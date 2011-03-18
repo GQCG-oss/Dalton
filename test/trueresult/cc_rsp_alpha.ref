@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:49:06 2010 
+     Date and time (Linux)  : Wed Mar 16 18:15:39 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -229,7 +230,7 @@ Point group: C1
 
  The molecule is linear.
 
-               B =       606561.40 MHz     (   20.232711 cm-1)
+               B =       606561.40 MHz     (   20.232710 cm-1)
 
 
 @  Nuclear repulsion energy :    5.104355716878
@@ -252,7 +253,7 @@ Point group: C1
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -302,7 +303,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:49:06 2010 
+     Date and time (Linux)  : Wed Mar 16 18:15:39 2011 
      Host name              : fe6                                     
 
  Title     :   linear dipole-dipole and quadrupole-magnetic dipole       
@@ -321,8 +322,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -332,6 +332,10 @@ Point group: C1
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -389,50 +393,77 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1    -99.9159496472        1.29322D+00   -9.99D+01    1
-      MULPOP F     0.02; H   ******; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
-   2    -100.006061861        2.26214D-01   -9.01D-02    2
-      MULPOP F     0.11; H   ******; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      1.997399
+      MULPOP  F      -0.44; H       0.44; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2    -100.006061881        2.26214D-01   -9.01D-02    2
+      Virial theorem: -V/T =      2.002657
+      MULPOP  F      -0.38; H       0.38; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
    3    -100.008563846        8.51422D-02   -2.50D-03    3
-      MULPOP F     0.12; H   ******; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      1.999075
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4    -100.008886254        2.15186D-02   -3.22D-04    4
-      MULPOP F     0.13; H   ******; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    T
-   5    -100.008918308        3.55901D-03   -3.21D-05    5
-      MULPOP F     0.13; H   ******; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -10    F
-   6    -100.008919840        7.37357D-04   -1.53D-06    6
-      MULPOP F     0.13; H   ******; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    T
-   7    -100.008919896        5.24727D-05   -5.51D-08    7
-      MULPOP F     0.13; H   ******; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
-   8    -100.008919896        4.65589D-06   -2.58D-10    8
-      MULPOP F     0.13; H   ******; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
-   9    -100.008919896        4.38994D-07   -6.25D-13    9
-      MULPOP F     0.13; H   ******; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -12    T
-  10    -100.008919896        2.49085D-08   -1.28D-13   10
-      MULPOP F     0.13; H   ******; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -17    F
-  11    -100.008919896        2.55853D-09    7.11D-14   10
-      MULPOP F     0.13; H   ******; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -17    T
-  12    -100.008919896        6.65749D-11   -1.42D-14   10
-      MULPOP F     0.13; H   ******; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -17    T
-  13    -100.008919896        8.93111D-12    1.42D-14   10
-      MULPOP F     0.13; H   ******; 
-  14  Screening settings (-IFTHRS, DIFDEN)  -17    T
-  14    -100.008919896        3.56737D-13    0.00D+00   10
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.08 seconds
+      Virial theorem: -V/T =      2.000623
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5    -100.008918307        3.55901D-03   -3.21D-05    5
+      Virial theorem: -V/T =      2.000296
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6    -100.008919840        7.37359D-04   -1.53D-06    6
+      Virial theorem: -V/T =      2.000320
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7    -100.008919896        5.24732D-05   -5.51D-08    7
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -100.008919896        4.65583D-06   -2.57D-10    8
+      Virial theorem: -V/T =      2.000326
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -100.008919896        4.38983D-07   -1.15D-12    9
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -100.008919896        2.49077D-08   -4.26D-14   10
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11    -100.008919896        2.55845D-09    1.14D-13   10
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12    -100.008919896        6.65748D-11   -1.14D-13   10
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13    -100.008919896        8.92410D-12    9.95D-14   10
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14    -100.008919896        3.83654D-13    4.26D-14   10
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.09 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -455,20 +486,23 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.008919895850                 
+     Final HF energy:            -100.008919895851                 
      Nuclear repulsion:             5.104355716878
-     Electronic energy:          -105.113275612729
+     Electronic energy:          -105.113275612730
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 21:49:06 2010 
+     Date and time (Linux)  : Wed Mar 16 18:15:39 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -476,23 +510,23 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 F   :1s    -0.9955  -0.2308  -0.0555  -0.0000  -0.0000   0.0644   0.0183
    2 F   :1s    -0.0212   0.5025   0.1234   0.0000   0.0000  -0.0741  -0.1606
    3 F   :1s     0.0052   0.5082   0.2358   0.0000   0.0000  -0.7503   0.3606
-   4 F   :2px    0.0000   0.0000   0.0000  -0.6568   0.0506  -0.0000   0.0000
-   5 F   :2py   -0.0000  -0.0000  -0.0000   0.0506   0.6568  -0.0000  -0.0000
+   4 F   :2px    0.0000   0.0000   0.0000   0.0506  -0.6568  -0.0000   0.0000
+   5 F   :2py   -0.0000  -0.0000  -0.0000   0.6568   0.0506  -0.0000  -0.0000
    6 F   :2pz    0.0013  -0.0602   0.5496   0.0000   0.0000   0.2591   0.3919
-   7 F   :2px    0.0000   0.0000   0.0000  -0.4845   0.0373  -0.0000   0.0000
-   8 F   :2py   -0.0000  -0.0000  -0.0000   0.0373   0.4845  -0.0000  -0.0000
+   7 F   :2px    0.0000   0.0000   0.0000   0.0373  -0.4845  -0.0000   0.0000
+   8 F   :2py   -0.0000  -0.0000  -0.0000   0.4845   0.0373  -0.0000  -0.0000
    9 F   :2pz   -0.0009  -0.0224   0.3522   0.0000   0.0000   0.4759  -0.1052
-  11 F   :3d1-   0.0000   0.0000   0.0000  -0.0017  -0.0223   0.0000   0.0000
+  11 F   :3d1-   0.0000   0.0000   0.0000  -0.0223  -0.0017   0.0000   0.0000
   12 F   :3d0    0.0000   0.0013  -0.0237  -0.0000  -0.0000  -0.0259   0.2926
-  13 F   :3d1+  -0.0000  -0.0000  -0.0000   0.0223  -0.0017   0.0000  -0.0000
+  13 F   :3d1+  -0.0000  -0.0000  -0.0000  -0.0017   0.0223   0.0000  -0.0000
   15 H   :1s    -0.0001   0.1311  -0.2709  -0.0000  -0.0000   0.1124   0.9672
   16 H   :1s    -0.0013   0.0073  -0.1255  -0.0000  -0.0000   1.3668  -0.9276
-  17 H   :2px   -0.0000  -0.0000  -0.0000  -0.0197   0.0015   0.0000  -0.0000
-  18 H   :2py    0.0000   0.0000   0.0000   0.0015   0.0197   0.0000   0.0000
+  17 H   :2px   -0.0000  -0.0000  -0.0000   0.0015  -0.0197   0.0000  -0.0000
+  18 H   :2py    0.0000   0.0000   0.0000   0.0197   0.0015   0.0000   0.0000
   19 H   :2pz    0.0006   0.0312  -0.0288  -0.0000  -0.0000   0.0206  -0.2828
 
 
@@ -501,7 +535,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:49:06 2010 
+     Date and time (Linux)  : Wed Mar 16 18:15:39 2011 
      Host name              : fe6                                     
 
 
@@ -793,10 +827,10 @@ Point group: C1
       1      19         0.00     0.23E+00
       2      11         0.00     0.21E-01
       3      18         0.00     0.18E-02
-      4       8         0.00     0.61E-06
-      5       5         0.00     0.29E-09
-      6       5         0.00     0.25E-11
-      7       4         0.00     0.15E-14
+      4      10         0.00     0.61E-06
+      5       5         0.00     0.28E-10
+      6       5         0.00     0.16E-11
+      7       2         0.00     0.11E-14
     --------------------------------------
     converged in  7 iterations
     threshold:    0.10E-11
@@ -812,7 +846,7 @@ Point group: C1
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.81 seconds
- >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -839,7 +873,7 @@ Point group: C1
       9       1         0.00     0.34E-08
      10       1         0.00     0.17E-09
      11       1         0.00     0.63E-11
-     12       1         0.00     0.35E-12
+     12       1         0.00     0.33E-12
     --------------------------------------
     converged in 12 iterations
     threshold:    0.10E-11
@@ -882,7 +916,7 @@ Point group: C1
       9       1         0.00     0.13E-08
      10       1         0.00     0.99E-10
      11       1         0.00     0.45E-11
-     12       1         0.00     0.29E-12
+     12       1         0.00     0.28E-12
     --------------------------------------
     converged in 12 iterations
     threshold:    0.10E-11
@@ -982,8 +1016,8 @@ Point group: C1
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1025,7 +1059,7 @@ Point group: C1
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   1.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1107,7 +1141,7 @@ Point group: C1
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.93 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.92 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -1188,26 +1222,26 @@ Point group: C1
    ZDIPLEN     ZDIPLEN      -4        388.073697924    
                             -2        9.26443567252    (RPA RESULT:  -8.37564249255    )
                              0        4.59830290737    
-                             2        7.71161829440    
-                             4        18.8857541496    
-                             6        48.7740988871    
+                             2        7.71161829436    
+                             4        18.8857541495    
+                             6        48.7740988867    
 
    XDIPLEN     XDIPLEN      -4        306.847865821    
                             -2        9.49425813601    (RPA RESULT:  -8.84600714425    )
                              0        1.97108007245    
                              2        1.50041957458    
-                             4        5.75974150861    
-                             6        29.1464990826    
+                             4        5.75974150858    
+                             6        29.1464990824    
 
-   XZTHETA     YANGMOM       1        6.10416407935    
+   XZTHETA     YANGMOM       1        6.10416407936    
                              3        2.33836943041    
-                             5        4.62427838630    
-                             7        21.0289145274    
+                             5        4.62427838632    
+                             7        21.0289145275    
 
-   YANGMOM     XZTHETA       1       -6.10416407935    
+   YANGMOM     XZTHETA       1       -6.10416407936    
                              3       -2.33836943041    
-                             5       -4.62427838630    
-                             7       -21.0289145274    
+                             5       -4.62427838632    
+                             7       -21.0289145275    
 
 ----------------------------------------------------------------------------------------
 
@@ -1237,29 +1271,32 @@ Point group: C1
           Number of t2 amplitudes                 :      2485
           Total number of amplitudes in ccsd      :      2555
 
- Iter.  1: Coupled cluster MP2   energy :    -100.1936625719334444
- Iter.  1: Coupled cluster CCSD  energy :    -100.1943060627133377
- Iter.  2: Coupled cluster CCSD  energy :    -100.1971586626826678
- Iter.  3: Coupled cluster CCSD  energy :    -100.1977954209490207
- Iter.  4: Coupled cluster CCSD  energy :    -100.1977970840506487
- Iter.  5: Coupled cluster CCSD  energy :    -100.1977935691907362
- Iter.  6: Coupled cluster CCSD  energy :    -100.1977918793544120
- Iter.  7: Coupled cluster CCSD  energy :    -100.1977908485305448
- Iter.  8: Coupled cluster CCSD  energy :    -100.1977909127009241
- Iter.  9: Coupled cluster CCSD  energy :    -100.1977909096108874
- Iter. 10: Coupled cluster CCSD  energy :    -100.1977909077496491
- Iter. 11: Coupled cluster CCSD  energy :    -100.1977909069591846
- Iter. 12: Coupled cluster CCSD  energy :    -100.1977909068219219
- Iter. 13: Coupled cluster CCSD  energy :    -100.1977909068234425
- Iter. 14: Coupled cluster CCSD  energy :    -100.1977909068141912
- Iter. 15: Coupled cluster CCSD  energy :    -100.1977909068155981
- Iter. 16: Coupled cluster CCSD  energy :    -100.1977909068172607
- Iter. 17: Coupled cluster CCSD  energy :    -100.1977909068173176
- Iter. 18: Coupled cluster CCSD  energy :    -100.1977909068173744
- Iter. 19: Coupled cluster CCSD  energy :    -100.1977909068173744
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936625719346949
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1943060627144462
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1971586626836199
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977954209497739
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977970840518850
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977935691921147
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977918793554636
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977908485315112
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909127020467
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909096117543
+ Iter. 10: Coupled cluster CCSD  energy :    -100.1977909077504734
+ Iter. 11: Coupled cluster CCSD  energy :    -100.1977909069601651
+ Iter. 12: Coupled cluster CCSD  energy :    -100.1977909068231440
+ Iter. 13: Coupled cluster CCSD  energy :    -100.1977909068246078
+ Iter. 14: Coupled cluster CCSD  energy :    -100.1977909068151149
+ Iter. 15: Coupled cluster CCSD  energy :    -100.1977909068166070
+ Iter. 16: Coupled cluster CCSD  energy :    -100.1977909068183124
+ Iter. 17: Coupled cluster CCSD  energy :    -100.1977909068182413
+ Iter. 18: Coupled cluster CCSD  energy :    -100.1977909068182555
+ Iter. 19: Coupled cluster CCSD  energy :    -100.1977909068183834
+ Iter. 20: Coupled cluster CCSD  energy :    -100.1977909068182981
+ Iter. 21: Coupled cluster CCSD  energy :    -100.1977909068183266
+ Iter. 22: Coupled cluster CCSD  energy :    -100.1977909068183266
 
  CCSD  energy converged to within   0.10D-13 is   -100.197790907
- Final 2-norm of the CC vector function:  1.95505167D-13
+ Final 2-norm of the CC vector function:  1.17219975D-14
 
 
 
@@ -1347,7 +1384,7 @@ Point group: C1
          Total time          0.03
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.76 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.75 seconds
  >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
@@ -1640,7 +1677,7 @@ Point group: C1
      14      20         0.01     0.11E-09
      15      15         0.01     0.14E-10
      16       5         0.00     0.20E-11
-     17       3         0.00     0.37E-12
+     17       3         0.00     0.41E-12
     --------------------------------------
     converged in 17 iterations
     threshold:    0.10E-11
@@ -1648,15 +1685,15 @@ Point group: C1
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.10
+         CC_TRDRV            0.11
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
          Total time          0.12
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   7.18 seconds
- >>>> Total wall time used in CCEQ_SOLV:  18.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   7.40 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  15.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1703,7 +1740,7 @@ Point group: C1
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.56 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.69 seconds
  >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
 
 
@@ -1750,7 +1787,7 @@ Point group: C1
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.40 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.43 seconds
  >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
 
 
@@ -1797,7 +1834,7 @@ Point group: C1
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.38 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.37 seconds
  >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
 
 
@@ -1843,7 +1880,7 @@ Point group: C1
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.25 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.23 seconds
  >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
 
 
@@ -1889,8 +1926,8 @@ Point group: C1
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.20 seconds
- >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.21 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2059,27 +2096,27 @@ Point group: C1
 
    ZDIPLEN     ZDIPLEN      -4        376.136084465    
                             -2        8.47649183325    
-                             0        4.57091150015    
-                             2        8.60972712594    
-                             4        23.2947097308    
-                             6        66.2016159823    
+                             0        4.57091150014    
+                             2        8.60972712590    
+                             4        23.2947097307    
+                             6        66.2016159818    
 
    XDIPLEN     XDIPLEN      -4        301.096911201    
-                            -2        8.97073932834    
+                            -2        8.97073932835    
                              0        1.93065698705    
-                             2        1.96737012919    
-                             4        9.87387343851    
-                             6        60.8500497169    
+                             2        1.96737012918    
+                             4        9.87387343845    
+                             6        60.8500497164    
 
    XZTHETA     YANGMOM       1        5.97082194218    
-                             3        2.24593321792    
-                             5        4.71696437754    
-                             7        25.4474424446    
+                             3        2.24593321794    
+                             5        4.71696437765    
+                             7        25.4474424452    
 
    YANGMOM     XZTHETA       1       -5.97082194218    
-                             3       -2.24593321792    
-                             5       -4.71696437754    
-                             7       -25.4474424446    
+                             3       -2.24593321794    
+                             5       -4.71696437765    
+                             7       -25.4474424452    
 
 ----------------------------------------------------------------------------------------
 
@@ -2121,9 +2158,9 @@ Point group: C1
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  38.67 seconds
- >>>> Total wall time used in DALTON:  1 minute  19 seconds
+ >>>> Total CPU  time used in DALTON:  39.33 seconds
+ >>>> Total wall time used in DALTON:  1 minute  12 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:50:25 2010 
+     Date and time (Linux)  : Wed Mar 16 18:16:51 2011 
      Host name              : fe6                                     

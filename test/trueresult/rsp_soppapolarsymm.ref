@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:18:19 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:53 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -183,8 +184,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -251,15 +252,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.972000    0.000000
- H    2:    0.972000    1.537101    0.000000
+ H   _1:    0.972000    0.000000
+ H   _2:    0.972000    1.537101    0.000000
 
 
   Max interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -267,8 +268,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.972000
-  bond distance:  H    2     O            0.972000
+  bond distance:  H   _1     O            0.972000
+  bond distance:  H   _2     O            0.972000
 
 
   Bond angles (degrees):
@@ -276,7 +277,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.500
+  bond angle:     H   _1     O          H   _2       104.500
 
 
 
@@ -296,7 +297,7 @@ Point group: C2v
 
                A                   B                   C
 
-         797267.3440         424480.0013         277000.0234 MHz
+         797267.3370         424479.9976         277000.0210 MHz
            26.593976           14.159129            9.239726 cm-1
 
 
@@ -370,7 +371,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - dipole velocity integrals
@@ -425,7 +426,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:19 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:53 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -440,8 +441,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -449,6 +449,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MP2      <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -484,28 +485,44 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -75.8080240525       2.26D+00  -7.58D+01    3  1  1  0
-      MULPOP O     0.17; H     0.36; 
+      Virial theorem: -V/T =      1.999834
+      MULPOP  O      -0.43; H   _1  0.22; H   _2  0.22; 
+ -----------------------------------------------------------------------------
    2  -76.0179559355       3.50D-01  -2.10D-01    3  1  1  0
-      MULPOP O     0.13; H    -0.79; 
+      Virial theorem: -V/T =      2.000516
+      MULPOP  O      -0.28; H   _1  0.14; H   _2  0.14; 
+ -----------------------------------------------------------------------------
    3  -76.0250798476       8.42D-02  -7.12D-03    3  1  1  0
-      MULPOP O     0.14; H    -0.96; 
+      Virial theorem: -V/T =      2.002196
+      MULPOP  O      -0.30; H   _1  0.15; H   _2  0.15; 
+ -----------------------------------------------------------------------------
    4  -76.0256316151       2.94D-02  -5.52D-04    3  1  1  0
-      MULPOP O     0.13; H    -0.94; 
+      Virial theorem: -V/T =      2.000742
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    5  -76.0256787149       7.26D-03  -4.71D-05    3  1  1  0
-      MULPOP O     0.13; H    -0.95; 
+      Virial theorem: -V/T =      2.001331
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    6  -76.0256814298       7.07D-04  -2.71D-06    3  1  1  0
-      MULPOP O     0.13; H    -0.95; 
+      Virial theorem: -V/T =      2.001210
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    7  -76.0256814818       1.30D-04  -5.20D-08    3  1  1  0
-      MULPOP O     0.13; H    -0.95; 
+      Virial theorem: -V/T =      2.001216
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    8  -76.0256814839       1.07D-05  -2.11D-09    3  1  1  0
-      MULPOP O     0.13; H    -0.95; 
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    9  -76.0256814839       6.63D-07  -1.20D-11    3  1  1  0
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -588,7 +605,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Time used for MP2 natural orbitals :       0.011 CPU seconds.
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -596,12 +616,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
      Final HF energy:             -76.025681483944                 
      Nuclear repulsion:             9.055004525638
-     Electronic energy:           -85.080686009581
+     Electronic energy:           -85.080686009582
 
      Final gradient norm:           0.000000663348
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:19 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:53 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -609,7 +629,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     1.0004  -0.0076   0.0022   0.0519   0.0683
    2 O   :1s     0.0021   0.8737  -0.2932  -0.1433   0.5085
    3 O   :1s    -0.0014  -0.1145  -0.1768  -0.9058  -0.6107
@@ -625,7 +645,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.7111  -0.4190  -0.3966
    2 O   :2px   -0.1012  -0.4775  -0.2515
    3 O   :3d2-   0.0262  -0.0201   0.1103
@@ -637,7 +657,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2pz    0.9204  -1.4099  -0.0114
    2 O   :2pz    0.0724   1.6625   0.6479
    3 O   :3d1-   0.0180  -0.0024  -0.1619
@@ -646,7 +666,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :3d1+  -0.1334   1.0607
    2 H   :2pz   -0.6844  -0.3620
 
@@ -656,7 +676,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:19 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:53 2011 
      Host name              : fe6                                     
 
 
@@ -736,8 +756,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
           ZDIPLEN 
 
 
-   SCF energy         :      -76.025681483943600
- -- inactive part     :      -85.080686009581498
+   SCF energy         :      -76.025681483943970
+ -- inactive part     :      -85.080686009581868
  -- nuclear repulsion :        9.055004525637894
 
 
@@ -817,6 +837,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : YDIPLEN 
  RSPLR -- frequencies :   0.000000  0.059200
+ FREQ 2    0.0000000000000000       5.92000000000000026E-002
 
 
 
@@ -847,7 +868,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< YDIPLEN  ; YDIPLEN  >> =  5.500083805435D+00
+@ -<< YDIPLEN  ; YDIPLEN  >> =  5.500083805425D+00
 
 @ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
 
@@ -857,7 +878,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   kJ/mol.:  1.5542958D+02
      nm  :  7.6965123D+02
 
-@ -<< YDIPLEN  ; YDIPLEN  >> =  5.560575332600D+00
+@ -<< YDIPLEN  ; YDIPLEN  >> =  5.560575332589D+00
 
 
  Time used in linear response calculation is      0.03 CPU seconds for symmetry 1
@@ -1057,29 +1078,29 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  YDIPLEN  YDIPLEN 
 
    k               Moment = S(-k-2)
-    0         5.50008377861405239884E+00
-    2         1.69082663248005289347E+01
-    4         9.81693066986093327841E+01
-    6         6.44000350688855633052E+02
-    8         4.35077700831982474483E+03
-   10         2.96657608928023546468E+04
-   12         2.02918964275639562402E+05
-   14         1.38955596025607082993E+06
-   16         9.51923837118867598474E+06
-   18         6.52213629439446181059E+07
-   20         4.46888780473056495190E+08
-   22         3.06208217688394880295E+09
-   24         2.09815232552232856750E+10
-   26         1.43766658761413696289E+11
-   28         9.85098590865591064453E+11
-   30         6.74996222041131347656E+12
-   32         4.62512027823345156250E+13
-   34         3.16916416383874937500E+14
-   36         2.17153306833803175000E+15
-   38         1.48794939143774580000E+16
+    0         5.50008377860356123534E+00
+    2         1.69082663247139493024E+01
+    4         9.81693066980004118705E+01
+    6         6.44000350684543263924E+02
+    8         4.35077700828913839359E+03
+   10         2.96657608925838540017E+04
+   12         2.02918964274085068610E+05
+   14         1.38955596024502511136E+06
+   16         9.51923837111028470099E+06
+   18         6.52213629433889016509E+07
+   20         4.46888780469121694565E+08
+   22         3.06208217685611581802E+09
+   24         2.09815232550266036987E+10
+   26         1.43766658760025115967E+11
+   28         9.85098590855796020508E+11
+   30         6.74996222034227832031E+12
+   32         4.62512027818483203125E+13
+   34         3.16916416380453375000E+14
+   36         2.17153306831396900000E+15
+   38         1.48794939142083460000E+16
 
 
- Time used in c6/c8 calculation       0.13 CPU seconds for symmetry 1
+ Time used in c6/c8 calculation       0.12 CPU seconds for symmetry 1
 
 
  >>>>>>>>>> Linear response calculation
@@ -1099,6 +1120,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  RSPLR -- linear response calculation for symmetry  2
  RSPLR -- operator label : XDIPLEN 
  RSPLR -- frequencies :   0.000000  0.059200
+ FREQ 2    0.0000000000000000       5.92000000000000026E-002
 
 
 
@@ -1129,7 +1151,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  7.396693916220D+00
+@ -<< XDIPLEN  ; XDIPLEN  >> =  7.396693916198D+00
 
 @ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
 
@@ -1139,10 +1161,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   kJ/mol.:  1.5542958D+02
      nm  :  7.6965123D+02
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  7.462908536777D+00
+@ -<< XDIPLEN  ; XDIPLEN  >> =  7.462908536754D+00
 
 
- Time used in linear response calculation is      0.03 CPU seconds for symmetry 2
+ Time used in linear response calculation is      0.02 CPU seconds for symmetry 2
 
 
  Solving RSPC6 for
@@ -1174,7 +1196,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966942134
+ XDIPLEN  XDIPLEN         7.3966942133
    Max difference in grid polarizabilities:      7.3966942   XDIPLEN 
 
 
@@ -1261,7 +1283,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966945578
+ XDIPLEN  XDIPLEN         7.3966945577
    Max difference in grid polarizabilities:      0.0013927   XDIPLEN 
 
 
@@ -1310,26 +1332,26 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  XDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0         7.39669457860692869389E+00
-    2         1.86536942040876745352E+01
-    4         6.74412111996395111646E+01
-    6         2.66843431650030083802E+02
-    8         1.09260303871356768468E+03
-   10         4.57914408374532013113E+03
-   12         1.95833565414057229646E+04
-   14         8.52919295071473316057E+04
-   16         3.77525423509237007238E+05
-   18         1.69447597443001996726E+06
-   20         7.69494004564847517759E+06
-   22         3.52812096002471148968E+07
-   24         1.63018386708567559719E+08
-   26         7.57858619962475538254E+08
-   28         3.54014069148869371414E+09
-   30         1.65983778908045482636E+10
-   32         7.80461510772511291504E+10
-   34         3.67778454271813110352E+11
-   36         1.73597574414738183594E+12
-   38         8.20444798862835937500E+12
+    0         7.39669457858412560114E+00
+    2         1.86536942039605371235E+01
+    4         6.74412111991055382987E+01
+    6         2.66843431647990030342E+02
+    8         1.09260303870639972956E+03
+   10         4.57914408372314483131E+03
+   12         1.95833565413546348282E+04
+   14         8.52919295071489032125E+04
+   16         3.77525423510337655898E+05
+   18         1.69447597444013366476E+06
+   20         7.69494004571837745607E+06
+   22         3.52812096006773114204E+07
+   24         1.63018386711053758860E+08
+   26         7.57858619976292729378E+08
+   28         3.54014069156347942352E+09
+   30         1.65983778912017459869E+10
+   32         7.80461510793311004639E+10
+   34         3.67778454282587646484E+11
+   36         1.73597574420271752930E+12
+   38         8.20444798891058496094E+12
 
 
  Time used in c6/c8 calculation       0.10 CPU seconds for symmetry 2
@@ -1352,6 +1374,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  RSPLR -- linear response calculation for symmetry  3
  RSPLR -- operator label : ZDIPLEN 
  RSPLR -- frequencies :   0.000000  0.059200
+ FREQ 2    0.0000000000000000       5.92000000000000026E-002
 
 
 
@@ -1392,7 +1415,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   kJ/mol.:  1.5542958D+02
      nm  :  7.6965123D+02
 
-@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.251795654194D+00
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.251795654195D+00
 
 
  Time used in linear response calculation is      0.02 CPU seconds for symmetry 3
@@ -1534,41 +1557,41 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  ZDIPLEN  ZDIPLEN 
 
    k               Moment = S(-k-2)
-    0         3.20692474826895468354E+00
-    2         1.22887903872831625307E+01
-    4         1.40520707568111362207E+02
-    6         1.72246239731449691135E+03
-    8         2.12013384837407465966E+04
-   10         2.61060013866128283553E+05
-   12         3.21465908248385507613E+06
-   14         3.95850720002056881785E+07
-   16         4.87447868783760190010E+08
-   18         6.00240005552641868591E+09
-   20         7.39131483935599975586E+10
-   22         9.10161511879315185547E+11
-   24         1.12076673200826582031E+13
-   26         1.38010457615877250000E+14
-   28         1.69945144403371850000E+15
-   30         2.09269301799371280000E+16
-   32         2.57692803341594272000E+17
-   34         3.17321175743747686400E+18
-   36         3.90747150365380853760E+19
-   38         4.81163399072883605504E+20
+    0         3.20692474826945606026E+00
+    2         1.22887903873541972644E+01
+    4         1.40520707568582821523E+02
+    6         1.72246239731369200854E+03
+    8         2.12013384836478362558E+04
+   10         2.61060013863960630260E+05
+   12         3.21465908244455698878E+06
+   14         3.95850719995665624738E+07
+   16         4.87447868773978590965E+08
+   18         6.00240005538243103027E+09
+   20         7.39131483914971160889E+10
+   22         9.10161511850344238281E+11
+   24         1.12076673196819609375E+13
+   26         1.38010457610401921875E+14
+   28         1.69945144395963150000E+15
+   30         2.09269301789427720000E+16
+   32         2.57692803328339360000E+17
+   34         3.17321175726181376000E+18
+   36         3.90747150342217482240E+19
+   38         4.81163399042473787392E+20
 
 
- Time used in c6/c8 calculation       0.06 CPU seconds for symmetry 3
+ Time used in c6/c8 calculation       0.07 CPU seconds for symmetry 3
 
  >>>> Total CPU  time used in RESPONSE:   0.37 seconds
- >>>> Total wall time used in RESPONSE:   3.00 seconds
+ >>>> Total wall time used in RESPONSE:   4.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.42 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.43 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:57 2011 
      Host name              : fe6                                     

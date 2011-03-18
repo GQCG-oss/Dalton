@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:19:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:48 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -155,8 +156,8 @@
  Symmetry Independent Centres             
  ----------------------------
       22 :      0.00000000     0.00000000     0.00000000  Isotope  1
-       9 :     -1.65996756     2.87514839     0.00000000  Isotope  1
-       9 :      3.31993512     0.00000000     0.00000000  Isotope  1
+       9 :     -1.65996755     2.87514838     0.00000000  Isotope  1
+       9 :      3.31993511     0.00000000     0.00000000  Isotope  1
 
  The following elements were found:   Y  Z     
 
@@ -205,8 +206,8 @@ Represented as:      C2v
 
                            Ti         47.947947
                            F          18.998403
-                           F    1     18.998403
-                           F    2     18.998403
+                           F   _1     18.998403
+                           F   _2     18.998403
 
                        Total mass:   104.943156 amu
                        Natural abundance:  73.800 %
@@ -239,9 +240,9 @@ Represented as:      C2v
 
   Total number of coordinates:   12
   Ti      :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
-  F       :     4  x   3.3199351228    5  y   0.0000000000    6  z   0.0000000000
-  F   / 1 :     7  x  -1.6599675614    8  y   2.8751483929    9  z   0.0000000000
-  F   / 2 :    10  x  -1.6599675614   11  y  -2.8751483929   12  z   0.0000000000
+  F       :     4  x   3.3199351071    5  y   0.0000000000    6  z   0.0000000000
+  F   / 1 :     7  x  -1.6599675535    8  y   2.8751483793    9  z   0.0000000000
+  F   / 2 :    10  x  -1.6599675535   11  y  -2.8751483793   12  z   0.0000000000
 
 
   Symmetry Coordinates
@@ -277,16 +278,16 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            Ti          F           F    1      F    2
+            Ti          F           F   _1      F   _2
             ------      ------      ------      ------
  Ti    :    0.000000
  F     :    1.756834    0.000000
- F    1:    1.756834    3.042926    0.000000
- F    2:    1.756834    3.042926    3.042926    0.000000
+ F   _1:    1.756834    3.042926    0.000000
+ F   _2:    1.756834    3.042926    3.042926    0.000000
 
 
   Max interatomic separation is    3.0429 Angstrom (    5.7503 Bohr)
-  between atoms    4 and    3, "F    2" and "F    1".
+  between atoms    4 and    3, "F   _2" and "F   _1".
 
 
   Bond distances (Angstrom):
@@ -295,8 +296,8 @@ Represented as:      C2v
                   atom 1     atom 2       distance
                   ------     ------       --------
   bond distance:  F          Ti           1.756834
-  bond distance:  F    1     Ti           1.756834
-  bond distance:  F    2     Ti           1.756834
+  bond distance:  F   _1     Ti           1.756834
+  bond distance:  F   _2     Ti           1.756834
 
 
   Bond angles (degrees):
@@ -304,9 +305,9 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     F          Ti         F    1       120.000
-  bond angle:     F          Ti         F    2       120.000
-  bond angle:     F    1     Ti         F    2       120.000
+  bond angle:     F          Ti         F   _1       120.000
+  bond angle:     F          Ti         F   _2       120.000
+  bond angle:     F   _1     Ti         F   _2       120.000
 
 
 
@@ -330,7 +331,7 @@ Represented as:      C2v
             0.191658            0.191658            0.095829 cm-1
 
 
-@  Nuclear repulsion energy :  221.177841708238
+@  Nuclear repulsion energy :  221.177842753152
 
 
   Symmetry Orbitals
@@ -409,7 +410,7 @@ Represented as:      C2v
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Fermi contact integrals
             (Dirac delta function integrals)
@@ -428,7 +429,7 @@ Represented as:      C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -469,7 +470,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:48 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -481,7 +482,6 @@ Represented as:      C2v
 
      Restricted, one open shell Kohn-Sham DFT calculation.
 
-
      Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
                Fock matrices are calculated directly
@@ -492,6 +492,7 @@ Represented as:      C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         48
      Number of electrons in active shells      1
      Total charge of the molecule              0
@@ -544,63 +545,86 @@ Represented as:      C2v
 
  Iter     Total energy    Error norm  Delta(E)  sym.  closed shell occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    F
- Radial Quadrature : LMG scheme
- Space partitioning: Original Becke partitioning
- Radial integration threshold: 1e-13
- Angular polynomials in range [15 35]
- Atom:    1*1 points=19962 compressed from 19962 (111 radial)
- Atom:    2*1 points=18520 compressed from 18520 ( 92 radial)
- Atom:    3*2 points=18520 compressed from 18520 ( 92 radial)
- Number of grid points:    57002 Grid generation time:       0.0 s
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+         DFT grid generation - Radial Quadrature  : LMG scheme
+         DFT grid generation -  partitioning : Original Becke partitioning
+         DFT grid generation - Radial integration threshold: 1e-13
+         DFT grid generation - Angular polynomials in range [15 35]
+         DFT grid generation - Atom:    1*1 points= 19962 compressed from 19962 (111 radial)
+         DFT grid generation - Atom:    2*1 points= 18520 compressed from 18520 ( 92 radial)
+         DFT grid generation - Atom:    3*2 points= 18520 compressed from 18520 ( 92 radial)
+         DFT grid generation - Number of grid points:    57002; grid generation time:      0.0 s
  Electrons:  48.9999792    -4e-07: Energy -73.878526 KS-AB/B time:       0.7 s
-   1  -1135.85168455       2.67D+00  -1.14D+03   1   12  7  4  1
-      MULPOP Ti   -1.23; F    -0.50; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    F
- Electrons:  48.9997796    -4e-06: Energy -71.740816 KS-AB/B time:       0.7 s
-   2  -1132.84574605       7.61D+00   3.01D+00   2   13  6  4  1
-      MULPOP Ti   -2.33; F    -0.56; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -6    F
- Electrons:  48.9999152    -2e-06: Energy -73.571990 KS-AB/B time:       0.6 s
-   3  -1136.18922703       8.38D-01  -3.34D+00   1   12  7  4  1
-      MULPOP Ti   -2.30; F    -0.71; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -7    F
- Electrons:  48.9999060    -2e-06: Energy -73.284111 KS-AB/B time:       0.6 s
-   4  -1136.24450552       2.94D-01  -5.53D-02   1   12  7  4  1
-      MULPOP Ti   -2.33; F    -0.67; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
- Electrons:  48.9999082    -2e-06: Energy -73.345246 KS-AB/B time:       0.6 s
-   5  -1136.25069834       3.08D-02  -6.19D-03   1   12  7  4  1
-      MULPOP Ti   -2.32; F    -0.68; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
- Electrons:  48.9999087    -2e-06: Energy -73.354018 KS-AB/B time:       0.6 s
-   6  -1136.25077136       3.35D-04  -7.30D-05   1   12  7  4  1
-      MULPOP Ti   -2.33; F    -0.68; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -11    F
+   1  -1135.85168448       2.67D+00  -1.14D+03   1   12  7  4  1
+      Virial theorem: -V/T =      2.007937
+      MULPOP  Ti      1.13; F      -0.38; F   _1 -0.38; F   _2 -0.38; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+ Electrons:  48.9997797    -4e-06: Energy -71.740817 KS-AB/B time:       0.7 s
+   2  -1132.84572237       7.61D+00   3.01D+00   2   13  6  4  1
+      Virial theorem: -V/T =      2.013743
+      MULPOP  Ti     -4.49; F       1.50; F   _1  1.50; F   _2  1.50; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+ Electrons:  48.9999152    -2e-06: Energy -73.571990 KS-AB/B time:       0.7 s
+   3  -1136.18922613       8.38D-01  -3.34D+00   1   12  7  4  1
+      Virial theorem: -V/T =      2.008842
+      MULPOP  Ti      0.75; F      -0.25; F   _1 -0.25; F   _2 -0.25; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+ Electrons:  48.9999060    -2e-06: Energy -73.284114 KS-AB/B time:       0.7 s
+   4  -1136.24450533       2.94D-01  -5.53D-02   1   12  7  4  1
+      Virial theorem: -V/T =      2.010100
+      MULPOP  Ti      0.00; F      -0.00; F   _1 -0.00; F   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+ Electrons:  48.9999082    -2e-06: Energy -73.345247 KS-AB/B time:       0.6 s
+   5  -1136.25069835       3.08D-02  -6.19D-03   1   12  7  4  1
+      Virial theorem: -V/T =      2.009867
+      MULPOP  Ti      0.17; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+ Electrons:  48.9999087    -2e-06: Energy -73.354019 KS-AB/B time:       0.6 s
+   6  -1136.25077136       3.10D-04  -7.30D-05   1   12  7  4  1
+      Virial theorem: -V/T =      2.009829
+      MULPOP  Ti      0.19; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
  Electrons:  48.9999087    -2e-06: Energy -73.353898 KS-AB/B time:       0.6 s
-   7  -1136.25077137       3.17D-04  -6.47D-09   1   12  7  4  1
-      MULPOP Ti   -2.30; F    -0.68; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -11    F
- Electrons:  48.9999087    -2e-06: Energy -73.353926 KS-AB/B time:       0.6 s
-   8  -1136.25077137       1.69D-04  -6.08D-09   1   12  7  4  1
-      MULPOP Ti   -2.33; F    -0.67; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
+   7  -1136.25077137       1.81D-04  -1.04D-08   1   12  7  4  1
+      Virial theorem: -V/T =      2.009830
+      MULPOP  Ti      0.19; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+ Electrons:  48.9999087    -2e-06: Energy -73.353955 KS-AB/B time:       0.6 s
+   8  -1136.25077138       4.11D-05  -2.36D-09   1   12  7  4  1
+      Virial theorem: -V/T =      2.009830
+      MULPOP  Ti      0.19; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
  Electrons:  48.9999087    -2e-06: Energy -73.353956 KS-AB/B time:       0.6 s
-   9  -1136.25077138       6.60D-07  -2.41D-09   1   12  7  4  1
-      MULPOP Ti   -2.32; F    -0.68; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -13    F
+   9  -1136.25077138       1.89D-06  -1.45D-10   1   12  7  4  1
+      Virial theorem: -V/T =      2.009830
+      MULPOP  Ti      0.19; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
  Electrons:  48.9999087    -2e-06: Energy -73.353956 KS-AB/B time:       0.6 s
-  10  -1136.25077138       2.33D-07  -1.59D-12   1   12  7  4  1
-      MULPOP Ti   -2.32; F    -0.68; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  10  -1136.25077138       2.33D-07   1.59D-12   1   12  7  4  1
+      Virial theorem: -V/T =      2.009830
+      MULPOP  Ti      0.19; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
  Electrons:  48.9999087    -2e-06: Energy -73.353956 KS-AB/B time:       0.6 s
-  11  -1136.25077138       5.33D-09  -1.14D-12   1   12  7  4  1
-      MULPOP Ti   -2.32; F    -0.68; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -14    F
+  11  -1136.25077138       5.22D-09  -2.96D-12   1   12  7  4  1
+      Virial theorem: -V/T =      2.009830
+      MULPOP  Ti      0.19; F      -0.06; F   _1 -0.06; F   _2 -0.06; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
  Electrons:  48.9999087    -2e-06: Energy -73.353956 KS-AB/B time:       0.6 s
-  12  -1136.25077138       4.74D-10   2.50D-12   1   12  7  4  1
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.93 seconds
+  12  -1136.25077138       9.51D-10   4.55D-13   1   12  7  4  1
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.98 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -619,18 +643,18 @@ Represented as:      C2v
 
   1   -176.10747202   -24.01143580   -24.01118397   -19.32313760   -16.42267489
         -2.32166595    -1.50054326    -0.95637277    -0.94153875    -0.24109056
-        -0.23681910    -0.19838171     0.00236723     0.17349351     0.28370300
-         0.47393065
+        -0.23681910    -0.19838171     0.00236723     0.17349352     0.28370301
+         0.47393066
 
-  2    -24.01143574   -16.42267485    -1.50054323    -0.94153870    -0.24109062
-        -0.19838164    -0.16980560     0.17349355     0.47393067
+  2    -24.01143574   -16.42267485    -1.50054323    -0.94153870    -0.24109063
+        -0.19838164    -0.16980560     0.17349355     0.47393068
 
-  3    -16.42417388    -1.48274793    -0.20815523    -0.20542050     0.12403807
+  3    -16.42417388    -1.48274793    -0.20815523    -0.20542050     0.12403808
          0.18120455
 
-  4     -0.20815534     0.12403819
+  4     -0.20815535     0.12403819
 
-    E(LUMO) :     0.12403807 au (symmetry 3)
+    E(LUMO) :     0.12403808 au (symmetry 3)
   - E(HOMO) :    -0.16980560 au (symmetry 2)
   ------------------------------------------
     gap     :     0.29384368 au
@@ -644,20 +668,23 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           2
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final DFT energy:          -1136.250771375221                 
-     Nuclear repulsion:           221.177841708238
-     Electronic energy:         -1357.428613083459
+     Final DFT energy:          -1136.250771376735                 
+     Nuclear repulsion:           221.177842753152
+     Electronic energy:         -1357.428614129886
 
-     Final gradient norm:           0.000000000474
+     Final gradient norm:           0.000000000951
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:26 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:57 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -665,7 +692,7 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           9       10       11       12       13       14       15
+    Orbital         9       10       11       12       13       14       15
    1 Ti  :1s     0.0000   0.0000   0.0243  -0.0000  -0.0344   0.0000  -0.0278
    2 Ti  :1s    -0.0000  -0.0000  -0.0758   0.0000   0.1106  -0.0000   0.0911
    3 Ti  :1s     0.0000   0.0000   0.2258  -0.0000  -0.3203   0.0000  -0.2588
@@ -686,7 +713,7 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           3        4        5        6        7        8        9
+    Orbital         3        4        5        6        7        8        9
    1 Ti  :2py   -0.3500   0.0761  -0.0112  -0.0747   0.0000   0.0867   0.1116
    2 Ti  :2py    1.0022  -0.2314   0.0324   0.2499  -0.0000  -0.3067  -0.4149
    3 Ti  :2py    0.0620   0.0551   0.0641  -0.2880   0.0000   0.6055   1.1506
@@ -700,7 +727,7 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 Ti  :2pz    0.9866  -0.3563  -0.0000   0.0606  -0.0000   0.1445
    2 Ti  :2pz    0.0416   1.0216   0.0000  -0.2070   0.0000  -0.5138
    3 Ti  :2pz   -0.0101   0.0646  -0.0000   0.3314  -0.0000   1.0706
@@ -711,17 +738,17 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ti  :3d1-   0.3288   0.9558
    2 F   :2pz    0.6348  -0.3286
 
 
 
- >>>> Total CPU  time used in SIRIUS :      9.07 seconds
+ >>>> Total CPU  time used in SIRIUS :      9.28 seconds
  >>>> Total wall time used in SIRIUS :      9.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:26 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:57 2011 
      Host name              : fe6                                     
 
 
@@ -802,10 +829,10 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
           SD 006 z
 
 
- open shell SCF energy:    -1136.250771375220893
- -- inactive part     :    -1357.428613083458686
+ open shell SCF energy:    -1136.250771376734747
+ -- inactive part     :    -1357.428614129886455
  --   active part     :        0.000000000000000
- -- nuclear repulsion :      221.177841708237821
+ -- nuclear repulsion :      221.177842753151623
 
 
                     ******************************************
@@ -851,14 +878,14 @@ and E(SOMO) :     0.00236723 au (symmetry 1)
  *** RSPCTL MICROITERATIONS CONVERGED
 
      FC Ti 01 inactive part:     0.00000000
-     FC Ti 01 active part  :    14.94162718
-     FC Ti 01 total        :    14.94162718
+     FC Ti 01 active part  :    14.94162725
+     FC Ti 01 total        :    14.94162725
 
 TRIPLET OPERATOR: "FC Ti 01" LAGRANGIAN:  0.395451 AVERAGE: 14.941627 TOTAL: 15.337078
 
      FC F  02 inactive part:     0.00000000
-     FC F  02 active part  :     0.31880245
-     FC F  02 total        :     0.31880245
+     FC F  02 active part  :     0.31880246
+     FC F  02 total        :     0.31880246
 
 TRIPLET OPERATOR: "FC F  02" LAGRANGIAN: -0.006226 AVERAGE:  0.318802 TOTAL:  0.312576
 
@@ -986,7 +1013,7 @@ TRIPLET OPERATOR: "SD 006 z" contribution = 0.0 by symmetry.
 
  *** NOTE: Results printed only for symmetry unique atoms!
 
- >>>> Total CPU  time used in RESPONSE:   3.65 seconds
+ >>>> Total CPU  time used in RESPONSE:   3.72 seconds
  >>>> Total wall time used in RESPONSE:   4.00 seconds
 
 
@@ -994,9 +1021,9 @@ TRIPLET OPERATOR: "SD 006 z" contribution = 0.0 by symmetry.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  12.77 seconds
+ >>>> Total CPU  time used in DALTON:  13.06 seconds
  >>>> Total wall time used in DALTON:  13.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:30 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:01 2011 
      Host name              : fe6                                     

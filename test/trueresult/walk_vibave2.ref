@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:20:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:15 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -261,7 +262,7 @@ Point group: C1
  Number of two-electron integrals written:       30407 ( 21.8% )
  Megabytes written:                              0.350
 
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -295,7 +296,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:16 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -307,12 +308,12 @@ Point group: C1
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -348,39 +349,65 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -99.9485080995        1.46877D+00   -9.99D+01    1
-      MULPOP H     0.01; F     0.00; 
+      Virial theorem: -V/T =      1.993995
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
    2    -100.051290104        3.67702D-01   -1.03D-01    2
-      MULPOP H     0.04; F     0.03; 
+      Virial theorem: -V/T =      2.004744
+      MULPOP  H       0.37; F      -0.37; 
+ -----------------------------------------------------------------------------
    3    -100.055799862        1.26351D-01   -4.51D-03    3
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      1.998824
+      MULPOP  H       0.41; F      -0.41; 
+ -----------------------------------------------------------------------------
    4    -100.056460473        3.98806D-02   -6.61D-04    4
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.001299
+      MULPOP  H       0.41; F      -0.41; 
+ -----------------------------------------------------------------------------
    5    -100.056545672        6.49514D-03   -8.52D-05    5
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000715
+      MULPOP  H       0.41; F      -0.41; 
+ -----------------------------------------------------------------------------
    6    -100.056551920        1.24596D-03   -6.25D-06    6
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000709
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
    7    -100.056552105        1.68026D-04   -1.84D-07    7
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
    8    -100.056552108        1.57263D-05   -3.21D-09    8
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
    9    -100.056552108        2.71690D-06   -2.08D-11    9
-      MULPOP H     0.03; F     0.03; 
-  10    -100.056552108        1.58082D-07   -4.12D-13   10
-      MULPOP H     0.03; F     0.03; 
-  11    -100.056552108        1.88282D-08    1.42D-14   10
-      MULPOP H     0.03; F     0.03; 
-  12    -100.056552108        1.87637D-09    2.84D-14   10
-      MULPOP H     0.03; F     0.03; 
-  13    -100.056552108        2.24874D-10   -4.26D-14   10
-      MULPOP H     0.03; F     0.03; 
-  14    -100.056552108        1.94767D-11    4.26D-14   10
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  10    -100.056552108        1.58082D-07   -4.26D-13   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  11    -100.056552108        1.88282D-08    1.14D-13   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  12    -100.056552108        1.87635D-09    1.42D-14   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  13    -100.056552108        2.24875D-10   -1.85D-13   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  14    -100.056552108        1.94668D-11    1.99D-13   10
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -403,20 +430,23 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.056552108118                 
+     Final HF energy:            -100.056552108119                 
      Nuclear repulsion:             5.215566151592
      Electronic energy:          -105.272118259711
 
      Final gradient norm:           0.000000000019
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:16 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -424,29 +454,29 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 H   :1s     0.0012   0.1195  -0.3357   0.0000   0.0000  -0.2448  -0.4152
-   2 H   :1s    -0.0002  -0.0467   0.0766  -0.0000  -0.0000  -0.7816   0.4076
-   3 H   :1s    -0.0001   0.0301  -0.0333   0.0000   0.0000  -0.4423   0.3824
-   4 H   :2px   -0.0000   0.0000  -0.0000  -0.0317  -0.0111  -0.0000  -0.0000
-   5 H   :2py    0.0000  -0.0000   0.0000  -0.0111   0.0317   0.0000   0.0000
-   6 H   :2pz   -0.0005  -0.0175   0.0173  -0.0000  -0.0000  -0.2079  -0.5983
-   9 H   :2pz   -0.0004   0.0185  -0.0156   0.0000   0.0000  -0.0960  -0.4579
-  10 F   :1s     0.9999  -0.0070   0.0190  -0.0000   0.0000  -0.0170  -0.0394
+   2 H   :1s    -0.0002  -0.0467   0.0766  -0.0000   0.0000  -0.7816   0.4076
+   3 H   :1s    -0.0001   0.0301  -0.0333   0.0000  -0.0000  -0.4423   0.3824
+   4 H   :2px   -0.0000   0.0000  -0.0000  -0.0288  -0.0172  -0.0000  -0.0000
+   5 H   :2py    0.0000  -0.0000   0.0000   0.0172  -0.0288   0.0000   0.0000
+   6 H   :2pz   -0.0005  -0.0175   0.0173  -0.0000   0.0000  -0.2079  -0.5983
+   9 H   :2pz   -0.0004   0.0185  -0.0156   0.0000  -0.0000  -0.0960  -0.4579
+  10 F   :1s     0.9999  -0.0070   0.0190  -0.0000  -0.0000  -0.0170  -0.0394
   11 F   :1s    -0.0007   0.9289   0.3240  -0.0000  -0.0000   0.0063  -0.1636
-  12 F   :1s    -0.0007   0.0049   0.0439   0.0000   0.0000  -0.0631  -0.1674
-  13 F   :1s    -0.0001  -0.0022   0.0103  -0.0000  -0.0000  -0.0059  -0.0601
-  14 F   :2px   -0.0000  -0.0000  -0.0000  -0.9306  -0.3250   0.0000   0.0000
-  15 F   :2py   -0.0000  -0.0000   0.0000  -0.3250   0.9306  -0.0000  -0.0000
-  16 F   :2pz    0.0001   0.0802  -0.7954   0.0000   0.0000  -0.0133   0.4673
-  19 F   :2pz   -0.0007  -0.0174   0.0403  -0.0000  -0.0000  -0.1343  -0.0506
-  20 F   :2px    0.0000  -0.0000   0.0000   0.0174   0.0061   0.0000   0.0000
-  21 F   :2py   -0.0000   0.0000  -0.0000   0.0061  -0.0174  -0.0000  -0.0000
-  22 F   :2pz    0.0007  -0.0042   0.0188  -0.0000  -0.0000  -0.0033  -0.0804
-  24 F   :3d1-   0.0000  -0.0000   0.0000  -0.0069   0.0197   0.0000   0.0000
-  25 F   :3d0   -0.0002   0.0083  -0.0303   0.0000   0.0000  -0.0280   0.0256
-  26 F   :3d1+  -0.0000   0.0000  -0.0000  -0.0197  -0.0069  -0.0000  -0.0000
-  30 F   :3d0   -0.0001  -0.0009  -0.0040  -0.0000  -0.0000  -0.0196   0.0181
+  12 F   :1s    -0.0007   0.0049   0.0439   0.0000  -0.0000  -0.0631  -0.1674
+  13 F   :1s    -0.0001  -0.0022   0.0103  -0.0000   0.0000  -0.0059  -0.0601
+  14 F   :2px   -0.0000  -0.0000  -0.0000  -0.8458  -0.5062   0.0000   0.0000
+  15 F   :2py   -0.0000  -0.0000   0.0000   0.5062  -0.8458  -0.0000  -0.0000
+  16 F   :2pz    0.0001   0.0802  -0.7954   0.0000  -0.0000  -0.0133   0.4673
+  19 F   :2pz   -0.0007  -0.0174   0.0403  -0.0000   0.0000  -0.1343  -0.0506
+  20 F   :2px    0.0000  -0.0000   0.0000   0.0158   0.0095   0.0000   0.0000
+  21 F   :2py   -0.0000   0.0000  -0.0000  -0.0095   0.0158  -0.0000  -0.0000
+  22 F   :2pz    0.0007  -0.0042   0.0188  -0.0000   0.0000  -0.0033  -0.0804
+  24 F   :3d1-   0.0000  -0.0000   0.0000   0.0107  -0.0179   0.0000   0.0000
+  25 F   :3d0   -0.0002   0.0083  -0.0303   0.0000  -0.0000  -0.0280   0.0256
+  26 F   :3d1+  -0.0000   0.0000  -0.0000  -0.0179  -0.0107  -0.0000  -0.0000
+  30 F   :3d0   -0.0001  -0.0009  -0.0040  -0.0000   0.0000  -0.0196   0.0181
 
 
 
@@ -454,7 +484,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:16 2011 
      Host name              : fe6                                     
 
 
@@ -560,7 +590,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:16 2011 
      Host name              : fe6                                     
 
 
@@ -643,19 +673,19 @@ Maximum number of iterations reset in numerical differentiation to    13
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.85632110         2.17655088         7.26019226
+      z      0.85632110         2.17655099         7.26019260
 
 
 
- Greatest diff. between AO and SO reorthonormalization gradients:       1.58E-30
- Greatest diff. between AO and SO one-electron Hamiltonian gradients:   6.22E-15
+ Greatest diff. between AO and SO reorthonormalization gradients:       5.55E-17
+ Greatest diff. between AO and SO one-electron Hamiltonian gradients:   1.78E-15
 
 
                          Kinetic energy integral gradient
                          --------------------------------
 
- H          0.0000000000           -0.0000000000           -0.8435944330
- F         -0.0000000000            0.0000000000            0.8435944330
+ H          0.0000000000           -0.0000000000           -0.8435944331
+ F         -0.0000000000            0.0000000000            0.8435944331
 
 
 
@@ -664,8 +694,8 @@ Maximum number of iterations reset in numerical differentiation to    13
                        Nuclear attraction integral gradient
                        ------------------------------------
 
- H         -0.0000000000            0.0000000000            7.8642068784
- F          0.0000000000           -0.0000000000           -7.8642068784
+ H         -0.0000000000            0.0000000000            7.8642068787
+ F          0.0000000000           -0.0000000000           -7.8642068787
 
 
 
@@ -687,11 +717,11 @@ Maximum number of iterations reset in numerical differentiation to    13
            H    x      H    y      H    z      F    x      F    y      F    z
 
  H    x   -0.772591
- H    y    0.000000   -0.772591
+ H    y   -0.000000   -0.772591
  H    z   -0.000000    0.000000    0.884455
 
- F    x    0.772591   -0.000000    0.000000   -0.772591
- F    y   -0.000000    0.772591   -0.000000    0.000000   -0.772591
+ F    x    0.772591    0.000000    0.000000   -0.772591
+ F    y    0.000000    0.772591   -0.000000   -0.000000   -0.772591
  F    z    0.000000   -0.000000   -0.884455   -0.000000    0.000000    0.884455
 
 
@@ -721,11 +751,11 @@ Maximum number of iterations reset in numerical differentiation to    13
            H    x      H    y      H    z      F    x      F    y      F    z
 
  H    x   -0.480841
- H    y    0.000000   -0.480841
+ H    y   -0.000000   -0.480841
  H    z    0.000000   -0.000000   -0.020590
 
- F    x    0.480841   -0.000000   -0.000000   -0.480841
- F    y   -0.000000    0.480841    0.000000    0.000000   -0.480841
+ F    x    0.480841    0.000000   -0.000000   -0.480841
+ F    y    0.000000    0.480841    0.000000   -0.000000   -0.480841
  F    z   -0.000000    0.000000    0.020590    0.000000   -0.000000   -0.020590
 
 
@@ -751,7 +781,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.85632110         2.17655088         7.26019226
+      z      0.85632110         2.17655099         7.26019260
 
 
 
@@ -771,7 +801,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
       x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.09693575        -0.24638606        -0.82185545
+      z     -0.09693575        -0.24638608        -0.82185548
 
 
 
@@ -787,13 +817,13 @@ Maximum number of iterations reset in numerical differentiation to    13
 
                        Bx             By             Bz
 
-        H    x    19.44444484    -0.00000000    -0.00000000
-        H    y     0.00000000    19.44444484     0.00000000
-        H    z     0.00000000    -0.00000000    44.38498218
+        H    x    19.44444468    -0.00000000    -0.00000000
+        H    y    -0.00000000    19.44444468     0.00000000
+        H    z     0.00000000    -0.00000000    44.38498181
 
-        F    x   461.60624612    -0.00000000     0.00000000
-        F    y    -0.00000000   461.60624612    -0.00000000
-        F    z     0.00000000    -0.00000000   481.77716227
+        F    x   461.60624233    -0.00000000     0.00000000
+        F    y    -0.00000000   461.60624233    -0.00000000
+        F    z     0.00000000    -0.00000000   481.77715831
 
 
 
@@ -802,7 +832,7 @@ Maximum number of iterations reset in numerical differentiation to    13
  Component: 001 NSTX                  0.365145
  Component: 001 NSTY                 -0.000000
  Component: 001 NSTZ                 -0.000000
- Component: 002 NSTX                  0.000000
+ Component: 002 NSTX                 -0.000000
  Component: 002 NSTY                  0.365145
  Component: 002 NSTZ                  0.000000
  Component: 003 NSTX                  0.000000
@@ -821,11 +851,11 @@ Maximum number of iterations reset in numerical differentiation to    13
 
 
  H      x :     0.3651446094           -0.0000000000           -0.0000000000
- H      y :     0.0000000000            0.3651446094            0.0000000000
+ H      y :    -0.0000000000            0.3651446094            0.0000000000
  H      z :     0.0000000000           -0.0000000000            0.8334995992
 
- F      x :     8.6684414915           -0.0000000000            0.0000000000
- F      y :    -0.0000000000            8.6684414915           -0.0000000000
+ F      x :     8.6684414916           -0.0000000000            0.0000000000
+ F      y :    -0.0000000000            8.6684414916           -0.0000000000
  F      z :     0.0000000000           -0.0000000000            9.0472284079
 
 
@@ -852,8 +882,9 @@ Maximum number of iterations reset in numerical differentiation to    13
 
 
 
- >>> Time used in MAGINT is   0.13 seconds
-1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
+ >>> Time used in MAGINT is   0.14 seconds
+
+  <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
 
 
@@ -902,20 +933,20 @@ Maximum number of iterations reset in numerical differentiation to    13
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:    4.5 microseconds
-  Average time for zero/non-zero integrals     :    1.0 microseconds
+  Average time for non-zero (written) integrals:    5.0 microseconds
+  Average time for zero/non-zero integrals     :    1.1 microseconds
   Average time for primitive integrals         :    0.1 microseconds
 
   Average reduction of primitive ODC vectors:    0.00 %
   Average reduction of contracted ODC vectors:   0.00 %
- >>> Time used in TWOEXP/TWOINT is   0.14 seconds
+ >>> Time used in TWOEXP/TWOINT is   0.15 seconds
 
 
                           Two-electron integral gradient
                           ------------------------------
 
- H          0.0000000000           -0.0000000000           -3.5244818724
- F         -0.0000000000            0.0000000000            3.5244818724
+ H          0.0000000000           -0.0000000000           -3.5244818727
+ F         -0.0000000000            0.0000000000            3.5244818727
 
 
 
@@ -924,8 +955,8 @@ Maximum number of iterations reset in numerical differentiation to    13
                      Potential energy (NN + NE + EE) gradient
                      ----------------------------------------
 
- H         -0.0000000000            0.0000000000            1.3172660858
- F          0.0000000000           -0.0000000000           -1.3172660858
+ H         -0.0000000000            0.0000000000            1.3172660859
+ F          0.0000000000           -0.0000000000           -1.3172660859
 
 
 
@@ -952,13 +983,13 @@ Maximum number of iterations reset in numerical differentiation to    13
  H    y    0.000000   -3.710328
  H    z   -0.000000    0.000000    0.878515
 
- F    x    3.710328   -0.000000    0.000000   -3.710328
- F    y   -0.000000    3.710328   -0.000000    0.000000   -3.710328
+ F    x    3.710328    0.000000    0.000000   -3.710328
+ F    y    0.000000    3.710328   -0.000000    0.000000   -3.710328
  F    z    0.000000   -0.000000   -0.878515   -0.000000    0.000000    0.878515
 
 
 
- >>> Time used in TWOEXP is   0.14 seconds
+ >>> Time used in TWOEXP is   0.15 seconds
 
 
  <<<<< Subroutine ONEDSF >>>>>
@@ -1006,7 +1037,7 @@ Maximum number of iterations reset in numerical differentiation to    13
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:    2.6 microseconds
+  Average time for non-zero (written) integrals:    2.8 microseconds
   Average time for zero/non-zero integrals     :    0.6 microseconds
   Average time for primitive integrals         :    0.1 microseconds
 
@@ -1041,12 +1072,12 @@ Maximum number of iterations reset in numerical differentiation to    13
 
                        Bx             By             Bz
 
-        H    x   -10.06192908    -0.00000000     0.00000000
-        H    y    -0.00000000   -10.06192908     0.00000000
+        H    x   -10.06192900    -0.00000000     0.00000000
+        H    y     0.00000000   -10.06192900     0.00000000
         H    z    -0.00000000     0.00000000     0.00000000
 
-        F    x    14.54689556    -0.00000000     0.00000000
-        F    y    -0.00000000    14.54689556     0.00000000
+        F    x    14.54689544     0.00000000     0.00000000
+        F    y    -0.00000000    14.54689544     0.00000000
         F    z    -0.00000000     0.00000000     0.00000000
 
 
@@ -1061,7 +1092,7 @@ Maximum number of iterations reset in numerical differentiation to    13
  NOCC     5
  NORB    32
  NBAS    32
- >>> Time used in RHSIDE is   0.19 seconds
+ >>> Time used in RHSIDE is   0.20 seconds
   <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> 
 
 
@@ -1276,13 +1307,13 @@ Maximum number of iterations reset in numerical differentiation to    13
 
  GRADIENT NO.      CSF RESIDUAL        ORBITAL RESIDUAL    TOTAL RESIDUAL
 
-         1          0.00000000D+00      1.10367584D-06      1.10367584D-06
+         1          0.00000000D+00      1.10367585D-06      1.10367585D-06
 
 
  Residual of Newton-Raphson vectors not converged:
 
  Newton-Raphson vector no.       norm of residual
-              1                1.10367584D-06
+              1                1.10367585D-06
 
  >>> Time used in this microiteration        0.00
 
@@ -1301,7 +1332,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
  GRADIENT NO.      CSF RESIDUAL        ORBITAL RESIDUAL    TOTAL RESIDUAL
 
-         1          0.00000000D+00      1.08196207D-07      1.08196207D-07
+         1          0.00000000D+00      1.08196204D-07      1.08196204D-07
 
  *** Response equations converged for this symmetry.
 
@@ -1369,7 +1400,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
  TIME IN SORTA      0.00
 
- NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 16 IS     32908
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 16 IS     32868
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
  TIME IN TRACD      0.01
@@ -1388,7 +1419,7 @@ Maximum number of iterations reset in numerical differentiation to    13
  TIME IN SORTB      0.00
  TIME IN TRAAB      0.01
 
- NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 15 IS     12216
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 15 IS     12166
  USING   150 + 1 RECORDS WITH BUFFER LENGTH   528
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
@@ -1396,7 +1427,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
  DRCCTL: Number of Dirac integrals written on file
 
- "DRCINT" is      6582
+ "DRCINT" is      6551
          Number of passes over Mulliken file    1
 
 
@@ -1440,24 +1471,24 @@ Maximum number of iterations reset in numerical differentiation to    13
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          33         2(1)  11(1)        0.0375767688        0.0375767688
-          39         2(1)  17(1)       -0.0447498337       -0.0447498337
+          34         2(1)  12(1)        0.0375767689        0.0375767689
+          40         2(1)  18(1)       -0.0447498337       -0.0447498337
           47         2(1)  25(1)       -0.0358445208       -0.0358445208
           59         3(1)  10(1)        0.1217014817        0.1217014817
-          60         3(1)  11(1)       -0.1575505318       -0.1575505318
-          66         3(1)  17(1)        0.1082896363        0.1082896363
+          61         3(1)  12(1)       -0.1575505318       -0.1575505318
+          67         3(1)  18(1)        0.1082896363        0.1082896363
           71         3(1)  22(1)        0.0589454077        0.0589454077
           74         3(1)  25(1)        0.0393453763        0.0393453763
-          82         4(1)   6(1)       -0.0423120383       -0.0423120383
-          83         4(1)   7(1)       -0.0678738751       -0.0678738751
-          84         4(1)   8(1)       -0.0432562981       -0.0432562981
-          90         4(1)  14(1)       -0.0434588177       -0.0434588177
-         109         5(1)   6(1)        0.1211589681        0.1211589681
-         110         5(1)   7(1)        0.1943543493        0.1943543493
-         111         5(1)   8(1)        0.1238628214        0.1238628214
-         117         5(1)  14(1)        0.1244427287        0.1244427287
+          82         4(1)   6(1)        0.0659069272        0.0659069272
+          83         4(1)   7(1)        0.1057230690        0.1057230690
+          84         4(1)   8(1)        0.0673777441        0.0673777441
+          90         4(1)  14(1)        0.0676931967        0.0676931967
+         109         5(1)   6(1)       -0.1101184866       -0.1101184866
+         110         5(1)   7(1)       -0.1766440169       -0.1766440169
+         111         5(1)   8(1)       -0.1125759541       -0.1125759541
+         117         5(1)  14(1)       -0.1131030180       -0.1131030180
 
-      119 elements with absolute value less than 1.94D-02 not printed.
+      119 elements with absolute value less than 1.77D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1520,24 +1551,24 @@ Maximum number of iterations reset in numerical differentiation to    13
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          34         2(1)  12(1)       -0.0375767688       -0.0375767688
-          40         2(1)  18(1)        0.0447498337        0.0447498337
+          33         2(1)  11(1)       -0.0375767689       -0.0375767689
+          39         2(1)  17(1)        0.0447498337        0.0447498337
           46         2(1)  24(1)        0.0358445208        0.0358445208
           58         3(1)   9(1)       -0.1217014817       -0.1217014817
-          61         3(1)  12(1)        0.1575505318        0.1575505318
-          67         3(1)  18(1)       -0.1082896363       -0.1082896363
+          60         3(1)  11(1)        0.1575505318        0.1575505318
+          66         3(1)  17(1)       -0.1082896363       -0.1082896363
           70         3(1)  21(1)       -0.0589454077       -0.0589454077
           73         3(1)  24(1)       -0.0393453763       -0.0393453763
-          82         4(1)   6(1)        0.1211589681        0.1211589681
-          83         4(1)   7(1)        0.1943543493        0.1943543493
-          84         4(1)   8(1)        0.1238628214        0.1238628214
-          90         4(1)  14(1)        0.1244427287        0.1244427287
-         109         5(1)   6(1)        0.0423120383        0.0423120383
-         110         5(1)   7(1)        0.0678738751        0.0678738751
-         111         5(1)   8(1)        0.0432562981        0.0432562981
-         117         5(1)  14(1)        0.0434588177        0.0434588177
+          82         4(1)   6(1)        0.1101184866        0.1101184866
+          83         4(1)   7(1)        0.1766440169        0.1766440169
+          84         4(1)   8(1)        0.1125759541        0.1125759541
+          90         4(1)  14(1)        0.1131030180        0.1131030180
+         109         5(1)   6(1)        0.0659069272        0.0659069272
+         110         5(1)   7(1)        0.1057230690        0.1057230690
+         111         5(1)   8(1)        0.0673777441        0.0673777441
+         117         5(1)  14(1)        0.0676931967        0.0676931967
 
-      119 elements with absolute value less than 1.94D-02 not printed.
+      119 elements with absolute value less than 1.77D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1580,12 +1611,12 @@ Maximum number of iterations reset in numerical differentiation to    13
 
                        Bx             By             Bz
 
-        H    x    12.01816546    -0.00000000    -0.00000000
-        H    y    -0.00000000    12.01816546    -0.00000000
+        H    x    12.01816536    -0.00000000    -0.00000000
+        H    y     0.00000000    12.01816536    -0.00000000
         H    z     0.00000000    -0.00000000    -0.00000000
 
-        F    x   -94.65374322     0.00000000    -0.00000000
-        F    y    -0.00000000   -94.65374322    -0.00000000
+        F    x   -94.65374244     0.00000000    -0.00000000
+        F    y    -0.00000000   -94.65374244    -0.00000000
         F    z    -0.00000000     0.00000000    -0.00000000
 
 
@@ -1622,7 +1653,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:17 2011 
      Host name              : fe6                                     
 
 
@@ -1642,18 +1673,18 @@ Maximum number of iterations reset in numerical differentiation to    13
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -100.0565521081 au (Hartrees)
-                         -2722.67720488 eV
-                           -262698.4398 kJ/mol
+                         -2722.67728214 eV
+                           -262698.4371 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.3220115535 au
-     Mass-velocity correction:                  -0.4082540654 au
+     Darwin correction:                          0.3220115509 au
+     Mass-velocity correction:                  -0.4082540620 au
 
-     Total relativistic correction:             -0.0862425118 au (0.0862%)
-     Non-relativistic + relativistic energy:  -100.1427946199 au
+     Total relativistic correction:             -0.0862425111 au (0.0862%)
+     Non-relativistic + relativistic energy:  -100.1427946192 au
 
 
 
@@ -1699,7 +1730,7 @@ Maximum number of iterations reset in numerical differentiation to    13
 
       x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z      0.75938535         1.93016482         6.43833681
+      z      0.75938535         1.93016491         6.43833712
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1719,13 +1750,13 @@ Maximum number of iterations reset in numerical differentiation to    13
 
                        Bx             By             Bz
 
-        H    x    21.40068122    -0.00000000    -0.00000000
-        H    y     0.00000000    21.40068122     0.00000000
-        H    z     0.00000000    -0.00000000    44.38498218
+        H    x    21.40068105    -0.00000000    -0.00000000
+        H    y     0.00000000    21.40068105     0.00000000
+        H    z     0.00000000    -0.00000000    44.38498181
 
-        F    x   381.49939846     0.00000000     0.00000000
-        F    y    -0.00000000   381.49939846    -0.00000000
-        F    z    -0.00000000     0.00000000   481.77716227
+        F    x   381.49939533     0.00000000     0.00000000
+        F    y    -0.00000000   381.49939533    -0.00000000
+        F    z    -0.00000000     0.00000000   481.77715831
 
 
 
@@ -1750,9 +1781,9 @@ Maximum number of iterations reset in numerical differentiation to    13
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    21.40068122    -0.00000000    -0.00000000
-  H      y     0.00000000    21.40068122     0.00000000
-  H      z     0.00000000    -0.00000000    44.38498218
+  H      x    21.40068105    -0.00000000    -0.00000000
+  H      y     0.00000000    21.40068105     0.00000000
+  H      z     0.00000000    -0.00000000    44.38498181
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1761,10 +1792,10 @@ Maximum number of iterations reset in numerical differentiation to    13
                  Bx         By         Bz            Bx         By         Bz
 
   H      x     9.3825    -0.0000    -0.0000       12.0182    -0.0000     0.0000
-  H      y     0.0000     9.3825     0.0000       -0.0000    12.0182     0.0000
+  H      y     0.0000     9.3825     0.0000        0.0000    12.0182     0.0000
   H      z    -0.0000     0.0000    44.3850        0.0000    -0.0000     0.0000
 
-  Diamagnetic contribution:     21.050005         Paramagnetic:       8.012110
+  Diamagnetic contribution:     21.050004         Paramagnetic:       8.012110
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1780,8 +1811,8 @@ Maximum number of iterations reset in numerical differentiation to    13
   Principal values and axes:
   --------------------------
 
-  H          21.400681  =   29.06  -   7.66:     0.987104  0.160082 -0.000000
-  H          21.400681  =   29.06  -   7.66:    -0.160082  0.987104  0.000000
+  H          21.400681  =   29.06  -   7.66:     0.000000  1.000000  0.000000
+  H          21.400681  =   29.06  -   7.66:     1.000000  0.000000 -0.000000
   H          44.384982  =   29.06  +  15.32:     0.000000 -0.000000  1.000000
 
 
@@ -1804,9 +1835,9 @@ Maximum number of iterations reset in numerical differentiation to    13
  String on input: "F       "
                     Bx             By             Bz
 
-  F      x   381.49939846     0.00000000     0.00000000
-  F      y    -0.00000000   381.49939846    -0.00000000
-  F      z    -0.00000000     0.00000000   481.77716227
+  F      x   381.49939533     0.00000000     0.00000000
+  F      y    -0.00000000   381.49939533    -0.00000000
+  F      z    -0.00000000     0.00000000   481.77715831
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1818,7 +1849,7 @@ Maximum number of iterations reset in numerical differentiation to    13
   F      y    -0.0000   476.1531    -0.0000       -0.0000   -94.6537     0.0000
   F      z     0.0000    -0.0000   481.7772       -0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    478.027815         Paramagnetic:     -63.102495
+  Diamagnetic contribution:    478.027811         Paramagnetic:     -63.102495
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1834,9 +1865,9 @@ Maximum number of iterations reset in numerical differentiation to    13
   Principal values and axes:
   --------------------------
 
-  F         381.499398  =  414.93  -  33.43:    -0.037671  0.999290 -0.000000
-  F         381.499398  =  414.93  -  33.43:     0.999290  0.037671  0.000000
-  F         481.777162  =  414.93  +  66.85:    -0.000000  0.000000  1.000000
+  F         381.499395  =  414.93  -  33.43:     0.996273 -0.086259  0.000000
+  F         381.499395  =  414.93  -  33.43:     0.086259  0.996273 -0.000000
+  F         481.777158  =  414.93  +  66.85:    -0.000000  0.000000  1.000000
 
 
                          +--------------------------------+
@@ -1916,8 +1947,8 @@ Maximum number of iterations reset in numerical differentiation to    13
  Number of steps        0
  WLKEND                 F
 
- Largest deviation from orthonormality of OMOs:0.428546E-13
- - found for element   29  29
+ Largest deviation from orthonormality of OMOs:0.479616E-13
+ - found for element   32  32
 
 
                                  Isotopic Masses
@@ -2043,14 +2074,14 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
               Column   1    Column   2    Column   3
-       1     21.40068122    0.00000000    0.00000000
-       2     -0.00000000   21.40068122   -0.00000000
-       3     -0.00000000    0.00000000   44.38498218
+       1     21.40068105    0.00000000    0.00000000
+       2     -0.00000000   21.40068105   -0.00000000
+       3     -0.00000000    0.00000000   44.38498181
 
               Column   1    Column   2    Column   3
-       1    381.49939846   -0.00000000   -0.00000000
-       2      0.00000000  381.49939846    0.00000000
-       3      0.00000000   -0.00000000  481.77716227
+       1    381.49939533   -0.00000000   -0.00000000
+       2      0.00000000  381.49939533    0.00000000
+       3      0.00000000   -0.00000000  481.77715831
 
 
        ********************************************************************
@@ -2097,14 +2128,14 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                   Bx             By             Bz
 
-  H      x    21.40068122    -0.00000000    -0.00000000
-  H      y     0.00000000    21.40068122     0.00000000
-  H      z     0.00000000    -0.00000000    44.38498218
+  H      x    21.40068105    -0.00000000    -0.00000000
+  H      y     0.00000000    21.40068105     0.00000000
+  H      z     0.00000000    -0.00000000    44.38498181
                   Bx             By             Bz
 
-  F      x   381.49939846     0.00000000     0.00000000
-  F      y    -0.00000000   381.49939846    -0.00000000
-  F      z    -0.00000000     0.00000000   481.77716227
+  F      x   381.49939533     0.00000000     0.00000000
+  F      y    -0.00000000   381.49939533    -0.00000000
+  F      z    -0.00000000     0.00000000   481.77715831
 
 
  CPU time statistics for ABACUS
@@ -2113,8 +2144,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.62 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.67 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 
                    .-------------------------------------------.
@@ -2145,7 +2176,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  Number of two-electron integrals written:       30407 ( 21.8% )
  Megabytes written:                              0.350
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -2172,37 +2203,61 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -99.8499058175        4.54395D+00    2.07D-01    1
-      MULPOP H     0.11; F    -0.21; 
+      Virial theorem: -V/T =      1.999608
+      MULPOP  H      -0.35; F       0.35; 
+ -----------------------------------------------------------------------------
    2    -100.053707069        2.42939D-01   -2.04D-01    2
-      MULPOP H     0.02; F     0.01; 
+      Virial theorem: -V/T =      1.999951
+      MULPOP  H       0.39; F      -0.39; 
+ -----------------------------------------------------------------------------
    3    -100.054689631        5.88282D-02   -9.83D-04    3
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.002325
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
    4    -100.054796253        1.46785D-02   -1.07D-04    4
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.001070
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
    5    -100.054804722        1.60610D-03   -8.47D-06    5
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.001309
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
    6    -100.054805140        3.39892D-04   -4.18D-07    6
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.001301
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
    7    -100.054805156        3.80296D-05   -1.56D-08    7
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.001298
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
    8    -100.054805156        7.14062D-06   -1.49D-10    8
-      MULPOP H     0.03; F     0.03; 
-   9    -100.054805156        1.00594D-06   -4.46D-12    9
-      MULPOP H     0.03; F     0.03; 
-  10    -100.054805156        1.01339D-07   -1.71D-13   10
-      MULPOP H     0.03; F     0.03; 
-  11    -100.054805156        1.09386D-08    2.84D-13   10
-      MULPOP H     0.03; F     0.03; 
-  12    -100.054805156        9.49061D-10   -1.71D-13   10
-      MULPOP H     0.03; F     0.03; 
-  13    -100.054805156        5.59483D-11    5.68D-14   10
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.01 seconds
+      Virial theorem: -V/T =      2.001298
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
+   9    -100.054805156        1.00594D-06   -4.49D-12    9
+      Virial theorem: -V/T =      2.001298
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
+  10    -100.054805156        1.01339D-07   -2.84D-14   10
+      Virial theorem: -V/T =      2.001298
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
+  11    -100.054805156        1.09386D-08    2.84D-14   10
+      Virial theorem: -V/T =      2.001298
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
+  12    -100.054805156        9.49059D-10   -1.42D-13   10
+      Virial theorem: -V/T =      2.001298
+      MULPOP  H       0.43; F      -0.43; 
+ -----------------------------------------------------------------------------
+  13    -100.054805156        5.59578D-11    2.27D-13   10
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.01 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2240,20 +2295,23 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.054805155746                 
+     Final HF energy:            -100.054805155747                 
      Nuclear repulsion:             5.065533548485
-     Electronic energy:          -105.120338704231
+     Electronic energy:          -105.120338704232
 
      Final gradient norm:           0.000000000056
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:51 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:18 2011 
      Host name              : fe6                                     
 
 
@@ -2262,7 +2320,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:51 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:18 2011 
      Host name              : fe6                                     
 
 
@@ -2321,7 +2379,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:51 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:18 2011 
      Host name              : fe6                                     
 
 
@@ -2387,7 +2445,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.88168389         2.24101667         7.47522697
+      z      0.88168389         2.24101677         7.47522732
 
 
 
@@ -2405,8 +2463,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
                        Nuclear attraction integral gradient
                        ------------------------------------
 
- H         -0.0000000000            0.0000000000            7.4262214898
- F          0.0000000000           -0.0000000000           -7.4262214898
+ H         -0.0000000000            0.0000000000            7.4262214900
+ F          0.0000000000           -0.0000000000           -7.4262214900
 
 
 
@@ -2441,7 +2499,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.88168389         2.24101667         7.47522697
+      z      0.88168389         2.24101677         7.47522732
 
 
 
@@ -2461,7 +2519,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
       x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.10096479        -0.25662687        -0.85601509
+      z     -0.10096479        -0.25662688        -0.85601513
 
 
 
@@ -2477,13 +2535,13 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                        Bx             By             Bz
 
-        H    x    18.12498182    -0.00000000    -0.00000000
-        H    y    -0.00000000    18.12498182     0.00000000
-        H    z     0.00000000    -0.00000000    42.26326495
+        H    x    18.12498167    -0.00000000    -0.00000000
+        H    y    -0.00000000    18.12498167     0.00000000
+        H    z     0.00000000    -0.00000000    42.26326460
 
-        F    x   461.69822749    -0.00000000     0.00000000
-        F    y    -0.00000000   461.69822749    -0.00000000
-        F    z     0.00000000    -0.00000000   481.67457218
+        F    x   461.69822369    -0.00000000     0.00000000
+        F    y    -0.00000000   461.69822369    -0.00000000
+        F    z     0.00000000    -0.00000000   481.67456822
 
 
 
@@ -2543,7 +2601,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
  >>> Time used in MAGINT is   0.14 seconds
-1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
+
+  <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
 
 
@@ -2592,7 +2651,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:    2.0 microseconds
+  Average time for non-zero (written) integrals:    1.9 microseconds
   Average time for zero/non-zero integrals     :    0.4 microseconds
   Average time for primitive integrals         :    0.0 microseconds
 
@@ -2603,8 +2662,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
                           Two-electron integral gradient
                           ------------------------------
 
- H          0.0000000000           -0.0000000000           -3.3286204249
- F         -0.0000000000            0.0000000000            3.3286204249
+ H          0.0000000000           -0.0000000000           -3.3286204250
+ F         -0.0000000000            0.0000000000            3.3286204250
 
 
 
@@ -2613,8 +2672,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
                      Potential energy (NN + NE + EE) gradient
                      ----------------------------------------
 
- H         -0.0000000000            0.0000000000            1.2465310504
- F          0.0000000000           -0.0000000000           -1.2465310504
+ H         -0.0000000000            0.0000000000            1.2465310505
+ F          0.0000000000           -0.0000000000           -1.2465310505
 
 
 
@@ -2677,7 +2736,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:    2.9 microseconds
+  Average time for non-zero (written) integrals:    2.8 microseconds
   Average time for zero/non-zero integrals     :    0.6 microseconds
   Average time for primitive integrals         :    0.1 microseconds
 
@@ -2712,12 +2771,12 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                        Bx             By             Bz
 
-        H    x    -9.55509948     0.00000000     0.00000000
-        H    y     0.00000000    -9.55509948     0.00000000
+        H    x    -9.55509940     0.00000000     0.00000000
+        H    y     0.00000000    -9.55509940     0.00000000
         H    z    -0.00000000     0.00000000     0.00000000
 
-        F    x    13.08728052     0.00000000     0.00000000
-        F    y     0.00000000    13.08728052     0.00000000
+        F    x    13.08728041    -0.00000000     0.00000000
+        F    y    -0.00000000    13.08728041     0.00000000
         F    z    -0.00000000     0.00000000     0.00000000
 
 
@@ -2765,7 +2824,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
  TIME IN SORTA      0.00
 
- NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 16 IS     32865
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 16 IS     32871
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
  TIME IN TRACD      0.01
@@ -2784,7 +2843,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  TIME IN SORTB      0.00
  TIME IN TRAAB      0.01
 
- NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 15 IS     12155
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 15 IS     12138
  USING   150 + 1 RECORDS WITH BUFFER LENGTH   528
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
@@ -2792,7 +2851,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
  DRCCTL: Number of Dirac integrals written on file
 
- "DRCINT" is      6539
+ "DRCINT" is      6533
          Number of passes over Mulliken file    1
 
 
@@ -2836,18 +2895,18 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          33         2(1)  11(1)        0.0375939724        0.0375939724
-          39         2(1)  17(1)       -0.0435226875       -0.0435226875
-          47         2(1)  25(1)       -0.0362591951       -0.0362591951
-          58         3(1)   9(1)        0.1396278901        0.1396278901
-          60         3(1)  11(1)       -0.1643375647       -0.1643375647
-          66         3(1)  17(1)        0.1117173450        0.1117173450
-          70         3(1)  21(1)        0.0637083961        0.0637083961
-          74         3(1)  25(1)        0.0398980838        0.0398980838
-          82         4(1)   6(1)        0.1553321639        0.1553321639
-          83         4(1)   7(1)        0.2430419117        0.2430419117
-          84         4(1)   8(1)        0.1306326313        0.1306326313
-          90         4(1)  14(1)        0.1359662012        0.1359662012
+          33         2(1)  11(1)        0.0375939722        0.0375939722
+          40         2(1)  18(1)       -0.0435226874       -0.0435226874
+          46         2(1)  24(1)       -0.0362591951       -0.0362591951
+          58         3(1)   9(1)        0.1396278899        0.1396278899
+          60         3(1)  11(1)       -0.1643375636       -0.1643375636
+          67         3(1)  18(1)        0.1117173448        0.1117173448
+          70         3(1)  21(1)        0.0637083960        0.0637083960
+          73         3(1)  24(1)        0.0398980838        0.0398980838
+          82         4(1)   6(1)       -0.1551752814       -0.1551752814
+          83         4(1)   7(1)       -0.2427964442       -0.2427964442
+          84         4(1)   8(1)       -0.1305006949       -0.1305006949
+          90         4(1)  14(1)       -0.1358288779       -0.1358288779
 
       123 elements with absolute value less than 2.43D-02 not printed.
 
@@ -2912,18 +2971,18 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          34         2(1)  12(1)       -0.0375939724       -0.0375939724
-          40         2(1)  18(1)        0.0435226875        0.0435226875
-          46         2(1)  24(1)        0.0362591951        0.0362591951
-          59         3(1)  10(1)       -0.1396278901       -0.1396278901
-          61         3(1)  12(1)        0.1643375647        0.1643375647
-          67         3(1)  18(1)       -0.1117173450       -0.1117173450
-          71         3(1)  22(1)       -0.0637083961       -0.0637083961
-          73         3(1)  24(1)       -0.0398980838       -0.0398980838
-         109         5(1)   6(1)        0.1553321639        0.1553321639
-         110         5(1)   7(1)        0.2430419117        0.2430419117
-         111         5(1)   8(1)        0.1306326313        0.1306326313
-         117         5(1)  14(1)        0.1359662012        0.1359662012
+          34         2(1)  12(1)       -0.0375939722       -0.0375939722
+          39         2(1)  17(1)        0.0435226874        0.0435226874
+          47         2(1)  25(1)        0.0362591951        0.0362591951
+          59         3(1)  10(1)       -0.1396278899       -0.1396278899
+          61         3(1)  12(1)        0.1643375636        0.1643375636
+          66         3(1)  17(1)       -0.1117173448       -0.1117173448
+          71         3(1)  22(1)       -0.0637083960       -0.0637083960
+          74         3(1)  25(1)       -0.0398980838       -0.0398980838
+         109         5(1)   6(1)        0.1551752814        0.1551752814
+         110         5(1)   7(1)        0.2427964442        0.2427964442
+         111         5(1)   8(1)        0.1305006949        0.1305006949
+         117         5(1)  14(1)        0.1358288779        0.1358288779
 
       123 elements with absolute value less than 2.43D-02 not printed.
 
@@ -2951,12 +3010,12 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                        Bx             By             Bz
 
-        H    x    12.10308794    -0.00000000    -0.00000000
-        H    y    -0.00000000    12.10308794    -0.00000000
+        H    x    12.10308784     0.00000000    -0.00000000
+        H    y    -0.00000000    12.10308784    -0.00000000
         H    z     0.00000000    -0.00000000    -0.00000000
 
-        F    x  -110.49000856     0.00000000    -0.00000000
-        F    y     0.00000000  -110.49000856    -0.00000000
+        F    x  -110.49000765     0.00000000    -0.00000000
+        F    y    -0.00000000  -110.49000765    -0.00000000
         F    z    -0.00000000     0.00000000    -0.00000000
 
 
@@ -2993,7 +3052,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:52 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:19 2011 
      Host name              : fe6                                     
 
 
@@ -3013,18 +3072,18 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -100.0548051557 au (Hartrees)
-                         -2722.62966789 eV
-                           -262693.8532 kJ/mol
+                         -2722.62974515 eV
+                           -262693.8504 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.3220179442 au
-     Mass-velocity correction:                  -0.4082443709 au
+     Darwin correction:                          0.3220179415 au
+     Mass-velocity correction:                  -0.4082443675 au
 
-     Total relativistic correction:             -0.0862264267 au (0.0862%)
-     Non-relativistic + relativistic energy:  -100.1410315824 au
+     Total relativistic correction:             -0.0862264260 au (0.0862%)
+     Non-relativistic + relativistic energy:  -100.1410315817 au
 
 
 
@@ -3053,7 +3112,7 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
       x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z      0.78071910         1.98438980         6.61921188
+      z      0.78071910         1.98438989         6.61921219
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -3073,13 +3132,13 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                        Bx             By             Bz
 
-        H    x    20.67297028    -0.00000000    -0.00000000
-        H    y     0.00000000    20.67297028     0.00000000
-        H    z     0.00000000    -0.00000000    42.26326495
+        H    x    20.67297011     0.00000000    -0.00000000
+        H    y    -0.00000000    20.67297011     0.00000000
+        H    z     0.00000000    -0.00000000    42.26326460
 
-        F    x   364.29549945     0.00000000     0.00000000
-        F    y     0.00000000   364.29549945    -0.00000000
-        F    z    -0.00000000     0.00000000   481.67457218
+        F    x   364.29549645     0.00000000     0.00000000
+        F    y    -0.00000000   364.29549645    -0.00000000
+        F    z    -0.00000000     0.00000000   481.67456822
 
 
 
@@ -3104,9 +3163,9 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    20.67297028    -0.00000000    -0.00000000
-  H      y     0.00000000    20.67297028     0.00000000
-  H      z     0.00000000    -0.00000000    42.26326495
+  H      x    20.67297011     0.00000000    -0.00000000
+  H      y    -0.00000000    20.67297011     0.00000000
+  H      z     0.00000000    -0.00000000    42.26326460
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -3114,8 +3173,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x     8.5699    -0.0000    -0.0000       12.1031    -0.0000     0.0000
-  H      y     0.0000     8.5699     0.0000       -0.0000    12.1031     0.0000
+  H      x     8.5699     0.0000    -0.0000       12.1031     0.0000     0.0000
+  H      y    -0.0000     8.5699     0.0000       -0.0000    12.1031     0.0000
   H      z    -0.0000     0.0000    42.2633        0.0000    -0.0000     0.0000
 
   Diamagnetic contribution:     19.801010         Paramagnetic:       8.068725
@@ -3126,16 +3185,16 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x     0.0000    -0.0000    -0.0000       -7.1968    -0.0000     0.0000
-  H      y     0.0000     0.0000     0.0000       -0.0000    -7.1968    -0.0000
+  H      x     0.0000     0.0000    -0.0000       -7.1968    -0.0000     0.0000
+  H      y    -0.0000     0.0000     0.0000       -0.0000    -7.1968    -0.0000
   H      z     0.0000    -0.0000     0.0000        0.0000    -0.0000    14.3935
 
 
   Principal values and axes:
   --------------------------
 
-  H          20.672970  =   27.87  -   7.20:     0.037923  0.999281  0.000000
-  H          20.672970  =   27.87  -   7.20:     0.999281 -0.037923 -0.000000
+  H          20.672970  =   27.87  -   7.20:     0.000000  1.000000  0.000000
+  H          20.672970  =   27.87  -   7.20:     1.000000  0.000000 -0.000000
   H          42.263265  =   27.87  +  14.39:     0.000000 -0.000000  1.000000
 
 
@@ -3158,9 +3217,9 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  String on input: "F       "
                     Bx             By             Bz
 
-  F      x   364.29549945     0.00000000     0.00000000
-  F      y     0.00000000   364.29549945    -0.00000000
-  F      z    -0.00000000     0.00000000   481.67457218
+  F      x   364.29549645     0.00000000     0.00000000
+  F      y    -0.00000000   364.29549645    -0.00000000
+  F      z    -0.00000000     0.00000000   481.67456822
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -3168,11 +3227,11 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                  Bx         By         Bz            Bx         By         Bz
 
-  F      x   474.7855     0.0000     0.0000     -110.4900     0.0000     0.0000
-  F      y     0.0000   474.7855    -0.0000        0.0000  -110.4900     0.0000
+  F      x   474.7855    -0.0000     0.0000     -110.4900     0.0000     0.0000
+  F      y    -0.0000   474.7855    -0.0000       -0.0000  -110.4900     0.0000
   F      z     0.0000    -0.0000   481.6746       -0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    477.081863         Paramagnetic:     -73.660006
+  Diamagnetic contribution:    477.081859         Paramagnetic:     -73.660005
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -3180,17 +3239,17 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                  Bx         By         Bz            Bx         By         Bz
 
-  F      x     0.0000    -0.0000     0.0000      -39.1264     0.0000    -0.0000
-  F      y     0.0000     0.0000    -0.0000        0.0000   -39.1264     0.0000
+  F      x     0.0000     0.0000     0.0000      -39.1264     0.0000    -0.0000
+  F      y    -0.0000     0.0000    -0.0000        0.0000   -39.1264     0.0000
   F      z    -0.0000     0.0000     0.0000       -0.0000     0.0000    78.2527
 
 
   Principal values and axes:
   --------------------------
 
-  F         364.295499  =  403.42  -  39.13:    -0.198414  0.980118 -0.000000
-  F         364.295499  =  403.42  -  39.13:     0.980118  0.198414  0.000000
-  F         481.674572  =  403.42  +  78.25:    -0.000000  0.000000  1.000000
+  F         364.295496  =  403.42  -  39.13:    -0.057080  0.998370 -0.000000
+  F         364.295496  =  403.42  -  39.13:     0.998370  0.057080  0.000000
+  F         481.674568  =  403.42  +  78.25:    -0.000000  0.000000  1.000000
 
 
                          +--------------------------------+
@@ -3252,8 +3311,8 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
  Number of steps        0
  WLKEND                 F
 
- Largest deviation from orthonormality of OMOs:0.404121E-13
- - found for element   24  24
+ Largest deviation from orthonormality of OMOs:0.479616E-13
+ - found for element   32  32
 
 
                                  Isotopic Masses
@@ -3375,14 +3434,14 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
 
               Column   1    Column   2    Column   3
-       1     20.67297028    0.00000000    0.00000000
-       2     -0.00000000   20.67297028   -0.00000000
-       3     -0.00000000    0.00000000   42.26326495
+       1     20.67297011   -0.00000000    0.00000000
+       2      0.00000000   20.67297011   -0.00000000
+       3     -0.00000000    0.00000000   42.26326460
 
               Column   1    Column   2    Column   3
-       1    364.29549945    0.00000000   -0.00000000
-       2      0.00000000  364.29549945    0.00000000
-       3      0.00000000   -0.00000000  481.67457218
+       1    364.29549645   -0.00000000   -0.00000000
+       2      0.00000000  364.29549645    0.00000000
+       3      0.00000000   -0.00000000  481.67456822
 
 
        ********************************************************************
@@ -3406,25 +3465,25 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                   Bx             By             Bz
 
-  H      x    20.67297028    -0.00000000    -0.00000000
-  H      y     0.00000000    20.67297028     0.00000000
-  H      z     0.00000000    -0.00000000    42.26326495
+  H      x    20.67297011     0.00000000    -0.00000000
+  H      y    -0.00000000    20.67297011     0.00000000
+  H      z     0.00000000    -0.00000000    42.26326460
                   Bx             By             Bz
 
-  F      x   364.29549945     0.00000000     0.00000000
-  F      y     0.00000000   364.29549945    -0.00000000
-  F      z    -0.00000000     0.00000000   481.67457218
+  F      x   364.29549645     0.00000000     0.00000000
+  F      y    -0.00000000   364.29549645    -0.00000000
+  F      z    -0.00000000     0.00000000   481.67456822
  >>> Time used in WLKDRV is   0.10 seconds
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     319 %
+ REST       00:00:02     335 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.57 seconds
+ >>>> Total CPU  time used in ABACUS:   0.56 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 
@@ -3456,7 +3515,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  Number of two-electron integrals written:       30407 ( 21.8% )
  Megabytes written:                              0.350
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -3483,39 +3542,65 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -99.2146489696        9.16836D+00    8.40D-01    1
-      MULPOP H     1.90; F     2.13; 
+      Virial theorem: -V/T =      1.977083
+      MULPOP  H       2.09; F      -2.09; 
+ -----------------------------------------------------------------------------
    2    -100.052949774        4.68409D-01   -8.38D-01    2
-      MULPOP H     0.06; F     0.08; 
+      Virial theorem: -V/T =      2.001558
+      MULPOP  H       0.51; F      -0.51; 
+ -----------------------------------------------------------------------------
    3    -100.056495886        4.96282D-02   -3.55D-03    3
-      MULPOP H     0.04; F     0.03; 
+      Virial theorem: -V/T =      1.999263
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
    4    -100.056563094        2.46439D-02   -6.72D-05    4
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000475
+      MULPOP  H       0.39; F      -0.39; 
+ -----------------------------------------------------------------------------
    5    -100.056582113        1.51363D-03   -1.90D-05    5
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000048
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
    6    -100.056582339        3.69162D-04   -2.26D-07    6
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
    7    -100.056582353        6.74801D-05   -1.34D-08    7
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000060
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
    8    -100.056582353        1.17554D-05   -5.49D-10    8
-      MULPOP H     0.03; F     0.03; 
-   9    -100.056582353        1.93538D-06   -1.88D-11    9
-      MULPOP H     0.03; F     0.03; 
-  10    -100.056582353        1.42957D-07   -5.40D-13   10
-      MULPOP H     0.03; F     0.03; 
-  11    -100.056582353        1.46321D-08    0.00D+00   10
-      MULPOP H     0.03; F     0.03; 
-  12    -100.056582353        1.79042D-09    4.26D-14   10
-      MULPOP H     0.03; F     0.03; 
-  13    -100.056582353        1.30699D-10   -2.27D-13   10
-      MULPOP H     0.03; F     0.03; 
-  14    -100.056582353        7.25881D-12    9.95D-14   10
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.01 seconds
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
+   9    -100.056582353        1.93538D-06   -1.90D-11    9
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
+  10    -100.056582353        1.42957D-07   -3.55D-13   10
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
+  11    -100.056582353        1.46321D-08   -1.56D-13   10
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
+  12    -100.056582353        1.79038D-09    7.11D-14   10
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
+  13    -100.056582353        1.30722D-10    1.42D-14   10
+      Virial theorem: -V/T =      2.000061
+      MULPOP  H       0.40; F      -0.40; 
+ -----------------------------------------------------------------------------
+  14    -100.056582353        7.26049D-12   -1.71D-13   10
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.01 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3553,7 +3638,10 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -3561,12 +3649,12 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
      Final HF energy:            -100.056582353120                 
      Nuclear repulsion:             5.374757447678
-     Electronic energy:          -105.431339800797
+     Electronic energy:          -105.431339800798
 
      Final gradient norm:           0.000000000007
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:20 2011 
      Host name              : fe6                                     
 
 
@@ -3575,7 +3663,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:20 2011 
      Host name              : fe6                                     
 
 
@@ -3634,7 +3722,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:20 2011 
      Host name              : fe6                                     
 
 
@@ -3700,7 +3788,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.83095830         2.11208510         7.04515755
+      z      0.83095830         2.11208520         7.04515788
 
 
 
@@ -3708,8 +3796,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                          Kinetic energy integral gradient
                          --------------------------------
 
- H         -0.0000000000           -0.0000000000           -0.9212454891
- F          0.0000000000            0.0000000000            0.9212454891
+ H          0.0000000000            0.0000000000           -0.9212454891
+ F         -0.0000000000           -0.0000000000            0.9212454891
 
 
 
@@ -3718,8 +3806,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                        Nuclear attraction integral gradient
                        ------------------------------------
 
- H          0.0000000000            0.0000000000            8.3331395378
- F         -0.0000000000           -0.0000000000           -8.3331395378
+ H         -0.0000000000           -0.0000000000            8.3331395382
+ F          0.0000000000            0.0000000000           -8.3331395382
 
 
 
@@ -3728,8 +3816,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                           Reorthonormalization gradient
                           -----------------------------
 
- H         -0.0000000000            0.0000000000           -0.4865584531
- F          0.0000000000           -0.0000000000            0.4865584531
+ H          0.0000000000            0.0000000000           -0.4865584531
+ F         -0.0000000000           -0.0000000000            0.4865584531
 
 
 
@@ -3754,7 +3842,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.83095830         2.11208510         7.04515755
+      z      0.83095830         2.11208520         7.04515788
 
 
 
@@ -3774,7 +3862,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
       x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z     -0.09263291        -0.23544936        -0.78537452
+      z     -0.09263291        -0.23544937        -0.78537455
 
 
 
@@ -3790,46 +3878,46 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                        Bx             By             Bz
 
-        H    x    20.98605381    -0.00000000     0.00000000
-        H    y    -0.00000000    20.98605381     0.00000000
-        H    z    -0.00000000    -0.00000000    46.66286212
+        H    x    20.98605363     0.00000000    -0.00000000
+        H    y     0.00000000    20.98605363     0.00000000
+        H    z     0.00000000     0.00000000    46.66286173
 
-        F    x   461.37996088    -0.00000000    -0.00000000
-        F    y    -0.00000000   461.37996088    -0.00000000
-        F    z    -0.00000000    -0.00000000   481.89457278
+        F    x   461.37995709     0.00000000     0.00000000
+        F    y     0.00000000   461.37995709    -0.00000000
+        F    z     0.00000000     0.00000000   481.89456882
 
 
 
 
  Expectation values for NUCSHI 
  Component: 001 NSTX                  0.394094
- Component: 001 NSTY                 -0.000000
- Component: 001 NSTZ                  0.000000
- Component: 002 NSTX                 -0.000000
+ Component: 001 NSTY                  0.000000
+ Component: 001 NSTZ                 -0.000000
+ Component: 002 NSTX                  0.000000
  Component: 002 NSTY                  0.394094
  Component: 002 NSTZ                  0.000000
- Component: 003 NSTX                 -0.000000
- Component: 003 NSTY                 -0.000000
+ Component: 003 NSTX                  0.000000
+ Component: 003 NSTY                  0.000000
  Component: 003 NSTZ                  0.876276
  Component: 004 NSTX                  8.664192
- Component: 004 NSTY                 -0.000000
- Component: 004 NSTZ                 -0.000000
- Component: 005 NSTX                 -0.000000
+ Component: 004 NSTY                  0.000000
+ Component: 004 NSTZ                  0.000000
+ Component: 005 NSTX                  0.000000
  Component: 005 NSTY                  8.664192
  Component: 005 NSTZ                 -0.000000
- Component: 006 NSTX                 -0.000000
- Component: 006 NSTY                 -0.000000
+ Component: 006 NSTX                  0.000000
+ Component: 006 NSTY                  0.000000
  Component: 006 NSTZ                  9.049433
 
 
 
- H      x :     0.3940942764           -0.0000000000            0.0000000000
- H      y :    -0.0000000000            0.3940942764            0.0000000000
- H      z :    -0.0000000000           -0.0000000000            0.8762755996
+ H      x :     0.3940942764            0.0000000000           -0.0000000000
+ H      y :     0.0000000000            0.3940942764            0.0000000000
+ H      z :     0.0000000000            0.0000000000            0.8762755996
 
- F      x :     8.6641921115           -0.0000000000           -0.0000000000
- F      y :    -0.0000000000            8.6641921115           -0.0000000000
- F      z :    -0.0000000000           -0.0000000000            9.0494332440
+ F      x :     8.6641921116            0.0000000000            0.0000000000
+ F      y :     0.0000000000            8.6641921116           -0.0000000000
+ F      z :     0.0000000000            0.0000000000            9.0494332440
 
 
 
@@ -3856,7 +3944,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
 
  >>> Time used in MAGINT is   0.14 seconds
-1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
+
+  <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
 
 
@@ -3916,8 +4005,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                           Two-electron integral gradient
                           ------------------------------
 
- H         -0.0000000000           -0.0000000000           -3.7340587510
- F          0.0000000000            0.0000000000            3.7340587510
+ H          0.0000000000            0.0000000000           -3.7340587513
+ F         -0.0000000000           -0.0000000000            3.7340587513
 
 
 
@@ -3926,8 +4015,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                      Potential energy (NN + NE + EE) gradient
                      ----------------------------------------
 
- H          0.0000000000            0.0000000000            1.3893010511
- F         -0.0000000000           -0.0000000000           -1.3893010511
+ H         -0.0000000000           -0.0000000000            1.3893010512
+ F          0.0000000000            0.0000000000           -1.3893010512
 
 
 
@@ -3936,8 +4025,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                                 Molecular gradient
                                 ------------------
 
- H         -0.0000000000            0.0000000000           -0.0185028911
- F          0.0000000000           -0.0000000000            0.0185028911
+ H         -0.0000000000           -0.0000000000           -0.0185028911
+ F          0.0000000000            0.0000000000            0.0185028911
 
 
 
@@ -4025,12 +4114,12 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                        Bx             By             Bz
 
-        H    x   -10.67061521     0.00000000     0.00000000
-        H    y     0.00000000   -10.67061521     0.00000000
-        H    z     0.00000000     0.00000000     0.00000000
+        H    x   -10.67061513    -0.00000000     0.00000000
+        H    y    -0.00000000   -10.67061513     0.00000000
+        H    z    -0.00000000    -0.00000000     0.00000000
 
-        F    x    16.09375351    -0.00000000     0.00000000
-        F    y     0.00000000    16.09375351     0.00000000
+        F    x    16.09375338     0.00000000     0.00000000
+        F    y     0.00000000    16.09375338     0.00000000
         F    z     0.00000000     0.00000000     0.00000000
 
 
@@ -4078,7 +4167,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
  TIME IN SORTA      0.00
 
- NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 16 IS     34542
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 16 IS     32863
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
  TIME IN TRACD      0.01
@@ -4091,13 +4180,13 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER 1706
 
-  NUMBER OF DA RECORDS FOR ALL INTEGRALS    21
-  NUMBER OF DA RECORDS ACTUALLY USED        21
+  NUMBER OF DA RECORDS FOR ALL INTEGRALS    20
+  NUMBER OF DA RECORDS ACTUALLY USED        20
   PERCENT NON-ZERO INTEGRALS              0.01
  TIME IN SORTB      0.00
  TIME IN TRAAB      0.01
 
- NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 15 IS     14080
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 15 IS     12146
  USING   150 + 1 RECORDS WITH BUFFER LENGTH   528
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
@@ -4105,7 +4194,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
  DRCCTL: Number of Dirac integrals written on file
 
- "DRCINT" is      7593
+ "DRCINT" is      6541
          Number of passes over Mulliken file    1
 
 
@@ -4149,19 +4238,19 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          33         2(1)  11(1)        0.0375348135        0.0375348135
-          39         2(1)  17(1)       -0.0458372214       -0.0458372214
-          45         2(1)  23(1)       -0.0353401188       -0.0353401188
-          59         3(1)  10(1)        0.1044009318        0.1044009318
-          60         3(1)  11(1)       -0.1506476918       -0.1506476918
-          66         3(1)  17(1)        0.1045567723        0.1045567723
-          70         3(1)  21(1)        0.0542601113        0.0542601113
-          72         3(1)  23(1)        0.0386644837        0.0386644837
-          82         4(1)   6(1)        0.1036694573        0.1036694573
-          83         4(1)   7(1)        0.1693912854        0.1693912854
-          84         4(1)   8(1)        0.1296809559        0.1296809559
-          90         4(1)  14(1)        0.1267517029        0.1267517029
-         101         4(1)  25(1)        0.0188982856        0.0188982856
+          34         2(1)  12(1)        0.0375348133        0.0375348133
+          40         2(1)  18(1)       -0.0458372213       -0.0458372213
+          46         2(1)  24(1)       -0.0353401188       -0.0353401188
+          59         3(1)  10(1)        0.1044009317        0.1044009317
+          61         3(1)  12(1)       -0.1506476911       -0.1506476911
+          67         3(1)  18(1)        0.1045567722        0.1045567722
+          71         3(1)  22(1)        0.0542601113        0.0542601113
+          73         3(1)  24(1)        0.0386644837        0.0386644837
+         109         5(1)   6(1)       -0.1035648901       -0.1035648901
+         110         5(1)   7(1)       -0.1692204272       -0.1692204272
+         111         5(1)   8(1)       -0.1295501520       -0.1295501520
+         117         5(1)  14(1)       -0.1266238536       -0.1266238536
+         128         5(1)  25(1)       -0.0188792236       -0.0188792236
 
       122 elements with absolute value less than 1.69D-02 not printed.
 
@@ -4226,19 +4315,19 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          34         2(1)  12(1)       -0.0375348135       -0.0375348135
-          40         2(1)  18(1)        0.0458372214        0.0458372214
-          46         2(1)  24(1)        0.0353401188        0.0353401188
-          58         3(1)   9(1)       -0.1044009318       -0.1044009318
-          61         3(1)  12(1)        0.1506476918        0.1506476918
-          67         3(1)  18(1)       -0.1045567723       -0.1045567723
-          71         3(1)  22(1)       -0.0542601113       -0.0542601113
-          73         3(1)  24(1)       -0.0386644837       -0.0386644837
-         109         5(1)   6(1)        0.1036694573        0.1036694573
-         110         5(1)   7(1)        0.1693912854        0.1693912854
-         111         5(1)   8(1)        0.1296809559        0.1296809559
-         117         5(1)  14(1)        0.1267517029        0.1267517029
-         128         5(1)  25(1)        0.0188982856        0.0188982856
+          33         2(1)  11(1)       -0.0375348133       -0.0375348133
+          39         2(1)  17(1)        0.0458372213        0.0458372213
+          45         2(1)  23(1)        0.0353401188        0.0353401188
+          58         3(1)   9(1)       -0.1044009317       -0.1044009317
+          60         3(1)  11(1)        0.1506476911        0.1506476911
+          66         3(1)  17(1)       -0.1045567722       -0.1045567722
+          70         3(1)  21(1)       -0.0542601113       -0.0542601113
+          72         3(1)  23(1)       -0.0386644837       -0.0386644837
+          82         4(1)   6(1)        0.1035648901        0.1035648901
+          83         4(1)   7(1)        0.1692204272        0.1692204272
+          84         4(1)   8(1)        0.1295501520        0.1295501520
+          90         4(1)  14(1)        0.1266238536        0.1266238536
+         101         4(1)  25(1)        0.0188792236        0.0188792236
 
       122 elements with absolute value less than 1.69D-02 not printed.
 
@@ -4266,13 +4355,13 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                        Bx             By             Bz
 
-        H    x    11.89506469     0.00000000    -0.00000000
-        H    y    -0.00000000    11.89506469    -0.00000000
-        H    z    -0.00000000    -0.00000000    -0.00000000
+        H    x    11.89506459     0.00000000    -0.00000000
+        H    y    -0.00000000    11.89506459    -0.00000000
+        H    z     0.00000000    -0.00000000    -0.00000000
 
-        F    x   -80.28016366    -0.00000000    -0.00000000
-        F    y     0.00000000   -80.28016366    -0.00000000
-        F    z     0.00000000     0.00000000    -0.00000000
+        F    x   -80.28016300    -0.00000000    -0.00000000
+        F    y     0.00000000   -80.28016300    -0.00000000
+        F    z    -0.00000000    -0.00000000    -0.00000000
 
 
 
@@ -4294,12 +4383,12 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
         ----------------------------------------------------------
 
         H    x       -0.0000000000     0.0000000000    -0.0000000000
-        H    y        0.0000000000     0.0000000000     0.0000000000
+        H    y       -0.0000000000     0.0000000000    -0.0000000000
         F    x        0.0000000000     0.0000000000     0.0000000000
-        F    y       -0.0000000000     0.0000000000    -0.0000000000
+        F    y        0.0000000000     0.0000000000     0.0000000000
         F    z        0.0185028911     0.0185028911     0.0000000000
 
- Largest deviation from tra-rot symmetry is in gradient element  4:  3.32E-14
+ Largest deviation from tra-rot symmetry is in gradient element  4:  3.13E-15
 
 
    ***************************************************************************
@@ -4308,7 +4397,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:21 2011 
      Host name              : fe6                                     
 
 
@@ -4328,18 +4417,18 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -100.0565823531 au (Hartrees)
-                         -2722.67802789 eV
-                           -262698.5192 kJ/mol
+                         -2722.67810515 eV
+                           -262698.5165 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.3220105561 au
-     Mass-velocity correction:                  -0.4082752468 au
+     Darwin correction:                          0.3220105535 au
+     Mass-velocity correction:                  -0.4082752435 au
 
-     Total relativistic correction:             -0.0862646907 au (0.0862%)
-     Non-relativistic + relativistic energy:  -100.1428470438 au
+     Total relativistic correction:             -0.0862646900 au (0.0862%)
+     Non-relativistic + relativistic energy:  -100.1428470431 au
 
 
 
@@ -4347,8 +4436,8 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
                              Molecular gradient (au)
                              -----------------------
 
- H         -0.0000000000            0.0000000000           -0.0185028911
- F          0.0000000000           -0.0000000000            0.0185028911
+ H         -0.0000000000           -0.0000000000           -0.0185028911
+ F          0.0000000000            0.0000000000            0.0185028911
 
 
 
@@ -4368,7 +4457,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
       x      0.00000000         0.00000000         0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z      0.73832539         1.87663574         6.25978303
+      z      0.73832539         1.87663583         6.25978332
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -4388,13 +4477,13 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                        Bx             By             Bz
 
-        H    x    22.21050328     0.00000000     0.00000000
-        H    y    -0.00000000    22.21050328     0.00000000
-        H    z    -0.00000000    -0.00000000    46.66286212
+        H    x    22.21050310     0.00000000    -0.00000000
+        H    y    -0.00000000    22.21050310     0.00000000
+        H    z     0.00000000    -0.00000000    46.66286173
 
-        F    x   397.19355073    -0.00000000    -0.00000000
-        F    y     0.00000000   397.19355073    -0.00000000
-        F    z     0.00000000     0.00000000   481.89457278
+        F    x   397.19354747    -0.00000000     0.00000000
+        F    y     0.00000000   397.19354747    -0.00000000
+        F    z    -0.00000000     0.00000000   481.89456882
 
 
 
@@ -4419,9 +4508,9 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  String on input: "H       "
                     Bx             By             Bz
 
-  H      x    22.21050328     0.00000000     0.00000000
-  H      y    -0.00000000    22.21050328     0.00000000
-  H      z    -0.00000000    -0.00000000    46.66286212
+  H      x    22.21050310     0.00000000    -0.00000000
+  H      y    -0.00000000    22.21050310     0.00000000
+  H      z     0.00000000    -0.00000000    46.66286173
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -4429,9 +4518,9 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x    10.3154    -0.0000     0.0000       11.8951     0.0000     0.0000
-  H      y    -0.0000    10.3154     0.0000       -0.0000    11.8951     0.0000
-  H      z     0.0000     0.0000    46.6629       -0.0000    -0.0000     0.0000
+  H      x    10.3154     0.0000    -0.0000       11.8951     0.0000     0.0000
+  H      y     0.0000    10.3154     0.0000       -0.0000    11.8951     0.0000
+  H      z    -0.0000     0.0000    46.6629        0.0000    -0.0000     0.0000
 
   Diamagnetic contribution:     22.431246         Paramagnetic:       7.930043
 
@@ -4441,17 +4530,17 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H      x     0.0000     0.0000     0.0000       -8.1508    -0.0000    -0.0000
+  H      x     0.0000     0.0000    -0.0000       -8.1508    -0.0000     0.0000
   H      y    -0.0000     0.0000     0.0000       -0.0000    -8.1508    -0.0000
-  H      z    -0.0000    -0.0000     0.0000       -0.0000    -0.0000    16.3016
+  H      z     0.0000    -0.0000     0.0000        0.0000    -0.0000    16.3016
 
 
   Principal values and axes:
   --------------------------
 
-  H          22.210503  =   30.36  -   8.15:    -0.000000  1.000000  0.000000
-  H          22.210503  =   30.36  -   8.15:     1.000000  0.000000  0.000000
-  H          46.662862  =   30.36  +  16.30:    -0.000000 -0.000000  1.000000
+  H          22.210503  =   30.36  -   8.15:     1.000000  0.000000 -0.000000
+  H          22.210503  =   30.36  -   8.15:     0.000000  1.000000  0.000000
+  H          46.662862  =   30.36  +  16.30:     0.000000  0.000000  1.000000
 
 
   Chemical shielding for F     :
@@ -4473,9 +4562,9 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  String on input: "F       "
                     Bx             By             Bz
 
-  F      x   397.19355073    -0.00000000    -0.00000000
-  F      y     0.00000000   397.19355073    -0.00000000
-  F      z     0.00000000     0.00000000   481.89457278
+  F      x   397.19354747    -0.00000000     0.00000000
+  F      y     0.00000000   397.19354747    -0.00000000
+  F      z    -0.00000000     0.00000000   481.89456882
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -4483,11 +4572,11 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                  Bx         By         Bz            Bx         By         Bz
 
-  F      x   477.4737    -0.0000    -0.0000      -80.2802    -0.0000     0.0000
+  F      x   477.4737     0.0000     0.0000      -80.2802    -0.0000     0.0000
   F      y     0.0000   477.4737    -0.0000        0.0000   -80.2802     0.0000
-  F      z    -0.0000    -0.0000   481.8946        0.0000     0.0000     0.0000
+  F      z     0.0000     0.0000   481.8946       -0.0000    -0.0000     0.0000
 
-  Diamagnetic contribution:    478.947334         Paramagnetic:     -53.520109
+  Diamagnetic contribution:    478.947330         Paramagnetic:     -53.520109
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -4495,17 +4584,17 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                  Bx         By         Bz            Bx         By         Bz
 
-  F      x     0.0000    -0.0000    -0.0000      -28.2337    -0.0000     0.0000
-  F      y     0.0000     0.0000    -0.0000       -0.0000   -28.2337     0.0000
-  F      z     0.0000     0.0000     0.0000        0.0000     0.0000    56.4673
+  F      x     0.0000    -0.0000     0.0000      -28.2337     0.0000    -0.0000
+  F      y     0.0000     0.0000    -0.0000        0.0000   -28.2337     0.0000
+  F      z    -0.0000     0.0000     0.0000       -0.0000     0.0000    56.4673
 
 
   Principal values and axes:
   --------------------------
 
-  F         397.193551  =  425.43  -  28.23:     0.999101  0.042397 -0.000000
-  F         397.193551  =  425.43  -  28.23:    -0.042397  0.999101  0.000000
-  F         481.894573  =  425.43  +  56.47:     0.000000  0.000000  1.000000
+  F         397.193547  =  425.43  -  28.23:    -0.010485  0.999945 -0.000000
+  F         397.193547  =  425.43  -  28.23:     0.999945  0.010485  0.000000
+  F         481.894569  =  425.43  +  56.47:    -0.000000  0.000000  1.000000
 
 
                          +--------------------------------+
@@ -4567,7 +4656,7 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  Number of steps        1
  WLKEND                 T
 
- Largest deviation from orthonormality of OMOs:0.406342E-13
+ Largest deviation from orthonormality of OMOs:0.428546E-13
  - found for element   20  20
 
 
@@ -4690,14 +4779,14 @@ IN 2   0.0000000000   0.0000000000  -0.0843535865
 
 
               Column   1    Column   2    Column   3
-       1     22.21050328    0.00000000   -0.00000000
-       2      0.00000000   22.21050328   -0.00000000
-       3      0.00000000    0.00000000   46.66286212
+       1     22.21050310   -0.00000000    0.00000000
+       2     -0.00000000   22.21050310    0.00000000
+       3     -0.00000000   -0.00000000   46.66286173
 
               Column   1    Column   2    Column   3
-       1    397.19355073    0.00000000    0.00000000
-       2     -0.00000000  397.19355073    0.00000000
-       3     -0.00000000   -0.00000000  481.89457278
+       1    397.19354747    0.00000000   -0.00000000
+       2      0.00000000  397.19354747   -0.00000000
+       3      0.00000000    0.00000000  481.89456882
 
 
        ********************************************************************
@@ -4721,14 +4810,14 @@ IN 2   0.0000000000   0.0000000000  -0.0843535865
 
                   Bx             By             Bz
 
-  H      x    22.21050328     0.00000000     0.00000000
-  H      y     0.00000000    22.21050328     0.00000000
-  H      z    -0.00000000    -0.00000000    46.66286212
+  H      x    22.21050310    -0.00000000    -0.00000000
+  H      y    -0.00000000    22.21050310    -0.00000000
+  H      z     0.00000000     0.00000000    46.66286173
                   Bx             By             Bz
 
-  F      x   397.19355073    -0.00000000    -0.00000000
-  F      y     0.00000000   397.19355073    -0.00000000
-  F      z     0.00000000     0.00000000   481.89457278
+  F      x   397.19354747     0.00000000     0.00000000
+  F      y     0.00000000   397.19354747     0.00000000
+  F      z    -0.00000000    -0.00000000   481.89456882
 
  All displacements are now done - numerical differentiation is complete.
 
@@ -4741,13 +4830,13 @@ IN 2   0.0000000000   0.0000000000  -0.0843535865
  --------------------------------------------------------
 
  Mode   Bxmx    Bxmy    Bxmz    Bymx    Bymy    Bymz    Bzmx    Bzmy    Bzmz
-   1    32.844  -0.000  -0.000   0.000  32.844  -0.000   0.000   0.000  62.465
+   1    32.844  -0.000   0.000  -0.000  32.844   0.000  -0.000  -0.000  62.465
 
  Nuclear shielding tensor second derivatives for: F     
  --------------------------------------------------------
 
  Mode   Bxmx    Bxmy    Bxmz    Bymx    Bymy    Bymz    Bzmx    Bzmy    Bzmz
-   1  -603.899   0.000   0.000  -0.000-603.899   0.000  -0.000  -0.000   5.928
+   1  -603.899   0.000  -0.000  -0.000-603.899  -0.000   0.000   0.000   5.928
 
 
           *************************************************************
@@ -4790,29 +4879,29 @@ Atom : H
     Effective geometry       <P^(0)_2>_eff      Vibrationally corrected
  -----------------------------------------------------------------------
 
- Bxmx       21.40068122            0.23208321           21.63276444
- Bymx       -0.00000000            0.00000000            0.00000000
- Bzmx       -0.00000000            0.00000000            0.00000000
+ Bxmx       21.40068105            0.23208321           21.63276426
+ Bymx       -0.00000000           -0.00000000           -0.00000000
+ Bzmx       -0.00000000           -0.00000000           -0.00000000
  Bxmy        0.00000000           -0.00000000           -0.00000000
- Bymy       21.40068122            0.23208321           21.63276444
- Bzmy        0.00000000            0.00000000            0.00000000
- Bxmz        0.00000000           -0.00000000           -0.00000000
- Bymz       -0.00000000           -0.00000000           -0.00000000
- Bzmz       44.38498218            0.44138661           44.82636879
+ Bymy       21.40068105            0.23208321           21.63276426
+ Bzmy        0.00000000           -0.00000000           -0.00000000
+ Bxmz        0.00000000            0.00000000            0.00000000
+ Bymz       -0.00000000            0.00000000            0.00000000
+ Bzmz       44.38498181            0.44138660           44.82636842
 
 Atom : F     
     Effective geometry       <P^(0)_2>_eff      Vibrationally corrected
  -----------------------------------------------------------------------
 
- Bxmx      381.49939846           -4.26722871          377.23216976
+ Bxmx      381.49939533           -4.26722867          377.23216665
  Bymx        0.00000000           -0.00000000           -0.00000000
- Bzmx        0.00000000           -0.00000000           -0.00000000
+ Bzmx        0.00000000            0.00000000            0.00000000
  Bxmy       -0.00000000            0.00000000            0.00000000
- Bymy      381.49939846           -4.26722871          377.23216976
- Bzmy       -0.00000000           -0.00000000           -0.00000000
- Bxmz       -0.00000000            0.00000000            0.00000000
- Bymz        0.00000000            0.00000000            0.00000000
- Bzmz      481.77716227            0.04188920          481.81905147
+ Bymy      381.49939533           -4.26722867          377.23216665
+ Bzmy       -0.00000000            0.00000000            0.00000000
+ Bxmz       -0.00000000           -0.00000000           -0.00000000
+ Bymz        0.00000000           -0.00000000           -0.00000000
+ Bzmz      481.77715831            0.04188920          481.81904751
 
  Numerical differentiation complete.
 
@@ -4857,7 +4946,7 @@ Atom : F
  Number of two-electron integrals written:       30407 ( 21.8% )
  Megabytes written:                              0.350
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -4884,37 +4973,61 @@ Atom : F
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -99.8271646727        4.82631D+00    2.29D-01    1
-      MULPOP H     0.14; F    -0.20; 
+      Virial theorem: -V/T =      1.998595
+      MULPOP  H      -0.46; F       0.46; 
+ -----------------------------------------------------------------------------
    2    -100.055331860        2.57066D-01   -2.28D-01    2
-      MULPOP H     0.02; F     0.01; 
+      Virial theorem: -V/T =      1.999288
+      MULPOP  H       0.37; F      -0.37; 
+ -----------------------------------------------------------------------------
    3    -100.056426641        6.15580D-02   -1.09D-03    3
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.001793
+      MULPOP  H       0.41; F      -0.41; 
+ -----------------------------------------------------------------------------
    4    -100.056542591        1.52788D-02   -1.16D-04    4
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000484
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
    5    -100.056551657        1.65915D-03   -9.07D-06    5
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000731
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
    6    -100.056552093        3.36727D-04   -4.36D-07    6
-      MULPOP H     0.03; F     0.03; 
+      Virial theorem: -V/T =      2.000723
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
    7    -100.056552108        4.08981D-05   -1.49D-08    7
-      MULPOP H     0.03; F     0.03; 
-   8    -100.056552108        8.29225D-06   -1.71D-10    8
-      MULPOP H     0.03; F     0.03; 
-   9    -100.056552108        1.04064D-06   -6.28D-12    9
-      MULPOP H     0.03; F     0.03; 
-  10    -100.056552108        9.77112D-08   -7.11D-14   10
-      MULPOP H     0.03; F     0.03; 
-  11    -100.056552108        1.05060D-08   -7.11D-14   10
-      MULPOP H     0.03; F     0.03; 
-  12    -100.056552108        9.03242D-10    1.42D-13   10
-      MULPOP H     0.03; F     0.03; 
-  13    -100.056552108        6.16012D-11   -1.42D-13   10
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.01 seconds
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+   8    -100.056552108        8.29225D-06   -1.72D-10    8
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+   9    -100.056552108        1.04064D-06   -6.05D-12    9
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  10    -100.056552108        9.77112D-08   -9.95D-14   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  11    -100.056552108        1.05060D-08   -9.95D-14   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  12    -100.056552108        9.03239D-10    1.42D-13   10
+      Virial theorem: -V/T =      2.000721
+      MULPOP  H       0.42; F      -0.42; 
+ -----------------------------------------------------------------------------
+  13    -100.056552108        6.15974D-11   -1.42D-13   10
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.01 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4952,29 +5065,32 @@ Atom : F
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.056552108118                 
+     Final HF energy:            -100.056552108119                 
      Nuclear repulsion:             5.215566151592
      Electronic energy:          -105.272118259711
 
      Final gradient norm:           0.000000000062
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:22 2011 
      Host name              : fe6                                     
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:22 2011 
      Host name              : fe6                                     
 
 
@@ -4992,7 +5108,7 @@ Atom : F
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:22 2011 
      Host name              : fe6                                     
 
 
@@ -5002,7 +5118,7 @@ Atom : F
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:22 2011 
      Host name              : fe6                                     
 
 
@@ -5020,9 +5136,9 @@ Atom : F
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.18 seconds
- >>>> Total wall time used in DALTON:   8.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.35 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:22 2011 
      Host name              : fe6                                     

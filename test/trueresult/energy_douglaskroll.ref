@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:13:05 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:04 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -128,7 +129,7 @@
 
  The following elements were found:   X  Y  Z  
  >>>> Total CPU  time used in DKINT:   0.02 seconds
- >>>> Total wall time used in DKINT:   1.00 seconds
+ >>>> Total wall time used in DKINT:   0.00 seconds
 
 
  **************************************************************************************
@@ -168,7 +169,7 @@
  Number of two-electron integrals written:       10381 ( 12.6% )
  Megabytes written:                              0.124
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -212,7 +213,7 @@
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:06 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:04 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -224,12 +225,12 @@
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -265,24 +266,36 @@
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1  -108.667208950       2.80D+00  -1.09D+02    3  1  1  0  2  0  0  0
-      MULPOP N     3.86; 
-   2  -108.994732176       5.26D-01  -3.28D-01    3  1  1  0  2  0  0  0
-      MULPOP N    -2.65; 
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -108.667208949       2.80D+00  -1.09D+02    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.011596
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+   2  -108.994732175       5.26D-01  -3.28D-01    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      1.994200
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
    3  -109.009534921       8.23D-02  -1.48D-02    3  1  1  0  2  0  0  0
-      MULPOP N     2.34; 
-   4  -109.010015573       1.39D-02  -4.81D-04    3  1  1  0  2  0  0  0
-      MULPOP N     1.85; 
-   5  -109.010031070       1.29D-03  -1.55D-05    3  1  1  0  2  0  0  0
-      MULPOP N     1.78; 
+      Virial theorem: -V/T =      2.001352
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   4  -109.010015572       1.39D-02  -4.81D-04    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.000658
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   5  -109.010031069       1.29D-03  -1.55D-05    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.000729
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
    6  -109.010031196       8.71D-05  -1.27D-07    3  1  1  0  2  0  0  0
-      MULPOP N     1.78; 
-   7  -109.010031197       6.16D-06  -4.45D-10    3  1  1  0  2  0  0  0
- DIIS converged in   7 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000726
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   7  -109.010031196       6.16D-06  -4.45D-10    3  1  1  0  2  0  0  0
+
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -312,7 +325,7 @@
 
   8      2.31918437
 
-    E(LUMO) :     0.19126204 au (symmetry 7)
+    E(LUMO) :     0.19126204 au (symmetry 6)
   - E(HOMO) :    -0.62054711 au (symmetry 2)
   ------------------------------------------
     gap     :     0.81180915 au
@@ -320,20 +333,23 @@
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -109.010031196895                 
+     Final HF energy:            -109.010031196469                 
      Nuclear repulsion:            24.257425742574
-     Electronic energy:          -133.267456939469
+     Electronic energy:          -133.267456939043
 
      Final gradient norm:           0.000006156168
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:06 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:04 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -341,7 +357,7 @@
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 N   :1s     0.7069  -0.0112  -0.0109   0.1612   0.4260
    2 N   :1s     0.0008   0.6649   0.1905   0.6158   2.0654
    3 N   :1s    -0.0001  -0.1980   0.2260  -0.3585  -2.1240
@@ -352,7 +368,7 @@
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 N   :2px    0.6329  -0.9340   0.4474
    2 N   :2px   -0.0423   1.0507  -0.2830
    3 N   :3d1+  -0.0482   0.1038   0.5958
@@ -360,7 +376,7 @@
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 N   :2py    0.6329  -0.9340   0.4474
    2 N   :2py   -0.0423   1.0507  -0.2830
    3 N   :3d1-  -0.0482   0.1038   0.5958
@@ -368,13 +384,13 @@
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 N   :3d2-   0.6485
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 N   :1s     0.7082   0.0025   0.0296   0.1787
    2 N   :1s     0.0038   0.6440  -0.3296   0.5784
    3 N   :1s    -0.0063   0.0508  -4.1188  -1.4713
@@ -385,7 +401,7 @@
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 N   :2px    0.6259   1.0842
    2 N   :2px    0.4140  -1.6773
    3 N   :3d1+   0.0127   0.0802
@@ -393,7 +409,7 @@
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 N   :2py    0.6259   1.0842
    2 N   :2py    0.4140  -1.6773
    3 N   :3d1-   0.0127   0.0802
@@ -401,7 +417,7 @@
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 N   :3d2-   0.7851
 
 
@@ -410,7 +426,7 @@
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:06 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:04 2011 
      Host name              : fe6                                     
 
 
@@ -418,9 +434,9 @@
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.06 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.07 seconds
+ >>>> Total wall time used in DALTON:   0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:06 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:04 2011 
      Host name              : fe6                                     

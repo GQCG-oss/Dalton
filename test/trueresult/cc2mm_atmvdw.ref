@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:06:01 2010 
+     Date and time (Linux)  : Wed Mar 16 18:31:39 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -285,10 +286,9 @@ Point group: C1
             0.189522            0.087551            0.059886 cm-1
 
 
-@  Nuclear repulsion energy :  271.498350406032
-
- QM3 induced dipole vector converged in  12 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.126144519474366
+@  Nuclear repulsion energy :  271.498351688676
+      QM3 induced dipole vector converged in  12 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.126144522343058
 
 
     **************************************************************************
@@ -340,14 +340,14 @@ Point group: C1
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
           - Electric field at the nuclei
           - Potential energy at the nuclei
 
- Center of mass  (bohr):      0.000000608966     -0.000004491142     -0.000371459833
+ Center of mass  (bohr):      0.000000608966     -0.000004491142     -0.000371459832
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -363,8 +363,8 @@ Point group: C1
  Megabytes written:                              4.074
 
  >>> Time used in TWOINT is   0.91 seconds
- >>>> Total CPU  time used in HERMIT:   1.03 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.06 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 
                         .----------------------------------.
@@ -401,7 +401,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:02 2010 
+     Date and time (Linux)  : Wed Mar 16 18:31:41 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -416,8 +416,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -425,6 +424,10 @@ Point group: C1
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         50
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -482,53 +485,113 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
- -----------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -300.552119495       0.00000000000        3.53729D+00   -3.01D+02
+      Virial theorem: -V/T =      1.998607
+      MULPOP  C       0.09; C       0.19; C       0.47; C       0.19; C       0.11; C       0.09; O      -0.56; H      -0.15; H      -0.15; H      -0.15; 
+              H      -0.16; H       0.16; H      -0.14; 
+ -----------------------------------------------------------------------------
+   2  -300.934914638       0.00000000000        4.97461D-01   -3.83D-01
+      Virial theorem: -V/T =      2.006560
+      MULPOP  C      -0.17; C      -0.07; C       0.07; C      -0.08; C      -0.08; C      -0.09; O      -0.10; H       0.07; H       0.06; H       0.09; 
+              H       0.07; H       0.14; H       0.07; 
+ -----------------------------------------------------------------------------
+   3  -300.954094333       0.00000000000        1.52295D-01   -1.92D-02
+      Virial theorem: -V/T =      2.005971
+      MULPOP  C      -0.07; C      -0.05; C       0.16; C      -0.04; C      -0.08; C      -0.08; O      -0.34; H       0.05; H       0.05; H       0.07; 
+              H       0.06; H       0.23; H       0.04; 
+ -----------------------------------------------------------------------------
+   4  -300.956339089       0.00000000000        4.05076D-02   -2.24D-03
+      Virial theorem: -V/T =      2.006107
+      MULPOP  C      -0.11; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+   5  -300.956639270       0.00000000000        1.44762D-02   -3.00D-04
+      Virial theorem: -V/T =      2.006053
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.09; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.07; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+   6  -300.956670431       0.00000000000        4.24221D-03   -3.12D-05
+      Virial theorem: -V/T =      2.006044
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+   7  -300.956673825       0.00000000000        5.72027D-04   -3.39D-06
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+   8  -300.956673859       0.00000000000        1.73992D-04   -3.38D-08
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+   9  -300.956673862       0.00000000000        4.38247D-05   -3.61D-09
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  10  -300.956673863       0.00000000000        1.23994D-05   -3.83D-10
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  11  -300.956673863       0.00000000000        4.33642D-06   -3.55D-11
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  12  -300.956673863       0.00000000000        2.30716D-06   -5.46D-12
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  13  -300.956673863       0.00000000000        4.27077D-07   -1.93D-12
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  14  -300.956673863       0.00000000000        1.27341D-07    6.82D-13
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  15  -300.956673863       0.00000000000        5.09735D-08   -5.68D-13
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  16  -300.956673863       0.00000000000        9.60145D-09    1.02D-12
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  17  -300.956673863       0.00000000000        3.45497D-09   -6.82D-13
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  18  -300.956673863       0.00000000000        1.46817D-09   -6.82D-13
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  19  -300.956673863       0.00000000000        4.23014D-10    6.82D-13
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  20  -300.956673863       0.00000000000        1.10996D-10    2.27D-13
+      Virial theorem: -V/T =      2.006042
+      MULPOP  C      -0.10; C      -0.05; C       0.14; C      -0.05; C      -0.08; C      -0.08; O      -0.28; H       0.06; H       0.06; H       0.08; 
+              H       0.06; H       0.20; H       0.05; 
+ -----------------------------------------------------------------------------
+  21  -300.956673863       0.00000000000        3.45521D-11    0.00D+00
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1  -300.552119501       0.00000000000        3.53729D+00   -3.01D+02
-      MULPOP C   ******; O   ******; H   ******; 
-   2  -300.934914641       0.00000000000        4.97461D-01   -3.83D-01
-      MULPOP C   ******; O   ******; H   ******; 
-   3  -300.954094336       0.00000000000        1.52295D-01   -1.92D-02
-      MULPOP C   ******; O   ******; H   ******; 
-   4  -300.956339093       0.00000000000        4.05076D-02   -2.24D-03
-      MULPOP C   ******; O   ******; H   ******; 
-   5  -300.956639274       0.00000000000        1.44762D-02   -3.00D-04
-      MULPOP C   ******; O   ******; H   ******; 
-   6  -300.956670435       0.00000000000        4.24221D-03   -3.12D-05
-      MULPOP C   ******; O   ******; H   ******; 
-   7  -300.956673829       0.00000000000        5.72027D-04   -3.39D-06
-      MULPOP C   ******; O   ******; H   ******; 
-   8  -300.956673863       0.00000000000        1.73992D-04   -3.38D-08
-      MULPOP C   ******; O   ******; H   ******; 
-   9  -300.956673866       0.00000000000        4.38247D-05   -3.61D-09
-      MULPOP C   ******; O   ******; H   ******; 
-  10  -300.956673867       0.00000000000        1.23994D-05   -3.81D-10
-      MULPOP C   ******; O   ******; H   ******; 
-  11  -300.956673867       0.00000000000        4.33642D-06   -3.52D-11
-      MULPOP C   ******; O   ******; H   ******; 
-  12  -300.956673867       0.00000000000        2.30716D-06   -5.80D-12
-      MULPOP C   ******; O   ******; H   ******; 
-  13  -300.956673867       0.00000000000        4.27077D-07   -1.14D-12
-      MULPOP C   ******; O   ******; H   ******; 
-  14  -300.956673867       0.00000000000        1.27341D-07   -2.27D-13
-      MULPOP C   ******; O   ******; H   ******; 
-  15  -300.956673867       0.00000000000        5.09736D-08    4.55D-13
-      MULPOP C   ******; O   ******; H   ******; 
-  16  -300.956673867       0.00000000000        9.60148D-09    2.27D-13
-      MULPOP C   ******; O   ******; H   ******; 
-  17  -300.956673867       0.00000000000        3.45508D-09   -1.36D-12
-      MULPOP C   ******; O   ******; H   ******; 
-  18  -300.956673867       0.00000000000        1.46820D-09    6.82D-13
-      MULPOP C   ******; O   ******; H   ******; 
-  19  -300.956673867       0.00000000000        4.23017D-10    0.00D+00
-      MULPOP C   ******; O   ******; H   ******; 
-  20  -300.956673867       0.00000000000        1.10940D-10   -6.82D-13
-      MULPOP C   ******; O   ******; H   ******; 
-  21  -300.956673867       0.00000000000        3.45639D-11    1.14D-12
- DIIS converged in  21 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+ *** DIIS converged in  21 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -542,11 +605,11 @@ Point group: C1
  Sym       Hartree-Fock orbital energies
 
   1    -20.28285539   -11.08051774   -11.02411832   -11.02104915   -11.01086426
-       -11.00794944   -11.00684465    -1.31139298    -1.07412140    -0.94731368
+       -11.00794944   -11.00684465    -1.31139299    -1.07412140    -0.94731368
         -0.92950232    -0.77237357    -0.74626198    -0.65203283    -0.60914448
         -0.57124036    -0.53307446    -0.52448426    -0.49708286    -0.46451438
         -0.43406414    -0.40058353    -0.39972660    -0.27356869    -0.23230231
-         0.27756828     0.29121253     0.51875533     0.57366063     0.60791508
+         0.27756828     0.29121253     0.51875534     0.57366064     0.60791508
 
     E(LUMO) :     0.27756828 au (symmetry 1)
   - E(HOMO) :    -0.23230231 au (symmetry 1)
@@ -556,7 +619,10 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -566,17 +632,17 @@ Point group: C1
 
         Electrostatic energy:       0.000000000000
         Polarization energy:        0.000000000000
-        van der Waals energy:      -0.000922236582
+        van der Waals energy:      -0.000922236556
         Total QM/MM energy:         0.000000000000
 
-     Final HF energy:            -300.956673866793                 
-     Nuclear repulsion:           271.498350406032
-     Electronic energy:          -572.455024272825
+     Final HF energy:            -300.956673862919                 
+     Nuclear repulsion:           271.498351688676
+     Electronic energy:          -572.455025551595
 
      Final gradient norm:           0.000000000035
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:02 2010 
+     Date and time (Linux)  : Wed Mar 16 18:31:41 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -584,7 +650,7 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital          21       22       23       24       25       26       27
+    Orbital        21       22       23       24       25       26       27
    1 C   :1s    -0.0090  -0.0109   0.0183   0.0000   0.0000   0.0000   0.0001
    2 C   :1s     0.0218   0.0390  -0.0659  -0.0000  -0.0002  -0.0001  -0.0006
    3 C   :2px    0.0024  -0.1744  -0.1037   0.4846  -0.3113  -0.5798  -0.2549
@@ -629,7 +695,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:02 2010 
+     Date and time (Linux)  : Wed Mar 16 18:31:41 2011 
      Host name              : fe6                                     
 
 
@@ -691,22 +757,22 @@ Point group: C1
           Number of t2 amplitudes                 :     41616
           Total number of amplitudes in ccsd      :     41904
 
- Iter.  1: Coupled cluster MP2   energy :    -301.3378404936234460
- Iter.  1: Coupled cluster CC2   energy :    -301.3377305639110091
- Iter.  2: Coupled cluster CC2   energy :    -301.3398266514809620
- Iter.  3: Coupled cluster CC2   energy :    -301.3403918203240437
- Iter.  4: Coupled cluster CC2   energy :    -301.3404849049140921
- Iter.  5: Coupled cluster CC2   energy :    -301.3404882854721905
- Iter.  6: Coupled cluster CC2   energy :    -301.3404898324561714
- Iter.  7: Coupled cluster CC2   energy :    -301.3404907756087709
- Iter.  8: Coupled cluster CC2   energy :    -301.3404912430725062
- Iter.  9: Coupled cluster CC2   energy :    -301.3404912119145820
- Iter. 10: Coupled cluster CC2   energy :    -301.3404911857757611
- Iter. 11: Coupled cluster CC2   energy :    -301.3404911801644630
+ Iter.  1: Coupled cluster MP2   energy :    -301.3378404861037438
+ Iter.  1: Coupled cluster CC2   energy :    -301.3377305563791992
+ Iter.  2: Coupled cluster CC2   energy :    -301.3398266439340318
+ Iter.  3: Coupled cluster CC2   energy :    -301.3403918127631869
+ Iter.  4: Coupled cluster CC2   energy :    -301.3404848973540879
+ Iter.  5: Coupled cluster CC2   energy :    -301.3404882779144600
+ Iter.  6: Coupled cluster CC2   energy :    -301.3404898249045232
+ Iter.  7: Coupled cluster CC2   energy :    -301.3404907680514384
+ Iter.  8: Coupled cluster CC2   energy :    -301.3404912355245528
+ Iter.  9: Coupled cluster CC2   energy :    -301.3404912043622517
+ Iter. 10: Coupled cluster CC2   energy :    -301.3404911782164390
+ Iter. 11: Coupled cluster CC2   energy :    -301.3404911726009914
 
- CC2   energy converged to within   0.10D-07 is   -301.340491180
- Final 2-norm of the CC vector function:  1.96112453D-06
-  Change in norm^2 of T-amplitudes in this solvent it.:  8.99709373006417623E-002
+ CC2   energy converged to within   0.10D-07 is   -301.340491173
+ Final 2-norm of the CC vector function:  1.96112440D-06
+  Change in norm^2 of T-amplitudes in this solvent it.:  8.99709365082773244E-002
 
 
 
@@ -737,9 +803,9 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
-  Change in norm^2 of L-amplitudes in this ccmm it.:  0.66707778799639716     
- >>> Time used in LR=R is   7.45 seconds
- Total <Lambda|H|CC> energy:   -301.34049117532146     
+  Change in norm^2 of L-amplitudes in this ccmm it.:  0.66707777991033657     
+ >>> Time used in LR=R is   7.47 seconds
+ Total <Lambda|H|CC> energy:   -301.34049116775799     
             The singles contribution is:            -0.0000000005
             The doubles contribution is:             0.0000000054
    
@@ -753,13 +819,12 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.126484499229218
 
- QM3 induced Dipole vector converged in  10 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.126484496338650
 
-
- E(QM/MM) contribution in iteration  0:            0.0026598615
- CC energy in the  current CCMM iteration:      -302.1113167795
+ E(QM/MM) contribution in iteration  0:            0.0026598616
+ CC energy in the  current CCMM iteration:      -302.1113167756
  CC energy in the previous CCMM iteration:         0.0000000000
  Change in Total energy in this CCMM it.:         -0.302111E+03
 
@@ -787,9 +852,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.00430300        -0.01093712        -0.03648231
-      y      0.37581582         0.95522844         3.18629910
-      z     -0.22398821        -0.56932119        -1.89905107
+      x     -0.00430300        -0.01093712        -0.03648232
+      y      0.37581583         0.95522849         3.18629927
+      z     -0.22398822        -0.56932123        -1.89905120
 
 
 
@@ -806,9 +871,9 @@ Point group: C1
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1     -2.99191745    0.01159755    0.00411354
-       2      0.01159755    1.80664638   -3.78806583
-       3      0.00411354   -3.78806583    1.18527108
+       1     -2.99191740    0.01159755    0.00411354
+       2      0.01159755    1.80664634   -3.78806583
+       3      0.00411354   -3.78806583    1.18527106
    
 
  *******************************************************************
@@ -828,19 +893,19 @@ Point group: C1
           Number of t2 amplitudes                 :     41616
           Total number of amplitudes in ccsd      :     41904
 
- Iter.  1: Coupled cluster RSTAR energy :    -301.3404911801644630
- Iter.  1: Coupled cluster CC2   energy :    -301.3404908278878906
- Iter.  2: Coupled cluster CC2   energy :    -301.3404853358836135
- Iter.  3: Coupled cluster CC2   energy :    -301.3404851052964091
- Iter.  4: Coupled cluster CC2   energy :    -301.3404848530565232
- Iter.  5: Coupled cluster CC2   energy :    -301.3404848197645265
- Iter.  6: Coupled cluster CC2   energy :    -301.3404847487767597
- Iter.  7: Coupled cluster CC2   energy :    -301.3404847352148295
- Iter.  8: Coupled cluster CC2   energy :    -301.3404847308260628
+ Iter.  1: Coupled cluster RSTAR energy :    -301.3404911726009914
+ Iter.  1: Coupled cluster CC2   energy :    -301.3404908203406762
+ Iter.  2: Coupled cluster CC2   energy :    -301.3404853283343527
+ Iter.  3: Coupled cluster CC2   energy :    -301.3404850977350407
+ Iter.  4: Coupled cluster CC2   energy :    -301.3404848454926537
+ Iter.  5: Coupled cluster CC2   energy :    -301.3404848122001454
+ Iter.  6: Coupled cluster CC2   energy :    -301.3404847412245431
+ Iter.  7: Coupled cluster CC2   energy :    -301.3404847276548253
+ Iter.  8: Coupled cluster CC2   energy :    -301.3404847232718566
 
- CC2   energy converged to within   0.10D-07 is   -301.340484731
- Final 2-norm of the CC vector function:  1.19696967D-07
-  Change in norm^2 of T-amplitudes in this solvent it.: -1.81919197995983328E-005
+ CC2   energy converged to within   0.10D-07 is   -301.340484723
+ Final 2-norm of the CC vector function:  1.19696960D-07
+  Change in norm^2 of T-amplitudes in this solvent it.: -1.81919197340951744E-005
 
 
 
@@ -873,9 +938,9 @@ Point group: C1
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.: -5.21495776343305906E-005
- >>> Time used in LR=R is   4.48 seconds
- Total <Lambda|H|CC> energy:   -301.34049092918963     
+  Change in norm^2 of L-amplitudes in this ccmm it.: -5.21495775646085846E-005
+ >>> Time used in LR=R is   4.47 seconds
+ Total <Lambda|H|CC> energy:   -301.34049092163553     
             The singles contribution is:            -0.0000033214
             The doubles contribution is:            -0.0000028769
    
@@ -889,15 +954,14 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+      QM3 induced Dipole vector converged in   6 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.126492359691951
 
- QM3 induced Dipole vector converged in   6 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.126492356801126
 
-
- E(QM/MM) contribution in iteration  1:            0.0026666661
- CC energy in the  current CCMM iteration:      -302.1113168958
- CC energy in the previous CCMM iteration:      -302.1113167795
- Change in Total energy in this CCMM it.:         -0.116298E-06
+ E(QM/MM) contribution in iteration  1:            0.0026666662
+ CC energy in the  current CCMM iteration:      -302.1113168919
+ CC energy in the previous CCMM iteration:      -302.1113167756
+ Change in Total energy in this CCMM it.:         -0.116307E-06
 
 
  *****************************************************************
@@ -924,8 +988,8 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x     -0.00380024        -0.00965925        -0.03221980
-      y      0.37539869         0.95416819         3.18276249
-      z     -0.22169118        -0.56348271        -1.87957602
+      y      0.37539869         0.95416824         3.18276266
+      z     -0.22169119        -0.56348275        -1.87957615
 
 
 
@@ -942,9 +1006,9 @@ Point group: C1
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1     -2.99511414    0.01163418    0.00365008
-       2      0.01163418    1.80032955   -3.79639380
-       3      0.00365008   -3.79639380    1.19478459
+       1     -2.99511409    0.01163418    0.00365008
+       2      0.01163418    1.80032952   -3.79639380
+       3      0.00365008   -3.79639380    1.19478457
    
 
  *******************************************************************
@@ -964,12 +1028,12 @@ Point group: C1
           Number of t2 amplitudes                 :     41616
           Total number of amplitudes in ccsd      :     41904
 
- Iter.  1: Coupled cluster RSTAR energy :    -301.3404847308260628
- Iter.  1: Coupled cluster CC2   energy :    -301.3404847253441972
+ Iter.  1: Coupled cluster RSTAR energy :    -301.3404847232718566
+ Iter.  1: Coupled cluster CC2   energy :    -301.3404847177923784
 
- CC2   energy converged to within   0.10D-07 is   -301.340484725
- Final 2-norm of the CC vector function:  7.83928364D-07
-  Change in norm^2 of T-amplitudes in this solvent it.: -6.48116051660263537E-008
+ CC2   energy converged to within   0.10D-07 is   -301.340484718
+ Final 2-norm of the CC vector function:  7.83928379D-07
+  Change in norm^2 of T-amplitudes in this solvent it.: -6.48116070811610712E-008
 
 
 
@@ -1002,9 +1066,9 @@ Point group: C1
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.: -4.60802546453642492E-007
- >>> Time used in LR=R is   2.28 seconds
- Total <Lambda|H|CC> energy:   -301.34049092400625     
+  Change in norm^2 of L-amplitudes in this ccmm it.: -4.60802543567062628E-007
+ >>> Time used in LR=R is   2.27 seconds
+ Total <Lambda|H|CC> energy:   -301.34049091645454     
             The singles contribution is:            -0.0000033249
             The doubles contribution is:            -0.0000028737
    
@@ -1018,15 +1082,14 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
-
- QM3 induced Dipole vector converged in   3 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.126492360071728
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.126492362962554
 
 
  E(QM/MM) contribution in iteration  2:            0.0026666963
- CC energy in the  current CCMM iteration:      -302.1113168914
- CC energy in the previous CCMM iteration:      -302.1113168958
- Change in Total energy in this CCMM it.:          0.444555E-08
+ CC energy in the  current CCMM iteration:      -302.1113168874
+ CC energy in the previous CCMM iteration:      -302.1113168919
+ Change in Total energy in this CCMM it.:          0.444322E-08
 
 
  *****************************************************************
@@ -1053,8 +1116,8 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x     -0.00380003        -0.00965870        -0.03221795
-      y      0.37540209         0.95417684         3.18279133
-      z     -0.22168167        -0.56345853        -1.87949536
+      y      0.37540209         0.95417689         3.18279150
+      z     -0.22168167        -0.56345857        -1.87949549
 
 
 
@@ -1071,9 +1134,9 @@ Point group: C1
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1     -2.99511539    0.01163408    0.00364977
-       2      0.01163408    1.80033987   -3.79640185
-       3      0.00364977   -3.79640185    1.19477552
+       1     -2.99511534    0.01163408    0.00364977
+       2      0.01163408    1.80033984   -3.79640184
+       3      0.00364977   -3.79640184    1.19477550
    
 
  *******************************************************************
@@ -1093,13 +1156,13 @@ Point group: C1
           Number of t2 amplitudes                 :     41616
           Total number of amplitudes in ccsd      :     41904
 
- Iter.  1: Coupled cluster RSTAR energy :    -301.3404847253441972
- Iter.  1: Coupled cluster CC2   energy :    -301.3404846994220634
- Iter.  2: Coupled cluster CC2   energy :    -301.3404846960282839
+ Iter.  1: Coupled cluster RSTAR energy :    -301.3404847177923784
+ Iter.  1: Coupled cluster CC2   energy :    -301.3404846918703015
+ Iter.  2: Coupled cluster CC2   energy :    -301.3404846884671429
 
- CC2   energy converged to within   0.10D-07 is   -301.340484696
- Final 2-norm of the CC vector function:  1.23749505D-07
-  Change in norm^2 of T-amplitudes in this solvent it.: -4.22717740811151543E-008
+ CC2   energy converged to within   0.10D-07 is   -301.340484688
+ Final 2-norm of the CC vector function:  1.23749519D-07
+  Change in norm^2 of T-amplitudes in this solvent it.: -4.22717747194933935E-008
 
 
 
@@ -1132,9 +1195,9 @@ Point group: C1
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.:  2.08748439645134454E-008
- >>> Time used in LR=R is   1.74 seconds
- Total <Lambda|H|CC> energy:   -301.34049092927245     
+  Change in norm^2 of L-amplitudes in this ccmm it.:  2.08748219820975578E-008
+ >>> Time used in LR=R is   1.73 seconds
+ Total <Lambda|H|CC> energy:   -301.34049092171142     
             The singles contribution is:            -0.0000033440
             The doubles contribution is:            -0.0000028892
    
@@ -1148,15 +1211,14 @@ Point group: C1
                          ! Coupled Cluster model is: CC2 !
                          +-------------------------------+
 
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.126492363115926
 
- QM3 induced Dipole vector converged in   2 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.126492360225101
 
-
- E(QM/MM) contribution in iteration  3:            0.0026666995
- CC energy in the  current CCMM iteration:      -302.1113168967
- CC energy in the previous CCMM iteration:      -302.1113168914
- Change in Total energy in this CCMM it.:         -0.533413E-08
+ E(QM/MM) contribution in iteration  3:            0.0026666996
+ CC energy in the  current CCMM iteration:      -302.1113168927
+ CC energy in the previous CCMM iteration:      -302.1113168874
+ Change in Total energy in this CCMM it.:         -0.532486E-08
 
 
 
@@ -1181,13 +1243,13 @@ Point group: C1
  +======================================================================+
  |      Eelec      |      Epol       |      Evdw       |    E(QM/MM)    |
  +----------------------------------------------------------------------+
- |    0.0036436605 |   -0.0000547244 |   -0.0009222366 |   0.0026666995 |
+ |    0.0036436606 |   -0.0000547244 |   -0.0009222366 |   0.0026666996 |
  +----------------------------------------------------------------------+
  +======================================================================+
  +----------------------------------------------------------------------+
  |  <L|H(vac)|CC>  | <H(qm)+H(qmmm)> | Delta E(mm/mm)  | E_rep          |
  +----------------------------------------------------------------------+
- | -302.1139835962 | -302.1113168967 |   -0.0000156180 |   0.0000000000 |
+ | -302.1139835923 | -302.1113168927 |   -0.0000156180 |   0.0000000000 |
  +======================================================================+
 
 
@@ -1218,8 +1280,8 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x     -0.00380000        -0.00965863        -0.03221772
-      y      0.37540239         0.95417761         3.18279390
-      z     -0.22168041        -0.56345533        -1.87948468
+      y      0.37540240         0.95417766         3.18279406
+      z     -0.22168041        -0.56345537        -1.87948482
 
 
 
@@ -1236,9 +1298,9 @@ Point group: C1
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1     -2.99511544    0.01163407    0.00364972
-       2      0.01163407    1.80034154   -3.79640215
-       3      0.00364972   -3.79640215    1.19477391
+       1     -2.99511539    0.01163407    0.00364972
+       2      0.01163407    1.80034150   -3.79640214
+       3      0.00364972   -3.79640214    1.19477389
    
 
  *******************************************************************
@@ -1281,15 +1343,15 @@ Point group: C1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2173460871        5.9142877159
-         2            0.2883479027        7.8463453451
+         1            0.2173460900        5.9142879625
+         2            0.2883479052        7.8463456353
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1          -301.123144842132433
-@@    1    2          -301.052143026526039
+@@    1    1          -301.123144831675347
+@@    1    2          -301.052143016482376
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1399,8 +1461,8 @@ Point group: C1
  *******************************************************************************
  *******************************************************************************
 
-             CC2 Total  energy:                  -302.1113168967                
-             CC2 E(QM/MM)     :                     0.0026666995                
+             CC2 Total  energy:                  -302.1113168927                
+             CC2 E(QM/MM)     :                     0.0026666996                
                                                                                 
                                                                                 
                                                                                 
@@ -1409,17 +1471,17 @@ Point group: C1
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.2173461  |       5.91429  |     47701.952  |  90.79  |
+ | ^1A   |    1   |     0.2173461  |       5.91429  |     47701.953  |  90.79  |
  | ^1A   |    2   |     0.2883479  |       7.84635  |     63285.050  |  93.18  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A       -301.1231448421                                        
-             2 ^1A       -301.0521430265                                        
+             1 ^1A       -301.1231448317                                        
+             2 ^1A       -301.0521430165                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -1438,9 +1500,9 @@ Point group: C1
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  30.52 seconds
+ >>>> Total CPU  time used in DALTON:  30.33 seconds
  >>>> Total wall time used in DALTON:  36.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:32:15 2011 
      Host name              : fe6                                     

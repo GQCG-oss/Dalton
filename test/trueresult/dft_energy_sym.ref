@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:30:10 2010 
+     Date and time (Linux)  : Wed Mar 16 18:55:09 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -197,10 +198,10 @@ Represented as:      C2
                                  Isotopic Masses
                                  ---------------
 
-                           O    1     15.994915
-                           O    2     15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           O   _1     15.994915
+                           O   _2     15.994915
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    34.005480 amu
                        Natural abundance:  99.491 %
@@ -265,16 +266,16 @@ Represented as:      C2
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O    1      O    2      H    1      H    2
+            O   _1      O   _2      H   _1      H   _2
             ------      ------      ------      ------
- O    1:    0.000000
- O    2:    1.490000    0.000000
- H    1:    0.970000    1.913883    0.000000
- H    2:    1.913883    0.970000    1.967747    0.000000
+ O   _1:    0.000000
+ O   _2:    1.490000    0.000000
+ H   _1:    0.970000    1.913883    0.000000
+ H   _2:    1.913883    0.970000    1.967747    0.000000
 
 
   Max interatomic separation is    1.9677 Angstrom (    3.7185 Bohr)
-  between atoms    4 and    3, "H    2" and "H    1".
+  between atoms    4 and    3, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -282,9 +283,9 @@ Represented as:      C2
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O    2     O    1       1.490000
-  bond distance:  H    1     O    1       0.970000
-  bond distance:  H    2     O    2       0.970000
+  bond distance:  O   _2     O   _1       1.490000
+  bond distance:  H   _1     O   _1       0.970000
+  bond distance:  H   _2     O   _2       0.970000
 
 
   Bond angles (degrees):
@@ -292,8 +293,8 @@ Represented as:      C2
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     O    2     O    1     H    1       100.000
-  bond angle:     O    1     O    2     H    2       100.000
+  bond angle:     O   _2     O   _1     H   _1       100.000
+  bond angle:     O   _1     O   _2     H   _2       100.000
 
 
 
@@ -311,7 +312,7 @@ Represented as:      C2
 
                A                   B                   C
 
-         293369.0691          25645.5348          24137.5391 MHz
+         293369.0666          25645.5346          24137.5388 MHz
             9.785739            0.855443            0.805142 cm-1
 
 
@@ -424,7 +425,7 @@ Represented as:      C2
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:30:10 2010 
+     Date and time (Linux)  : Wed Mar 16 18:55:09 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -435,7 +436,6 @@ Represented as:      C2
  Print level on unit LUW4  =   2 is   5
 
      Restricted, closed shell Kohn-Sham DFT calculation.
-
                Fock matrices are calculated directly
                without use of integrals on disk.
 
@@ -444,6 +444,7 @@ Represented as:      C2
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         18
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -491,50 +492,67 @@ Represented as:      C2
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    F
- Radial Quadrature : LMG scheme
- Space partitioning: Original Becke partitioning
- Radial integration threshold: 1e-13
- Angular polynomials in range [15 35]
- Atom:    1*2 points=21288 compressed from 21288 (114 radial)
- Atom:    3*2 points=20612 compressed from 20612 ( 88 radial)
- Number of grid points:    41900 Grid generation time:       0.0 s
-K-S energy, electrons, error :     -8.907062088081  18.0000009505    9.51D-07
-   1  -150.877198743       2.81D+00  -1.51D+02    5  4
-      MULPOP O   ******; H   ******; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    F
-K-S energy, electrons, error :     -9.019152729241  18.0000009796    9.80D-07
-   2  -151.182744614       6.39D-01  -3.06D-01    5  4
-      MULPOP O   ******; H   ******; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    F
-K-S energy, electrons, error :     -8.960541673688  18.0000009440    9.44D-07
-   3  -151.200094024       1.59D-01  -1.73D-02    5  4
-      MULPOP O   ******; H   ******; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    F
-K-S energy, electrons, error :     -8.989109434072  18.0000009402    9.40D-07
-   4  -151.201172061       6.71D-02  -1.08D-03    5  4
-      MULPOP O   ******; H   ******; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -9    F
-K-S energy, electrons, error :     -8.979648590295  18.0000009416    9.42D-07
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+         DFT grid generation - Radial Quadrature  : LMG scheme
+         DFT grid generation -  partitioning : Original Becke partitioning
+         DFT grid generation - Radial integration threshold: 1e-13
+         DFT grid generation - Angular polynomials in range [15 35]
+         DFT grid generation - Atom:    1*2 points= 21288 compressed from 21288 (114 radial)
+         DFT grid generation - Atom:    3*2 points= 20612 compressed from 20612 ( 88 radial)
+         DFT grid generation - Number of grid points:    41900; grid generation time:      0.0 s
+      K-S energy, electrons, error :     -8.907062088081  18.0000009505    9.51D-07
+   1  -150.877199125       2.81D+00  -1.51D+02    5  4
+      Virial theorem: -V/T =      2.005490
+      MULPOP  O   _1 -0.22; O   _2 -0.22; H   _1  0.22; H   _2  0.22; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -9.019152816006  18.0000009796    9.80D-07
+   2  -151.182744521       6.39D-01  -3.06D-01    5  4
+      Virial theorem: -V/T =      2.001291
+      MULPOP  O   _1 -0.34; O   _2 -0.34; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.960541676540  18.0000009440    9.44D-07
+   3  -151.200094030       1.59D-01  -1.73D-02    5  4
+      Virial theorem: -V/T =      2.007075
+      MULPOP  O   _1 -0.34; O   _2 -0.34; H   _1  0.34; H   _2  0.34; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.989109451184  18.0000009402    9.40D-07
+   4  -151.201172068       6.71D-02  -1.08D-03    5  4
+      Virial theorem: -V/T =      2.004242
+      MULPOP  O   _1 -0.36; O   _2 -0.36; H   _1  0.36; H   _2  0.36; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.979648592926  18.0000009416    9.42D-07
    5  -151.201389145       7.55D-03  -2.17D-04    5  4
-      MULPOP O   ******; H   ******; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
-K-S energy, electrons, error :     -8.980425810446  18.0000009410    9.41D-07
+      Virial theorem: -V/T =      2.005150
+      MULPOP  O   _1 -0.36; O   _2 -0.36; H   _1  0.36; H   _2  0.36; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.980425811017  18.0000009410    9.41D-07
    6  -151.201392101       4.66D-04  -2.96D-06    5  4
-      MULPOP O   ******; H   ******; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
-K-S energy, electrons, error :     -8.980411452177  18.0000009409    9.41D-07
+      Virial theorem: -V/T =      2.005068
+      MULPOP  O   _1 -0.36; O   _2 -0.36; H   _1  0.36; H   _2  0.36; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.980411452278  18.0000009409    9.41D-07
    7  -151.201392125       1.26D-04  -2.36D-08    5  4
-      MULPOP O   ******; H   ******; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    F
-K-S energy, electrons, error :     -8.980414520650  18.0000009409    9.41D-07
+      Virial theorem: -V/T =      2.005069
+      MULPOP  O   _1 -0.36; O   _2 -0.36; H   _1  0.36; H   _2  0.36; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.980414520664  18.0000009409    9.41D-07
    8  -151.201392128       4.01D-05  -3.41D-09    5  4
-      MULPOP O   ******; H   ******; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -10    F
-K-S energy, electrons, error :     -8.980413875660  18.0000009409    9.41D-07
+      Virial theorem: -V/T =      2.005068
+      MULPOP  O   _1 -0.36; O   _2 -0.36; H   _1  0.36; H   _2  0.36; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+      K-S energy, electrons, error :     -8.980413875654  18.0000009409    9.41D-07
    9  -151.201392128       8.21D-06  -3.59D-10    5  4
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.55 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.57 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -560,20 +578,23 @@ K-S energy, electrons, error :     -8.980413875660  18.0000009409    9.41D-07
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final DFT energy:           -151.201392128432                 
+     Final DFT energy:           -151.201392128435                 
      Nuclear repulsion:            36.151288504456
-     Electronic energy:          -187.352680632888
+     Electronic energy:          -187.352680632891
 
-     Final gradient norm:           0.000008205939
+     Final gradient norm:           0.000008205975
 
  
-     Date and time (Linux)  : Wed Dec 29 22:30:13 2010 
+     Date and time (Linux)  : Wed Mar 16 18:55:12 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -581,7 +602,7 @@ K-S energy, electrons, error :     -8.980413875660  18.0000009409    9.41D-07
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 O   :1s     0.7036  -0.1506   0.0245  -0.0447  -0.0112   0.0499   0.0098
    2 O   :1s     0.0189   0.3321  -0.0561   0.1079   0.0247  -0.0851  -0.0832
    3 O   :1s    -0.0054   0.2933  -0.0972   0.1787   0.0561  -0.6143   0.2166
@@ -605,7 +626,7 @@ K-S energy, electrons, error :     -8.980413875660  18.0000009409    9.41D-07
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 O   :1s     0.7037  -0.1541  -0.0470   0.0360   0.0707   0.0173
    2 O   :1s     0.0198   0.3521   0.1093  -0.0877  -0.1633   0.0015
    3 O   :1s    -0.0108   0.3627   0.1847  -0.1420  -0.5678  -0.4238
@@ -628,11 +649,11 @@ K-S energy, electrons, error :     -8.980413875660  18.0000009409    9.41D-07
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.84 seconds
+ >>>> Total CPU  time used in SIRIUS :      2.85 seconds
  >>>> Total wall time used in SIRIUS :      3.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:30:13 2010 
+     Date and time (Linux)  : Wed Mar 16 18:55:12 2011 
      Host name              : fe6                                     
 
 
@@ -640,9 +661,9 @@ K-S energy, electrons, error :     -8.980413875660  18.0000009409    9.41D-07
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.85 seconds
+ >>>> Total CPU  time used in DALTON:   2.87 seconds
  >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:30:13 2010 
+     Date and time (Linux)  : Wed Mar 16 18:55:12 2011 
      Host name              : fe6                                     

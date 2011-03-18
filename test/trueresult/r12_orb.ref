@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:43:09 2010 
+     Date and time (Linux)  : Wed Mar 16 19:11:39 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -203,13 +204,18 @@ Point group: D2
                                  ---------------
 
                            C          12.000000
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    3      1.007825
-                           H    4      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _3      1.007825
+                           H   _4      1.007825
+                           C           0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H   _3      0.000000
+                           H   _4      0.000000
 
                        Total mass:    16.031300 amu
-                       Natural abundance:  98.841 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
@@ -305,29 +311,29 @@ Point group: D2
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C           H    1      H    2      H    3      H    4      C     
+            C           H   _1      H   _2      H   _3      H   _4      C     
             ------      ------      ------      ------      ------      ------
  C     :    0.000000
- H    1:    1.170203    0.000000
- H    2:    1.170203    1.910933    0.000000
- H    3:    1.170203    1.910933    1.910933    0.000000
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000
+ H   _1:    1.170203    0.000000
+ H   _2:    1.170203    1.910933    0.000000
+ H   _3:    1.170203    1.910933    1.910933    0.000000
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000
  C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
- H    1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
- H    2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
- H    3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+ H   _1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H   _2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H   _3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
 
-            H    1      H    2      H    3      H    4
+            H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------
- H    1:    0.000000
- H    2:    1.910933    0.000000
- H    3:    1.910933    1.910933    0.000000
- H    4:    1.910933    1.910933    1.910933    0.000000
+ H   _1:    0.000000
+ H   _2:    1.910933    0.000000
+ H   _3:    1.910933    1.910933    0.000000
+ H   _4:    1.910933    1.910933    1.910933    0.000000
 
 
   Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -335,10 +341,10 @@ Point group: D2
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     C            1.170203
-  bond distance:  H    2     C            1.170203
-  bond distance:  H    3     C            1.170203
-  bond distance:  H    4     C            1.170203
+  bond distance:  H   _1     C            1.170203
+  bond distance:  H   _2     C            1.170203
+  bond distance:  H   _3     C            1.170203
+  bond distance:  H   _4     C            1.170203
 
 
   Bond angles (degrees):
@@ -346,12 +352,12 @@ Point group: D2
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     C          H    2       109.471
-  bond angle:     H    1     C          H    3       109.471
-  bond angle:     H    1     C          H    4       109.471
-  bond angle:     H    2     C          H    3       109.471
-  bond angle:     H    2     C          H    4       109.471
-  bond angle:     H    3     C          H    4       109.471
+  bond angle:     H   _1     C          H   _2       109.471
+  bond angle:     H   _1     C          H   _3       109.471
+  bond angle:     H   _1     C          H   _4       109.471
+  bond angle:     H   _2     C          H   _3       109.471
+  bond angle:     H   _2     C          H   _4       109.471
+  bond angle:     H   _3     C          H   _4       109.471
 
 
 
@@ -369,7 +375,7 @@ Point group: D2
 
                A                   B                   C
 
-         137322.2826         137322.2826         137322.2826 MHz
+         137322.2814         137322.2814         137322.2814 MHz
             4.580578            4.580578            4.580578 cm-1
 
 
@@ -469,6 +475,8 @@ Point group: D2
    68     H    A   2py       62 +   63 -   64 -   65
    69     H    A   2pz       66 -   67 +   68 -   69
 
+  Number of floating/multiple basis set orbitals :    5
+
   Symmetries of electric field:  B3 (4)  B2 (2)  B1 (3)
 
   Symmetries of magnetic field:  B3 (4)  B2 (2)  B1 (3)
@@ -491,7 +499,7 @@ Point group: D2
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Cartesian multipole moment integrals of orders 2 and lower
 
@@ -505,8 +513,8 @@ Point group: D2
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -531,7 +539,7 @@ Point group: D2
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:43:10 2010 
+     Date and time (Linux)  : Wed Mar 16 19:11:39 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -546,8 +554,7 @@ Point group: D2
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -557,6 +564,10 @@ Point group: D2
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -614,49 +625,76 @@ Point group: D2
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   1  -29.2237640129       1.33D+01  -2.92D+01    2  1  1  1
-      MULPOP C    -1.83; H    -0.15; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   2  -34.8133409941       5.65D+00  -5.59D+00    2  1  1  1
-      MULPOP C    -6.17; H     1.85; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   3  -39.2350220366       4.09D+00  -4.42D+00    2  1  1  1
-      MULPOP C    -0.01; H     0.00; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   4  -40.0919660086       1.09D+00  -8.57D-01    2  1  1  1
-      MULPOP C     0.11; H     0.02; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   5  -40.1716432169       5.01D-02  -7.97D-02    2  1  1  1
-      MULPOP C     0.17; H     0.04; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  -29.2237640128       1.33D+01  -2.92D+01    2  1  1  1
+      Virial theorem: -V/T =      1.454438
+      MULPOP  C      -4.22; H   _1  1.05; H   _2  1.05; H   _3  1.05; H   _4  1.05; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -34.8133409878       5.65D+00  -5.59D+00    2  1  1  1
+      Virial theorem: -V/T =      2.081911
+      MULPOP  C       9.91; H   _1 -2.48; H   _2 -2.48; H   _3 -2.48; H   _4 -2.48; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -39.2350220243       4.09D+00  -4.42D+00    2  1  1  1
+      Virial theorem: -V/T =      1.896390
+      MULPOP  C      -1.67; H   _1  0.42; H   _2  0.42; H   _3  0.42; H   _4  0.42; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -40.0919659962       1.09D+00  -8.57D-01    2  1  1  1
+      Virial theorem: -V/T =      1.985113
+      MULPOP  C      -0.74; H   _1  0.18; H   _2  0.18; H   _3  0.18; H   _4  0.18; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5  -40.1716432040       5.01D-02  -7.97D-02    2  1  1  1
+      Virial theorem: -V/T =      2.011824
+      MULPOP  C      -0.48; H   _1  0.12; H   _2  0.12; H   _3  0.12; H   _4  0.12; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6  -40.1718284304       1.75D-02  -1.85D-04    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-   7  Screening settings (-IFTHRS, DIFDEN)   -9    T
+      Virial theorem: -V/T =      2.011418
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
    7  -40.1718499949       1.25D-03  -2.16D-05    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-   8  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   8  -40.1718502095       1.69D-04  -2.15D-07    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
-   9  -40.1718502132       7.41D-06  -3.67D-09    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -13    F
-  10  -40.1718502132       1.07D-06  -4.87D-12    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -16    F
-  11  -40.1718502132       5.54D-08  -1.56D-13    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  12  -40.1718502132       4.65D-09   4.26D-14    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  13  -40.1718502132       1.43D-10  -1.42D-14    2  1  1  1
-      MULPOP C     0.16; H     0.04; 
-  14  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  14  -40.1718502132       6.03D-12   0.00D+00    2  1  1  1
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.14 seconds
+      Virial theorem: -V/T =      2.010919
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -40.1718502092       1.69D-04  -2.14D-07    2  1  1  1
+      Virial theorem: -V/T =      2.010877
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -40.1718502132       7.41D-06  -4.05D-09    2  1  1  1
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -40.1718502132       1.08D-06  -4.90D-12    2  1  1  1
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -40.1718502132       5.55D-08  -8.53D-14    2  1  1  1
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -40.1718502132       4.65D-09   1.42D-14    2  1  1  1
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -40.1718502132       1.42D-10  -5.68D-14    2  1  1  1
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H   _1  0.13; H   _2  0.13; H   _3  0.13; H   _4  0.13; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -40.1718502132       6.03D-12   2.84D-14    2  1  1  1
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.16 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -681,7 +719,7 @@ Point group: D2
          2.67814645
 
     E(LUMO) :     0.14348326 au (symmetry 1)
-  - E(HOMO) :    -0.52460189 au (symmetry 2)
+  - E(HOMO) :    -0.52460189 au (symmetry 4)
   ------------------------------------------
     gap     :     0.66808515 au
 
@@ -701,23 +739,23 @@ Point group: D2
 
 @   8 MO components are deleted in symmetry    1
  Overlap eigenvalues of the deleted orbitals:
-  2.11D-15  7.53D-16  3.61D-16  1.03D-16  1.40D-17
-  2.53D-18 -1.37D-16 -5.49D-16
+  1.29D-15  3.24D-16  1.97D-16  1.89D-16 -2.62D-18
+ -4.15D-18 -1.55D-16 -3.34D-16
 
 @   6 MO components are deleted in symmetry    2
  Overlap eigenvalues of the deleted orbitals:
-  2.91D-17  1.81D-17 -3.23D-19 -9.81D-18 -9.47D-17
- -1.29D-16
+  1.13D-16  6.38D-17  3.70D-17 -8.87D-18 -1.73D-17
+ -7.08D-16
 
 @   6 MO components are deleted in symmetry    3
  Overlap eigenvalues of the deleted orbitals:
-  5.54D-16 -2.24D-18 -8.52D-18 -3.31D-17 -7.86D-17
- -1.53D-16
+  2.50D-16  8.34D-17 -1.21D-17 -3.04D-17 -1.53D-16
+ -1.60D-16
 
 @   6 MO components are deleted in symmetry    4
  Overlap eigenvalues of the deleted orbitals:
-  2.66D-16  1.78D-16  5.46D-17 -7.78D-18 -3.24D-17
- -9.57D-16
+  6.19D-16  3.14D-17 -2.14D-17 -6.55D-17 -6.84D-17
+ -1.19D-16
 
   Canonical primary and secondary basis sets
   ISYM       NORB1 MBAS1       NORB2 MBAS2
@@ -736,20 +774,23 @@ Point group: D2
    4      0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -40.171850213220                 
+     Final HF energy:             -40.171850213221                 
      Nuclear repulsion:            12.514560078913
-     Electronic energy:           -52.686410292133
+     Electronic energy:           -52.686410292134
 
      Final gradient norm:           0.000000000006
 
  
-     Date and time (Linux)  : Wed Dec 29 22:43:10 2010 
+     Date and time (Linux)  : Wed Mar 16 19:11:39 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -757,7 +798,7 @@ Point group: D2
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 C   :1s     0.4677   0.0897   0.0449  -0.0492   0.0594
    2 C   :1s     0.6127   0.2006   0.1064  -0.0875   0.1407
    3 C   :1s     0.0191  -0.2864  -0.2306  -0.3605  -0.1103
@@ -770,7 +811,7 @@ Point group: D2
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 C   :2py    0.2999   0.1925  -0.0972  -0.3066
    2 C   :2py    0.2916   0.1501  -0.4129  -1.2175
    3 C   :2py    0.0945   1.7722   1.6945   1.8202
@@ -781,7 +822,7 @@ Point group: D2
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 C   :2pz    0.2999   0.1925  -0.0972  -0.3066
    2 C   :2pz    0.2916   0.1501  -0.4129  -1.2175
    3 C   :2pz    0.0945   1.7722   1.6945   1.8202
@@ -792,7 +833,7 @@ Point group: D2
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 C   :2px    0.2999   0.1925  -0.0972  -0.3066
    2 C   :2px    0.2916   0.1501  -0.4129  -1.2175
    3 C   :2px    0.0945   1.7722   1.6945   1.8202
@@ -802,11 +843,11 @@ Point group: D2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.24 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.27 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:43:10 2010 
+     Date and time (Linux)  : Wed Mar 16 19:11:39 2011 
      Host name              : fe6                                     
 
 
@@ -885,7 +926,7 @@ Point group: D2
  Number of two-electron spin-orbit integrals written:     21357 ( 1.4%)
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
- >>> Time used in TWOINT is   0.15 seconds
+ >>> Time used in TWOINT is   0.17 seconds
 
  Number of two-electron spin-orbit integrals written:      1170 ( 0.1%)
 
@@ -897,14 +938,14 @@ Point group: D2
 
  Number of two-electron spin-orbit integrals written:      2808 ( 0.1%)
  Computation of (ik|[[f12,T1],f12]|jl) integrals done
- >>> Time used in #6 [4] is   0.42 seconds
+ >>> Time used in #6 [4] is   0.46 seconds
 
  Number of two-electron spin-orbit integrals written:     12285 ( 1.5%)
 
  Number of two-electron spin-orbit integrals written:     21357 ( 1.4%)
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
- >>> Time used in TWOINT is   0.13 seconds
+ >>> Time used in TWOINT is   0.15 seconds
 
  Number of two-electron spin-orbit integrals written:      1170 ( 0.1%)
 
@@ -916,7 +957,7 @@ Point group: D2
 
  Number of two-electron spin-orbit integrals written:      2808 ( 0.1%)
  Computation of (ik|f12**2|jl) integrals done
- >>> Time used in #4 [4] is   0.36 seconds
+ >>> Time used in #4 [4] is   0.40 seconds
 
  Number of two-electron spin-orbit integrals written:     12285 ( 1.5%)
 
@@ -934,16 +975,16 @@ Point group: D2
 
  Number of two-electron spin-orbit integrals written:      2808 ( 0.1%)
  Computation of (ik|f12/r12|jl) integrals done
- >>> Time used in #2 [4] is   0.19 seconds
+ >>> Time used in #2 [4] is   0.21 seconds
 
  Number of two-electron spin-orbit integrals written:     64525 ( 7.7%)
- >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.31 seconds
 
  Number of two-electron spin-orbit integrals written:    114714 ( 7.6%)
- >>> Time used in TWOINT is   0.25 seconds
+ >>> Time used in TWOINT is   0.28 seconds
 
  Number of two-electron spin-orbit integrals written:    161398 ( 8.1%)
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.55 seconds
 
  Number of two-electron spin-orbit integrals written:     12285 ( 1.5%)
 
@@ -952,11 +993,11 @@ Point group: D2
  Number of two-electron spin-orbit integrals written:     10671 ( 1.3%)
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>> Time used in TWOINT is   0.14 seconds
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
  Computation of (ip'|f12|jq') integrals done
- >>> Time used in #3 [5] is   1.40 seconds
+ >>> Time used in #3 [5] is   1.59 seconds
 
  Number of two-electron spin-orbit integrals written:     64525 ( 7.7%)
 
@@ -974,14 +1015,14 @@ Point group: D2
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in #1 [5] is   0.29 seconds
+ >>> Time used in #1 [5] is   0.32 seconds
 
  Number of two-electron spin-orbit integrals written:     12285 ( 1.5%)
 
  Number of two-electron spin-orbit integrals written:     21357 ( 1.4%)
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
- >>> Time used in TWOINT is   0.13 seconds
+ >>> Time used in TWOINT is   0.15 seconds
 
  Number of two-electron spin-orbit integrals written:      1170 ( 0.1%)
 
@@ -992,16 +1033,16 @@ Point group: D2
  Number of two-electron spin-orbit integrals written:      2808 ( 0.1%)
 
  Number of two-electron spin-orbit integrals written:      2808 ( 0.1%)
- >>> Time used in #4 [4] is   0.36 seconds
+ >>> Time used in #4 [4] is   0.40 seconds
 
  Number of two-electron spin-orbit integrals written:     64525 ( 7.7%)
- >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.30 seconds
 
  Number of two-electron spin-orbit integrals written:    114714 ( 7.6%)
- >>> Time used in TWOINT is   0.25 seconds
+ >>> Time used in TWOINT is   0.28 seconds
 
  Number of two-electron spin-orbit integrals written:    161398 ( 8.1%)
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.54 seconds
 
  Number of two-electron spin-orbit integrals written:     12285 ( 1.5%)
 
@@ -1010,20 +1051,20 @@ Point group: D2
  Number of two-electron spin-orbit integrals written:     10671 ( 1.3%)
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>> Time used in TWOINT is   0.14 seconds
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
  Computation of (i* p'|f12|jq') integrals done
- >>> Time used in #3 [5] is   1.49 seconds
+ >>> Time used in #3 [5] is   1.67 seconds
 
  Number of two-electron spin-orbit integrals written:     64525 ( 7.7%)
- >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.30 seconds
 
  Number of two-electron spin-orbit integrals written:    114714 ( 7.6%)
- >>> Time used in TWOINT is   0.25 seconds
+ >>> Time used in TWOINT is   0.28 seconds
 
  Number of two-electron spin-orbit integrals written:    161398 ( 8.1%)
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.55 seconds
 
  Number of two-electron spin-orbit integrals written:     12285 ( 1.5%)
 
@@ -1032,36 +1073,36 @@ Point group: D2
  Number of two-electron spin-orbit integrals written:     10671 ( 1.3%)
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>> Time used in TWOINT is   0.14 seconds
 
  Number of two-electron spin-orbit integrals written:     30186 ( 1.5%)
  Computation of (i'p|f12|jq') integrals done
- >>> Time used in #3 [5] is   1.40 seconds
+ >>> Time used in #3 [5] is   1.59 seconds
 
  Number of two-electron spin-orbit integrals written:     62240 ( 7.5%)
- >>> Time used in TWOINT is   0.70 seconds
+ >>> Time used in TWOINT is   0.80 seconds
 
  Number of two-electron spin-orbit integrals written:    103767 ( 6.9%)
- >>> Time used in TWOINT is   0.65 seconds
+ >>> Time used in TWOINT is   0.74 seconds
 
  Number of two-electron spin-orbit integrals written:    150966 ( 7.5%)
- >>> Time used in TWOINT is   1.24 seconds
+ >>> Time used in TWOINT is   1.40 seconds
 
  Number of two-electron spin-orbit integrals written:     11790 ( 1.4%)
- >>> Time used in TWOINT is   0.17 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
  Number of two-electron spin-orbit integrals written:     19224 ( 1.3%)
- >>> Time used in TWOINT is   0.16 seconds
+ >>> Time used in TWOINT is   0.18 seconds
 
  Number of two-electron spin-orbit integrals written:     10669 ( 1.3%)
 
  Number of two-electron spin-orbit integrals written:     27918 ( 1.4%)
- >>> Time used in TWOINT is   0.30 seconds
+ >>> Time used in TWOINT is   0.34 seconds
 
  Number of two-electron spin-orbit integrals written:     29778 ( 1.5%)
- >>> Time used in TWOINT is   0.11 seconds
+ >>> Time used in TWOINT is   0.13 seconds
  Computation of (ip'|[T,f12]|jq') integrals done
- >>> Time used in #5 [5] is   3.46 seconds
+ >>> Time used in #5 [5] is   3.90 seconds
 
 
                  +-----------------------------------------------+
@@ -1700,9 +1741,9 @@ Point group: D2
        -0.082442259   -0.140759382   -0.027016086   -0.031762770
 
               MP2-R12/B   correlation energy =   -0.172522152
- >>> Time used in E(R12) is  10.42 seconds
- Time for MP2-R12 part cpu:   19.800991058349609     
- Time for MP2-R12 part wall:   22.000000000000000     
+ >>> Time used in E(R12) is  11.69 seconds
+ Time for MP2-R12 part cpu:   22.234619677066803     
+ Time for MP2-R12 part wall:   25.000000000000000     
 
 NOAUXB with HERDIR not implemented
 
@@ -1746,9 +1787,9 @@ NOAUXB with HERDIR not implemented
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  20.08 seconds
- >>>> Total wall time used in DALTON:  23.00 seconds
+ >>>> Total CPU  time used in DALTON:  22.56 seconds
+ >>>> Total wall time used in DALTON:  25.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:43:32 2010 
+     Date and time (Linux)  : Wed Mar 16 19:12:04 2011 
      Host name              : fe6                                     

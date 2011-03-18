@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:28:18 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:27 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -264,7 +265,7 @@ Point group: C1
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -280,7 +281,7 @@ Point group: C1
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -314,7 +315,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:18 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:27 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -329,8 +330,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -340,6 +340,10 @@ Point group: C1
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -393,47 +397,72 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1    -99.9306315544        1.22196D+00   -9.99D+01    1
-      MULPOP H     0.84; F    11.59; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
+      Virial theorem: -V/T =      1.997516
+      MULPOP  H       0.45; F      -0.45; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
    2    -100.010699960        2.74556D-01   -8.01D-02    2
-      MULPOP H     2.15; F    11.70; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      2.003831
+      MULPOP  H       0.26; F      -0.26; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
    3    -100.013492162        8.67169D-02   -2.79D-03    3
-      MULPOP H     2.56; F    12.30; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      1.999764
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4    -100.013838942        2.60489D-02   -3.47D-04    4
-      MULPOP H     2.63; F    12.24; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.001375
+      MULPOP  H       0.28; F      -0.28; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5    -100.013880076        3.73443D-03   -4.11D-05    5
-      MULPOP H     2.67; F    12.32; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.000951
+      MULPOP  H       0.28; F      -0.28; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6    -100.013881896        8.08863D-04   -1.82D-06    6
-      MULPOP H     2.68; F    12.34; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
-   7    -100.013881966        7.31589D-05   -7.01D-08    7
-      MULPOP H     2.68; F    12.34; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
-   8    -100.013881967        6.50575D-06   -5.33D-10    8
-      MULPOP H     2.68; F    12.35; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
-   9    -100.013881967        8.32923D-07   -2.39D-12    9
-      MULPOP H     2.68; F    12.35; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    F
-  10    -100.013881967        5.32737D-08   -8.53D-14   10
-      MULPOP H     2.68; F    12.35; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  11    -100.013881967        3.40448D-09    2.84D-14   10
-      MULPOP H     2.68; F    12.35; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  12    -100.013881967        1.63117D-10    4.26D-14   10
-      MULPOP H     2.68; F    12.34; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  13    -100.013881967        3.34042D-11   -9.95D-14   10
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.13 seconds
+      Virial theorem: -V/T =      2.000974
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7    -100.013881966        7.31588D-05   -7.02D-08    7
+      Virial theorem: -V/T =      2.000983
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -100.013881967        6.50582D-06   -5.33D-10    8
+      Virial theorem: -V/T =      2.000982
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -100.013881967        8.32929D-07   -2.37D-12    9
+      Virial theorem: -V/T =      2.000982
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -100.013881967        5.32742D-08    0.00D+00   10
+      Virial theorem: -V/T =      2.000982
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11    -100.013881967        3.40450D-09   -1.28D-13   10
+      Virial theorem: -V/T =      2.000982
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12    -100.013881967        1.63122D-10    4.26D-14   10
+      Virial theorem: -V/T =      2.000982
+      MULPOP  H       0.29; F      -0.29; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13    -100.013881967        3.33939D-11    9.95D-14   10
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.13 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -456,7 +485,10 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -469,7 +501,7 @@ Point group: C1
      Final gradient norm:           0.000000000033
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:18 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:27 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -477,24 +509,24 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
-   1 H   :1s     0.0003   0.1470  -0.3726  -0.0000  -0.0000  -0.1156  -1.2954
-   2 H   :1s     0.0006   0.0079  -0.0568  -0.0000  -0.0000  -1.2111   0.9682
-   3 H   :2px    0.0000  -0.0000  -0.0000  -0.0312   0.0004   0.0000   0.0000
-   4 H   :2py   -0.0000   0.0000   0.0000  -0.0004  -0.0312   0.0000  -0.0000
-   5 H   :2pz    0.0002  -0.0384   0.0544   0.0000  -0.0000   0.0090  -0.2686
-   6 F   :1s     1.0006  -0.0040  -0.0032   0.0000  -0.0000  -0.0328   0.0329
-   7 F   :1s     0.0005   0.4841   0.1056  -0.0000   0.0000   0.0651   0.1197
-   8 F   :1s    -0.0029   0.5038   0.2572  -0.0000   0.0000   0.6238  -0.1629
-   9 F   :2px    0.0000  -0.0000  -0.0000  -0.6648   0.0090   0.0000   0.0000
-  10 F   :2py   -0.0000   0.0000   0.0000  -0.0090  -0.6648   0.0000  -0.0000
-  11 F   :2pz    0.0010   0.0518  -0.5509   0.0000  -0.0000   0.2413   0.3586
-  12 F   :2px    0.0000  -0.0000  -0.0000  -0.4774   0.0065   0.0000   0.0000
-  13 F   :2py   -0.0000   0.0000   0.0000  -0.0065  -0.4774   0.0000  -0.0000
-  14 F   :2pz   -0.0007  -0.0008  -0.3150   0.0000  -0.0000   0.3561   0.1784
-  16 F   :3d1-   0.0000  -0.0000  -0.0000  -0.0002  -0.0115  -0.0000   0.0000
-  17 F   :3d0   -0.0001   0.0046  -0.0173   0.0000  -0.0000   0.0057  -0.0667
-  18 F   :3d1+  -0.0000   0.0000   0.0000  -0.0115   0.0002  -0.0000  -0.0000
+    Orbital         1        2        3        4        5        6        7
+   1 H   :1s     0.0003   0.1470  -0.3726  -0.0000   0.0000  -0.1156  -1.2954
+   2 H   :1s     0.0006   0.0079  -0.0568   0.0000   0.0000  -1.2111   0.9682
+   3 H   :2px   -0.0000   0.0000   0.0000  -0.0001   0.0312  -0.0000  -0.0000
+   4 H   :2py    0.0000  -0.0000   0.0000   0.0312   0.0001  -0.0000  -0.0000
+   5 H   :2pz    0.0002  -0.0384   0.0544   0.0000   0.0000   0.0090  -0.2686
+   6 F   :1s     1.0006  -0.0040  -0.0032  -0.0000   0.0000  -0.0328   0.0329
+   7 F   :1s     0.0005   0.4841   0.1056  -0.0000  -0.0000   0.0651   0.1197
+   8 F   :1s    -0.0029   0.5038   0.2572  -0.0000  -0.0000   0.6238  -0.1629
+   9 F   :2px   -0.0000   0.0000   0.0000  -0.0017   0.6649  -0.0000  -0.0000
+  10 F   :2py    0.0000  -0.0000   0.0000   0.6649   0.0017  -0.0000  -0.0000
+  11 F   :2pz    0.0010   0.0518  -0.5509   0.0000   0.0000   0.2413   0.3586
+  12 F   :2px   -0.0000   0.0000   0.0000  -0.0012   0.4774  -0.0000  -0.0000
+  13 F   :2py    0.0000  -0.0000   0.0000   0.4774   0.0012  -0.0000  -0.0000
+  14 F   :2pz   -0.0007  -0.0008  -0.3150   0.0000   0.0000   0.3561   0.1784
+  16 F   :3d1-  -0.0000   0.0000  -0.0000   0.0115   0.0000   0.0000   0.0000
+  17 F   :3d0   -0.0001   0.0046  -0.0173   0.0000   0.0000   0.0057  -0.0667
+  18 F   :3d1+   0.0000  -0.0000  -0.0000  -0.0000   0.0115   0.0000   0.0000
 
 
 
@@ -502,7 +534,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:18 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:27 2011 
      Host name              : fe6                                     
 
 
@@ -553,7 +585,7 @@ Point group: C1
           Number of t2 amplitudes                 :      2485
           Total number of amplitudes in ccsd      :      2555
 
- Iter.  1: Coupled cluster MP2   energy :    -100.2201256863188519
+ Iter.  1: Coupled cluster MP2   energy :    -100.2201256863184682
 
 
 
@@ -653,7 +685,7 @@ Point group: C1
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  1.38722606114546447E-002
+ CC_FOP> Norm of RHS vector:  1.38722606114523844E-002
 
 
                       Solving for orbital relaxation vector
@@ -674,15 +706,15 @@ Point group: C1
                                 Molecular gradient
                                 ------------------
 
- H         -0.0000000000            0.0000000000            0.0544535236
- F          0.0000000000           -0.0000000000           -0.0544535236
+ H          0.0000000000            0.0000000000            0.0544535236
+ F         -0.0000000000           -0.0000000000           -0.0544535236
 
 
 
 
                    Molecular gradient norm:  5.93E-03
 
->>> Total time used in gradient section:        0.52 seconds.
+>>> Total time used in gradient section:        0.45 seconds.
   
 
  *******************************************************************************
@@ -772,13 +804,13 @@ Point group: C1
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000     -0.058000570319
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.058000570318
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -809,44 +841,67 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -15    T
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1    -100.017841808        1.12094D-01   -3.96D-03    1
-      MULPOP H     2.68; F    12.38; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      2.000753
+      MULPOP  H       0.28; F      -0.28; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
    2    -100.018540720        2.52194D-02   -6.99D-04    2
-      MULPOP H     2.80; F    12.60; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      1.999978
+      MULPOP  H       0.26; F      -0.26; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
    3    -100.018577167        8.52762D-03   -3.64D-05    3
-      MULPOP H     2.84; F    12.63; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.000351
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4    -100.018581906        2.92423D-03   -4.74D-06    4
-      MULPOP H     2.85; F    12.66; 
-   5  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      Virial theorem: -V/T =      2.000198
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5    -100.018582451        6.09224D-04   -5.45D-07    5
-      MULPOP H     2.85; F    12.66; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      2.000238
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6    -100.018582506        8.80044D-05   -5.45D-08    6
-      MULPOP H     2.86; F    12.67; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      2.000241
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
    7    -100.018582506        6.34096D-06   -7.62D-10    7
-      MULPOP H     2.86; F    12.67; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -12    F
-   8    -100.018582506        4.24712D-07   -2.93D-12    8
-      MULPOP H     2.86; F    12.67; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -15    F
-   9    -100.018582506        5.37995D-08    2.84D-14    9
-      MULPOP H     2.86; F    12.67; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  10    -100.018582506        1.56040D-09    7.11D-14   10
-      MULPOP H     2.86; F    12.67; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  11    -100.018582506        1.30844D-10   -5.68D-14   10
-      MULPOP H     2.86; F    12.67; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  12    -100.018582506        1.20620D-11   -1.42D-14   10
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.30 seconds
+      Virial theorem: -V/T =      2.000241
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -100.018582506        4.24712D-07   -2.88D-12    8
+      Virial theorem: -V/T =      2.000241
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -100.018582506        5.37994D-08   -1.42D-14    9
+      Virial theorem: -V/T =      2.000241
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -100.018582506        1.56089D-09    0.00D+00   10
+      Virial theorem: -V/T =      2.000241
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11    -100.018582506        1.30788D-10    8.53D-14   10
+      Virial theorem: -V/T =      2.000241
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12    -100.018582506        1.20559D-11   -2.84D-14   10
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.31 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -869,20 +924,23 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:            -100.018582506414                 
-     Nuclear repulsion:             5.108430764003
-     Electronic energy:          -105.127013270417
+     Nuclear repulsion:             5.108430764006
+     Electronic energy:          -105.127013270420
 
      Final gradient norm:           0.000000000012
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:20 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:29 2011 
      Host name              : fe6                                     
 
 
@@ -891,7 +949,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:20 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:29 2011 
      Host name              : fe6                                     
 
 
@@ -942,7 +1000,7 @@ Point group: C1
           Number of t2 amplitudes                 :      2485
           Total number of amplitudes in ccsd      :      2555
 
- Iter.  1: Coupled cluster MP2   energy :    -100.2230164217889552
+ Iter.  1: Coupled cluster MP2   energy :    -100.2230164217895094
 
 
 
@@ -1044,7 +1102,7 @@ Point group: C1
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  1.25219068423339328E-002
+ CC_FOP> Norm of RHS vector:  1.25219068423206691E-002
 
 
                       Solving for orbital relaxation vector
@@ -1068,15 +1126,15 @@ ETAKAPPA
                                 Molecular gradient
                                 ------------------
 
- H         -0.0000000000            0.0000000000            0.0147160445
- F          0.0000000000           -0.0000000000           -0.0147160445
+ H          0.0000000000            0.0000000000            0.0147160445
+ F         -0.0000000000           -0.0000000000           -0.0147160445
 
 
 
 
                    Molecular gradient norm:  4.33E-04
 
->>> Total time used in gradient section:        0.46 seconds.
+>>> Total time used in gradient section:        0.45 seconds.
   
 
  *******************************************************************************
@@ -1167,13 +1225,13 @@ ETAKAPPA
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000     -0.044498971931
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.044498971900
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -1204,41 +1262,62 @@ ETAKAPPA
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -15    T
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1    -100.019321598        4.38410D-02   -7.39D-04    1
-      MULPOP H     2.86; F    12.69; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      2.000120
+      MULPOP  H       0.25; F      -0.25; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
    2    -100.019427039        9.52433D-03   -1.05D-04    2
-      MULPOP H     2.91; F    12.77; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      1.999830
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
    3    -100.019432221        3.11498D-03   -5.18D-06    3
-      MULPOP H     2.92; F    12.78; 
-   4  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      Virial theorem: -V/T =      1.999964
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4    -100.019432841        1.07670D-03   -6.20D-07    4
-      MULPOP H     2.92; F    12.79; 
-   5  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      1.999908
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5    -100.019432912        2.20738D-04   -7.06D-08    5
-      MULPOP H     2.92; F    12.79; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      1.999923
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6    -100.019432919        3.32842D-05   -7.16D-09    6
-      MULPOP H     2.93; F    12.79; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -12    F
+      Virial theorem: -V/T =      1.999924
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
    7    -100.019432919        2.41526D-06   -1.11D-10    7
-      MULPOP H     2.93; F    12.79; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -15    F
-   8    -100.019432919        1.62558D-07   -3.27D-13    8
-      MULPOP H     2.93; F    12.79; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -15    T
-   9    -100.019432919        2.08177D-08   -2.84D-14    9
-      MULPOP H     2.93; F    12.79; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  10    -100.019432919        5.19554D-10    0.00D+00   10
-      MULPOP H     2.93; F    12.79; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  11    -100.019432919        4.53975D-11    2.84D-14   10
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.48 seconds
+      Virial theorem: -V/T =      1.999924
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -100.019432919        1.62558D-07   -3.98D-13    8
+      Virial theorem: -V/T =      1.999924
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -100.019432919        2.08177D-08   -1.42D-14    9
+      Virial theorem: -V/T =      1.999924
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -100.019432919        5.19550D-10    4.26D-14   10
+      Virial theorem: -V/T =      1.999924
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11    -100.019432919        4.66312D-11   -5.68D-14   10
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.49 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1261,20 +1340,23 @@ ETAKAPPA
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.019432918888                 
-     Nuclear repulsion:             5.197010394889
-     Electronic energy:          -105.216443313777
+     Final HF energy:            -100.019432918891                 
+     Nuclear repulsion:             5.197010395096
+     Electronic energy:          -105.216443313987
 
-     Final gradient norm:           0.000000000045
+     Final gradient norm:           0.000000000047
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:30 2011 
      Host name              : fe6                                     
 
 
@@ -1283,7 +1365,7 @@ ETAKAPPA
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:30 2011 
      Host name              : fe6                                     
 
 
@@ -1334,7 +1416,7 @@ ETAKAPPA
           Number of t2 amplitudes                 :      2485
           Total number of amplitudes in ccsd      :      2555
 
- Iter.  1: Coupled cluster MP2   energy :    -100.2231896417613370
+ Iter.  1: Coupled cluster MP2   energy :    -100.2231896417621471
 
 
 
@@ -1436,7 +1518,7 @@ ETAKAPPA
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  1.20591849540429685E-002
+ CC_FOP> Norm of RHS vector:  1.20591849530240231E-002
 
 
                       Solving for orbital relaxation vector
@@ -1460,15 +1542,15 @@ ETAKAPPA
                                 Molecular gradient
                                 ------------------
 
- H         -0.0000000000            0.0000000000           -0.0035352496
- F          0.0000000000           -0.0000000000            0.0035352496
+ H          0.0000000000            0.0000000000           -0.0035352474
+ F         -0.0000000000           -0.0000000000            0.0035352474
 
 
 
 
                    Molecular gradient norm:  2.50E-05
 
->>> Total time used in gradient section:        0.46 seconds.
+>>> Total time used in gradient section:        0.45 seconds.
   
 
  *******************************************************************************
@@ -1514,8 +1596,8 @@ ETAKAPPA
                                 Next geometry (au)
                                 ------------------
 
- H          0.0000000000            0.0000000000            1.6029355118
- F          0.0000000000            0.0000000000           -0.1346458518
+ H          0.0000000000            0.0000000000            1.6029355103
+ F          0.0000000000            0.0000000000           -0.1346458503
 
 
 
@@ -1559,13 +1641,13 @@ ETAKAPPA
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000     -0.047114212279
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.047114210893
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -1596,41 +1678,62 @@ ETAKAPPA
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -15    T
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1    -100.019306922        8.60647D-03    1.26D-04    1
-      MULPOP H     2.92; F    12.79; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -9    F
+      Virial theorem: -V/T =      1.999949
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
    2    -100.019310985        1.84364D-03   -4.06D-06    2
-      MULPOP H     2.92; F    12.77; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   3    -100.019311181        5.94687D-04   -1.96D-07    3
-      MULPOP H     2.91; F    12.77; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   4    -100.019311203        2.08373D-04   -2.25D-08    4
-      MULPOP H     2.91; F    12.77; 
-   5  Screening settings (-IFTHRS, DIFDEN)  -11    F
-   5    -100.019311206        4.26503D-05   -2.60D-09    5
-      MULPOP H     2.91; F    12.77; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -11    T
-   6    -100.019311206        6.57686D-06   -2.69D-10    6
-      MULPOP H     2.91; F    12.77; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -11    T
-   7    -100.019311206        4.73315D-07   -4.32D-12    7
-      MULPOP H     2.91; F    12.77; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -15    F
-   8    -100.019311206        3.24118D-08   -8.53D-14    8
-      MULPOP H     2.91; F    12.77; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -15    T
-   9    -100.019311206        4.09910D-09   -2.84D-14    9
-      MULPOP H     2.91; F    12.77; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  10    -100.019311206        1.01529D-10    2.84D-14   10
-      MULPOP H     2.91; F    12.77; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  11    -100.019311206        9.28083D-12    2.84D-14   10
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.66 seconds
+      Virial theorem: -V/T =      2.000005
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3    -100.019311181        5.94686D-04   -1.96D-07    3
+      Virial theorem: -V/T =      1.999980
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4    -100.019311203        2.08373D-04   -2.26D-08    4
+      Virial theorem: -V/T =      1.999991
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5    -100.019311206        4.26503D-05   -2.59D-09    5
+      Virial theorem: -V/T =      1.999988
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6    -100.019311206        6.57685D-06   -2.69D-10    6
+      Virial theorem: -V/T =      1.999988
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7    -100.019311206        4.73315D-07   -4.42D-12    7
+      Virial theorem: -V/T =      1.999988
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -100.019311206        3.24116D-08   -4.26D-14    8
+      Virial theorem: -V/T =      1.999988
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -100.019311206        4.09910D-09    9.95D-14    9
+      Virial theorem: -V/T =      1.999988
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -100.019311206        1.01497D-10   -1.14D-13   10
+      Virial theorem: -V/T =      1.999988
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11    -100.019311206        9.65365D-12    9.95D-14   10
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.67 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1653,29 +1756,32 @@ ETAKAPPA
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.019311206123                 
-     Nuclear repulsion:             5.179613564214
-     Electronic energy:          -105.198924770337
+     Final HF energy:            -100.019311206194                 
+     Nuclear repulsion:             5.179613573405
+     Electronic energy:          -105.198924779600
 
-     Final gradient norm:           0.000000000009
+     Final gradient norm:           0.000000000010
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:23 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:32 2011 
      Host name              : fe6                                     
 
 
 
  >>>> Total CPU  time used in SIRIUS :      0.11 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:23 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:32 2011 
      Host name              : fe6                                     
 
 
@@ -1726,7 +1832,7 @@ ETAKAPPA
           Number of t2 amplitudes                 :      2485
           Total number of amplitudes in ccsd      :      2555
 
- Iter.  1: Coupled cluster MP2   energy :    -100.2231993917717290
+ Iter.  1: Coupled cluster MP2   energy :    -100.2231993917730506
 
 
 
@@ -1738,7 +1844,7 @@ ETAKAPPA
 
 
 
-            Total SCF   energy:                  -100.0193112061
+            Total SCF   energy:                  -100.0193112062
 
             Total MP2   energy:                  -100.2231993918
 
@@ -1758,7 +1864,7 @@ ETAKAPPA
 
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0193112061                
+            Total SCF   energy:                  -100.0193112062                
             Total MP2   energy:                  -100.2231993918                
   
 
@@ -1828,7 +1934,7 @@ ETAKAPPA
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  1.21472521698011444E-002
+ CC_FOP> Norm of RHS vector:  1.21472521229158224E-002
 
 
                       Solving for orbital relaxation vector
@@ -1852,15 +1958,15 @@ ETAKAPPA
                                 Molecular gradient
                                 ------------------
 
- H         -0.0000000000            0.0000000000            0.0001687407
- F          0.0000000000           -0.0000000000           -0.0001687407
+ H          0.0000000000            0.0000000000            0.0001687372
+ F         -0.0000000000           -0.0000000000           -0.0001687372
 
 
 
 
                    Molecular gradient norm:  5.69E-08
 
->>> Total time used in gradient section:        0.46 seconds.
+>>> Total time used in gradient section:        0.45 seconds.
   
 
  *******************************************************************************
@@ -1875,7 +1981,7 @@ ETAKAPPA
 
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0193112061                
+            Total SCF   energy:                  -100.0193112062                
             Total MP2   energy:                  -100.2231993918                
   
 
@@ -1906,8 +2012,8 @@ ETAKAPPA
                                 Next geometry (au)
                                 ------------------
 
- H          0.0000000000            0.0000000000            1.6028030222
- F          0.0000000000            0.0000000000           -0.1345133622
+ H          0.0000000000            0.0000000000            1.6028030233
+ F          0.0000000000            0.0000000000           -0.1345133633
 
 
 
@@ -1951,13 +2057,13 @@ ETAKAPPA
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
           - Geometrical derivatives of one-electron Hamiltonian integrals
 
- Center of mass  (bohr):      0.000000000000      0.000000000000     -0.046995071158
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.046995072120
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -1988,38 +2094,57 @@ ETAKAPPA
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)  -15    T
-   1    -100.019317206        3.90934D-04   -6.00D-06    1
-      MULPOP H     2.91; F    12.77; 
-   2  Screening settings (-IFTHRS, DIFDEN)  -10    F
-   2    -100.019317214        8.39642D-05   -8.39D-09    2
-      MULPOP H     2.91; F    12.77; 
-   3  Screening settings (-IFTHRS, DIFDEN)  -10    T
-   3    -100.019317215        2.71584D-05   -4.06D-10    3
-      MULPOP H     2.91; F    12.77; 
-   4  Screening settings (-IFTHRS, DIFDEN)  -12    F
-   4    -100.019317215        9.49602D-06   -4.71D-11    4
-      MULPOP H     2.91; F    12.77; 
-   5  Screening settings (-IFTHRS, DIFDEN)  -12    T
-   5    -100.019317215        1.94492D-06   -5.49D-12    5
-      MULPOP H     2.91; F    12.77; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -15    F
-   6    -100.019317215        2.98693D-07   -5.54D-13    6
-      MULPOP H     2.91; F    12.77; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -15    T
-   7    -100.019317215        2.15159D-08    1.42D-14    7
-      MULPOP H     2.91; F    12.77; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -15    T
-   8    -100.019317215        1.46954D-09    5.68D-14    8
-      MULPOP H     2.91; F    12.77; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -15    T
-   9    -100.019317215        1.86157D-10    1.42D-14    9
-      MULPOP H     2.91; F    12.77; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  10    -100.019317215        4.59974D-12   -1.28D-13   10
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.83 seconds
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1    -100.019317206        3.90926D-04   -6.00D-06    1
+      Virial theorem: -V/T =      1.999986
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2    -100.019317214        8.39626D-05   -8.39D-09    2
+      Virial theorem: -V/T =      1.999984
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3    -100.019317215        2.71579D-05   -4.06D-10    3
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4    -100.019317215        9.49583D-06   -4.72D-11    4
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5    -100.019317215        1.94488D-06   -5.27D-12    5
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6    -100.019317215        2.98687D-07   -6.96D-13    6
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7    -100.019317215        2.15154D-08    1.42D-13    7
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -100.019317215        1.46952D-09   -2.84D-14    8
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -100.019317215        1.86136D-10   -2.84D-14    9
+      Virial theorem: -V/T =      1.999985
+      MULPOP  H       0.24; F      -0.24; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -100.019317215        4.61827D-12   -5.68D-14   10
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.84 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2042,20 +2167,23 @@ ETAKAPPA
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.019317214674                 
-     Nuclear repulsion:             5.180403569903
-     Electronic energy:          -105.199720784576
+     Final HF energy:            -100.019317214626                 
+     Nuclear repulsion:             5.180403563525
+     Electronic energy:          -105.199720778151
 
      Final gradient norm:           0.000000000005
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:33 2011 
      Host name              : fe6                                     
 
 
@@ -2064,7 +2192,7 @@ ETAKAPPA
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:33 2011 
      Host name              : fe6                                     
 
 
@@ -2115,7 +2243,7 @@ ETAKAPPA
           Number of t2 amplitudes                 :      2485
           Total number of amplitudes in ccsd      :      2555
 
- Iter.  1: Coupled cluster MP2   energy :    -100.2231994143738660
+ Iter.  1: Coupled cluster MP2   energy :    -100.2231994143750171
 
 
 
@@ -2127,7 +2255,7 @@ ETAKAPPA
 
 
 
-            Total SCF   energy:                  -100.0193172147
+            Total SCF   energy:                  -100.0193172146
 
             Total MP2   energy:                  -100.2231994144
 
@@ -2147,7 +2275,7 @@ ETAKAPPA
 
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0193172147                
+            Total SCF   energy:                  -100.0193172146                
             Total MP2   energy:                  -100.2231994144                
   
 
@@ -2217,7 +2345,7 @@ ETAKAPPA
                  Constructing right-hand-side for MP2-kappa-0(ai)
                  ------------------------------------------------
 
- CC_FOP> Norm of RHS vector:  1.21432238719802136E-002
+ CC_FOP> Norm of RHS vector:  1.21432239044877658E-002
 
 
                       Solving for orbital relaxation vector
@@ -2241,13 +2369,13 @@ ETAKAPPA
                                 Molecular gradient
                                 ------------------
 
- H         -0.0000000000            0.0000000000            0.0000018149
- F          0.0000000000           -0.0000000000           -0.0000018149
+ H          0.0000000000            0.0000000000            0.0000018115
+ F         -0.0000000000           -0.0000000000           -0.0000018115
 
 
 
 
-                   Molecular gradient norm:  6.59E-12
+                   Molecular gradient norm:  6.56E-12
 
 >>> Total time used in gradient section:        0.46 seconds.
   
@@ -2264,7 +2392,7 @@ ETAKAPPA
 
                                                                                 
                                                                                 
-            Total SCF   energy:                  -100.0193172147                
+            Total SCF   energy:                  -100.0193172146                
             Total MP2   energy:                  -100.2231994144                
   
 
@@ -2295,8 +2423,8 @@ ETAKAPPA
                                Final geometry (au)
                                -------------------
 
- H          0.0000000000            0.0000000000            1.6028030222
- F          0.0000000000            0.0000000000           -0.1345133622
+ H          0.0000000000            0.0000000000            1.6028030233
+ F          0.0000000000            0.0000000000           -0.1345133633
 
 
 
@@ -2325,7 +2453,7 @@ ETAKAPPA
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:34 2011 
      Host name              : fe6                                     
 
 
@@ -2335,15 +2463,15 @@ ETAKAPPA
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:34 2011 
      Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- H          0.0000000000            0.0000000000            1.6028030222
- F          0.0000000000            0.0000000000           -0.1345133622
+ H          0.0000000000            0.0000000000            1.6028030233
+ F          0.0000000000            0.0000000000           -0.1345133633
 
 
 
@@ -2354,19 +2482,19 @@ ETAKAPPA
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-     Total energy       -100.0193172147 au (Hartrees)
-                         -2721.66399192 eV
-                           -262600.6796 kJ/mol
+     Total energy       -100.0193172146 au (Hartrees)
+                         -2721.66406915 eV
+                           -262600.6769 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.3227179324 au
-     Mass-velocity correction:                  -0.4088501769 au
+     Darwin correction:                          0.3227179297 au
+     Mass-velocity correction:                  -0.4088501735 au
 
-     Total relativistic correction:             -0.0861322445 au (0.0861%)
-     Non-relativistic + relativistic energy:  -100.1054494592 au
+     Total relativistic correction:             -0.0861322438 au (0.0861%)
+     Non-relativistic + relativistic energy:  -100.1054494584 au
 
 
 
@@ -2375,7 +2503,7 @@ ETAKAPPA
                                   -------------
 
                  au               Debye          C m (/(10**-30)
-              0.768872           1.954278           6.518771
+              0.768872           1.954279           6.518772
 
 
                              Dipole moment components
@@ -2383,9 +2511,9 @@ ETAKAPPA
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.00000000         0.00000000         0.00000000
+      x     -0.00000000        -0.00000000        -0.00000000
       y     -0.00000000        -0.00000000        -0.00000000
-      z      0.76887238         1.95427845         6.51877123
+      z      0.76887239         1.95427855         6.51877155
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -2442,8 +2570,8 @@ ETAKAPPA
                                   Final geometry
                                   --------------
 
- H          0.0000000000            0.0000000000            1.6028030222
- F          0.0000000000            0.0000000000           -0.1345133622
+ H          0.0000000000            0.0000000000            1.6028030233
+ F          0.0000000000            0.0000000000           -0.1345133633
 
 
 
@@ -2486,9 +2614,9 @@ ETAKAPPA
  Energy change during optimization :      -0.003074 a.u.
                                              -8.070 kJ/mol
 
- >>>> Total CPU  time used in DALTON:   5.28 seconds
- >>>> Total wall time used in DALTON:   9.00 seconds
+ >>>> Total CPU  time used in DALTON:   5.14 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:34 2011 
      Host name              : fe6                                     

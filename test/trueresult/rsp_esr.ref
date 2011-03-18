@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:46:30 2010 
+     Date and time (Linux)  : Wed Mar 16 18:13:05 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -179,8 +180,8 @@ Point group: C2v
                                  ---------------
 
                            Cl         34.968853
-                           O1   1     15.994915
-                           O1   2     15.994915
+                           O1  _1     15.994915
+                           O1  _2     15.994915
 
                        Total mass:    66.958683 amu
                        Natural abundance:  75.407 %
@@ -245,15 +246,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            Cl          O1   1      O1   2
+            Cl          O1  _1      O1  _2
             ------      ------      ------
  Cl    :    0.000000
- O1   1:    1.470000    0.000000
- O1   2:    1.470000    2.512110    0.000000
+ O1  _1:    1.470000    0.000000
+ O1  _2:    1.470000    2.512110    0.000000
 
 
   Max interatomic separation is    2.5121 Angstrom (    4.7472 Bohr)
-  between atoms    3 and    2, "O1   2" and "O1   1".
+  between atoms    3 and    2, "O1  _2" and "O1  _1".
 
 
   Bond distances (Angstrom):
@@ -261,8 +262,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O1   1     Cl           1.470000
-  bond distance:  O1   2     Cl           1.470000
+  bond distance:  O1  _1     Cl           1.470000
+  bond distance:  O1  _2     Cl           1.470000
 
 
   Bond angles (degrees):
@@ -270,7 +271,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     O1   1     Cl         O1   2       117.400
+  bond angle:     O1  _1     Cl         O1  _2       117.400
 
 
 
@@ -290,7 +291,7 @@ Point group: C2v
 
                A                   B                   C
 
-          51867.2872          10013.5469           8393.1563 MHz
+          51867.2867          10013.5468           8393.1562 MHz
             1.730106            0.334016            0.279966 cm-1
 
 
@@ -471,7 +472,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Fermi contact integrals
             (Dirac delta function integrals)
@@ -495,9 +496,9 @@ Point group: C2v
  Number of two-electron integrals written:     7905721 ( 21.1% )
  Megabytes written:                             90.530
 
- >>> Time used in TWOINT is   1.51 seconds
- >>>> Total CPU  time used in HERMIT:   1.59 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>> Time used in TWOINT is   1.58 seconds
+ >>>> Total CPU  time used in HERMIT:   1.70 seconds
+ >>>> Total wall time used in HERMIT:   5.00 seconds
 
 
                         .----------------------------------.
@@ -537,7 +538,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:46:34 2010 
+     Date and time (Linux)  : Wed Mar 16 18:13:10 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -549,7 +550,6 @@ Point group: C2v
 
      Restricted, one open shell Hartree-Fock calculation.
 
-
      Time-dependent Hartree-Fock calculation (random phase approximation).
 
 
@@ -558,6 +558,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         32
      Number of electrons in active shells      1
      Total charge of the molecule              0
@@ -596,41 +597,69 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)  sym.  closed shell occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
- >>> Time used in FORMSUP is   0.37 seconds
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+ >>> Time used in FORMSUP is   0.38 seconds
    1  -608.396981602       4.38D+01  -6.08D+02   2    8  2  5  1
-      MULPOP Cl  -14.89; O1    0.80; 
+      Virial theorem: -V/T =      1.999356
+      MULPOP  Cl      1.72; O1  _1 -0.86; O1  _2 -0.86; 
+ -----------------------------------------------------------------------------
    2  -608.760553605       2.50D+00  -3.64D-01   2    8  2  5  1
-      MULPOP Cl  141.51; O1   -1.84; 
+      Virial theorem: -V/T =      1.999606
+      MULPOP  Cl     -0.00; O1  _1  0.00; O1  _2  0.00; 
+ -----------------------------------------------------------------------------
    3  -608.830548788       2.23D+00  -7.00D-02   2    8  2  5  1
-      MULPOP Cl    9.73; O1   -4.41; 
+      Virial theorem: -V/T =      1.999187
+      MULPOP  Cl      1.62; O1  _1 -0.81; O1  _2 -0.81; 
+ -----------------------------------------------------------------------------
    4  -609.050383159       1.45D-01  -2.20D-01   2    8  2  5  1
-      MULPOP Cl  106.57; O1   -2.02; 
+      Virial theorem: -V/T =      2.000911
+      MULPOP  Cl      0.95; O1  _1 -0.48; O1  _2 -0.48; 
+ -----------------------------------------------------------------------------
    5  -609.053198282       6.71D-02  -2.82D-03   2    8  2  5  1
-      MULPOP Cl  114.88; O1   -1.99; 
+      Virial theorem: -V/T =      2.000384
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    6  -609.054020516       2.40D-02  -8.22D-04   2    8  2  5  1
-      MULPOP Cl  112.66; O1   -2.12; 
+      Virial theorem: -V/T =      2.000434
+      MULPOP  Cl      0.90; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    7  -609.054184492       6.86D-03  -1.64D-04   2    8  2  5  1
-      MULPOP Cl  112.19; O1   -2.15; 
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.90; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    8  -609.054199243       2.90D-03  -1.48D-05   2    8  2  5  1
-      MULPOP Cl  112.31; O1   -2.15; 
+      Virial theorem: -V/T =      2.000377
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    9  -609.054201039       1.37D-03  -1.80D-06   2    8  2  5  1
-      MULPOP Cl  112.21; O1   -2.16; 
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   10  -609.054201559       4.90D-04  -5.20D-07   2    8  2  5  1
-      MULPOP Cl  112.14; O1   -2.16; 
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   11  -609.054201685       1.92D-04  -1.27D-07   2    8  2  5  1
-      MULPOP Cl  112.12; O1   -2.16; 
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   12  -609.054201706       8.38D-05  -2.08D-08   2    8  2  5  1
-      MULPOP Cl  112.11; O1   -2.15; 
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   13  -609.054201710       5.06D-05  -3.30D-09   2    8  2  5  1
-      MULPOP Cl  112.11; O1   -2.15; 
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   14  -609.054201710       1.50D-05  -5.43D-10   2    8  2  5  1
-      MULPOP Cl  112.11; O1   -2.15; 
-  15  -609.054201710       5.02D-06  -6.55D-11   2    8  2  5  1
- DIIS converged in  15 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000373
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
+  15  -609.054201710       5.02D-06  -6.58D-11   2    8  2  5  1
+
+ *** DIIS converged in  15 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -674,20 +703,23 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           2
      Spatial symmetry:            2
      Total charge of molecule:    0
 
-     Final HF energy:            -609.054201710108                 
+     Final HF energy:            -609.054201710113                 
      Nuclear repulsion:           111.397397857680
-     Electronic energy:          -720.451599567789
+     Electronic energy:          -720.451599567794
 
-     Final gradient norm:           0.000005022906
+     Final gradient norm:           0.000005022905
 
  
-     Date and time (Linux)  : Wed Dec 29 21:46:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:13:12 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -695,7 +727,7 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           4        5        6        7        8        9       10
+    Orbital         4        5        6        7        8        9       10
    7 Cl  :1s    -0.0006   0.0137   0.0152   0.0008  -0.0038  -0.0071  -0.0038
    8 Cl  :1s    -0.0013   0.0287   0.0321   0.0015  -0.0076  -0.0144  -0.0141
    9 Cl  :1s    -0.0018   0.0425   0.0470   0.0027  -0.0121  -0.0228  -0.0057
@@ -738,7 +770,7 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    2 Cl  :2px    0.0192  -0.0040  -0.0038   0.0027  -0.0004
    3 Cl  :2px    0.0887  -0.0189  -0.0184   0.0161  -0.0030
    4 Cl  :2px    0.2565  -0.0560  -0.0539   0.0357  -0.0052
@@ -760,7 +792,7 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    2 Cl  :2py   -0.0000   0.0192  -0.0023  -0.0033   0.0004  -0.0025   0.0037
    3 Cl  :2py   -0.0000   0.0885  -0.0107  -0.0155   0.0017  -0.0122   0.0189
    4 Cl  :2py   -0.0000   0.2560  -0.0325  -0.0463   0.0053  -0.0351   0.0521
@@ -794,7 +826,7 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Cl  :3d2-   0.0682   0.2299  -0.0168
    2 Cl  :3d2-   0.0965   0.8922  -0.3045
    3 Cl  :4f2-  -0.0235   0.0127   0.0651
@@ -806,11 +838,11 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.16 seconds
- >>>> Total wall time used in SIRIUS :      3.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.17 seconds
+ >>>> Total wall time used in SIRIUS :      2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:46:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:13:12 2011 
      Host name              : fe6                                     
 
 
@@ -899,9 +931,9 @@ and E(SOMO) :    -0.22424106 au (symmetry 2)
           SD 006 y
 
 
- open shell SCF energy:     -609.054201710108146
- -- inactive part     :     -720.014533077843794
- --   active part     :       -0.437066489944796
+ open shell SCF energy:     -609.054201710113261
+ -- inactive part     :     -720.014533077849251
+ --   active part     :       -0.437066489944423
  -- nuclear repulsion :      111.397397857680389
 
 
@@ -1062,7 +1094,7 @@ TRIPLET OPERATOR: "SD 005 y" contribution = 0.0 by symmetry.
 TRIPLET OPERATOR: "SD 006 y" contribution = 0.0 by symmetry.
 - Operator is of symmetry no.  4
 
- >>>> Total CPU  time used in RESPONSE:   3.26 seconds
+ >>>> Total CPU  time used in RESPONSE:   3.21 seconds
  >>>> Total wall time used in RESPONSE:   7.00 seconds
 
 
@@ -1070,9 +1102,9 @@ TRIPLET OPERATOR: "SD 006 y" contribution = 0.0 by symmetry.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   6.02 seconds
+ >>>> Total CPU  time used in DALTON:   6.09 seconds
  >>>> Total wall time used in DALTON:  14.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:46:44 2010 
+     Date and time (Linux)  : Wed Mar 16 18:13:19 2011 
      Host name              : fe6                                     

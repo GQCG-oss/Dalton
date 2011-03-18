@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 23:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 19:58:45 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -224,13 +225,18 @@ Point group: D2
                                  ---------------
 
                            C          12.000000
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    3      1.007825
-                           H    4      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _3      1.007825
+                           H   _4      1.007825
+                           C           0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H   _3      0.000000
+                           H   _4      0.000000
 
                        Total mass:    16.031300 amu
-                       Natural abundance:  98.841 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
@@ -326,29 +332,29 @@ Point group: D2
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C           H    1      H    2      H    3      H    4      C     
+            C           H   _1      H   _2      H   _3      H   _4      C     
             ------      ------      ------      ------      ------      ------
  C     :    0.000000
- H    1:    1.170203    0.000000
- H    2:    1.170203    1.910933    0.000000
- H    3:    1.170203    1.910933    1.910933    0.000000
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000
+ H   _1:    1.170203    0.000000
+ H   _2:    1.170203    1.910933    0.000000
+ H   _3:    1.170203    1.910933    1.910933    0.000000
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000
  C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
- H    1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
- H    2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
- H    3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+ H   _1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H   _2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H   _3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
 
-            H    1      H    2      H    3      H    4
+            H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------
- H    1:    0.000000
- H    2:    1.910933    0.000000
- H    3:    1.910933    1.910933    0.000000
- H    4:    1.910933    1.910933    1.910933    0.000000
+ H   _1:    0.000000
+ H   _2:    1.910933    0.000000
+ H   _3:    1.910933    1.910933    0.000000
+ H   _4:    1.910933    1.910933    1.910933    0.000000
 
 
   Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -356,10 +362,10 @@ Point group: D2
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     C            1.170203
-  bond distance:  H    2     C            1.170203
-  bond distance:  H    3     C            1.170203
-  bond distance:  H    4     C            1.170203
+  bond distance:  H   _1     C            1.170203
+  bond distance:  H   _2     C            1.170203
+  bond distance:  H   _3     C            1.170203
+  bond distance:  H   _4     C            1.170203
 
 
   Bond angles (degrees):
@@ -367,12 +373,12 @@ Point group: D2
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     C          H    2       109.471
-  bond angle:     H    1     C          H    3       109.471
-  bond angle:     H    1     C          H    4       109.471
-  bond angle:     H    2     C          H    3       109.471
-  bond angle:     H    2     C          H    4       109.471
-  bond angle:     H    3     C          H    4       109.471
+  bond angle:     H   _1     C          H   _2       109.471
+  bond angle:     H   _1     C          H   _3       109.471
+  bond angle:     H   _1     C          H   _4       109.471
+  bond angle:     H   _2     C          H   _3       109.471
+  bond angle:     H   _2     C          H   _4       109.471
+  bond angle:     H   _3     C          H   _4       109.471
 
 
 
@@ -390,7 +396,7 @@ Point group: D2
 
                A                   B                   C
 
-         137322.2826         137322.2826         137322.2826 MHz
+         137322.2814         137322.2814         137322.2814 MHz
             4.580578            4.580578            4.580578 cm-1
 
 
@@ -505,6 +511,8 @@ Point group: D2
    83     H    A   2py       77 +   78 -   79 -   80
    84     H    A   2pz       81 -   82 +   83 -   84
 
+  Number of floating/multiple basis set orbitals :    5
+
   Symmetries of electric field:  B3 (4)  B2 (2)  B1 (3)
 
   Symmetries of magnetic field:  B3 (4)  B2 (2)  B1 (3)
@@ -527,7 +535,7 @@ Point group: D2
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Cartesian multipole moment integrals of orders 2 and lower
 
@@ -541,7 +549,7 @@ Point group: D2
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -568,7 +576,7 @@ Point group: D2
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 23:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 19:58:45 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -583,8 +591,7 @@ Point group: D2
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -594,6 +601,10 @@ Point group: D2
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -653,49 +664,76 @@ Point group: D2
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   1  -26.9208461562       1.74D+01  -2.69D+01    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   2  -34.5740142129       5.98D+00  -7.65D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   3  -38.7812870349       4.97D+00  -4.21D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   4  -40.0920858983       1.21D+00  -1.31D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   5  -40.1914985533       6.81D-02  -9.94D-02    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
-   6  -40.1917302493       2.39D-02  -2.32D-04    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   7  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   7  -40.1917714460       1.96D-03  -4.12D-05    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   8  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   8  -40.1917720843       2.24D-04  -6.38D-07    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
-   9  -40.1917720926       2.77D-05  -8.29D-09    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -11    T
-  10  -40.1917720926       1.91D-06  -7.56D-11    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -13    F
-  11  -40.1917720926       2.05D-07   5.94D-12    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -16    F
-  12  -40.1917720926       3.18D-08  -4.26D-14    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  13  -40.1917720926       6.90D-10   0.00D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  14  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  14  -40.1917720926       1.78D-11   0.00D+00    2  1  1  1
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.51 seconds
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  -26.9208461510       1.74D+01  -2.69D+01    2  1  1  1
+      Virial theorem: -V/T =      1.397424
+      MULPOP  C      -3.96; H   _1  0.99; H   _2  0.99; H   _3  0.99; H   _4  0.99; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -34.5740137487       5.98D+00  -7.65D+00    2  1  1  1
+      Virial theorem: -V/T =      2.092202
+      MULPOP  C       7.24; H   _1 -1.81; H   _2 -1.81; H   _3 -1.81; H   _4 -1.81; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -38.7812868927       4.97D+00  -4.21D+00    2  1  1  1
+      Virial theorem: -V/T =      1.865551
+      MULPOP  C      -2.05; H   _1  0.51; H   _2  0.51; H   _3  0.51; H   _4  0.51; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -40.0920858822       1.21D+00  -1.31D+00    2  1  1  1
+      Virial theorem: -V/T =      1.982551
+      MULPOP  C      -0.78; H   _1  0.19; H   _2  0.19; H   _3  0.19; H   _4  0.19; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5  -40.1914985475       6.81D-02  -9.94D-02    2  1  1  1
+      Virial theorem: -V/T =      2.012916
+      MULPOP  C      -0.36; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6  -40.1917302489       2.39D-02  -2.32D-04    2  1  1  1
+      Virial theorem: -V/T =      2.011954
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7  -40.1917714459       1.96D-03  -4.12D-05    2  1  1  1
+      Virial theorem: -V/T =      2.011289
+      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -40.1917720842       2.24D-04  -6.38D-07    2  1  1  1
+      Virial theorem: -V/T =      2.011253
+      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -40.1917720926       2.77D-05  -8.32D-09    2  1  1  1
+      Virial theorem: -V/T =      2.011254
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -40.1917720926       1.90D-06  -6.95D-11    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -40.1917720926       2.04D-07  -2.56D-13    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -40.1917720926       3.20D-08   0.00D+00    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -40.1917720926       6.94D-10   1.42D-14    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -40.1917720926       1.71D-11  -4.26D-14    2  1  1  1
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.54 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -741,23 +779,26 @@ Point group: D2
    2      0.006483084240
    3      0.006483084240
    4      0.006483084240
- >>> Time used in R12AUX is   0.30 seconds
+ >>> Time used in R12AUX is   0.33 seconds
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -40.191772092640                 
+     Final HF energy:             -40.191772092642                 
      Nuclear repulsion:            12.514560078913
-     Electronic energy:           -52.706332171553
+     Electronic energy:           -52.706332171555
 
-     Final gradient norm:           0.000000000018
+     Final gradient norm:           0.000000000017
 
  
-     Date and time (Linux)  : Wed Dec 29 23:28:28 2010 
+     Date and time (Linux)  : Wed Mar 16 19:58:46 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -765,7 +806,7 @@ Point group: D2
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 C   :1s     0.5636  -0.1015   0.0530   0.0703
    2 C   :1s     0.4666  -0.1682   0.0852   0.1326
    3 C   :1s     0.0034   0.4331  -0.0983  -0.4555
@@ -780,7 +821,7 @@ Point group: D2
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C   :2py    0.1818  -0.1464   0.0159
    2 C   :2py    0.2931  -0.1083  -0.0054
    3 C   :2py    0.2049  -1.1248   1.3166
@@ -795,7 +836,7 @@ Point group: D2
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C   :2pz    0.1818  -0.1464   0.0159
    2 C   :2pz    0.2931  -0.1083  -0.0054
    3 C   :2pz    0.2049  -1.1248   1.3166
@@ -810,7 +851,7 @@ Point group: D2
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C   :2px    0.1818  -0.1464   0.0159
    2 C   :2px    0.2931  -0.1083  -0.0054
    3 C   :2px    0.2049  -1.1248   1.3166
@@ -824,11 +865,11 @@ Point group: D2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.84 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.90 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:28:28 2010 
+     Date and time (Linux)  : Wed Mar 16 19:58:46 2011 
      Host name              : fe6                                     
 
 
@@ -901,26 +942,26 @@ Point group: D2
  Core memory required by CCSD_R12 :          85926  (double words)
 
  Computation of (ik|[[f12,T1],f12]|jl) integrals done
- >>> Time used in #6 [4] is   0.41 seconds
+ >>> Time used in #6 [4] is   0.44 seconds
  Computation of (ik|f12**2|jl) integrals done
- >>> Time used in #4 [4] is   0.40 seconds
+ >>> Time used in #4 [4] is   0.44 seconds
  Computation of (ik|f12/r12|jl) integrals done
- >>> Time used in #2 [4] is   0.37 seconds
+ >>> Time used in #2 [4] is   0.40 seconds
  Computation of (ip'|f12|jq') integrals done
- >>> Time used in #3 [6] is   4.65 seconds
+ >>> Time used in #3 [6] is   5.18 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.02 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in #1 [5] is   1.60 seconds
+ >>> Time used in #1 [5] is   1.57 seconds
  Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
- >>> Time used in #4 [5] is   1.66 seconds
+ >>> Time used in #4 [5] is   1.62 seconds
  Computation of (i'p'|f12|jq') integrals done
- >>> Time used in #3 [6] is   4.65 seconds
+ >>> Time used in #3 [6] is   4.58 seconds
  Computation of (ip'|[T,f12]|jq') integrals done
- >>> Time used in #5 [5] is   3.92 seconds
+ >>> Time used in #5 [5] is   3.88 seconds
 
 
           +-------------------------------------------------------------+
@@ -950,9 +991,9 @@ Point group: D2
        -0.125452553   -0.148261165   -0.047677939   -0.054001899
 
               MP2-R12/B   correlation energy =   -0.202263065
- >>> Time used in E(R12) is   0.19 seconds
- Time for MP2-R12 part cpu:   17.861284852027893     
- Time for MP2-R12 part wall:   18.000000000000000     
+ >>> Time used in E(R12) is   0.18 seconds
+ Time for MP2-R12 part cpu:   18.318215847015381     
+ Time for MP2-R12 part wall:   19.000000000000000     
  Preparing R12 Ansatz 2/3 ... ONEAUX= F
    
 
@@ -1018,206 +1059,206 @@ Point group: D2
 
 
           Printed all double excitations greater than 0.020000
- Iter.  1: Coupled cluster MP2-R12/B energy :     -40.3940351574688634
-     Conventional correlation energy:    -0.1772244891091361
-     R12 correlation energy         :    -0.0250385757192652
-     Total correlation energy       :    -0.2022630648284013
+ Iter.  1: Coupled cluster MP2-R12/B energy :     -40.3940351574701708
+     Conventional correlation energy:    -0.1772244891090864
+     R12 correlation energy         :    -0.0250385757192883
+     Total correlation energy       :    -0.2022630648283747
 
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.0000000000D+00
        Norm^2 of t2am   after ccvec:        0.3132031271D-01
        Norm^2 of omega1 after ccvec:        0.1493865155D-02
-       Norm^2 of omega2 after ccvec:        0.6623948725D-28
+       Norm^2 of omega2 after ccvec:        0.6737053212D-28
        Norm^2 of r12am     in NXTAM:        0.1193200374D+00
-       Norm^2 of Omegar12  in NXTAM:        0.3757696953D-27
- Iter.  1: Coupled cluster CC2-R12/B energy :     -40.3939356210674418
-     Conventional correlation energy:    -0.1771249527077146
-     R12 correlation energy         :    -0.0250385757192633
-     Total correlation energy       :    -0.2021635284269778
+       Norm^2 of Omegar12  in NXTAM:        0.4145024193D-27
+ Iter.  1: Coupled cluster CC2-R12/B energy :     -40.3939356210688914
+     Conventional correlation energy:    -0.1771249527078069
+     R12 correlation energy         :    -0.0250385757192858
+     Total correlation energy       :    -0.2021635284270927
 
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.3632883250D-03
        Norm^2 of t2am   after ccvec:        0.3132031271D-01
        Norm^2 of omega1 after ccvec:        0.1850635151D-04
        Norm^2 of omega2 after ccvec:        0.8052288434D-04
        Norm^2 of r12am     in NXTAM:        0.1193200374D+00
        Norm^2 of Omegar12  in NXTAM:        0.1265491235D-06
- Iter.  2: Coupled cluster CC2-R12/B energy :     -40.3952410978048704
-     Conventional correlation energy:    -0.1782794904855862
-     R12 correlation energy         :    -0.0251895146788229
-     Total correlation energy       :    -0.2034690051644092
+ Iter.  2: Coupled cluster CC2-R12/B energy :     -40.3952410978062417
+     Conventional correlation energy:    -0.1782794904856004
+     R12 correlation energy         :    -0.0251895146788439
+     Total correlation energy       :    -0.2034690051644443
 
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.4621160766D-03
        Norm^2 of t2am   after ccvec:        0.3166191029D-01
        Norm^2 of omega1 after ccvec:        0.3893216573D-05
        Norm^2 of omega2 after ccvec:        0.1039257096D-05
        Norm^2 of r12am     in NXTAM:        0.1206894995D+00
        Norm^2 of Omegar12  in NXTAM:        0.1387411400D-07
- Iter.  3: Coupled cluster CC2-R12/B energy :     -40.3953955690784667
-     Conventional correlation energy:    -0.1784210789458172
-     R12 correlation energy         :    -0.0252023974921846
-     Total correlation energy       :    -0.2036234764380018
+ Iter.  3: Coupled cluster CC2-R12/B energy :     -40.3953955690796107
+     Conventional correlation energy:    -0.1784210789456040
+     R12 correlation energy         :    -0.0252023974922068
+     Total correlation energy       :    -0.2036234764378108
 
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5504077666D-03
        Norm^2 of t2am   after ccvec:        0.3173376199D-01
        Norm^2 of omega1 after ccvec:        0.1250409933D-06
        Norm^2 of omega2 after ccvec:        0.1189295096D-06
        Norm^2 of r12am     in NXTAM:        0.1208021416D+00
        Norm^2 of Omegar12  in NXTAM:        0.1179290531D-08
- Iter.  4: Coupled cluster CC2-R12/B energy :     -40.3953879135476228
-     Conventional correlation energy:    -0.1784018519075090
-     R12 correlation energy         :    -0.0252139689996481
-     Total correlation energy       :    -0.2036158209071571
+ Iter.  4: Coupled cluster CC2-R12/B energy :     -40.3953879135487668
+     Conventional correlation energy:    -0.1784018519072958
+     R12 correlation energy         :    -0.0252139689996700
+     Total correlation energy       :    -0.2036158209069658
 
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5596125264D-03
        Norm^2 of t2am   after ccvec:        0.3172589933D-01
        Norm^2 of omega1 after ccvec:        0.7505023268D-08
        Norm^2 of omega2 after ccvec:        0.3169214033D-08
        Norm^2 of r12am     in NXTAM:        0.1208900381D+00
        Norm^2 of Omegar12  in NXTAM:        0.2765583021D-10
- Iter.  5: Coupled cluster CC2-R12/B energy :     -40.3953857868832671
-     Conventional correlation energy:    -0.1783981863752473
-     R12 correlation energy         :    -0.0252155078675585
-     Total correlation energy       :    -0.2036136942428058
+ Iter.  5: Coupled cluster CC2-R12/B energy :     -40.3953857868845247
+     Conventional correlation energy:    -0.1783981863751478
+     R12 correlation energy         :    -0.0252155078675796
+     Total correlation energy       :    -0.2036136942427274
 
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5599440404D-03
        Norm^2 of t2am   after ccvec:        0.3172492753D-01
-       Norm^2 of omega1 after ccvec:        0.7782088401D-10
-       Norm^2 of omega2 after ccvec:        0.9109578133D-10
+       Norm^2 of omega1 after ccvec:        0.7782088381D-10
+       Norm^2 of omega2 after ccvec:        0.9109578136D-10
        Norm^2 of r12am     in NXTAM:        0.1208951683D+00
-       Norm^2 of Omegar12  in NXTAM:        0.8895419013D-12
- Iter.  6: Coupled cluster CC2-R12/B energy :     -40.3953862289637726
-     Conventional correlation energy:    -0.1783984112831618
-     R12 correlation energy         :    -0.0252157250401496
-     Total correlation energy       :    -0.2036141363233114
+       Norm^2 of Omegar12  in NXTAM:        0.8895419008D-12
+ Iter.  6: Coupled cluster CC2-R12/B energy :     -40.3953862289646892
+     Conventional correlation energy:    -0.1783984112827213
+     R12 correlation energy         :    -0.0252157250401711
+     Total correlation energy       :    -0.2036141363228924
 
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5601337470D-03
        Norm^2 of t2am   after ccvec:        0.3172484188D-01
-       Norm^2 of omega1 after ccvec:        0.3847394819D-11
-       Norm^2 of omega2 after ccvec:        0.2643077028D-11
+       Norm^2 of omega1 after ccvec:        0.3847394852D-11
+       Norm^2 of omega2 after ccvec:        0.2643077030D-11
        Norm^2 of r12am     in NXTAM:        0.1208971648D+00
-       Norm^2 of Omegar12  in NXTAM:        0.5593145303D-14
- Iter.  7: Coupled cluster CC2-R12/B energy :     -40.3953862730022948
-     Conventional correlation energy:    -0.1783984197799597
-     R12 correlation energy         :    -0.0252157605818713
-     Total correlation energy       :    -0.2036141803618310
+       Norm^2 of Omegar12  in NXTAM:        0.5593145237D-14
+ Iter.  7: Coupled cluster CC2-R12/B energy :     -40.3953862730031545
+     Conventional correlation energy:    -0.1783984197794624
+     R12 correlation energy         :    -0.0252157605818934
+     Total correlation energy       :    -0.2036141803613558
 
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5601640451D-03
        Norm^2 of t2am   after ccvec:        0.3172480969D-01
-       Norm^2 of omega1 after ccvec:        0.1131410542D-12
-       Norm^2 of omega2 after ccvec:        0.6219637098D-13
+       Norm^2 of omega1 after ccvec:        0.1131410597D-12
+       Norm^2 of omega2 after ccvec:        0.6219637177D-13
        Norm^2 of r12am     in NXTAM:        0.1208974563D+00
-       Norm^2 of Omegar12  in NXTAM:        0.1369380818D-14
- Iter.  8: Coupled cluster CC2-R12/B energy :     -40.3953862564920385
-     Conventional correlation energy:    -0.1783984178961262
-     R12 correlation energy         :    -0.0252157459554517
-     Total correlation energy       :    -0.2036141638515779
+       Norm^2 of Omegar12  in NXTAM:        0.1369380958D-14
+ Iter.  8: Coupled cluster CC2-R12/B energy :     -40.3953862564930262
+     Conventional correlation energy:    -0.1783984178957567
+     R12 correlation energy         :    -0.0252157459554732
+     Total correlation energy       :    -0.2036141638512300
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5601585170D-03
        Norm^2 of t2am   after ccvec:        0.3172480373D-01
-       Norm^2 of omega1 after ccvec:        0.2703199455D-14
-       Norm^2 of omega2 after ccvec:        0.1354033523D-14
+       Norm^2 of omega1 after ccvec:        0.2703199563D-14
+       Norm^2 of omega2 after ccvec:        0.1354033721D-14
        Norm^2 of r12am     in NXTAM:        0.1208973832D+00
-       Norm^2 of Omegar12  in NXTAM:        0.3861064053D-16
- Iter.  9: Coupled cluster CC2-R12/B energy :     -40.3953862543692779
-     Conventional correlation energy:    -0.1783984174397659
-     R12 correlation energy         :    -0.0252157442890479
-     Total correlation energy       :    -0.2036141617288138
+       Norm^2 of Omegar12  in NXTAM:        0.3861062599D-16
+ Iter.  9: Coupled cluster CC2-R12/B energy :     -40.3953862543705995
+     Conventional correlation energy:    -0.1783984174397304
+     R12 correlation energy         :    -0.0252157442890692
+     Total correlation energy       :    -0.2036141617287996
 
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5601591818D-03
        Norm^2 of t2am   after ccvec:        0.3172480386D-01
-       Norm^2 of omega1 after ccvec:        0.1734185386D-15
-       Norm^2 of omega2 after ccvec:        0.3537447342D-15
+       Norm^2 of omega1 after ccvec:        0.1734186193D-15
+       Norm^2 of omega2 after ccvec:        0.3537447486D-15
        Norm^2 of r12am     in NXTAM:        0.1208973658D+00
-       Norm^2 of Omegar12  in NXTAM:        0.1528173030D-17
- Iter. 10: Coupled cluster CC2-R12/B energy :     -40.3953862547415881
-     Conventional correlation energy:    -0.1783984183052212
-     R12 correlation energy         :    -0.0252157437959017
-     Total correlation energy       :    -0.2036141621011229
+       Norm^2 of Omegar12  in NXTAM:        0.1528172619D-17
+ Iter. 10: Coupled cluster CC2-R12/B energy :     -40.3953862547428102
+     Conventional correlation energy:    -0.1783984183050862
+     R12 correlation energy         :    -0.0252157437959234
+     Total correlation energy       :    -0.2036141621010095
 
 
        Iteration no.: 11
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5601592221D-03
        Norm^2 of t2am   after ccvec:        0.3172480374D-01
-       Norm^2 of omega1 after ccvec:        0.1885889283D-16
-       Norm^2 of omega2 after ccvec:        0.6326405225D-17
+       Norm^2 of omega1 after ccvec:        0.1885889753D-16
+       Norm^2 of omega2 after ccvec:        0.6326406391D-17
        Norm^2 of r12am     in NXTAM:        0.1208973629D+00
-       Norm^2 of Omegar12  in NXTAM:        0.1852440509D-18
- Iter. 11: Coupled cluster CC2-R12/B energy :     -40.3953862545014459
-     Conventional correlation energy:    -0.1783984181808620
-     R12 correlation energy         :    -0.0252157436801238
-     Total correlation energy       :    -0.2036141618609858
+       Norm^2 of Omegar12  in NXTAM:        0.1852436159D-18
+ Iter. 11: Coupled cluster CC2-R12/B energy :     -40.3953862545030304
+     Conventional correlation energy:    -0.1783984181810894
+     R12 correlation energy         :    -0.0252157436801451
+     Total correlation energy       :    -0.2036141618612345
 
 
        Iteration no.: 12
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.73 seconds
+       Time used in   RHS - TOTAL  :       0.72 seconds
        Norm^2 of t1am   after ccvec:        0.5601592953D-03
        Norm^2 of t2am   after ccvec:        0.3172480368D-01
-       Norm^2 of omega1 after ccvec:        0.4060404211D-18
-       Norm^2 of omega2 after ccvec:        0.3776670081D-18
+       Norm^2 of omega1 after ccvec:        0.4060364801D-18
+       Norm^2 of omega2 after ccvec:        0.3776680756D-18
        Norm^2 of r12am     in NXTAM:        0.1208973616D+00
-       Norm^2 of Omegar12  in NXTAM:        0.2982933628D-20
- Iter. 12: Coupled cluster CC2-R12/B energy :     -40.3953862545295763
-     Conventional correlation energy:    -0.1783984181882801
-     R12 correlation energy         :    -0.0252157437008340
-     Total correlation energy       :    -0.2036141618891140
+       Norm^2 of Omegar12  in NXTAM:        0.2982797899D-20
+ Iter. 12: Coupled cluster CC2-R12/B energy :     -40.3953862545308056
+     Conventional correlation energy:    -0.1783984181881522
+     R12 correlation energy         :    -0.0252157437008551
+     Total correlation energy       :    -0.2036141618890072
 
 
  CC2-R12/B energy converged to within   0.10D-09 is    -40.395386255
- Final 2-norm of the CC vector function:  8.85272517D-10
+ Final 2-norm of the CC vector function:  8.85270894D-10
  R12       energy converged to within   0.10D-09 is     -0.025215744
 
 
@@ -1304,7 +1345,7 @@ Point group: D2
 
 
 
-       Time used in   RHS - TOTAL  :       0.74 seconds
+       Time used in   RHS - TOTAL  :       0.73 seconds
 
 
             E-intermediates calculated 
@@ -1336,29 +1377,29 @@ Point group: D2
  Length of Excitation vectors in this class is:      2889
  Converging for  4 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.75401585626249723               20
-  HIGHST VALUE AND PLACE    51.649282694685112               92
-IELMNT XMIN IMIN NDEG        1    7.54016D-01      20   1
+  LOWEST VALUE AND PLACE   0.75401585626277301               29
+  HIGHST VALUE AND PLACE    51.649282694682825               92
+IELMNT XMIN IMIN NDEG        1    7.54016D-01      29   1
 IELMNT XMIN IMIN NDEG        2    7.54016D-01      11   2
-IELMNT XMIN IMIN NDEG        3    7.54016D-01      29   3
-IELMNT XMIN IMIN NDEG        4    9.44239D-01      12   1
+IELMNT XMIN IMIN NDEG        3    7.54016D-01      20   3
+IELMNT XMIN IMIN NDEG        4    9.44239D-01      30   1
 IELMNT XMIN IMIN NDEG        5    9.44239D-01      21   2
-IELMNT XMIN IMIN NDEG        6    9.44239D-01      30   3
+IELMNT XMIN IMIN NDEG        6    9.44239D-01      12   3
 IELMNT XMIN IMIN NDEG        7    1.06336D+00       1   1
-IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
+IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     20     11     29     12     21     30      1
-  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626249723        1.0633632596758913     
- Start vector guessed from diagonal
- ... selected element no. 20
- Start vector guessed from diagonal
- ... selected element no. 11
+     1 :     29     11     20     30     21     12      1
+  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626277301        1.0633632596764986     
  Start vector guessed from diagonal
  ... selected element no. 29
  Start vector guessed from diagonal
- ... selected element no. 12
+ ... selected element no. 11
+ Start vector guessed from diagonal
+ ... selected element no. 20
+ Start vector guessed from diagonal
+ ... selected element no. 30
  CCEQ_SOL: IPRLE   =               5
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
@@ -1379,9 +1420,9 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
     --------------------------------------
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -1393,10 +1434,10 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.62992629
        4      0.71525283
   
- ROOT:  1 RESIDUAL TOT: 3.10936D-01
- ROOT:  2 RESIDUAL TOT: 3.06033D-01
- ROOT:  3 RESIDUAL TOT: 3.26650D-01
- ROOT:  4 RESIDUAL TOT: 3.19139D-01
+ ROOT:  1 RESIDUAL TOT: 3.10864D-01
+ ROOT:  2 RESIDUAL TOT: 3.06088D-01
+ ROOT:  3 RESIDUAL TOT: 3.26652D-01
+ ROOT:  4 RESIDUAL TOT: 3.19135D-01
       1       4         0.03     0.33E+00
 
  Lowest eigenvalues in this iteration: 
@@ -1407,203 +1448,139 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.62992629
        4      0.71525283
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        1.89
 
 
 
- Time used in     CC_RHTR in total   :       1.88 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.93 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49429769
-       2      0.49563916
-       3      0.55068892
-       4      0.64144553
+       1      0.49429614
+       2      0.49564064
+       3      0.55068919
+       4      0.64144602
   
- ROOT:  1 RESIDUAL TOT: 5.20655D-02
- ROOT:  2 RESIDUAL TOT: 5.49911D-02
- ROOT:  3 RESIDUAL TOT: 8.24878D-02
- ROOT:  4 RESIDUAL TOT: 5.56171D-02
+ ROOT:  1 RESIDUAL TOT: 5.20618D-02
+ ROOT:  2 RESIDUAL TOT: 5.49940D-02
+ ROOT:  3 RESIDUAL TOT: 8.24890D-02
+ ROOT:  4 RESIDUAL TOT: 5.56091D-02
       2       4         0.03     0.82E-01
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
-       1      0.49429769
-       2      0.49563916
-       3      0.55068892
-       4      0.64144553
+       1      0.49429614
+       2      0.49564064
+       3      0.55068919
+       4      0.64144602
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        1.89
+ >>> TIME USED IN THIS MICRO ITERATION        1.94
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.98 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   Int. calc. & read    :       0.48 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49156638
-       2      0.49211274
-       3      0.54549025
-       4      0.63959139
+       1      0.49156776
+       2      0.49211081
+       3      0.54548981
+       4      0.63959143
   
- ROOT:  1 RESIDUAL TOT: 3.21866D-02
- ROOT:  2 RESIDUAL TOT: 3.84182D-02
+ ROOT:  1 RESIDUAL TOT: 3.21794D-02
+ ROOT:  2 RESIDUAL TOT: 3.84292D-02
  ROOT:  3 RESIDUAL TOT: 3.89290D-02
- ROOT:  4 RESIDUAL TOT: 1.43063D-02
+ ROOT:  4 RESIDUAL TOT: 1.43057D-02
       3       4         0.03     0.39E-01
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
-       1      0.49156638
-       2      0.49211274
-       3      0.54549025
-       4      0.63959139
+       1      0.49156776
+       2      0.49211081
+       3      0.54548981
+       4      0.63959143
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.99
 
 
 
- Time used in     CC_RHTR in total   :       2.02 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.49 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49164293
-       2      0.49204276
-       3      0.54531867
-       4      0.63990378
+       1      0.49164267
+       2      0.49204330
+       3      0.54531905
+       4      0.63990376
   
- ROOT:  1 RESIDUAL TOT: 1.20052D-02
- ROOT:  2 RESIDUAL TOT: 1.72678D-02
- ROOT:  3 RESIDUAL TOT: 3.16879D-02
- ROOT:  4 RESIDUAL TOT: 7.62137D-03
+ ROOT:  1 RESIDUAL TOT: 1.20045D-02
+ ROOT:  2 RESIDUAL TOT: 1.72671D-02
+ ROOT:  3 RESIDUAL TOT: 3.16865D-02
+ ROOT:  4 RESIDUAL TOT: 7.62116D-03
       4       4         0.03     0.32E-01
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
-       1      0.49164293
-       2      0.49204276
-       3      0.54531867
-       4      0.63990378
+       1      0.49164267
+       2      0.49204330
+       3      0.54531905
+       4      0.63990376
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        2.02
+ >>> TIME USED IN THIS MICRO ITERATION        1.89
 
 
 
- Time used in     CC_RHTR in total   :       2.02 seconds
+ Time used in     CC_RHTR in total   :       1.94 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.49 seconds
+ Time used in   Int. calc. & read    :       0.48 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49152582
-       2      0.49172768
-       3      0.54361695
-       4      0.63980861
+       1      0.49152585
+       2      0.49172770
+       3      0.54361674
+       4      0.63980870
   
- ROOT:  1 RESIDUAL TOT: 6.95616D-03
- ROOT:  2 RESIDUAL TOT: 1.67673D-02
- ROOT:  3 RESIDUAL TOT: 2.43546D-02
- ROOT:  4 RESIDUAL TOT: 1.68264D-02
+ ROOT:  1 RESIDUAL TOT: 6.95635D-03
+ ROOT:  2 RESIDUAL TOT: 1.67671D-02
+ ROOT:  3 RESIDUAL TOT: 2.43549D-02
+ ROOT:  4 RESIDUAL TOT: 1.68268D-02
       5       4         0.03     0.24E-01
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
-       1      0.49152582
-       2      0.49172768
-       3      0.54361695
-       4      0.63980861
+       1      0.49152585
+       2      0.49172770
+       3      0.54361674
+       4      0.63980870
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        2.03
+ >>> TIME USED IN THIS MICRO ITERATION        1.95
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
-  
-
- REDUCED EIGENVALUES real part:
-
-              Column   1
-       1      0.49148774
-       2      0.49149692
-       3      0.54314668
-       4      0.63931431
-  
- ROOT:  1 RESIDUAL TOT: 3.02886D-03
- ROOT:  2 RESIDUAL TOT: 5.37771D-03
- ROOT:  3 RESIDUAL TOT: 1.00543D-02
- ROOT:  4 RESIDUAL TOT: 3.14621D-02
-      6       4         0.03     0.31E-01
-
- Lowest eigenvalues in this iteration: 
-
-              Column   1
-       1      0.49148774
-       2      0.49149692
-       3      0.54314668
-       4      0.63931431
- Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        1.93
-
-
-
- Time used in     CC_RHTR in total   :       1.96 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
-  
-
- REDUCED EIGENVALUES real part:
-
-              Column   1
-       1      0.49147983
-       2      0.49148161
-       3      0.54313782
-       4      0.63831333
-  
- ROOT:  1 RESIDUAL TOT: 8.89147D-04
- ROOT:  2 RESIDUAL TOT: 6.63295D-04
- ROOT:  3 RESIDUAL TOT: 2.69345D-03
- ROOT:  4 RESIDUAL TOT: 5.15621D-02
-      7       4         0.03     0.52E-01
-
- Lowest eigenvalues in this iteration: 
-
-              Column   1
-       1      0.49147983
-       2      0.49148161
-       3      0.54313782
-       4      0.63831333
- Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        1.97
-
-
-
- Time used in     CC_RHTR in total   :       1.87 seconds
+ Time used in     CC_RHTR in total   :       1.93 seconds
  Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -1612,31 +1589,95 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49148483
-       2      0.49148542
-       3      0.54315630
-       4      0.63830960
+       1      0.49148775
+       2      0.49149676
+       3      0.54314640
+       4      0.63931433
   
- ROOT:  1 RESIDUAL TOT: 1.24000D-04
- ROOT:  2 RESIDUAL TOT: 1.58100D-04
- ROOT:  3 RESIDUAL TOT: 5.59113D-04
- ROOT:  4 RESIDUAL TOT: 4.23676D-03
+ ROOT:  1 RESIDUAL TOT: 3.02895D-03
+ ROOT:  2 RESIDUAL TOT: 5.37854D-03
+ ROOT:  3 RESIDUAL TOT: 1.00562D-02
+ ROOT:  4 RESIDUAL TOT: 3.14679D-02
+      6       4         0.03     0.31E-01
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.49148775
+       2      0.49149676
+       3      0.54314640
+       4      0.63931433
+ Dimension of the reduced space:    28
+ >>> TIME USED IN THIS MICRO ITERATION        1.94
+
+
+
+ Time used in     CC_RHTR in total   :       1.99 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.47 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.49147985
+       2      0.49148160
+       3      0.54313789
+       4      0.63831394
+  
+ ROOT:  1 RESIDUAL TOT: 8.89309D-04
+ ROOT:  2 RESIDUAL TOT: 6.63157D-04
+ ROOT:  3 RESIDUAL TOT: 2.69302D-03
+ ROOT:  4 RESIDUAL TOT: 5.15594D-02
+      7       4         0.03     0.52E-01
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.49147985
+       2      0.49148160
+       3      0.54313789
+       4      0.63831394
+ Dimension of the reduced space:    32
+ >>> TIME USED IN THIS MICRO ITERATION        2.00
+
+
+
+ Time used in     CC_RHTR in total   :       1.98 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.47 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.49148484
+       2      0.49148542
+       3      0.54315629
+       4      0.63830965
+  
+ ROOT:  1 RESIDUAL TOT: 1.23997D-04
+ ROOT:  2 RESIDUAL TOT: 1.58105D-04
+ ROOT:  3 RESIDUAL TOT: 5.59100D-04
+ ROOT:  4 RESIDUAL TOT: 4.23701D-03
       8       4         0.03     0.42E-02
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
-       1      0.49148483
+       1      0.49148484
        2      0.49148542
-       3      0.54315630
-       4      0.63830960
+       3      0.54315629
+       4      0.63830965
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        1.99
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
+ Time used in     CC_RHTR in total   :       1.93 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1646,13 +1687,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
               Column   1
        1      0.49148355
        2      0.49148359
-       3      0.54315725
+       3      0.54315724
        4      0.63829001
   
- ROOT:  1 RESIDUAL TOT: 3.44496D-05
- ROOT:  2 RESIDUAL TOT: 2.95480D-05
- ROOT:  3 RESIDUAL TOT: 1.19849D-04
- ROOT:  4 RESIDUAL TOT: 1.20079D-03
+ ROOT:  1 RESIDUAL TOT: 3.44434D-05
+ ROOT:  2 RESIDUAL TOT: 2.95531D-05
+ ROOT:  3 RESIDUAL TOT: 1.19858D-04
+ ROOT:  4 RESIDUAL TOT: 1.20073D-03
       9       4         0.03     0.12E-02
 
  Lowest eigenvalues in this iteration: 
@@ -1660,15 +1701,15 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
               Column   1
        1      0.49148355
        2      0.49148359
-       3      0.54315725
+       3      0.54315724
        4      0.63829001
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.94
 
 
 
- Time used in     CC_RHTR in total   :       1.98 seconds
- Time used in   CC part              :       0.03 seconds
+ Time used in     CC_RHTR in total   :       1.94 seconds
+ Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.48 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1681,10 +1722,10 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315755
        4      0.63829179
   
- ROOT:  1 RESIDUAL TOT: 4.81821D-06
- ROOT:  2 RESIDUAL TOT: 4.71975D-06
- ROOT:  3 RESIDUAL TOT: 2.49779D-05
- ROOT:  4 RESIDUAL TOT: 2.57602D-04
+ ROOT:  1 RESIDUAL TOT: 4.81816D-06
+ ROOT:  2 RESIDUAL TOT: 4.71888D-06
+ ROOT:  3 RESIDUAL TOT: 2.49723D-05
+ ROOT:  4 RESIDUAL TOT: 2.57541D-04
      10       4         0.03     0.26E-03
 
  Lowest eigenvalues in this iteration: 
@@ -1695,12 +1736,12 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315755
        4      0.63829179
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        1.99
+ >>> TIME USED IN THIS MICRO ITERATION        1.95
 
 
 
- Time used in     CC_RHTR in total   :       1.95 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1713,10 +1754,10 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829199
   
- ROOT:  1 RESIDUAL TOT: 8.03652D-07
- ROOT:  2 RESIDUAL TOT: 8.59595D-07
- ROOT:  3 RESIDUAL TOT: 5.27400D-06
- ROOT:  4 RESIDUAL TOT: 5.28070D-05
+ ROOT:  1 RESIDUAL TOT: 8.03794D-07
+ ROOT:  2 RESIDUAL TOT: 8.59468D-07
+ ROOT:  3 RESIDUAL TOT: 5.27341D-06
+ ROOT:  4 RESIDUAL TOT: 5.27910D-05
      11       4         0.03     0.53E-04
 
  Lowest eigenvalues in this iteration: 
@@ -1727,11 +1768,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829199
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        1.96
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.91 seconds
+ Time used in     CC_RHTR in total   :       1.93 seconds
  Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -1745,10 +1786,10 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829232
   
- ROOT:  1 RESIDUAL TOT: 1.24192D-07
- ROOT:  2 RESIDUAL TOT: 1.39772D-07
- ROOT:  3 RESIDUAL TOT: 6.13055D-07
- ROOT:  4 RESIDUAL TOT: 7.12897D-06
+ ROOT:  1 RESIDUAL TOT: 1.24194D-07
+ ROOT:  2 RESIDUAL TOT: 1.39797D-07
+ ROOT:  3 RESIDUAL TOT: 6.13226D-07
+ ROOT:  4 RESIDUAL TOT: 7.12986D-06
      12       4         0.03     0.71E-05
 
  Lowest eigenvalues in this iteration: 
@@ -1759,13 +1800,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829232
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.95
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
+ Time used in     CC_RHTR in total   :       1.99 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.48 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -1777,10 +1818,10 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829240
   
- ROOT:  1 RESIDUAL TOT: 2.91682D-08
- ROOT:  2 RESIDUAL TOT: 2.14385D-08
- ROOT:  3 RESIDUAL TOT: 9.41655D-08
- ROOT:  4 RESIDUAL TOT: 1.46125D-06
+ ROOT:  1 RESIDUAL TOT: 2.90723D-08
+ ROOT:  2 RESIDUAL TOT: 2.15528D-08
+ ROOT:  3 RESIDUAL TOT: 9.41577D-08
+ ROOT:  4 RESIDUAL TOT: 1.46114D-06
      13       4         0.03     0.15E-05
 
  Lowest eigenvalues in this iteration: 
@@ -1791,13 +1832,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829240
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        1.89
+ >>> TIME USED IN THIS MICRO ITERATION        2.01
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -1809,12 +1850,12 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
   
- ROOT:  1 RESIDUAL TOT: 5.35716D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35716D-09
- ROOT:  2 RESIDUAL TOT: 3.43757D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.43757D-09
- ROOT:  3 RESIDUAL TOT: 1.63429D-08
- ROOT:  4 RESIDUAL TOT: 2.83623D-07
+ ROOT:  1 RESIDUAL TOT: 5.35868D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35868D-09
+ ROOT:  2 RESIDUAL TOT: 3.43714D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.43714D-09
+ ROOT:  3 RESIDUAL TOT: 1.63417D-08
+ ROOT:  4 RESIDUAL TOT: 2.83600D-07
      14       4         0.03     0.28E-06
 
  Lowest eigenvalues in this iteration: 
@@ -1825,13 +1866,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
  Dimension of the reduced space:    58
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.18 seconds
+ Time used in     CC_RHTR in total   :       1.16 seconds
  Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -1843,13 +1884,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
   
- ROOT:  1 RESIDUAL TOT: 5.35785D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35785D-09
- ROOT:  2 RESIDUAL TOT: 1.92190D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.92190D-09
- ROOT:  3 RESIDUAL TOT: 2.59563D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.59563D-09
- ROOT:  4 RESIDUAL TOT: 5.34874D-08
+ ROOT:  1 RESIDUAL TOT: 5.35932D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35932D-09
+ ROOT:  2 RESIDUAL TOT: 1.92139D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.92139D-09
+ ROOT:  3 RESIDUAL TOT: 2.59579D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.59579D-09
+ ROOT:  4 RESIDUAL TOT: 5.34715D-08
      15       2         0.02     0.53E-07
 
  Lowest eigenvalues in this iteration: 
@@ -1860,13 +1901,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
  Dimension of the reduced space:    59
- >>> TIME USED IN THIS MICRO ITERATION        1.19
+ >>> TIME USED IN THIS MICRO ITERATION        1.18
 
 
 
- Time used in     CC_RHTR in total   :       0.73 seconds
+ Time used in     CC_RHTR in total   :       0.72 seconds
  Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.37 seconds
+ Time used in   Int. calc. & read    :       0.36 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -1878,13 +1919,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
   
- ROOT:  1 RESIDUAL TOT: 5.35741D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35741D-09
- ROOT:  2 RESIDUAL TOT: 1.65409D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.65409D-09
- ROOT:  3 RESIDUAL TOT: 2.04973D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.04973D-09
- ROOT:  4 RESIDUAL TOT: 1.25766D-08
+ ROOT:  1 RESIDUAL TOT: 5.35880D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35880D-09
+ ROOT:  2 RESIDUAL TOT: 1.65344D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.65344D-09
+ ROOT:  3 RESIDUAL TOT: 2.04952D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.04952D-09
+ ROOT:  4 RESIDUAL TOT: 1.25696D-08
      16       1         0.01     0.13E-07
 
  Lowest eigenvalues in this iteration: 
@@ -1895,11 +1936,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.74
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
 
- Time used in     CC_RHTR in total   :       0.73 seconds
+ Time used in     CC_RHTR in total   :       0.72 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.37 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -1913,14 +1954,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
   
- ROOT:  1 RESIDUAL TOT: 5.35725D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35725D-09
- ROOT:  2 RESIDUAL TOT: 1.65328D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.65328D-09
- ROOT:  3 RESIDUAL TOT: 1.96948D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.96948D-09
- ROOT:  4 RESIDUAL TOT: 2.40074D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 2.40074D-09
+ ROOT:  1 RESIDUAL TOT: 5.35861D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.35861D-09
+ ROOT:  2 RESIDUAL TOT: 1.65262D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.65262D-09
+ ROOT:  3 RESIDUAL TOT: 1.96950D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.96950D-09
+ ROOT:  4 RESIDUAL TOT: 2.39971D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 2.39971D-09
      17       1         0.01     0.54E-08
 
  Lowest eigenvalues in this iteration: 
@@ -1931,7 +1972,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
        3      0.54315754
        4      0.63829241
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.74
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
     --------------------------------------
     converged in 17 iterations
@@ -1940,15 +1981,15 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.49
+         CC_TRDRV            0.50
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
          Total time          0.50
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  29.81 seconds
- >>>> Total wall time used in CCEQ_SOLV:  34.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  29.89 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  33.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1968,7 +2009,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  eigenvector was orthogonalized against  1 degenerate vectors
 
 
- eigenvector for state  1      0.49148364has been renormalized... scaling factor:  0.99992684    
+ eigenvector for state  1      0.49148364has been renormalized... scaling factor:  0.99994192    
 
  degenerate eigenvector found:  2        0.4914836398
  eigenvector was orthogonalized against  1 degenerate vectors
@@ -1985,25 +2026,25 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4914836398       13.3739497759
-         2            0.4914836398       13.3739497768
-         3            0.5431575388       14.7800680553
-         4            0.6382924114       17.3688195525
+         1            0.4914836398       13.3739501554
+         2            0.4914836398       13.3739501563
+         3            0.5431575388       14.7800684746
+         4            0.6382924114       17.3688200454
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -39.903902614733830
-@@    1    2           -39.903902614699966
-@@    1    3           -39.852228715735734
-@@    1    4           -39.757093843113267
+@@    1    1           -39.903902614735514
+@@    1    2           -39.903902614701835
+@@    1    3           -39.852228715737418
+@@    1    4           -39.757093843113502
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
  -------------------------------------------------------------
 
-          Excitation Energy :                            13.3739 eV
+          Excitation Energy :                            13.3740 eV
 
 
           CC_PRAM:Overall Contribution of the Different Components
@@ -2011,11 +2052,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
 
 
 
-          Single Excitation Contribution :              97.3357 %
+          Single Excitation Contribution :              97.3355 %
 
-          Double Excitation Contribution :               2.6643 %
+          Double Excitation Contribution :               2.6645 %
 
-          ||T1||/||T2||                  :               6.0443
+          ||T1||/||T2||                  :               6.0441
 
           Norm of Total Amplitude Vector :               0.9999
 
@@ -2024,36 +2065,36 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   3   |   1       1     |       20          |              |    0.682558  |
- | 3   3   |   2       1     |       21          |              |   -0.112463  |
- | 3   3   |   3       1     |       22          |              |   -0.098942  |
- | 4   4   |   1       1     |       29          |              |   -0.679894  |
- | 4   4   |   2       1     |       30          |              |    0.112024  |
+ | 2   2   |   1       1     |       11          |              |   -0.680043  |
+ | 2   2   |   2       1     |       12          |              |    0.112049  |
+ | 3   3   |   1       1     |       20          |              |    0.682409  |
+ | 3   3   |   2       1     |       21          |              |   -0.112439  |
+ | 3   3   |   3       1     |       22          |              |   -0.098921  |
  +-----------------------------------------------------------------------------+
- | 3 1 3 1 |   1   1   1   1 |       20        1 |          191 |   -0.019090  |
- | 4 1 4 1 |   1   1   1   1 |       29        1 |          407 |    0.019016  |
- | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |   -0.026348  |
- | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.026451  |
- | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.032014  |
- | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |    0.026134  |
- | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |   -0.026123  |
- | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |    0.031889  |
- | 4 1 3 2 |   1   2   1   1 |       20       11 |          904 |   -0.022084  |
- | 3 1 4 2 |   1   2   1   1 |       29       11 |         1120 |    0.022140  |
- | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |    0.025062  |
- | 3 4 4 3 |   2   1   1   1 |       30       20 |         1158 |    0.025688  |
- | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |   -0.025739  |
- | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |   -0.025111  |
- | 4 3 2 1 |   2   1   1   1 |       11        1 |         1462 |   -0.022359  |
- | 2 3 4 1 |   2   1   1   1 |       30        1 |         1842 |   -0.024307  |
- | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |    0.018729  |
- | 1 4 3 2 |   2   1   1   1 |       20       10 |         1606 |   -0.018207  |
- | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |    0.019280  |
- | 3 4 2 1 |   2   1   1   1 |       11        1 |         2165 |    0.022257  |
- | 2 4 3 1 |   2   1   1   1 |       20        1 |         2300 |    0.024228  |
- | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |   -0.018852  |
- | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |   -0.019406  |
- | 1 3 4 2 |   2   1   1   1 |       29       10 |         2525 |    0.018308  |
+ | 2 1 2 1 |   1   1   1   1 |       11        1 |           56 |    0.019020  |
+ | 3 1 3 1 |   1   1   1   1 |       20        1 |          191 |   -0.019086  |
+ | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.031896  |
+ | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |   -0.026124  |
+ | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |    0.026134  |
+ | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.026445  |
+ | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.032007  |
+ | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.026353  |
+ | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.024232  |
+ | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.022263  |
+ | 3 1 4 2 |   1   2   1   1 |       29       11 |         1120 |    0.018303  |
+ | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |   -0.019399  |
+ | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |   -0.018845  |
+ | 4 3 2 1 |   2   1   1   1 |       11        1 |         1462 |   -0.024303  |
+ | 2 3 4 1 |   2   1   1   1 |       30        1 |         1842 |   -0.022354  |
+ | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |    0.019287  |
+ | 2 1 4 3 |   1   2   1   1 |       29       20 |         1832 |   -0.018213  |
+ | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.018736  |
+ | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |   -0.025108  |
+ | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |   -0.025736  |
+ | 2 3 3 2 |   1   2   1   1 |       19       11 |         2291 |    0.025691  |
+ | 1 3 4 2 |   2   1   1   1 |       29       10 |         2525 |    0.022137  |
+ | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |    0.025065  |
+ | 1 2 4 3 |   2   1   1   1 |       29       19 |         2534 |   -0.022087  |
  +=============================================================================+
 
 
@@ -2069,7 +2110,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  Analysis of the Coupled Cluster Excitation Vector Number :  2
  -------------------------------------------------------------
 
-          Excitation Energy :                            13.3739 eV
+          Excitation Energy :                            13.3740 eV
 
 
           CC_PRAM:Overall Contribution of the Different Components
@@ -2077,11 +2118,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
 
 
 
-          Single Excitation Contribution :              97.3348 %
+          Single Excitation Contribution :              97.3350 %
 
-          Double Excitation Contribution :               2.6652 %
+          Double Excitation Contribution :               2.6650 %
 
-          ||T1||/||T2||                  :               6.0433
+          ||T1||/||T2||                  :               6.0435
 
           Norm of Total Amplitude Vector :               0.9999
 
@@ -2090,42 +2131,42 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |    0.786608  |
- | 2   2   |   2       1     |       12          |              |   -0.129607  |
- | 2   2   |   3       1     |       13          |              |   -0.114025  |
- | 3   3   |   1       1     |       20          |              |   -0.391002  |
- | 4   4   |   1       1     |       29          |              |   -0.395606  |
+ | 2   2   |   1       1     |       11          |              |   -0.395349  |
+ | 3   3   |   1       1     |       20          |              |   -0.391261  |
+ | 4   4   |   1       1     |       29          |              |    0.786610  |
+ | 4   4   |   2       1     |       30          |              |   -0.129608  |
+ | 4   4   |   3       1     |       31          |              |   -0.114026  |
  +-----------------------------------------------------------------------------+
- | 2 1 2 1 |   1   1   1   1 |       11        1 |           56 |   -0.022000  |
- | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |   -0.036894  |
- | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |    0.023406  |
- | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |   -0.021762  |
- | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |    0.023484  |
- | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |   -0.021860  |
- | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |    0.018339  |
- | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |    0.030483  |
- | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |    0.018555  |
- | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |   -0.026884  |
- | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |   -0.026897  |
- | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |    0.018182  |
- | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |    0.018589  |
- | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |   -0.026035  |
- | 2 1 4 3 |   1   1   1   1 |       29       19 |         1831 |    0.016511  |
- | 2 1 4 3 |   1   2   1   1 |       29       20 |         1832 |    0.023321  |
- | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |   -0.025354  |
- | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |    0.018055  |
- | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |    0.018458  |
- | 2 3 3 2 |   1   2   1   1 |       19       11 |         2291 |   -0.025992  |
- | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |   -0.025311  |
- | 1 2 4 3 |   1   1   1   1 |       28       19 |         2506 |    0.016515  |
- | 1 2 4 3 |   2   1   1   1 |       29       19 |         2534 |    0.023294  |
+ | 4 1 4 1 |   1   1   1   1 |       29        1 |          407 |   -0.022000  |
+ | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.018543  |
+ | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |    0.030483  |
+ | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |   -0.021854  |
+ | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |    0.023480  |
+ | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |    0.018351  |
+ | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |   -0.021768  |
+ | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |    0.023410  |
+ | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.036894  |
+ | 4 1 3 2 |   1   1   1   1 |       20       10 |          903 |    0.016515  |
+ | 4 1 3 2 |   1   2   1   1 |       20       11 |          904 |    0.023296  |
+ | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |   -0.025314  |
+ | 3 4 4 3 |   2   1   1   1 |       30       20 |         1158 |   -0.025994  |
+ | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |    0.018465  |
+ | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |    0.018062  |
+ | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.025352  |
+ | 1 4 3 2 |   1   1   1   1 |       19       10 |         1587 |    0.016511  |
+ | 1 4 3 2 |   2   1   1   1 |       20       10 |         1606 |    0.023319  |
+ | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.026033  |
+ | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |    0.018582  |
+ | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.018175  |
+ | 3 4 2 1 |   2   1   1   1 |       11        1 |         2165 |   -0.026896  |
+ | 2 4 3 1 |   2   1   1   1 |       20        1 |         2300 |   -0.026885  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.9851
 
 
-          Printed all single excitations greater than 0.098658
+          Printed all single excitations greater than 0.098659
 
 
           Printed all double excitations greater than 0.016325
@@ -2195,7 +2236,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
 
           Double Excitation Contribution :               2.6180 %
 
-          ||T1||/||T2||                  :               6.0989
+          ||T1||/||T2||                  :               6.0990
 
           Norm of Total Amplitude Vector :               0.9965
 
@@ -2204,34 +2245,34 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |    0.123764  |
- | 2   2   |   2       1     |       12          |              |    0.792723  |
- | 3   3   |   2       1     |       21          |              |   -0.397426  |
- | 4   4   |   2       1     |       30          |              |   -0.395297  |
+ | 2   2   |   2       1     |       12          |              |   -0.395294  |
+ | 3   3   |   2       1     |       21          |              |   -0.397429  |
+ | 4   4   |   1       1     |       29          |              |    0.123764  |
+ | 4   4   |   2       1     |       30          |              |    0.792723  |
  +-----------------------------------------------------------------------------+
- | 2 1 2 1 |   2   1   1   1 |       12        1 |           67 |   -0.022102  |
- | 2 2 2 2 |   2   1   1   1 |       12       11 |           77 |   -0.041500  |
- | 2 2 2 2 |   3   2   1   1 |       13       12 |           90 |    0.034393  |
- | 3 2 3 2 |   1   2   1   1 |       20       12 |          202 |   -0.022989  |
- | 3 2 3 2 |   3   2   1   1 |       22       12 |          243 |    0.020188  |
- | 4 2 4 2 |   1   2   1   1 |       29       12 |          418 |   -0.022998  |
- | 4 2 4 2 |   3   2   1   1 |       31       12 |          477 |    0.020195  |
+ | 4 1 4 1 |   2   1   1   1 |       30        1 |          436 |   -0.022102  |
+ | 2 2 2 2 |   2   1   1   1 |       12       11 |           77 |    0.020694  |
+ | 2 2 2 2 |   3   2   1   1 |       13       12 |           90 |   -0.017150  |
+ | 4 2 4 2 |   2   1   1   1 |       30       11 |          446 |   -0.022998  |
+ | 4 2 4 2 |   2   3   1   1 |       30       13 |          448 |    0.020195  |
  | 3 3 3 3 |   2   1   1   1 |       21       20 |          230 |    0.020806  |
  | 3 3 3 3 |   3   2   1   1 |       22       21 |          252 |   -0.017243  |
- | 4 4 4 4 |   2   1   1   1 |       30       29 |          464 |    0.020694  |
- | 4 4 4 4 |   3   2   1   1 |       31       30 |          495 |   -0.017150  |
- | 1 2 2 1 |   5   2   1   1 |       14        2 |          796 |    0.021770  |
- | 4 2 3 1 |   2   2   1   1 |       21        2 |          915 |   -0.022928  |
- | 3 2 4 1 |   2   2   1   1 |       30        2 |         1140 |   -0.022877  |
- | 4 1 3 2 |   2   2   1   1 |       21       11 |          924 |   -0.019551  |
- | 3 1 4 2 |   2   2   1   1 |       30       11 |         1149 |   -0.019612  |
- | 3 4 4 3 |   2   2   1   1 |       30       21 |         1159 |    0.019923  |
- | 4 3 2 1 |   2   2   1   1 |       11        2 |         1463 |    0.025959  |
- | 2 1 4 3 |   2   2   1   1 |       30       20 |         1861 |    0.027022  |
- | 2 2 4 4 |   2   2   1   1 |       30       30 |         1871 |   -0.020607  |
- | 3 4 2 1 |   2   2   1   1 |       11        2 |         2166 |    0.025924  |
- | 2 2 3 3 |   2   2   1   1 |       20       20 |         2319 |   -0.020607  |
- | 1 2 4 3 |   2   2   1   1 |       29       20 |         2535 |    0.027001  |
+ | 4 3 4 3 |   2   1   1   1 |       30       20 |          455 |   -0.022989  |
+ | 4 3 4 3 |   2   3   1   1 |       30       22 |          457 |    0.020188  |
+ | 4 4 4 4 |   2   1   1   1 |       30       29 |          464 |   -0.041500  |
+ | 4 4 4 4 |   3   2   1   1 |       31       30 |          495 |    0.034393  |
+ | 3 2 4 1 |   2   2   1   1 |       30        2 |         1140 |    0.025924  |
+ | 4 1 3 2 |   2   2   1   1 |       21       11 |          924 |    0.027001  |
+ | 4 4 3 3 |   2   2   1   1 |       21       21 |          934 |   -0.020607  |
+ | 2 3 4 1 |   2   2   1   1 |       30        2 |         1843 |    0.025959  |
+ | 4 4 2 2 |   2   2   1   1 |       11       11 |         1472 |   -0.020607  |
+ | 1 4 3 2 |   2   2   1   1 |       20       11 |         1607 |    0.027022  |
+ | 3 4 2 1 |   2   2   1   1 |       11        2 |         2166 |   -0.022876  |
+ | 2 4 3 1 |   2   2   1   1 |       20        2 |         2301 |   -0.022928  |
+ | 1 4 4 1 |   5   2   1   1 |       32        2 |         2607 |   -0.021849  |
+ | 2 3 3 2 |   2   2   1   1 |       20       11 |         2310 |    0.019923  |
+ | 1 3 4 2 |   2   2   1   1 |       29       11 |         2526 |   -0.019613  |
+ | 1 2 4 3 |   2   2   1   1 |       29       20 |         2535 |   -0.019551  |
  +=============================================================================+
 
 
@@ -2262,27 +2303,27 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      13   1
  Length of Excitation vectors in this class is:      2807
  Converging for  4 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.67700533843959143               10
-  HIGHST VALUE AND PLACE    51.262924773448816              713
+  LOWEST VALUE AND PLACE   0.67700533844036015               10
+  HIGHST VALUE AND PLACE    51.262924773446684              713
 IELMNT XMIN IMIN NDEG        1    6.77005D-01      10   1
-IELMNT XMIN IMIN NDEG        2    7.54016D-01      29   1
-IELMNT XMIN IMIN NDEG        3    7.54016D-01      20   2
+IELMNT XMIN IMIN NDEG        2    7.54016D-01      20   1
+IELMNT XMIN IMIN NDEG        3    7.54016D-01      29   2
 IELMNT XMIN IMIN NDEG        4    9.44239D-01      21   1
 IELMNT XMIN IMIN NDEG        5    9.44239D-01      30   2
 IELMNT XMIN IMIN NDEG        6    1.14037D+00       1   1
 IELMNT XMIN IMIN NDEG        7    1.19591D+00      11   1
-IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
+IELMNT XMIN IMIN NDEG        8    1.30158D+00      22   1
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     10     29     20     21     30      1     11
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843959143        1.1959103517881580     
+     1 :     10     20     29     21     30      1     11
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844036015        1.1959103517886711     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
- ... selected element no. 29
- Start vector guessed from diagonal
  ... selected element no. 20
+ Start vector guessed from diagonal
+ ... selected element no. 29
  Start vector guessed from diagonal
  ... selected element no. 21
  CCEQ_SOL: IPRLE   =               5
@@ -2305,9 +2346,9 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
     --------------------------------------
 
 
- Time used in     CC_RHTR in total   :       1.91 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2333,11 +2374,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.56780069
        4      0.74030769
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.94 seconds
  Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.44 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -2365,14 +2406,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49339823
        4      0.66417870
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.94
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
+ Time used in     CC_RHTR in total   :       1.99 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.48 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -2397,14 +2438,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49180049
        4      0.65760618
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        2.00
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -2429,7 +2470,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49164852
        4      0.64650166
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
@@ -2465,9 +2506,9 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2493,14 +2534,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49154572
        4      0.63690352
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.89
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       2.03 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.48 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -2525,13 +2566,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155236
        4      0.63641890
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        2.04
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.98 seconds
+ Time used in   CC part              :       0.03 seconds
+ Time used in   Int. calc. & read    :       0.47 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2557,13 +2598,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155497
        4      0.63636615
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.99
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2589,11 +2630,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155430
        4      0.63636157
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.88 seconds
  Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -2621,13 +2662,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155425
        4      0.63636221
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.91 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.84 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2653,13 +2694,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155426
        4      0.63636145
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
 
 
 
- Time used in     CC_RHTR in total   :       1.96 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2685,13 +2726,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636137
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        1.98
+ >>> TIME USED IN THIS MICRO ITERATION        1.91
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2718,13 +2759,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    55
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.63 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.46 seconds
+ Time used in     CC_RHTR in total   :       1.47 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.40 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2743,7 +2784,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  ROOT:  3 RESIDUAL TOT: 3.46096D-09
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 3.46096D-09
  ROOT:  4 RESIDUAL TOT: 2.53621D-07
-     14       3         0.03     0.25E-06
+     14       3         0.02     0.25E-06
 
  Lowest eigenvalues in this iteration: 
 
@@ -2753,13 +2794,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        1.64
+ >>> TIME USED IN THIS MICRO ITERATION        1.48
 
 
 
- Time used in     CC_RHTR in total   :       0.74 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.38 seconds
+ Time used in     CC_RHTR in total   :       0.72 seconds
+ Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.36 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2788,13 +2829,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.76
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
 
- Time used in     CC_RHTR in total   :       0.73 seconds
- Time used in   CC part              :       0.00 seconds
- Time used in   Int. calc. & read    :       0.37 seconds
+ Time used in     CC_RHTR in total   :       0.81 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.41 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -2806,8 +2847,8 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
   
- ROOT:  1 RESIDUAL TOT: 9.95993D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95993D-10
+ ROOT:  1 RESIDUAL TOT: 9.95990D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95990D-10
  ROOT:  2 RESIDUAL TOT: 1.28640D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.28640D-09
  ROOT:  3 RESIDUAL TOT: 2.65756D-09
@@ -2824,7 +2865,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.74
+ >>> TIME USED IN THIS MICRO ITERATION        0.83
 
     --------------------------------------
     converged in 16 iterations
@@ -2840,8 +2881,8 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
          Total time          0.47
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  28.14 seconds
- >>>> Total wall time used in CCEQ_SOLV:  32.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  28.07 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  31.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2868,19 +2909,19 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4176046212       11.3635994740
-         2            0.4827790556       13.1370859966
-         3            0.4915542657       13.3758716044
-         4            0.6363613609       17.3162729961
+         1            0.4176046212       11.3635997965
+         2            0.4827790556       13.1370863694
+         3            0.4915542657       13.3758719839
+         4            0.6363613609       17.3162734875
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -39.977781633289219
-@@    2    2           -39.912607198968033
-@@    2    3           -39.903831988833076
-@@    2    4           -39.759024893644352
+@@    2    1           -39.977781633288984
+@@    2    2           -39.912607198970079
+@@    2    3           -39.903831988834362
+@@    2    4           -39.759024893644401
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2918,7 +2959,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | 3 1 4 1 |   1  10   1   1 |       29       10 |          362 |   -0.042415  |
  | 3 1 4 1 |   2  10   1   1 |       30       10 |          363 |   -0.018884  |
  | 3 1 4 1 |   3  10   1   1 |       31       10 |          364 |    0.024313  |
- | 2 2 1 2 |   1   4   1   1 |        1       14 |          482 |    0.022729  |
+ | 2 2 1 2 |   1   4   1   1 |        1       14 |          482 |    0.022645  |
  | 2 3 1 3 |   1   2   1   1 |        1       21 |          741 |   -0.032406  |
  | 2 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.032406  |
  | 3 4 2 2 |   1   1   1   1 |       10       10 |         1712 |   -0.025933  |
@@ -2988,7 +3029,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | 3 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.018602  |
  | 3 4 4 4 |   1   2   1   1 |       29       30 |         1102 |    0.024923  |
  | 3 3 2 1 |   2   1   1   1 |       11        1 |         1380 |    0.021521  |
- | 2 3 3 1 |   4   1   1   1 |       22        1 |         1391 |    0.019448  |
+ | 2 3 3 1 |   4   1   1   1 |       22        1 |         1391 |    0.019434  |
  | 1 3 4 1 |   3   1   1   1 |       30        1 |         1399 |    0.023870  |
  | 4 4 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.021521  |
  | 2 4 3 2 |   2   1   1   1 |       20       10 |         1722 |    0.018255  |
@@ -3052,7 +3093,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | 3 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.018890  |
  | 4 3 1 1 |   1   1   1   1 |        1        1 |         1370 |   -0.020251  |
  | 3 3 2 1 |   2   1   1   1 |       11        1 |         1380 |   -0.021964  |
- | 2 3 3 1 |   4   1   1   1 |       22        1 |         1391 |   -0.019594  |
+ | 2 3 3 1 |   4   1   1   1 |       22        1 |         1391 |   -0.019579  |
  | 1 3 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.019987  |
  | 4 4 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.021964  |
  | 3 4 2 2 |   2   1   1   1 |       11       10 |         1713 |   -0.020280  |
@@ -3165,29 +3206,29 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  Length of Excitation vectors in this class is:      2807
  Converging for  4 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.67700533843957611               19
-  HIGHST VALUE AND PLACE    51.262924773448802             1046
+  LOWEST VALUE AND PLACE   0.67700533844035959               19
+  HIGHST VALUE AND PLACE    51.262924773446684             1046
 IELMNT XMIN IMIN NDEG        1    6.77005D-01      19   1
-IELMNT XMIN IMIN NDEG        2    7.54016D-01      29   1
-IELMNT XMIN IMIN NDEG        3    7.54016D-01      10   2
-IELMNT XMIN IMIN NDEG        4    9.44239D-01      30   1
-IELMNT XMIN IMIN NDEG        5    9.44239D-01      11   2
+IELMNT XMIN IMIN NDEG        2    7.54016D-01      10   1
+IELMNT XMIN IMIN NDEG        3    7.54016D-01      29   2
+IELMNT XMIN IMIN NDEG        4    9.44239D-01      11   1
+IELMNT XMIN IMIN NDEG        5    9.44239D-01      30   2
 IELMNT XMIN IMIN NDEG        6    1.14037D+00       1   1
 IELMNT XMIN IMIN NDEG        7    1.19591D+00      20   1
-IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
+IELMNT XMIN IMIN NDEG        8    1.30158D+00      12   1
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     19     29     10     30     11      1     20
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843957611        1.1959103517881426     
+     1 :     19     10     29     11     30      1     20
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844035959        1.1959103517886704     
  Start vector guessed from diagonal
  ... selected element no. 19
  Start vector guessed from diagonal
- ... selected element no. 29
- Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
- ... selected element no. 30
+ ... selected element no. 29
+ Start vector guessed from diagonal
+ ... selected element no. 11
  CCEQ_SOL: IPRLE   =               5
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
@@ -3208,9 +3249,9 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
     --------------------------------------
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.93 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   Int. calc. & read    :       0.48 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3236,13 +3277,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.56780069
        4      0.74030769
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.94
 
 
 
- Time used in     CC_RHTR in total   :       1.94 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.90 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3268,13 +3309,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49339823
        4      0.66417870
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        1.95
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3300,14 +3341,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49180049
        4      0.65760618
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.89
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -3332,13 +3373,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49164852
        4      0.64650166
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        1.87
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.44 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3364,13 +3405,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49157236
        4      0.63891287
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3396,14 +3437,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49154572
        4      0.63690352
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       2.03 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.49 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -3428,13 +3469,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155236
        4      0.63641890
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        2.03
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.84 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3460,11 +3501,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155497
        4      0.63636615
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
+ Time used in     CC_RHTR in total   :       1.86 seconds
  Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -3492,14 +3533,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155430
        4      0.63636157
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        1.87
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
+ Time used in   IO of vectors/I.M.   :       0.01 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -3524,12 +3565,12 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155425
        4      0.63636221
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
+ Time used in     CC_RHTR in total   :       1.88 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -3556,13 +3597,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155426
        4      0.63636145
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.96 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.47 seconds
+ Time used in     CC_RHTR in total   :       1.90 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3588,12 +3629,12 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636137
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        1.97
+ >>> TIME USED IN THIS MICRO ITERATION        1.92
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -3621,13 +3662,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    55
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.54 seconds
+ Time used in     CC_RHTR in total   :       1.51 seconds
  Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.41 seconds
+ Time used in   Int. calc. & read    :       0.40 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3639,8 +3680,8 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
   
- ROOT:  1 RESIDUAL TOT: 9.95383D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95383D-10
+ ROOT:  1 RESIDUAL TOT: 9.95382D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95382D-10
  ROOT:  2 RESIDUAL TOT: 3.99965D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.99965D-09
  ROOT:  3 RESIDUAL TOT: 3.46096D-09
@@ -3656,13 +3697,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        1.55
+ >>> TIME USED IN THIS MICRO ITERATION        1.53
 
 
 
- Time used in     CC_RHTR in total   :       0.73 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.37 seconds
+ Time used in     CC_RHTR in total   :       0.81 seconds
+ Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.41 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -3691,11 +3732,11 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.74
+ >>> TIME USED IN THIS MICRO ITERATION        0.82
 
 
 
- Time used in     CC_RHTR in total   :       0.79 seconds
+ Time used in     CC_RHTR in total   :       0.81 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.41 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -3709,8 +3750,8 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
   
- ROOT:  1 RESIDUAL TOT: 9.95993D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95993D-10
+ ROOT:  1 RESIDUAL TOT: 9.95991D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95991D-10
  ROOT:  2 RESIDUAL TOT: 1.28640D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.28640D-09
  ROOT:  3 RESIDUAL TOT: 2.65756D-09
@@ -3727,7 +3768,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.79
+ >>> TIME USED IN THIS MICRO ITERATION        0.82
 
     --------------------------------------
     converged in 16 iterations
@@ -3736,14 +3777,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.47
+         CC_TRDRV            0.46
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.47
+         Total time          0.46
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  28.16 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  27.84 seconds
  >>>> Total wall time used in CCEQ_SOLV:  32.00 seconds
 
 
@@ -3771,19 +3812,19 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4176046212       11.3635994740
-         2            0.4827790556       13.1370859966
-         3            0.4915542657       13.3758716044
-         4            0.6363613609       17.3162729961
+         1            0.4176046212       11.3635997965
+         2            0.4827790556       13.1370863694
+         3            0.4915542657       13.3758719839
+         4            0.6363613609       17.3162734875
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -39.977781633289219
-@@    3    2           -39.912607198968047
-@@    3    3           -39.903831988833076
-@@    3    4           -39.759024893644359
+@@    3    1           -39.977781633288977
+@@    3    2           -39.912607198970086
+@@    3    3           -39.903831988834362
+@@    3    4           -39.759024893644401
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3822,7 +3863,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | 2 2 4 2 |   1   9   1   1 |       29       19 |          695 |   -0.042415  |
  | 2 2 4 2 |   2   9   1   1 |       30       19 |          696 |   -0.018884  |
  | 2 2 4 2 |   3   9   1   1 |       31       19 |          697 |    0.024313  |
- | 3 3 1 3 |   1   3   1   1 |        1       22 |          778 |   -0.026245  |
+ | 3 3 1 3 |   1   3   1   1 |        1       22 |          778 |   -0.026244  |
  | 3 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.032406  |
  | 3 1 2 2 |   1   2   1   1 |       10       11 |         1749 |   -0.024600  |
  | 2 1 3 2 |   2  10   1   1 |       20       19 |         2055 |   -0.025933  |
@@ -3867,41 +3908,41 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   4   |   1       1     |       29          |              |   -0.672530  |
- | 2   4   |   2       1     |       30          |              |    0.143075  |
- | 2   4   |   3       1     |       31          |              |    0.108998  |
- | 4   2   |   1       1     |       10          |              |    0.672530  |
- | 4   2   |   2       1     |       11          |              |   -0.143075  |
- | 4   2   |   3       1     |       12          |              |   -0.108998  |
+ | 2   4   |   1       1     |       29          |              |    0.672530  |
+ | 2   4   |   2       1     |       30          |              |   -0.143075  |
+ | 2   4   |   3       1     |       31          |              |   -0.108998  |
+ | 4   2   |   1       1     |       10          |              |   -0.672530  |
+ | 4   2   |   2       1     |       11          |              |    0.143075  |
+ | 4   2   |   3       1     |       12          |              |    0.108998  |
  +-----------------------------------------------------------------------------+
- | 3 1 1 1 |   1  10   1   1 |        1       10 |          334 |   -0.018310  |
- | 4 1 2 1 |   2  10   1   1 |       11       10 |          344 |   -0.043051  |
- | 4 1 2 1 |   4  10   1   1 |       13       10 |          346 |    0.018602  |
- | 1 1 3 1 |   2  10   1   1 |       20       10 |          353 |   -0.025280  |
- | 4 2 2 2 |   2   1   1   1 |       11       11 |          381 |    0.024923  |
- | 2 2 4 2 |   1   1   1   1 |       29       11 |          399 |   -0.025227  |
- | 2 2 4 2 |   1   2   1   1 |       29       12 |          436 |   -0.021512  |
- | 4 3 2 3 |   2   1   1   1 |       11       20 |          714 |   -0.021781  |
- | 2 3 4 3 |   1   1   1   1 |       29       20 |          732 |    0.021781  |
- | 3 4 1 4 |   1   1   1   1 |        1       29 |         1037 |    0.018310  |
- | 4 4 2 4 |   2   2   1   1 |       11       30 |         1084 |    0.025227  |
- | 4 4 2 4 |   2   3   1   1 |       11       31 |         1121 |    0.021512  |
- | 1 4 3 4 |   2   1   1   1 |       20       29 |         1056 |    0.025280  |
- | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |    0.043051  |
- | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |   -0.018602  |
- | 2 4 4 4 |   1   2   1   1 |       29       30 |         1102 |   -0.024923  |
- | 3 2 2 1 |   5   1   1   1 |       14        1 |         1383 |    0.017967  |
- | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |   -0.021521  |
- | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.023870  |
- | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |    0.023870  |
- | 3 1 2 2 |   1   1   1   1 |       10       10 |         1712 |   -0.020606  |
- | 3 1 2 2 |   2  10   1   1 |       11       19 |         2046 |   -0.018255  |
- | 2 1 3 2 |   2   2   1   1 |       20       11 |         1759 |   -0.018808  |
- | 1 1 4 2 |   3  10   1   1 |       30       19 |         2065 |    0.018808  |
- | 4 4 1 3 |   1   1   1   1 |        1       20 |         2073 |    0.021521  |
- | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |    0.020606  |
- | 4 3 1 4 |   1   4   1   1 |        1       32 |         2517 |    0.017967  |
- | 2 3 3 4 |   2   1   1   1 |       20       29 |         2425 |    0.018255  |
+ | 3 1 1 1 |   1  10   1   1 |        1       10 |          334 |    0.018310  |
+ | 4 1 2 1 |   2  10   1   1 |       11       10 |          344 |    0.043051  |
+ | 4 1 2 1 |   4  10   1   1 |       13       10 |          346 |   -0.018602  |
+ | 1 1 3 1 |   2  10   1   1 |       20       10 |          353 |    0.025280  |
+ | 4 2 2 2 |   2   1   1   1 |       11       11 |          381 |   -0.024923  |
+ | 2 2 4 2 |   1   1   1   1 |       29       11 |          399 |    0.025227  |
+ | 2 2 4 2 |   1   2   1   1 |       29       12 |          436 |    0.021512  |
+ | 4 3 2 3 |   2   1   1   1 |       11       20 |          714 |    0.021781  |
+ | 2 3 4 3 |   1   1   1   1 |       29       20 |          732 |   -0.021781  |
+ | 3 4 1 4 |   1   1   1   1 |        1       29 |         1037 |   -0.018310  |
+ | 4 4 2 4 |   2   2   1   1 |       11       30 |         1084 |   -0.025227  |
+ | 4 4 2 4 |   2   3   1   1 |       11       31 |         1121 |   -0.021512  |
+ | 1 4 3 4 |   2   1   1   1 |       20       29 |         1056 |   -0.025280  |
+ | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.043051  |
+ | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.018602  |
+ | 2 4 4 4 |   1   2   1   1 |       29       30 |         1102 |    0.024923  |
+ | 3 2 2 1 |   5   1   1   1 |       14        1 |         1383 |   -0.017917  |
+ | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |    0.021521  |
+ | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |    0.023870  |
+ | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.023870  |
+ | 3 1 2 2 |   1   1   1   1 |       10       10 |         1712 |    0.020606  |
+ | 3 1 2 2 |   2  10   1   1 |       11       19 |         2046 |    0.018255  |
+ | 2 1 3 2 |   2   2   1   1 |       20       11 |         1759 |    0.018808  |
+ | 1 1 4 2 |   3  10   1   1 |       30       19 |         2065 |   -0.018808  |
+ | 4 4 1 3 |   1   1   1   1 |        1       20 |         2073 |   -0.021521  |
+ | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.020606  |
+ | 4 3 1 4 |   1   4   1   1 |        1       32 |         2517 |   -0.018016  |
+ | 2 3 3 4 |   2   1   1   1 |       20       29 |         2425 |   -0.018255  |
  +=============================================================================+
 
 
@@ -3955,7 +3996,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.040685  |
  | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.018890  |
  | 4 2 1 1 |   1   1   1   1 |        1        1 |         1370 |   -0.020251  |
- | 3 2 2 1 |   5   1   1   1 |       14        1 |         1383 |    0.018090  |
+ | 3 2 2 1 |   5   1   1   1 |       14        1 |         1383 |    0.018040  |
  | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |   -0.021964  |
  | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.019987  |
  | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.019987  |
@@ -3969,7 +4010,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | 2 4 3 3 |   2   1   1   1 |       20       20 |         2092 |   -0.020280  |
  | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.022295  |
  | 1 4 4 3 |   3   9   1   1 |       30       28 |         2398 |    0.017304  |
- | 4 3 1 4 |   1   4   1   1 |        1       32 |         2517 |   -0.018090  |
+ | 4 3 1 4 |   1   4   1   1 |        1       32 |         2517 |   -0.018140  |
  +=============================================================================+
 
 
@@ -4006,37 +4047,37 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   4   |   1       1     |       29          |              |    0.139337  |
- | 2   4   |   2       1     |       30          |              |    0.681166  |
- | 4   2   |   1       1     |       10          |              |   -0.139337  |
- | 4   2   |   2       1     |       11          |              |   -0.681166  |
+ | 2   4   |   1       1     |       29          |              |   -0.139337  |
+ | 2   4   |   2       1     |       30          |              |   -0.681166  |
+ | 4   2   |   1       1     |       10          |              |    0.139337  |
+ | 4   2   |   2       1     |       11          |              |    0.681166  |
  +-----------------------------------------------------------------------------+
- | 4 1 2 1 |   2  10   1   1 |       11       10 |          344 |    0.019567  |
- | 3 2 1 2 |   1   1   1   1 |        1       11 |          371 |    0.019057  |
- | 4 2 2 2 |   2   1   1   1 |       11       11 |          381 |    0.019801  |
- | 4 2 2 2 |   4   1   1   1 |       13       11 |          383 |   -0.030382  |
- | 1 2 3 2 |   2   1   1   1 |       20       11 |          390 |    0.021287  |
- | 1 2 3 2 |   4   1   1   1 |       22       11 |          392 |   -0.018477  |
- | 2 2 4 2 |   1   1   1   1 |       29       11 |          399 |    0.032533  |
- | 2 2 4 2 |   2   1   1   1 |       30       11 |          400 |    0.029037  |
- | 4 3 2 3 |   3   1   1   1 |       12       20 |          715 |    0.019594  |
- | 2 3 4 3 |   2   1   1   1 |       30       20 |          733 |   -0.019594  |
- | 3 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.019057  |
- | 4 4 2 4 |   2   2   1   1 |       11       30 |         1084 |   -0.032533  |
- | 4 4 2 4 |   3   2   1   1 |       12       30 |         1085 |   -0.029037  |
- | 1 4 3 4 |   2   2   1   1 |       20       30 |         1093 |   -0.021287  |
- | 1 4 3 4 |   4   2   1   1 |       22       30 |         1095 |    0.018477  |
- | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.019567  |
- | 2 4 4 4 |   1   2   1   1 |       29       30 |         1102 |   -0.019801  |
- | 2 4 4 4 |   3   2   1   1 |       31       30 |         1104 |    0.030382  |
- | 2 2 3 1 |   3   2   1   1 |       21        2 |         1427 |    0.031531  |
- | 1 2 4 1 |   3   2   1   1 |       30        2 |         1436 |    0.027646  |
- | 4 1 1 2 |   2   2   1   1 |        2       11 |         1741 |   -0.027646  |
- | 3 1 2 2 |   2   2   1   1 |       11       11 |         1750 |    0.018727  |
- | 4 4 1 3 |   2   1   1   1 |        2       20 |         2074 |   -0.031531  |
- | 3 4 2 3 |   2   1   1   1 |       11       20 |         2083 |    0.026317  |
- | 2 3 3 4 |   3   1   1   1 |       21       29 |         2426 |   -0.026317  |
- | 1 3 4 4 |   3   1   1   1 |       30       29 |         2435 |   -0.018727  |
+ | 4 1 2 1 |   2  10   1   1 |       11       10 |          344 |   -0.019567  |
+ | 3 2 1 2 |   1   1   1   1 |        1       11 |          371 |   -0.019057  |
+ | 4 2 2 2 |   2   1   1   1 |       11       11 |          381 |   -0.019801  |
+ | 4 2 2 2 |   4   1   1   1 |       13       11 |          383 |    0.030382  |
+ | 1 2 3 2 |   2   1   1   1 |       20       11 |          390 |   -0.021287  |
+ | 1 2 3 2 |   4   1   1   1 |       22       11 |          392 |    0.018477  |
+ | 2 2 4 2 |   1   1   1   1 |       29       11 |          399 |   -0.032533  |
+ | 2 2 4 2 |   2   1   1   1 |       30       11 |          400 |   -0.029037  |
+ | 4 3 2 3 |   3   1   1   1 |       12       20 |          715 |   -0.019594  |
+ | 2 3 4 3 |   2   1   1   1 |       30       20 |          733 |    0.019594  |
+ | 3 4 1 4 |   1   2   1   1 |        1       30 |         1074 |    0.019057  |
+ | 4 4 2 4 |   2   2   1   1 |       11       30 |         1084 |    0.032533  |
+ | 4 4 2 4 |   3   2   1   1 |       12       30 |         1085 |    0.029037  |
+ | 1 4 3 4 |   2   2   1   1 |       20       30 |         1093 |    0.021287  |
+ | 1 4 3 4 |   4   2   1   1 |       22       30 |         1095 |   -0.018477  |
+ | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |    0.019567  |
+ | 2 4 4 4 |   1   2   1   1 |       29       30 |         1102 |    0.019801  |
+ | 2 4 4 4 |   3   2   1   1 |       31       30 |         1104 |   -0.030382  |
+ | 2 2 3 1 |   3   2   1   1 |       21        2 |         1427 |   -0.031531  |
+ | 1 2 4 1 |   3   2   1   1 |       30        2 |         1436 |   -0.027646  |
+ | 4 1 1 2 |   2   2   1   1 |        2       11 |         1741 |    0.027646  |
+ | 3 1 2 2 |   2   2   1   1 |       11       11 |         1750 |   -0.018727  |
+ | 4 4 1 3 |   2   1   1   1 |        2       20 |         2074 |    0.031531  |
+ | 3 4 2 3 |   2   1   1   1 |       11       20 |         2083 |   -0.026317  |
+ | 2 3 3 4 |   3   1   1   1 |       21       29 |         2426 |    0.026317  |
+ | 1 3 4 4 |   3   1   1   1 |       30       29 |         2435 |    0.018727  |
  +=============================================================================+
 
 
@@ -4070,21 +4111,21 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      31   1
  Length of Excitation vectors in this class is:      2807
  Converging for  4 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.67700533843959010               28
-  HIGHST VALUE AND PLACE    51.262924773448816             2748
+  LOWEST VALUE AND PLACE   0.67700533844035959               28
+  HIGHST VALUE AND PLACE    51.262924773446684             2748
 IELMNT XMIN IMIN NDEG        1    6.77005D-01      28   1
 IELMNT XMIN IMIN NDEG        2    7.54016D-01      19   1
 IELMNT XMIN IMIN NDEG        3    7.54016D-01      10   2
-IELMNT XMIN IMIN NDEG        4    9.44239D-01      20   1
-IELMNT XMIN IMIN NDEG        5    9.44239D-01      11   2
+IELMNT XMIN IMIN NDEG        4    9.44239D-01      11   1
+IELMNT XMIN IMIN NDEG        5    9.44239D-01      20   2
 IELMNT XMIN IMIN NDEG        6    1.14037D+00       1   1
 IELMNT XMIN IMIN NDEG        7    1.19591D+00      29   1
-IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
+IELMNT XMIN IMIN NDEG        8    1.30158D+00      12   1
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     28     19     10     20     11      1     29
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843959010        1.1959103517881566     
+     1 :     28     19     10     11     20      1     29
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844035959        1.1959103517886704     
  Start vector guessed from diagonal
  ... selected element no. 28
  Start vector guessed from diagonal
@@ -4092,7 +4133,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
- ... selected element no. 20
+ ... selected element no. 11
  CCEQ_SOL: IPRLE   =               5
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
@@ -4113,9 +4154,9 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
     --------------------------------------
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.44 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4141,13 +4182,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.56780069
        4      0.74030769
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.89
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.03 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4173,12 +4214,12 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49339823
        4      0.66417870
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
+ Time used in     CC_RHTR in total   :       1.84 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.44 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4205,13 +4246,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49180049
        4      0.65760618
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4237,13 +4278,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49164852
        4      0.64650166
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        1.92
+ >>> TIME USED IN THIS MICRO ITERATION        1.89
 
 
 
- Time used in     CC_RHTR in total   :       1.94 seconds
+ Time used in     CC_RHTR in total   :       1.84 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.48 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4269,13 +4310,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49157236
        4      0.63891287
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        1.95
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4301,13 +4342,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49154572
        4      0.63690352
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4333,13 +4374,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155236
        4      0.63641890
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in     CC_RHTR in total   :       1.84 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.44 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4365,13 +4406,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155497
        4      0.63636615
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4397,13 +4438,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155430
        4      0.63636157
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
- Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.44 seconds
+ Time used in     CC_RHTR in total   :       1.89 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4429,14 +4470,14 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155425
        4      0.63636221
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       2.06 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.50 seconds
- Time used in   IO of vectors/I.M.   :       0.01 seconds
+ Time used in     CC_RHTR in total   :       1.88 seconds
+ Time used in   CC part              :       0.02 seconds
+ Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
  REDUCED EIGENVALUES real part:
@@ -4461,13 +4502,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155426
        4      0.63636145
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        2.07
+ >>> TIME USED IN THIS MICRO ITERATION        1.90
 
 
 
- Time used in     CC_RHTR in total   :       1.87 seconds
+ Time used in     CC_RHTR in total   :       1.94 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   Int. calc. & read    :       0.49 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4479,7 +4520,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636137
   
- ROOT:  1 RESIDUAL TOT: 1.64002D-08
+ ROOT:  1 RESIDUAL TOT: 1.64003D-08
  ROOT:  2 RESIDUAL TOT: 9.85261D-08
  ROOT:  3 RESIDUAL TOT: 1.15573D-07
  ROOT:  4 RESIDUAL TOT: 6.13228D-06
@@ -4493,13 +4534,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636137
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        1.88
+ >>> TIME USED IN THIS MICRO ITERATION        1.96
 
 
 
- Time used in     CC_RHTR in total   :       1.92 seconds
+ Time used in     CC_RHTR in total   :       1.84 seconds
  Time used in   CC part              :       0.02 seconds
- Time used in   Int. calc. & read    :       0.43 seconds
+ Time used in   Int. calc. & read    :       0.42 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4526,13 +4567,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    55
- >>> TIME USED IN THIS MICRO ITERATION        1.93
+ >>> TIME USED IN THIS MICRO ITERATION        1.85
 
 
 
- Time used in     CC_RHTR in total   :       1.59 seconds
+ Time used in     CC_RHTR in total   :       1.51 seconds
  Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.46 seconds
+ Time used in   Int. calc. & read    :       0.41 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4544,8 +4585,8 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636136
   
- ROOT:  1 RESIDUAL TOT: 9.95382D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95382D-10
+ ROOT:  1 RESIDUAL TOT: 9.95383D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95383D-10
  ROOT:  2 RESIDUAL TOT: 3.99965D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.99965D-09
  ROOT:  3 RESIDUAL TOT: 3.46096D-09
@@ -4561,13 +4602,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        1.60
+ >>> TIME USED IN THIS MICRO ITERATION        1.53
 
 
 
- Time used in     CC_RHTR in total   :       0.82 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.42 seconds
+ Time used in     CC_RHTR in total   :       0.72 seconds
+ Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.37 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4596,13 +4637,13 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.84
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
 
- Time used in     CC_RHTR in total   :       0.82 seconds
+ Time used in     CC_RHTR in total   :       0.72 seconds
  Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.42 seconds
+ Time used in   Int. calc. & read    :       0.36 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
@@ -4614,8 +4655,8 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636136
   
- ROOT:  1 RESIDUAL TOT: 9.95993D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95993D-10
+ ROOT:  1 RESIDUAL TOT: 9.95992D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95992D-10
  ROOT:  2 RESIDUAL TOT: 1.28640D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.28640D-09
  ROOT:  3 RESIDUAL TOT: 2.65756D-09
@@ -4632,7 +4673,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
        3      0.49155427
        4      0.63636136
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.83
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
     --------------------------------------
     converged in 16 iterations
@@ -4641,15 +4682,15 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.47
+         CC_TRDRV            0.46
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.47
+         Total time          0.46
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  28.46 seconds
- >>>> Total wall time used in CCEQ_SOLV:  31.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  27.52 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  30.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4676,19 +4717,19 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4176046212       11.3635994740
-         2            0.4827790556       13.1370859966
-         3            0.4915542657       13.3758716044
-         4            0.6363613609       17.3162729961
+         1            0.4176046212       11.3635997965
+         2            0.4827790556       13.1370863694
+         3            0.4915542657       13.3758719839
+         4            0.6363613609       17.3162734875
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -39.977781633289212
-@@    4    2           -39.912607198968040
-@@    4    3           -39.903831988833076
-@@    4    4           -39.759024893644359
+@@    4    1           -39.977781633288984
+@@    4    2           -39.912607198970072
+@@    4    3           -39.903831988834362
+@@    4    4           -39.759024893644387
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4735,7 +4776,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
  | 2 3 3 3 |   4   9   1   1 |       22       28 |         2390 |    0.024313  |
  | 1 3 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.063225  |
  | 1 3 4 3 |   4   9   1   1 |       31       28 |         2399 |    0.029549  |
- | 4 4 1 4 |   1   4   1   1 |        1       32 |         2517 |   -0.022729  |
+ | 4 4 1 4 |   1   4   1   1 |        1       32 |         2517 |   -0.022811  |
  +=============================================================================+
 
 
@@ -4772,40 +4813,40 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |       19          |              |   -0.672530  |
- | 2   3   |   2       1     |       20          |              |    0.143075  |
- | 2   3   |   3       1     |       21          |              |    0.108998  |
- | 3   2   |   1       1     |       10          |              |    0.672530  |
- | 3   2   |   2       1     |       11          |              |   -0.143075  |
- | 3   2   |   3       1     |       12          |              |   -0.108998  |
+ | 2   3   |   1       1     |       19          |              |    0.672530  |
+ | 2   3   |   2       1     |       20          |              |   -0.143075  |
+ | 2   3   |   3       1     |       21          |              |   -0.108998  |
+ | 3   2   |   1       1     |       10          |              |   -0.672530  |
+ | 3   2   |   2       1     |       11          |              |    0.143075  |
+ | 3   2   |   3       1     |       12          |              |    0.108998  |
  +-----------------------------------------------------------------------------+
- | 1 2 3 1 |   3   1   1   1 |       21        1 |           21 |   -0.023870  |
- | 2 2 4 1 |   2   1   1   1 |       30        1 |           30 |   -0.021521  |
- | 3 1 1 2 |   1   2   1   1 |        1       11 |          371 |    0.023870  |
- | 4 1 2 2 |   1   1   1   1 |       10       10 |          343 |   -0.020606  |
- | 1 1 3 2 |   2  10   1   1 |       20       19 |          686 |    0.020606  |
- | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |   -0.018808  |
- | 3 4 1 3 |   1   3   1   1 |        1       22 |          778 |    0.019448  |
- | 2 4 4 3 |   1   1   1   1 |       29       20 |          732 |    0.018255  |
- | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |    0.021521  |
- | 4 3 2 4 |   2   1   1   1 |       11       29 |         1047 |   -0.018255  |
- | 1 3 3 4 |   3   1   1   1 |       21       29 |         1057 |    0.018808  |
- | 4 1 1 1 |   1  10   1   1 |        1       10 |         1703 |   -0.018310  |
- | 3 1 2 1 |   2  10   1   1 |       11       10 |         1713 |   -0.043051  |
- | 3 1 2 1 |   4  10   1   1 |       13       10 |         1715 |    0.018602  |
- | 1 1 4 1 |   2  10   1   1 |       29       10 |         1731 |   -0.025280  |
- | 4 2 1 2 |   1   9   1   1 |        1       19 |         2036 |    0.018310  |
- | 3 2 2 2 |   2   1   1   1 |       11       11 |         1750 |    0.024923  |
- | 2 2 3 2 |   2   1   1   1 |       20       11 |         1759 |   -0.025227  |
- | 2 2 3 2 |   2   2   1   1 |       20       12 |         1796 |   -0.021512  |
- | 2 2 3 2 |   2   9   1   1 |       20       19 |         2055 |    0.043051  |
- | 2 2 3 2 |   4   9   1   1 |       22       19 |         2057 |   -0.018602  |
- | 1 2 4 2 |   2   9   1   1 |       29       19 |         2064 |    0.025280  |
- | 3 3 2 3 |   2   1   1   1 |       11       20 |         2083 |    0.025227  |
- | 3 3 2 3 |   2   2   1   1 |       11       21 |         2120 |    0.021512  |
- | 2 3 3 3 |   2   1   1   1 |       20       20 |         2092 |   -0.024923  |
- | 3 4 2 4 |   2   1   1   1 |       11       29 |         2416 |   -0.021781  |
- | 2 4 3 4 |   2   1   1   1 |       20       29 |         2425 |    0.021781  |
+ | 1 2 3 1 |   3   1   1   1 |       21        1 |           21 |    0.023870  |
+ | 2 2 4 1 |   2   1   1   1 |       30        1 |           30 |    0.021521  |
+ | 3 1 1 2 |   1   2   1   1 |        1       11 |          371 |   -0.023870  |
+ | 4 1 2 2 |   1   1   1   1 |       10       10 |          343 |    0.020606  |
+ | 1 1 3 2 |   2  10   1   1 |       20       19 |          686 |   -0.020606  |
+ | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |    0.018808  |
+ | 3 4 1 3 |   1   3   1   1 |        1       22 |          778 |   -0.019462  |
+ | 2 4 4 3 |   1   1   1   1 |       29       20 |          732 |   -0.018255  |
+ | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.021521  |
+ | 4 3 2 4 |   2   1   1   1 |       11       29 |         1047 |    0.018255  |
+ | 1 3 3 4 |   3   1   1   1 |       21       29 |         1057 |   -0.018808  |
+ | 4 1 1 1 |   1  10   1   1 |        1       10 |         1703 |    0.018310  |
+ | 3 1 2 1 |   2  10   1   1 |       11       10 |         1713 |    0.043051  |
+ | 3 1 2 1 |   4  10   1   1 |       13       10 |         1715 |   -0.018602  |
+ | 1 1 4 1 |   2  10   1   1 |       29       10 |         1731 |    0.025280  |
+ | 4 2 1 2 |   1   9   1   1 |        1       19 |         2036 |   -0.018310  |
+ | 3 2 2 2 |   2   1   1   1 |       11       11 |         1750 |   -0.024923  |
+ | 2 2 3 2 |   2   1   1   1 |       20       11 |         1759 |    0.025227  |
+ | 2 2 3 2 |   2   2   1   1 |       20       12 |         1796 |    0.021512  |
+ | 2 2 3 2 |   2   9   1   1 |       20       19 |         2055 |   -0.043051  |
+ | 2 2 3 2 |   4   9   1   1 |       22       19 |         2057 |    0.018602  |
+ | 1 2 4 2 |   2   9   1   1 |       29       19 |         2064 |   -0.025280  |
+ | 3 3 2 3 |   2   1   1   1 |       11       20 |         2083 |   -0.025227  |
+ | 3 3 2 3 |   2   2   1   1 |       11       21 |         2120 |   -0.021512  |
+ | 2 3 3 3 |   2   1   1   1 |       20       20 |         2092 |    0.024923  |
+ | 3 4 2 4 |   2   1   1   1 |       11       29 |         2416 |    0.021781  |
+ | 2 4 3 4 |   2   1   1   1 |       20       29 |         2425 |   -0.021781  |
  +=============================================================================+
 
 
@@ -4856,7 +4897,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
  | 1 1 3 2 |   2  10   1   1 |       20       19 |          686 |   -0.022295  |
  | 1 1 3 2 |   3  10   1   1 |       21       19 |          687 |    0.017304  |
  | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |   -0.021383  |
- | 3 4 1 3 |   1   3   1   1 |        1       22 |          778 |   -0.019594  |
+ | 3 4 1 3 |   1   3   1   1 |        1       22 |          778 |   -0.019608  |
  | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.021964  |
  | 1 3 3 4 |   3   1   1   1 |       21       29 |         1057 |   -0.021383  |
  | 2 3 4 4 |   2   1   1   1 |       30       29 |         1066 |   -0.020280  |
@@ -4909,37 +4950,37 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |       19          |              |    0.139337  |
- | 2   3   |   2       1     |       20          |              |    0.681166  |
- | 3   2   |   1       1     |       10          |              |   -0.139337  |
- | 3   2   |   2       1     |       11          |              |   -0.681166  |
+ | 2   3   |   1       1     |       19          |              |   -0.139337  |
+ | 2   3   |   2       1     |       20          |              |   -0.681166  |
+ | 3   2   |   1       1     |       10          |              |    0.139337  |
+ | 3   2   |   2       1     |       11          |              |    0.681166  |
  +-----------------------------------------------------------------------------+
- | 1 2 3 1 |   3   2   1   1 |       21        2 |           58 |    0.027646  |
- | 2 2 4 1 |   2   2   1   1 |       30        2 |           67 |    0.031531  |
- | 3 1 1 2 |   2   2   1   1 |        2       11 |          372 |   -0.027646  |
- | 4 1 2 2 |   2   2   1   1 |       11       11 |          381 |    0.018727  |
- | 1 4 3 3 |   3   1   1   1 |       21       20 |          724 |   -0.018727  |
- | 2 4 4 3 |   2   1   1   1 |       30       20 |          733 |   -0.026317  |
- | 3 3 1 4 |   2   2   1   1 |        2       30 |         1075 |   -0.031531  |
- | 4 3 2 4 |   2   2   1   1 |       11       30 |         1084 |    0.026317  |
- | 3 1 2 1 |   2  10   1   1 |       11       10 |         1713 |    0.019567  |
- | 4 2 1 2 |   1   1   1   1 |        1       11 |         1740 |    0.019057  |
- | 3 2 2 2 |   2   1   1   1 |       11       11 |         1750 |    0.019801  |
- | 3 2 2 2 |   4   1   1   1 |       13       11 |         1752 |   -0.030382  |
- | 2 2 3 2 |   2   1   1   1 |       20       11 |         1759 |    0.032533  |
- | 2 2 3 2 |   3   1   1   1 |       21       11 |         1760 |    0.029037  |
- | 2 2 3 2 |   2   9   1   1 |       20       19 |         2055 |   -0.019567  |
- | 1 2 4 2 |   2   1   1   1 |       29       11 |         1768 |    0.021287  |
- | 1 2 4 2 |   4   1   1   1 |       31       11 |         1770 |   -0.018477  |
- | 4 3 1 3 |   1   1   1   1 |        1       20 |         2073 |   -0.019057  |
- | 3 3 2 3 |   2   1   1   1 |       11       20 |         2083 |   -0.032533  |
- | 3 3 2 3 |   3   1   1   1 |       12       20 |         2084 |   -0.029037  |
- | 2 3 3 3 |   2   1   1   1 |       20       20 |         2092 |   -0.019801  |
- | 2 3 3 3 |   4   1   1   1 |       22       20 |         2094 |    0.030382  |
- | 1 3 4 3 |   2   1   1   1 |       29       20 |         2101 |   -0.021287  |
- | 1 3 4 3 |   4   1   1   1 |       31       20 |         2103 |    0.018477  |
- | 3 4 2 4 |   3   1   1   1 |       12       29 |         2417 |    0.019594  |
- | 2 4 3 4 |   3   1   1   1 |       21       29 |         2426 |   -0.019594  |
+ | 1 2 3 1 |   3   2   1   1 |       21        2 |           58 |   -0.027646  |
+ | 2 2 4 1 |   2   2   1   1 |       30        2 |           67 |   -0.031531  |
+ | 3 1 1 2 |   2   2   1   1 |        2       11 |          372 |    0.027646  |
+ | 4 1 2 2 |   2   2   1   1 |       11       11 |          381 |   -0.018727  |
+ | 1 4 3 3 |   3   1   1   1 |       21       20 |          724 |    0.018727  |
+ | 2 4 4 3 |   2   1   1   1 |       30       20 |          733 |    0.026317  |
+ | 3 3 1 4 |   2   2   1   1 |        2       30 |         1075 |    0.031531  |
+ | 4 3 2 4 |   2   2   1   1 |       11       30 |         1084 |   -0.026317  |
+ | 3 1 2 1 |   2  10   1   1 |       11       10 |         1713 |   -0.019567  |
+ | 4 2 1 2 |   1   1   1   1 |        1       11 |         1740 |   -0.019057  |
+ | 3 2 2 2 |   2   1   1   1 |       11       11 |         1750 |   -0.019801  |
+ | 3 2 2 2 |   4   1   1   1 |       13       11 |         1752 |    0.030382  |
+ | 2 2 3 2 |   2   1   1   1 |       20       11 |         1759 |   -0.032533  |
+ | 2 2 3 2 |   3   1   1   1 |       21       11 |         1760 |   -0.029037  |
+ | 2 2 3 2 |   2   9   1   1 |       20       19 |         2055 |    0.019567  |
+ | 1 2 4 2 |   2   1   1   1 |       29       11 |         1768 |   -0.021287  |
+ | 1 2 4 2 |   4   1   1   1 |       31       11 |         1770 |    0.018477  |
+ | 4 3 1 3 |   1   1   1   1 |        1       20 |         2073 |    0.019057  |
+ | 3 3 2 3 |   2   1   1   1 |       11       20 |         2083 |    0.032533  |
+ | 3 3 2 3 |   3   1   1   1 |       12       20 |         2084 |    0.029037  |
+ | 2 3 3 3 |   2   1   1   1 |       20       20 |         2092 |    0.019801  |
+ | 2 3 3 3 |   4   1   1   1 |       22       20 |         2094 |   -0.030382  |
+ | 1 3 4 3 |   2   1   1   1 |       29       20 |         2101 |    0.021287  |
+ | 1 3 4 3 |   4   1   1   1 |       31       20 |         2103 |   -0.018477  |
+ | 3 4 2 4 |   3   1   1   1 |       12       29 |         2417 |   -0.019594  |
+ | 2 4 3 4 |   3   1   1   1 |       21       29 |         2426 |    0.019594  |
  +=============================================================================+
 
 
@@ -4966,7 +5007,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
 
  Ground state energy is target 
 
- Ecorr =                    -40.39538625452957631978
+ Ecorr =                    -40.39538625453080555872
 
  *******************************************************************
   
@@ -4993,25 +5034,25 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4914836  |      13.37395  |    107868.191  |  97.34  |
- | ^1A   |    2   |     0.4914836  |      13.37395  |    107868.191  |  97.33  |
- | ^1A   |    3   |     0.5431575  |      14.78007  |    119209.301  |  97.10  |
- | ^1A   |    4   |     0.6382924  |      17.36882  |    140088.992  |  97.38  |
+ | ^1A   |    1   |     0.4914836  |      13.37395  |    107868.190  |  97.34  |
+ | ^1A   |    2   |     0.4914836  |      13.37395  |    107868.190  |  97.34  |
+ | ^1A   |    3   |     0.5431575  |      14.78007  |    119209.300  |  97.10  |
+ | ^1A   |    4   |     0.6382924  |      17.36882  |    140088.990  |  97.38  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.4176046  |      11.36360  |     91653.620  |  97.02  |
- | ^1B2  |    2   |     0.4827791  |      13.13709  |    105957.755  |  96.99  |
- | ^1B2  |    3   |     0.4915543  |      13.37587  |    107883.691  |  97.15  |
- | ^1B2  |    4   |     0.6363614  |      17.31627  |    139665.175  |  97.13  |
+ | ^1B2  |    1   |     0.4176046  |      11.36360  |     91653.619  |  97.02  |
+ | ^1B2  |    2   |     0.4827791  |      13.13709  |    105957.754  |  96.99  |
+ | ^1B2  |    3   |     0.4915543  |      13.37587  |    107883.690  |  97.15  |
+ | ^1B2  |    4   |     0.6363614  |      17.31627  |    139665.174  |  97.13  |
  +-----------------------------------------------------------------------------+
- | ^1B1  |    1   |     0.4176046  |      11.36360  |     91653.620  |  97.02  |
- | ^1B1  |    2   |     0.4827791  |      13.13709  |    105957.755  |  96.99  |
- | ^1B1  |    3   |     0.4915543  |      13.37587  |    107883.691  |  97.15  |
- | ^1B1  |    4   |     0.6363614  |      17.31627  |    139665.175  |  97.13  |
+ | ^1B1  |    1   |     0.4176046  |      11.36360  |     91653.619  |  97.02  |
+ | ^1B1  |    2   |     0.4827791  |      13.13709  |    105957.754  |  96.99  |
+ | ^1B1  |    3   |     0.4915543  |      13.37587  |    107883.690  |  97.15  |
+ | ^1B1  |    4   |     0.6363614  |      17.31627  |    139665.174  |  97.13  |
  +-----------------------------------------------------------------------------+
- | ^1B3  |    1   |     0.4176046  |      11.36360  |     91653.620  |  97.02  |
- | ^1B3  |    2   |     0.4827791  |      13.13709  |    105957.755  |  96.99  |
- | ^1B3  |    3   |     0.4915543  |      13.37587  |    107883.691  |  97.15  |
- | ^1B3  |    4   |     0.6363614  |      17.31627  |    139665.175  |  97.13  |
+ | ^1B3  |    1   |     0.4176046  |      11.36360  |     91653.619  |  97.02  |
+ | ^1B3  |    2   |     0.4827791  |      13.13709  |    105957.754  |  96.99  |
+ | ^1B3  |    3   |     0.4915543  |      13.37587  |    107883.690  |  97.15  |
+ | ^1B3  |    4   |     0.6363614  |      17.31627  |    139665.174  |  97.13  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -5034,7 +5075,7 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
              4 ^1B3       -39.7590248936                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -5053,9 +5094,9 @@ IELMNT XMIN IMIN NDEG        8    1.30158D+00      21   1
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  2 minutes 23 seconds
- >>>> Total wall time used in DALTON:  2 minutes 40 seconds
+ >>>> Total CPU  time used in DALTON:  2 minutes 22 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 38 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:31:07 2010 
+     Date and time (Linux)  : Wed Mar 16 20:01:23 2011 
      Host name              : fe6                                     

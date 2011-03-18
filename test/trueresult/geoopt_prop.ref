@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -134,12 +135,6 @@
  ****************** Output of molecule and basis set info suppressed ******************
  **************************************************************************************
 
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
 
 
                       SYMADD: Requested addition of symmetry
@@ -244,8 +239,8 @@ Represented as:      C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -312,15 +307,15 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.972000    0.000000
- H    2:    0.972000    1.537101    0.000000
+ H   _1:    0.972000    0.000000
+ H   _2:    0.972000    1.537101    0.000000
 
 
   Max interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -328,8 +323,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.972000
-  bond distance:  H    2     O            0.972000
+  bond distance:  H   _1     O            0.972000
+  bond distance:  H   _2     O            0.972000
 
 
   Bond angles (degrees):
@@ -337,7 +332,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.500
+  bond angle:     H   _1     O          H   _2       104.500
 
 
 
@@ -357,7 +352,7 @@ Represented as:      C2v
 
                A                   B                   C
 
-         797267.3440         424480.0013         277000.0234 MHz
+         797267.3370         424479.9976         277000.0210 MHz
            26.593976           14.159129            9.239726 cm-1
 
 
@@ -447,7 +442,7 @@ Represented as:      C2v
  Number of two-electron integrals written:       57092 ( 25.7% )
  Megabytes written:                              0.660
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -482,7 +477,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -494,12 +489,12 @@ Represented as:      C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -535,28 +530,44 @@ Represented as:      C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -75.8294835460       2.39D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.997271
+      MULPOP  O      -0.56; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
    2  -76.0427775618       3.85D-01  -2.13D-01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001859
+      MULPOP  O      -0.46; H   _1  0.23; H   _2  0.23; 
+ -----------------------------------------------------------------------------
    3  -76.0506585657       8.69D-02  -7.88D-03    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.002129
+      MULPOP  O      -0.50; H   _1  0.25; H   _2  0.25; 
+ -----------------------------------------------------------------------------
    4  -76.0514148689       2.07D-02  -7.56D-04    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001298
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    5  -76.0514535670       9.42D-03  -3.87D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001693
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    6  -76.0514589341       1.95D-03  -5.37D-06    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001527
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    7  -76.0514595020       3.21D-04  -5.68D-07    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001554
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    8  -76.0514595189       4.79D-05  -1.69D-08    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001554
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    9  -76.0514595192       9.11D-06  -2.63D-10    3  1  1  0
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -587,20 +598,23 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.051459519190                 
+     Final HF energy:             -76.051459519191                 
      Nuclear repulsion:             9.055004525638
-     Electronic energy:           -85.106464044828
+     Electronic energy:           -85.106464044829
 
      Final gradient norm:           0.000009105820
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -608,7 +622,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     0.5515  -0.1140   0.0375  -0.0169  -0.0112
    2 O   :1s     0.4717  -0.1904   0.0639  -0.0299  -0.0191
    3 O   :1s     0.0055   0.5435  -0.1978   0.1118   0.0721
@@ -630,7 +644,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.2879   0.1158  -0.2478
    2 O   :2px    0.4452   0.0955  -0.8882
    3 O   :2px    0.4127   0.5907   1.5991
@@ -641,7 +655,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.2273  -0.0390  -0.0711
    2 O   :2py    0.3500  -0.0736  -0.1027
    3 O   :2py    0.2150   0.0117  -0.0578
@@ -657,7 +671,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :3d2-  -0.1271   1.0488
    2 H   :2px   -0.6877  -0.3314
 
@@ -667,7 +681,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
 
@@ -688,7 +702,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
 
@@ -698,7 +712,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
 
@@ -706,8 +720,8 @@ Represented as:      C2v
                              -----------------------
 
  O          0.0000000000            0.0000000000           -0.1258515023
- H    1     0.0000000000            1.4523500000            0.9986773907
- H    2     0.0000000000           -1.4523500000            0.9986773907
+ H   _1     0.0000000000            1.4523500000            0.9986773907
+ H   _2     0.0000000000           -1.4523500000            0.9986773907
 
 
 
@@ -719,18 +733,18 @@ Represented as:      C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0514595192 au (Hartrees)
-                         -2069.46542598 eV
-                           -199673.0783 kJ/mol
+                         -2069.46548471 eV
+                           -199673.0762 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1974514225 au
-     Mass-velocity correction:                  -0.2489637594 au
+     Darwin correction:                          0.1974514209 au
+     Mass-velocity correction:                  -0.2489637574 au
 
-     Total relativistic correction:             -0.0515123369 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1029718561 au
+     Total relativistic correction:             -0.0515123365 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1029718556 au
 
 
 
@@ -745,8 +759,8 @@ Represented as:      C2v
 
 
  O          0.0000000000            0.0000000000           -0.0410235861
- H    1     0.0000000000            0.0247561201            0.0205117930
- H    2     0.0000000000           -0.0247561201            0.0205117930
+ H   _1     0.0000000000            0.0247561201            0.0205117930
+ H   _2     0.0000000000           -0.0247561201            0.0205117930
 
 
 
@@ -764,7 +778,7 @@ Represented as:      C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.88703692         2.25462271         7.52061185
+      z      0.88703692         2.25462282         7.52061221
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -776,15 +790,15 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.972000    0.000000
- H    2:    0.972000    1.537101    0.000000
+ H   _1:    0.972000    0.000000
+ H   _2:    0.972000    1.537101    0.000000
 
 
   Max interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -792,8 +806,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.972000
-  bond distance:  H    2     O            0.972000
+  bond distance:  H   _1     O            0.972000
+  bond distance:  H   _2     O            0.972000
 
 
   Bond angles (degrees):
@@ -801,7 +815,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.500
+  bond angle:     H   _1     O          H   _2       104.500
 
 
 
@@ -832,8 +846,8 @@ Represented as:      C2v
                                 ------------------
 
  O          0.0000000000            0.0000000000           -0.1036694787
- H    1     0.0000000000            1.4181911744            0.9875863789
- H    2     0.0000000000           -1.4181911744            0.9875863789
+ H   _1     0.0000000000            1.4181911744            0.9875863789
+ H   _2     0.0000000000           -1.4181911744            0.9875863789
 
 
 
@@ -858,12 +872,6 @@ Represented as:      C2v
  **************************************************************************************
 
 
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -880,7 +888,7 @@ Represented as:      C2v
  Number of two-electron integrals written:       57092 ( 25.7% )
  Megabytes written:                              0.660
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -907,27 +915,41 @@ Represented as:      C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -76.0529083258        9.30019D-02   -1.45D-03    1
-      MULPOP O   ******; H   ******; 
-   2    -76.0532779161        2.74995D-02   -3.70D-04    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000987
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
+   2    -76.0532779162        2.74995D-02   -3.70D-04    2
+      Virial theorem: -V/T =      1.999800
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    3    -76.0533082403        1.24480D-02   -3.03D-05    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000499
+      MULPOP  O      -0.51; H   _1  0.25; H   _2  0.25; 
+ -----------------------------------------------------------------------------
    4    -76.0533161888        2.14121D-03   -7.95D-06    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000264
+      MULPOP  O      -0.51; H   _1  0.25; H   _2  0.25; 
+ -----------------------------------------------------------------------------
    5    -76.0533168500        5.69477D-04   -6.61D-07    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000294
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    6    -76.0533169156        1.06094D-04   -6.55D-08    6
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000297
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    7    -76.0533169175        1.73542D-05   -1.97D-09    7
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000297
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    8    -76.0533169176        2.57567D-06   -4.74D-11    8
- DIIS converged in   8 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -958,20 +980,23 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.053316917596                 
-     Nuclear repulsion:             9.293892537021
-     Electronic energy:           -85.347209454616
+     Final HF energy:             -76.053316917597                 
+     Nuclear repulsion:             9.293892537039
+     Electronic energy:           -85.347209454636
 
      Final gradient norm:           0.000002575675
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
 
@@ -980,7 +1005,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
 
@@ -1003,7 +1028,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:43 2011 
      Host name              : fe6                                     
 
 
@@ -1013,7 +1038,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:48 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1024,7 +1049,7 @@ Represented as:      C2v
 
 
  >>>> Total CPU  time used in ABACUS:   0.04 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
                    .-------------------------------------------.
@@ -1043,8 +1068,8 @@ Represented as:      C2v
                                 ------------------
 
  O          0.0000000000            0.0000000000           -0.0930949333
- H    1     0.0000000000            1.4159354362            0.9822991061
- H    2     0.0000000000           -1.4159354362            0.9822991061
+ H   _1     0.0000000000            1.4159354362            0.9822991061
+ H   _2     0.0000000000           -1.4159354362            0.9822991061
 
 
 
@@ -1070,12 +1095,6 @@ Represented as:      C2v
  **************************************************************************************
 
 
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -1092,7 +1111,7 @@ Represented as:      C2v
  Number of two-electron integrals written:       57092 ( 25.7% )
  Megabytes written:                              0.660
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -1119,25 +1138,37 @@ Represented as:      C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -76.0533776741        2.54776D-02   -6.08D-05    1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000143
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    2    -76.0534085433        7.44273D-03   -3.09D-05    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999856
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    3    -76.0534111204        3.52003D-03   -2.58D-06    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000042
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    4    -76.0534117804        6.20728D-04   -6.60D-07    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999977
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    5    -76.0534118365        1.52129D-04   -5.60D-08    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999986
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    6    -76.0534118410        3.07318D-05   -4.53D-09    6
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999987
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    7    -76.0534118412        5.30220D-06   -1.69D-10    7
- DIIS converged in   7 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1168,20 +1199,23 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.053411841177                 
-     Nuclear repulsion:             9.351911055507
-     Electronic energy:           -85.405322896685
+     Final HF energy:             -76.053411841178                 
+     Nuclear repulsion:             9.351911055512
+     Electronic energy:           -85.405322896689
 
      Final gradient norm:           0.000005302204
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1190,7 +1224,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1213,7 +1247,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1223,7 +1257,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1233,7 +1267,7 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.05 seconds
+ >>>> Total CPU  time used in ABACUS:   0.04 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
@@ -1253,8 +1287,8 @@ Represented as:      C2v
                                 ------------------
 
  O          0.0000000000            0.0000000000           -0.0899263525
- H    1     0.0000000000            1.4197621139            0.9807148157
- H    2     0.0000000000           -1.4197621139            0.9807148157
+ H   _1     0.0000000000            1.4197621139            0.9807148157
+ H   _2     0.0000000000           -1.4197621139            0.9807148157
 
 
 
@@ -1280,12 +1314,6 @@ Represented as:      C2v
  **************************************************************************************
 
 
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -1302,7 +1330,7 @@ Represented as:      C2v
  Number of two-electron integrals written:       57092 ( 25.7% )
  Megabytes written:                              0.660
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -1329,23 +1357,33 @@ Represented as:      C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -76.0534191877        6.04218D-03   -7.35D-06    1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999987
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    2    -76.0534214079        1.15729D-03   -2.22D-06    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999999
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    3    -76.0534215426        1.89692D-04   -1.35D-07    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000000
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    4    -76.0534215473        6.30637D-05   -4.68D-09    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000003
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    5    -76.0534215476        1.89702D-05   -2.72D-10    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000002
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    6    -76.0534215476        3.87122D-06   -3.93D-11    6
- DIIS converged in   6 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1376,20 +1414,23 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -76.053421547594                 
-     Nuclear repulsion:             9.350032217912
-     Electronic energy:           -85.403453765506
+     Nuclear repulsion:             9.350032217915
+     Electronic energy:           -85.403453765509
 
      Final gradient norm:           0.000003871221
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1398,7 +1439,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1421,7 +1462,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1431,7 +1472,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:49 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:44 2011 
      Host name              : fe6                                     
 
 
@@ -1461,8 +1502,8 @@ Represented as:      C2v
                                 ------------------
 
  O          0.0000000000            0.0000000000           -0.0879638432
- H    1     0.0000000000            1.4225656180            0.9797335611
- H    2     0.0000000000           -1.4225656180            0.9797335611
+ H   _1     0.0000000000            1.4225656180            0.9797335611
+ H   _2     0.0000000000           -1.4225656180            0.9797335611
 
 
 
@@ -1488,12 +1529,6 @@ Represented as:      C2v
  **************************************************************************************
 
 
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-311++G**                                                                      
-
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -1510,7 +1545,7 @@ Represented as:      C2v
  Number of two-electron integrals written:       57092 ( 25.7% )
  Megabytes written:                              0.660
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -1537,23 +1572,33 @@ Represented as:      C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -76.0534225042        4.10250D-03   -9.57D-07    1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000007
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    2    -76.0534234942        7.76812D-04   -9.90D-07    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000024
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    3    -76.0534235497        2.29905D-04   -5.54D-08    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000017
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    4    -76.0534235526        7.45510D-05   -2.97D-09    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000023
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    5    -76.0534235531        1.06890D-05   -4.79D-10    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000022
+      MULPOP  O      -0.51; H   _1  0.26; H   _2  0.26; 
+ -----------------------------------------------------------------------------
    6    -76.0534235531        2.69339D-06   -1.57D-11    6
- DIIS converged in   6 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1584,20 +1629,23 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -76.053423553139                 
-     Nuclear repulsion:             9.346957743637
-     Electronic energy:           -85.400381296777
+     Nuclear repulsion:             9.346957743641
+     Electronic energy:           -85.400381296780
 
      Final gradient norm:           0.000002693386
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:45 2011 
      Host name              : fe6                                     
 
 
@@ -1606,7 +1654,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:45 2011 
      Host name              : fe6                                     
 
 
@@ -1629,7 +1677,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:45 2011 
      Host name              : fe6                                     
 
 
@@ -1639,7 +1687,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:45 2011 
      Host name              : fe6                                     
 
 
@@ -1669,8 +1717,8 @@ Represented as:      C2v
                                -------------------
 
  O          0.0000000000            0.0000000000           -0.0879638432
- H    1     0.0000000000            1.4225656180            0.9797335611
- H    2     0.0000000000           -1.4225656180            0.9797335611
+ H   _1     0.0000000000            1.4225656180            0.9797335611
+ H   _2     0.0000000000           -1.4225656180            0.9797335611
 
 
 
@@ -1724,7 +1772,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:45 2011 
      Host name              : fe6                                     
 
 
@@ -1734,7 +1782,7 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:47 2011 
      Host name              : fe6                                     
 
 
@@ -1742,8 +1790,8 @@ Represented as:      C2v
                              -----------------------
 
  O          0.0000000000            0.0000000000           -0.0879638432
- H    1     0.0000000000            1.4225656180            0.9797335611
- H    2     0.0000000000           -1.4225656180            0.9797335611
+ H   _1     0.0000000000            1.4225656180            0.9797335611
+ H   _2     0.0000000000           -1.4225656180            0.9797335611
 
 
 
@@ -1755,18 +1803,18 @@ Represented as:      C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0534235531 au (Hartrees)
-                         -2069.51887006 eV
-                           -199678.2349 kJ/mol
+                         -2069.51892879 eV
+                           -199678.2328 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1973997981 au
-     Mass-velocity correction:                  -0.2489050288 au
+     Darwin correction:                          0.1973997964 au
+     Mass-velocity correction:                  -0.2489050268 au
 
-     Total relativistic correction:             -0.0515052308 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1049287839 au
+     Total relativistic correction:             -0.0515052303 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1049287835 au
 
 
 
@@ -1781,8 +1829,8 @@ Represented as:      C2v
 
 
  O          0.0000000000            0.0000000000           -0.0000014458
- H    1     0.0000000000           -0.0000001298            0.0000007229
- H    2     0.0000000000            0.0000001298            0.0000007229
+ H   _1     0.0000000000           -0.0000001298            0.0000007229
+ H   _2     0.0000000000            0.0000001298            0.0000007229
 
 
 
@@ -1827,26 +1875,26 @@ Represented as:      C2v
 
 
 
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
+            O      x    O      y    O      z    H   _1 x    H   _1 y    H   _1 z
 
  O      x    0.000001
  O      y    0.000000    0.813488
  O      z    0.000000    0.000000    0.529756
 
- H    1 x   -0.000001    0.000000    0.000000    0.000000
- H    1 y    0.000000   -0.406744   -0.241670    0.000000    0.438323
- H    1 z    0.000000   -0.305278   -0.264878    0.000000    0.273474    0.247001
+ H   _1 x   -0.000001    0.000000    0.000000    0.000000
+ H   _1 y    0.000000   -0.406744   -0.241670    0.000000    0.438323
+ H   _1 z    0.000000   -0.305278   -0.264878    0.000000    0.273474    0.247001
 
- H    2 x   -0.000001    0.000000    0.000000    0.000000    0.000000    0.000000
- H    2 y    0.000000   -0.406744    0.241670    0.000000   -0.031579    0.031804
- H    2 z    0.000000    0.305278   -0.264878    0.000000   -0.031804    0.017877
+ H   _2 x   -0.000001    0.000000    0.000000    0.000000    0.000000    0.000000
+ H   _2 y    0.000000   -0.406744    0.241670    0.000000   -0.031579    0.031804
+ H   _2 z    0.000000    0.305278   -0.264878    0.000000   -0.031804    0.017877
 
 
-            H    2 x    H    2 y    H    2 z
+            H   _2 x    H   _2 y    H   _2 z
 
- H    2 x    0.000000
- H    2 y    0.000000    0.438323
- H    2 z    0.000000   -0.273474    0.247001
+ H   _2 x    0.000000
+ H   _2 y    0.000000    0.438323
+ H   _2 z    0.000000   -0.273474    0.247001
 
 
 
@@ -1864,7 +1912,7 @@ Represented as:      C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86393634         2.19590690         7.32475698
+      z      0.86393634         2.19590700         7.32475732
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1905,13 +1953,13 @@ Represented as:      C2v
       O      y     0.00000000    -0.59851522     0.00000000
       O      z     0.00000000     0.00000000    -0.44817426
 
-      H    1 x     0.40457921     0.00000000     0.00000000
-      H    1 y     0.00000000     0.29925761    -0.02974537
-      H    1 z     0.00000000    -0.07904844     0.22408713
+      H   _1 x     0.40457921     0.00000000     0.00000000
+      H   _1 y     0.00000000     0.29925761    -0.02974537
+      H   _1 z     0.00000000    -0.07904844     0.22408713
 
-      H    2 x     0.40457921     0.00000000     0.00000000
-      H    2 y     0.00000000     0.29925761     0.02974537
-      H    2 z     0.00000000     0.07904844     0.22408713
+      H   _2 x     0.40457921     0.00000000     0.00000000
+      H   _2 y     0.00000000     0.29925761     0.02974537
+      H   _2 z     0.00000000     0.07904844     0.22408713
 
 
 
@@ -1923,8 +1971,8 @@ Represented as:      C2v
       [ Reference : J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333 ]
 
                             O        -0.618616
-                            H    1    0.309308
-                            H    2    0.309308
+                            H   _1    0.309308
+                            H   _2    0.309308
 
 
 
@@ -1973,7 +2021,7 @@ Represented as:      C2v
                          Ex          Ey          Ez
 
             Ex      -7.876871    0.000000    0.000000
-            Ey       0.000000    8.697324    0.000000
+            Ey       0.000000    8.697325    0.000000
             Ez       0.000000    0.000000   -0.820453
 
 
@@ -1993,7 +2041,7 @@ Represented as:      C2v
   ---------------------------------------------------------------
 
   Isotropic magnetizability:      -2.8986   -228.7311    -13.7745
-  Diamagnetic contribution:       -3.2053   -252.9297    -15.2318
+  Diamagnetic contribution:       -3.2053   -252.9298    -15.2318
   Paramagnetic contribution:       0.3067     24.1987      1.4573
   1st anisotropy:                 -0.0339     -2.6747     -0.1611
   2nd anisotropy:                  0.0367      2.8936      0.1743
@@ -2013,9 +2061,9 @@ Represented as:      C2v
 
                        Bx                  By                  Bz
 
-  Bx        -2.900467588758     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -2.874172725018     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000     -2.921216131790
+  Bx        -2.900467588790     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.874172725026     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000     -2.921216131809
 
 
 
@@ -2024,9 +2072,9 @@ Represented as:      C2v
 
                        Bx                  By                  Bz
 
-  Bx        -3.409318778129     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -3.013171508196     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000     -3.193347228094
+  Bx        -3.409318778124     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -3.013171508192     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000     -3.193347228089
 
 
 
@@ -2035,9 +2083,9 @@ Represented as:      C2v
 
                        Bx                  By                  Bz
 
-  Bx         0.508851189371     -0.000000000000     -0.000000000000
-  By        -0.000000000000      0.138998783177     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000      0.272131096304
+  Bx         0.508851189335     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.138998783166     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000      0.272131096280
 
 
 
@@ -2060,7 +2108,7 @@ Represented as:      C2v
   Molecular rotational g-tensor
   -----------------------------
 
-  Isotropic g-tensor       :       0.68204561
+  Isotropic g-tensor       :       0.68204560
   Nuclear contribution     :       0.97479952
   Diamagnetic contribution :       0.02503009
   Electronic contribution  :      -0.31778401
@@ -2114,22 +2162,22 @@ Represented as:      C2v
     Symmetry 2
                        By
 
-        O    y   369.63085462
-        H    y    80.33033065
-        H    z    16.32979202
+        O    y   369.63085158
+        H    y    80.33032998
+        H    z    16.32979188
 
     Symmetry 3
                        Bx
 
-        O    x   310.84799242
-        H    x    48.70433243
+        O    x   310.84798987
+        H    x    48.70433203
 
     Symmetry 4
                        Bz
 
-        O    z   322.28061988
-        H    y    19.03845492
-        H    z    62.14877593
+        O    z   322.28061723
+        H    y    19.03845476
+        H    z    62.14877542
 
 
 
@@ -2153,9 +2201,9 @@ Represented as:      C2v
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   310.84799242     0.00000000     0.00000000
-  O      y     0.00000000   369.63085462     0.00000000
-  O      z     0.00000000     0.00000000   322.28061988
+  O      x   310.84798987     0.00000000     0.00000000
+  O      y     0.00000000   369.63085158     0.00000000
+  O      z     0.00000000     0.00000000   322.28061723
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -2167,7 +2215,7 @@ Represented as:      C2v
   O      y     0.0000   414.6992     0.0000        0.0000   -45.0684     0.0000
   O      z     0.0000     0.0000   415.5314        0.0000     0.0000   -93.2508
 
-  Diamagnetic contribution:    417.275240         Paramagnetic:     -83.022084
+  Diamagnetic contribution:    417.275236         Paramagnetic:     -83.022083
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -2183,12 +2231,12 @@ Represented as:      C2v
   Principal values and axes:
   --------------------------
 
-  O         310.847992  =  334.25  -  23.41:     1.000000  0.000000  0.000000
-  O         322.280620  =  334.25  -  11.97:     0.000000  0.000000  1.000000
-  O         369.630855  =  334.25  +  35.38:     0.000000  1.000000  0.000000
+  O         310.847990  =  334.25  -  23.41:     1.000000  0.000000  0.000000
+  O         322.280617  =  334.25  -  11.97:     0.000000  0.000000  1.000000
+  O         369.630852  =  334.25  +  35.38:     0.000000  1.000000  0.000000
 
 
-  Chemical shielding for H    1:
+  Chemical shielding for H   _1:
   ==============================
 
 
@@ -2203,13 +2251,13 @@ Represented as:      C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    24.35216621     0.00000000     0.00000000
-  H    1 y     0.00000000    40.16516532     9.51922746
-  H    1 z     0.00000000     8.16489601    31.07438796
+  H   _1 x    24.35216601     0.00000000     0.00000000
+  H   _1 y     0.00000000    40.16516499     9.51922738
+  H   _1 z     0.00000000     8.16489594    31.07438771
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -2217,11 +2265,11 @@ Represented as:      C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x    13.8316     0.0000     0.0000       10.5205     0.0000     0.0000
-  H    1 y     0.0000    37.5261    17.3240        0.0000     2.6391    -7.8048
-  H    1 z     0.0000    14.5528    23.4110        0.0000    -6.3879     7.6634
+  H   _1 x    13.8316     0.0000     0.0000       10.5205     0.0000     0.0000
+  H   _1 y     0.0000    37.5261    17.3240        0.0000     2.6391    -7.8048
+  H   _1 z     0.0000    14.5528    23.4110        0.0000    -6.3879     7.6634
 
-  Diamagnetic contribution:     24.922912         Paramagnetic:       6.940995
+  Diamagnetic contribution:     24.922911         Paramagnetic:       6.940995
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -2229,20 +2277,20 @@ Represented as:      C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -7.5117     0.0000     0.0000
-  H    1 y     0.0000     0.0000     0.6772        0.0000     8.3013     8.8421
-  H    1 z     0.0000    -0.6772     0.0000        0.0000     8.8421    -0.7895
+  H   _1 x     0.0000     0.0000     0.0000       -7.5117     0.0000     0.0000
+  H   _1 y     0.0000     0.0000     0.6772        0.0000     8.3013     8.8421
+  H   _1 z     0.0000    -0.6772     0.0000        0.0000     8.8421    -0.7895
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     24.352166  =   31.86  -   7.51:     1.000000  0.000000  0.000000
-  H    1     25.677814  =   31.86  -   6.19:     0.000000 -0.520964  0.853578
-  H    1     45.561739  =   31.86  +  13.70:     0.000000  0.853578  0.520964
+  H   _1     24.352166  =   31.86  -   7.51:     1.000000  0.000000  0.000000
+  H   _1     25.677814  =   31.86  -   6.19:     0.000000 -0.520964  0.853578
+  H   _1     45.561739  =   31.86  +  13.70:     0.000000  0.853578  0.520964
 
 
-  Chemical shielding for H    2:
+  Chemical shielding for H   _2:
   ==============================
 
 
@@ -2257,13 +2305,13 @@ Represented as:      C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    24.35216621     0.00000000     0.00000000
-  H    2 y     0.00000000    40.16516532    -9.51922746
-  H    2 z     0.00000000    -8.16489601    31.07438796
+  H   _2 x    24.35216601     0.00000000     0.00000000
+  H   _2 y     0.00000000    40.16516499    -9.51922738
+  H   _2 z     0.00000000    -8.16489594    31.07438771
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -2271,11 +2319,11 @@ Represented as:      C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x    13.8316     0.0000     0.0000       10.5205     0.0000     0.0000
-  H    2 y     0.0000    37.5261   -17.3240        0.0000     2.6391     7.8048
-  H    2 z     0.0000   -14.5528    23.4110        0.0000     6.3879     7.6634
+  H   _2 x    13.8316     0.0000     0.0000       10.5205     0.0000     0.0000
+  H   _2 y     0.0000    37.5261   -17.3240        0.0000     2.6391     7.8048
+  H   _2 z     0.0000   -14.5528    23.4110        0.0000     6.3879     7.6634
 
-  Diamagnetic contribution:     24.922912         Paramagnetic:       6.940995
+  Diamagnetic contribution:     24.922911         Paramagnetic:       6.940995
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -2283,17 +2331,17 @@ Represented as:      C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -7.5117     0.0000     0.0000
-  H    2 y     0.0000     0.0000    -0.6772        0.0000     8.3013    -8.8421
-  H    2 z     0.0000     0.6772     0.0000        0.0000    -8.8421    -0.7895
+  H   _2 x     0.0000     0.0000     0.0000       -7.5117     0.0000     0.0000
+  H   _2 y     0.0000     0.0000    -0.6772        0.0000     8.3013    -8.8421
+  H   _2 z     0.0000     0.6772     0.0000        0.0000    -8.8421    -0.7895
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     24.352166  =   31.86  -   7.51:     1.000000  0.000000  0.000000
-  H    2     25.677814  =   31.86  -   6.19:     0.000000  0.520964  0.853578
-  H    2     45.561739  =   31.86  +  13.70:     0.000000  0.853578 -0.520964
+  H   _2     24.352166  =   31.86  -   7.51:     1.000000  0.000000  0.000000
+  H   _2     25.677814  =   31.86  -   6.19:     0.000000  0.520964  0.853578
+  H   _2     45.561739  =   31.86  +  13.70:     0.000000  0.853578 -0.520964
 
 
                          +--------------------------------+
@@ -2305,8 +2353,8 @@ Represented as:      C2v
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       334.2532  417.2752  -83.0221    0.6110   58.7829   53.0665    0.3232
- @1H    1   31.8639   24.9229    6.9410    0.8750   21.2096   20.5467    0.0968
- @1H    2   31.8639   24.9229    6.9410    0.8750   21.2096   20.5467    0.0968
+ @1H   _1   31.8639   24.9229    6.9410    0.8750   21.2096   20.5467    0.0968
+ @1H   _2   31.8639   24.9229    6.9410    0.8750   21.2096   20.5467    0.0968
 
 
 
@@ -2319,23 +2367,23 @@ Represented as:      C2v
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       334.2532  417.2752  -83.0221   53.0665    0.3232   53.9823    0.0000
- @2H    1   31.8639   24.9229    6.9410   20.5467    0.0968   20.5788    0.6772
- @2H    2   31.8639   24.9229    6.9410   20.5467    0.0968   20.5788    0.6772
+ @2H   _1   31.8639   24.9229    6.9410   20.5467    0.0968   20.5788    0.6772
+ @2H   _2   31.8639   24.9229    6.9410   20.5467    0.0968   20.5788    0.6772
 
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.941232    0.000000
- H    2:    0.941232    1.505579    0.000000
+ H   _1:    0.941232    0.000000
+ H   _2:    0.941232    1.505579    0.000000
 
 
   Max interatomic separation is    1.5056 Angstrom (    2.8451 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -2343,8 +2391,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.941232
-  bond distance:  H    2     O            0.941232
+  bond distance:  H   _1     O            0.941232
+  bond distance:  H   _2     O            0.941232
 
 
   Bond angles (degrees):
@@ -2352,7 +2400,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       106.220
+  bond angle:     H   _1     O          H   _2       106.220
 
 
 
@@ -2367,10 +2415,10 @@ Represented as:      C2v
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63128
+    Hartree to (cm)-1      : 219474.62934
     a.m.u.  to a.u.        :   1822.88848
-    Bohr    to Angstrom    :  0.529177208
-    a.u.    to A**4amu-1   :   142.943570
+    Bohr    to Angstrom    :  0.529177211
+    a.u.    to A**4amu-1   :   142.943572
     a.u.    to km (mol)-1  :      974.864
 
 
@@ -2386,8 +2434,8 @@ Represented as:      C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -2410,8 +2458,8 @@ Represented as:      C2v
 
                A                   B                   C
 
-         884400.2137         442440.8276         294907.0388 MHz
-           29.500416           14.758237            9.837040 cm-1
+         884400.2059         442440.8238         294907.0363 MHz
+           29.500415           14.758237            9.837040 cm-1
 
 
 
@@ -2443,16 +2491,16 @@ Represented as:      C2v
   ----------------------------------------------
 
     O      x    0.000000    0.000000    0.000000
-    O      y   -0.068292    0.000000    0.000000
-    O      z    0.000000    0.048869   -0.067888
+    O      y   -0.068292    0.000000   -0.000000
+    O      z   -0.000000   -0.048869   -0.067888
 
-    H    1 x    0.000000    0.000000    0.000000
-    H    1 y    0.541919   -0.571649   -0.411503
-    H    1 z    0.406734   -0.387793    0.538713
+    H   _1 x    0.000000    0.000000    0.000000
+    H   _1 y    0.541919    0.571649   -0.411503
+    H   _1 z    0.406734    0.387793    0.538713
 
-    H    2 x    0.000000    0.000000    0.000000
-    H    2 y    0.541919    0.571649    0.411503
-    H    2 z   -0.406734   -0.387793    0.538713
+    H   _2 x    0.000000    0.000000    0.000000
+    H   _2 y    0.541919   -0.571649    0.411503
+    H   _2 z   -0.406734    0.387793    0.538713
 
 
 
@@ -2490,9 +2538,9 @@ Represented as:      C2v
                 1  4245     2  4143     3  1726 
   ----------------------------------------------
 
-    1 stre      0.732195   -0.719319    0.035015
-    2 stre     -0.732195   -0.719319    0.035015
-    4 bend      0.000000    0.006845   -0.823277
+    1 stre      0.732195    0.719319    0.035015
+    2 stre     -0.732195    0.719319    0.035015
+    4 bend     -0.000000   -0.006845   -0.823277
 
 
 
@@ -2502,9 +2550,9 @@ Represented as:      C2v
 
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
-   1            0.000000       1.445367      -0.000000
-   2            0.000000      -0.000000      -0.776645
-   3            0.000000      -0.000000       1.423397
+   1            0.000000       1.445367       0.000000
+   2            0.000000      -0.000000       0.776645
+   3            0.000000       0.000000       1.423397
 
 
 
@@ -2514,7 +2562,7 @@ Represented as:      C2v
              electronic     vibrational           total    energy 
 
              -76.053424        0.023040      -76.030384    Hartrees
-           -16691797.09         5056.67    -16686740.42    cm-1
+           -16691796.94         5056.67    -16686740.27    cm-1
              -199678.23           60.49      -199617.74    kJ/mol
               -47724.24           14.46       -47709.79    kcal/mol
 
@@ -2542,7 +2590,7 @@ Represented as:      C2v
    700.00     2.5375D+07         292.60         1.0300   7.647497D+09
    800.00     3.5431D+07         357.19         1.0481   1.326391D+10
    900.00     4.7562D+07         425.94         1.0702   2.168134D+10
-  1000.00     6.1895D+07         498.61         1.0963   3.383306D+10
+  1000.00     6.1895D+07         498.61         1.0963   3.383307D+10
   1500.00     1.7056D+08         914.57         1.2816   1.999106D+11
   2000.00     3.5013D+08        1406.97         1.5548   7.659240D+11
 
@@ -2562,8 +2610,8 @@ Represented as:      C2v
                          Ex          Ey          Ez
 
             Ex       0.000000    0.000000    0.000000
-            Ey       0.000000    0.132814    0.000000
-            Ez       0.000000    0.000000    0.818993
+            Ey       0.000000    0.132814   -0.000000
+            Ez       0.000000   -0.000000    0.818993
 
 
 
@@ -2573,8 +2621,8 @@ Represented as:      C2v
                          Ex          Ey          Ez
 
             Ex       0.000000    0.000000    0.000000
-            Ey       0.000000    0.019681    0.000000
-            Ez       0.000000    0.000000    0.121362
+            Ey       0.000000    0.019681   -0.000000
+            Ez       0.000000   -0.000000    0.121362
 
 
 
@@ -2585,8 +2633,8 @@ Represented as:      C2v
 
                          EA          EB          EC
 
-            EA       0.019681    0.000000    0.000000
-            EB       0.000000    0.121362    0.000000
+            EA       0.019681   -0.000000    0.000000
+            EB      -0.000000    0.121362    0.000000
             EC       0.000000    0.000000    0.000000
 
 
@@ -2600,8 +2648,8 @@ Represented as:      C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.41 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.40 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 
                    .-------------------------------------------.
@@ -2620,8 +2668,8 @@ Represented as:      C2v
                                   --------------
 
  O          0.0000000000            0.0000000000           -0.0879638432
- H    1     0.0000000000            1.4225656180            0.9797335611
- H    2     0.0000000000           -1.4225656180            0.9797335611
+ H   _1     0.0000000000            1.4225656180            0.9797335611
+ H   _2     0.0000000000           -1.4225656180            0.9797335611
 
 
 
@@ -2639,15 +2687,15 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.941232    0.000000
- H    2:    0.941232    1.505579    0.000000
+ H   _1:    0.941232    0.000000
+ H   _2:    0.941232    1.505579    0.000000
 
 
   Max interatomic separation is    1.5056 Angstrom (    2.8451 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -2655,8 +2703,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.941232
-  bond distance:  H    2     O            0.941232
+  bond distance:  H   _1     O            0.941232
+  bond distance:  H   _2     O            0.941232
 
 
   Bond angles (degrees):
@@ -2664,7 +2712,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       106.220
+  bond angle:     H   _1     O          H   _2       106.220
 
 
 
@@ -2674,9 +2722,9 @@ Represented as:      C2v
  Energy change during optimization :      -0.001964 a.u.
                                              -5.157 kJ/mol
 
- >>>> Total CPU  time used in DALTON:   0.88 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.90 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:47 2011 
      Host name              : fe6                                     

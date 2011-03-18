@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:24:28 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:50 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -275,7 +276,7 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =       627973.53 MHz     (   20.946942 cm-1)
+               B =       627973.52 MHz     (   20.946942 cm-1)
 
 
 @  Nuclear repulsion energy :    5.193668373495
@@ -356,7 +357,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - traceless quadrupole moment integrals
 
@@ -414,7 +415,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:28 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:50 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -429,8 +430,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
 @  The molecule is placed in a static field.
@@ -444,6 +444,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -505,37 +509,61 @@ Charge correction to interaction with electric field:   -0.00000000
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -99.9262072551        1.43997D+00   -9.99D+01    1
-      MULPOP H     0.06; F    -0.02; 
+      Virial theorem: -V/T =      1.994782
+      MULPOP  H       0.36; F      -0.36; 
+ -----------------------------------------------------------------------------
    2    -100.027983120        3.43521D-01   -1.02D-01    2
-      MULPOP H     0.20; F    -0.05; 
+      Virial theorem: -V/T =      2.004734
+      MULPOP  H       0.28; F      -0.28; 
+ -----------------------------------------------------------------------------
    3    -100.032634002        1.25963D-01   -4.65D-03    3
-      MULPOP H     0.15; F    -0.09; 
+      Virial theorem: -V/T =      1.999005
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
    4    -100.033357120        3.46844D-02   -7.23D-04    4
-      MULPOP H     0.15; F    -0.10; 
+      Virial theorem: -V/T =      2.001394
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
    5    -100.033439387        6.03566D-03   -8.23D-05    5
-      MULPOP H     0.15; F    -0.10; 
+      Virial theorem: -V/T =      2.000916
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
    6    -100.033445084        1.06825D-03   -5.70D-06    6
-      MULPOP H     0.15; F    -0.10; 
+      Virial theorem: -V/T =      2.000930
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
    7    -100.033445236        1.31222D-04   -1.52D-07    7
-      MULPOP H     0.15; F    -0.10; 
+      Virial theorem: -V/T =      2.000938
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
    8    -100.033445238        1.71481D-05   -2.12D-09    8
-      MULPOP H     0.15; F    -0.10; 
-   9    -100.033445238        1.92566D-06   -2.23D-11    9
-      MULPOP H     0.15; F    -0.10; 
-  10    -100.033445238        1.33401D-07   -1.71D-13   10
-      MULPOP H     0.15; F    -0.10; 
-  11    -100.033445238        1.61067D-08    0.00D+00   10
-      MULPOP H     0.15; F    -0.10; 
-  12    -100.033445238        1.21891D-09    0.00D+00   10
-      MULPOP H     0.15; F    -0.10; 
-  13    -100.033445238        1.75427D-10   -5.68D-14   10
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000938
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
+   9    -100.033445238        1.92566D-06   -2.21D-11    9
+      Virial theorem: -V/T =      2.000938
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
+  10    -100.033445238        1.33401D-07   -3.41D-13   10
+      Virial theorem: -V/T =      2.000938
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
+  11    -100.033445238        1.61067D-08   -1.42D-14   10
+      Virial theorem: -V/T =      2.000938
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
+  12    -100.033445238        1.21895D-09    2.84D-14   10
+      Virial theorem: -V/T =      2.000938
+      MULPOP  H       0.32; F      -0.32; 
+ -----------------------------------------------------------------------------
+  13    -100.033445238        1.75423D-10    1.42D-14   10
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -566,7 +594,10 @@ Charge correction to interaction with electric field:   -0.00000000
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -578,14 +609,14 @@ Charge correction to interaction with electric field:   -0.00000000
     2.00000000E-05                  ZZTHETA 
 
 
-     Final HF energy:            -100.033445237701                 
+     Final HF energy:            -100.033445237702                 
      Nuclear repulsion:             5.193668373495
      Electronic energy:          -105.227113611196
 
      Final gradient norm:           0.000000000175
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:28 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:50 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -593,7 +624,7 @@ Charge correction to interaction with electric field:   -0.00000000
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 H   :1s    -0.0019  -0.3428   0.6961  -0.0703  -0.0712
    2 H   :1s    -0.0047   0.2720  -0.3548  -0.6762   3.2084
    3 H   :1s    -0.0002   0.0017   0.0003  -1.3376   1.0736
@@ -612,7 +643,7 @@ Charge correction to interaction with electric field:   -0.00000000
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 H   :2px    0.0250   0.0145   0.0029
    2 H   :2px    0.0134  -0.2203  -1.6943
    3 F   :2px    0.9603  -0.2543   0.1165
@@ -624,7 +655,7 @@ Charge correction to interaction with electric field:   -0.00000000
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 H   :2py    0.0250   0.0145   0.0029
    2 H   :2py    0.0134  -0.2203  -1.6943
    3 F   :2py    0.9603  -0.2543   0.1165
@@ -636,17 +667,17 @@ Charge correction to interaction with electric field:   -0.00000000
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 F   :3d2-  -0.0267   1.1698
    2 F   :3d2-   1.0136  -0.5845
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:28 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:50 2011 
      Host name              : fe6                                     
 
 
@@ -749,8 +780,8 @@ Charge correction to interaction with electric field:   -0.00000000
 
 
           Printed all double excitations greater than 0.016667
- Iter.  1: Coupled cluster MP2   energy :    -100.2557162769456056
-     Conventional correlation energy:    -0.2222710392443616
+ Iter.  1: Coupled cluster MP2   energy :    -100.2557162769464583
+     Conventional correlation energy:    -0.2222710392446174
 
        Iteration no.:  1
        -----------------
@@ -760,8 +791,8 @@ Charge correction to interaction with electric field:   -0.00000000
        Norm^2 of t2am   after ccvec:        0.2133769502D-01
        Norm^2 of omega1 after ccvec:        0.1418540075D-02
        Norm^2 of omega2 after ccvec:        0.5095279990D-02
- Iter.  1: Coupled cluster CCSD  energy :    -100.2545590154076365
-     Conventional correlation energy:    -0.2211137777063925
+ Iter.  1: Coupled cluster CCSD  energy :    -100.2545590154087307
+     Conventional correlation energy:    -0.2211137777068899
 
        Iteration no.:  2
        -----------------
@@ -771,8 +802,8 @@ Charge correction to interaction with electric field:   -0.00000000
        Norm^2 of t2am   after ccvec:        0.2201907389D-01
        Norm^2 of omega1 after ccvec:        0.5251242609D-04
        Norm^2 of omega2 after ccvec:        0.7200794851D-03
- Iter.  2: Coupled cluster CCSD  energy :    -100.2584205728282143
-     Conventional correlation energy:    -0.2249753351269703
+ Iter.  2: Coupled cluster CCSD  energy :    -100.2584205728283564
+     Conventional correlation energy:    -0.2249753351265156
 
        Iteration no.:  3
        -----------------
@@ -782,8 +813,8 @@ Charge correction to interaction with electric field:   -0.00000000
        Norm^2 of t2am   after ccvec:        0.2359630326D-01
        Norm^2 of omega1 after ccvec:        0.1668017316D-04
        Norm^2 of omega2 after ccvec:        0.6216985262D-04
- Iter.  3: Coupled cluster CCSD  energy :    -100.2595409932516333
-     Conventional correlation energy:    -0.2260957555503893
+ Iter.  3: Coupled cluster CCSD  energy :    -100.2595409932520027
+     Conventional correlation energy:    -0.2260957555501619
 
        Iteration no.:  4
        -----------------
@@ -793,8 +824,8 @@ Charge correction to interaction with electric field:   -0.00000000
        Norm^2 of t2am   after ccvec:        0.2428394069D-01
        Norm^2 of omega1 after ccvec:        0.2299260592D-06
        Norm^2 of omega2 after ccvec:        0.2193659729D-05
- Iter.  4: Coupled cluster CCSD  energy :    -100.2594413770879669
-     Conventional correlation energy:    -0.2259961393867229
+ Iter.  4: Coupled cluster CCSD  energy :    -100.2594413770884785
+     Conventional correlation energy:    -0.2259961393866377
 
        Iteration no.:  5
        -----------------
@@ -804,7 +835,7 @@ Charge correction to interaction with electric field:   -0.00000000
        Norm^2 of t2am   after ccvec:        0.2431111836D-01
        Norm^2 of omega1 after ccvec:        0.2122799986D-07
        Norm^2 of omega2 after ccvec:        0.1567742712D-06
- Iter.  5: Coupled cluster CCSD  energy :    -100.2594230419377226
+ Iter.  5: Coupled cluster CCSD  energy :    -100.2594230419383194
      Conventional correlation energy:    -0.2259778042364786
 
        Iteration no.:  6
@@ -815,8 +846,8 @@ Charge correction to interaction with electric field:   -0.00000000
        Norm^2 of t2am   after ccvec:        0.2430578082D-01
        Norm^2 of omega1 after ccvec:        0.1728251212D-08
        Norm^2 of omega2 after ccvec:        0.6006329829D-08
- Iter.  6: Coupled cluster CCSD  energy :    -100.2594260654763332
-     Conventional correlation energy:    -0.2259808277750892
+ Iter.  6: Coupled cluster CCSD  energy :    -100.2594260654773279
+     Conventional correlation energy:    -0.2259808277754871
 
        Iteration no.:  7
        -----------------
@@ -824,10 +855,10 @@ Charge correction to interaction with electric field:   -0.00000000
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239484510D-02
        Norm^2 of t2am   after ccvec:        0.2430658947D-01
-       Norm^2 of omega1 after ccvec:        0.1242852832D-09
+       Norm^2 of omega1 after ccvec:        0.1242852833D-09
        Norm^2 of omega2 after ccvec:        0.7469065650D-09
- Iter.  7: Coupled cluster CCSD  energy :    -100.2594253567960436
-     Conventional correlation energy:    -0.2259801190947996
+ Iter.  7: Coupled cluster CCSD  energy :    -100.2594253567963136
+     Conventional correlation energy:    -0.2259801190944728
 
        Iteration no.:  8
        -----------------
@@ -835,10 +866,10 @@ Charge correction to interaction with electric field:   -0.00000000
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239825953D-02
        Norm^2 of t2am   after ccvec:        0.2430579086D-01
-       Norm^2 of omega1 after ccvec:        0.8151617607D-11
-       Norm^2 of omega2 after ccvec:        0.4058800627D-10
- Iter.  8: Coupled cluster CCSD  energy :    -100.2594249839146414
-     Conventional correlation energy:    -0.2259797462133974
+       Norm^2 of omega1 after ccvec:        0.8151617584D-11
+       Norm^2 of omega2 after ccvec:        0.4058800623D-10
+ Iter.  8: Coupled cluster CCSD  energy :    -100.2594249839148688
+     Conventional correlation energy:    -0.2259797462130280
 
        Iteration no.:  9
        -----------------
@@ -846,13 +877,13 @@ Charge correction to interaction with electric field:   -0.00000000
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239859134D-02
        Norm^2 of t2am   after ccvec:        0.2430552674D-01
-       Norm^2 of omega1 after ccvec:        0.5084455271D-12
-       Norm^2 of omega2 after ccvec:        0.3629740831D-11
- Iter.  9: Coupled cluster CCSD  energy :    -100.2594249844071754
-     Conventional correlation energy:    -0.2259797467059315
+       Norm^2 of omega1 after ccvec:        0.5084455252D-12
+       Norm^2 of omega2 after ccvec:        0.3629740820D-11
+ Iter.  9: Coupled cluster CCSD  energy :    -100.2594249844081560
+     Conventional correlation energy:    -0.2259797467063152
 
  CCSD  energy converged to within   0.50D-09 is   -100.259424984
- Final 2-norm of the CC vector function:  2.03425327D-06
+ Final 2-norm of the CC vector function:  2.03425326D-06
 
 
                     +------------------------------------------+
@@ -927,7 +958,7 @@ Charge correction to interaction with electric field:   -0.00000000
 
  Ground state energy is target 
 
- Ecorr =                   -100.25942498440717542962
+ Ecorr =                   -100.25942498440815597860
 
  *******************************************************************
 
@@ -955,19 +986,19 @@ Charge correction to interaction with electric field:   -0.00000000
           Number of t2 amplitudes                 :      1633
           Total number of amplitudes in ccsd      :      1671
 
- Iter.  1: Coupled cluster RSTAR energy :    -100.2594249844071754
-     Conventional correlation energy:    -0.2259797467059315
+ Iter.  1: Coupled cluster RSTAR energy :    -100.2594249844081560
+     Conventional correlation energy:    -0.2259797467063152
 
        Iteration no.:  1
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239872642D-02
-       Norm^2 of t2am   after ccvec:        0.2430552133D-01
-       Norm^2 of omega1 after ccvec:        0.1051552632D-12
-       Norm^2 of omega2 after ccvec:        0.4722677139D-12
- Iter.  1: Coupled cluster CCSD  energy :    -100.2594249866170060
-     Conventional correlation energy:    -0.2259797489157620
+       Norm^2 of t2am   after ccvec:        0.2430552134D-01
+       Norm^2 of omega1 after ccvec:        0.1051552639D-12
+       Norm^2 of omega2 after ccvec:        0.4722677155D-12
+ Iter.  1: Coupled cluster CCSD  energy :    -100.2594249866180718
+     Conventional correlation energy:    -0.2259797489162310
 
        Iteration no.:  2
        -----------------
@@ -975,10 +1006,10 @@ Charge correction to interaction with electric field:   -0.00000000
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239877131D-02
        Norm^2 of t2am   after ccvec:        0.2430551720D-01
-       Norm^2 of omega1 after ccvec:        0.2656215037D-13
-       Norm^2 of omega2 after ccvec:        0.8184832213D-13
- Iter.  2: Coupled cluster CCSD  energy :    -100.2594249882016442
-     Conventional correlation energy:    -0.2259797505004002
+       Norm^2 of omega1 after ccvec:        0.2656215055D-13
+       Norm^2 of omega2 after ccvec:        0.8184832102D-13
+ Iter.  2: Coupled cluster CCSD  energy :    -100.2594249882023831
+     Conventional correlation energy:    -0.2259797505005423
 
        Iteration no.:  3
        -----------------
@@ -986,10 +1017,10 @@ Charge correction to interaction with electric field:   -0.00000000
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239880111D-02
        Norm^2 of t2am   after ccvec:        0.2430551445D-01
-       Norm^2 of omega1 after ccvec:        0.3946724319D-14
-       Norm^2 of omega2 after ccvec:        0.1606382988D-13
- Iter.  3: Coupled cluster CCSD  energy :    -100.2594249889615128
-     Conventional correlation energy:    -0.2259797512602688
+       Norm^2 of omega1 after ccvec:        0.3946724760D-14
+       Norm^2 of omega2 after ccvec:        0.1606383019D-13
+ Iter.  3: Coupled cluster CCSD  energy :    -100.2594249889620670
+     Conventional correlation energy:    -0.2259797512602262
 
        Iteration no.:  4
        -----------------
@@ -997,13 +1028,13 @@ Charge correction to interaction with electric field:   -0.00000000
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.1239881875D-02
        Norm^2 of t2am   after ccvec:        0.2430551265D-01
-       Norm^2 of omega1 after ccvec:        0.6662793743D-16
-       Norm^2 of omega2 after ccvec:        0.5945293382D-15
- Iter.  4: Coupled cluster CCSD  energy :    -100.2594249886857938
-     Conventional correlation energy:    -0.2259797509845498
+       Norm^2 of omega1 after ccvec:        0.6662776117D-16
+       Norm^2 of omega2 after ccvec:        0.5945294685D-15
+ Iter.  4: Coupled cluster CCSD  energy :    -100.2594249886862769
+     Conventional correlation energy:    -0.2259797509844361
 
  CCSD  energy converged to within   0.50D-09 is   -100.259424989
- Final 2-norm of the CC vector function:  2.57129787D-08
+ Final 2-norm of the CC vector function:  2.57129778D-08
 
 
                     +------------------------------------------+
@@ -1067,7 +1098,7 @@ Charge correction to interaction with electric field:   -0.00000000
                      Time for the first d :       0.00
                      Total time estimate  :       0.05
                      Total memory usage(w):      10715
-       Time used in   RHS - TOTAL  :       0.06 seconds
+       Time used in   RHS - TOTAL  :       0.05 seconds
 
 
 
@@ -1098,7 +1129,7 @@ Charge correction to interaction with electric field:   -0.00000000
 
  Ground state energy is target 
 
- Ecorr =                   -100.26356430599605573661
+ Ecorr =                   -100.26356430599652469482
 
  *******************************************************************
   
@@ -1135,7 +1166,7 @@ Charge correction to interaction with electric field:   -0.00000000
 
 
           Threshold used for packing of integrals:0.10E-13
-          Time used for packing and unpacking:        0.06 seconds
+          Time used for packing and unpacking:        0.05 seconds
   
 
  *******************************************************************************
@@ -1158,5 +1189,5 @@ Charge correction to interaction with electric field:   -0.00000000
  >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:29 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:51 2011 
      Host name              : fe6                                     

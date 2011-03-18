@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:13:56 2010 
+     Date and time (Linux)  : Wed Mar 16 18:39:12 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -173,8 +174,8 @@ Point group: C2v
                                  ---------------
 
                             O1        15.994915
-                            O2  1     15.994915
-                            O2  2     15.994915
+                            O2 _1     15.994915
+                            O2 _2     15.994915
 
                        Total mass:    47.984745 amu
                        Natural abundance:  99.282 %
@@ -238,15 +239,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-             O1          O2  1       O2  2
+             O1          O2 _1       O2 _2
             ------      ------      ------
   O1   :    0.000000
-  O2  1:    1.271560    0.000000
-  O2  2:    1.271560    2.177498    0.000000
+  O2 _1:    1.271560    0.000000
+  O2 _2:    1.271560    2.177498    0.000000
 
 
   Max interatomic separation is    2.1775 Angstrom (    4.1149 Bohr)
-  between atoms    3 and    2, " O2  2" and " O2  1".
+  between atoms    3 and    2, " O2 _2" and " O2 _1".
 
 
   Bond distances (Angstrom):
@@ -254,8 +255,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:   O2  1      O1          1.271560
-  bond distance:   O2  2      O1          1.271560
+  bond distance:   O2 _1      O1          1.271560
+  bond distance:   O2 _2      O1          1.271560
 
 
   Bond angles (degrees):
@@ -263,7 +264,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:      O2  1      O1         O2  2       117.792
+  bond angle:      O2 _1      O1         O2 _2       117.792
 
 
 
@@ -272,7 +273,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       4.601099          1.000000    0.000000    0.000000
-   IB      37.919927          0.000000    1.000000    0.000000
+   IB      37.919928          0.000000    1.000000    0.000000
    IC      42.521026          0.000000    0.000000    1.000000
 
 
@@ -283,7 +284,7 @@ Point group: C2v
 
                A                   B                   C
 
-         109838.7696          13327.5310          11885.3907 MHz
+         109838.7687          13327.5309          11885.3906 MHz
             3.663827            0.444559            0.396454 cm-1
 
 
@@ -388,7 +389,7 @@ Point group: C2v
  Number of two-electron integrals written:      204427 ( 23.2% )
  Megabytes written:                              2.343
 
- >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total CPU  time used in HERMIT:   0.09 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -427,7 +428,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:13:56 2010 
+     Date and time (Linux)  : Wed Mar 16 18:39:12 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -446,8 +447,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
                an MP2 calculation
 
 
@@ -456,6 +456,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons         16
      Number of electrons in active shells      8
      Total charge of the molecule              0
@@ -503,35 +504,57 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-12
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
    1    -223.336186416        3.47295D+00   -2.23D+02    1
-      MULPOP  O1 -24.70;  O2  -7.04; 
+      Virial theorem: -V/T =      2.003613
+      MULPOP   O1     0.40;  O2 _1 -0.20;  O2 _2 -0.20; 
+ -----------------------------------------------------------------------------
    2    -223.578799474        2.77530D+00   -2.43D-01    2
-      MULPOP  O1  -0.20;  O2  29.17; 
+      Virial theorem: -V/T =      1.994000
+      MULPOP   O1    -0.12;  O2 _1  0.06;  O2 _2  0.06; 
+ -----------------------------------------------------------------------------
    3    -223.911048092        4.09722D-01   -3.32D-01    3
-      MULPOP  O1 -17.14;  O2  -5.92; 
+      Virial theorem: -V/T =      2.000889
+      MULPOP   O1     0.78;  O2 _1 -0.39;  O2 _2 -0.39; 
+ -----------------------------------------------------------------------------
    4    -223.920857337        6.03166D-02   -9.81D-03    4
-      MULPOP  O1 -16.65;  O2  -9.17; 
+      Virial theorem: -V/T =      2.001167
+      MULPOP   O1     0.72;  O2 _1 -0.36;  O2 _2 -0.36; 
+ -----------------------------------------------------------------------------
    5    -223.921342432        2.55906D-02   -4.85D-04    5
-      MULPOP  O1 -15.84;  O2  -7.62; 
+      Virial theorem: -V/T =      2.000628
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
    6    -223.921453391        1.22016D-02   -1.11D-04    6
-      MULPOP  O1 -15.67;  O2  -7.71; 
+      Virial theorem: -V/T =      2.000740
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
    7    -223.921499757        4.27356D-03   -4.64D-05    7
-      MULPOP  O1 -15.53;  O2  -7.52; 
+      Virial theorem: -V/T =      2.000712
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
    8    -223.921504154        5.99853D-04   -4.40D-06    8
-      MULPOP  O1 -15.51;  O2  -7.50; 
+      Virial theorem: -V/T =      2.000708
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
    9    -223.921504236        9.33625D-05   -8.12D-08    9
-      MULPOP  O1 -15.51;  O2  -7.49; 
+      Virial theorem: -V/T =      2.000707
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
   10    -223.921504237        1.18288D-05   -8.74D-10   10
-      MULPOP  O1 -15.51;  O2  -7.49; 
-  11    -223.921504237        4.30284D-06   -2.81D-11   10
-      MULPOP  O1 -15.51;  O2  -7.49; 
-  12    -223.921504237        9.35712D-07   -3.98D-12   10
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000707
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
+  11    -223.921504237        4.30284D-06   -2.83D-11   10
+      Virial theorem: -V/T =      2.000707
+      MULPOP   O1     0.73;  O2 _1 -0.37;  O2 _2 -0.37; 
+ -----------------------------------------------------------------------------
+  12    -223.921504237        9.35712D-07   -4.04D-12   10
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -546,8 +569,8 @@ Point group: C2v
     Number of electrons :   24
     Orbital occupations :    6    4    1    1
 
- Hartree-Fock electronic energy:        -292.743799359987
- Hartree-Fock total      energy:        -223.921504236602
+ Hartree-Fock electronic energy:        -292.743799359994
+ Hartree-Fock total      energy:        -223.921504236609
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  1.28D-07
 
@@ -621,7 +644,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
          1.85738825     0.00914316     0.00020987     0.00005758     0.00000740
          0.00000069
 
- Time used for MP2 natural orbitals :       0.096 CPU seconds.
+ Time used for MP2 natural orbitals :       0.095 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -653,10 +676,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
 
  CI energies and residuals:
-    1     -224.140862007868577       1.09D-01
+    1     -224.140862007875910       1.09D-01
 
 
- Final CI energy:     -224.140862007868577
+ Final CI energy:     -224.140862007875910
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -683,16 +706,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.140862007869           (MACRO    1)
+ Total MCSCF energy       :    -224.140862007876           (MACRO    1)
 
  - Nuclear repulsion      :     68.8222951233850    
  - Inactive energy        :    -273.484825078333    
- - Active energy          :    -19.4783320529210    
+ - Active energy          :    -19.4783320529285    
 
- Norm of total gradient   :        0.294935410597
- -    of CI gradient      :        0.217366409623
- -    of orbital gradient :        0.199345780973
-      MULPOP  O1   8.87;  O2 -14.79; 
+ Norm of total gradient   :        0.294935410596
+ -    of CI gradient      :        0.217366409622
+ -    of orbital gradient :        0.199345780972
+      Virial theorem: -V/T =      1.998466
+      MULPOP   O1     0.63;  O2 _1 -0.32;  O2 _2 -0.32; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
@@ -725,16 +749,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.158008631515           (MACRO    2)
+ Total MCSCF energy       :    -224.158008631522           (MACRO    2)
 
  - Nuclear repulsion      :     68.8222951233850    
- - Inactive energy        :    -272.637261209750    
- - Active energy          :    -20.3430425451504    
+ - Inactive energy        :    -272.637261209742    
+ - Active energy          :    -20.3430425451651    
 
- Norm of total gradient   :        0.150505765793
- -    of CI gradient      :        0.137200137280
- -    of orbital gradient :        0.061871704899
-      MULPOP  O1   8.47;  O2  10.74; 
+ Norm of total gradient   :        0.150505765799
+ -    of CI gradient      :        0.137200137286
+ -    of orbital gradient :        0.061871704901
+      Virial theorem: -V/T =      1.998515
+      MULPOP   O1     0.71;  O2 _1 -0.36;  O2 _2 -0.36; 
 
  Residual norm when dim(red L) =   6
  NEO root     CSF        orbital          total
@@ -767,16 +792,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.162394885669           (MACRO    3)
+ Total MCSCF energy       :    -224.162394885676           (MACRO    3)
 
  - Nuclear repulsion      :     68.8222951233850    
- - Inactive energy        :    -272.824399698525    
- - Active energy          :    -20.1602903105285    
+ - Inactive energy        :    -272.824399698530    
+ - Active energy          :    -20.1602903105316    
 
- Norm of total gradient   :        0.024313510102
- -    of CI gradient      :        0.022170859387
+ Norm of total gradient   :        0.024313510103
+ -    of CI gradient      :        0.022170859388
  -    of orbital gradient :        0.009979968313
-      MULPOP  O1   7.54;  O2   0.72; 
+      Virial theorem: -V/T =      1.998452
+      MULPOP   O1     0.70;  O2 _1 -0.35;  O2 _2 -0.35; 
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -809,16 +835,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.162547416407           (MACRO    4)
+ Total MCSCF energy       :    -224.162547416414           (MACRO    4)
 
  - Nuclear repulsion      :     68.8222951233850    
- - Inactive energy        :    -272.843480799966    
- - Active energy          :    -20.1413617398257    
+ - Inactive energy        :    -272.843480799963    
+ - Active energy          :    -20.1413617398362    
 
  Norm of total gradient   :        0.000735446449
  -    of CI gradient      :        0.000626600045
  -    of orbital gradient :        0.000385037483
-      MULPOP  O1   7.39;  O2  -1.00; 
+      Virial theorem: -V/T =      1.998395
+      MULPOP   O1     0.68;  O2 _1 -0.34;  O2 _2 -0.34; 
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -851,37 +878,41 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.162547515391           (MACRO    5)
+ Total MCSCF energy       :    -224.162547515398           (MACRO    5)
 
  - Nuclear repulsion      :     68.8222951233850    
- - Inactive energy        :    -272.844344254523    
- - Active energy          :    -20.1404983842525    
+ - Inactive energy        :    -272.844344254520    
+ - Active energy          :    -20.1404983842630    
 
- Norm of total gradient   :        0.000007331322
+ Norm of total gradient   :        0.000007331323
  -    of CI gradient      :        0.000005888709
  -    of orbital gradient :        0.000004367081
-      MULPOP  O1   7.38;  O2  -0.96; 
+      Virial theorem: -V/T =      1.998397
+      MULPOP   O1     0.68;  O2 _1 -0.34;  O2 _2 -0.34; 
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           35
-     Total number of CPU seconds used         0.71
+     Total number of CPU seconds used         0.67
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 22:13:57 2010 
+     Date and time (Linux)  : Wed Mar 16 18:39:14 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    7   -224.140862007869   0.2949354106  0.000000   0.4923613324
-    2    4   -224.158008631515   0.1505057658  0.692030   0.1349537309
-    3   12   -224.162394885669   0.0243135101  1.063767   0.0298784830
-    4   12   -224.162547416407   0.0007354464  1.005287   0.0010647789
-    5    0   -224.162547515391   0.0000073313  1.000335   0.0000000000
+    1    7   -224.140862007876   0.2949354106  0.000000   0.4923613324
+    2    4   -224.158008631522   0.1505057658  0.692030   0.1349537309
+    3   12   -224.162394885676   0.0243135101  1.063767   0.0298784830
+    4   12   -224.162547416414   0.0007354464  1.005287   0.0010647789
+    5    0   -224.162547515398   0.0000073313  1.000331   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -896,36 +927,36 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     7     5     3      0.13      0.06      0.07      0.06      0.01
-    2     4     3     2      0.11      0.06      0.04      0.04      0.01
-    3    12     8     5      0.18      0.06      0.11      0.10      0.01
-    4    12     8     5      0.18      0.06      0.11      0.10      0.01
-    5     0     0     0      0.07      0.06      0.00      0.00
+    1     7     5     3      0.14      0.06      0.07      0.06      0.01
+    2     4     3     2      0.11      0.06      0.04      0.03      0.01
+    3    12     8     5      0.16      0.06      0.10      0.09      0.01
+    4    12     8     5      0.16      0.06      0.10      0.09      0.01
+    5     0     0     0      0.06      0.06      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -273.484825078333    -19.478332052921   -224.140862007869
-    2   -272.637261209750    -20.343042545150   -224.158008631515
-    3   -272.824399698525    -20.160290310528   -224.162394885669
-    4   -272.843480799966    -20.141361739826   -224.162547416407
-    5   -272.844344254523    -20.140498384253   -224.162547515391
+    1   -273.484825078333    -19.478332052929   -224.140862007876
+    2   -272.637261209742    -20.343042545165   -224.158008631522
+    3   -272.824399698530    -20.160290310532   -224.162394885676
+    4   -272.843480799963    -20.141361739836   -224.162547416414
+    5   -272.844344254520    -20.140498384263   -224.162547515398
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.024777297634     -0.017146623646      0.692029611110
-    3     -0.004123321295     -0.004386254154      1.063767249674
-    4     -0.000151728613     -0.000152530738      1.005286576390
-    5     -0.000000098951     -0.000000098984      1.000335257276
+    2     -0.024777297635     -0.017146623646      0.692029611075
+    3     -0.004123321296     -0.004386254154      1.063767249733
+    4     -0.000151728613     -0.000152530738      1.005286577085
+    5     -0.000000098951     -0.000000098984      1.000330948769
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.492361332428      0.700000000000
-    2      0.20000000  1.00000000      0.134953730882      0.700000000000
-    3      0.20000000  1.00000000      0.029878482982      0.700000000000
+    1      0.20000000  1.00000000      0.492361332436      0.700000000000
+    2      0.20000000  1.00000000      0.134953730884      0.700000000000
+    3      0.20000000  1.00000000      0.029878482980      0.700000000000
     4      0.20000000  1.00000000      0.001064778895      0.700000000000
     5      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -934,27 +965,30 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
     1   -0.001963147586    0.995186584217   -0.015701775429   -0.087375965744
-    2   -0.000329625571    0.999635948707   -0.005282467668   -0.025866797433
+    2   -0.000329625571    0.999635948707   -0.005282467668   -0.025866797434
     3   -0.000012137856    0.999982146003   -0.002855790304   -0.004604079865
     4   -0.000000007916    0.999999977325   -0.000037038161   -0.000200635954
     5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -224.162547515391                 
+     Final MCSCF energy:         -224.162547515398                 
      Nuclear repulsion:            68.822295123385
-     Electronic energy:          -292.984842638775
+     Electronic energy:          -292.984842638783
 
-     Final gradient norm:           0.000007331322
+     Final gradient norm:           0.000007331323
 
  
-     Date and time (Linux)  : Wed Dec 29 22:13:57 2010 
+     Date and time (Linux)  : Wed Mar 16 18:39:14 2011 
      Host name              : fe6                                     
 
 
@@ -983,7 +1017,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           3        4        5        6        7        8        9
+    Orbital         3        4        5        6        7        8        9
    1  O1 :1s    -0.1538  -0.1545  -0.0360   0.0632   0.0981  -0.0091   0.0101
    2  O1 :1s     0.3260   0.3511   0.0659  -0.1290  -0.3629   0.0258  -0.0405
    3  O1 :1s     0.3256   0.5423   0.2096  -0.1308  -0.4106   0.0250   0.0237
@@ -1008,7 +1042,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1  O1 :2px    0.0006   0.0735   0.0498  -0.5058  -0.7927  -0.0024  -0.0068
    2  O1 :2px    0.0055  -0.0488   0.0801  -0.2441  -0.2763  -0.0501  -0.0001
    3  O1 :2px    0.0380  -0.1000  -0.0385   0.2311   0.1044   1.0641   8.2403
@@ -1029,7 +1063,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1  O1 :2pz    0.5389   0.4559  -0.0701  -0.0319
    2  O1 :2pz    0.3603   0.2962  -0.0773  -0.0368
    3  O1 :2pz   -0.2145  -0.1813  -1.5474 -12.3321
@@ -1043,7 +1077,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1  O1 :3d1+   0.0193  -0.1248  -6.1177   0.1688
    2  O2 :2pz    0.4673  -0.6462  -0.0419  -0.0213
    3  O2 :2pz    0.3489   0.6802   0.0413   0.0114
@@ -1125,11 +1159,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.87 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.82 seconds
+ >>>> Total wall time used in SIRIUS :      2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:13:57 2010 
+     Date and time (Linux)  : Wed Mar 16 18:39:14 2011 
      Host name              : fe6                                     
 
 
@@ -1196,9 +1230,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :     -224.162547515390543
- -- inactive part     :     -272.844344254522980
- --   active part     :      -20.140498384252542
+ MCSCF energy         :     -224.162547515397790
+ -- inactive part     :     -272.844344254519740
+ --   active part     :      -20.140498384263022
  -- nuclear repulsion :       68.822295123384976
 
 
@@ -1245,10 +1279,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
      REAL AND IMAGINARY PART :       19-4.986036D-01-7.746743D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       17 3.898905D-01 8.290811D-01
+     REAL AND IMAGINARY PART :       18 3.898905D-01 8.290811D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       18 3.898905D-01-8.290811D-01
+     REAL AND IMAGINARY PART :       19 3.898905D-01-8.290811D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
      REAL AND IMAGINARY PART :       20-3.898905D-01 8.290811D-01
@@ -1257,196 +1291,196 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
      REAL AND IMAGINARY PART :       21-3.898905D-01-8.290811D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       19 1.791831D-01 9.824354D-01
+     REAL AND IMAGINARY PART :       20 1.791831D-01 9.824354D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       20 1.791831D-01-9.824354D-01
+     REAL AND IMAGINARY PART :       21 1.791831D-01-9.824354D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       21-1.791831D-01 9.824354D-01
+     REAL AND IMAGINARY PART :       22-1.791831D-01 9.824354D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       22-1.791831D-01-9.824354D-01
+     REAL AND IMAGINARY PART :       23-1.791831D-01-9.824354D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       14 2.694825D-16 1.453320D+00
+     REAL AND IMAGINARY PART :       13-6.745025D-15 1.453320D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       15 0.000000D+00-1.453320D+00
+     REAL AND IMAGINARY PART :       14-6.924228D-15-1.453320D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       22 1.352874D-14 9.529501D-01
+     REAL AND IMAGINARY PART :       23-5.879759D-17 9.529501D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       23 1.346017D-14-9.529501D-01
+     REAL AND IMAGINARY PART :       24 2.342197D-16-9.529501D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       16-1.046761D-14 1.480055D+00
+     REAL AND IMAGINARY PART :       15-1.078949D-15 1.480055D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       17-1.044720D-14-1.480055D+00
+     REAL AND IMAGINARY PART :       16-1.052682D-15-1.480055D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       22-4.923216D-15 9.525960D-01
+     REAL AND IMAGINARY PART :       22-1.510425D-14 9.525960D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       23-4.815291D-15-9.525960D-01
+     REAL AND IMAGINARY PART :       23-1.512905D-14-9.525960D-01
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       16-7.254284D-15 1.520856D+00
+     REAL AND IMAGINARY PART :       16 8.334145D-16 1.520856D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       17-6.967743D-15-1.520856D+00
+     REAL AND IMAGINARY PART :       17 7.263750D-16-1.520856D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       22 1.407065D-14 1.170074D+00
+     REAL AND IMAGINARY PART :       22-6.886401D-15 1.170074D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       23 1.444446D-14-1.170074D+00
+     REAL AND IMAGINARY PART :       23-7.153222D-15-1.170074D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       17 1.874164D-14 1.526700D+00
+     REAL AND IMAGINARY PART :       17-1.249339D-15 1.526700D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       18 1.876780D-14-1.526700D+00
+     REAL AND IMAGINARY PART :       18-9.956993D-16-1.526700D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       21 1.345662D-14 1.170825D+00
+     REAL AND IMAGINARY PART :       21-1.139830D-16 1.170825D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       22 1.336984D-14-1.170825D+00
+     REAL AND IMAGINARY PART :       22 7.709897D-16-1.170825D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       17-1.680070D-14 1.524437D+00
+     REAL AND IMAGINARY PART :       17-1.106562D-14 1.524437D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       18-1.699920D-14-1.524437D+00
+     REAL AND IMAGINARY PART :       18-1.091332D-14-1.524437D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       21-1.724544D-14 1.172572D+00
+     REAL AND IMAGINARY PART :       23-2.206505D-14 1.172572D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       22-1.747614D-14-1.172572D+00
+     REAL AND IMAGINARY PART :       24-2.142593D-14-1.172572D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       18-9.016843D-15 1.463457D+00
+     REAL AND IMAGINARY PART :       21 3.003422D-14 1.463457D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       19-8.932340D-15-1.463457D+00
+     REAL AND IMAGINARY PART :       22 2.988725D-14-1.463457D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       25-8.148327D-15 1.260924D+00
+     REAL AND IMAGINARY PART :       24-6.261980D-16 1.260924D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       26-8.081263D-15-1.260924D+00
+     REAL AND IMAGINARY PART :       25-4.833193D-16-1.260924D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       20-9.033979D-15 1.466903D+00
+     REAL AND IMAGINARY PART :       21-1.796266D-14 1.466903D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       21-8.994508D-15-1.466903D+00
+     REAL AND IMAGINARY PART :       22-1.730412D-14-1.466903D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       23-6.903849D-15 1.257650D+00
+     REAL AND IMAGINARY PART :       25 9.357601D-15 1.257650D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       24-6.789136D-15-1.257650D+00
+     REAL AND IMAGINARY PART :       26 9.136830D-15-1.257650D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       20-1.407681D-14 1.467151D+00
+     REAL AND IMAGINARY PART :       20-2.171543D-14 1.467151D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       21-1.388418D-14-1.467151D+00
+     REAL AND IMAGINARY PART :       21-2.187770D-14-1.467151D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       25 9.331650D-16 1.263451D+00
+     REAL AND IMAGINARY PART :       27-7.995411D-15 1.263451D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       26 1.241470D-15-1.263451D+00
+     REAL AND IMAGINARY PART :       28-8.015216D-15-1.263451D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       28 2.981495D-14 1.475628D+00
+     REAL AND IMAGINARY PART :       28 2.808549D-14 1.475628D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       29 2.996681D-14-1.475628D+00
+     REAL AND IMAGINARY PART :       29 2.812625D-14-1.475628D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       31-1.154496D-14 1.263870D+00
+     REAL AND IMAGINARY PART :       31 9.238368D-15 1.263870D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       32-1.168339D-14-1.263870D+00
+     REAL AND IMAGINARY PART :       32 9.532462D-15-1.263870D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       25 1.873810D-15 1.475424D+00
+     REAL AND IMAGINARY PART :       25-5.192118D-15 1.475424D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       26 2.315922D-15-1.475424D+00
+     REAL AND IMAGINARY PART :       26-5.193899D-15-1.475424D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       32 1.136183D-14 1.269376D+00
+     REAL AND IMAGINARY PART :       32 1.483502D-14 1.269376D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       33 1.148550D-14-1.269376D+00
+     REAL AND IMAGINARY PART :       33 1.451562D-14-1.269376D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       30 2.683934D-14 1.477395D+00
+     REAL AND IMAGINARY PART :       30 2.507013D-14 1.477395D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       31 2.648792D-14-1.477395D+00
+     REAL AND IMAGINARY PART :       31 2.505900D-14-1.477395D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       35-6.180779D-15 1.269309D+00
+     REAL AND IMAGINARY PART :       35-2.041546D-14 1.269309D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       36-6.872718D-15-1.269309D+00
+     REAL AND IMAGINARY PART :       36-2.032778D-14-1.269309D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       28-1.561324D-14 1.478007D+00
+     REAL AND IMAGINARY PART :       30 5.702577D-15 1.478007D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       29-1.554845D-14-1.478007D+00
+     REAL AND IMAGINARY PART :       31 6.008525D-15-1.478007D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       35 1.594957D-14 1.269838D+00
+     REAL AND IMAGINARY PART :       35-4.890051D-15 1.269838D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       36 1.642237D-14-1.269838D+00
+     REAL AND IMAGINARY PART :       36-5.157500D-15-1.269838D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       30-2.224273D-14 1.477426D+00
+     REAL AND IMAGINARY PART :       30-1.966491D-14 1.477426D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       31-2.194694D-14-1.477426D+00
+     REAL AND IMAGINARY PART :       31-1.977987D-14-1.477426D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       32 1.233238D-14 1.269605D+00
+     REAL AND IMAGINARY PART :       32-1.571830D-14 1.269605D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       33 1.206775D-14-1.269605D+00
+     REAL AND IMAGINARY PART :       33-1.587488D-14-1.269605D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       30 6.344810D-15 1.476983D+00
+     REAL AND IMAGINARY PART :       30 2.622444D-15 1.476983D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       31 6.345652D-15-1.476983D+00
+     REAL AND IMAGINARY PART :       31 2.797969D-15-1.476983D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       32-1.389651D-14 1.275095D+00
+     REAL AND IMAGINARY PART :       35 1.437743D-14 1.275095D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       33-1.384294D-14-1.275095D+00
+     REAL AND IMAGINARY PART :       36 1.432624D-14-1.275095D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       32-1.811018D-14 1.476868D+00
+     REAL AND IMAGINARY PART :       31 1.014594D-14 1.476868D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       33-1.804012D-14-1.476868D+00
+     REAL AND IMAGINARY PART :       32 1.016132D-14-1.476868D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       35-2.767829D-14 1.273457D+00
+     REAL AND IMAGINARY PART :       34 2.225905D-14 1.273457D+00
 
  *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
-     REAL AND IMAGINARY PART :       36-2.752804D-14-1.273457D+00
+     REAL AND IMAGINARY PART :       35 2.226559D-14-1.273457D+00
 
  *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
 
@@ -1465,20 +1499,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
          174        47(4)  39(3)       -0.0000000000        0.0000000000
-         175        47(4)  40(3)       -0.0000000000        0.0000000000
-         177        47(4)  42(3)       -0.0000000000        0.0000000000
-         178        47(4)  43(3)       -0.0000000000        0.0000000000
-         179        47(4)  44(3)       -0.0000000000        0.0000000000
-         180        47(4)  45(3)       -0.0000000000        0.0000000000
+         175        47(4)  40(3)        0.0000000000        0.0000000000
+         176        47(4)  41(3)       -0.0000000000       -0.0000000000
+         177        47(4)  42(3)        0.0000000000        0.0000000000
+         178        47(4)  43(3)        0.0000000000        0.0000000000
+         179        47(4)  44(3)        0.0000000000        0.0000000000
+         180        47(4)  45(3)        0.0000000000        0.0000000000
 
-      174 elements with absolute value less than 2.75D-15 not printed.
+      173 elements with absolute value less than 1.64D-15 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           4                           -0.6831060105        0.0000000000
-         401                            0.6831060105        0.0000000000
+           4                            0.6831060105       -0.0000000000
+         401                           -0.6831060105       -0.0000000000
 
      1214 elements with absolute value less than 6.83D-02 not printed.
 
@@ -1488,11 +1523,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   ==============================================================
 
- Coefficient of determinant         4 is     -0.68310601 -6.83106010E-01
+ Coefficient of determinant         4 is      0.68310601  6.83106010E-01
  alpha-string:  1     3     5     7
   beta-string:  1     3     5  6
 
- Coefficient of determinant       401 is      0.68310601  6.83106010E-01
+ Coefficient of determinant       401 is     -0.68310601 -6.83106010E-01
  alpha-string:  1     3     5  6
   beta-string:  1     3     5     7
 
@@ -1528,13 +1563,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-         174        47(4)  39(3)        0.2183328375       -0.2137169103
-         175        47(4)  40(3)        0.5119953174       -0.0233416585
-         176        47(4)  41(3)       -0.1917668765        0.0602124655
-         177        47(4)  42(3)        0.2753701708       -0.2101424502
-         178        47(4)  43(3)        0.7366634223       -0.1368398776
-         179        47(4)  44(3)        0.9518578937       -0.5765720293
-         180        47(4)  45(3)        1.4411796132       -0.2359938937
+         174        47(4)  39(3)       -0.2183328376        0.2137169103
+         175        47(4)  40(3)       -0.5119953178        0.0233416585
+         176        47(4)  41(3)        0.1917668774       -0.0602124655
+         177        47(4)  42(3)       -0.2753701710        0.2101424502
+         178        47(4)  43(3)       -0.7366634216        0.1368398775
+         179        47(4)  44(3)       -0.9518578938        0.5765720293
+         180        47(4)  45(3)       -1.4411796133        0.2359938937
 
       173 elements with absolute value less than 1.44D-01 not printed.
 
@@ -1542,16 +1577,16 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                           -0.0633407656        0.0086958742
-           4                            0.5665284055       -0.0102527624
-           8                           -0.2939429465        0.0069823187
-          92                           -0.1307598550       -0.0103232815
-         114                            0.0964852295        0.0054780084
-         369                           -0.0633407656        0.0086958742
-         401                            0.5665284055       -0.0102527624
-         405                           -0.1307598550       -0.0103232815
-         406                            0.0964852295        0.0054780084
-         465                           -0.2939429465        0.0069823187
+           2                            0.0633407656       -0.0086958742
+           4                           -0.5665284055        0.0102527624
+           8                            0.2939429465       -0.0069823187
+          92                            0.1307598550        0.0103232815
+         114                           -0.0964852295       -0.0054780084
+         369                            0.0633407656       -0.0086958742
+         401                           -0.5665284055        0.0102527624
+         405                            0.1307598550        0.0103232815
+         406                           -0.0964852295       -0.0054780084
+         465                            0.2939429465       -0.0069823187
 
      1206 elements with absolute value less than 5.67D-02 not printed.
 
@@ -1561,11 +1596,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.3057E+00 to 0.9667E+00
   ==============================================================
 
- Coefficient of determinant         4 is      0.56652841  5.66528405E-01
+ Coefficient of determinant         4 is     -0.56652841 -5.66528405E-01
  alpha-string:  1     3     5     7
   beta-string:  1     3     5  6
 
- Coefficient of determinant       401 is      0.56652841  5.66528405E-01
+ Coefficient of determinant       401 is     -0.56652841 -5.66528405E-01
  alpha-string:  1     3     5  6
   beta-string:  1     3     5     7
 
@@ -1573,19 +1608,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.9667E-01 to 0.3057E+00
   ==============================================================
 
- Coefficient of determinant         8 is     -0.29394295 -2.93942946E-01
+ Coefficient of determinant         8 is      0.29394295  2.93942946E-01
  alpha-string:  1     3        6  7
   beta-string:  1     3     5  6
 
- Coefficient of determinant        92 is     -0.13075985 -1.30759855E-01
+ Coefficient of determinant        92 is      0.13075985  1.30759855E-01
  alpha-string:  1     3     5     7
   beta-string:  1  2        5     7
 
- Coefficient of determinant       405 is     -0.13075985 -1.30759855E-01
+ Coefficient of determinant       405 is      0.13075985  1.30759855E-01
  alpha-string:  1  2        5     7
   beta-string:  1     3     5     7
 
- Coefficient of determinant       465 is     -0.29394295 -2.93942946E-01
+ Coefficient of determinant       465 is      0.29394295  2.93942946E-01
  alpha-string:  1     3     5  6
   beta-string:  1     3        6  7
 
@@ -1593,19 +1628,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.5665E-01 to 0.9667E-01
   ==============================================================
 
- Coefficient of determinant         2 is     -0.06334077 -6.33407656E-02
+ Coefficient of determinant         2 is      0.06334077  6.33407656E-02
  alpha-string:  1  2        5  6
   beta-string:  1     3     5  6
 
- Coefficient of determinant       114 is      0.09648523  9.64852295E-02
+ Coefficient of determinant       114 is     -0.09648523 -9.64852295E-02
  alpha-string:  1     3     5     7
   beta-string:        3  4  5     7
 
- Coefficient of determinant       369 is     -0.06334077 -6.33407656E-02
+ Coefficient of determinant       369 is      0.06334077  6.33407656E-02
  alpha-string:  1     3     5  6
   beta-string:  1  2        5  6
 
- Coefficient of determinant       406 is      0.09648523  9.64852295E-02
+ Coefficient of determinant       406 is     -0.09648523 -9.64852295E-02
  alpha-string:        3  4  5     7
   beta-string:  1     3     5     7
 
@@ -1630,16 +1665,16 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           7         4(1)  24(2)        0.1033421238        0.0206634738
-           9         5(1)  24(2)       -0.7490474031        0.0805824576
-          10         5(1)  25(2)        0.3265141439        0.0047094024
-          85         7(1)  34(2)        0.0011259478       -0.0843469550
-          92        23(2)   6(1)        0.6945545923       -0.0922263591
-          93        23(2)   7(1)       -0.5320535422       -0.0095743052
-         121        23(2)   9(1)       -0.0954260296       -0.0004130665
-         128        23(2)  16(1)       -0.1110579545       -0.0029207101
-         155        25(2)  17(1)       -0.0326642582        0.1443204770
-         180        47(4)  45(3)       -0.0827021812        0.0094376176
+           7         4(1)  24(2)       -0.1033421238       -0.0206634738
+           9         5(1)  24(2)        0.7490474031       -0.0805824576
+          10         5(1)  25(2)       -0.3265141439       -0.0047094024
+          85         7(1)  34(2)       -0.0011259478        0.0843469550
+          92        23(2)   6(1)       -0.6945545923        0.0922263591
+          93        23(2)   7(1)        0.5320535422        0.0095743052
+         121        23(2)   9(1)        0.0954260296        0.0004130665
+         128        23(2)  16(1)        0.1110579545        0.0029207101
+         155        25(2)  17(1)        0.0326642582       -0.1443204770
+         180        47(4)  45(3)        0.0827021812       -0.0094376176
 
       170 elements with absolute value less than 7.49D-02 not printed.
 
@@ -1647,26 +1682,26 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                            0.0348282485       -0.0007576517
-           3                            0.0412936567       -0.0008061936
-           4                           -0.0186758270       -0.0038243162
-           6                           -0.0148168101        0.0102580095
-           8                            0.0164750928        0.0004518262
-          92                           -0.1088214818        0.0110221971
-          93                            0.0172137276       -0.0083654603
-         114                           -0.1432520114        0.0091603649
-         116                            0.0167187887       -0.0090725539
-         162                            0.0150531205       -0.0021591607
-         369                            0.0348282485       -0.0007576517
-         385                            0.0412936567       -0.0008061936
-         401                           -0.0186758270       -0.0038243162
-         405                           -0.1088214818        0.0110221971
-         406                           -0.1432520114        0.0091603649
-         421                            0.0172137276       -0.0083654603
-         433                           -0.0148168101        0.0102580095
-         438                            0.0167187887       -0.0090725539
-         465                            0.0164750928        0.0004518262
-         472                            0.0150531205       -0.0021591607
+           2                           -0.0348282485        0.0007576517
+           3                           -0.0412936567        0.0008061936
+           4                            0.0186758270        0.0038243162
+           6                            0.0148168101       -0.0102580095
+           8                           -0.0164750928       -0.0004518262
+          92                            0.1088214818       -0.0110221971
+          93                           -0.0172137276        0.0083654603
+         114                            0.1432520114       -0.0091603649
+         116                           -0.0167187887        0.0090725539
+         162                           -0.0150531205        0.0021591607
+         369                           -0.0348282485        0.0007576517
+         385                           -0.0412936567        0.0008061936
+         401                            0.0186758270        0.0038243162
+         405                            0.1088214818       -0.0110221971
+         406                            0.1432520114       -0.0091603649
+         421                           -0.0172137276        0.0083654603
+         433                            0.0148168101       -0.0102580095
+         438                           -0.0167187887        0.0090725539
+         465                           -0.0164750928       -0.0004518262
+         472                           -0.0150531205        0.0021591607
 
      1196 elements with absolute value less than 1.43D-02 not printed.
 
@@ -1676,19 +1711,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.8852E-01 to 0.2799E+00
   ==============================================================
 
- Coefficient of determinant        92 is     -0.10882148 -1.08821482E-01
+ Coefficient of determinant        92 is      0.10882148  1.08821482E-01
  alpha-string:  1     3     5     7
   beta-string:  1  2        5     7
 
- Coefficient of determinant       114 is     -0.14325201 -1.43252011E-01
+ Coefficient of determinant       114 is      0.14325201  1.43252011E-01
  alpha-string:  1     3     5     7
   beta-string:        3  4  5     7
 
- Coefficient of determinant       405 is     -0.10882148 -1.08821482E-01
+ Coefficient of determinant       405 is      0.10882148  1.08821482E-01
  alpha-string:  1  2        5     7
   beta-string:  1     3     5     7
 
- Coefficient of determinant       406 is     -0.14325201 -1.43252011E-01
+ Coefficient of determinant       406 is      0.14325201  1.43252011E-01
  alpha-string:        3  4  5     7
   beta-string:  1     3     5     7
 
@@ -1696,19 +1731,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.2799E-01 to 0.8852E-01
   ==============================================================
 
- Coefficient of determinant         2 is      0.03482825  3.48282485E-02
+ Coefficient of determinant         2 is     -0.03482825 -3.48282485E-02
  alpha-string:  1  2        5  6
   beta-string:  1     3     5  6
 
- Coefficient of determinant         3 is      0.04129366  4.12936567E-02
+ Coefficient of determinant         3 is     -0.04129366 -4.12936567E-02
  alpha-string:        3  4  5  6
   beta-string:  1     3     5  6
 
- Coefficient of determinant       369 is      0.03482825  3.48282485E-02
+ Coefficient of determinant       369 is     -0.03482825 -3.48282485E-02
  alpha-string:  1     3     5  6
   beta-string:  1  2        5  6
 
- Coefficient of determinant       385 is      0.04129366  4.12936567E-02
+ Coefficient of determinant       385 is     -0.04129366 -4.12936567E-02
  alpha-string:  1     3     5  6
   beta-string:        3  4  5  6
 
@@ -1716,51 +1751,51 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.1433E-01 to 0.2799E-01
   ==============================================================
 
- Coefficient of determinant         4 is     -0.01867583 -1.86758270E-02
+ Coefficient of determinant         4 is      0.01867583  1.86758270E-02
  alpha-string:  1     3     5     7
   beta-string:  1     3     5  6
 
- Coefficient of determinant         6 is     -0.01481681 -1.48168101E-02
+ Coefficient of determinant         6 is      0.01481681  1.48168101E-02
  alpha-string:  1        4  5     7
   beta-string:  1     3     5  6
 
- Coefficient of determinant         8 is      0.01647509  1.64750928E-02
+ Coefficient of determinant         8 is     -0.01647509 -1.64750928E-02
  alpha-string:  1     3        6  7
   beta-string:  1     3     5  6
 
- Coefficient of determinant        93 is      0.01721373  1.72137276E-02
+ Coefficient of determinant        93 is     -0.01721373 -1.72137276E-02
  alpha-string:     2  3     5     7
   beta-string:  1  2        5     7
 
- Coefficient of determinant       116 is      0.01671879  1.67187887E-02
+ Coefficient of determinant       116 is     -0.01671879 -1.67187887E-02
  alpha-string:  1        4  5     7
   beta-string:        3  4  5     7
 
- Coefficient of determinant       162 is      0.01505312  1.50531205E-02
+ Coefficient of determinant       162 is     -0.01505312 -1.50531205E-02
  alpha-string:  1     3        6  7
   beta-string:        3  4     6  7
 
- Coefficient of determinant       401 is     -0.01867583 -1.86758270E-02
+ Coefficient of determinant       401 is      0.01867583  1.86758270E-02
  alpha-string:  1     3     5  6
   beta-string:  1     3     5     7
 
- Coefficient of determinant       421 is      0.01721373  1.72137276E-02
+ Coefficient of determinant       421 is     -0.01721373 -1.72137276E-02
  alpha-string:  1  2        5     7
   beta-string:     2  3     5     7
 
- Coefficient of determinant       433 is     -0.01481681 -1.48168101E-02
+ Coefficient of determinant       433 is      0.01481681  1.48168101E-02
  alpha-string:  1     3     5  6
   beta-string:  1        4  5     7
 
- Coefficient of determinant       438 is      0.01671879  1.67187887E-02
+ Coefficient of determinant       438 is     -0.01671879 -1.67187887E-02
  alpha-string:        3  4  5     7
   beta-string:  1        4  5     7
 
- Coefficient of determinant       465 is      0.01647509  1.64750928E-02
+ Coefficient of determinant       465 is     -0.01647509 -1.64750928E-02
  alpha-string:  1     3     5  6
   beta-string:  1     3        6  7
 
- Coefficient of determinant       472 is      0.01505312  1.50531205E-02
+ Coefficient of determinant       472 is     -0.01505312 -1.50531205E-02
  alpha-string:        3  4     6  7
   beta-string:  1     3        6  7
 
@@ -1810,19 +1845,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           6         3(1)  38(3)        0.1238293780        0.0055477101
-           7         4(1)  37(3)        0.3059705954       -0.0201273534
-           9         5(1)  37(3)       -0.4842015153        0.0467133273
-          10         5(1)  38(3)        0.5817918021        0.0065611158
-          58         7(1)  44(3)       -0.1116149884        0.0106459301
-          64        23(2)  46(4)        0.8383492262       -0.0409020702
-         108        38(3)  17(1)       -0.0171766918        0.0934161688
-         123        47(4)  26(2)        0.0084069956       -0.1684253333
-         124        47(4)  27(2)       -0.0183451373        0.1354612698
-         128        47(4)  31(2)        0.0457032834       -0.3971337296
-         130        47(4)  33(2)       -0.0208002863        0.1996991296
-         131        47(4)  34(2)        0.0783529486       -0.4280382084
-         132        47(4)  35(2)       -0.0347572694        0.3620498724
+           6         3(1)  38(3)       -0.1238293780       -0.0055477101
+           7         4(1)  37(3)       -0.3059705954        0.0201273534
+           9         5(1)  37(3)        0.4842015153       -0.0467133273
+          10         5(1)  38(3)       -0.5817918021       -0.0065611158
+          58         7(1)  44(3)        0.1116149884       -0.0106459301
+          64        23(2)  46(4)       -0.8383492262        0.0409020702
+         108        38(3)  17(1)        0.0171766918       -0.0934161688
+         123        47(4)  26(2)       -0.0084069956        0.1684253333
+         124        47(4)  27(2)        0.0183451372       -0.1354612694
+         128        47(4)  31(2)       -0.0457032835        0.3971337297
+         130        47(4)  33(2)        0.0208002862       -0.1996991295
+         131        47(4)  34(2)       -0.0783529486        0.4280382086
+         132        47(4)  35(2)        0.0347572694       -0.3620498723
 
       120 elements with absolute value less than 8.38D-02 not printed.
 
@@ -1830,12 +1865,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           4                            0.0042999076        0.0326808126
-         136                            0.3101995426        0.0075267834
-         353                           -0.0000724020       -0.0333047834
-         657                            0.0042999076        0.0326808126
-         663                            0.3101995426        0.0075267834
-         961                           -0.0000724020       -0.0333047834
+           4                           -0.0042999076       -0.0326808126
+         136                           -0.3101995426       -0.0075267834
+         353                            0.0000724020        0.0333047834
+         657                           -0.0042999076       -0.0326808126
+         663                           -0.3101995426       -0.0075267834
+         961                            0.0000724020        0.0333047834
 
      1210 elements with absolute value less than 3.10D-02 not printed.
 
@@ -1845,11 +1880,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.1417E+00 to 0.4482E+00
   ==============================================================
 
- Coefficient of determinant       136 is      0.31019954  3.10199543E-01
+ Coefficient of determinant       136 is     -0.31019954 -3.10199543E-01
  alpha-string:  1     3     5     7
   beta-string:        3     5  6  7
 
- Coefficient of determinant       663 is      0.31019954  3.10199543E-01
+ Coefficient of determinant       663 is     -0.31019954 -3.10199543E-01
  alpha-string:        3     5  6  7
   beta-string:  1     3     5     7
 
@@ -1883,24 +1918,24 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           5         3(1)  37(3)       -0.2365356673        0.0189791536
-           6         3(1)  38(3)       -0.2468555932       -0.0032981336
-           7         4(1)  37(3)       -0.6488621369        0.0797435862
-           8         4(1)  38(3)       -0.1409886641       -0.0013452829
-           9         5(1)  37(3)       -0.4456117322        0.0802578708
-          10         5(1)  38(3)        0.2425290458       -0.0088303620
-          58         7(1)  44(3)        0.1359936109       -0.0072627369
-          62        22(2)  46(4)        0.2764460402       -0.0227417305
-          64        23(2)  46(4)        0.6770156701       -0.0412198464
-         108        38(3)  17(1)       -0.0165300583        0.0811244766
-         123        47(4)  26(2)        0.0193875048       -0.1310665691
-         124        47(4)  27(2)       -0.0132502628        0.1160370728
-         128        47(4)  31(2)        0.0761346189       -0.3734745381
-         129        47(4)  32(2)       -0.0469689749        0.1129782630
-         130        47(4)  33(2)       -0.0799449957        0.3221685977
-         131        47(4)  34(2)        0.0742071890       -0.5734217517
-         132        47(4)  35(2)       -0.0491926814        0.1384867721
-         133        47(4)  36(2)       -0.0582070581        0.1685513852
+           5         3(1)  37(3)        0.2365356673       -0.0189791536
+           6         3(1)  38(3)        0.2468555932        0.0032981336
+           7         4(1)  37(3)        0.6488621369       -0.0797435862
+           8         4(1)  38(3)        0.1409886641        0.0013452829
+           9         5(1)  37(3)        0.4456117322       -0.0802578708
+          10         5(1)  38(3)       -0.2425290458        0.0088303620
+          58         7(1)  44(3)       -0.1359936109        0.0072627369
+          62        22(2)  46(4)       -0.2764460402        0.0227417305
+          64        23(2)  46(4)       -0.6770156701        0.0412198464
+         108        38(3)  17(1)        0.0165300583       -0.0811244766
+         123        47(4)  26(2)       -0.0193875048        0.1310665691
+         124        47(4)  27(2)        0.0132502627       -0.1160370723
+         128        47(4)  31(2)       -0.0761346187        0.3734745377
+         129        47(4)  32(2)        0.0469689753       -0.1129782648
+         130        47(4)  33(2)        0.0799449957       -0.3221685976
+         131        47(4)  34(2)       -0.0742071890        0.5734217518
+         132        47(4)  35(2)        0.0491926814       -0.1384867719
+         133        47(4)  36(2)        0.0582070581       -0.1685513852
 
       115 elements with absolute value less than 6.77D-02 not printed.
 
@@ -1908,14 +1943,14 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-         136                           -0.4747575726       -0.0019879962
-         137                           -0.0599573133        0.0008518787
-         140                           -0.0660567050        0.0000263315
-         449                           -0.2159175087        0.0057536411
-         663                           -0.4747575726       -0.0019879962
-         679                           -0.0599573133        0.0008518787
-         727                           -0.0660567050        0.0000263315
-         967                           -0.2159175087        0.0057536411
+         136                            0.4747575726        0.0019879962
+         137                            0.0599573133       -0.0008518787
+         140                            0.0660567050       -0.0000263315
+         449                            0.2159175087       -0.0057536411
+         663                            0.4747575726        0.0019879962
+         679                            0.0599573133       -0.0008518787
+         727                            0.0660567050       -0.0000263315
+         967                            0.2159175087       -0.0057536411
 
      1208 elements with absolute value less than 4.75D-02 not printed.
 
@@ -1925,11 +1960,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.2438E+00 to 0.7711E+00
   ==============================================================
 
- Coefficient of determinant       136 is     -0.47475757 -4.74757573E-01
+ Coefficient of determinant       136 is      0.47475757  4.74757573E-01
  alpha-string:  1     3     5     7
   beta-string:        3     5  6  7
 
- Coefficient of determinant       663 is     -0.47475757 -4.74757573E-01
+ Coefficient of determinant       663 is      0.47475757  4.74757573E-01
  alpha-string:        3     5  6  7
   beta-string:  1     3     5     7
 
@@ -1937,11 +1972,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.7711E-01 to 0.2438E+00
   ==============================================================
 
- Coefficient of determinant       449 is     -0.21591751 -2.15917509E-01
+ Coefficient of determinant       449 is      0.21591751  2.15917509E-01
  alpha-string:  1     3     5  6
   beta-string:  1           5  6  7
 
- Coefficient of determinant       967 is     -0.21591751 -2.15917509E-01
+ Coefficient of determinant       967 is      0.21591751  2.15917509E-01
  alpha-string:  1           5  6  7
   beta-string:  1     3     5  6
 
@@ -1949,19 +1984,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.4748E-01 to 0.7711E-01
   ==============================================================
 
- Coefficient of determinant       137 is     -0.05995731 -5.99573133E-02
+ Coefficient of determinant       137 is      0.05995731  5.99573133E-02
  alpha-string:     2  3     5     7
   beta-string:        3     5  6  7
 
- Coefficient of determinant       140 is     -0.06605670 -6.60567050E-02
+ Coefficient of determinant       140 is      0.06605670  6.60567050E-02
  alpha-string:  1     3        6  7
   beta-string:        3     5  6  7
 
- Coefficient of determinant       679 is     -0.05995731 -5.99573133E-02
+ Coefficient of determinant       679 is      0.05995731  5.99573133E-02
  alpha-string:        3     5  6  7
   beta-string:     2  3     5     7
 
- Coefficient of determinant       727 is     -0.06605670 -6.60567050E-02
+ Coefficient of determinant       727 is      0.06605670  6.60567050E-02
  alpha-string:        3     5  6  7
   beta-string:  1     3        6  7
 
@@ -1985,14 +2020,14 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-         112        46(4)  26(2)        0.3824830795        0.0005965978
-         123        47(4)  26(2)        1.7780985582       -0.0003405110
-         124        47(4)  27(2)        0.5079330073        0.0054953263
-         128        47(4)  31(2)        0.4101367152       -0.0039427623
-         129        47(4)  32(2)       -0.7600911757       -0.0191579940
-         130        47(4)  33(2)       -0.5444743751        0.0036655454
-         131        47(4)  34(2)       -0.2855803708       -0.0030445386
-         132        47(4)  35(2)       -0.3396031866        0.0350822353
+         112        46(4)  26(2)       -0.3824830795       -0.0005965978
+         123        47(4)  26(2)       -1.7780985580        0.0003405110
+         124        47(4)  27(2)       -0.5079330092       -0.0054953263
+         128        47(4)  31(2)       -0.4101367116        0.0039427624
+         129        47(4)  32(2)        0.7600911771        0.0191579940
+         130        47(4)  33(2)        0.5444743751       -0.0036655454
+         131        47(4)  34(2)        0.2855803706        0.0030445386
+         132        47(4)  35(2)        0.3396031868       -0.0350822353
 
       125 elements with absolute value less than 1.78D-01 not printed.
 
@@ -2000,18 +2035,18 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           4                           -0.4637775138        0.0013140007
-           6                            0.0578883714       -0.0003441777
-           8                            0.1030028728        0.0001384060
-          52                            0.0698970806        0.0000099813
-         353                            0.1984062372       -0.0037771605
-         417                           -0.0912449341        0.0000960702
-         657                           -0.4637775138        0.0013140007
-         689                            0.0578883714       -0.0003441777
-         721                            0.1030028728        0.0001384060
-         723                            0.0698970806        0.0000099813
-         961                            0.1984062372       -0.0037771605
-         965                           -0.0912449341        0.0000960702
+           4                            0.4637775138       -0.0013140007
+           6                           -0.0578883714        0.0003441777
+           8                           -0.1030028728       -0.0001384060
+          52                           -0.0698970806       -0.0000099813
+         353                           -0.1984062372        0.0037771605
+         417                            0.0912449341       -0.0000960702
+         657                            0.4637775138       -0.0013140007
+         689                           -0.0578883714        0.0003441777
+         721                           -0.1030028728       -0.0001384060
+         723                           -0.0698970806       -0.0000099813
+         961                           -0.1984062372        0.0037771605
+         965                            0.0912449341       -0.0000960702
 
      1204 elements with absolute value less than 4.64D-02 not printed.
 
@@ -2021,11 +2056,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.2466E+00 to 0.7798E+00
   ==============================================================
 
- Coefficient of determinant         4 is     -0.46377751 -4.63777514E-01
+ Coefficient of determinant         4 is      0.46377751  4.63777514E-01
  alpha-string:  1     3     5     7
   beta-string:  1     3  4  5
 
- Coefficient of determinant       657 is     -0.46377751 -4.63777514E-01
+ Coefficient of determinant       657 is      0.46377751  4.63777514E-01
  alpha-string:  1     3  4  5
   beta-string:  1     3     5     7
 
@@ -2033,27 +2068,27 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.7798E-01 to 0.2466E+00
   ==============================================================
 
- Coefficient of determinant         8 is      0.10300287  1.03002873E-01
+ Coefficient of determinant         8 is     -0.10300287 -1.03002873E-01
  alpha-string:  1     3        6  7
   beta-string:  1     3  4  5
 
- Coefficient of determinant       353 is      0.19840624  1.98406237E-01
+ Coefficient of determinant       353 is     -0.19840624 -1.98406237E-01
  alpha-string:  1     3     5  6
   beta-string:  1  2  3     5
 
- Coefficient of determinant       417 is     -0.09124493 -9.12449341E-02
+ Coefficient of determinant       417 is      0.09124493  9.12449341E-02
  alpha-string:  1     3     5  6
   beta-string:  1     3  4        7
 
- Coefficient of determinant       721 is      0.10300287  1.03002873E-01
+ Coefficient of determinant       721 is     -0.10300287 -1.03002873E-01
  alpha-string:  1     3  4  5
   beta-string:  1     3        6  7
 
- Coefficient of determinant       961 is      0.19840624  1.98406237E-01
+ Coefficient of determinant       961 is     -0.19840624 -1.98406237E-01
  alpha-string:  1  2  3     5
   beta-string:  1     3     5  6
 
- Coefficient of determinant       965 is     -0.09124493 -9.12449341E-02
+ Coefficient of determinant       965 is      0.09124493  9.12449341E-02
  alpha-string:  1     3  4        7
   beta-string:  1     3     5  6
 
@@ -2061,19 +2096,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   Printout of coefficients in interval  0.4638E-01 to 0.7798E-01
   ==============================================================
 
- Coefficient of determinant         6 is      0.05788837  5.78883714E-02
+ Coefficient of determinant         6 is     -0.05788837 -5.78883714E-02
  alpha-string:  1        4  5     7
   beta-string:  1     3  4  5
 
- Coefficient of determinant        52 is      0.06989708  6.98970806E-02
+ Coefficient of determinant        52 is     -0.06989708 -6.98970806E-02
  alpha-string:  1     3        6  7
   beta-string:  1     3  4     6
 
- Coefficient of determinant       689 is      0.05788837  5.78883714E-02
+ Coefficient of determinant       689 is     -0.05788837 -5.78883714E-02
  alpha-string:  1     3  4  5
   beta-string:  1        4  5     7
 
- Coefficient of determinant       723 is      0.06989708  6.98970806E-02
+ Coefficient of determinant       723 is     -0.06989708 -6.98970806E-02
  alpha-string:  1     3  4     6
   beta-string:  1     3        6  7
 
@@ -2091,7 +2126,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
   10- 5 to 10- 4       262    0.45463111E-06    0.60805000E+00
   10- 6 to 10- 5        50    0.12204043E-08    0.60805000E+00
   10- 7 to 10- 6         8    0.10863446E-11    0.60805000E+00
-  10- 8 to 10- 7         2    0.10183265E-13    0.60805000E+00
+  10- 8 to 10- 7         2    0.10183267E-13    0.60805000E+00
   Number of coefficients less than 10^-11 times norm is             0
 
 
@@ -2283,7 +2318,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
     ZDIPLEN       freq            LR value
  -----------------------------------------
-              0.005000          6.86046228
+              0.005000          6.86046227
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -2291,7 +2326,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
  Orbital variables.         KZWOPT:     127
  Configuration variables.   KZCONF:    1216
  Total number of variables. KZVAR :    1343
- >>> Time used in CRVEC1 is   1.97 seconds
+ >>> Time used in CRVEC1 is   1.96 seconds
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -2313,12 +2348,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.37D-0
 
  Operator symmetry =  2; triplet =   F
 
-RSPORT:    2 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.07805 a.u.
- after    3 linear transformations is   -454.91568819
+ after    3 linear transformations is   -454.91568818
  INERTIA (POS,ZER,NEG) of reduced matrix is    5    0    1
  Determinant of reduced matrix is -2.46 * 10 ** -4.0
 
@@ -2382,7 +2417,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 
  Operator symmetry =  2; triplet =   F
 
-RSPORT:    2 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -2416,7 +2451,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 
  Operator symmetry =  1; triplet =   F
 
-RSPORT:    3 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -2503,7 +2538,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.23054 a.u.
- after   12 linear transformations is      9.22292316
+ after   12 linear transformations is      9.22292315
  INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
  Determinant of reduced matrix is  5.91 * 10 **-13.0
 
@@ -2641,7 +2676,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.22054 a.u.
- after    5 linear transformations is     -1.51170494
+ after    5 linear transformations is     -1.51170493
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -1.92 * 10 ** -7.0
 
@@ -2662,7 +2697,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.22054 a.u.
- after    8 linear transformations is      1.66906078
+ after    8 linear transformations is      1.66906077
  INERTIA (POS,ZER,NEG) of reduced matrix is   14    0    2
  Determinant of reduced matrix is  1.12 * 10 ** -9.0
 
@@ -2781,7 +2816,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000  0.225544         64.77933013
+                         -0.005000  0.225544         64.77933012
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -2861,7 +2896,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after    8 linear transformations is      2.94844422
+ after    8 linear transformations is      2.94844423
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -2.00 * 10 ** -4.0
 
@@ -2959,7 +2994,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   22 linear transformations is      3.65799536
+ after   22 linear transformations is      3.65799535
  INERTIA (POS,ZER,NEG) of reduced matrix is   41    0    3
  Determinant of reduced matrix is -8.75 * 10 **-11.0
 
@@ -2980,7 +3015,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   25 linear transformations is      2.86894766
+ after   25 linear transformations is      2.86894767
  INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    4
  Determinant of reduced matrix is  2.47 * 10 ** -9.0
 
@@ -3111,7 +3146,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after    8 linear transformations is      2.83205851
+ after    8 linear transformations is      2.83205852
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -3.66 * 10 ** -3.0
 
@@ -3300,7 +3335,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000  0.355574          6.91229819
+                         -0.005000  0.355574          6.91229818
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -3349,7 +3384,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  CRLRV2 -- freqr1 :  -5.000000D-03
  CRLRV2 -- freqr2 :  -7.305312D-02
   >>> RSPCTL skipped because norm of
-      property vector is only  1.74205765369585167E-013
+      property vector is only  1.12699656819861549E-013
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -3365,7 +3400,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  CRLRV2 -- freqr1 :  -5.000000D-03
  CRLRV2 -- freqr2 :   7.305312D-02
   >>> RSPCTL skipped because norm of
-      property vector is only  1.73880957204378927E-013
+      property vector is only  1.15835020309086686E-013
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -3431,7 +3466,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000  0.225544         16.82393604
+                         -0.005000  0.225544         16.82393605
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -3485,14 +3520,14 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   13 linear transformations is     12.50056616
+ after   13 linear transformations is     12.50056615
  INERTIA (POS,ZER,NEG) of reduced matrix is   25    0    1
  Determinant of reduced matrix is -3.61 * 10 ** -5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   14 linear transformations is      1.82230360
+ after   14 linear transformations is      1.82230359
  INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    2
  Determinant of reduced matrix is  1.86 * 10 ** -4.0
 
@@ -3534,7 +3569,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   20 linear transformations is      6.60584836
+ after   20 linear transformations is      6.60584837
  INERTIA (POS,ZER,NEG) of reduced matrix is   38    0    2
  Determinant of reduced matrix is  4.11 * 10 ** -3.0
 
@@ -3576,14 +3611,14 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   26 linear transformations is      6.63317107
+ after   26 linear transformations is      6.63317108
  INERTIA (POS,ZER,NEG) of reduced matrix is   50    0    2
  Determinant of reduced matrix is  3.42 * 10 ** -1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   27 linear transformations is      6.63356096
+ after   27 linear transformations is      6.63356097
  INERTIA (POS,ZER,NEG) of reduced matrix is   52    0    2
  Determinant of reduced matrix is  1.49 * 10 ** -1.0
 
@@ -3714,98 +3749,98 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   15 linear transformations is     11.04914143
+ after   15 linear transformations is     11.04914142
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -5.83 * 10 ** -5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   16 linear transformations is     13.39551725
+ after   16 linear transformations is     13.39551724
  INERTIA (POS,ZER,NEG) of reduced matrix is   31    0    1
  Determinant of reduced matrix is -8.85 * 10 ** -5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   17 linear transformations is     14.34584944
+ after   17 linear transformations is     14.34584943
  INERTIA (POS,ZER,NEG) of reduced matrix is   33    0    1
  Determinant of reduced matrix is -8.35 * 10 ** -4.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   18 linear transformations is     20.04189268
+ after   18 linear transformations is     20.04189267
  INERTIA (POS,ZER,NEG) of reduced matrix is   35    0    1
  Determinant of reduced matrix is -1.94 * 10 ** -4.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   19 linear transformations is     20.73473600
+ after   19 linear transformations is     20.73473599
  INERTIA (POS,ZER,NEG) of reduced matrix is   37    0    1
  Determinant of reduced matrix is -2.54 * 10 ** -3.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   20 linear transformations is     23.94967748
+ after   20 linear transformations is     23.94967746
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -9.71 * 10 ** -4.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   21 linear transformations is     24.91452436
+ after   21 linear transformations is     24.91452435
  INERTIA (POS,ZER,NEG) of reduced matrix is   41    0    1
  Determinant of reduced matrix is -5.42 * 10 ** -3.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   22 linear transformations is     26.09457952
+ after   22 linear transformations is     26.09457951
  INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    1
  Determinant of reduced matrix is -1.10 * 10 ** -3.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   23 linear transformations is     26.22766468
+ after   23 linear transformations is     26.22766467
  INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    1
  Determinant of reduced matrix is -6.77 * 10 ** -3.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   24 linear transformations is     26.32109222
+ after   24 linear transformations is     26.32109221
  INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    1
  Determinant of reduced matrix is -6.34 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   25 linear transformations is     26.60399892
+ after   25 linear transformations is     26.60399890
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -1.78 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   26 linear transformations is     26.63433499
+ after   26 linear transformations is     26.63433497
  INERTIA (POS,ZER,NEG) of reduced matrix is   51    0    1
  Determinant of reduced matrix is -1.25 * 10 ** -1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   27 linear transformations is     26.70401142
+ after   27 linear transformations is     26.70401140
  INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    1
  Determinant of reduced matrix is -2.35 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   28 linear transformations is     26.71230265
+ after   28 linear transformations is     26.71230264
  INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    1
  Determinant of reduced matrix is -1.37 * 10 ** -1.0
 
@@ -3819,7 +3854,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000  0.355574        208.68635435
+                         -0.005000  0.355574        208.68635424
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -3841,7 +3876,7 @@ RSPORT:    3 out of    2 new trial vectors linear dependent
 
  Operator symmetry =  4; triplet =   F
 
-RSPORT:    2 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -3875,7 +3910,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 
  Operator symmetry =  4; triplet =   F
 
-RSPORT:    2 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -4294,7 +4329,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.36057 a.u.
- after   24 linear transformations is      1.00054381
+ after   24 linear transformations is      1.00054382
  INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
  Determinant of reduced matrix is -1.32 * 10 **-10.0
 
@@ -4446,7 +4481,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   11 linear transformations is     -1.70312749
+ after   11 linear transformations is     -1.70312750
  INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    2
  Determinant of reduced matrix is  5.68 * 10 **-10.0
 
@@ -4516,7 +4551,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   21 linear transformations is      0.20509823
+ after   21 linear transformations is      0.20509822
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    3
  Determinant of reduced matrix is -1.21 * 10 **-11.0
 
@@ -4544,7 +4579,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.35057 a.u.
- after   25 linear transformations is      0.86890771
+ after   25 linear transformations is      0.86890772
  INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    3
  Determinant of reduced matrix is -6.05 * 10 **-10.0
 
@@ -4703,7 +4738,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.07401 a.u.
- after   21 linear transformations is     -2.61283552
+ after   21 linear transformations is     -2.61283553
  INERTIA (POS,ZER,NEG) of reduced matrix is   41    0    1
  Determinant of reduced matrix is -6.54 * 10 **-10.0
 
@@ -5181,98 +5216,98 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    6 linear transformations is     33.70155094
+ after    6 linear transformations is     33.70155095
  INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
  Determinant of reduced matrix is -3.08 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    7 linear transformations is     34.33296472
+ after    7 linear transformations is     34.33296473
  INERTIA (POS,ZER,NEG) of reduced matrix is   13    0    1
  Determinant of reduced matrix is -6.94 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    8 linear transformations is     34.53512657
+ after    8 linear transformations is     34.53512658
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -2.81 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    9 linear transformations is     35.21086438
+ after    9 linear transformations is     35.21086439
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is -1.02 * 10 **-11.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   10 linear transformations is     35.31277907
+ after   10 linear transformations is     35.31277908
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -5.86 * 10 **-11.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   11 linear transformations is     35.57686483
+ after   11 linear transformations is     35.57686485
  INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    1
  Determinant of reduced matrix is -2.24 * 10 **-11.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   12 linear transformations is     37.24108591
+ after   12 linear transformations is     37.24108592
  INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
  Determinant of reduced matrix is -1.05 * 10 **-14.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   13 linear transformations is     29.37647574
+ after   13 linear transformations is     29.37647572
  INERTIA (POS,ZER,NEG) of reduced matrix is   24    0    2
  Determinant of reduced matrix is  3.87 * 10 **-15.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   14 linear transformations is     34.95334109
+ after   14 linear transformations is     34.95334110
  INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    2
  Determinant of reduced matrix is  2.98 * 10 **-16.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   15 linear transformations is     35.52010482
+ after   15 linear transformations is     35.52010483
  INERTIA (POS,ZER,NEG) of reduced matrix is   28    0    2
  Determinant of reduced matrix is  2.30 * 10 **-16.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   16 linear transformations is     36.98640840
+ after   16 linear transformations is     36.98640841
  INERTIA (POS,ZER,NEG) of reduced matrix is   30    0    2
  Determinant of reduced matrix is  2.73 * 10 **-18.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   17 linear transformations is     38.72797541
+ after   17 linear transformations is     38.72797542
  INERTIA (POS,ZER,NEG) of reduced matrix is   32    0    2
  Determinant of reduced matrix is  5.00 * 10 **-18.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   18 linear transformations is   -748.72631786
+ after   18 linear transformations is   -748.72636328
  INERTIA (POS,ZER,NEG) of reduced matrix is   33    0    3
  Determinant of reduced matrix is -2.33 * 10 **-23.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   19 linear transformations is     21.10910299
+ after   19 linear transformations is     21.10910298
  INERTIA (POS,ZER,NEG) of reduced matrix is   35    0    3
  Determinant of reduced matrix is -4.40 * 10 **-21.0
 
@@ -5293,56 +5328,56 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   22 linear transformations is     29.07549444
+ after   22 linear transformations is     29.07549445
  INERTIA (POS,ZER,NEG) of reduced matrix is   41    0    3
  Determinant of reduced matrix is -7.85 * 10 **-22.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   23 linear transformations is     29.58216775
+ after   23 linear transformations is     29.58216776
  INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    3
  Determinant of reduced matrix is -1.82 * 10 **-23.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   24 linear transformations is     29.61881381
+ after   24 linear transformations is     29.61881382
  INERTIA (POS,ZER,NEG) of reduced matrix is   45    0    3
  Determinant of reduced matrix is -1.42 * 10 **-22.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   25 linear transformations is     29.73922982
+ after   25 linear transformations is     29.73922983
  INERTIA (POS,ZER,NEG) of reduced matrix is   47    0    3
  Determinant of reduced matrix is -7.72 * 10 **-24.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   26 linear transformations is     29.76892582
+ after   26 linear transformations is     29.76892583
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    3
  Determinant of reduced matrix is -5.39 * 10 **-23.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   27 linear transformations is     29.79978626
+ after   27 linear transformations is     29.79978627
  INERTIA (POS,ZER,NEG) of reduced matrix is   51    0    3
  Determinant of reduced matrix is -4.57 * 10 **-24.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   28 linear transformations is     29.80409750
+ after   28 linear transformations is     29.80409751
  INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    3
  Determinant of reduced matrix is -3.04 * 10 **-23.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   29 linear transformations is     29.81089915
+ after   29 linear transformations is     29.81089916
  INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    3
  Determinant of reduced matrix is -6.89 * 10 **-25.0
 
@@ -5356,7 +5391,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000 -0.413084         91.19883948
+                         -0.005000 -0.413084         91.19883952
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -5382,161 +5417,161 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    6 linear transformations is     30.39050024
+ after    6 linear transformations is     30.39050025
  INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
  Determinant of reduced matrix is -2.63 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    7 linear transformations is     30.87756735
+ after    7 linear transformations is     30.87756736
  INERTIA (POS,ZER,NEG) of reduced matrix is   13    0    1
  Determinant of reduced matrix is -7.69 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    8 linear transformations is     31.01969229
+ after    8 linear transformations is     31.01969230
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -2.00 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    9 linear transformations is     31.58060604
+ after    9 linear transformations is     31.58060605
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is -6.95 * 10 **-12.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   10 linear transformations is     31.98675860
+ after   10 linear transformations is     31.98675861
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -1.74 * 10 **-12.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   11 linear transformations is     30.17712335
+ after   11 linear transformations is     30.17712336
  INERTIA (POS,ZER,NEG) of reduced matrix is   20    0    2
  Determinant of reduced matrix is  5.21 * 10 **-15.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   12 linear transformations is     30.97266311
+ after   12 linear transformations is     30.97266312
  INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
  Determinant of reduced matrix is  2.10 * 10 **-14.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   13 linear transformations is     31.30820973
+ after   13 linear transformations is     31.30820974
  INERTIA (POS,ZER,NEG) of reduced matrix is   24    0    2
  Determinant of reduced matrix is  2.22 * 10 **-16.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   14 linear transformations is     31.38832539
+ after   14 linear transformations is     31.38832540
  INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    2
  Determinant of reduced matrix is  1.54 * 10 **-15.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   15 linear transformations is     31.54657545
+ after   15 linear transformations is     31.54657546
  INERTIA (POS,ZER,NEG) of reduced matrix is   28    0    2
  Determinant of reduced matrix is  2.54 * 10 **-15.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   16 linear transformations is     31.85464511
+ after   16 linear transformations is     31.85464512
  INERTIA (POS,ZER,NEG) of reduced matrix is   30    0    2
  Determinant of reduced matrix is  1.10 * 10 **-17.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   17 linear transformations is     32.05420240
+ after   17 linear transformations is     32.05420241
  INERTIA (POS,ZER,NEG) of reduced matrix is   32    0    2
  Determinant of reduced matrix is  2.79 * 10 **-17.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   18 linear transformations is     32.65086221
+ after   18 linear transformations is     32.65086222
  INERTIA (POS,ZER,NEG) of reduced matrix is   34    0    2
  Determinant of reduced matrix is  3.03 * 10 **-20.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   19 linear transformations is     33.01054590
+ after   19 linear transformations is     33.01054591
  INERTIA (POS,ZER,NEG) of reduced matrix is   36    0    2
  Determinant of reduced matrix is  6.64 * 10 **-20.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   20 linear transformations is     33.60541877
+ after   20 linear transformations is     33.60541878
  INERTIA (POS,ZER,NEG) of reduced matrix is   38    0    2
  Determinant of reduced matrix is  1.04 * 10 **-21.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   21 linear transformations is     33.87506326
+ after   21 linear transformations is     33.87506327
  INERTIA (POS,ZER,NEG) of reduced matrix is   40    0    2
  Determinant of reduced matrix is  5.10 * 10 **-21.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   22 linear transformations is     34.03004917
+ after   22 linear transformations is     34.03004918
  INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    2
  Determinant of reduced matrix is  1.76 * 10 **-20.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   23 linear transformations is     34.26208411
+ after   23 linear transformations is     34.26208412
  INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    2
  Determinant of reduced matrix is  9.03 * 10 **-22.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   24 linear transformations is     34.28406770
+ after   24 linear transformations is     34.28406771
  INERTIA (POS,ZER,NEG) of reduced matrix is   46    0    2
  Determinant of reduced matrix is  8.07 * 10 **-21.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   25 linear transformations is     34.30560663
+ after   25 linear transformations is     34.30560664
  INERTIA (POS,ZER,NEG) of reduced matrix is   48    0    2
  Determinant of reduced matrix is  4.49 * 10 **-20.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   26 linear transformations is     34.36282264
+ after   26 linear transformations is     34.36282265
  INERTIA (POS,ZER,NEG) of reduced matrix is   50    0    2
  Determinant of reduced matrix is  9.54 * 10 **-22.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   27 linear transformations is     34.37558376
+ after   27 linear transformations is     34.37558377
  INERTIA (POS,ZER,NEG) of reduced matrix is   52    0    2
  Determinant of reduced matrix is  4.37 * 10 **-23.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   28 linear transformations is     34.37878490
+ after   28 linear transformations is     34.37878491
  INERTIA (POS,ZER,NEG) of reduced matrix is   54    0    2
  Determinant of reduced matrix is  3.04 * 10 **-22.0
 
@@ -5550,7 +5585,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000  0.413084         90.82018958
+                         -0.005000  0.413084         90.82018960
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -5974,7 +6009,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.29179 a.u.
- after    4 linear transformations is   -269.46030519
+ after    4 linear transformations is   -269.46030527
  INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
  Determinant of reduced matrix is -4.76 * 10 ** -6.0
 
@@ -6175,7 +6210,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    5 linear transformations is   -554.08215857
+ after    5 linear transformations is   -554.08215934
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -1.63 * 10 ** -7.0
 
@@ -6196,14 +6231,14 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    8 linear transformations is     33.94159949
+ after    8 linear transformations is     33.94159950
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -8.85 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    9 linear transformations is     34.48301610
+ after    9 linear transformations is     34.48301611
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is -3.48 * 10 ** -6.0
 
@@ -6224,14 +6259,14 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   12 linear transformations is     35.99147097
+ after   12 linear transformations is     35.99147098
  INERTIA (POS,ZER,NEG) of reduced matrix is   22    0    2
  Determinant of reduced matrix is  8.90 * 10 **-11.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   13 linear transformations is     37.77588806
+ after   13 linear transformations is     37.77588807
  INERTIA (POS,ZER,NEG) of reduced matrix is   24    0    2
  Determinant of reduced matrix is  5.49 * 10 **-12.0
 
@@ -6245,21 +6280,21 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   15 linear transformations is     77.28227486
+ after   15 linear transformations is     77.28227457
  INERTIA (POS,ZER,NEG) of reduced matrix is   28    0    2
  Determinant of reduced matrix is  1.75 * 10 **-15.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   16 linear transformations is     36.86932039
+ after   16 linear transformations is     36.86932040
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    3
  Determinant of reduced matrix is -5.86 * 10 **-14.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   17 linear transformations is     37.66504779
+ after   17 linear transformations is     37.66504780
  INERTIA (POS,ZER,NEG) of reduced matrix is   31    0    3
  Determinant of reduced matrix is -2.45 * 10 **-15.0
 
@@ -6273,7 +6308,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   19 linear transformations is     37.81516143
+ after   19 linear transformations is     37.81516144
  INERTIA (POS,ZER,NEG) of reduced matrix is   35    0    3
  Determinant of reduced matrix is -9.01 * 10 **-14.0
 
@@ -6294,14 +6329,14 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   22 linear transformations is     38.02831184
+ after   22 linear transformations is     38.02831185
  INERTIA (POS,ZER,NEG) of reduced matrix is   41    0    3
  Determinant of reduced matrix is -1.21 * 10 **-16.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   23 linear transformations is     38.03666315
+ after   23 linear transformations is     38.03666316
  INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    3
  Determinant of reduced matrix is -8.15 * 10 **-16.0
 
@@ -6322,7 +6357,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   26 linear transformations is     38.05723817
+ after   26 linear transformations is     38.05723818
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    3
  Determinant of reduced matrix is -3.62 * 10 **-16.0
 
@@ -6336,14 +6371,14 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   28 linear transformations is     38.06722054
+ after   28 linear transformations is     38.06722055
  INERTIA (POS,ZER,NEG) of reduced matrix is   53    0    3
  Determinant of reduced matrix is -4.97 * 10 **-17.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   29 linear transformations is     38.07004919
+ after   29 linear transformations is     38.07004920
  INERTIA (POS,ZER,NEG) of reduced matrix is   55    0    3
  Determinant of reduced matrix is -9.59 * 10 **-19.0
 
@@ -6357,7 +6392,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000 -0.413084         60.39914103
+                         -0.005000 -0.413084         60.39914104
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -6383,14 +6418,14 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    4 linear transformations is    -34.51763791
+ after    4 linear transformations is    -34.51763794
  INERTIA (POS,ZER,NEG) of reduced matrix is    7    0    1
  Determinant of reduced matrix is -5.75 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    5 linear transformations is     20.49962588
+ after    5 linear transformations is     20.49962589
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -7.65 * 10 ** -9.0
 
@@ -6411,7 +6446,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    8 linear transformations is     33.31936890
+ after    8 linear transformations is     33.31936891
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -2.94 * 10 **-10.0
 
@@ -6446,14 +6481,14 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   13 linear transformations is     34.25919691
+ after   13 linear transformations is     34.25919692
  INERTIA (POS,ZER,NEG) of reduced matrix is   24    0    2
  Determinant of reduced matrix is  5.25 * 10 **-15.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   14 linear transformations is     35.68569481
+ after   14 linear transformations is     35.68569482
  INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    2
  Determinant of reduced matrix is  2.47 * 10 **-15.0
 
@@ -6467,7 +6502,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   16 linear transformations is     33.68184028
+ after   16 linear transformations is     33.68184029
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    3
  Determinant of reduced matrix is -1.22 * 10 **-15.0
 
@@ -6481,7 +6516,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   18 linear transformations is     34.00144553
+ after   18 linear transformations is     34.00144554
  INERTIA (POS,ZER,NEG) of reduced matrix is   33    0    3
  Determinant of reduced matrix is -3.49 * 10 **-16.0
 
@@ -6502,7 +6537,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   21 linear transformations is     34.07277042
+ after   21 linear transformations is     34.07277043
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    3
  Determinant of reduced matrix is -1.18 * 10 **-16.0
 
@@ -6516,7 +6551,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   23 linear transformations is     34.08422527
+ after   23 linear transformations is     34.08422528
  INERTIA (POS,ZER,NEG) of reduced matrix is   43    0    3
  Determinant of reduced matrix is -2.49 * 10 **-17.0
 
@@ -6921,7 +6956,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.29179 a.u.
- after   19 linear transformations is     -2.08269532
+ after   19 linear transformations is     -2.08269531
  INERTIA (POS,ZER,NEG) of reduced matrix is   37    0    1
  Determinant of reduced matrix is -1.26 * 10 ** -5.0
 
@@ -6996,105 +7031,105 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after    9 linear transformations is     23.48116541
+ after    9 linear transformations is     23.48116543
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is -4.67 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   10 linear transformations is     23.62023596
+ after   10 linear transformations is     23.62023597
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -2.27 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   11 linear transformations is     23.80924566
+ after   11 linear transformations is     23.80924568
  INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    1
  Determinant of reduced matrix is -8.65 * 10 ** -8.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   12 linear transformations is     23.90106043
+ after   12 linear transformations is     23.90106044
  INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
  Determinant of reduced matrix is -1.34 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   13 linear transformations is     13.54656833
+ after   13 linear transformations is     13.54656843
  INERTIA (POS,ZER,NEG) of reduced matrix is   24    0    2
  Determinant of reduced matrix is  5.41 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   14 linear transformations is     22.29516959
+ after   14 linear transformations is     22.29516961
  INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    2
  Determinant of reduced matrix is  9.73 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   15 linear transformations is     23.22299332
+ after   15 linear transformations is     23.22299334
  INERTIA (POS,ZER,NEG) of reduced matrix is   28    0    2
  Determinant of reduced matrix is  1.42 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   16 linear transformations is     23.24921458
+ after   16 linear transformations is     23.24921460
  INERTIA (POS,ZER,NEG) of reduced matrix is   30    0    2
  Determinant of reduced matrix is  1.06 * 10 ** -8.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   17 linear transformations is     23.37597821
+ after   17 linear transformations is     23.37597823
  INERTIA (POS,ZER,NEG) of reduced matrix is   32    0    2
  Determinant of reduced matrix is  1.42 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   18 linear transformations is     23.39355435
+ after   18 linear transformations is     23.39355436
  INERTIA (POS,ZER,NEG) of reduced matrix is   34    0    2
  Determinant of reduced matrix is  4.36 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   19 linear transformations is     23.42779401
+ after   19 linear transformations is     23.42779402
  INERTIA (POS,ZER,NEG) of reduced matrix is   36    0    2
  Determinant of reduced matrix is  1.74 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   20 linear transformations is     23.43347238
+ after   20 linear transformations is     23.43347240
  INERTIA (POS,ZER,NEG) of reduced matrix is   38    0    2
  Determinant of reduced matrix is  5.55 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   21 linear transformations is     23.44425573
+ after   21 linear transformations is     23.44425574
  INERTIA (POS,ZER,NEG) of reduced matrix is   40    0    2
  Determinant of reduced matrix is  7.51 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   22 linear transformations is     23.44507645
+ after   22 linear transformations is     23.44507646
  INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    2
  Determinant of reduced matrix is  5.59 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency    -0.41808 a.u.
- after   23 linear transformations is     23.44772861
+ after   23 linear transformations is     23.44772863
  INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    2
  Determinant of reduced matrix is  9.79 * 10 **-10.0
 
@@ -7108,7 +7143,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000 -0.413084         49.18839970
+                         -0.005000 -0.413084         49.18839973
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -7134,133 +7169,133 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    5 linear transformations is     18.91367795
+ after    5 linear transformations is     18.91367796
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -7.53 * 10 ** -6.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    6 linear transformations is     19.50674604
+ after    6 linear transformations is     19.50674605
  INERTIA (POS,ZER,NEG) of reduced matrix is   11    0    1
  Determinant of reduced matrix is -9.25 * 10 ** -5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    7 linear transformations is     20.92624951
+ after    7 linear transformations is     20.92624953
  INERTIA (POS,ZER,NEG) of reduced matrix is   13    0    1
  Determinant of reduced matrix is -4.15 * 10 ** -8.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    8 linear transformations is     21.15388833
+ after    8 linear transformations is     21.15388834
  INERTIA (POS,ZER,NEG) of reduced matrix is   15    0    1
  Determinant of reduced matrix is -2.81 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after    9 linear transformations is     21.30024688
+ after    9 linear transformations is     21.30024690
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-10.00 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   10 linear transformations is     21.54757155
+ after   10 linear transformations is     21.54757156
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -6.31 * 10 ** -8.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   11 linear transformations is     21.57905108
+ after   11 linear transformations is     21.57905110
  INERTIA (POS,ZER,NEG) of reduced matrix is   21    0    1
  Determinant of reduced matrix is -1.24 * 10 ** -7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   12 linear transformations is     21.87754346
+ after   12 linear transformations is     21.87754347
  INERTIA (POS,ZER,NEG) of reduced matrix is   23    0    1
  Determinant of reduced matrix is -5.83 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   13 linear transformations is     27.49043060
+ after   13 linear transformations is     27.49043069
  INERTIA (POS,ZER,NEG) of reduced matrix is   25    0    1
  Determinant of reduced matrix is -2.99 * 10 **-11.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   14 linear transformations is     20.61773218
+ after   14 linear transformations is     20.61773220
  INERTIA (POS,ZER,NEG) of reduced matrix is   26    0    2
  Determinant of reduced matrix is  6.25 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   15 linear transformations is     21.09248718
+ after   15 linear transformations is     21.09248719
  INERTIA (POS,ZER,NEG) of reduced matrix is   28    0    2
  Determinant of reduced matrix is  1.46 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   16 linear transformations is     21.12946214
+ after   16 linear transformations is     21.12946216
  INERTIA (POS,ZER,NEG) of reduced matrix is   30    0    2
  Determinant of reduced matrix is  2.51 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   17 linear transformations is     21.20031878
+ after   17 linear transformations is     21.20031879
  INERTIA (POS,ZER,NEG) of reduced matrix is   32    0    2
  Determinant of reduced matrix is  5.40 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   18 linear transformations is     21.22159826
+ after   18 linear transformations is     21.22159828
  INERTIA (POS,ZER,NEG) of reduced matrix is   34    0    2
  Determinant of reduced matrix is  1.57 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   19 linear transformations is     21.24263222
+ after   19 linear transformations is     21.24263224
  INERTIA (POS,ZER,NEG) of reduced matrix is   36    0    2
  Determinant of reduced matrix is  6.05 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   20 linear transformations is     21.24587155
+ after   20 linear transformations is     21.24587157
  INERTIA (POS,ZER,NEG) of reduced matrix is   38    0    2
  Determinant of reduced matrix is  3.80 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   21 linear transformations is     21.25188800
+ after   21 linear transformations is     21.25188801
  INERTIA (POS,ZER,NEG) of reduced matrix is   40    0    2
  Determinant of reduced matrix is  5.25 * 10 **-10.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   22 linear transformations is     21.25254407
+ after   22 linear transformations is     21.25254408
  INERTIA (POS,ZER,NEG) of reduced matrix is   42    0    2
  Determinant of reduced matrix is  4.86 * 10 ** -9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.40808 a.u.
- after   23 linear transformations is     21.25411969
+ after   23 linear transformations is     21.25411971
  INERTIA (POS,ZER,NEG) of reduced matrix is   44    0    2
  Determinant of reduced matrix is  1.25 * 10 ** -9.0
 
@@ -7274,8 +7309,8 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     EXCITLAB     freq1     freq2                Norm
  ---------------------------------------------------------------
-                         -0.005000  0.413084         44.20693651
- >>> Time used in CRVEC2 is  19.99 seconds
+                         -0.005000  0.413084         44.20693654
+ >>> Time used in CRVEC2 is  19.90 seconds
 
 
  <<<<< CALCULATING CONTRIBUTIONS TO TWO-PHOTON ABSORPTION AMPLITUDE >>>>>
@@ -7321,7 +7356,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
    Contribution                Term         Accumulated
  ------------------------------------------------------
  Na T[4] Nb Nc Nd       -0.15771982         -0.15771982
- Na T[3] Nx Nyz         -0.94680063         -1.10452045
+ Na T[3] Nx Nyz         -0.94680063         -1.10452044
  Na X[3] Ny Nz           1.04440688         -0.06011357
  Nx A[3] Ny Nz           0.64252917          0.58241560
  Na X[2] Nyz             0.23212527          0.81454087
@@ -7358,12 +7393,12 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd       33.50143118         33.50143118
- Na T[3] Nx Nyz        -98.27102427        -64.76959309
+ Na T[4] Nb Nc Nd       33.50143119         33.50143119
+ Na T[3] Nx Nyz        -98.27102428        -64.76959309
  Na X[3] Ny Nz          16.55387073        -48.21572236
- Nx A[3] Ny Nz          20.66312419        -27.55259816
- Na X[2] Nyz             0.09739465        -27.45520351
- Nx A[2] Nyz           -47.31331532        -74.76851883
+ Nx A[3] Ny Nz          20.66312419        -27.55259817
+ Na X[2] Nyz             0.09739465        -27.45520352
+ Nx A[2] Nyz           -47.31331532        -74.76851884
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2   -0.005000
@@ -7372,17 +7407,17 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 @ State no., symmetry, excitation energy:   2   2    0.225544
 @ State no., symmetry, excitation energy:   2   2    0.225544
 
-@ < e | AB | f >  =         -74.76851883
+@ < e | AB | f >  =         -74.76851884
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
  Na T[4] Nb Nc Nd        0.89836111          0.89836111
- Na T[3] Nx Nyz       -119.51086221       -118.61250109
- Na X[3] Ny Nz           2.35504219       -116.25745890
- Nx A[3] Ny Nz           1.76077872       -114.49668018
- Na X[2] Nyz             0.21878506       -114.27789512
- Nx A[2] Nyz            85.80360610        -28.47428901
+ Na T[3] Nx Nyz       -119.51086214       -118.61250103
+ Na X[3] Ny Nz           2.35504219       -116.25745883
+ Nx A[3] Ny Nz           1.76077872       -114.49668011
+ Na X[2] Nyz             0.21878506       -114.27789505
+ Nx A[2] Nyz            85.80360605        -28.47428900
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2   -0.005000
@@ -7391,7 +7426,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 @ State no., symmetry, excitation energy:   3   2    0.355574
 @ State no., symmetry, excitation energy:   3   2    0.355574
 
-@ < e | AB | f >  =         -28.47428901
+@ < e | AB | f >  =         -28.47428900
 
 
    Contribution                Term         Accumulated
@@ -7439,7 +7474,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  Na X[3] Ny Nz           0.24360445          0.36412319
  Nx A[3] Ny Nz           0.18243397          0.54655716
  Na X[2] Nyz             0.02825786          0.57481502
- Nx A[2] Nyz            -2.12803446         -1.55321945
+ Nx A[2] Nyz            -2.12803447         -1.55321945
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3   -0.005000
@@ -7472,7 +7507,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd        0.87202620          0.87202620
+ Na T[4] Nb Nc Nd        0.87202619          0.87202619
  Na T[3] Nx Nyz         -1.82473224         -0.95270604
  Na X[3] Ny Nz           1.33442832          0.38172227
  Nx A[3] Ny Nz           0.98167900          1.36340127
@@ -7496,7 +7531,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  Na X[3] Ny Nz           2.60249531          4.60534601
  Nx A[3] Ny Nz           2.37029908          6.97564508
  Na X[2] Nyz            -0.70787738          6.26776771
- Nx A[2] Nyz           -65.43039208        -59.16262437
+ Nx A[2] Nyz           -65.43039210        -59.16262439
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    1   -0.005000
@@ -7505,13 +7540,13 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 @ State no., symmetry, excitation energy:   3   3    0.413084
 @ State no., symmetry, excitation energy:   3   3    0.413084
 
-@ < e | AB | f >  =         -59.16262437
+@ < e | AB | f >  =         -59.16262439
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
  Na T[4] Nb Nc Nd        3.06433943          3.06433943
- Na T[3] Nx Nyz          9.36915410         12.43349352
+ Na T[3] Nx Nyz          9.36915409         12.43349352
  Na X[3] Ny Nz           3.14043253         15.57392606
  Nx A[3] Ny Nz           3.51940710         19.09333315
  Na X[2] Nyz             1.36417185         20.45750501
@@ -7531,10 +7566,10 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  ------------------------------------------------------
  Na T[4] Nb Nc Nd       12.43451670         12.43451670
  Na T[3] Nx Nyz        -29.38788593        -16.95336923
- Na X[3] Ny Nz           6.50078285        -10.45258638
+ Na X[3] Ny Nz           6.50078285        -10.45258637
  Nx A[3] Ny Nz           7.34425068         -3.10833569
  Na X[2] Nyz             3.30387089          0.19553520
- Nx A[2] Nyz           -16.44502214        -16.24948694
+ Nx A[2] Nyz           -16.44502214        -16.24948693
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2   -0.005000
@@ -7543,17 +7578,17 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 @ State no., symmetry, excitation energy:   2   3    0.296788
 @ State no., symmetry, excitation energy:   2   3    0.296788
 
-@ < e | AB | f >  =         -16.24948694
+@ < e | AB | f >  =         -16.24948693
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
  Na T[4] Nb Nc Nd       13.73479689         13.73479689
- Na T[3] Nx Nyz         -8.07793392          5.65686297
- Na X[3] Ny Nz          10.79041847         16.44728144
- Nx A[3] Ny Nz          14.22818363         30.67546507
- Na X[2] Nyz            -8.18221562         22.49324945
- Nx A[2] Nyz           -62.75801651        -40.26476706
+ Na T[3] Nx Nyz         -8.07793392          5.65686298
+ Na X[3] Ny Nz          10.79041847         16.44728145
+ Nx A[3] Ny Nz          14.22818363         30.67546508
+ Na X[2] Nyz            -8.18221562         22.49324946
+ Nx A[2] Nyz           -62.75801652        -40.26476707
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2   -0.005000
@@ -7562,7 +7597,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 @ State no., symmetry, excitation energy:   3   3    0.413084
 @ State no., symmetry, excitation energy:   3   3    0.413084
 
-@ < e | AB | f >  =         -40.26476706
+@ < e | AB | f >  =         -40.26476707
 
 
    Contribution                Term         Accumulated
@@ -7610,7 +7645,7 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
  Na X[3] Ny Nz           3.85016127          5.73223290
  Nx A[3] Ny Nz           3.09823532          8.83046822
  Na X[2] Nyz            -3.02462513          5.80584309
- Nx A[2] Nyz           -46.32991899        -40.52407590
+ Nx A[2] Nyz           -46.32991902        -40.52407593
 
 @ Third order transition moment in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    3   -0.005000
@@ -7619,20 +7654,20 @@ RSPORT:    2 out of    2 new trial vectors linear dependent
 @ State no., symmetry, excitation energy:   3   3    0.413084
 @ State no., symmetry, excitation energy:   3   3    0.413084
 
-@ < e | AB | f >  =         -40.52407590
+@ < e | AB | f >  =         -40.52407593
 
 
- >>>> Total CPU  time used in RESPONSE:  1 minute  22 seconds
- >>>> Total wall time used in RESPONSE:  1 minute  39 seconds
+ >>>> Total CPU  time used in RESPONSE:  1 minute  25 seconds
+ >>>> Total wall time used in RESPONSE:  1 minute  40 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute  23 seconds
- >>>> Total wall time used in DALTON:  1 minute  41 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute  26 seconds
+ >>>> Total wall time used in DALTON:  1 minute  42 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:15:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:40:54 2011 
      Host name              : fe6                                     

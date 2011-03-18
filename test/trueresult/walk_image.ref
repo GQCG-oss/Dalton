@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:19:52 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -261,7 +262,7 @@ Point group: C1
 
                A                   B                   C
 
-         910047.4385         269123.6673         207701.2427 MHz
+         910047.4305         269123.6649         207701.2409 MHz
            30.355915            8.976999            6.928168 cm-1
 
 
@@ -289,7 +290,7 @@ Point group: C1
  Number of two-electron integrals written:       52269 ( 48.2% )
  Megabytes written:                              0.605
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -323,7 +324,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:52 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -335,12 +336,12 @@ Point group: C1
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -376,29 +377,45 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -55.8295064311        1.82245D+00   -5.58D+01    1
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002341
+      MULPOP  N      -0.49; H       0.12; H       0.19; H       0.19; 
+ -----------------------------------------------------------------------------
    2    -56.0623781888        4.66187D-01   -2.33D-01    2
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.983736
+      MULPOP  N      -0.74; H       0.27; H       0.24; H       0.24; 
+ -----------------------------------------------------------------------------
    3    -56.0774635579        2.00400D-01   -1.51D-02    3
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.994190
+      MULPOP  N      -0.73; H       0.27; H       0.23; H       0.23; 
+ -----------------------------------------------------------------------------
    4    -56.0797803274        3.96799D-02   -2.32D-03    4
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.990112
+      MULPOP  N      -0.80; H       0.30; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
    5    -56.0799839596        8.74580D-03   -2.04D-04    5
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.990281
+      MULPOP  N      -0.81; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
    6    -56.0799902220        9.07886D-04   -6.26D-06    6
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.990186
+      MULPOP  N      -0.82; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
    7    -56.0799902956        7.50107D-05   -7.36D-08    7
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.990201
+      MULPOP  N      -0.82; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
    8    -56.0799902962        1.08102D-05   -5.11D-10    8
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.990201
+      MULPOP  N      -0.82; H       0.31; H       0.25; H       0.25; 
+ -----------------------------------------------------------------------------
    9    -56.0799902962        1.46043D-06   -1.06D-11    9
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -421,20 +438,23 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.079990296161                 
+     Final HF energy:             -56.079990296163                 
      Nuclear repulsion:            13.460727047286
-     Electronic energy:           -69.540717343447
+     Electronic energy:           -69.540717343449
 
      Final gradient norm:           0.000001460428
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:52 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -442,24 +462,24 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
-   1 N   :s     -0.9947   0.2012  -0.0454  -0.0000   0.0000   0.1274   0.0336
+    Orbital         1        2        3        4        5        6        7
+   1 N   :s     -0.9947   0.2012  -0.0454   0.0000   0.0000   0.1274   0.0336
    2 N   :s     -0.0261  -0.3933   0.0904  -0.0000  -0.0000  -0.1103  -0.0541
    3 N   :s      0.0001  -0.3637   0.1387   0.0000  -0.0000  -2.2039  -0.4001
    4 N   :px     0.0008   0.0792   0.4595  -0.0000  -0.0000   0.0744  -0.2497
-   5 N   :py     0.0000  -0.0000  -0.0000  -0.5051  -0.0000  -0.0000  -0.0000
+   5 N   :py     0.0000   0.0000  -0.0000  -0.5051  -0.0000   0.0000  -0.0000
    6 N   :pz     0.0000  -0.0000   0.0000  -0.0000   0.5875   0.0000   0.0000
-   7 N   :px    -0.0001   0.0117   0.1811   0.0000  -0.0000   0.4345  -1.5196
-   8 N   :py    -0.0000   0.0000  -0.0000  -0.2981  -0.0000  -0.0000  -0.0000
+   7 N   :px    -0.0001   0.0117   0.1811  -0.0000  -0.0000   0.4345  -1.5196
+   8 N   :py     0.0000  -0.0000  -0.0000  -0.2981  -0.0000   0.0000  -0.0000
    9 N   :pz     0.0000  -0.0000   0.0000  -0.0000   0.5348   0.0000   0.0000
   10 N   :dxx    0.0014  -0.0076  -0.0018   0.0000  -0.0000   0.0121   0.0139
-  11 N   :dxy   -0.0000   0.0000   0.0000   0.0298   0.0000   0.0000  -0.0000
+  11 N   :dxy   -0.0000  -0.0000   0.0000   0.0298   0.0000  -0.0000   0.0000
   13 N   :dyy    0.0023   0.0030  -0.0049  -0.0000  -0.0000   0.0219   0.0094
   15 N   :dzz    0.0023   0.0064   0.0010  -0.0000   0.0000   0.0315  -0.0027
   16 H   :s      0.0006  -0.1251   0.3036  -0.0000  -0.0000   0.0501   0.0149
   17 H   :s     -0.0003  -0.0020   0.1033  -0.0000  -0.0000   0.7173   2.3507
   18 H   :px    -0.0004   0.0168  -0.0231   0.0000   0.0000  -0.0038  -0.0073
-  19 H   :py     0.0000  -0.0000  -0.0000  -0.0165  -0.0000  -0.0000  -0.0000
+  19 H   :py     0.0000   0.0000  -0.0000  -0.0165  -0.0000   0.0000  -0.0000
   20 H   :pz    -0.0000   0.0000  -0.0000   0.0000   0.0239  -0.0000  -0.0000
   21 H   :s      0.0005  -0.1877  -0.1610  -0.2311  -0.0000   0.0253   0.0117
   22 H   :s     -0.0003  -0.0213  -0.0566  -0.1993  -0.0000   1.1405  -0.9193
@@ -478,7 +498,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:52 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:22 2011 
      Host name              : fe6                                     
 
 
@@ -558,7 +578,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:52 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
      Host name              : fe6                                     
 
 
@@ -568,7 +588,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
      Host name              : fe6                                     
 
 
@@ -590,18 +610,18 @@ Point group: C1
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -56.0799902962 au (Hartrees)
-                         -1526.01411914 eV
-                           -147237.9934 kJ/mol
+                         -1526.01416244 eV
+                           -147237.9918 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1119225549 au
-     Mass-velocity correction:                  -0.1403793991 au
+     Darwin correction:                          0.1119225540 au
+     Mass-velocity correction:                  -0.1403793979 au
 
-     Total relativistic correction:             -0.0284568442 au (0.0507%)
-     Non-relativistic + relativistic energy:   -56.1084471404 au
+     Total relativistic correction:             -0.0284568440 au (0.0507%)
+     Non-relativistic + relativistic energy:   -56.1084471401 au
 
 
 
@@ -666,8 +686,8 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.22293646        -0.56664790        -1.89013393
-      y     -0.00000000        -0.00000000        -0.00000000
+      x     -0.22293646        -0.56664792        -1.89013402
+      y      0.00000000         0.00000000         0.00000000
       z      0.00000000         0.00000000         0.00000000
 
 
@@ -713,7 +733,7 @@ Point group: C1
 
 
 
- Largest deviation from orthonormality of OMOs:0.761613E-13
+ Largest deviation from orthonormality of OMOs:0.677236E-13
  - found for element   30  30
 
 
@@ -768,12 +788,12 @@ Point group: C1
    sym 1            1           2           3           4           5
   ----------------------------------------------------------------------
 
-   N    x      -0.000000    0.000000   -0.254625   -0.005837   -0.000000
-   N    y      -0.000000    0.575479    0.000000    0.000000    0.640577
+   N    x      -0.000000   -0.000000   -0.254625   -0.005837    0.000000
+   N    y      -0.000000    0.575479   -0.000000    0.000000    0.640577
    N    z       0.859604   -0.000000   -0.000000    0.000000    0.000000
 
    H    x      -0.000000    0.000000   -0.289351    0.719238   -0.000000
-   H    y      -0.000000   -0.538114   -0.000000   -0.000000   -0.004423
+   H    y      -0.000000   -0.538114    0.000000    0.000000   -0.004423
    H    z      -0.385778    0.000000    0.000000   -0.000000   -0.000000
 
    H    x       0.000000   -0.435063    0.271988   -0.356700    0.440055
@@ -788,11 +808,11 @@ Point group: C1
    sym 1            6
   ----------------------
    N    x       0.827727
-   N    y       0.000000
+   N    y      -0.000000
    N    z       0.000000
 
    H    x      -0.385970
-   H    y       0.000000
+   H    y      -0.000000
    H    z      -0.000000
 
    H    x      -0.220879
@@ -822,8 +842,8 @@ Point group: C1
                            Cartesian displacements (au)
                            ----------------------------
 
- N         -0.1106508677            0.0000000000           -0.0000000000
- H          0.0066288432           -0.0000000000            0.0000000000
+ N         -0.1106508677           -0.0000000000           -0.0000000000
+ H          0.0066288432            0.0000000000            0.0000000000
  H          0.0520110123            0.3408094778            0.0000000000
  H          0.0520110123           -0.3408094778            0.0000000000
 
@@ -857,8 +877,8 @@ Point group: C1
                             Cartesian coordinates (au)
                             --------------------------
 
- N         -0.1106508677            0.0000000000           -0.0000000000
- H          1.7066288432           -0.0000000000            0.0000000000
+ N         -0.1106508677           -0.0000000000           -0.0000000000
+ H          1.7066288432            0.0000000000            0.0000000000
  H         -1.3320889877            1.3327094778            0.0000000000
  H         -1.3320889877           -1.3327094778            0.0000000000
 
@@ -878,7 +898,7 @@ Point group: C1
 
 
   Max interatomic separation is    1.7559 Angstrom (    3.3181 Bohr)
-  between atoms    3 and    2, "H     " and "H     ".
+  between atoms    4 and    2, "H     " and "H     ".
 
 
   Bond distances (Angstrom):
@@ -910,7 +930,7 @@ Point group: C1
 
 
  >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 
                    .-------------------------------------------.
@@ -931,12 +951,6 @@ Point group: C1
  **************************************************************************************
 
 
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
-
 
                      .---------------------------------------.
                      | Starting in Integral Section (HERMIT) |
@@ -950,8 +964,8 @@ Point group: C1
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
- Number of two-electron integrals written:       54579 ( 50.4% )
- Megabytes written:                              0.625
+ Number of two-electron integrals written:       54826 ( 50.6% )
+ Megabytes written:                              0.632
 
  >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
@@ -980,29 +994,45 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -55.0590277016        7.18430D+00    1.02D+00    1
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.959562
+      MULPOP  N      -0.51; H       0.10; H       0.21; H       0.21; 
+ -----------------------------------------------------------------------------
    2    -56.1534905911        5.51561D-01   -1.09D+00    2
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998455
+      MULPOP  N      -0.89; H       0.29; H       0.30; H       0.30; 
+ -----------------------------------------------------------------------------
    3    -56.1650544378        4.81080D-02   -1.16D-02    3
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998792
+      MULPOP  N      -0.87; H       0.31; H       0.28; H       0.28; 
+ -----------------------------------------------------------------------------
    4    -56.1653071026        1.18439D-02   -2.53D-04    4
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998377
+      MULPOP  N      -0.86; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
    5    -56.1653270642        4.79421D-03   -2.00D-05    5
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998513
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
    6    -56.1653288320        6.85711D-04   -1.77D-06    6
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998407
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
    7    -56.1653288828        1.08167D-04   -5.08D-08    7
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998412
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
    8    -56.1653288841        2.16152D-05   -1.29D-09    8
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.998412
+      MULPOP  N      -0.85; H       0.31; H       0.27; H       0.27; 
+ -----------------------------------------------------------------------------
    9    -56.1653288842        2.54856D-06   -5.57D-11    9
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.03 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.03 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1040,20 +1070,23 @@ Point group: C1
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.165328884195                 
-     Nuclear repulsion:            12.574193644398
-     Electronic energy:           -68.739522528593
+     Final HF energy:             -56.165328884196                 
+     Nuclear repulsion:            12.574193644400
+     Electronic energy:           -68.739522528597
 
      Final gradient norm:           0.000002548564
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
      Host name              : fe6                                     
 
 
@@ -1062,7 +1095,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
      Host name              : fe6                                     
 
 
@@ -1071,7 +1104,7 @@ Point group: C1
                      `---------------------------------------'
 
 
- Center of mass dipole origin  :   -0.147681    0.000000   -0.000000
+ Center of mass dipole origin  :   -0.147681   -0.000000   -0.000000
 
 
                  .------------------------------------------------.
@@ -1080,7 +1113,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:23 2011 
      Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
@@ -1092,15 +1125,15 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:54 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:24 2011 
      Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- N         -0.1106508677            0.0000000000           -0.0000000000
- H          1.7066288432           -0.0000000000            0.0000000000
+ N         -0.1106508677           -0.0000000000           -0.0000000000
+ H          1.7066288432            0.0000000000            0.0000000000
  H         -1.3320889877            1.3327094778            0.0000000000
  H         -1.3320889877           -1.3327094778            0.0000000000
 
@@ -1114,18 +1147,18 @@ Point group: C1
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -56.1653288842 au (Hartrees)
-                         -1528.33630018 eV
-                           -147462.0498 kJ/mol
+                         -1528.33634355 eV
+                           -147462.0483 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1118668190 au
-     Mass-velocity correction:                  -0.1402463897 au
+     Darwin correction:                          0.1118668180 au
+     Mass-velocity correction:                  -0.1402463886 au
 
-     Total relativistic correction:             -0.0283795708 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.1937084550 au
+     Total relativistic correction:             -0.0283795706 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.1937084548 au
 
 
 
@@ -1190,8 +1223,8 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.10365078        -0.26345399        -0.87878791
-      y     -0.00000000        -0.00000000        -0.00000000
+      x     -0.10365078        -0.26345400        -0.87878795
+      y      0.00000000         0.00000000         0.00000000
       z      0.00000000         0.00000000         0.00000000
 
 
@@ -1213,7 +1246,7 @@ Point group: C1
 
 
   Max interatomic separation is    1.7559 Angstrom (    3.3181 Bohr)
-  between atoms    3 and    2, "H     " and "H     ".
+  between atoms    4 and    2, "H     " and "H     ".
 
 
   Bond distances (Angstrom):
@@ -1240,7 +1273,7 @@ Point group: C1
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 0.99879
 
- Largest deviation from orthonormality of OMOs:0.961453E-13
+ Largest deviation from orthonormality of OMOs:0.979217E-13
  - found for element    2   2
 
 
@@ -1449,7 +1482,7 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.60 seconds
+ >>>> Total CPU  time used in ABACUS:   0.61 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
@@ -1470,12 +1503,6 @@ Point group: C1
  ****************** Output of molecule and basis set info suppressed ******************
  **************************************************************************************
 
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
 
 
                      .---------------------------------------.
@@ -1520,29 +1547,45 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -55.6036806076        4.57781D+00    5.62D-01    1
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      1.980684
+      MULPOP  N      -0.80; H       0.18; H       0.31; H       0.31; 
+ -----------------------------------------------------------------------------
    2    -56.1796875731        4.16614D-01   -5.76D-01    2
-      MULPOP N   ******; H   ******; 
-   3    -56.1864328927        3.02872D-02   -6.75D-03    3
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001949
+      MULPOP  N      -0.87; H       0.27; H       0.30; H       0.30; 
+ -----------------------------------------------------------------------------
+   3    -56.1864328928        3.02872D-02   -6.75D-03    3
+      Virial theorem: -V/T =      2.002579
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    4    -56.1865279987        8.73488D-03   -9.51D-05    4
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002239
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    5    -56.1865362020        3.45543D-03   -8.20D-06    5
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002415
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    6    -56.1865373260        5.84717D-04   -1.12D-06    6
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002346
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    7    -56.1865373593        8.18745D-05   -3.33D-08    7
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002352
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    8    -56.1865373600        1.31375D-05   -7.44D-10    8
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002352
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    9    -56.1865373600        1.94628D-06   -2.53D-11    9
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.06 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.06 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1580,20 +1623,23 @@ Point group: C1
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -56.186537360030                 
-     Nuclear repulsion:            12.121216038156
-     Electronic energy:           -68.307753398186
+     Final HF energy:             -56.186537360032                 
+     Nuclear repulsion:            12.121216038160
+     Electronic energy:           -68.307753398192
 
      Final gradient norm:           0.000001946277
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:25 2011 
      Host name              : fe6                                     
 
 
@@ -1602,7 +1648,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:25 2011 
      Host name              : fe6                                     
 
 
@@ -1620,7 +1666,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:25 2011 
      Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
@@ -1634,7 +1680,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
      Host name              : fe6                                     
 
 
@@ -1656,18 +1702,18 @@ Point group: C1
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -56.1865373600 au (Hartrees)
-                         -1528.91341215 eV
-                           -147517.7327 kJ/mol
+                         -1528.91345553 eV
+                           -147517.7311 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1118370386 au
-     Mass-velocity correction:                  -0.1401802522 au
+     Darwin correction:                          0.1118370377 au
+     Mass-velocity correction:                  -0.1401802510 au
 
-     Total relativistic correction:             -0.0283432136 au (0.0504%)
-     Non-relativistic + relativistic energy:   -56.2148805736 au
+     Total relativistic correction:             -0.0283432133 au (0.0504%)
+     Non-relativistic + relativistic energy:   -56.2148805734 au
 
 
 
@@ -1782,7 +1828,7 @@ Point group: C1
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 0.99743
 
- Largest deviation from orthonormality of OMOs:0.581757E-13
+ Largest deviation from orthonormality of OMOs:0.563993E-13
  - found for element   30  30
 
 
@@ -1941,7 +1987,7 @@ Point group: C1
  N         -0.2673006734           -0.0000000002           -0.0000000080
  H          1.5969656493            0.0000000047           -0.0000000026
  H         -1.1989324924            1.6140949959            0.0000000053
- H         -1.1989324835           -1.6140950005            0.0000000053
+ H         -1.1989324835           -1.6140950004            0.0000000053
 
 
 
@@ -1987,11 +2033,11 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     195 %
+ REST       00:00:01     193 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.63 seconds
+ >>>> Total CPU  time used in ABACUS:   0.65 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
@@ -2012,12 +2058,6 @@ Point group: C1
  ****************** Output of molecule and basis set info suppressed ******************
  **************************************************************************************
 
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
 
 
                      .---------------------------------------.
@@ -2062,25 +2102,37 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -56.1834381590        5.41763D-01    3.10D-03    1
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.002018
+      MULPOP  N      -0.90; H       0.27; H       0.31; H       0.31; 
+ -----------------------------------------------------------------------------
    2    -56.1867302574        2.90968D-02   -3.29D-03    2
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001492
+      MULPOP  N      -0.87; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    3    -56.1867596385        6.44227D-03   -2.94D-05    3
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001860
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    4    -56.1867619050        2.04306D-03   -2.27D-06    4
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001691
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    5    -56.1867621942        3.26603D-04   -2.89D-07    5
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001733
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    6    -56.1867622104        4.19352D-05   -1.62D-08    6
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001733
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    7    -56.1867622106        7.02118D-06   -2.23D-10    7
- DIIS converged in   7 iterations !
- - total time used in SIRFCK        :       0.12 seconds
+
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.12 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2118,20 +2170,23 @@ Point group: C1
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -56.186762210632                 
-     Nuclear repulsion:            12.196194794998
-     Electronic energy:           -68.382957005630
+     Nuclear repulsion:            12.196194795008
+     Electronic energy:           -68.382957005640
 
      Final gradient norm:           0.000007021183
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
      Host name              : fe6                                     
 
 
@@ -2140,7 +2195,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
      Host name              : fe6                                     
 
 
@@ -2158,12 +2213,12 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:26 2011 
      Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
 
- Largest deviation from tra-rot symmetry is in gradient element  6:  1.93E-12
+ Largest deviation from tra-rot symmetry is in gradient element  3:  1.93E-12
 
 
    ***************************************************************************
@@ -2172,7 +2227,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:57 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
      Host name              : fe6                                     
 
 
@@ -2182,7 +2237,7 @@ Point group: C1
  N         -0.2673006734           -0.0000000002           -0.0000000080
  H          1.5969656493            0.0000000047           -0.0000000026
  H         -1.1989324924            1.6140949959            0.0000000053
- H         -1.1989324835           -1.6140950005            0.0000000053
+ H         -1.1989324835           -1.6140950004            0.0000000053
 
 
 
@@ -2194,18 +2249,18 @@ Point group: C1
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -56.1867622106 au (Hartrees)
-                         -1528.91953064 eV
-                           -147518.3230 kJ/mol
+                         -1528.91957403 eV
+                           -147518.3214 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1118444480 au
-     Mass-velocity correction:                  -0.1401945586 au
+     Darwin correction:                          0.1118444471 au
+     Mass-velocity correction:                  -0.1401945575 au
 
-     Total relativistic correction:             -0.0283501106 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151123213 au
+     Total relativistic correction:             -0.0283501104 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151123210 au
 
 
 
@@ -2320,7 +2375,7 @@ Point group: C1
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 1.00000
 
- Largest deviation from orthonormality of OMOs:0.870415E-13
+ Largest deviation from orthonormality of OMOs:0.834888E-13
  - found for element   15  15
 
 
@@ -2529,8 +2584,8 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.63 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.65 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
                    .-------------------------------------------.
@@ -2550,12 +2605,6 @@ Point group: C1
  ****************** Output of molecule and basis set info suppressed ******************
  **************************************************************************************
 
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
-
-  Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31G**                                                                         
 
 
                      .---------------------------------------.
@@ -2600,23 +2649,33 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -56.1867591576        1.72833D-02    3.05D-06    1
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001743
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    2    -56.1867624065        8.99823D-04   -3.25D-06    2
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001765
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    3    -56.1867624364        2.19360D-04   -2.98D-08    3
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001753
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    4    -56.1867624390        6.47504D-05   -2.69D-09    4
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001758
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    5    -56.1867624394        1.02436D-05   -3.19D-10    5
-      MULPOP N   ******; H   ******; 
+      Virial theorem: -V/T =      2.001757
+      MULPOP  N      -0.86; H       0.29; H       0.29; H       0.29; 
+ -----------------------------------------------------------------------------
    6    -56.1867624394        1.05514D-06   -1.64D-11    6
- DIIS converged in   6 iterations !
- - total time used in SIRFCK        :       0.18 seconds
+
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.18 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2654,20 +2713,23 @@ Point group: C1
 
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
      Final HF energy:             -56.186762439384                 
-     Nuclear repulsion:            12.193377537163
-     Electronic energy:           -68.380139976547
+     Nuclear repulsion:            12.193377537165
+     Electronic energy:           -68.380139976549
 
      Final gradient norm:           0.000001055140
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
      Host name              : fe6                                     
 
 
@@ -2676,7 +2738,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
      Host name              : fe6                                     
 
 
@@ -2694,7 +2756,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:27 2011 
      Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
@@ -2706,7 +2768,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:59 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:28 2011 
      Host name              : fe6                                     
 
 
@@ -2728,18 +2790,18 @@ Point group: C1
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -56.1867624394 au (Hartrees)
-                         -1528.91953687 eV
-                           -147518.3236 kJ/mol
+                         -1528.91958025 eV
+                           -147518.3220 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1118441658 au
-     Mass-velocity correction:                  -0.1401940125 au
+     Darwin correction:                          0.1118441648 au
+     Mass-velocity correction:                  -0.1401940114 au
 
-     Total relativistic correction:             -0.0283498467 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151122861 au
+     Total relativistic correction:             -0.0283498465 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151122859 au
 
 
 
@@ -2918,8 +2980,8 @@ Point group: C1
    H    y       0.000000   -0.451643    0.180189    0.500000    0.193008
    H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
 
-   H    x      -0.000000   -0.351357    0.481581   -0.288674   -0.154733
-   H    y      -0.000000    0.469019    0.128334   -0.500000   -0.193893
+   H    x      -0.000000   -0.351357    0.481582   -0.288674   -0.154733
+   H    y      -0.000000    0.469020    0.128334   -0.500000   -0.193893
    H    z      -0.288675    0.000000   -0.000000    0.000000    0.000000
 
 
@@ -3002,11 +3064,11 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     203 %
+ REST       00:00:01     212 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.61 seconds
+ >>>> Total CPU  time used in ABACUS:   0.58 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
@@ -3049,7 +3111,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:19:59 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:28 2011 
      Host name              : fe6                                     
 
  Old LUGDR file opened in ORTREL.
@@ -3061,7 +3123,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:00 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:29 2011 
      Host name              : fe6                                     
 
 
@@ -3083,18 +3145,18 @@ Point group: C1
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -56.1867624394 au (Hartrees)
-                         -1528.91953687 eV
-                           -147518.3236 kJ/mol
+                         -1528.91958025 eV
+                           -147518.3220 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1118441658 au
-     Mass-velocity correction:                  -0.1401940125 au
+     Darwin correction:                          0.1118441648 au
+     Mass-velocity correction:                  -0.1401940114 au
 
-     Total relativistic correction:             -0.0283498467 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151122861 au
+     Total relativistic correction:             -0.0283498465 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151122859 au
 
 
 
@@ -3250,10 +3312,10 @@ Point group: C1
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63128
+    Hartree to (cm)-1      : 219474.62934
     a.m.u.  to a.u.        :   1822.88848
-    Bohr    to Angstrom    :  0.529177208
-    a.u.    to A**4amu-1   :   142.943570
+    Bohr    to Angstrom    :  0.529177211
+    a.u.    to A**4amu-1   :   142.943572
     a.u.    to km (mol)-1  :      974.864
 
 
@@ -3294,7 +3356,7 @@ Point group: C1
 
                A                   B                   C
 
-         343486.3016         343486.1947         171743.1241 MHz
+         343486.2986         343486.1917         171743.1226 MHz
            11.457470           11.457466            5.728734 cm-1
 
 
@@ -3336,7 +3398,7 @@ Point group: C1
     H      y   -0.013006   -0.000012   -0.000000    0.775998    0.020389
     H      z    0.000000   -0.000000   -0.000000   -0.000000    0.000000
 
-    H      x   -0.340889    0.183387   -0.287547    0.348276    0.575873
+    H      x   -0.340889    0.183387   -0.287547    0.348275    0.575873
     H      y    0.577454   -0.340176    0.498046    0.137454    0.367017
     H      z    0.000000   -0.000000    0.000000    0.000000   -0.000000
 
@@ -3388,8 +3450,8 @@ Point group: C1
              electronic     vibrational           total    energy 
 
              -56.186762        0.035086      -56.151677    Hartrees
-           -12331568.97         7700.45    -12323868.52    cm-1
-             -147518.32           92.12      -147426.21    kJ/mol
+           -12331568.86         7700.45    -12323868.41    cm-1
+             -147518.32           92.12      -147426.20    kJ/mol
               -35257.73           22.02       -35235.71    kcal/mol
 
 
@@ -3424,11 +3486,10 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     258 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.39 seconds
+ >>>> Total CPU  time used in ABACUS:   0.36 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
@@ -3437,8 +3498,8 @@ Point group: C1
                    `-------------------------------------------'
 
  >>>> Total CPU  time used in DALTON:   3.73 seconds
- >>>> Total wall time used in DALTON:   8.00 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:20:00 2010 
+     Date and time (Linux)  : Wed Mar 16 17:47:29 2011 
      Host name              : fe6                                     

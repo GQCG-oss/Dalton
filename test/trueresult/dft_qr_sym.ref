@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:31:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:56:20 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -189,8 +190,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -256,15 +257,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.971970    0.000000
- H    2:    0.971970    1.537048    0.000000
+ H   _1:    0.971970    0.000000
+ H   _2:    0.971970    1.537048    0.000000
 
 
   Max interatomic separation is    1.5370 Angstrom (    2.9046 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -272,8 +273,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.971970
-  bond distance:  H    2     O            0.971970
+  bond distance:  H   _1     O            0.971970
+  bond distance:  H   _2     O            0.971970
 
 
   Bond angles (degrees):
@@ -281,7 +282,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.500
+  bond angle:     H   _1     O          H   _2       104.500
 
 
 
@@ -301,8 +302,8 @@ Point group: C2v
 
                A                   B                   C
 
-         797308.3147         424509.2299         277017.4157 MHz
-           26.595343           14.160104            9.240306 cm-1
+         797308.3077         424509.2262         277017.4133 MHz
+           26.595342           14.160104            9.240306 cm-1
 
 
 @  Nuclear repulsion energy :    9.055287756882
@@ -421,7 +422,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:31:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:56:20 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -433,7 +434,6 @@ Point group: C2v
 
      Restricted, closed shell Kohn-Sham DFT calculation.
 
-
      Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
 
@@ -442,6 +442,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -493,35 +494,48 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
- Radial Quadrature : LMG scheme
- Space partitioning: Blocked partitioning for large molecules/parallel calc:s.
- Radial integration threshold: 1e-13
- Angular polynomials in range [15 35]
- Atom:    1*1 points=18912 compressed from 18912 ( 96 radial)
- Atom:    2*2 points=18406 compressed from 18406 ( 77 radial)
- Number of grid points:    37318 Grid generation time:       0.0 s
-K-S energy, electrons, error :     -7.461563613096   9.9999995404   -4.60D-07
+         DFT grid generation - Radial Quadrature  : LMG scheme
+         DFT grid generation -  partitioning : Blocked partitioning for large molecules/parallel calc:s.
+         DFT grid generation - Radial integration threshold: 1e-13
+         DFT grid generation - Angular polynomials in range [15 35]
+         DFT grid generation - Atom:    1*1 points= 18912 compressed from 18912 ( 96 radial)
+         DFT grid generation - Atom:    2*2 points= 18406 compressed from 18406 ( 77 radial)
+         DFT grid generation - Number of grid points:    37318; grid generation time:      0.0 s
+      K-S energy, electrons, error :     -7.461563613096   9.9999995404   -4.60D-07
    1  -75.7528913356       2.22D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H   ******; 
-K-S energy, electrons, error :     -7.530933374733   9.9999992830   -7.17D-07
+      Virial theorem: -V/T =      2.001811
+      MULPOP  O      -0.39; H   _1  0.19; H   _2  0.19; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.530933374732   9.9999992830   -7.17D-07
    2  -75.9351900808       1.23D-01  -1.82D-01    3  1  1  0
-      MULPOP O   ******; H   ******; 
-K-S energy, electrons, error :     -7.515844437096   9.9999992948   -7.05D-07
+      Virial theorem: -V/T =      2.004647
+      MULPOP  O      -0.65; H   _1  0.32; H   _2  0.32; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.515844437097   9.9999992948   -7.05D-07
    3  -75.9357881247       3.89D-02  -5.98D-04    3  1  1  0
-      MULPOP O   ******; H   ******; 
-K-S energy, electrons, error :     -7.525455309943   9.9999992967   -7.03D-07
+      Virial theorem: -V/T =      2.006273
+      MULPOP  O      -0.64; H   _1  0.32; H   _2  0.32; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.525455309943   9.9999992967   -7.03D-07
    4  -75.9358112725       2.87D-02  -2.31D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
-K-S energy, electrons, error :     -7.521212912873   9.9999992955   -7.04D-07
+      Virial theorem: -V/T =      2.005085
+      MULPOP  O      -0.66; H   _1  0.33; H   _2  0.33; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.521212912873   9.9999992955   -7.04D-07
    5  -75.9358448758       1.46D-03  -3.36D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
-K-S energy, electrons, error :     -7.521403260470   9.9999992956   -7.04D-07
+      Virial theorem: -V/T =      2.005588
+      MULPOP  O      -0.65; H   _1  0.32; H   _2  0.32; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.521403260470   9.9999992956   -7.04D-07
    6  -75.9358449700       2.29D-05  -9.42D-08    3  1  1  0
-      MULPOP O   ******; H   ******; 
-K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
+      Virial theorem: -V/T =      2.005565
+      MULPOP  O      -0.65; H   _1  0.33; H   _2  0.33; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
    7  -75.9358449701       1.82D-06  -1.17D-10    3  1  1  0
- DIIS converged in   7 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -548,20 +562,23 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final DFT energy:            -75.935844970074                 
+     Final DFT energy:            -75.935844970075                 
      Nuclear repulsion:             9.055287756882
-     Electronic energy:           -84.991132726956
+     Electronic energy:           -84.991132726957
 
      Final gradient norm:           0.000001822454
 
  
-     Date and time (Linux)  : Wed Dec 29 22:31:20 2010 
+     Date and time (Linux)  : Wed Mar 16 18:56:22 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -569,7 +586,7 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     0.9822  -0.2255   0.1054   0.1104   0.0582
    2 O   :1s     0.1026   0.2160  -0.0897  -0.0574  -0.0983
    3 O   :1s    -0.0420   0.6785  -0.4784  -0.9865  -0.0033
@@ -581,7 +598,7 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.4100  -0.3670   0.2103
    2 O   :2px    0.3411  -0.7378   0.3082
    3 H   :1s     0.2361   0.0894  -0.9484
@@ -590,17 +607,17 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :2pz    0.5295  -1.0251
    2 O   :2pz    0.6244   0.9702
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.32 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.19 seconds
  >>>> Total wall time used in SIRIUS :      2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:31:20 2010 
+     Date and time (Linux)  : Wed Mar 16 18:56:22 2011 
      Host name              : fe6                                     
 
 
@@ -682,8 +699,8 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
           ZDIPLEN 
 
 
-   SCF energy         :      -75.935844970074101
- -- inactive part     :      -84.991132726956138
+   SCF energy         :      -75.935844970074996
+ -- inactive part     :      -84.991132726957034
  -- nuclear repulsion :        9.055287756882032
 
 
@@ -742,7 +759,7 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.200000D+00
  SYMMETRY    1
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.20000):     5.10690160893    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.20000):     5.10690160892    
 
 
  Linear response calculations for quadratic response
@@ -784,17 +801,17 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.000000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     6.99254256716    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     6.99254256715    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.100000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     7.21249061505    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     7.21249061504    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.200000D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.20000):     7.98279469154    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.20000):     7.98279469153    
 
 
  Linear response calculations for quadratic response
@@ -818,9 +835,9 @@ K-S energy, electrons, error :     -7.521403390505   9.9999992956   -7.04D-07
 
  Operator symmetry =  3; triplet =   F
 
+ Electrons: 9.999999(-7.04e-07): LR-DFT*3 evaluation time:       0.4 s
  Electrons: 9.999999(-7.04e-07): LR-DFT*3 evaluation time:       0.5 s
- Electrons: 9.999999(-7.04e-07): LR-DFT*3 evaluation time:       0.5 s
-RSPORT:    9 out of    3 new trial vectors linear dependent
+RSPORT:    2 out of    3 new trial vectors linear dependent
  Electrons: 9.999999(-7.04e-07): LR-DFT*1 evaluation time:       0.2 s
 
  *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
@@ -828,21 +845,21 @@ RSPORT:    9 out of    3 new trial vectors linear dependent
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   7.08D-16
- RSP solution vector no.    2; norm of residual   1.05D-15
- RSP solution vector no.    3; norm of residual   7.69D-16
+ RSP solution vector no.    1; norm of residual   7.11D-16
+ RSP solution vector no.    2; norm of residual   7.90D-16
+ RSP solution vector no.    3; norm of residual   6.83D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000D+00
  SYMMETRY    3
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):    0.837736295868    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):    0.837736295867    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.100000D+00
  SYMMETRY    3
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):    0.865316213696    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):    0.865316213695    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.200000D+00
  SYMMETRY    3
@@ -871,14 +888,14 @@ RSPORT:    9 out of    3 new trial vectors linear dependent
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.000000
 @ B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
-@ Value of linear response -<<A;B>(omega):       4.220473586864
+@ Value of linear response -<<A;B>(omega):       4.220473586859
 
 @ Singlet linear response function in a.u.
 
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
 @ B operator, symmetry, frequency:   YDIPLEN    1  0.100000
 
-@ Value of linear response -<<A;B>(omega):       4.397035119481
+@ Value of linear response -<<A;B>(omega):       4.397035119476
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -892,14 +909,14 @@ RSPORT:    9 out of    3 new trial vectors linear dependent
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.000000
 @ B operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ Value of linear response -<<A;B>(omega):       6.992542567160
+@ Value of linear response -<<A;B>(omega):       6.992542567153
 
 @ Singlet linear response function in a.u.
 
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.100000
 @ B operator, symmetry, frequency:   XDIPLEN    2  0.100000
 
-@ Value of linear response -<<A;B>(omega):       7.212490615048
+@ Value of linear response -<<A;B>(omega):       7.212490615040
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -913,14 +930,14 @@ RSPORT:    9 out of    3 new trial vectors linear dependent
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.000000
 @ B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ Value of linear response -<<A;B>(omega):       0.837736295868
+@ Value of linear response -<<A;B>(omega):       0.837736295867
 
 @ Singlet linear response function in a.u.
 
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.100000
 @ B operator, symmetry, frequency:   ZDIPLEN    3  0.100000
 
-@ Value of linear response -<<A;B>(omega):       0.865316213696
+@ Value of linear response -<<A;B>(omega):       0.865316213695
 
 
   Results from quadratic response calculation
@@ -1081,7 +1098,7 @@ RSPORT:    9 out of    3 new trial vectors linear dependent
  S3TEST Final result YC :              0.00000000
  S3TEST Final result YO :              0.00000000
 @ B-freq = 0.000000  C-freq = 0.100000     beta(Z;Z,Y) =     -1.50262797
- Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.3 s
+ Electrons: 9.999999(-7.04e-07): QR-DFT/b evaluation time:       0.2 s
 
    COU CONTRIBUTION TO HYPVAL         -0.93177722         -0.93177722
 
@@ -1206,17 +1223,17 @@ RSPORT:    9 out of    3 new trial vectors linear dependent
  S3TEST Final result YO :              0.00000000
 @ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Z,Z) =     -1.92229775
 
- >>>> Total CPU  time used in RESPONSE:   9.32 seconds
- >>>> Total wall time used in RESPONSE:   9.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   8.32 seconds
+ >>>> Total wall time used in RESPONSE:   8.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  10.65 seconds
- >>>> Total wall time used in DALTON:  11.00 seconds
+ >>>> Total CPU  time used in DALTON:   9.53 seconds
+ >>>> Total wall time used in DALTON:  10.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:31:29 2010 
+     Date and time (Linux)  : Wed Mar 16 18:56:30 2011 
      Host name              : fe6                                     

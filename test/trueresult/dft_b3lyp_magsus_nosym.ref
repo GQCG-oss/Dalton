@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:33:46 2010 
+     Date and time (Linux)  : Wed Mar 16 18:58:46 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -255,7 +256,7 @@ Point group: C1
 
                A                   B                   C
 
-         580601.8534          26946.6098          25751.4463 MHz
+         580601.8483          26946.6096          25751.4461 MHz
            19.366793            0.898842            0.858976 cm-1
 
 
@@ -283,8 +284,8 @@ Point group: C1
  Number of two-electron integrals written:       78690 ( 49.9% )
  Megabytes written:                              0.907
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -318,7 +319,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:33:47 2010 
+     Date and time (Linux)  : Wed Mar 16 18:58:46 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -330,12 +331,12 @@ Point group: C1
 
      Restricted, closed shell Kohn-Sham DFT calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         18
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -387,43 +388,60 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
- Radial Quadrature : LMG scheme
- Space partitioning: Original Becke partitioning
- Radial integration threshold: 1e-13
- Angular polynomials in range [15 35]
- Atom:    1*1 points=20612 compressed from 20612 ( 88 radial)
- Atom:    2*1 points=21288 compressed from 21288 (114 radial)
- Atom:    3*1 points=21588 compressed from 21588 (114 radial)
- Number of grid points:    63488 Grid generation time:       0.0 s
-K-S energy, electrons, error :    -15.483249565220  18.0000004056    4.06D-07
+ -----------------------------------------------------------------------------
+         DFT grid generation - Radial Quadrature  : LMG scheme
+         DFT grid generation -  partitioning : Original Becke partitioning
+         DFT grid generation - Radial integration threshold: 1e-13
+         DFT grid generation - Angular polynomials in range [15 35]
+         DFT grid generation - Atom:    1*1 points= 20612 compressed from 20612 ( 88 radial)
+         DFT grid generation - Atom:    2*1 points= 21288 compressed from 21288 (114 radial)
+         DFT grid generation - Atom:    3*1 points= 21588 compressed from 21588 (114 radial)
+         DFT grid generation - Number of grid points:    63488; grid generation time:      0.0 s
+      K-S energy, electrons, error :    -15.483249565220  18.0000004056    4.06D-07
    1    -175.272914098        1.77939D+00   -1.75D+02    1
-      MULPOP H    -0.00; O     0.00; F    -0.01; 
-K-S energy, electrons, error :    -15.630938162549  18.0000002672    2.67D-07
+      Virial theorem: -V/T =      2.006831
+      MULPOP  H       0.28; O      -0.05; F      -0.23; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.630938162548  18.0000002672    2.67D-07
    2    -175.326699149        1.69345D+00   -5.38D-02    2
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.590637693446  18.0000004220    4.22D-07
+      Virial theorem: -V/T =      2.000947
+      MULPOP  H       0.41; O      -0.52; F       0.11; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.590637693445  18.0000004220    4.22D-07
    3    -175.408229778        1.05838D+00   -8.15D-02    3
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.548642707720  18.0000003451    3.45D-07
+      Virial theorem: -V/T =      2.002782
+      MULPOP  H       0.30; O       0.06; F      -0.36; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.548642707720  18.0000003451    3.45D-07
    4    -175.456454209        1.19382D-01   -4.82D-02    4
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.575639990525  18.0000003529    3.53D-07
+      Virial theorem: -V/T =      2.005927
+      MULPOP  H       0.35; O      -0.19; F      -0.16; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.575639990524  18.0000003529    3.53D-07
    5    -175.456955299        4.17083D-02   -5.01D-04    5
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.566181764687  18.0000003516    3.52D-07
+      Virial theorem: -V/T =      2.004335
+      MULPOP  H       0.36; O      -0.18; F      -0.18; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.566181764686  18.0000003516    3.52D-07
    6    -175.457032351        3.46063D-03   -7.71D-05    6
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.566836846911  18.0000003516    3.52D-07
+      Virial theorem: -V/T =      2.004871
+      MULPOP  H       0.35; O      -0.18; F      -0.18; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.566836846910  18.0000003516    3.52D-07
    7    -175.457032870        4.64447D-04   -5.19D-07    7
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.566835352602  18.0000003516    3.52D-07
+      Virial theorem: -V/T =      2.004835
+      MULPOP  H       0.36; O      -0.18; F      -0.18; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.566835352601  18.0000003516    3.52D-07
    8    -175.457032880        8.10292D-05   -9.98D-09    8
-      MULPOP H     0.00; O     0.00; F     0.02; 
-K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
+      Virial theorem: -V/T =      2.004835
+      MULPOP  H       0.36; O      -0.18; F      -0.18; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -15.566840133462  18.0000003516    3.52D-07
    9    -175.457032880        9.21112D-06   -3.88D-10    9
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.02 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.02 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -447,20 +465,23 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final DFT energy:           -175.457032880228                 
+     Final DFT energy:           -175.457032880229                 
      Nuclear repulsion:            33.471396680443
-     Electronic energy:          -208.928429560671
+     Electronic energy:          -208.928429560673
 
      Final gradient norm:           0.000009211120
 
  
-     Date and time (Linux)  : Wed Dec 29 22:33:51 2010 
+     Date and time (Linux)  : Wed Mar 16 18:58:52 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -468,7 +489,7 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           5        6        7        8        9       10       11
+    Orbital         5        6        7        8        9       10       11
    1 H   :1s    -0.2069   0.0866   0.0000  -0.1614   0.0000  -0.0177  -0.1651
    2 H   :1s    -0.1273   0.0525   0.0000  -0.0846   0.0000  -0.2430  -1.4546
    3 H   :2px    0.0028   0.0118   0.0000  -0.0003   0.0000   0.0175  -0.0031
@@ -503,11 +524,11 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
 
 
- >>>> Total CPU  time used in SIRIUS :      4.90 seconds
- >>>> Total wall time used in SIRIUS :      5.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      5.04 seconds
+ >>>> Total wall time used in SIRIUS :      6.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:33:52 2010 
+     Date and time (Linux)  : Wed Mar 16 18:58:52 2011 
      Host name              : fe6                                     
 
 
@@ -544,20 +565,20 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:33:52 2010 
+     Date and time (Linux)  : Wed Mar 16 18:58:52 2011 
      Host name              : fe6                                     
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
- Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.6 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
+ Electrons: 18.000000( 3.52e-07): LR-DFT*1 evaluation time:       0.7 s
 
 
    ***************************************************************************
@@ -566,7 +587,7 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:34:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:59:06 2011 
      Host name              : fe6                                     
 
 
@@ -587,18 +608,18 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -175.4570328802 au (Hartrees)
-                         -4774.42859856 eV
-                           -460662.3737 kJ/mol
+                         -4774.42873404 eV
+                           -460662.3688 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.5114876645 au
-     Mass-velocity correction:                  -0.6488396653 au
+     Darwin correction:                          0.5114876603 au
+     Mass-velocity correction:                  -0.6488396600 au
 
-     Total relativistic correction:             -0.1373520009 au (0.0783%)
-     Non-relativistic + relativistic energy:  -175.5943848811 au
+     Total relativistic correction:             -0.1373519997 au (0.0783%)
+     Non-relativistic + relativistic energy:  -175.5943848800 au
 
 
 
@@ -615,8 +636,8 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.35724590        -0.90802841        -3.02885676
-      y     -0.69074170        -1.75569009        -5.85635176
+      x     -0.35724590        -0.90802846        -3.02885690
+      y     -0.69074170        -1.75569017        -5.85635204
       z      0.00000000         0.00000000         0.00000000
 
 
@@ -661,9 +682,9 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
                        Bx                  By                  Bz
 
-  Bx        -4.122228954409      0.003449331213     -0.000000000000
-  By         0.003449331213     -2.134350619245      0.000000000000
-  Bz         0.000000000000      0.000000000000     -2.357871791823
+  Bx        -4.122228954411      0.003449331212     -0.000000000000
+  By         0.003449331212     -2.134350619248      0.000000000000
+  Bz         0.000000000000      0.000000000000     -2.357871791824
 
 
 
@@ -672,9 +693,9 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
                        Bx                  By                  Bz
 
-  Bx        -4.383056816324      0.104164935193     -0.000000000000
-  By         0.104164935193    -12.310515590636     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000    -12.667452677000
+  Bx        -4.383056816325      0.104164935193     -0.000000000000
+  By         0.104164935193    -12.310515590638     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000    -12.667452677002
 
 
 
@@ -683,9 +704,9 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
 
                        Bx                  By                  Bz
 
-  Bx         0.260827861915     -0.100715603980     -0.000000000000
-  By        -0.100715603980     10.176164971391      0.000000000000
-  Bz         0.000000000000      0.000000000000     10.309580885177
+  Bx         0.260827861914     -0.100715603982     -0.000000000000
+  By        -0.100715603982     10.176164971390      0.000000000000
+  Bz         0.000000000000      0.000000000000     10.309580885179
 
 
 
@@ -737,8 +758,8 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
   --------------------------------------------------------
 
    A           -0.37306738      0.00865676     -0.00000000
-   B            0.18652185     -0.54293319      0.00000000
-   C           -0.00000000      0.00000000     -0.51654090
+   B            0.18652185     -0.54293319     -0.00000000
+   C           -0.00000000     -0.00000000     -0.51654090
 
 
   Diamagnetic contribution in principal axis system (a.u.):
@@ -785,24 +806,24 @@ K-S energy, electrons, error :    -15.566840133463  18.0000003516    3.52D-07
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:02      14 %
- LINRES     00:00:08      65 %
+ RHSIDE     00:00:02      15 %
+ LINRES     00:00:09      65 %
  RELAX      00:00:03      21 %
 
- TOTAL      00:00:12     100 %
+ TOTAL      00:00:14     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  12.16 seconds
- >>>> Total wall time used in ABACUS:  13.00 seconds
+ >>>> Total CPU  time used in ABACUS:  13.69 seconds
+ >>>> Total wall time used in ABACUS:  14.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  17.13 seconds
- >>>> Total wall time used in DALTON:  19.00 seconds
+ >>>> Total CPU  time used in DALTON:  18.81 seconds
+ >>>> Total wall time used in DALTON:  20.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:34:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:59:06 2011 
      Host name              : fe6                                     

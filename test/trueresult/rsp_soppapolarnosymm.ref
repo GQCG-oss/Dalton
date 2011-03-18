@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:18:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -237,7 +238,7 @@ Point group: C1
 
                A                   B                   C
 
-         797267.3440         424480.0013         277000.0234 MHz
+         797267.3370         424479.9976         277000.0210 MHz
            26.593976           14.159129            9.239726 cm-1
 
 
@@ -299,7 +300,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -314,8 +315,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -323,6 +323,7 @@ Point group: C1
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MP2      <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -358,31 +359,49 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -75.8558054129        1.60794D+00   -7.59D+01    1
-      MULPOP O   368.20; H   ******; 
+      Virial theorem: -V/T =      2.000312
+      MULPOP  O      -0.55; H       0.28; H       0.28; 
+ -----------------------------------------------------------------------------
    2    -76.0198639633        3.12287D-01   -1.64D-01    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.002416
+      MULPOP  O      -0.28; H       0.14; H       0.14; 
+ -----------------------------------------------------------------------------
    3    -76.0251506648        7.25194D-02   -5.29D-03    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000758
+      MULPOP  O      -0.31; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    4    -76.0256406432        2.50537D-02   -4.90D-04    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001614
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    5    -76.0256763237        6.18368D-03   -3.57D-05    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001128
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    6    -76.0256811281        1.40431D-03   -4.80D-06    6
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001201
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    7    -76.0256814782        1.85175D-04   -3.50D-07    7
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    8    -76.0256814838        2.87151D-05   -5.64D-09    8
-      MULPOP O   ******; H   ******; 
-   9    -76.0256814839        5.54466D-06   -1.03D-10    9
-      MULPOP O   ******; H   ******; 
-  10    -76.0256814839        3.02762D-07   -3.51D-12   10
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+   9    -76.0256814839        5.54466D-06   -1.02D-10    9
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+  10    -76.0256814839        3.02762D-07   -3.61D-12   10
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -397,7 +416,7 @@ Point group: C1
     Number of electrons :   10
     Orbital occupations :    5
 
- Hartree-Fock electronic energy:         -85.080686009581
+ Hartree-Fock electronic energy:         -85.080686009582
  Hartree-Fock total      energy:         -76.025681483944
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-08
@@ -434,7 +453,10 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Time used for MP2 natural orbitals :       0.025 CPU seconds.
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -447,7 +469,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
      Final gradient norm:           0.000000302762
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -455,20 +477,20 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 O   :1s    -1.0004   0.0076   0.0000  -0.0022   0.0000  -0.0519   0.0000
-   2 O   :1s    -0.0021  -0.8737   0.0000   0.2932  -0.0000   0.1433   0.0000
-   3 O   :1s     0.0014   0.1145  -0.0000   0.1768   0.0000   0.9058   0.0000
-   4 O   :2px   -0.0000  -0.0000  -0.7111  -0.0000  -0.0000   0.0000  -0.4190
-   5 O   :2py   -0.0025  -0.1108   0.0000  -0.7927   0.0000   0.2855   0.0000
+   2 O   :1s    -0.0021  -0.8737   0.0000   0.2932  -0.0000   0.1433  -0.0000
+   3 O   :1s     0.0014   0.1145  -0.0000   0.1768   0.0000   0.9058  -0.0000
+   4 O   :2px   -0.0000   0.0000  -0.7111  -0.0000  -0.0000  -0.0000  -0.4190
+   5 O   :2py   -0.0025  -0.1108   0.0000  -0.7927   0.0000   0.2855  -0.0000
    6 O   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.9204   0.0000  -0.0000
-   7 O   :2px   -0.0000  -0.0000   0.1012  -0.0000   0.0000   0.0000  -0.4775
-   8 O   :2py    0.0017   0.0619  -0.0000  -0.0018   0.0000   0.2117   0.0000
+   7 O   :2px   -0.0000  -0.0000   0.1012   0.0000   0.0000  -0.0000  -0.4775
+   8 O   :2py    0.0017   0.0619  -0.0000  -0.0018   0.0000   0.2117  -0.0000
    9 O   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.0724   0.0000  -0.0000
-  10 O   :3d2-  -0.0000  -0.0000  -0.0262  -0.0000   0.0000   0.0000  -0.0201
+  10 O   :3d2-  -0.0000  -0.0000  -0.0262  -0.0000   0.0000  -0.0000  -0.0201
   11 O   :3d1-  -0.0000   0.0000   0.0000  -0.0000  -0.0180   0.0000  -0.0000
   12 O   :3d0    0.0001   0.0031   0.0000   0.0128  -0.0000  -0.0117   0.0000
-  14 O   :3d2+  -0.0000  -0.0004  -0.0000   0.0130   0.0000  -0.0019  -0.0000
+  14 O   :3d2+  -0.0000  -0.0004  -0.0000   0.0130   0.0000  -0.0019   0.0000
   15 H   :1s     0.0003  -0.3191  -0.5530  -0.3516  -0.0000  -0.1058   0.0501
   16 H   :1s    -0.0006   0.1494   0.1845   0.1327  -0.0000  -0.7699   1.3912
   17 H   :2px   -0.0005   0.0364   0.0234   0.0317   0.0000   0.0162  -0.0198
@@ -486,7 +508,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:48 2011 
      Host name              : fe6                                     
 
 
@@ -554,8 +576,8 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
           ZDIPLEN 
 
 
-   SCF energy         :      -76.025681483943615
- -- inactive part     :      -85.080686009581513
+   SCF energy         :      -76.025681483944012
+ -- inactive part     :      -85.080686009581910
  -- nuclear repulsion :        9.055004525637894
 
 
@@ -635,6 +657,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : XDIPLEN 
  RSPLR -- frequencies :   0.000000  0.059200
+ FREQ 2    0.0000000000000000       5.92000000000000026E-002
 
 
 
@@ -657,6 +680,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : YDIPLEN 
  RSPLR -- frequencies :   0.000000  0.059200
+ FREQ 2    0.0000000000000000       5.92000000000000026E-002
 
 
 
@@ -679,6 +703,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : ZDIPLEN 
  RSPLR -- frequencies :   0.000000  0.059200
+ FREQ 2    0.0000000000000000       5.92000000000000026E-002
 
 
 
@@ -709,11 +734,11 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  7.396691946234D+00
-@ -<< XDIPLEN  ; YDIPLEN  >> =  1.245232693052D-14
-@ -<< XDIPLEN  ; ZDIPLEN  >> =  4.788676923727D-15
-@ -<< YDIPLEN  ; YDIPLEN  >> =  5.500083478627D+00
-@ -<< YDIPLEN  ; ZDIPLEN  >> =  5.435088547239D-16
+@ -<< XDIPLEN  ; XDIPLEN  >> =  7.396691946212D+00
+@ -<< XDIPLEN  ; YDIPLEN  >> = -1.922428387507D-13
+@ -<< XDIPLEN  ; ZDIPLEN  >> =  4.788676923746D-15
+@ -<< YDIPLEN  ; YDIPLEN  >> =  5.500083478617D+00
+@ -<< YDIPLEN  ; ZDIPLEN  >> =  5.435088547250D-16
 @ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.206925055259D+00
 
 @ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :
@@ -724,12 +749,12 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
   kJ/mol.:  1.5542958D+02
      nm  :  7.6965123D+02
 
-@ -<< XDIPLEN  ; XDIPLEN  >> =  7.462906541162D+00
-@ -<< XDIPLEN  ; YDIPLEN  >> =  1.380685130940D-14
-@ -<< XDIPLEN  ; ZDIPLEN  >> =  5.093539235154D-15
-@ -<< YDIPLEN  ; YDIPLEN  >> =  5.560575009624D+00
-@ -<< YDIPLEN  ; ZDIPLEN  >> =  5.693828180462D-16
-@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.251795977224D+00
+@ -<< XDIPLEN  ; XDIPLEN  >> =  7.462906541138D+00
+@ -<< XDIPLEN  ; YDIPLEN  >> = -1.977071135532D-13
+@ -<< XDIPLEN  ; ZDIPLEN  >> =  5.093539235172D-15
+@ -<< YDIPLEN  ; YDIPLEN  >> =  5.560575009613D+00
+@ -<< YDIPLEN  ; ZDIPLEN  >> =  5.693828180473D-16
+@ -<< ZDIPLEN  ; ZDIPLEN  >> =  3.251795977225D+00
 
 
  Time used in linear response calculation is      0.16 CPU seconds for symmetry 1
@@ -810,10 +835,10 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Static polarisabilities (length)
  ------------------------------------------------
   
- XDIPLEN  XDIPLEN         7.3966922434
+ XDIPLEN  XDIPLEN         7.3966922433
    Max difference in grid polarizabilities:      7.3966922   XDIPLEN 
 
- YDIPLEN  XDIPLEN         0.0000000000
+ YDIPLEN  XDIPLEN        -0.0000000000
   
  YDIPLEN  YDIPLEN         5.5000834074
    Max difference in grid polarizabilities:      5.5000834   YDIPLEN 
@@ -971,7 +996,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
    Max difference in grid polarizabilities:      0.0193291   YDIPLEN 
 
  ZDIPLEN  XDIPLEN        -0.0000000000
- ZDIPLEN  YDIPLEN         0.0000000000
+ ZDIPLEN  YDIPLEN        -0.0000000000
   
  ZDIPLEN  ZDIPLEN         3.2069250481
    Max difference in grid polarizabilities:      0.0038958   ZDIPLEN 
@@ -1041,13 +1066,13 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  XDIPLEN  XDIPLEN         7.3966925878
    Max difference in grid polarizabilities:      0.0013927   XDIPLEN 
 
- YDIPLEN  XDIPLEN         0.0000000000
+ YDIPLEN  XDIPLEN        -0.0000000000
   
  YDIPLEN  YDIPLEN         5.5000834393
    Max difference in grid polarizabilities:      0.0024079   YDIPLEN 
 
- ZDIPLEN  XDIPLEN        -0.0000000000
- ZDIPLEN  YDIPLEN        -0.0000000000
+ ZDIPLEN  XDIPLEN         0.0000000000
+ ZDIPLEN  YDIPLEN         0.0000000000
   
  ZDIPLEN  ZDIPLEN         3.2069250491
    Max difference in grid polarizabilities:      0.0003646   ZDIPLEN 
@@ -1117,13 +1142,13 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  XDIPLEN  XDIPLEN         7.3966926086
    Max difference in grid polarizabilities:      0.0007071   XDIPLEN 
 
- YDIPLEN  XDIPLEN         0.0000000000
+ YDIPLEN  XDIPLEN        -0.0000000000
   
  YDIPLEN  YDIPLEN         5.5000834479
    Max difference in grid polarizabilities:      0.0020130   YDIPLEN 
 
  ZDIPLEN  XDIPLEN         0.0000000000
- ZDIPLEN  YDIPLEN         0.0000000000
+ ZDIPLEN  YDIPLEN        -0.0000000000
   
  ZDIPLEN  ZDIPLEN         3.2069250598
    Max difference in grid polarizabilities:      0.0001547   ZDIPLEN 
@@ -1199,7 +1224,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
    Max difference in grid polarizabilities:      0.0002740   YDIPLEN 
 
  ZDIPLEN  XDIPLEN         0.0000000000
- ZDIPLEN  YDIPLEN        -0.0000000000
+ ZDIPLEN  YDIPLEN         0.0000000000
   
  ZDIPLEN  ZDIPLEN         3.2069250602
    Max difference in grid polarizabilities:      0.0000030   ZDIPLEN 
@@ -1216,7 +1241,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
   
  YDIPLEN  YDIPLEN         5.5000834518
  ZDIPLEN  XDIPLEN         0.0000000000
- ZDIPLEN  YDIPLEN        -0.0000000000
+ ZDIPLEN  YDIPLEN         0.0000000000
   
  ZDIPLEN  ZDIPLEN         3.2069250602
 
@@ -1228,166 +1253,166 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  XDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0         7.39669263039062840903E+00
-    2         1.86536869705876462433E+01
-    4         6.74411896357535027846E+01
-    6         2.66843539561584179864E+02
-    8         1.09260447703046997958E+03
-   10         4.57927394810921759927E+03
-   12         1.95867068608371409937E+04
-   14         8.53387155424701486481E+04
-   16         3.78002710868127702270E+05
-   18         1.69851417833744268864E+06
-   20         7.72517002120698988438E+06
-   22         3.54890124310441911221E+07
-   24         1.64360719019051194191E+08
-   26         7.66132046362369418144E+08
-   28         3.58931100452083444595E+09
-   30         1.68822944450771484375E+10
-   32         7.96477991246559295654E+10
-   34         3.76643074987700622559E+11
-   36         1.78426827833647021484E+12
-   38         8.46406493525726367188E+12
+    0         7.39669263036805002542E+00
+    2         1.86536869704614609589E+01
+    4         6.74411896352256547971E+01
+    6         2.66843539559580392506E+02
+    8         1.09260447702350120380E+03
+   10         4.57927394808808912785E+03
+   12         1.95867068607914370659E+04
+   14         8.53387155424993979977E+04
+   16         3.78002710869371425360E+05
+   18         1.69851417834830051288E+06
+   20         7.72517002128079812974E+06
+   22         3.54890124314950406551E+07
+   24         1.64360719021647244692E+08
+   26         7.66132046376773238182E+08
+   28         3.58931100459875965118E+09
+   30         1.68822944454911460876E+10
+   32         7.96477991268258361816E+10
+   34         3.76643074998955749512E+11
+   36         1.78426827839436889648E+12
+   38         8.46406493555312890625E+12
 
 
  YDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0        -4.74196316217885242635E-15
-    2         3.56265443487935308877E-13
-    4         4.07023608454522158588E-12
-    6         3.29948592989463635751E-11
-    8         2.43054271731713055222E-10
-   10         1.72848873810253480359E-09
-   12         1.21015660836554161024E-08
-   14         8.40447406437078158058E-08
-   16         5.80969792322035712942E-07
-   18         4.00438973274465097627E-06
-   20         2.75485880386870606007E-05
-   22         1.89284425243841373165E-04
-   24         1.29944871827855287783E-03
-   26         8.91557442289202597974E-03
-   28         6.11455248411461940727E-02
-   30         4.19236711247174320683E-01
-   32         2.87389171295095069425E+00
-   34         1.96980669745334964205E+01
-   36         1.35000901777600631704E+02
-   38         9.25170683162350883322E+02
+    0        -2.07121808127145200495E-13
+    2        -1.48021740657898528444E-12
+    4        -1.00452096288488196436E-11
+    6        -6.87881571525944584154E-11
+    8        -4.77826904986715643746E-10
+   10        -3.34052398350081313048E-09
+   12        -2.33576612846912651814E-08
+   14        -1.62873829829831344177E-07
+   16        -1.13172697738321298099E-06
+   18        -7.83777019925889789512E-06
+   20        -5.41310644580460180561E-05
+   22        -3.73049474279754818534E-04
+   24        -2.56675003347478199525E-03
+   26        -1.76394208789977594010E-02
+   28        -1.21118771520960843979E-01
+   30        -8.31134249395273694283E-01
+   32        -5.70086761038369882471E+00
+   34        -3.90909796549745109928E+01
+   36        -2.67989483391756948549E+02
+   38        -1.83693051914602483521E+03
 
 
  YDIPLEN  YDIPLEN 
 
    k               Moment = S(-k-2)
-    0         5.50008345180605040525E+00
-    2         1.69082673244843171290E+01
-    4         9.81693323965518231944E+01
-    6         6.44000635163549873141E+02
-    8         4.35077965055548884266E+03
-   10         2.96657836484608415049E+04
-   12         2.02919151903464226052E+05
-   14         1.38955746293295035139E+06
-   16         9.51925015479070879519E+06
-   18         6.52214538773044720292E+07
-   20         4.46889473392175436020E+08
-   22         3.06208740336648511887E+09
-   24         2.09815623465911521912E+10
-   26         1.43766949087337005615E+11
-   28         9.85100734159826904297E+11
-   30         6.74997796136445019531E+12
-   32         4.62513178690490000000E+13
-   34         3.16917254496987875000E+14
-   36         2.17153915053683950000E+15
-   38         1.48795379155468840000E+16
+    0         5.50008345179561963789E+00
+    2         1.69082673243989063394E+01
+    4         9.81693323959541004342E+01
+    6         6.44000635159331636714E+02
+    8         4.35077965052555737202E+03
+   10         2.96657836482482380234E+04
+   12         2.02919151901955046924E+05
+   14         1.38955746292224805802E+06
+   16         9.51925015471489541233E+06
+   18         6.52214538767679929733E+07
+   20         4.46889473388382852077E+08
+   22         3.06208740333970022202E+09
+   24         2.09815623464021492004E+10
+   26         1.43766949086004486084E+11
+   28         9.85100734150439331055E+11
+   30         6.74997796129836621094E+12
+   32         4.62513178685841328125E+13
+   34         3.16917254493719937500E+14
+   36         2.17153915051388125000E+15
+   38         1.48795379153856940000E+16
 
 
  ZDIPLEN  XDIPLEN 
 
    k               Moment = S(-k-2)
-    0         1.43731236690827925198E-13
-    2         1.06098222004214424931E-13
-    4         7.99506903470563811454E-13
-    6         9.79705362515451375852E-12
-    8         1.20942072456881920204E-10
-   10         1.48995681912591554959E-09
-   12         1.83469726682811026394E-08
-   14         2.25910013826360509423E-07
-   16         2.78174111358108655889E-06
-   18         3.42536621692261135787E-05
-   20         4.21795858974937439446E-04
-   22         5.19397650359579039075E-03
-   24         6.39585620632876494795E-02
-   26         7.87585734849075791431E-01
-   28         9.69833479348555371757E+00
-   30         1.19425364646703741300E+02
-   32         1.47060490090222219806E+03
-   34         1.81090410600068098574E+04
-   36         2.22994885532169340877E+05
-   38         2.74596092704626033083E+06
+    0         5.39100674802756670997E-14
+    2         8.89899032987547196608E-14
+    4         9.19902322882929043234E-13
+    6         1.12365444976813677826E-11
+    8         1.37918757039490067905E-10
+   10         1.69550604440805666110E-09
+   12         2.08626498699147484485E-08
+   14         2.56819493935373090410E-07
+   16         3.16205263336695901568E-06
+   18         3.89354213394167990346E-05
+   20         4.79440654110946211375E-04
+   22         5.90378525646895104678E-03
+   24         7.26990145375791818605E-02
+   26         8.95215092542866464065E-01
+   28         1.10236805757514986226E+01
+   30         1.35745669587810169787E+02
+   32         1.67157320794239285533E+03
+   34         2.05837661951850604964E+04
+   36         2.53468670555237738881E+05
+   38         3.12121537008003378287E+06
 
 
  ZDIPLEN  YDIPLEN 
 
    k               Moment = S(-k-2)
-    0        -7.40805790378523496803E-14
-    2         5.78843939109827324830E-14
-    4         1.30488889325982387014E-12
-    6         1.93504177281784327757E-11
-    8         2.60624373303531584619E-10
-   10         3.36254744986386070060E-09
-   12         4.24569151786909476727E-08
-   14         5.30014674076582664408E-07
-   16         6.57594435525380079257E-06
-   18         8.13143236517968381665E-05
-   20         1.00362191852610164663E-03
-   22         1.23744827755286977006E-02
-   24         1.52488256085182960486E-01
-   26         1.87848698732235752651E+00
-   28         2.31368116857887500259E+01
-   30         2.84941889833115965303E+02
-   32         3.50901664563206441017E+03
-   34         4.32117040019858468440E+04
-   36         5.32120551283980719745E+05
-   38         6.55261417144063115120E+06
+    0         6.42910144867038821597E-14
+    2         2.37501632466699597324E-14
+    4        -8.29428178871294994971E-14
+    6        -2.70159964432058954580E-12
+    8        -4.36254830742353746971E-11
+   10        -6.05427989037521474057E-10
+   12        -7.91590966410944109061E-09
+   14        -1.00616291894860109320E-07
+   16        -1.26046216573838542473E-06
+   18        -1.56683704610593271236E-05
+   20        -1.93947650877873358942E-04
+   22        -2.39517385524412769471E-03
+   24        -2.95414748183312377006E-02
+   26        -3.64097960057022662639E-01
+   28        -4.48572536813999711569E+00
+   30        -5.52524720022436923728E+01
+   32        -6.80483643407931936054E+02
+   34        -8.38019560911512962775E+03
+   36        -1.03198694290341140004E+05
+   38        -1.27082313871810329147E+06
 
 
  ZDIPLEN  ZDIPLEN 
 
    k               Moment = S(-k-2)
-    0         3.20692506021625467483E+00
-    2         1.22887964856693354676E+01
-    4         1.40520857479781227539E+02
-    6         1.72246572111225964363E+03
-    8         2.12014747152726959030E+04
-   10         2.61063222367463400587E+05
-   12         3.21471832188681187108E+06
-   14         3.95860461308925375342E+07
-   16         4.87462879895561337471E+08
-   18         6.00262204204134368896E+09
-   20         7.39163392793537597656E+10
-   22         9.10206436164741943359E+11
-   24         1.12082898663931328125E+13
-   26         1.38018977606477125000E+14
-   28         1.69956687475356975000E+15
-   30         2.09284810817524600000E+16
-   32         2.57713495653288096000E+17
-   34         3.17348619722554880000E+18
-   36         3.90783362681556992000E+19
-   38         4.81210968184500060160E+20
+    0         3.20692506021671430716E+00
+    2         1.22887964857421359000E+01
+    4         1.40520857480292363562E+02
+    6         1.72246572111214436518E+03
+    8         2.12014747151907322404E+04
+   10         2.61063222365460649598E+05
+   12         3.21471832184991566464E+06
+   14         3.95860461302875280380E+07
+   16         4.87462879886255979538E+08
+   18         6.00262204190391254425E+09
+   20         7.39163392773801269531E+10
+   22         9.10206436136974243164E+11
+   24         1.12082898660085429688E+13
+   26         1.38018977601216015625E+14
+   28         1.69956687468231600000E+15
+   30         2.09284810807953840000E+16
+   32         2.57713495640521856000E+17
+   34         3.17348619705626675200E+18
+   36         3.90783362659224371200E+19
+   38         4.81210968155168178176E+20
 
 
  Time used in c6/c8 calculation       1.52 CPU seconds for symmetry 1
 
  >>>> Total CPU  time used in RESPONSE:   1.69 seconds
- >>>> Total wall time used in RESPONSE:   3.00 seconds
+ >>>> Total wall time used in RESPONSE:   5.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.77 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.78 seconds
+ >>>> Total wall time used in DALTON:   5.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:18 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:53 2011 
      Host name              : fe6                                     

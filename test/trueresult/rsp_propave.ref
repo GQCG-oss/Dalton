@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:17:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -329,7 +330,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - dipole velocity integrals
@@ -388,7 +389,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -400,7 +401,6 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
      Time-dependent Hartree-Fock calculation (random phase approximation).
 
 
@@ -409,6 +409,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons          4
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -444,22 +445,32 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -7.80709768206       5.59D-01  -7.81D+00    2  0  0  0
-      MULPOP Li   -0.26; H     0.00; 
+      Virial theorem: -V/T =      1.948000
+      MULPOP  Li      0.47; H      -0.47; 
+ -----------------------------------------------------------------------------
    2  -7.86132282152       4.60D-02  -5.42D-02    2  0  0  0
-      MULPOP Li   -0.70; H     0.00; 
+      Virial theorem: -V/T =      1.985529
+      MULPOP  Li      0.02; H      -0.02; 
+ -----------------------------------------------------------------------------
    3  -7.86168429793       5.88D-03  -3.61D-04    2  0  0  0
-      MULPOP Li   -0.74; H     0.00; 
+      Virial theorem: -V/T =      1.988133
+      MULPOP  Li     -0.02; H       0.02; 
+ -----------------------------------------------------------------------------
    4  -7.86170623292       1.27D-03  -2.19D-05    2  0  0  0
-      MULPOP Li   -0.75; H     0.00; 
+      Virial theorem: -V/T =      1.988365
+      MULPOP  Li     -0.02; H       0.02; 
+ -----------------------------------------------------------------------------
    5  -7.86170731457       3.41D-05  -1.08D-06    2  0  0  0
-      MULPOP Li   -0.75; H     0.00; 
+      Virial theorem: -V/T =      1.988395
+      MULPOP  Li     -0.02; H       0.02; 
+ -----------------------------------------------------------------------------
    6  -7.86170731522       1.49D-06  -6.51D-10    2  0  0  0
- DIIS converged in   6 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -485,7 +496,10 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -498,7 +512,7 @@ Point group: C2v
      Final gradient norm:           0.000001493720
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -506,7 +520,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 Li  :1s     0.9913   0.1668   0.2101  -0.0940
    2 Li  :1s     0.0327  -0.4557  -0.7995   0.7008
    3 Li  :2pz    0.0063   0.3459  -0.6120  -0.9780
@@ -515,13 +529,13 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 Li  :2px    1.0000
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 Li  :2py    1.0000
 
 
@@ -530,7 +544,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     
 
 
@@ -598,8 +612,8 @@ Point group: C2v
           ZDIPLEN 
 
 
-   SCF energy         :       -7.861707315216580
- -- inactive part     :       -8.850997616798553
+   SCF energy         :       -7.861707315216719
+ -- inactive part     :       -8.850997616798692
  -- nuclear repulsion :        0.989290301581974
 
 
@@ -765,13 +779,13 @@ Point group: C2v
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
-Contribution from C4FOCK:    116.304382830286
+Contribution from C4FOCK:    116.304382830258
  Na T[4] Nb Nc Nd     -116.30438283       -116.30438283
  Na T[3] Nx Nyz       2278.33225102       2162.02786819
  Na X[3] Ny Nz         401.31070835       2563.33857654
- Nx A[3] Ny Nz         133.77023612       2697.10881265
- Na X[2] Nyz         -8309.88038185      -5612.77156920
- Nx A[2] Nyz         -8309.88038185     -13922.65195105
+ Nx A[3] Ny Nz         133.77023612       2697.10881266
+ Na X[2] Nyz         -8309.88038186      -5612.77156920
+ Nx A[2] Nyz         -8309.88038186     -13922.65195106
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.000000
@@ -779,7 +793,7 @@ Contribution from C4FOCK:    116.304382830286
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =      -13922.65195105
+@ << A; B, C, D >>  =      -13922.65195106
 
 
 
@@ -792,8 +806,8 @@ Contribution from C4FOCK:    116.304382830286
 
 @ gamma(Z;Z,Z,Z)      13922.6520
 
- >>>> Total CPU  time used in RESPONSE:   0.00 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.01 seconds
+ >>>> Total wall time used in RESPONSE:   0.00 seconds
 
 
                    .-------------------------------------------.
@@ -801,8 +815,8 @@ Contribution from C4FOCK:    116.304382830286
                    `-------------------------------------------'
 
  >>>> Total CPU  time used in DALTON:   0.02 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total wall time used in DALTON:   0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     

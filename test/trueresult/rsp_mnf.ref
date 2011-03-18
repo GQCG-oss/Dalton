@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:17:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:25 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -188,8 +189,8 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           O    1     15.994915
-                           O    2     15.994915
+                           O   _1     15.994915
+                           O   _2     15.994915
 
                        Total mass:    31.989830 amu
                        Natural abundance:  99.521 %
@@ -255,14 +256,14 @@ Point group: D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O    1      O    2
+            O   _1      O   _2
             ------      ------
- O    1:    0.000000
- O    2:    1.207053    0.000000
+ O   _1:    0.000000
+ O   _2:    1.207053    0.000000
 
 
   Max interatomic separation is    1.2071 Angstrom (    2.2810 Bohr)
-  between atoms    2 and    1, "O    2" and "O    1".
+  between atoms    2 and    1, "O   _2" and "O   _1".
 
 
   Bond distances (Angstrom):
@@ -270,7 +271,7 @@ Point group: D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O    2     O    1       1.207053
+  bond distance:  O   _2     O   _1       1.207053
 
 
 
@@ -381,7 +382,7 @@ Point group: D2h
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Mean field spin-orbit integrals
 
@@ -401,8 +402,8 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Number of two-electron integrals written:       10381 ( 12.6% )
  Megabytes written:                              0.124
 
- >>> Time used in TWOINT is   0.26 seconds
- >>>> Total CPU  time used in HERMIT:   0.29 seconds
+ >>> Time used in TWOINT is   0.24 seconds
+ >>>> Total CPU  time used in HERMIT:   0.30 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -446,7 +447,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:25 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -468,6 +469,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      2
      Total charge of the molecule              0
@@ -515,9 +517,8 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
 
 
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-12
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
 
 
  >>> SIRCI.CIST1: plus combination of all degenerate
@@ -543,10 +544,10 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
 
  CI energies and residuals:
-    1     -149.326557485343955       3.14D-16
+    1     -149.326557485345745       3.14D-16
 
 
- Final CI energy:     -149.326557485343955
+ Final CI energy:     -149.326557485345745
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -555,16 +556,17 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.326557485344           (MACRO    1)
+ Total MCSCF energy       :    -149.326557485346           (MACRO    1)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -175.636081215000    
- - Active energy          :    -1.74834562588977    
+ - Inactive energy        :    -175.636081215001    
+ - Active energy          :    -1.74834562589014    
 
- Norm of total gradient   :        2.368923451891
+ Norm of total gradient   :        2.368923451893
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        2.368923451891
-      MULPOP O    73.78; 
+ -    of orbital gradient :        2.368923451893
+      Virial theorem: -V/T =      2.003979
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -579,16 +581,17 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.554189295065           (MACRO    2)
+ Total MCSCF energy       :    -149.554189295066           (MACRO    2)
 
  - Nuclear repulsion      :     28.0578693555458    
  - Inactive energy        :    -176.072877761395    
- - Active energy          :    -1.53918088921585    
+ - Active energy          :    -1.53918088921651    
 
- Norm of total gradient   :        0.153018955538
+ Norm of total gradient   :        0.153018955536
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.153018955538
-      MULPOP O    87.57; 
+ -    of orbital gradient :        0.153018955536
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O   _1  0.00; O   _2  0.00; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -603,16 +606,17 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.555462989559           (MACRO    3)
+ Total MCSCF energy       :    -149.555462989560           (MACRO    3)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -176.092265050180    
- - Active energy          :    -1.52106729492453    
+ - Inactive energy        :    -176.092265050181    
+ - Active energy          :    -1.52106729492519    
 
  Norm of total gradient   :        0.001149412876
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.001149412876
-      MULPOP O    87.27; 
+      Virial theorem: -V/T =      1.999887
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -627,16 +631,17 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.555463035716           (MACRO    4)
+ Total MCSCF energy       :    -149.555463035718           (MACRO    4)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -176.092343592189    
- - Active energy          :    -1.52098879907310    
+ - Inactive energy        :    -176.092343592190    
+ - Active energy          :    -1.52098879907378    
 
  Norm of total gradient   :        0.000006915489
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.000006915489
-      MULPOP O    87.27; 
+      Virial theorem: -V/T =      1.999884
+      MULPOP  O   _1  0.00; O   _2  0.00; 
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            4
@@ -644,25 +649,28 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
      Total number of CPU seconds used         0.03
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:26 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    3   -149.326557485344   2.3689234519  0.000000   0.2638582140
-    2    3   -149.554189295065   0.1530189555  0.988004   0.0199328744
-    3    3   -149.555462989559   0.0011494129  1.000729   0.0001259943
-    4    0   -149.555463035716   0.0000069155  1.000001   0.0000000000
+    1    3   -149.326557485346   2.3689234519  0.000000   0.2638582140
+    2    3   -149.554189295066   0.1530189555  0.988004   0.0199328744
+    3    3   -149.555462989560   0.0011494129  1.000729   0.0001259943
+    4    0   -149.555463035718   0.0000069155  1.000002   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      2    0.000000    0.000000     17    1.068743    2.368923    2.368923
-    2      1   -0.000000    0.000000     16   -0.053804    0.153019    0.153019
+    1      1    0.000000    0.000000     17    1.068743    2.368923    2.368923
+    2      2   -0.000000    0.000000     14   -0.053804    0.153019    0.153019
     3      2   -0.000000    0.000000     18    0.000654    0.001149    0.001149
     4      2   -0.000000    0.000000     23    0.000004    0.000007    0.000007
 
@@ -678,23 +686,23 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -175.636081215000     -1.748345625890   -149.326557485344
-    2   -176.072877761395     -1.539180889216   -149.554189295065
-    3   -176.092265050180     -1.521067294925   -149.555462989559
-    4   -176.092343592189     -1.520988799073   -149.555463035716
+    1   -175.636081215001     -1.748345625890   -149.326557485346
+    2   -176.072877761395     -1.539180889217   -149.554189295066
+    3   -176.092265050181     -1.521067294925   -149.555462989560
+    4   -176.092343592190     -1.520988799074   -149.555463035718
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.230395730660     -0.227631809721      0.988003593072
-    3     -0.001272767216     -0.001273694494      1.000728553109
-    4     -0.000000046157     -0.000000046157      1.000001252172
+    2     -0.230395730660     -0.227631809720      0.988003593071
+    3     -0.001272767216     -0.001273694494      1.000728553148
+    4     -0.000000046157     -0.000000046157      1.000001867940
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.263858214040      0.700000000000
+    1      0.20000000  1.00000000      0.263858214039      0.700000000000
     2      0.20000000  1.00000000      0.019932874426      0.700000000000
     3      0.20000000  1.00000000      0.000125994341      0.700000000000
     4      0.00000000  0.00000000      0.000000000000      0.700000000000
@@ -709,21 +717,24 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
     4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -149.555463035716                 
+     Final MCSCF energy:         -149.555463035718                 
      Nuclear repulsion:            28.057869355546
-     Electronic energy:          -177.613332391262
+     Electronic energy:          -177.613332391264
 
      Final gradient norm:           0.000006915489
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:26 2011 
      Host name              : fe6                                     
 
 
@@ -763,7 +774,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     0.7071  -0.0230   0.0228  -0.0199   0.0600
    2 O   :1s     0.0004   0.5535   0.3414  -0.1186   0.2823
    3 O   :1s    -0.0000  -0.0278   0.0576   0.5914   0.0799
@@ -774,7 +785,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.6304   0.0841   0.2015
    2 O   :2px   -0.0317  -0.5830  -0.0502
    3 O   :3d1+  -0.0399  -0.0624   0.6383
@@ -782,7 +793,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.6304   0.0841   0.2015
    2 O   :2py   -0.0317  -0.5830  -0.0502
    3 O   :3d1-  -0.0399  -0.0624   0.6383
@@ -790,13 +801,13 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :3d2-   0.6484
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 O   :1s     0.7073   0.0130  -0.1631  -0.0335
    2 O   :1s     0.0013   0.7582  -1.2519  -0.0487
    3 O   :1s     0.0007   0.0316  -0.4708  -0.1654
@@ -807,7 +818,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.8344  -0.4006  -0.6235
    2 O   :2px    0.0705  -1.1732  -0.5655
    3 O   :3d1+   0.0070   0.0059   1.0168
@@ -815,7 +826,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.8344  -0.4006  -0.6235
    2 O   :2py    0.0705  -1.1732  -0.5655
    3 O   :3d1-   0.0070   0.0059   1.0168
@@ -823,7 +834,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :3d2-   0.7853
 
  Printout of CI-coefficients abs greater than 0.05000 for root  1
@@ -863,11 +874,11 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:50 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:26 2011 
      Host name              : fe6                                     
 
 
@@ -920,9 +931,9 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :     -149.555463035716372
- -- inactive part     :     -176.092343592189081
- --   active part     :       -1.520988799073100
+ MCSCF energy         :     -149.555463035717821
+ -- inactive part     :     -176.092343592189877
+ --   active part     :       -1.520988799073776
  -- nuclear repulsion :       28.057869355545812
 
 
@@ -963,7 +974,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    Z1MNF-SO
-@ STATE NO:    1 *TRANSITION MOMENT:  8.70408116E-04 *ENERGY(eV):  -2.9125418    
+@ STATE NO:    1 *TRANSITION MOMENT:  8.70408109E-04 *ENERGY(eV):  -2.9125419    
 
 
   ******************************************************************************
@@ -976,30 +987,30 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  ---------------------------------------
 
 @ Excitation energy : -0.10703395    au
-@                     -2.9125418     eV
-@                     -23491.237     cm-1
+@                     -2.9125419     eV
+@                     -23491.236     cm-1
                       -281.01759     kJ / mol
 
 @ Total energy :      -149.66250     au
 
 @ Operator type:    Z1MNF-SO
 @ Spin-orbit coupling constant (Z1MNF-SO) :   191.03250     cm-1
-                                            8.70408116E-04 au
+                                            8.70408109E-04 au
 
 
  Time used in polarization propagator calculation is      0.00 CPU seconds for symmetry 4
 
  >>>> Total CPU  time used in RESPONSE:   0.01 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total wall time used in RESPONSE:   0.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.34 seconds
+ >>>> Total CPU  time used in DALTON:   0.36 seconds
  >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:51 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:26 2011 
      Host name              : fe6                                     

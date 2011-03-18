@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:06:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:32:15 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -271,14 +272,13 @@ Point group: C1
 
                A                   B                   C
 
-         822132.5945         437764.9381         285658.8056 MHz
+         822132.5951         437764.9384         285658.8058 MHz
            27.423392           14.602267            9.528552 cm-1
 
 
-@  Nuclear repulsion energy :    9.195434939919
-
- QM3 induced dipole vector converged in  17 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.446730930098457
+@  Nuclear repulsion energy :    9.195434983361
+      QM3 induced dipole vector converged in  17 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.446730942088080
 
 
     **************************************************************************
@@ -330,7 +330,7 @@ Point group: C1
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -338,7 +338,7 @@ Point group: C1
           - Electric field at the nuclei
           - Potential energy at the nuclei
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      0.123933712326
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.123933711741
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -375,7 +375,7 @@ Point group: C1
      Number of Huckel orbitals each symmetry:    7
 
  Huckel EHT eigenvalues for symmetry :  1
-          -20.705641      -1.506568      -0.731292      -0.670540      -0.616200
+          -20.705641      -1.506569      -0.731292      -0.670540      -0.616200
            -0.292149      -0.257509
 
  **********************************************************************
@@ -383,7 +383,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:32:15 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -398,8 +398,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -407,6 +406,10 @@ Point group: C1
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -458,39 +461,65 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
- -----------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+   1  -75.3897473301       0.00000000000        2.18975D+00   -7.54D+01
+      Virial theorem: -V/T =      1.996699
+      MULPOP  O      -0.39; H       0.19; H       0.19; 
+ -----------------------------------------------------------------------------
+   2  -75.5787943288       0.00000000000        2.72416D-01   -1.89D-01
+      Virial theorem: -V/T =      2.003094
+      MULPOP  O      -0.66; H       0.33; H       0.33; 
+ -----------------------------------------------------------------------------
+   3  -75.5851900841       0.00000000000        4.97921D-02   -6.40D-03
+      Virial theorem: -V/T =      2.001784
+      MULPOP  O      -0.72; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   4  -75.5853831338       0.00000000000        4.93248D-03   -1.93D-04
+      Virial theorem: -V/T =      2.001615
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   5  -75.5853844062       0.00000000000        1.83298D-03   -1.27D-06
+      Virial theorem: -V/T =      2.001528
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   6  -75.5853845837       0.00000000000        3.11639D-04   -1.78D-07
+      Virial theorem: -V/T =      2.001560
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   7  -75.5853846004       0.00000000000        7.25447D-05   -1.67D-08
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   8  -75.5853846015       0.00000000000        6.03983D-06   -1.14D-09
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+   9  -75.5853846015       0.00000000000        6.48415D-07   -3.24D-12
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+  10  -75.5853846015       0.00000000000        7.39716D-08   -2.84D-14
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+  11  -75.5853846015       0.00000000000        1.48688D-08   -2.84D-14
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+  12  -75.5853846015       0.00000000000        7.25053D-10    1.42D-14
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+  13  -75.5853846015       0.00000000000        3.00197D-11    0.00D+00
+      Virial theorem: -V/T =      2.001557
+      MULPOP  O      -0.73; H       0.36; H       0.36; 
+ -----------------------------------------------------------------------------
+  14  -75.5853846015       0.00000000000        1.19927D-12   -1.42D-14
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
-   1  -75.3897473325       0.00000000000        2.18975D+00   -7.54D+01
-      MULPOP O     0.52; H   ******; 
-   2  -75.5787943290       0.00000000000        2.72416D-01   -1.89D-01
-      MULPOP O     0.83; H   ******; 
-   3  -75.5851900843       0.00000000000        4.97921D-02   -6.40D-03
-      MULPOP O     0.87; H   ******; 
-   4  -75.5853831340       0.00000000000        4.93248D-03   -1.93D-04
-      MULPOP O     0.88; H   ******; 
-   5  -75.5853844064       0.00000000000        1.83298D-03   -1.27D-06
-      MULPOP O     0.88; H   ******; 
-   6  -75.5853845839       0.00000000000        3.11639D-04   -1.78D-07
-      MULPOP O     0.88; H   ******; 
-   7  -75.5853846006       0.00000000000        7.25447D-05   -1.67D-08
-      MULPOP O     0.88; H   ******; 
-   8  -75.5853846018       0.00000000000        6.03983D-06   -1.14D-09
-      MULPOP O     0.88; H   ******; 
-   9  -75.5853846018       0.00000000000        6.48415D-07   -3.27D-12
-      MULPOP O     0.88; H   ******; 
-  10  -75.5853846018       0.00000000000        7.39715D-08   -1.42D-14
-      MULPOP O     0.88; H   ******; 
-  11  -75.5853846018       0.00000000000        1.48689D-08   -1.42D-14
-      MULPOP O     0.88; H   ******; 
-  12  -75.5853846018       0.00000000000        7.25059D-10    1.42D-14
-      MULPOP O     0.88; H   ******; 
-  13  -75.5853846018       0.00000000000        3.00174D-11    4.26D-14
-      MULPOP O     0.88; H   ******; 
-  14  -75.5853846018       0.00000000000        1.18871D-12   -5.68D-14
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -504,7 +533,7 @@ Point group: C1
  Sym       Hartree-Fock orbital energies
 
   1    -20.42812629    -1.32952766    -0.68568839    -0.53765979    -0.47962337
-         0.26378497     0.36216849     1.19345015     1.30881396     1.78232569
+         0.26378497     0.36216849     1.19345016     1.30881396     1.78232569
 
     E(LUMO) :     0.26378497 au (symmetry 1)
   - E(HOMO) :    -0.47962337 au (symmetry 1)
@@ -514,7 +543,10 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -524,17 +556,17 @@ Point group: C1
 
         Electrostatic energy:       0.000000000000
         Polarization energy:        0.000000000000
-        van der Waals energy:      -0.001124905654
+        van der Waals energy:      -0.001124905686
         Total QM/MM energy:         0.000000000000
 
-     Final HF energy:             -75.585384601756                 
-     Nuclear repulsion:             9.195434939919
-     Electronic energy:           -84.780819541675
+     Final HF energy:             -75.585384601544                 
+     Nuclear repulsion:             9.195434983361
+     Electronic energy:           -84.780819584905
 
      Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:32:15 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -542,16 +574,16 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
-   1 O   :1s     0.9832  -0.2291  -0.0000   0.0884   0.0000   0.1093   0.0000
-   2 O   :1s     0.0959   0.2175   0.0000  -0.0822   0.0000  -0.0348   0.0000
-   3 O   :1s    -0.0380   0.7061   0.0000  -0.4051   0.0000  -1.0459  -0.0000
-   4 O   :2px    0.0000  -0.0000   0.3986   0.0000   0.0000   0.0000  -0.3030
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s     0.9832  -0.2291   0.0000   0.0884   0.0000   0.1093  -0.0000
+   2 O   :1s     0.0959   0.2175  -0.0000  -0.0822   0.0000  -0.0348  -0.0000
+   3 O   :1s    -0.0380   0.7061  -0.0000  -0.4051   0.0000  -1.0459   0.0000
+   4 O   :2px   -0.0000   0.0000   0.3986  -0.0000   0.0000  -0.0000  -0.3030
    5 O   :2py    0.0000   0.0000   0.0000   0.0000   0.5213   0.0000   0.0000
-   6 O   :2pz    0.0035   0.0836  -0.0000   0.4421   0.0000  -0.2090  -0.0000
-   7 O   :2px   -0.0000  -0.0000   0.3696   0.0000   0.0000   0.0000  -0.7749
+   6 O   :2pz    0.0035   0.0836   0.0000   0.4421   0.0000  -0.2090   0.0000
+   7 O   :2px    0.0000  -0.0000   0.3696  -0.0000   0.0000  -0.0000  -0.7749
    8 O   :2py    0.0000   0.0000   0.0000   0.0000   0.6321   0.0000   0.0000
-   9 O   :2pz   -0.0068   0.0935  -0.0000   0.5080   0.0000  -0.4658  -0.0000
+   9 O   :2pz   -0.0068   0.0935   0.0000   0.5080   0.0000  -0.4658   0.0000
   10 H   :1s     0.0026   0.1173  -0.2340   0.1309   0.0000   0.0463  -0.0359
   11 H   :1s     0.0069   0.0190  -0.1831   0.1050   0.0000   0.8635  -1.1778
   12 H   :1s     0.0026   0.1173   0.2340   0.1309   0.0000   0.0463   0.0359
@@ -563,7 +595,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:06:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:32:15 2011 
      Host name              : fe6                                     
 
  NOTE:    1 warnings have been issued.
@@ -617,20 +649,20 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster MP2   energy :     -75.7077883071739137
- Iter.  1: Coupled cluster CCSD  energy :     -75.7107462763085834
- Iter.  2: Coupled cluster CCSD  energy :     -75.7134103864049735
- Iter.  3: Coupled cluster CCSD  energy :     -75.7138931683686707
- Iter.  4: Coupled cluster CCSD  energy :     -75.7138832846123364
+ Iter.  1: Coupled cluster MP2   energy :     -75.7077883066469468
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7107462758004601
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7134103858639094
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7138931678159679
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7138832840588947
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are     4
 
- CCSD  energy converged to within   0.10D-08 is    -75.713883285
- Final 2-norm of the CC vector function:  9.38414113D-04
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.14364558727571514E-002
+ CCSD  energy converged to within   0.10D-08 is    -75.713883284
+ Final 2-norm of the CC vector function:  9.38414105D-04
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.14364556786077673E-002
 
 
 
@@ -667,9 +699,9 @@ Point group: C1
 
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:           8
-  Change in norm^2 of L-amplitudes in this ccmm it.:  0.11903470732701726     
+  Change in norm^2 of L-amplitudes in this ccmm it.:  0.11903470652574039     
  >>> Time used in LR=R is   0.11 seconds
- Total <Lambda|H|CC> energy:   -75.713043806414760     
+ Total <Lambda|H|CC> energy:   -75.713043805834488     
             The singles contribution is:             0.0011995163
             The doubles contribution is:            -0.0003600381
 
@@ -703,13 +735,12 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in  15 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.339616443276464
 
- QM3 induced Dipole vector converged in  15 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.339616434029793
 
-
- E(QM/MM) contribution in iteration  0:           -0.0414837534
- CC energy in the  current CCMM iteration:       -75.7545275598
+ E(QM/MM) contribution in iteration  0:           -0.0414837539
+ CC energy in the  current CCMM iteration:       -75.7545275597
  CC energy in the previous CCMM iteration:         0.0000000000
  Change in Total energy in this CCMM it.:         -0.757545E+02
 
@@ -737,9 +768,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.03019220        -0.07674091        -0.25598011
-      y      0.00404004         0.01026877         0.03425292
-      z      1.02320859         2.60073654         8.67512330
+      x     -0.03019220        -0.07674091        -0.25598012
+      y      0.00404004         0.01026877         0.03425293
+      z      1.02320859         2.60073666         8.67512371
 
 
    
@@ -761,20 +792,20 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7138832846123364
- Iter.  1: Coupled cluster CCSD  energy :     -75.7137298579862374
- Iter.  2: Coupled cluster CCSD  energy :     -75.7135583982980336
- Iter.  3: Coupled cluster CCSD  energy :     -75.7135153842059339
- Iter.  4: Coupled cluster CCSD  energy :     -75.7135123526026206
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7138832840588947
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7137298574309909
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7135583977409823
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7135153836490673
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7135123520461519
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are    12
 
- CCSD  energy converged to within   0.10D-08 is    -75.713512353
- Final 2-norm of the CC vector function:  2.29544918D-04
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.80978223469431632E-004
+ CCSD  energy converged to within   0.10D-08 is    -75.713512352
+ Final 2-norm of the CC vector function:  2.29544920D-04
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.80978239481893821E-004
 
 
 
@@ -813,9 +844,9 @@ Point group: C1
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          16
-  Change in norm^2 of L-amplitudes in this ccmm it.:  3.91906158799332216E-004
- Total <Lambda|H|CC> energy:   -75.711952786262557     
-            The singles contribution is:             0.0020229606
+  Change in norm^2 of L-amplitudes in this ccmm it.:  3.91906216213197545E-004
+ Total <Lambda|H|CC> energy:   -75.711952785654560     
+            The singles contribution is:             0.0020229607
             The doubles contribution is:            -0.0004633943
 
 
@@ -848,14 +879,13 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in  12 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.346007619576689
 
- QM3 induced Dipole vector converged in  12 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.346007610053621
 
-
- E(QM/MM) contribution in iteration  1:           -0.0427201487
- CC energy in the  current CCMM iteration:       -75.7546729349
- CC energy in the previous CCMM iteration:       -75.7545275598
+ E(QM/MM) contribution in iteration  1:           -0.0427201492
+ CC energy in the  current CCMM iteration:       -75.7546729348
+ CC energy in the previous CCMM iteration:       -75.7545275597
  Change in Total energy in this CCMM it.:         -0.145375E-03
 
 
@@ -882,9 +912,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.01857511        -0.04721322        -0.15748634
+      x     -0.01857511        -0.04721322        -0.15748635
       y      0.00527427         0.01340584         0.04471708
-      z      1.05338365         2.67743387         8.93095806
+      z      1.05338365         2.67743400         8.93095849
 
 
    
@@ -906,11 +936,11 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7135123526026206
- Iter.  1: Coupled cluster CCSD  energy :     -75.7135090865634339
- Iter.  2: Coupled cluster CCSD  energy :     -75.7135047560262535
- Iter.  3: Coupled cluster CCSD  energy :     -75.7135037211374424
- Iter.  4: Coupled cluster CCSD  energy :     -75.7135036464294870
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7135123520461519
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7135090860065532
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7135047554691170
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7135037205802206
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7135036458725779
 
  CCSD energy will not be converged further
 
@@ -918,8 +948,8 @@ Point group: C1
  Accumulated inner iterations at this point are    20
 
  CCSD  energy converged to within   0.10D-08 is    -75.713503646
- Final 2-norm of the CC vector function:  7.19056666D-06
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.03608228784399237E-005
+ Final 2-norm of the CC vector function:  7.19056681D-06
+  Change in norm^2 of T-amplitudes in this solvent it.:  1.03608235464472398E-005
 
 
 
@@ -958,8 +988,8 @@ Point group: C1
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          24
-  Change in norm^2 of L-amplitudes in this ccmm it.:  2.68233569034187491E-005
- Total <Lambda|H|CC> energy:   -75.711922236263220     
+  Change in norm^2 of L-amplitudes in this ccmm it.:  2.68233590876298944E-005
+ Total <Lambda|H|CC> energy:   -75.711922235653589     
             The singles contribution is:             0.0020472642
             The doubles contribution is:            -0.0004658540
 
@@ -993,15 +1023,14 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.346192988804137
 
- QM3 induced Dipole vector converged in  10 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.346192979270844
 
-
- E(QM/MM) contribution in iteration  2:           -0.0427504966
- CC energy in the  current CCMM iteration:       -75.7546727328
- CC energy in the previous CCMM iteration:       -75.7546729349
- Change in Total energy in this CCMM it.:          0.202107E-06
+ E(QM/MM) contribution in iteration  2:           -0.0427504971
+ CC energy in the  current CCMM iteration:       -75.7546727327
+ CC energy in the previous CCMM iteration:       -75.7546729348
+ Change in Total energy in this CCMM it.:          0.202108E-06
 
 
  *****************************************************************
@@ -1027,9 +1056,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.01775018        -0.04511646        -0.15049232
+      x     -0.01775018        -0.04511646        -0.15049233
       y      0.00528958         0.01344477         0.04484693
-      z      1.05417425         2.67944339         8.93766111
+      z      1.05417425         2.67944352         8.93766153
 
 
    
@@ -1051,20 +1080,20 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7135036464294870
- Iter.  1: Coupled cluster CCSD  energy :     -75.7135035429374028
- Iter.  2: Coupled cluster CCSD  energy :     -75.7135034075138975
- Iter.  3: Coupled cluster CCSD  energy :     -75.7135033781473084
- Iter.  4: Coupled cluster CCSD  energy :     -75.7135033758564617
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7135036458725779
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7135035423803515
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7135034069572725
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7135033775905413
+ Iter.  4: Coupled cluster CCSD  energy :     -75.7135033752992683
 
  CCSD energy will not be converged further
 
  right now in CCSLV calc.
  Accumulated inner iterations at this point are    28
 
- CCSD  energy converged to within   0.10D-08 is    -75.713503376
- Final 2-norm of the CC vector function:  2.50944742D-07
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.75796624277929725E-007
+ CCSD  energy converged to within   0.10D-08 is    -75.713503375
+ Final 2-norm of the CC vector function:  2.50944750D-07
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.75796647394854766E-007
 
 
 
@@ -1103,9 +1132,9 @@ Point group: C1
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          32
-  Change in norm^2 of L-amplitudes in this ccmm it.:  9.37051816848888386E-007
- Total <Lambda|H|CC> energy:   -75.711921389767923     
-            The singles contribution is:             0.0020479312
+  Change in norm^2 of L-amplitudes in this ccmm it.:  9.37051885918638305E-007
+ Total <Lambda|H|CC> energy:   -75.711921389157965     
+            The singles contribution is:             0.0020479313
             The doubles contribution is:            -0.0004659451
 
 
@@ -1138,15 +1167,14 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.346199016595497
 
- QM3 induced Dipole vector converged in   7 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.346199007061798
 
-
- E(QM/MM) contribution in iteration  3:           -0.0427513555
- CC energy in the  current CCMM iteration:       -75.7546727453
- CC energy in the previous CCMM iteration:       -75.7546727328
- Change in Total energy in this CCMM it.:         -0.124751E-07
+ E(QM/MM) contribution in iteration  3:           -0.0427513561
+ CC energy in the  current CCMM iteration:       -75.7546727452
+ CC energy in the previous CCMM iteration:       -75.7546727327
+ Change in Total energy in this CCMM it.:         -0.124749E-07
 
 
  *****************************************************************
@@ -1172,9 +1200,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.01771147        -0.04501807        -0.15016413
+      x     -0.01771147        -0.04501808        -0.15016414
       y      0.00528972         0.01344513         0.04484812
-      z      1.05419773         2.67950305         8.93786011
+      z      1.05419773         2.67950318         8.93786054
 
 
    
@@ -1196,14 +1224,14 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7135033758564617
- Iter.  1: Coupled cluster CCSD  energy :     -75.7135033720639683
- Iter.  2: Coupled cluster CCSD  energy :     -75.7135033672772693
- Iter.  3: Coupled cluster CCSD  energy :     -75.7135033662803494
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7135033752992683
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7135033715070875
+ Iter.  2: Coupled cluster CCSD  energy :     -75.7135033667205448
+ Iter.  3: Coupled cluster CCSD  energy :     -75.7135033657235823
 
  CCSD  energy converged to within   0.10D-08 is    -75.713503366
- Final 2-norm of the CC vector function:  3.80878917D-08
-  Change in norm^2 of T-amplitudes in this solvent it.:  8.51330504703096125E-009
+ Final 2-norm of the CC vector function:  3.80878905D-08
+  Change in norm^2 of T-amplitudes in this solvent it.:  8.51330567153141260E-009
 
 
 
@@ -1242,8 +1270,8 @@ Point group: C1
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          39
-  Change in norm^2 of L-amplitudes in this ccmm it.:  1.71981579949465058E-008
- Total <Lambda|H|CC> energy:   -75.711921363110974     
+  Change in norm^2 of L-amplitudes in this ccmm it.:  1.71981611590821259E-008
+ Total <Lambda|H|CC> energy:   -75.711921362501442     
             The singles contribution is:             0.0020479512
             The doubles contribution is:            -0.0004659480
 
@@ -1277,15 +1305,14 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.346199231983996
 
- QM3 induced Dipole vector converged in   4 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.346199222450278
 
-
- E(QM/MM) contribution in iteration  4:           -0.0427513829
- CC energy in the  current CCMM iteration:       -75.7546727461
- CC energy in the previous CCMM iteration:       -75.7546727453
- Change in Total energy in this CCMM it.:         -0.763237E-09
+ E(QM/MM) contribution in iteration  4:           -0.0427513835
+ CC energy in the  current CCMM iteration:       -75.7546727460
+ CC energy in the previous CCMM iteration:       -75.7546727452
+ Change in Total energy in this CCMM it.:         -0.763677E-09
 
 
  *****************************************************************
@@ -1311,9 +1338,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.01770979        -0.04501378        -0.15014981
-      y      0.00528971         0.01344510         0.04484803
-      z      1.05419851         2.67950504         8.93786673
+      x     -0.01770979        -0.04501378        -0.15014982
+      y      0.00528971         0.01344510         0.04484804
+      z      1.05419851         2.67950516         8.93786716
 
 
    
@@ -1335,12 +1362,12 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7135033662803494
- Iter.  1: Coupled cluster CCSD  energy :     -75.7135033661040353
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7135033657235823
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7135033655470835
 
  CCSD  energy converged to within   0.10D-08 is    -75.713503366
- Final 2-norm of the CC vector function:  1.77776220D-08
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.19589468136716093E-010
+ Final 2-norm of the CC vector function:  1.77776234D-08
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.19589811611964336E-010
 
 
 
@@ -1379,9 +1406,9 @@ Point group: C1
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          44
-  Change in norm^2 of L-amplitudes in this ccmm it.:  9.65336394154192590E-010
- Total <Lambda|H|CC> energy:   -75.711921362066690     
-            The singles contribution is:             0.0020479524
+  Change in norm^2 of L-amplitudes in this ccmm it.:  9.65336102720648626E-010
+ Total <Lambda|H|CC> energy:   -75.711921361456973     
+            The singles contribution is:             0.0020479525
             The doubles contribution is:            -0.0004659484
 
 
@@ -1414,15 +1441,14 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.346199239113409
 
- QM3 induced Dipole vector converged in   2 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.346199229579690
 
-
- E(QM/MM) contribution in iteration  5:           -0.0427513838
- CC energy in the  current CCMM iteration:       -75.7546727459
- CC energy in the previous CCMM iteration:       -75.7546727461
- Change in Total energy in this CCMM it.:          0.170942E-09
+ E(QM/MM) contribution in iteration  5:           -0.0427513844
+ CC energy in the  current CCMM iteration:       -75.7546727458
+ CC energy in the previous CCMM iteration:       -75.7546727460
+ Change in Total energy in this CCMM it.:          0.171127E-09
 
 
  *****************************************************************
@@ -1448,9 +1474,9 @@ Point group: C1
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.01770973        -0.04501363        -0.15014930
+      x     -0.01770973        -0.04501363        -0.15014931
       y      0.00528971         0.01344510         0.04484803
-      z      1.05419853         2.67950510         8.93786695
+      z      1.05419853         2.67950523         8.93786737
 
 
    
@@ -1472,12 +1498,12 @@ Point group: C1
           Number of t2 amplitudes                 :       820
           Total number of amplitudes in ccsd      :       860
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.7135033661040353
- Iter.  1: Coupled cluster CCSD  energy :     -75.7135033659573509
+ Iter.  1: Coupled cluster RSTAR energy :     -75.7135033655470835
+ Iter.  1: Coupled cluster CCSD  energy :     -75.7135033654001290
 
- CCSD  energy converged to within   0.10D-08 is    -75.713503366
- Final 2-norm of the CC vector function:  8.65014620D-09
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.63819278922827749E-011
+ CCSD  energy converged to within   0.10D-08 is    -75.713503365
+ Final 2-norm of the CC vector function:  8.65014715D-09
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.63817821755107929E-011
 
 
 
@@ -1514,9 +1540,9 @@ Point group: C1
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.: -4.18956536130110635E-012
- Total <Lambda|H|CC> energy:   -75.711921361736501     
-            The singles contribution is:             0.0020479526
+  Change in norm^2 of L-amplitudes in this ccmm it.: -4.19009271723780330E-012
+ Total <Lambda|H|CC> energy:   -75.711921361126514     
+            The singles contribution is:             0.0020479527
             The doubles contribution is:            -0.0004659484
 
 
@@ -1549,15 +1575,14 @@ Point group: C1
                          ! Coupled Cluster model is: CCSD !
                          +--------------------------------+
 
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.346199240325699
 
- QM3 induced Dipole vector converged in   2 iterations.
- Final norm2 of QM3 induced dipole moment vector:    0.346199230791979
 
-
- E(QM/MM) contribution in iteration  6:           -0.0427513840
- CC energy in the  current CCMM iteration:       -75.7546727457
- CC energy in the previous CCMM iteration:       -75.7546727459
- Change in Total energy in this CCMM it.:          0.191790E-09
+ E(QM/MM) contribution in iteration  6:           -0.0427513845
+ CC energy in the  current CCMM iteration:       -75.7546727456
+ CC energy in the previous CCMM iteration:       -75.7546727458
+ Change in Total energy in this CCMM it.:          0.192060E-09
 
 
 
@@ -1582,13 +1607,13 @@ Point group: C1
  +======================================================================+
  |      Eelec      |      Epol       |      Evdw       |    E(QM/MM)    |
  +----------------------------------------------------------------------+
- |   -0.0364946061 |   -0.0051318722 |   -0.0011249057 |  -0.0427513840 |
+ |   -0.0364946064 |   -0.0051318724 |   -0.0011249057 |  -0.0427513845 |
  +----------------------------------------------------------------------+
  +======================================================================+
  +----------------------------------------------------------------------+
  |  <L|H(vac)|CC>  | <H(qm)+H(qmmm)> | Delta E(mm/mm)  | E_rep          |
  +----------------------------------------------------------------------+
- |  -75.7119213617 |  -75.7546727457 |   -0.0000184451 |   0.0000000000 |
+ |  -75.7119213611 |  -75.7546727456 |   -0.0000184451 |   0.0000000000 |
  +======================================================================+
 
 
@@ -1622,8 +1647,8 @@ Point group: C1
                  au               Debye          C m (/(10**-30)
 
       x     -0.01770972        -0.04501360        -0.15014922
-      y      0.00528971         0.01344510         0.04484802
-      z      1.05419854         2.67950511         8.93786698
+      y      0.00528971         0.01344510         0.04484803
+      z      1.05419854         2.67950524         8.93786741
 
 
      
@@ -1889,35 +1914,35 @@ Point group: C1
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000   1.6338445901   0.0449273489
-     2     XDIPLEN      1        -0.0428000000   1.8470256606   0.0512051588
-     3     XDIPLEN      1         0.0428000000   2.4276271885   0.0684908967
-     4     XDIPLEN      1         0.0856000000   2.8312133146   0.0806387600
-     5     YDIPLEN      1        -0.0856000000   0.1464229113   0.0027809283
-     6     YDIPLEN      1        -0.0428000000   0.1650630461   0.0031790958
-     7     YDIPLEN      1         0.0428000000   0.2224163276   0.0044593609
-     8     YDIPLEN      1         0.0856000000   0.2696572368   0.0055720956
-     9     ZDIPLEN      1        -0.0856000000   0.9348360426   0.0213730492
-    10     ZDIPLEN      1        -0.0428000000   1.0614632333   0.0247152610
-    11     ZDIPLEN      1         0.0428000000   1.4188390324   0.0344119993
-    12     ZDIPLEN      1         0.0856000000   1.6795499855   0.0416780876
+     1     XDIPLEN      1        -0.0856000000   1.6338445532   0.0449273473
+     2     XDIPLEN      1        -0.0428000000   1.8470256174   0.0512051570
+     3     XDIPLEN      1         0.0428000000   2.4276271272   0.0684908941
+     4     XDIPLEN      1         0.0856000000   2.8312132399   0.0806387569
+     5     YDIPLEN      1        -0.0856000000   0.1464229129   0.0027809283
+     6     YDIPLEN      1        -0.0428000000   0.1650630479   0.0031790958
+     7     YDIPLEN      1         0.0428000000   0.2224163299   0.0044593610
+     8     YDIPLEN      1         0.0856000000   0.2696572394   0.0055720956
+     9     ZDIPLEN      1        -0.0856000000   0.9348360260   0.0213730485
+    10     ZDIPLEN      1        -0.0428000000   1.0614632138   0.0247152602
+    11     ZDIPLEN      1         0.0428000000   1.4188390038   0.0344119981
+    12     ZDIPLEN      1         0.0856000000   1.6795499498   0.0416780861
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000  10.7510149721   0.5913389334
-     2     XDIPLEN      1        -0.0428000000   9.1544635491   0.5040124098
-     3     XDIPLEN      1         0.0428000000   6.8496148211   0.3804037414
-     4     XDIPLEN      1         0.0856000000   5.9977123711   0.3358914683
-     5     YDIPLEN      1        -0.0856000000   1.0543061620   0.0959885058
-     6     YDIPLEN      1        -0.0428000000   0.8678625946   0.0766704591
-     7     YDIPLEN      1         0.0428000000   0.6409618514   0.0534545940
-     8     YDIPLEN      1         0.0856000000   0.5668305290   0.0460085794
-     9     ZDIPLEN      1        -0.0856000000   6.1735029347   0.6639222717
-    10     ZDIPLEN      1        -0.0428000000   5.1499848879   0.5451146042
-    11     ZDIPLEN      1         0.0428000000   3.7395426335   0.3860621750
-    12     ZDIPLEN      1         0.0856000000   3.2344691455   0.3310012000
+     1     XDIPLEN      1        -0.0856000000  10.7510147021   0.5913389149
+     2     XDIPLEN      1        -0.0428000000   9.1544633311   0.5040123946
+     3     XDIPLEN      1         0.0428000000   6.8496146737   0.3804037306
+     4     XDIPLEN      1         0.0856000000   5.9977122484   0.3358914590
+     5     YDIPLEN      1        -0.0856000000   1.0543061723   0.0959885063
+     6     YDIPLEN      1        -0.0428000000   0.8678626038   0.0766704595
+     7     YDIPLEN      1         0.0428000000   0.6409618586   0.0534545943
+     8     YDIPLEN      1         0.0856000000   0.5668305352   0.0460085797
+     9     ZDIPLEN      1        -0.0856000000   6.1735028140   0.6639222540
+    10     ZDIPLEN      1        -0.0428000000   5.1499847947   0.5451145904
+    11     ZDIPLEN      1         0.0428000000   3.7395425753   0.3860621661
+    12     ZDIPLEN      1         0.0856000000   3.2344690990   0.3310011926
   Solvent 1-order response equations not converged in           1  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -1975,35 +2000,35 @@ Point group: C1
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000   1.7130843763   0.0471236651
-     2     XDIPLEN      1        -0.0428000000   1.9300209658   0.0535225609
-     3     XDIPLEN      1         0.0428000000   2.5226401808   0.0711864090
-     4     XDIPLEN      1         0.0856000000   2.9352048257   0.0836146884
-     5     YDIPLEN      1        -0.0856000000   0.1468104404   0.0027881572
-     6     YDIPLEN      1        -0.0428000000   0.1654788181   0.0031869949
-     7     YDIPLEN      1         0.0428000000   0.2229338994   0.0044697043
-     8     YDIPLEN      1         0.0856000000   0.2702645773   0.0055846766
-     9     ZDIPLEN      1        -0.0856000000   0.9577126645   0.0219154738
-    10     ZDIPLEN      1        -0.0428000000   1.0854407810   0.0252932617
-    11     ZDIPLEN      1         0.0428000000   1.4465097017   0.0351042706
-    12     ZDIPLEN      1         0.0856000000   1.7101037785   0.0424587004
+     1     XDIPLEN      1        -0.0856000000   1.7130843384   0.0471236634
+     2     XDIPLEN      1        -0.0428000000   1.9300209216   0.0535225590
+     3     XDIPLEN      1         0.0428000000   2.5226401182   0.0711864063
+     4     XDIPLEN      1         0.0856000000   2.9352047495   0.0836146851
+     5     YDIPLEN      1        -0.0856000000   0.1468104420   0.0027881572
+     6     YDIPLEN      1        -0.0428000000   0.1654788199   0.0031869949
+     7     YDIPLEN      1         0.0428000000   0.2229339017   0.0044697043
+     8     YDIPLEN      1         0.0856000000   0.2702645800   0.0055846766
+     9     ZDIPLEN      1        -0.0856000000   0.9577126478   0.0219154731
+    10     ZDIPLEN      1        -0.0428000000   1.0854407613   0.0252932609
+    11     ZDIPLEN      1         0.0428000000   1.4465096730   0.0351042694
+    12     ZDIPLEN      1         0.0856000000   1.7101037425   0.0424586989
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000  10.7209839639   0.5912499930
-     2     XDIPLEN      1        -0.0428000000   9.1292198843   0.5040424009
-     3     XDIPLEN      1         0.0428000000   6.8308014970   0.3805553503
-     4     XDIPLEN      1         0.0856000000   5.9810880599   0.3360769496
-     5     YDIPLEN      1        -0.0856000000   1.0544538133   0.0959519139
-     6     YDIPLEN      1        -0.0428000000   0.8679440293   0.0766434382
-     7     YDIPLEN      1         0.0428000000   0.6409873423   0.0534389229
-     8     YDIPLEN      1         0.0856000000   0.5668434560   0.0459962365
-     9     ZDIPLEN      1        -0.0856000000   6.1601120875   0.6626235422
-    10     ZDIPLEN      1        -0.0428000000   5.1387248700   0.5440838464
-    11     ZDIPLEN      1         0.0428000000   3.7311847993   0.3853745433
-    12     ZDIPLEN      1         0.0856000000   3.2271276092   0.3304262727
+     1     XDIPLEN      1        -0.0856000000  10.7209836948   0.5912499745
+     2     XDIPLEN      1        -0.0428000000   9.1292196671   0.5040423857
+     3     XDIPLEN      1         0.0428000000   6.8308013501   0.3805553395
+     4     XDIPLEN      1         0.0856000000   5.9810879376   0.3360769403
+     5     YDIPLEN      1        -0.0856000000   1.0544538236   0.0959519144
+     6     YDIPLEN      1        -0.0428000000   0.8679440385   0.0766434387
+     7     YDIPLEN      1         0.0428000000   0.6409873494   0.0534389233
+     8     YDIPLEN      1         0.0856000000   0.5668434623   0.0459962368
+     9     ZDIPLEN      1        -0.0856000000   6.1601119671   0.6626235245
+    10     ZDIPLEN      1        -0.0428000000   5.1387247770   0.5440838325
+    11     ZDIPLEN      1         0.0428000000   3.7311847412   0.3853745344
+    12     ZDIPLEN      1         0.0856000000   3.2271275628   0.3304262653
   Solvent 1-order response equations not converged in           2  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -2061,35 +2086,35 @@ Point group: C1
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000   1.7129399142   0.0471196577
-     2     XDIPLEN      1        -0.0428000000   1.9298721590   0.0535184029
-     3     XDIPLEN      1         0.0428000000   2.5224711672   0.0711816112
-     4     XDIPLEN      1         0.0856000000   2.9350182326   0.0836093455
-     5     YDIPLEN      1        -0.0856000000   0.1468104547   0.0027881575
-     6     YDIPLEN      1        -0.0428000000   0.1654788266   0.0031869951
-     7     YDIPLEN      1         0.0428000000   0.2229339003   0.0044697044
-     8     YDIPLEN      1         0.0856000000   0.2702645754   0.0055846766
-     9     ZDIPLEN      1        -0.0856000000   0.9576836221   0.0219147802
-    10     ZDIPLEN      1        -0.0428000000   1.0854099222   0.0252925125
-    11     ZDIPLEN      1         0.0428000000   1.4464726622   0.0351033374
-    12     ZDIPLEN      1         0.0856000000   1.7100617286   0.0424576187
+     1     XDIPLEN      1        -0.0856000000   1.7129398763   0.0471196561
+     2     XDIPLEN      1        -0.0428000000   1.9298721149   0.0535184010
+     3     XDIPLEN      1         0.0428000000   2.5224711047   0.0711816085
+     4     XDIPLEN      1         0.0856000000   2.9350181565   0.0836093423
+     5     YDIPLEN      1        -0.0856000000   0.1468104563   0.0027881575
+     6     YDIPLEN      1        -0.0428000000   0.1654788284   0.0031869951
+     7     YDIPLEN      1         0.0428000000   0.2229339027   0.0044697044
+     8     YDIPLEN      1         0.0856000000   0.2702645780   0.0055846767
+     9     ZDIPLEN      1        -0.0856000000   0.9576836054   0.0219147796
+    10     ZDIPLEN      1        -0.0428000000   1.0854099026   0.0252925117
+    11     ZDIPLEN      1         0.0428000000   1.4464726335   0.0351033363
+    12     ZDIPLEN      1         0.0856000000   1.7100616927   0.0424576172
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000  10.7210084532   0.5912629860
-     2     XDIPLEN      1        -0.0428000000   9.1292488832   0.5040492585
-     3     XDIPLEN      1         0.0428000000   6.8308293095   0.3805574606
-     4     XDIPLEN      1         0.0856000000   5.9811142413   0.3360781271
-     5     YDIPLEN      1        -0.0856000000   1.0544535452   0.0959520212
-     6     YDIPLEN      1        -0.0428000000   0.8679440419   0.0766434836
-     7     YDIPLEN      1         0.0428000000   0.6409874119   0.0534389362
-     8     YDIPLEN      1         0.0856000000   0.5668435042   0.0459962481
-     9     ZDIPLEN      1        -0.0856000000   6.1600774980   0.6626378660
-    10     ZDIPLEN      1        -0.0428000000   5.1387050090   0.5440945095
-    11     ZDIPLEN      1         0.0428000000   3.7311788220   0.3853809482
-    12     ZDIPLEN      1         0.0856000000   3.2271249713   0.3304314177
+     1     XDIPLEN      1        -0.0856000000  10.7210081841   0.5912629676
+     2     XDIPLEN      1        -0.0428000000   9.1292486659   0.5040492434
+     3     XDIPLEN      1         0.0428000000   6.8308291626   0.3805574498
+     4     XDIPLEN      1         0.0856000000   5.9811141190   0.3360781178
+     5     YDIPLEN      1        -0.0856000000   1.0544535555   0.0959520216
+     6     YDIPLEN      1        -0.0428000000   0.8679440511   0.0766434840
+     7     YDIPLEN      1         0.0428000000   0.6409874190   0.0534389366
+     8     YDIPLEN      1         0.0856000000   0.5668435105   0.0459962484
+     9     ZDIPLEN      1        -0.0856000000   6.1600773777   0.6626378482
+    10     ZDIPLEN      1        -0.0428000000   5.1387049160   0.5440944957
+    11     ZDIPLEN      1         0.0428000000   3.7311787639   0.3853809392
+    12     ZDIPLEN      1         0.0856000000   3.2271249249   0.3304314103
   Solvent 1-order response equations not converged in           3  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -2147,35 +2172,35 @@ Point group: C1
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000   1.7129401379   0.0471196640
-     2     XDIPLEN      1        -0.0428000000   1.9298723997   0.0535184096
-     3     XDIPLEN      1         0.0428000000   2.5224714554   0.0711816194
-     4     XDIPLEN      1         0.0856000000   2.9350185590   0.0836093549
-     5     YDIPLEN      1        -0.0856000000   0.1468104546   0.0027881575
-     6     YDIPLEN      1        -0.0428000000   0.1654788265   0.0031869951
-     7     YDIPLEN      1         0.0428000000   0.2229339003   0.0044697044
-     8     YDIPLEN      1         0.0856000000   0.2702645754   0.0055846766
-     9     ZDIPLEN      1        -0.0856000000   0.9576836018   0.0219147798
-    10     ZDIPLEN      1        -0.0428000000   1.0854099164   0.0252925124
-    11     ZDIPLEN      1         0.0428000000   1.4464726796   0.0351033379
-    12     ZDIPLEN      1         0.0856000000   1.7100617580   0.0424576195
+     1     XDIPLEN      1        -0.0856000000   1.7129401000   0.0471196623
+     2     XDIPLEN      1        -0.0428000000   1.9298723555   0.0535184077
+     3     XDIPLEN      1         0.0428000000   2.5224713929   0.0711816167
+     4     XDIPLEN      1         0.0856000000   2.9350184828   0.0836093517
+     5     YDIPLEN      1        -0.0856000000   0.1468104562   0.0027881575
+     6     YDIPLEN      1        -0.0428000000   0.1654788283   0.0031869951
+     7     YDIPLEN      1         0.0428000000   0.2229339027   0.0044697044
+     8     YDIPLEN      1         0.0856000000   0.2702645780   0.0055846767
+     9     ZDIPLEN      1        -0.0856000000   0.9576835851   0.0219147791
+    10     ZDIPLEN      1        -0.0428000000   1.0854098968   0.0252925116
+    11     ZDIPLEN      1         0.0428000000   1.4464726509   0.0351033367
+    12     ZDIPLEN      1         0.0856000000   1.7100617220   0.0424576180
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000  10.7210084678   0.5912629376
-     2     XDIPLEN      1        -0.0428000000   9.1292488552   0.5040492375
-     3     XDIPLEN      1         0.0428000000   6.8308292627   0.3805574569
-     4     XDIPLEN      1         0.0856000000   5.9811141942   0.3360781259
-     5     YDIPLEN      1        -0.0856000000   1.0544535500   0.0959520205
-     6     YDIPLEN      1        -0.0428000000   0.8679440444   0.0766434831
-     7     YDIPLEN      1         0.0428000000   0.6409874127   0.0534389361
-     8     YDIPLEN      1         0.0856000000   0.5668435047   0.0459962479
-     9     ZDIPLEN      1        -0.0856000000   6.1600776431   0.6626378480
-    10     ZDIPLEN      1        -0.0428000000   5.1387050907   0.5440944950
-    11     ZDIPLEN      1         0.0428000000   3.7311788493   0.3853809392
-    12     ZDIPLEN      1         0.0856000000   3.2271249866   0.3304314105
+     1     XDIPLEN      1        -0.0856000000  10.7210081987   0.5912629191
+     2     XDIPLEN      1        -0.0428000000   9.1292486380   0.5040492223
+     3     XDIPLEN      1         0.0428000000   6.8308291158   0.3805574461
+     4     XDIPLEN      1         0.0856000000   5.9811140719   0.3360781166
+     5     YDIPLEN      1        -0.0856000000   1.0544535603   0.0959520209
+     6     YDIPLEN      1        -0.0428000000   0.8679440536   0.0766434836
+     7     YDIPLEN      1         0.0428000000   0.6409874198   0.0534389364
+     8     YDIPLEN      1         0.0856000000   0.5668435109   0.0459962482
+     9     ZDIPLEN      1        -0.0856000000   6.1600775227   0.6626378302
+    10     ZDIPLEN      1        -0.0428000000   5.1387049978   0.5440944812
+    11     ZDIPLEN      1         0.0428000000   3.7311787912   0.3853809302
+    12     ZDIPLEN      1         0.0856000000   3.2271249402   0.3304314031
   Solvent 1-order response equations not converged in           4  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -2231,35 +2256,35 @@ Point group: C1
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000   1.7129401376   0.0471196640
-     2     XDIPLEN      1        -0.0428000000   1.9298723992   0.0535184096
-     3     XDIPLEN      1         0.0428000000   2.5224714548   0.0711816193
-     4     XDIPLEN      1         0.0856000000   2.9350185583   0.0836093549
-     5     YDIPLEN      1        -0.0856000000   0.1468104546   0.0027881575
-     6     YDIPLEN      1        -0.0428000000   0.1654788265   0.0031869951
-     7     YDIPLEN      1         0.0428000000   0.2229339003   0.0044697044
-     8     YDIPLEN      1         0.0856000000   0.2702645754   0.0055846766
-     9     ZDIPLEN      1        -0.0856000000   0.9576836023   0.0219147798
-    10     ZDIPLEN      1        -0.0428000000   1.0854099168   0.0252925124
-    11     ZDIPLEN      1         0.0428000000   1.4464726798   0.0351033379
-    12     ZDIPLEN      1         0.0856000000   1.7100617581   0.0424576195
+     1     XDIPLEN      1        -0.0856000000   1.7129400997   0.0471196623
+     2     XDIPLEN      1        -0.0428000000   1.9298723551   0.0535184077
+     3     XDIPLEN      1         0.0428000000   2.5224713923   0.0711816167
+     4     XDIPLEN      1         0.0856000000   2.9350184822   0.0836093517
+     5     YDIPLEN      1        -0.0856000000   0.1468104562   0.0027881575
+     6     YDIPLEN      1        -0.0428000000   0.1654788283   0.0031869951
+     7     YDIPLEN      1         0.0428000000   0.2229339027   0.0044697044
+     8     YDIPLEN      1         0.0856000000   0.2702645780   0.0055846767
+     9     ZDIPLEN      1        -0.0856000000   0.9576835856   0.0219147791
+    10     ZDIPLEN      1        -0.0428000000   1.0854098971   0.0252925116
+    11     ZDIPLEN      1         0.0428000000   1.4464726511   0.0351033367
+    12     ZDIPLEN      1         0.0856000000   1.7100617222   0.0424576180
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     XDIPLEN      1        -0.0856000000  10.7210084640   0.5912629392
-     2     XDIPLEN      1        -0.0428000000   9.1292488539   0.5040492381
-     3     XDIPLEN      1         0.0428000000   6.8308292625   0.3805574570
-     4     XDIPLEN      1         0.0856000000   5.9811141942   0.3360781259
-     5     YDIPLEN      1        -0.0856000000   1.0544535500   0.0959520205
-     6     YDIPLEN      1        -0.0428000000   0.8679440445   0.0766434831
-     7     YDIPLEN      1         0.0428000000   0.6409874127   0.0534389361
-     8     YDIPLEN      1         0.0856000000   0.5668435047   0.0459962479
-     9     ZDIPLEN      1        -0.0856000000   6.1600776384   0.6626378491
-    10     ZDIPLEN      1        -0.0428000000   5.1387050881   0.5440944957
-    11     ZDIPLEN      1         0.0428000000   3.7311788483   0.3853809395
-    12     ZDIPLEN      1         0.0856000000   3.2271249859   0.3304314107
+     1     XDIPLEN      1        -0.0856000000  10.7210081949   0.5912629207
+     2     XDIPLEN      1        -0.0428000000   9.1292486366   0.5040492230
+     3     XDIPLEN      1         0.0428000000   6.8308291156   0.3805574462
+     4     XDIPLEN      1         0.0856000000   5.9811140718   0.3360781166
+     5     YDIPLEN      1        -0.0856000000   1.0544535603   0.0959520209
+     6     YDIPLEN      1        -0.0428000000   0.8679440537   0.0766434836
+     7     YDIPLEN      1         0.0428000000   0.6409874198   0.0534389364
+     8     YDIPLEN      1         0.0856000000   0.5668435109   0.0459962482
+     9     ZDIPLEN      1        -0.0856000000   6.1600775181   0.6626378313
+    10     ZDIPLEN      1        -0.0428000000   5.1387049951   0.5440944819
+    11     ZDIPLEN      1         0.0428000000   3.7311787902   0.3853809305
+    12     ZDIPLEN      1         0.0856000000   3.2271249395   0.3304314033
   Solvent 1-order response equations converged in           4  solvent iterations
 
  Solution of CC response equations completed.
@@ -2288,33 +2313,33 @@ Point group: C1
 
 
  +--------------------------------------------------+
- | total time for  18 G transforms.:      0.90 secs.|
+ | total time for  18 G transforms.:      0.89 secs.|
  +==================================================+
 
 
 
->>> Time used for   18 G matrix transformations:        0.90 seconds.
+>>> Time used for   18 G matrix transformations:        0.89 seconds.
  +--------------------------------------------------+
- | total time for  30 B transforms.:      1.40 secs.|
+ | total time for  30 B transforms.:      1.39 secs.|
  +--------------------------------------------------+
- |  % of time used in start up org.:      0.64      |
+ |  % of time used in start up org.:      0.86      |
  |  % of time used in Fock interm. :      0.00      |
  |  % of time used in ERI          :      0.00      |
  |  % of time used in CCRDAO       :      0.00      |
- |  % of time used in (**|k del)   :      0.00      |
- |  % of time used in singles part :      0.14      |
- |  % of time used in A term       :      0.71      |
- |  % of time used in BF term      :      1.50      |
- |  % of time used in F term       :      1.21      |
- |  % of time used in E term       :      2.14      |
- |  % of time used in C term       :      0.93      |
- |  % of time used in D term       :      1.36      |
- |  % of time used in I/O          :      2.21      |
+ |  % of time used in (**|k del)   :      0.07      |
+ |  % of time used in singles part :      0.07      |
+ |  % of time used in A term       :      1.22      |
+ |  % of time used in BF term      :      1.22      |
+ |  % of time used in F term       :      1.15      |
+ |  % of time used in E term       :      1.79      |
+ |  % of time used in C term       :      1.29      |
+ |  % of time used in D term       :      1.22      |
+ |  % of time used in I/O          :      1.94      |
  +==================================================+
 
 
 
->>> Time used for   30 B matrix transformations:        1.40 seconds.
+>>> Time used for   30 B matrix transformations:        1.39 seconds.
 
 
                                 +-----------------+
@@ -2331,235 +2356,235 @@ Point group: C1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.13335374194208256E-002
- Printing first contribution.                                     Norm2 of singles:   6.30021024309088736E-003 Norm2 of doubles:   1.83304124704654556E-002
+ Printing norm2 TGCMO in KMAT:   1.13335376299759025E-002
+ Printing first contribution.                                     Norm2 of singles:   6.30021024979165751E-003 Norm2 of doubles:   1.83304123688776341E-002
  K matrix transformation for ITRAN,           2
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.73672499679605671E-002
- Printing first contribution.                                     Norm2 of singles:   9.66959475063582964E-003 Norm2 of doubles:   2.81068783550935397E-002
- Printing second contribution.                                  Norm2 of singles:   1.01796330360516638E-002 Norm2 of doubles:   2.85693778281383599E-002
+ Printing norm2 TGCMO in KMAT:   1.73672502210478891E-002
+ Printing first contribution.                                     Norm2 of singles:   9.66959472267550461E-003 Norm2 of doubles:   2.81068780877658728E-002
+ Printing second contribution.                                  Norm2 of singles:   1.01796330153199957E-002 Norm2 of doubles:   2.85693775595310673E-002
  K matrix transformation for ITRAN,           3
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.49229215357643222E-002
- Printing first contribution.                                     Norm2 of singles:   1.13052101604848802E-002 Norm2 of doubles:   3.21339086401488880E-002
+ Printing norm2 TGCMO in KMAT:   1.49229217748704096E-002
+ Printing first contribution.                                     Norm2 of singles:   1.13052101218703866E-002 Norm2 of doubles:   3.21339083014519147E-002
  K matrix transformation for ITRAN,           4
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   9.98351199669856443E-003
- Printing first contribution.                                     Norm2 of singles:   7.55194354462922560E-003 Norm2 of doubles:   2.14832877858733562E-002
- Printing second contribution.                                  Norm2 of singles:   7.21397467206599460E-003 Norm2 of doubles:   2.11740083674356074E-002
+ Printing norm2 TGCMO in KMAT:   9.98351219395533437E-003
+ Printing first contribution.                                     Norm2 of singles:   7.55194354668568737E-003 Norm2 of doubles:   2.14832876389246044E-002
+ Printing second contribution.                                  Norm2 of singles:   7.21397466785915920E-003 Norm2 of doubles:   2.11740082207419744E-002
  K matrix transformation for ITRAN,           5
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            7
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   7.50183690308612813E-005
- Printing first contribution.                                     Norm2 of singles:   1.25775155320912584E-006 Norm2 of doubles:   1.47616923192665005E-005
- Printing second contribution.                                  Norm2 of singles:   6.75373489333096341E-004 Norm2 of doubles:   1.37565311850552886E-003
+ Printing norm2 TGCMO in KMAT:   7.50183737524571170E-005
+ Printing first contribution.                                     Norm2 of singles:   1.25775162292653875E-006 Norm2 of doubles:   1.47616930956975423E-005
+ Printing second contribution.                                  Norm2 of singles:   6.75373508490513855E-004 Norm2 of doubles:   1.37565315791734945E-003
  K matrix transformation for ITRAN,           6
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.73672499679605671E-002
- Printing first contribution.                                     Norm2 of singles:   1.03647022055489493E-003 Norm2 of doubles:   2.11027652710098343E-003
- Printing second contribution.                                  Norm2 of singles:   2.02362068545673579E-006 Norm2 of doubles:   2.31074144298341332E-005
+ Printing norm2 TGCMO in KMAT:   1.73672502210478891E-002
+ Printing first contribution.                                     Norm2 of singles:   1.03647024585674995E-003 Norm2 of doubles:   2.11027657919340148E-003
+ Printing second contribution.                                  Norm2 of singles:   2.02362079149959202E-006 Norm2 of doubles:   2.31074155606667332E-005
  K matrix transformation for ITRAN,           7
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            6
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   9.07027007907985195E-005
- Printing first contribution.                                     Norm2 of singles:   2.00775137049700511E-006 Norm2 of doubles:   2.35301597822650354E-005
- Printing second contribution.                                  Norm2 of singles:   1.31732043342214894E-003 Norm2 of doubles:   2.39925877667060373E-003
+ Printing norm2 TGCMO in KMAT:   9.07027065213778877E-005
+ Printing first contribution.                                     Norm2 of singles:   2.00775147888836183E-006 Norm2 of doubles:   2.35301609743308466E-005
+ Printing second contribution.                                  Norm2 of singles:   1.31732046659362384E-003 Norm2 of doubles:   2.39925883895529199E-003
  K matrix transformation for ITRAN,           8
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   9.98351199669856443E-003
- Printing first contribution.                                     Norm2 of singles:   8.79989667249055779E-004 Norm2 of doubles:   1.60343768356099241E-003
- Printing second contribution.                                  Norm2 of singles:   1.28592822258165322E-006 Norm2 of doubles:   1.54531450950499031E-005
+ Printing norm2 TGCMO in KMAT:   9.98351219395533437E-003
+ Printing first contribution.                                     Norm2 of singles:   8.79989692651683480E-004 Norm2 of doubles:   1.60343773111297928E-003
+ Printing second contribution.                                  Norm2 of singles:   1.28592829558377033E-006 Norm2 of doubles:   1.54531459305661940E-005
  K matrix transformation for ITRAN,           9
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   2.46176879086308772E-003
- Printing first contribution.                                     Norm2 of singles:   1.06757154380268302E-003 Norm2 of doubles:   1.02094509596572418E-003
- Printing second contribution.                                  Norm2 of singles:   3.67802139916748516E-003 Norm2 of doubles:   2.83258310301384795E-003
+ Printing norm2 TGCMO in KMAT:   2.46176885365070701E-003
+ Printing first contribution.                                     Norm2 of singles:   1.06757155018761879E-003 Norm2 of doubles:   1.02094510107887085E-003
+ Printing second contribution.                                  Norm2 of singles:   3.67802142013412764E-003 Norm2 of doubles:   2.83258312408727611E-003
  K matrix transformation for ITRAN,          10
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.73672499679605671E-002
- Printing first contribution.                                     Norm2 of singles:   5.64530911312562545E-003 Norm2 of doubles:   4.34998494893439752E-003
- Printing second contribution.                                  Norm2 of singles:   1.73866619554374443E-003 Norm2 of doubles:   1.61689894835247453E-003
+ Printing norm2 TGCMO in KMAT:   1.73672502210478891E-002
+ Printing first contribution.                                     Norm2 of singles:   5.64530912296975010E-003 Norm2 of doubles:   4.34998496402721341E-003
+ Printing second contribution.                                  Norm2 of singles:   1.73866620035655691E-003 Norm2 of doubles:   1.61689895053356643E-003
  K matrix transformation for ITRAN,          11
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   3.26134108150250013E-003
- Printing first contribution.                                     Norm2 of singles:   1.93406114554961245E-003 Norm2 of doubles:   1.81865281535608628E-003
- Printing second contribution.                                  Norm2 of singles:   6.87166865432440287E-003 Norm2 of doubles:   5.16435531323220561E-003
+ Printing norm2 TGCMO in KMAT:   3.26134115592389192E-003
+ Printing first contribution.                                     Norm2 of singles:   1.93406114806370794E-003 Norm2 of doubles:   1.81865281530868886E-003
+ Printing second contribution.                                  Norm2 of singles:   6.87166866093506974E-003 Norm2 of doubles:   5.16435532828163953E-003
  K matrix transformation for ITRAN,          12
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   9.98351199669856443E-003
- Printing first contribution.                                     Norm2 of singles:   4.58999956951251786E-003 Norm2 of doubles:   3.44837777976085167E-003
- Printing second contribution.                                  Norm2 of singles:   1.22622834472099502E-003 Norm2 of doubles:   1.18190431467197522E-003
+ Printing norm2 TGCMO in KMAT:   9.98351219395533437E-003
+ Printing first contribution.                                     Norm2 of singles:   4.58999959086131906E-003 Norm2 of doubles:   3.44837780257507267E-003
+ Printing second contribution.                                  Norm2 of singles:   1.22622834991864159E-003 Norm2 of doubles:   1.18190431869601739E-003
  K matrix transformation for ITRAN,          13
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            7
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   7.50183690308612813E-005
- Printing first contribution.                                     Norm2 of singles:   4.53807228421944713E-007 Norm2 of doubles:   1.12894710107177500E-006
+ Printing norm2 TGCMO in KMAT:   7.50183737524571170E-005
+ Printing first contribution.                                     Norm2 of singles:   4.53807267599510859E-007 Norm2 of doubles:   1.12894719244807364E-006
  K matrix transformation for ITRAN,          14
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            6
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   9.07027007907985195E-005
- Printing first contribution.                                     Norm2 of singles:   7.81764461389915752E-007 Norm2 of doubles:   1.71477664696427402E-006
+ Printing norm2 TGCMO in KMAT:   9.07027065213778877E-005
+ Printing first contribution.                                     Norm2 of singles:   7.81764528263899621E-007 Norm2 of doubles:   1.71477678635893947E-006
  K matrix transformation for ITRAN,          15
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   2.46176879086308772E-003
- Printing first contribution.                                     Norm2 of singles:   1.13918992336727292E-004 Norm2 of doubles:   2.19833293819442905E-004
- Printing second contribution.                                  Norm2 of singles:   1.04654558899343925E-006 Norm2 of doubles:   7.84594415661435321E-006
+ Printing norm2 TGCMO in KMAT:   2.46176885365070701E-003
+ Printing first contribution.                                     Norm2 of singles:   1.13918996440991787E-004 Norm2 of doubles:   2.19833302071977872E-004
+ Printing second contribution.                                  Norm2 of singles:   1.04654565036348159E-006 Norm2 of doubles:   7.84594460999450314E-006
  K matrix transformation for ITRAN,          16
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   3.26134108150250013E-003
- Printing first contribution.                                     Norm2 of singles:   2.20397024142922549E-004 Norm2 of doubles:   3.79818422451901506E-004
- Printing second contribution.                                  Norm2 of singles:   1.75471154195289105E-006 Norm2 of doubles:   1.28428574130272557E-005
+ Printing norm2 TGCMO in KMAT:   3.26134115592389192E-003
+ Printing first contribution.                                     Norm2 of singles:   2.20397031332475782E-004 Norm2 of doubles:   3.79818435761837124E-004
+ Printing second contribution.                                  Norm2 of singles:   1.75471164186831221E-006 Norm2 of doubles:   1.28428581275209224E-005
  K matrix transformation for ITRAN,          17
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   2.46176879086308772E-003
- Printing first contribution.                                     Norm2 of singles:   7.28678926130106163E-004 Norm2 of doubles:   1.51085880939871376E-003
+ Printing norm2 TGCMO in KMAT:   2.46176885365070701E-003
+ Printing first contribution.                                     Norm2 of singles:   7.28678934515498370E-004 Norm2 of doubles:   1.51085882634945361E-003
  K matrix transformation for ITRAN,          18
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   3.26134108150250013E-003
- Printing first contribution.                                     Norm2 of singles:   1.39637711083518247E-003 Norm2 of doubles:   2.68184883119490557E-003
+ Printing norm2 TGCMO in KMAT:   3.26134115592389192E-003
+ Printing first contribution.                                     Norm2 of singles:   1.39637712028858820E-003 Norm2 of doubles:   2.68184884784222581E-003
  K matrix transformation for ITRAN,          19
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            5
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.01743074182201998E-004
- Printing first contribution.                                     Norm2 of singles:   1.62667268852784177E-006 Norm2 of doubles:   1.96233927372039421E-005
- Printing second contribution.                                  Norm2 of singles:   1.27142752661736310E-003 Norm2 of doubles:   2.17636292431130831E-003
+ Printing norm2 TGCMO in KMAT:   1.01743080609504658E-004
+ Printing first contribution.                                     Norm2 of singles:   1.62667277981791753E-006 Norm2 of doubles:   1.96233937794986479E-005
+ Printing second contribution.                                  Norm2 of singles:   1.27142756064840736E-003 Norm2 of doubles:   2.17636298507848259E-003
  K matrix transformation for ITRAN,          20
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            8
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   6.91142495739332998E-005
- Printing first contribution.                                     Norm2 of singles:   1.59095798658596718E-006 Norm2 of doubles:   1.82353213928239320E-005
- Printing second contribution.                                  Norm2 of singles:   7.54766814785697926E-004 Norm2 of doubles:   1.61575023694209051E-003
+ Printing norm2 TGCMO in KMAT:   6.91142539136170093E-005
+ Printing first contribution.                                     Norm2 of singles:   1.59095807135903878E-006 Norm2 of doubles:   1.82353223056429874E-005
+ Printing second contribution.                                  Norm2 of singles:   7.54766834312634309E-004 Norm2 of doubles:   1.61575027893569334E-003
  K matrix transformation for ITRAN,          21
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            5
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.01743074182201998E-004
- Printing first contribution.                                     Norm2 of singles:   5.95917076587936355E-007 Norm2 of doubles:   1.49431922038811863E-006
- Printing second contribution.                                  Norm2 of singles:   8.31773483614931492E-007 Norm2 of doubles:   1.68257080366783536E-006
+ Printing norm2 TGCMO in KMAT:   1.01743080609504658E-004
+ Printing first contribution.                                     Norm2 of singles:   5.95917128379381997E-007 Norm2 of doubles:   1.49431934219838517E-006
+ Printing second contribution.                                  Norm2 of singles:   8.31773553318302819E-007 Norm2 of doubles:   1.68257093894807087E-006
  K matrix transformation for ITRAN,          22
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            8
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   6.91142495739332998E-005
- Printing first contribution.                                     Norm2 of singles:   6.11682363232383573E-007 Norm2 of doubles:   1.33347046083909944E-006
- Printing second contribution.                                  Norm2 of singles:   4.61204485139970597E-007 Norm2 of doubles:   1.21901717346181722E-006
+ Printing norm2 TGCMO in KMAT:   6.91142539136170093E-005
+ Printing first contribution.                                     Norm2 of singles:   6.11682415172221129E-007 Norm2 of doubles:   1.33347056838222911E-006
+ Printing second contribution.                                  Norm2 of singles:   4.61204525254836139E-007 Norm2 of doubles:   1.21901727248325312E-006
  K matrix transformation for ITRAN,          23
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            5
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   1.01743074182201998E-004
- Printing first contribution.                                     Norm2 of singles:   1.35644892926378192E-006 Norm2 of doubles:   1.03499998538575609E-005
- Printing second contribution.                                  Norm2 of singles:   2.10605614981681296E-004 Norm2 of doubles:   3.40397350525826830E-004
+ Printing norm2 TGCMO in KMAT:   1.01743080609504658E-004
+ Printing first contribution.                                     Norm2 of singles:   1.35644900962842312E-006 Norm2 of doubles:   1.03500004584849863E-005
+ Printing second contribution.                                  Norm2 of singles:   2.10605622195190057E-004 Norm2 of doubles:   3.40397363224273562E-004
  K matrix transformation for ITRAN,          24
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1            8
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   6.91142495739332998E-005
- Printing first contribution.                                     Norm2 of singles:   1.38794917497029525E-006 Norm2 of doubles:   1.00122484909886568E-005
- Printing second contribution.                                  Norm2 of singles:   1.28855361520568133E-004 Norm2 of doubles:   2.61398212512109235E-004
+ Printing norm2 TGCMO in KMAT:   6.91142539136170093E-005
+ Printing first contribution.                                     Norm2 of singles:   1.38794925313194902E-006 Norm2 of doubles:   1.00122490412002157E-005
+ Printing second contribution.                                  Norm2 of singles:   1.28855365831059658E-004 Norm2 of doubles:   2.61398221564201482E-004
  K matrix transformation for ITRAN,          25
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            9
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   3.80339255119114140E-003
- Printing first contribution.                                     Norm2 of singles:   1.65081405267356279E-003 Norm2 of doubles:   1.58054666766891077E-003
- Printing second contribution.                                  Norm2 of singles:   6.35714541468373768E-003 Norm2 of doubles:   4.72358626920543756E-003
+ Printing norm2 TGCMO in KMAT:   3.80339263244991108E-003
+ Printing first contribution.                                     Norm2 of singles:   1.65081405576334036E-003 Norm2 of doubles:   1.58054666899107603E-003
+ Printing second contribution.                                  Norm2 of singles:   6.35714542830844928E-003 Norm2 of doubles:   4.72358628904964630E-003
  K matrix transformation for ITRAN,          26
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1           12
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   2.15708836221169872E-003
- Printing first contribution.                                     Norm2 of singles:   1.28109511707393832E-003 Norm2 of doubles:   1.20370641181772719E-003
- Printing second contribution.                                  Norm2 of singles:   4.14274128808762160E-003 Norm2 of doubles:   3.23765104787407951E-003
+ Printing norm2 TGCMO in KMAT:   2.15708842012652356E-003
+ Printing first contribution.                                     Norm2 of singles:   1.28109512381285786E-003 Norm2 of doubles:   1.20370641662488121E-003
+ Printing second contribution.                                  Norm2 of singles:   4.14274130540764115E-003 Norm2 of doubles:   3.23765106647765782E-003
  K matrix transformation for ITRAN,          27
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            9
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   3.80339255119114140E-003
- Printing first contribution.                                     Norm2 of singles:   1.76154468715098778E-004 Norm2 of doubles:   3.39946782060810467E-004
- Printing second contribution.                                  Norm2 of singles:   1.82486722053518632E-006 Norm2 of doubles:   1.29298421161941494E-005
+ Printing norm2 TGCMO in KMAT:   3.80339263244991108E-003
+ Printing first contribution.                                     Norm2 of singles:   1.76154474340376339E-004 Norm2 of doubles:   3.39946793425712922E-004
+ Printing second contribution.                                  Norm2 of singles:   1.82486732130608301E-006 Norm2 of doubles:   1.29298428104472371E-005
  K matrix transformation for ITRAN,          28
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1           12
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   2.15708836221169872E-003
- Printing first contribution.                                     Norm2 of singles:   1.46032793004827074E-004 Norm2 of doubles:   2.51599960420745403E-004
- Printing second contribution.                                  Norm2 of singles:   1.05182449796181148E-006 Norm2 of doubles:   8.06873531826872367E-006
+ Printing norm2 TGCMO in KMAT:   2.15708842012652356E-003
+ Printing first contribution.                                     Norm2 of singles:   1.46032798344834401E-004 Norm2 of doubles:   2.51599970233091000E-004
+ Printing second contribution.                                  Norm2 of singles:   1.05182456106042276E-006 Norm2 of doubles:   8.06873579826370759E-006
  K matrix transformation for ITRAN,          29
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            9
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   3.80339255119114140E-003
- Printing first contribution.                                     Norm2 of singles:   1.12680621429929332E-003 Norm2 of doubles:   2.33529432916080443E-003
- Printing second contribution.                                  Norm2 of singles:   1.30001699584987563E-003 Norm2 of doubles:   2.38766140875224702E-003
+ Printing norm2 TGCMO in KMAT:   3.80339263244991108E-003
+ Printing first contribution.                                     Norm2 of singles:   1.12680622264488685E-003 Norm2 of doubles:   2.33529434584077737E-003
+ Printing second contribution.                                  Norm2 of singles:   1.30001700644779249E-003 Norm2 of doubles:   2.38766142668055343E-003
  K matrix transformation for ITRAN,          30
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1           12
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   2.15708836221169872E-003
- Printing first contribution.                                     Norm2 of singles:   9.25045774957605239E-004 Norm2 of doubles:   1.77743545738146035E-003
- Printing second contribution.                                  Norm2 of singles:   8.16979666009471977E-004 Norm2 of doubles:   1.74923400487550442E-003
+ Printing norm2 TGCMO in KMAT:   2.15708842012652356E-003
+ Printing first contribution.                                     Norm2 of singles:   9.25045784872344842E-004 Norm2 of doubles:   1.77743547538659289E-003
+ Printing second contribution.                                  Norm2 of singles:   8.16979674024788903E-004 Norm2 of doubles:   1.74923402193043480E-003
  +==================================================+
 
 
@@ -2572,7 +2597,7 @@ Point group: C1
 
 >>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
 
->>> Total time for  27 quadratic response func.:        2.83 seconds.
+>>> Total time for  27 quadratic response func.:        2.81 seconds.
 
 
                  +---------------------------------------------------------------------------------------+
@@ -2583,21 +2608,21 @@ Point group: C1
   A operator                  B operator                  C operator                     property 
 ------------------------------------------------------------------------------------------------------
 
- XDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.85151849    
+ XDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.85151847    
 
  XDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428     0.11419348    
 
- XDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428     -18.242157    
+ XDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428     -18.242156    
 
  XDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428     0.11419348    
 
  XDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.22651071E-01
 
- XDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.76524454E-02
+ XDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.76524453E-02
 
- XDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428     -18.242157    
+ XDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428     -18.242156    
 
- XDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.76524454E-02
+ XDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.76524453E-02
 
  XDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.50421530    
 
@@ -2605,17 +2630,17 @@ Point group: C1
 
  YDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.23059199E-01
 
- YDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.76379738E-02
+ YDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.76379737E-02
 
  YDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.23059199E-01
 
  YDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428     0.12151228E-01
 
- YDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.91025204    
+ YDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.91025205    
 
- YDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.76379738E-02
+ YDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.76379737E-02
 
- YDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.91025204    
+ YDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.91025205    
 
  YDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428     0.98289762E-01
 
@@ -2623,15 +2648,15 @@ Point group: C1
 
  ZDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.72944893E-02
 
- ZDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.50320757    
+ ZDIPLEN  (unrel.) -0.0856   XDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428    -0.50320756    
 
  ZDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.72944893E-02
 
- ZDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.87262952    
+ ZDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428    -0.87262953    
 
  ZDIPLEN  (unrel.) -0.0856   YDIPLEN  (unrel.)  0.0428   ZDIPLEN  (unrel.)  0.0428     0.95052360E-01
 
- ZDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.50320757    
+ ZDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   XDIPLEN  (unrel.)  0.0428    -0.50320756    
 
  ZDIPLEN  (unrel.) -0.0856   ZDIPLEN  (unrel.)  0.0428   YDIPLEN  (unrel.)  0.0428     0.95052360E-01
 
@@ -2666,7 +2691,7 @@ Point group: C1
                     +----------+----------+----------+----------+----------+
                     | |mu*bet| |  -0.0856 |   0.0428 |   0.0428 |  32.0758 |
                     +----------+----------+----------+----------+----------+
-                    | <beta>   |  -0.0856 |   0.0428 |   0.0428 |   0.0000 |
+                    | <beta>   |  -0.0856 |   0.0428 |   0.0428 |  -0.0000 |
                     +----------+----------+----------+----------+----------+
 
 
@@ -2686,8 +2711,8 @@ Point group: C1
  *******************************************************************************
  *******************************************************************************
 
-            CCSD Total  energy:                   -75.7546727457                
-            CCSD E(QM/MM)     :                    -0.0427513840                
+            CCSD Total  energy:                   -75.7546727456                
+            CCSD E(QM/MM)     :                    -0.0427513845                
                                                                                 
   
 
@@ -2707,9 +2732,9 @@ Point group: C1
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  19.70 seconds
- >>>> Total wall time used in DALTON:  51.00 seconds
+ >>>> Total CPU  time used in DALTON:  19.73 seconds
+ >>>> Total wall time used in DALTON:  38.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:07:28 2010 
+     Date and time (Linux)  : Wed Mar 16 18:32:53 2011 
      Host name              : fe6                                     

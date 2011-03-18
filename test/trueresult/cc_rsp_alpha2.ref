@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:21:57 2010 
+     Date and time (Linux)  : Wed Mar 16 17:49:21 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -331,7 +332,7 @@ Point group: D2h
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
 
@@ -392,7 +393,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:57 2010 
+     Date and time (Linux)  : Wed Mar 16 17:49:21 2011 
      Host name              : fe6                                     
 
  Title     :   linear polarizability for the Ne atom                     
@@ -410,8 +411,7 @@ Point group: D2h
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -419,6 +419,10 @@ Point group: D2h
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -474,34 +478,56 @@ Point group: D2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -128.495132211       1.26D-01  -1.28D+02    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.40; 
+      Virial theorem: -V/T =      2.000469
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    2  -128.496325731       2.08D-02  -1.19D-03    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
+      Virial theorem: -V/T =      2.000663
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    3  -128.496364266       1.81D-03  -3.85D-05    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
+      Virial theorem: -V/T =      2.000632
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    4  -128.496364394       5.63D-04  -1.28D-07    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
+      Virial theorem: -V/T =      2.000661
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    5  -128.496364405       7.00D-05  -1.16D-08    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
+      Virial theorem: -V/T =      2.000651
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    6  -128.496364406       2.64D-06  -1.89D-10    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
+      Virial theorem: -V/T =      2.000652
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    7  -128.496364406       1.08D-07  -4.26D-13    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
-   8  -128.496364406       4.66D-09   5.68D-14    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
+      Virial theorem: -V/T =      2.000652
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
+   8  -128.496364406       4.66D-09  -2.84D-14    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.000652
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    9  -128.496364406       1.76D-10   0.00D+00    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
-  10  -128.496364406       2.52D-11  -2.84D-14    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
-  11  -128.496364406       5.74D-12   0.00D+00    2  1  1  0  1  0  0  0
-      MULPOP Ne    0.00; 
-  12  -128.496364406       5.56D-14   8.53D-14    2  1  1  0  1  0  0  0
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000652
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
+  10  -128.496364406       2.53D-11   5.68D-14    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.000652
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
+  11  -128.496364406       6.51D-12   0.00D+00    2  1  1  0  1  0  0  0
+      Virial theorem: -V/T =      2.000652
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
+  12  -128.496364406       8.71D-14   5.68D-14    2  1  1  0  1  0  0  0
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -529,14 +555,17 @@ Point group: D2h
   7      0.57960406     2.08228925     6.60822002
 
     E(LUMO) :     0.05412818 au (symmetry 1)
-  - E(HOMO) :    -0.85301784 au (symmetry 2)
+  - E(HOMO) :    -0.85301784 au (symmetry 3)
   ------------------------------------------
     gap     :     0.90714602 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -549,7 +578,7 @@ Point group: D2h
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:57 2010 
+     Date and time (Linux)  : Wed Mar 16 17:49:21 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -557,7 +586,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 Ne  :1s     1.0003   0.0034   0.0117   0.0394
    2 Ne  :1s     0.0011   1.0120   0.1240  -0.1769
    3 Ne  :1s    -0.0019  -0.0235  -0.0517  -0.8380
@@ -567,7 +596,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Ne  :2py    1.0025   0.0637  -0.2687
    2 Ne  :2py   -0.0223  -0.0232  -0.2329
    3 Ne  :2py    0.0424   0.1825   1.3783
@@ -576,7 +605,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Ne  :2px    1.0025   0.0637  -0.2687
    2 Ne  :2px   -0.0223  -0.0232  -0.2329
    3 Ne  :2px    0.0424   0.1825   1.3783
@@ -585,7 +614,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ne  :3d2-   0.0354  -0.0064
    2 Ne  :3d2-  -0.1062   1.1767
    3 Ne  :3d2-   1.0490  -0.5469
@@ -593,7 +622,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Ne  :2pz    1.0025   0.0637  -0.2687
    2 Ne  :2pz   -0.0223  -0.0232  -0.2329
    3 Ne  :2pz    0.0424   0.1825   1.3783
@@ -602,7 +631,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ne  :3d1-   0.0354  -0.0064
    2 Ne  :3d1-  -0.1062   1.1767
    3 Ne  :3d1-   1.0490  -0.5469
@@ -610,7 +639,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ne  :3d1+   0.0354  -0.0064
    2 Ne  :3d1+  -0.1062   1.1767
    3 Ne  :3d1+   1.0490  -0.5469
@@ -621,7 +650,7 @@ Point group: D2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:57 2010 
+     Date and time (Linux)  : Wed Mar 16 17:49:21 2011 
      Host name              : fe6                                     
 
 
@@ -848,7 +877,7 @@ Point group: D2h
     Iter  #Vectors  time (min)   residual
     --------------------------------------
       1       5         0.00     0.11E+00
-      2       4         0.00     0.25E-10
+      2       4         0.00     0.54E-10
     --------------------------------------
     converged in  2 iterations
     threshold:    0.10E-09
@@ -885,7 +914,7 @@ Point group: D2h
       6       1         0.00     0.11E-06
       7       1         0.00     0.27E-08
       8       1         0.00     0.10E-09
-      9       1         0.00     0.52E-15
+      9       1         0.00     0.30E-15
     --------------------------------------
     converged in  9 iterations
     threshold:    0.10E-09
@@ -900,7 +929,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -1120,7 +1149,7 @@ Point group: D2h
  Iter. 11: Coupled cluster CC2   energy :    -128.7052382005875018
 
  CC2   energy converged to within   0.10D-09 is   -128.705238201
- Final 2-norm of the CC vector function:  2.08098421D-08
+ Final 2-norm of the CC vector function:  2.08098434D-08
 
 
 
@@ -1185,7 +1214,7 @@ Point group: D2h
      10       1         0.00     0.28E-06
      11       1         0.00     0.15E-07
      12       1         0.00     0.70E-08
-     13       1         0.00     0.43E-14
+     13       1         0.00     0.59E-14
     --------------------------------------
     converged in 13 iterations
     threshold:    0.10E-09
@@ -1201,7 +1230,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1428,8 +1457,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1665,7 +1694,7 @@ Point group: D2h
  Iter. 12: Coupled cluster CCSD  energy :    -128.7068067985877917
 
  CCSD  energy converged to within   0.10D-09 is   -128.706806799
- Final 2-norm of the CC vector function:  6.94940016D-09
+ Final 2-norm of the CC vector function:  6.94939821D-09
 
 
 
@@ -1948,8 +1977,8 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.62 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.64 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1992,8 +2021,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.15 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2037,7 +2066,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2081,7 +2110,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2124,8 +2153,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.15 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2239,9 +2268,9 @@ Point group: D2h
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.25 seconds
- >>>> Total wall time used in DALTON:  10.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.31 seconds
+ >>>> Total wall time used in DALTON:  13.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:22:07 2010 
+     Date and time (Linux)  : Wed Mar 16 17:49:34 2011 
      Host name              : fe6                                     

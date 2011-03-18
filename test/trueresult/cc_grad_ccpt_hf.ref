@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:28:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:56:07 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -274,7 +275,7 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =       606561.40 MHz     (   20.232711 cm-1)
+               B =       606561.40 MHz     (   20.232710 cm-1)
 
 
 @  Nuclear repulsion energy :    5.104355716878
@@ -334,7 +335,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -394,7 +395,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:56:07 2011 
      Host name              : fe6                                     
 
  Title     :    test case for CCSD(T) gradient calculation               
@@ -411,8 +412,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -420,6 +420,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -471,34 +475,56 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -99.9502552703       1.30D+00  -1.00D+02    3  1  1  0
-      MULPOP H     0.04; F    -0.74; 
+      Virial theorem: -V/T =      1.997385
+      MULPOP  H       0.44; F      -0.44; 
+ -----------------------------------------------------------------------------
    2  -100.019489513       1.74D-01  -6.92D-02    3  1  1  0
-      MULPOP H     0.01; F    -0.77; 
+      Virial theorem: -V/T =      2.001915
+      MULPOP  H       0.46; F      -0.46; 
+ -----------------------------------------------------------------------------
    3  -100.021618659       5.31D-02  -2.13D-03    3  1  1  0
-      MULPOP H     0.00; F    -0.78; 
+      Virial theorem: -V/T =      1.999339
+      MULPOP  H       0.48; F      -0.48; 
+ -----------------------------------------------------------------------------
    4  -100.021757544       1.82D-02  -1.39D-04    3  1  1  0
-      MULPOP H     0.00; F    -0.78; 
+      Virial theorem: -V/T =      2.000475
+      MULPOP  H       0.48; F      -0.48; 
+ -----------------------------------------------------------------------------
    5  -100.021776885       2.65D-03  -1.93D-05    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
+      Virial theorem: -V/T =      2.000154
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
    6  -100.021777786       4.02D-04  -9.01D-07    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
+      Virial theorem: -V/T =      2.000184
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
    7  -100.021777805       2.50D-05  -1.88D-08    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
+      Virial theorem: -V/T =      2.000187
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
    8  -100.021777805       4.02D-06  -5.74D-11    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
-   9  -100.021777805       2.01D-07  -8.53D-13    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
+      Virial theorem: -V/T =      2.000187
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
+   9  -100.021777805       2.01D-07  -8.24D-13    3  1  1  0
+      Virial theorem: -V/T =      2.000187
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
   10  -100.021777805       6.94D-09   0.00D+00    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
-  11  -100.021777805       7.72D-10  -4.26D-14    3  1  1  0
-      MULPOP H    -0.00; F    -0.78; 
-  12  -100.021777805       2.37D-11   4.26D-14    3  1  1  0
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000187
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
+  11  -100.021777805       7.72D-10  -5.68D-14    3  1  1  0
+      Virial theorem: -V/T =      2.000187
+      MULPOP  H       0.49; F      -0.49; 
+ -----------------------------------------------------------------------------
+  12  -100.021777805       2.36D-11   2.84D-14    3  1  1  0
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -525,7 +551,10 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -538,7 +567,7 @@ Point group: C2v
      Final gradient norm:           0.000000000024
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:56:07 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -546,7 +575,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 H   :1s     0.0000  -0.1288   0.2852   0.1041   0.9577
    2 H   :1s     0.0001  -0.0022   0.0895   1.4466  -0.9857
    3 F   :1s    -0.5799   0.1408   0.0372   0.0362   0.0007
@@ -559,14 +588,14 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 F   :2px    0.7552   0.8679
    2 F   :2px    0.3809  -1.0856
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 F   :2py    0.7552   0.8679
    2 F   :2py    0.3809  -1.0856
 
@@ -576,7 +605,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:58 2010 
+     Date and time (Linux)  : Wed Mar 16 17:56:07 2011 
      Host name              : fe6                                     
 
 
@@ -627,26 +656,26 @@ Point group: C2v
           Number of t2 amplitudes                 :       137
           Total number of amplitudes in ccsd      :       149
 
- Iter.  1: Coupled cluster MP2   energy :    -100.1443985879908354
-     Conventional correlation energy:    -0.1226207832091859
- Iter.  1: Coupled cluster CCSD  energy :    -100.1427936696993442
-     Conventional correlation energy:    -0.1210158649176947
- Iter.  2: Coupled cluster CCSD  energy :    -100.1456130237364732
-     Conventional correlation energy:    -0.1238352189548237
- Iter.  3: Coupled cluster CCSD  energy :    -100.1463417697855647
-     Conventional correlation energy:    -0.1245639650039152
- Iter.  4: Coupled cluster CCSD  energy :    -100.1463829656958353
-     Conventional correlation energy:    -0.1246051609141858
- Iter.  5: Coupled cluster CCSD  energy :    -100.1463822837620796
-     Conventional correlation energy:    -0.1246044789804301
- Iter.  6: Coupled cluster CCSD  energy :    -100.1463806584500986
-     Conventional correlation energy:    -0.1246028536684491
- Iter.  7: Coupled cluster CCSD  energy :    -100.1463802288107559
-     Conventional correlation energy:    -0.1246024240291064
- Iter.  8: Coupled cluster CCSD  energy :    -100.1463802012174824
-     Conventional correlation energy:    -0.1246023964358329
- Iter.  9: Coupled cluster CCSD  energy :    -100.1463801951124566
-     Conventional correlation energy:    -0.1246023903308071
+ Iter.  1: Coupled cluster MP2   energy :    -100.1443985879911622
+     Conventional correlation energy:    -0.1226207832091717
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1427936696995573
+     Conventional correlation energy:    -0.1210158649175668
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1456130237366722
+     Conventional correlation energy:    -0.1238352189546816
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1463417697861757
+     Conventional correlation energy:    -0.1245639650041852
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1463829656961906
+     Conventional correlation energy:    -0.1246051609142000
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1463822837625344
+     Conventional correlation energy:    -0.1246044789805438
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1463806584505107
+     Conventional correlation energy:    -0.1246028536685202
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1463802288111253
+     Conventional correlation energy:    -0.1246024240291348
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1463802012178661
+     Conventional correlation energy:    -0.1246023964358756
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1463801951129824
+     Conventional correlation energy:    -0.1246023903309919
 
  CCSD  energy converged to within   0.10D-07 is   -100.146380195
  Final 2-norm of the CC vector function:  3.50481228D-07
@@ -869,15 +898,15 @@ Point group: C2v
                                 Inside ccpt_den()
                                 -----------------
 
- CC_DEN_PTFC: ZKDIA before TWO electron part   45.926568009721059     
+ CC_DEN_PTFC: ZKDIA before TWO electron part   45.926568009719972     
 
 
                     Construct part of rhs for CCSD(T)-kappa-0
                     -----------------------------------------
 
  CC_DEN_PTFC using CCETACOR
- CC_DEN_PTFC: ZKDIA before CCETACOR  2.16446804904732744E-005
- CC_FOP> Norm of RHS vector:  6.46080816730583874E-005
+ CC_DEN_PTFC: ZKDIA before CCETACOR  2.16446804906352813E-005
+ CC_FOP> Norm of RHS vector:  6.46080816728629870E-005
 
 
                       Solving for orbital relaxation vector
@@ -911,7 +940,7 @@ Point group: C2v
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  3.47984327165447194E-006
+ Norm of zeta-kappa-0:  3.47984327166626475E-006
   
 
  *******************************************************************
@@ -1044,9 +1073,9 @@ Point group: C2v
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.28 seconds
+ >>>> Total CPU  time used in DALTON:   0.27 seconds
  >>>> Total wall time used in DALTON:   2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:29:00 2010 
+     Date and time (Linux)  : Wed Mar 16 17:56:09 2011 
      Host name              : fe6                                     

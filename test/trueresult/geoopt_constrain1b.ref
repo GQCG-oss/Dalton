@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:03 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -239,14 +240,14 @@ Represented as:      C2h
                                  Isotopic Masses
                                  ---------------
 
-                           C    1     12.000000
-                           C    2     12.000000
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    3      1.007825
-                           H    4      1.007825
-                           H    1      1.007825
-                           H    2      1.007825
+                           C   _1     12.000000
+                           C   _2     12.000000
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _3      1.007825
+                           H   _4      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    30.046950 amu
                        Natural abundance:  97.724 %
@@ -332,25 +333,25 @@ Represented as:      C2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C    1      C    2      H    1      H    2      H    3      H    4
+            C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------      ------      ------
- C    1:    0.000000
- C    2:    1.857187    0.000000
- H    1:    1.089998    2.448064    0.000000
- H    2:    1.089998    2.448064    1.778929    0.000000
- H    3:    2.448064    1.089998    2.783612    3.303496    0.000000
- H    4:    2.448064    1.089998    3.303496    2.783612    1.778929    0.000000
- H    1:    1.089998    2.448064    1.778929    1.778929    2.783612    2.783612
- H    2:    2.448064    1.089998    2.783612    2.783612    1.778929    1.778929
+ C   _1:    0.000000
+ C   _2:    1.857187    0.000000
+ H   _1:    1.089998    2.448064    0.000000
+ H   _2:    1.089998    2.448064    1.778929    0.000000
+ H   _3:    2.448064    1.089998    2.783612    3.303496    0.000000
+ H   _4:    2.448064    1.089998    3.303496    2.783612    1.778929    0.000000
+ H   _1:    1.089998    2.448064    1.778929    1.778929    2.783612    2.783612
+ H   _2:    2.448064    1.089998    2.783612    2.783612    1.778929    1.778929
 
-            H    1      H    2
+            H   _1      H   _2
             ------      ------
- H    1:    0.000000
- H    2:    3.303496    0.000000
+ H   _1:    0.000000
+ H   _2:    3.303496    0.000000
 
 
   Max interatomic separation is    3.3035 Angstrom (    6.2427 Bohr)
-  between atoms    8 and    7, "H    2" and "H    1".
+  between atoms    8 and    7, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -358,13 +359,13 @@ Represented as:      C2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  C    2     C    1       1.857187
-  bond distance:  H    1     C    1       1.089998
-  bond distance:  H    2     C    1       1.089998
-  bond distance:  H    3     C    2       1.089998
-  bond distance:  H    4     C    2       1.089998
-  bond distance:  H    1     C    1       1.089998
-  bond distance:  H    2     C    2       1.089998
+  bond distance:  C   _2     C   _1       1.857187
+  bond distance:  H   _1     C   _1       1.089998
+  bond distance:  H   _2     C   _1       1.089998
+  bond distance:  H   _3     C   _2       1.089998
+  bond distance:  H   _4     C   _2       1.089998
+  bond distance:  H   _1     C   _1       1.089998
+  bond distance:  H   _2     C   _2       1.089998
 
 
   Bond angles (degrees):
@@ -372,18 +373,18 @@ Represented as:      C2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C    2     C    1     H    1       109.565
-  bond angle:     C    2     C    1     H    2       109.565
-  bond angle:     C    2     C    1     H    1       109.565
-  bond angle:     H    1     C    1     H    2       109.378
-  bond angle:     H    1     C    1     H    1       109.378
-  bond angle:     H    2     C    1     H    1       109.378
-  bond angle:     C    1     C    2     H    3       109.565
-  bond angle:     C    1     C    2     H    4       109.565
-  bond angle:     C    1     C    2     H    2       109.565
-  bond angle:     H    3     C    2     H    4       109.378
-  bond angle:     H    3     C    2     H    2       109.378
-  bond angle:     H    4     C    2     H    2       109.378
+  bond angle:     C   _2     C   _1     H   _1       109.565
+  bond angle:     C   _2     C   _1     H   _2       109.565
+  bond angle:     C   _2     C   _1     H   _1       109.565
+  bond angle:     H   _1     C   _1     H   _2       109.378
+  bond angle:     H   _1     C   _1     H   _1       109.378
+  bond angle:     H   _2     C   _1     H   _1       109.378
+  bond angle:     C   _1     C   _2     H   _3       109.565
+  bond angle:     C   _1     C   _2     H   _4       109.565
+  bond angle:     C   _1     C   _2     H   _2       109.565
+  bond angle:     H   _3     C   _2     H   _4       109.378
+  bond angle:     H   _3     C   _2     H   _2       109.378
+  bond angle:     H   _4     C   _2     H   _2       109.378
 
 
 
@@ -401,7 +402,7 @@ Represented as:      C2h
 
                A                   B                   C
 
-          79229.0961          14862.6762          14862.6760 MHz
+          79229.0955          14862.6760          14862.6759 MHz
             2.642798            0.495766            0.495766 cm-1
 
 
@@ -511,7 +512,7 @@ Represented as:      C2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:03 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -523,12 +524,12 @@ Represented as:      C2h
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         18
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -564,24 +565,36 @@ Represented as:      C2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -78.1468450030       1.73D+00  -7.81D+01    4  1  3  1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.010750
+      MULPOP  C   _1  0.32; C   _2  0.32; H   _1 -0.11; H   _2 -0.11; H   _3 -0.11; H   _4 -0.11; H   _1 -0.11; H   _2 -0.11; 
+ -----------------------------------------------------------------------------
    2  -78.2537493853       1.85D-01  -1.07D-01    4  1  3  1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009012
+      MULPOP  C   _1 -0.22; C   _2 -0.22; H   _1  0.07; H   _2  0.07; H   _3  0.07; H   _4  0.07; H   _1  0.07; H   _2  0.07; 
+ -----------------------------------------------------------------------------
    3  -78.2564579637       3.70D-02  -2.71D-03    4  1  3  1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.010309
+      MULPOP  C   _1 -0.16; C   _2 -0.16; H   _1  0.05; H   _2  0.05; H   _3  0.05; H   _4  0.05; H   _1  0.05; H   _2  0.05; 
+ -----------------------------------------------------------------------------
    4  -78.2565833607       7.67D-03  -1.25D-04    4  1  3  1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009881
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    5  -78.2565905652       1.91D-04  -7.20D-06    4  1  3  1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009821
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    6  -78.2565905695       1.16D-05  -4.31D-09    4  1  3  1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009820
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    7  -78.2565905696       9.34D-07  -1.40D-11    4  1  3  1
- DIIS converged in   7 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   7 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -611,20 +624,23 @@ Represented as:      C2h
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -78.256590569560                 
+     Final HF energy:             -78.256590569563                 
      Nuclear repulsion:            38.922921861519
-     Electronic energy:          -117.179512431078
+     Electronic energy:          -117.179512431081
 
      Final gradient norm:           0.000000933938
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:03 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -632,7 +648,7 @@ Represented as:      C2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 C   :1s     0.7020  -0.1594  -0.0000   0.0322   0.1509  -0.0000
    2 C   :1s     0.0229   0.4611   0.0000  -0.1616  -0.9694   0.0000
    3 C   :2py    0.0000   0.0000  -0.4014  -0.0000   0.0000   0.8163
@@ -643,14 +659,14 @@ Represented as:      C2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C   :2px    0.3961  -0.7509
    2 H   :1s     0.2890   0.6148
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 C   :1s     0.7013  -0.1503   0.0000   0.1083   0.0000
    2 C   :1s     0.0272   0.4438  -0.0000  -0.5375  -0.0000
    3 C   :2py    0.0000   0.0000   0.3961  -0.0000   0.7509
@@ -661,7 +677,7 @@ Represented as:      C2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C   :2px    0.4014   0.8163
    2 H   :1s     0.3233  -0.6005
 
@@ -671,7 +687,7 @@ Represented as:      C2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:03 2011 
      Host name              : fe6                                     
 
 
@@ -692,7 +708,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.70E-12
@@ -704,21 +720,21 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- C    1     0.0000000000            0.0000000000            1.7547876282
- C    2     0.0000000000           -0.0000000000           -1.7547876282
- H    1     1.6808445513            0.9704360937            2.4445545504
- H    2    -1.6808445513            0.9704360937            2.4445545504
- H    3     1.6808445513           -0.9704360937           -2.4445545504
- H    4    -1.6808445513           -0.9704360937           -2.4445545504
- H    1     0.0000000000           -1.9408721894            2.4445545504
- H    2     0.0000000000            1.9408721894           -2.4445545504
+ C   _1     0.0000000000            0.0000000000            1.7547876282
+ C   _2     0.0000000000           -0.0000000000           -1.7547876282
+ H   _1     1.6808445513            0.9704360937            2.4445545504
+ H   _2    -1.6808445513            0.9704360937            2.4445545504
+ H   _3     1.6808445513           -0.9704360937           -2.4445545504
+ H   _4    -1.6808445513           -0.9704360937           -2.4445545504
+ H   _1     0.0000000000           -1.9408721894            2.4445545504
+ H   _2     0.0000000000            1.9408721894           -2.4445545504
 
 
 
@@ -730,18 +746,18 @@ Represented as:      C2h
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -78.2565905696 au (Hartrees)
-                         -2129.47009252 eV
-                           -205462.6490 kJ/mol
+                         -2129.47015295 eV
+                           -205462.6469 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.0777331066 au
-     Mass-velocity correction:                  -0.0980237769 au
+     Darwin correction:                          0.0777331060 au
+     Mass-velocity correction:                  -0.0980237761 au
 
-     Total relativistic correction:             -0.0202906704 au (0.0259%)
-     Non-relativistic + relativistic energy:   -78.2768812399 au
+     Total relativistic correction:             -0.0202906702 au (0.0259%)
+     Non-relativistic + relativistic energy:   -78.2768812398 au
 
 
 
@@ -759,14 +775,14 @@ Represented as:      C2h
 
 
 
- C    1     0.0000000000            0.0000000213            0.1214477018
- C    2     0.0000000000           -0.0000000213           -0.1214477018
- H    1     0.0015003992            0.0008662609            0.0047713361
- H    2    -0.0015003992            0.0008662609            0.0047713361
- H    3     0.0015003992           -0.0008662609           -0.0047713361
- H    4    -0.0015003992           -0.0008662609           -0.0047713361
- H    1     0.0000000000           -0.0017325422            0.0047713425
- H    2     0.0000000000            0.0017325422           -0.0047713425
+ C   _1     0.0000000000            0.0000000213            0.1214477018
+ C   _2     0.0000000000           -0.0000000213           -0.1214477018
+ H   _1     0.0015003992            0.0008662609            0.0047713361
+ H   _2    -0.0015003992            0.0008662609            0.0047713361
+ H   _3     0.0015003992           -0.0008662609           -0.0047713361
+ H   _4    -0.0015003992           -0.0008662609           -0.0047713361
+ H   _1     0.0000000000           -0.0017325422            0.0047713425
+ H   _2     0.0000000000            0.0017325422           -0.0047713425
 
 
 
@@ -794,25 +810,25 @@ Represented as:      C2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C    1      C    2      H    1      H    2      H    3      H    4
+            C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------      ------      ------
- C    1:    0.000000
- C    2:    1.857187    0.000000
- H    1:    1.089998    2.448064    0.000000
- H    2:    1.089998    2.448064    1.778929    0.000000
- H    3:    2.448064    1.089998    2.783612    3.303496    0.000000
- H    4:    2.448064    1.089998    3.303496    2.783612    1.778929    0.000000
- H    1:    1.089998    2.448064    1.778929    1.778929    2.783612    2.783612
- H    2:    2.448064    1.089998    2.783612    2.783612    1.778929    1.778929
+ C   _1:    0.000000
+ C   _2:    1.857187    0.000000
+ H   _1:    1.089998    2.448064    0.000000
+ H   _2:    1.089998    2.448064    1.778929    0.000000
+ H   _3:    2.448064    1.089998    2.783612    3.303496    0.000000
+ H   _4:    2.448064    1.089998    3.303496    2.783612    1.778929    0.000000
+ H   _1:    1.089998    2.448064    1.778929    1.778929    2.783612    2.783612
+ H   _2:    2.448064    1.089998    2.783612    2.783612    1.778929    1.778929
 
-            H    1      H    2
+            H   _1      H   _2
             ------      ------
- H    1:    0.000000
- H    2:    3.303496    0.000000
+ H   _1:    0.000000
+ H   _2:    3.303496    0.000000
 
 
   Max interatomic separation is    3.3035 Angstrom (    6.2427 Bohr)
-  between atoms    8 and    7, "H    2" and "H    1".
+  between atoms    8 and    7, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -820,13 +836,13 @@ Represented as:      C2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  C    2     C    1       1.857187
-  bond distance:  H    1     C    1       1.089998
-  bond distance:  H    2     C    1       1.089998
-  bond distance:  H    3     C    2       1.089998
-  bond distance:  H    4     C    2       1.089998
-  bond distance:  H    1     C    1       1.089998
-  bond distance:  H    2     C    2       1.089998
+  bond distance:  C   _2     C   _1       1.857187
+  bond distance:  H   _1     C   _1       1.089998
+  bond distance:  H   _2     C   _1       1.089998
+  bond distance:  H   _3     C   _2       1.089998
+  bond distance:  H   _4     C   _2       1.089998
+  bond distance:  H   _1     C   _1       1.089998
+  bond distance:  H   _2     C   _2       1.089998
 
 
   Bond angles (degrees):
@@ -834,18 +850,18 @@ Represented as:      C2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C    2     C    1     H    1       109.565
-  bond angle:     C    2     C    1     H    2       109.565
-  bond angle:     C    2     C    1     H    1       109.565
-  bond angle:     H    1     C    1     H    2       109.378
-  bond angle:     H    1     C    1     H    1       109.378
-  bond angle:     H    2     C    1     H    1       109.378
-  bond angle:     C    1     C    2     H    3       109.565
-  bond angle:     C    1     C    2     H    4       109.565
-  bond angle:     C    1     C    2     H    2       109.565
-  bond angle:     H    3     C    2     H    4       109.378
-  bond angle:     H    3     C    2     H    2       109.378
-  bond angle:     H    4     C    2     H    2       109.378
+  bond angle:     C   _2     C   _1     H   _1       109.565
+  bond angle:     C   _2     C   _1     H   _2       109.565
+  bond angle:     C   _2     C   _1     H   _1       109.565
+  bond angle:     H   _1     C   _1     H   _2       109.378
+  bond angle:     H   _1     C   _1     H   _1       109.378
+  bond angle:     H   _2     C   _1     H   _1       109.378
+  bond angle:     C   _1     C   _2     H   _3       109.565
+  bond angle:     C   _1     C   _2     H   _4       109.565
+  bond angle:     C   _1     C   _2     H   _2       109.565
+  bond angle:     H   _3     C   _2     H   _4       109.378
+  bond angle:     H   _3     C   _2     H   _2       109.378
+  bond angle:     H   _4     C   _2     H   _2       109.378
 
 
 
@@ -875,14 +891,14 @@ Represented as:      C2h
                                 Next geometry (au)
                                 ------------------
 
- C    1     0.0000000000           -0.0000000069            1.7547876282
- C    2     0.0000000000            0.0000000069           -1.7547876282
- H    1     1.6969193963            0.9797168613            2.3722594598
- H    2    -1.6969193963            0.9797168613            2.3722594598
- H    3     1.6969193963           -0.9797168613           -2.3722594598
- H    4    -1.6969193963           -0.9797168613           -2.3722594598
- H    1     0.0000000000           -1.9594337360            2.3722594806
- H    2     0.0000000000            1.9594337360           -2.3722594806
+ C   _1     0.0000000000           -0.0000000069            1.7547876282
+ C   _2     0.0000000000            0.0000000069           -1.7547876282
+ H   _1     1.6969193963            0.9797168613            2.3722594598
+ H   _2    -1.6969193963            0.9797168613            2.3722594598
+ H   _3     1.6969193963           -0.9797168613           -2.3722594598
+ H   _4    -1.6969193963           -0.9797168613           -2.3722594598
+ H   _1     0.0000000000           -1.9594337360            2.3722594806
+ H   _2     0.0000000000            1.9594337360           -2.3722594806
 
 
 
@@ -923,7 +939,7 @@ Represented as:      C2h
  Number of two-electron integrals written:        2596 ( 27.9% )
  Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -950,23 +966,33 @@ Represented as:      C2h
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -78.2567953694        4.27543D-02   -2.05D-04    1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009557
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    2    -78.2570072203        1.05219D-02   -2.12D-04    2
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009545
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    3    -78.2570225462        9.05923D-04   -1.53D-05    3
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009583
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    4    -78.2570226537        1.06363D-04   -1.08D-07    4
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009577
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    5    -78.2570226551        1.62656D-05   -1.41D-09    5
-      MULPOP C   ******; H   ******; 
-   6    -78.2570226551        2.94065D-07   -2.94D-11    6
- DIIS converged in   6 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.009578
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
+   6    -78.2570226551        2.94065D-07   -2.95D-11    6
+
+ *** DIIS converged in   6 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -996,20 +1022,23 @@ Represented as:      C2h
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -78.257022655136                 
-     Nuclear repulsion:            39.085019246505
-     Electronic energy:          -117.342041901642
+     Final HF energy:             -78.257022655137                 
+     Nuclear repulsion:            39.085019246515
+     Electronic energy:          -117.342041901652
 
      Final gradient norm:           0.000000294065
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
@@ -1018,7 +1047,7 @@ Represented as:      C2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
@@ -1041,10 +1070,10 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  2.65E-12
+ Largest deviation from tra-rot symmetry is in gradient element  1:  2.67E-12
 
 
    ***************************************************************************
@@ -1053,7 +1082,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
@@ -1082,14 +1111,14 @@ Represented as:      C2h
                                 Next geometry (au)
                                 ------------------
 
- C    1     0.0000000000            0.0000000106            1.7547876282
- C    2     0.0000000000           -0.0000000106           -1.7547876282
- H    1     1.6872040173            0.9741076966            2.3980278732
- H    2    -1.6872040173            0.9741076966            2.3980278732
- H    3     1.6872040173           -0.9741076966           -2.3980278732
- H    4    -1.6872040173           -0.9741076966           -2.3980278732
- H    1     0.0000000000           -1.9482153786            2.3980278441
- H    2     0.0000000000            1.9482153786           -2.3980278441
+ C   _1     0.0000000000            0.0000000106            1.7547876282
+ C   _2     0.0000000000           -0.0000000106           -1.7547876282
+ H   _1     1.6872040173            0.9741076966            2.3980278732
+ H   _2    -1.6872040173            0.9741076966            2.3980278732
+ H   _3     1.6872040173           -0.9741076966           -2.3980278732
+ H   _4    -1.6872040173           -0.9741076966           -2.3980278732
+ H   _1     0.0000000000           -1.9482153786            2.3980278441
+ H   _2     0.0000000000            1.9482153786           -2.3980278441
 
 
 
@@ -1131,8 +1160,8 @@ Represented as:      C2h
  Number of two-electron integrals written:        2596 ( 27.9% )
  Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -1158,21 +1187,29 @@ Represented as:      C2h
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -78.2571940564        1.61273D-02   -1.71D-04    1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009532
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    2    -78.2572221047        3.79699D-03   -2.80D-05    2
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009538
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    3    -78.2572241216        3.05742D-04   -2.02D-06    3
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009535
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    4    -78.2572241347        2.24393D-05   -1.31D-08    4
-      MULPOP C   ******; H   ******; 
-   5    -78.2572241348        3.05862D-06   -5.96D-11    5
- DIIS converged in   5 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.009536
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
+   5    -78.2572241348        3.05862D-06   -5.95D-11    5
+
+ *** DIIS converged in   5 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1202,20 +1239,23 @@ Represented as:      C2h
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -78.257224134760                 
-     Nuclear repulsion:            39.075171367601
-     Electronic energy:          -117.332395502362
+     Final HF energy:             -78.257224134761                 
+     Nuclear repulsion:            39.075171367605
+     Electronic energy:          -117.332395502366
 
      Final gradient norm:           0.000003058623
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
@@ -1224,7 +1264,7 @@ Represented as:      C2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
@@ -1247,7 +1287,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.08E-11
@@ -1259,7 +1299,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:04 2011 
      Host name              : fe6                                     
 
 
@@ -1288,14 +1328,14 @@ Represented as:      C2h
                                 Next geometry (au)
                                 ------------------
 
- C    1     0.0000000000           -0.0000000327            1.7547876282
- C    2     0.0000000000            0.0000000327           -1.7547876282
- H    1     1.6873557467            0.9741952799            2.3971495998
- H    2    -1.6873557467            0.9741952799            2.3971495998
- H    3     1.6873557467           -0.9741952799           -2.3971495998
- H    4    -1.6873557467           -0.9741952799           -2.3971495998
- H    1     0.0000000000           -1.9483906041            2.3971496820
- H    2     0.0000000000            1.9483906041           -2.3971496820
+ C   _1     0.0000000000           -0.0000000327            1.7547876282
+ C   _2     0.0000000000            0.0000000327           -1.7547876282
+ H   _1     1.6873557467            0.9741952799            2.3971495998
+ H   _2    -1.6873557467            0.9741952799            2.3971495998
+ H   _3     1.6873557467           -0.9741952799           -2.3971495998
+ H   _4    -1.6873557467           -0.9741952799           -2.3971495998
+ H   _1     0.0000000000           -1.9483906041            2.3971496820
+ H   _2     0.0000000000            1.9483906041           -2.3971496820
 
 
 
@@ -1337,8 +1377,8 @@ Represented as:      C2h
  Number of two-electron integrals written:        2596 ( 27.9% )
  Megabytes written:                              0.034
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
                         .----------------------------------.
@@ -1364,19 +1404,25 @@ Represented as:      C2h
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -78.2572243120        5.27008D-04   -1.77D-07    1
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009531
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    2    -78.2572243442        1.29223D-04   -3.22D-08    2
-      MULPOP C   ******; H   ******; 
+      Virial theorem: -V/T =      2.009531
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    3    -78.2572243464        1.22915D-05   -2.26D-09    3
-      MULPOP C   ******; H   ******; 
-   4    -78.2572243465        1.37613D-06   -1.90D-11    4
- DIIS converged in   4 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.009531
+      MULPOP  C   _1 -0.17; C   _2 -0.17; H   _1  0.06; H   _2  0.06; H   _3  0.06; H   _4  0.06; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
+   4    -78.2572243465        1.37613D-06   -1.89D-11    4
+
+ *** DIIS converged in   4 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1406,20 +1452,23 @@ Represented as:      C2h
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -78.257224346450                 
-     Nuclear repulsion:            39.077614495439
+     Final HF energy:             -78.257224346451                 
+     Nuclear repulsion:            39.077614495438
      Electronic energy:          -117.334838841889
 
      Final gradient norm:           0.000001376132
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     
 
 
@@ -1428,7 +1477,7 @@ Represented as:      C2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     
 
 
@@ -1451,7 +1500,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     
 
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.63E-10
@@ -1463,7 +1512,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     
 
 
@@ -1492,14 +1541,14 @@ Represented as:      C2h
                                Final geometry (au)
                                -------------------
 
- C    1     0.0000000000           -0.0000000327            1.7547876282
- C    2     0.0000000000            0.0000000327           -1.7547876282
- H    1     1.6873557467            0.9741952799            2.3971495998
- H    2    -1.6873557467            0.9741952799            2.3971495998
- H    3     1.6873557467           -0.9741952799           -2.3971495998
- H    4    -1.6873557467           -0.9741952799           -2.3971495998
- H    1     0.0000000000           -1.9483906041            2.3971496820
- H    2     0.0000000000            1.9483906041           -2.3971496820
+ C   _1     0.0000000000           -0.0000000327            1.7547876282
+ C   _2     0.0000000000            0.0000000327           -1.7547876282
+ H   _1     1.6873557467            0.9741952799            2.3971495998
+ H   _2    -1.6873557467            0.9741952799            2.3971495998
+ H   _3     1.6873557467           -0.9741952799           -2.3971495998
+ H   _4    -1.6873557467           -0.9741952799           -2.3971495998
+ H   _1     0.0000000000           -1.9483906041            2.3971496820
+ H   _2     0.0000000000            1.9483906041           -2.3971496820
 
 
 
@@ -1528,7 +1577,7 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     
 
 
@@ -1538,21 +1587,21 @@ Represented as:      C2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- C    1     0.0000000000           -0.0000000327            1.7547876282
- C    2     0.0000000000            0.0000000327           -1.7547876282
- H    1     1.6873557467            0.9741952799            2.3971495998
- H    2    -1.6873557467            0.9741952799            2.3971495998
- H    3     1.6873557467           -0.9741952799           -2.3971495998
- H    4    -1.6873557467           -0.9741952799           -2.3971495998
- H    1     0.0000000000           -1.9483906041            2.3971496820
- H    2     0.0000000000            1.9483906041           -2.3971496820
+ C   _1     0.0000000000           -0.0000000327            1.7547876282
+ C   _2     0.0000000000            0.0000000327           -1.7547876282
+ H   _1     1.6873557467            0.9741952799            2.3971495998
+ H   _2    -1.6873557467            0.9741952799            2.3971495998
+ H   _3     1.6873557467           -0.9741952799           -2.3971495998
+ H   _4    -1.6873557467           -0.9741952799           -2.3971495998
+ H   _1     0.0000000000           -1.9483906041            2.3971496820
+ H   _2     0.0000000000            1.9483906041           -2.3971496820
 
 
 
@@ -1564,18 +1613,18 @@ Represented as:      C2h
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -78.2572243465 au (Hartrees)
-                         -2129.48733847 eV
-                           -205464.3130 kJ/mol
+                         -2129.48739890 eV
+                           -205464.3108 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.0777342503 au
-     Mass-velocity correction:                  -0.0980273128 au
+     Darwin correction:                          0.0777342497 au
+     Mass-velocity correction:                  -0.0980273120 au
 
-     Total relativistic correction:             -0.0202930625 au (0.0259%)
-     Non-relativistic + relativistic energy:   -78.2775174090 au
+     Total relativistic correction:             -0.0202930624 au (0.0259%)
+     Non-relativistic + relativistic energy:   -78.2775174088 au
 
 
 
@@ -1602,25 +1651,25 @@ Represented as:      C2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C    1      C    2      H    1      H    2      H    3      H    4
+            C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------      ------      ------
- C    1:    0.000000
- C    2:    1.857187    0.000000
- H    1:    1.085633    2.427004    0.000000
- H    2:    1.085633    2.427004    1.785820    0.000000
- H    3:    2.427004    1.085633    2.738538    3.269365    0.000000
- H    4:    2.427004    1.085633    3.269365    2.738538    1.785820    0.000000
- H    1:    1.085633    2.427004    1.785820    1.785820    2.738538    2.738538
- H    2:    2.427004    1.085633    2.738538    2.738538    1.785820    1.785820
+ C   _1:    0.000000
+ C   _2:    1.857187    0.000000
+ H   _1:    1.085633    2.427004    0.000000
+ H   _2:    1.085633    2.427004    1.785820    0.000000
+ H   _3:    2.427004    1.085633    2.738538    3.269365    0.000000
+ H   _4:    2.427004    1.085633    3.269365    2.738538    1.785820    0.000000
+ H   _1:    1.085633    2.427004    1.785820    1.785820    2.738538    2.738538
+ H   _2:    2.427004    1.085633    2.738538    2.738538    1.785820    1.785820
 
-            H    1      H    2
+            H   _1      H   _2
             ------      ------
- H    1:    0.000000
- H    2:    3.269365    0.000000
+ H   _1:    0.000000
+ H   _2:    3.269365    0.000000
 
 
   Max interatomic separation is    3.2694 Angstrom (    6.1782 Bohr)
-  between atoms    8 and    7, "H    2" and "H    1".
+  between atoms    8 and    7, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1628,13 +1677,13 @@ Represented as:      C2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  C    2     C    1       1.857187
-  bond distance:  H    1     C    1       1.085633
-  bond distance:  H    2     C    1       1.085633
-  bond distance:  H    3     C    2       1.085633
-  bond distance:  H    4     C    2       1.085633
-  bond distance:  H    1     C    1       1.085633
-  bond distance:  H    2     C    2       1.085633
+  bond distance:  C   _2     C   _1       1.857187
+  bond distance:  H   _1     C   _1       1.085633
+  bond distance:  H   _2     C   _1       1.085633
+  bond distance:  H   _3     C   _2       1.085633
+  bond distance:  H   _4     C   _2       1.085633
+  bond distance:  H   _1     C   _1       1.085633
+  bond distance:  H   _2     C   _2       1.085633
 
 
   Bond angles (degrees):
@@ -1642,18 +1691,18 @@ Represented as:      C2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C    2     C    1     H    1       108.247
-  bond angle:     C    2     C    1     H    2       108.247
-  bond angle:     C    2     C    1     H    1       108.247
-  bond angle:     H    1     C    1     H    2       110.667
-  bond angle:     H    1     C    1     H    1       110.667
-  bond angle:     H    2     C    1     H    1       110.667
-  bond angle:     C    1     C    2     H    3       108.247
-  bond angle:     C    1     C    2     H    4       108.247
-  bond angle:     C    1     C    2     H    2       108.247
-  bond angle:     H    3     C    2     H    4       110.667
-  bond angle:     H    3     C    2     H    2       110.667
-  bond angle:     H    4     C    2     H    2       110.667
+  bond angle:     C   _2     C   _1     H   _1       108.247
+  bond angle:     C   _2     C   _1     H   _2       108.247
+  bond angle:     C   _2     C   _1     H   _1       108.247
+  bond angle:     H   _1     C   _1     H   _2       110.667
+  bond angle:     H   _1     C   _1     H   _1       110.667
+  bond angle:     H   _2     C   _1     H   _1       110.667
+  bond angle:     C   _1     C   _2     H   _3       108.247
+  bond angle:     C   _1     C   _2     H   _4       108.247
+  bond angle:     C   _1     C   _2     H   _2       108.247
+  bond angle:     H   _3     C   _2     H   _4       110.667
+  bond angle:     H   _3     C   _2     H   _2       110.667
+  bond angle:     H   _4     C   _2     H   _2       110.667
 
 
 
@@ -1683,14 +1732,14 @@ Represented as:      C2h
                                   Final geometry
                                   --------------
 
- C    1     0.0000000000           -0.0000000327            1.7547876282
- C    2     0.0000000000            0.0000000327           -1.7547876282
- H    1     1.6873557467            0.9741952799            2.3971495998
- H    2    -1.6873557467            0.9741952799            2.3971495998
- H    3     1.6873557467           -0.9741952799           -2.3971495998
- H    4    -1.6873557467           -0.9741952799           -2.3971495998
- H    1     0.0000000000           -1.9483906041            2.3971496820
- H    2     0.0000000000            1.9483906041           -2.3971496820
+ C   _1     0.0000000000           -0.0000000327            1.7547876282
+ C   _2     0.0000000000            0.0000000327           -1.7547876282
+ H   _1     1.6873557467            0.9741952799            2.3971495998
+ H   _2    -1.6873557467            0.9741952799            2.3971495998
+ H   _3     1.6873557467           -0.9741952799           -2.3971495998
+ H   _4    -1.6873557467           -0.9741952799           -2.3971495998
+ H   _1     0.0000000000           -1.9483906041            2.3971496820
+ H   _2     0.0000000000            1.9483906041           -2.3971496820
 
 
 
@@ -1707,25 +1756,25 @@ Represented as:      C2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C    1      C    2      H    1      H    2      H    3      H    4
+            C   _1      C   _2      H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------      ------      ------
- C    1:    0.000000
- C    2:    1.857187    0.000000
- H    1:    1.085633    2.427004    0.000000
- H    2:    1.085633    2.427004    1.785820    0.000000
- H    3:    2.427004    1.085633    2.738538    3.269365    0.000000
- H    4:    2.427004    1.085633    3.269365    2.738538    1.785820    0.000000
- H    1:    1.085633    2.427004    1.785820    1.785820    2.738538    2.738538
- H    2:    2.427004    1.085633    2.738538    2.738538    1.785820    1.785820
+ C   _1:    0.000000
+ C   _2:    1.857187    0.000000
+ H   _1:    1.085633    2.427004    0.000000
+ H   _2:    1.085633    2.427004    1.785820    0.000000
+ H   _3:    2.427004    1.085633    2.738538    3.269365    0.000000
+ H   _4:    2.427004    1.085633    3.269365    2.738538    1.785820    0.000000
+ H   _1:    1.085633    2.427004    1.785820    1.785820    2.738538    2.738538
+ H   _2:    2.427004    1.085633    2.738538    2.738538    1.785820    1.785820
 
-            H    1      H    2
+            H   _1      H   _2
             ------      ------
- H    1:    0.000000
- H    2:    3.269365    0.000000
+ H   _1:    0.000000
+ H   _2:    3.269365    0.000000
 
 
   Max interatomic separation is    3.2694 Angstrom (    6.1782 Bohr)
-  between atoms    8 and    7, "H    2" and "H    1".
+  between atoms    8 and    7, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1733,13 +1782,13 @@ Represented as:      C2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  C    2     C    1       1.857187
-  bond distance:  H    1     C    1       1.085633
-  bond distance:  H    2     C    1       1.085633
-  bond distance:  H    3     C    2       1.085633
-  bond distance:  H    4     C    2       1.085633
-  bond distance:  H    1     C    1       1.085633
-  bond distance:  H    2     C    2       1.085633
+  bond distance:  C   _2     C   _1       1.857187
+  bond distance:  H   _1     C   _1       1.085633
+  bond distance:  H   _2     C   _1       1.085633
+  bond distance:  H   _3     C   _2       1.085633
+  bond distance:  H   _4     C   _2       1.085633
+  bond distance:  H   _1     C   _1       1.085633
+  bond distance:  H   _2     C   _2       1.085633
 
 
   Bond angles (degrees):
@@ -1747,18 +1796,18 @@ Represented as:      C2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C    2     C    1     H    1       108.247
-  bond angle:     C    2     C    1     H    2       108.247
-  bond angle:     C    2     C    1     H    1       108.247
-  bond angle:     H    1     C    1     H    2       110.667
-  bond angle:     H    1     C    1     H    1       110.667
-  bond angle:     H    2     C    1     H    1       110.667
-  bond angle:     C    1     C    2     H    3       108.247
-  bond angle:     C    1     C    2     H    4       108.247
-  bond angle:     C    1     C    2     H    2       108.247
-  bond angle:     H    3     C    2     H    4       110.667
-  bond angle:     H    3     C    2     H    2       110.667
-  bond angle:     H    4     C    2     H    2       110.667
+  bond angle:     C   _2     C   _1     H   _1       108.247
+  bond angle:     C   _2     C   _1     H   _2       108.247
+  bond angle:     C   _2     C   _1     H   _1       108.247
+  bond angle:     H   _1     C   _1     H   _2       110.667
+  bond angle:     H   _1     C   _1     H   _1       110.667
+  bond angle:     H   _2     C   _1     H   _1       110.667
+  bond angle:     C   _1     C   _2     H   _3       108.247
+  bond angle:     C   _1     C   _2     H   _4       108.247
+  bond angle:     C   _1     C   _2     H   _2       108.247
+  bond angle:     H   _3     C   _2     H   _4       110.667
+  bond angle:     H   _3     C   _2     H   _2       110.667
+  bond angle:     H   _4     C   _2     H   _2       110.667
 
 
 
@@ -1769,9 +1818,9 @@ Represented as:      C2h
  Energy change during optimization :      -0.000634 a.u.
                                              -1.664 kJ/mol
 
- >>>> Total CPU  time used in DALTON:   0.29 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.31 seconds
+ >>>> Total wall time used in DALTON:   2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:14:09 2010 
+     Date and time (Linux)  : Wed Mar 16 17:42:05 2011 
      Host name              : fe6                                     

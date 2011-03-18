@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:46:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:15:07 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -213,9 +214,11 @@ Point group: C2v
 
                            B          11.009305
                            H           1.007825
+                           B           0.000000
+                           H           0.000000
 
                        Total mass:    12.017130 amu
-                       Natural abundance:  80.088 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.195315
 
@@ -384,6 +387,8 @@ Point group: C2v
 
   No orbitals in symmetry  A2 ( 4)
 
+  Number of floating/multiple basis set orbitals :    2
+
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
@@ -406,7 +411,7 @@ Point group: C2v
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Cartesian multipole moment integrals of orders 2 and lower
 
@@ -420,7 +425,7 @@ Point group: C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -447,7 +452,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:46:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:15:07 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -462,8 +467,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -473,6 +477,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons          6
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -532,46 +540,71 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1  -23.7919251551       2.35D+00  -2.38D+01    2  1  0  0
-      MULPOP B     0.07; H     0.22; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
+      Virial theorem: -V/T =      1.842685
+      MULPOP  B      -0.85; H       0.85; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
    2  -24.8475362942       3.25D-01  -1.06D+00    2  1  0  0
-      MULPOP B     0.25; H    -0.01; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      2.020807
+      MULPOP  B      -0.07; H       0.07; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
    3  -24.8632919723       1.02D-01  -1.58D-02    2  1  0  0
-      MULPOP B     0.25; H    -0.02; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.008046
+      MULPOP  B      -0.20; H       0.20; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4  -24.8661450214       1.99D-02  -2.85D-03    2  1  0  0
-      MULPOP B     0.26; H    -0.02; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.005996
+      MULPOP  B      -0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5  -24.8662245512       1.60D-03  -7.95D-05    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      Virial theorem: -V/T =      2.005979
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6  -24.8662249440       2.88D-04  -3.93D-07    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      2.005930
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
    7  -24.8662249627       4.42D-05  -1.87D-08    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
    8  -24.8662249632       6.36D-06  -4.55D-10    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
+      Virial theorem: -V/T =      2.005926
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
    9  -24.8662249632       7.38D-07  -1.02D-11    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    F
-  10  -24.8662249632       8.14D-08  -1.60D-13    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -24.8662249632       8.14D-08  -1.53D-13    2  1  0  0
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
   11  -24.8662249632       5.72D-09   7.11D-15    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  12  -24.8662249632       3.12D-10   7.11D-15    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  13  -24.8662249632       1.32D-11  -7.11D-15    2  1  0  0
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.01 seconds
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -24.8662249632       3.12D-10  -7.11D-15    2  1  0  0
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -24.8662249632       1.32D-11   0.00D+00    2  1  0  0
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.02 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -613,7 +646,10 @@ Point group: C2v
    3      0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -621,12 +657,12 @@ Point group: C2v
 
      Final HF energy:             -24.866224963189                 
      Nuclear repulsion:             2.146937881370
-     Electronic energy:           -27.013162844558
+     Electronic energy:           -27.013162844559
 
      Final gradient norm:           0.000000000013
 
  
-     Date and time (Linux)  : Wed Dec 29 22:46:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:15:08 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -634,7 +670,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 B   :1s     0.9929   0.2173  -0.1399  -0.0981
    2 B   :1s    -0.0268   0.4807  -0.2638  -0.3588
    3 B   :1s     0.0100   0.1989  -0.5920  -1.9470
@@ -646,24 +682,24 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 B   :2px   -0.6053   1.0272
    2 B   :2px    0.5319   1.0671
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 B   :2py   -0.3999  -1.1233
    2 B   :2py    0.7243  -0.9471
 
 
 
  >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:46:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:15:08 2011 
      Host name              : fe6                                     
 
 
@@ -777,7 +813,7 @@ Point group: C2v
        -0.033227778   -0.073887083   -0.002817193   -0.011868089
 
               MP2-R12/B   correlation energy =   -0.085755172
- Time for MP2-R12 part cpu:  0.45193201303482056     
+ Time for MP2-R12 part cpu:  0.43893299996852875     
  Time for MP2-R12 part wall:   0.0000000000000000     
    
 
@@ -799,10 +835,10 @@ Point group: C2v
           Number of t2' amplitudes for R12 part   :         6
           Total number of amplitudes in ccsd      :        60
 
- Iter.  1: Coupled cluster MP2-R12/A energy :     -25.0063026940182027
-     Conventional correlation energy:    -0.0360449713809103
-     R12 correlation energy         :    -0.1040327594486866
-     Total correlation energy       :    -0.1400777308295969
+ Iter.  1: Coupled cluster MP2-R12/A energy :     -25.0063026940186219
+     Conventional correlation energy:    -0.0360449713808535
+     R12 correlation energy         :    -0.1040327594487056
+     Total correlation energy       :    -0.1400777308295591
 
 
        Iteration no.:  1
@@ -810,25 +846,25 @@ Point group: C2v
 
        Time used in   RHS - TOTAL  :       0.09 seconds
        Norm^2 of omega1 after ccvec:        0.9675831043D-04
-       Norm^2 of omega2 after ccvec:        0.1047458754D-29
-       Norm^2 of Omegar12  in NXTAM:        0.6289061086D-29
- Iter.  1: Coupled cluster CC2-R12/A energy :     -25.0062824074527441
-     Conventional correlation energy:    -0.0360246848154482
-     R12 correlation energy         :    -0.1040327594486883
-     Total correlation energy       :    -0.1400574442641364
+       Norm^2 of omega2 after ccvec:        0.4143162465D-30
+       Norm^2 of Omegar12  in NXTAM:        0.1062256441D-29
+ Iter.  1: Coupled cluster CC2-R12/A energy :     -25.0062824074531669
+     Conventional correlation energy:    -0.0360246848153984
+     R12 correlation energy         :    -0.1040327594487061
+     Total correlation energy       :    -0.1400574442641046
 
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
+       Time used in   RHS - TOTAL  :       0.08 seconds
        Norm^2 of omega1 after ccvec:        0.6549308719D-05
        Norm^2 of omega2 after ccvec:        0.1522249272D-04
        Norm^2 of Omegar12  in NXTAM:        0.1251688661D-05
- Iter.  2: Coupled cluster CC2-R12/A energy :     -25.0065966334043317
-     Conventional correlation energy:    -0.0360263205711746
-     R12 correlation energy         :    -0.1043453496445513
-     Total correlation energy       :    -0.1403716702157259
+ Iter.  2: Coupled cluster CC2-R12/A energy :     -25.0065966334047758
+     Conventional correlation energy:    -0.0360263205711426
+     R12 correlation energy         :    -0.1043453496445697
+     Total correlation energy       :    -0.1403716702157124
 
 
        Iteration no.:  3
@@ -838,10 +874,10 @@ Point group: C2v
        Norm^2 of omega1 after ccvec:        0.1881012690D-05
        Norm^2 of omega2 after ccvec:        0.7542276616D-06
        Norm^2 of Omegar12  in NXTAM:        0.5444521982D-07
- Iter.  3: Coupled cluster CC2-R12/A energy :     -25.0067024357475169
-     Conventional correlation energy:    -0.0360107582200158
-     R12 correlation energy         :    -0.1044667143388938
-     Total correlation energy       :    -0.1404774725589096
+ Iter.  3: Coupled cluster CC2-R12/A energy :     -25.0067024357479397
+     Conventional correlation energy:    -0.0360107582199660
+     R12 correlation energy         :    -0.1044667143389123
+     Total correlation energy       :    -0.1404774725588783
 
 
        Iteration no.:  4
@@ -849,12 +885,12 @@ Point group: C2v
 
        Time used in   RHS - TOTAL  :       0.09 seconds
        Norm^2 of omega1 after ccvec:        0.8944577375D-07
-       Norm^2 of omega2 after ccvec:        0.5659042484D-07
+       Norm^2 of omega2 after ccvec:        0.5659042485D-07
        Norm^2 of Omegar12  in NXTAM:        0.1214271990D-08
- Iter.  4: Coupled cluster CC2-R12/A energy :     -25.0067050691369523
-     Conventional correlation energy:    -0.0360021222476696
-     R12 correlation energy         :    -0.1044779837006768
-     Total correlation energy       :    -0.1404801059483465
+ Iter.  4: Coupled cluster CC2-R12/A energy :     -25.0067050691374106
+     Conventional correlation energy:    -0.0360021222476519
+     R12 correlation energy         :    -0.1044779837006954
+     Total correlation energy       :    -0.1404801059483473
 
 
        Iteration no.:  5
@@ -864,131 +900,131 @@ Point group: C2v
        Norm^2 of omega1 after ccvec:        0.1316547278D-08
        Norm^2 of omega2 after ccvec:        0.3211026380D-09
        Norm^2 of Omegar12  in NXTAM:        0.1357910096D-10
- Iter.  5: Coupled cluster CC2-R12/A energy :     -25.0067051055156035
-     Conventional correlation energy:    -0.0360008352494141
-     R12 correlation energy         :    -0.1044793070775824
-     Total correlation energy       :    -0.1404801423269965
+ Iter.  5: Coupled cluster CC2-R12/A energy :     -25.0067051055160192
+     Conventional correlation energy:    -0.0360008352493573
+     R12 correlation energy         :    -0.1044793070776006
+     Total correlation energy       :    -0.1404801423269579
 
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
+       Time used in   RHS - TOTAL  :       0.08 seconds
        Norm^2 of omega1 after ccvec:        0.2661138256D-10
        Norm^2 of omega2 after ccvec:        0.1212447868D-10
-       Norm^2 of Omegar12  in NXTAM:        0.6645941658D-12
- Iter.  6: Coupled cluster CC2-R12/A energy :     -25.0067051277287433
-     Conventional correlation energy:    -0.0360006089046649
-     R12 correlation energy         :    -0.1044795556354717
-     Total correlation energy       :    -0.1404801645401367
+       Norm^2 of Omegar12  in NXTAM:        0.6645941674D-12
+ Iter.  6: Coupled cluster CC2-R12/A energy :     -25.0067051277291768
+     Conventional correlation energy:    -0.0360006089046259
+     R12 correlation energy         :    -0.1044795556354906
+     Total correlation energy       :    -0.1404801645401164
 
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.08 seconds
-       Norm^2 of omega1 after ccvec:        0.2584360910D-12
-       Norm^2 of omega2 after ccvec:        0.1602546530D-12
-       Norm^2 of Omegar12  in NXTAM:        0.2229422092D-14
- Iter.  7: Coupled cluster CC2-R12/A energy :     -25.0067051380625607
-     Conventional correlation energy:    -0.0360006182241577
-     R12 correlation energy         :    -0.1044795566497972
-     Total correlation energy       :    -0.1404801748739549
+       Norm^2 of omega1 after ccvec:        0.2584360897D-12
+       Norm^2 of omega2 after ccvec:        0.1602546537D-12
+       Norm^2 of Omegar12  in NXTAM:        0.2229422032D-14
+ Iter.  7: Coupled cluster CC2-R12/A energy :     -25.0067051380629763
+     Conventional correlation energy:    -0.0360006182240973
+     R12 correlation energy         :    -0.1044795566498162
+     Total correlation energy       :    -0.1404801748739135
 
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.2924703639D-14
-       Norm^2 of omega2 after ccvec:        0.7234310748D-15
-       Norm^2 of Omegar12  in NXTAM:        0.1862138225D-16
- Iter.  8: Coupled cluster CC2-R12/A energy :     -25.0067051366611537
-     Conventional correlation energy:    -0.0360006173668879
-     R12 correlation energy         :    -0.1044795561056577
-     Total correlation energy       :    -0.1404801734725456
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm^2 of omega1 after ccvec:        0.2924703899D-14
+       Norm^2 of omega2 after ccvec:        0.7234310637D-15
+       Norm^2 of Omegar12  in NXTAM:        0.1862139018D-16
+ Iter.  8: Coupled cluster CC2-R12/A energy :     -25.0067051366615836
+     Conventional correlation energy:    -0.0360006173668452
+     R12 correlation energy         :    -0.1044795561056752
+     Total correlation energy       :    -0.1404801734725204
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.8232650527D-16
-       Norm^2 of omega2 after ccvec:        0.5478070105D-16
-       Norm^2 of Omegar12  in NXTAM:        0.1004237831D-17
- Iter.  9: Coupled cluster CC2-R12/A energy :     -25.0067051367077511
-     Conventional correlation energy:    -0.0360006174250387
-     R12 correlation energy         :    -0.1044795560941068
-     Total correlation energy       :    -0.1404801735191455
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm^2 of omega1 after ccvec:        0.8232655765D-16
+       Norm^2 of omega2 after ccvec:        0.5478071182D-16
+       Norm^2 of Omegar12  in NXTAM:        0.1004235085D-17
+ Iter.  9: Coupled cluster CC2-R12/A energy :     -25.0067051367081632
+     Conventional correlation energy:    -0.0360006174249783
+     R12 correlation energy         :    -0.1044795560941248
+     Total correlation energy       :    -0.1404801735191031
 
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.8444975682D-17
-       Norm^2 of omega2 after ccvec:        0.2902307759D-17
-       Norm^2 of Omegar12  in NXTAM:        0.1484227158D-18
- Iter. 10: Coupled cluster CC2-R12/A energy :     -25.0067051367458966
-     Conventional correlation energy:    -0.0360006174012391
-     R12 correlation energy         :    -0.1044795561560512
-     Total correlation energy       :    -0.1404801735572903
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm^2 of omega1 after ccvec:        0.8444953055D-17
+       Norm^2 of omega2 after ccvec:        0.2902308796D-17
+       Norm^2 of Omegar12  in NXTAM:        0.1484231852D-18
+ Iter. 10: Coupled cluster CC2-R12/A energy :     -25.0067051367463371
+     Conventional correlation energy:    -0.0360006174012071
+     R12 correlation energy         :    -0.1044795561560695
+     Total correlation energy       :    -0.1404801735572766
 
 
        Iteration no.: 11
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.5162605179D-19
-       Norm^2 of omega2 after ccvec:        0.1951066651D-19
-       Norm^2 of Omegar12  in NXTAM:        0.6408077340D-21
- Iter. 11: Coupled cluster CC2-R12/A energy :     -25.0067051367482414
-     Conventional correlation energy:    -0.0360006174027347
-     R12 correlation energy         :    -0.1044795561569003
-     Total correlation energy       :    -0.1404801735596350
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm^2 of omega1 after ccvec:        0.5162663354D-19
+       Norm^2 of omega2 after ccvec:        0.1951048112D-19
+       Norm^2 of Omegar12  in NXTAM:        0.6408346231D-21
+ Iter. 11: Coupled cluster CC2-R12/A energy :     -25.0067051367486677
+     Conventional correlation energy:    -0.0360006174026850
+     R12 correlation energy         :    -0.1044795561569197
+     Total correlation energy       :    -0.1404801735596047
 
 
        Iteration no.: 12
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.6233183260D-20
-       Norm^2 of omega2 after ccvec:        0.6597367948D-20
-       Norm^2 of Omegar12  in NXTAM:        0.3854879830D-21
- Iter. 12: Coupled cluster CC2-R12/A energy :     -25.0067051367538333
-     Conventional correlation energy:    -0.0360006174009690
-     R12 correlation energy         :    -0.1044795561642590
-     Total correlation energy       :    -0.1404801735652280
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm^2 of omega1 after ccvec:        0.6233190202D-20
+       Norm^2 of omega2 after ccvec:        0.6597448085D-20
+       Norm^2 of Omegar12  in NXTAM:        0.3854535814D-21
+ Iter. 12: Coupled cluster CC2-R12/A energy :     -25.0067051367542916
+     Conventional correlation energy:    -0.0360006174009548
+     R12 correlation energy         :    -0.1044795561642767
+     Total correlation energy       :    -0.1404801735652316
 
 
        Iteration no.: 13
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.3568973871D-21
-       Norm^2 of omega2 after ccvec:        0.1783858933D-21
-       Norm^2 of Omegar12  in NXTAM:        0.2386625114D-23
- Iter. 13: Coupled cluster CC2-R12/A energy :     -25.0067051367543876
-     Conventional correlation energy:    -0.0360006174003864
-     R12 correlation energy         :    -0.1044795561653930
-     Total correlation energy       :    -0.1404801735657794
+       Norm^2 of omega1 after ccvec:        0.3569068260D-21
+       Norm^2 of omega2 after ccvec:        0.1783785181D-21
+       Norm^2 of Omegar12  in NXTAM:        0.2390655198D-23
+ Iter. 13: Coupled cluster CC2-R12/A energy :     -25.0067051367548174
+     Conventional correlation energy:    -0.0360006174003438
+     R12 correlation energy         :    -0.1044795561654126
+     Total correlation energy       :    -0.1404801735657564
 
 
        Iteration no.: 14
        -----------------
 
        Time used in   RHS - TOTAL  :       0.08 seconds
-       Norm^2 of omega1 after ccvec:        0.2581659661D-22
-       Norm^2 of omega2 after ccvec:        0.1663732087D-22
-       Norm^2 of Omegar12  in NXTAM:        0.7839454227D-24
- Iter. 14: Coupled cluster CC2-R12/A energy :     -25.0067051367546718
-     Conventional correlation energy:    -0.0360006174003296
-     R12 correlation energy         :    -0.1044795561657357
-     Total correlation energy       :    -0.1404801735660653
+       Norm^2 of omega1 after ccvec:        0.2581141191D-22
+       Norm^2 of omega2 after ccvec:        0.1663871945D-22
+       Norm^2 of Omegar12  in NXTAM:        0.7828287432D-24
+ Iter. 14: Coupled cluster CC2-R12/A energy :     -25.0067051367551052
+     Conventional correlation energy:    -0.0360006174002905
+     R12 correlation energy         :    -0.1044795561657536
+     Total correlation energy       :    -0.1404801735660441
 
 
  CC2-R12/A energy converged to within   0.10D-11 is    -25.006705137
- Final 2-norm of the CC vector function:  6.51566708D-12
+ Final 2-norm of the CC vector function:  6.51537653D-12
  R12       energy converged to within   0.10D-11 is     -0.104479556
 
 
@@ -1097,7 +1133,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :     30      1     52     32      6     35     39
-  MIN AND MAX IN SELECTED SUPSPACE   0.36034152919686901       0.85050024760123266     
+  MIN AND MAX IN SELECTED SUPSPACE   0.36034152919770052       0.85050024760276211     
  Start vector guessed from diagonal
  ... selected element no. 30
  Start vector guessed from diagonal
@@ -1129,7 +1165,7 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.23730D-27
+ norm of vector after Gram-Schmidt's orthogonalization  3.22866D-28
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -1355,9 +1391,9 @@ Point group: C2v
        3      0.53130111
        4      0.60876122
   
- ROOT:  1 RESIDUAL TOT: 3.15367D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.15367D-11
- ROOT:  2 RESIDUAL TOT: 5.20800D-10
+ ROOT:  1 RESIDUAL TOT: 3.15366D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.15366D-11
+ ROOT:  2 RESIDUAL TOT: 5.20801D-10
  ROOT:  3 RESIDUAL TOT: 3.11878D-07
  ROOT:  4 RESIDUAL TOT: 1.07457D-07
      10       4         0.00     0.31E-06
@@ -1381,8 +1417,8 @@ Point group: C2v
        3      0.53130112
        4      0.60876122
   
- ROOT:  1 RESIDUAL TOT: 6.26229D-12
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.26229D-12
+ ROOT:  1 RESIDUAL TOT: 6.26232D-12
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.26232D-12
  ROOT:  2 RESIDUAL TOT: 2.56453D-11
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.56453D-11
  ROOT:  3 RESIDUAL TOT: 2.43711D-08
@@ -1408,10 +1444,10 @@ Point group: C2v
        3      0.53130112
        4      0.60876122
   
- ROOT:  1 RESIDUAL TOT: 4.98991D-12
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.98991D-12
- ROOT:  2 RESIDUAL TOT: 1.39886D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.39886D-11
+ ROOT:  1 RESIDUAL TOT: 4.98987D-12
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.98987D-12
+ ROOT:  2 RESIDUAL TOT: 1.39887D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.39887D-11
  ROOT:  3 RESIDUAL TOT: 1.83030D-09
  ROOT:  4 RESIDUAL TOT: 1.33491D-09
      12       2         0.00     0.18E-08
@@ -1435,14 +1471,14 @@ Point group: C2v
        3      0.53130112
        4      0.60876122
   
- ROOT:  1 RESIDUAL TOT: 4.50002D-12
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.50002D-12
+ ROOT:  1 RESIDUAL TOT: 4.49997D-12
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.49997D-12
  ROOT:  2 RESIDUAL TOT: 1.38590D-11
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.38590D-11
- ROOT:  3 RESIDUAL TOT: 9.82921D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 9.82921D-11
- ROOT:  4 RESIDUAL TOT: 8.30253D-11
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 8.30253D-11
+ ROOT:  3 RESIDUAL TOT: 9.82920D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 9.82920D-11
+ ROOT:  4 RESIDUAL TOT: 8.30252D-11
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 8.30252D-11
      13       2         0.00     0.98E-10
 
  Lowest eigenvalues in this iteration: 
@@ -1470,7 +1506,7 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.53 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1497,19 +1533,19 @@ Point group: C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2843957524        7.7388018667
-         2            0.3848739653       10.4729530461
-         3            0.5313011154       14.4574383727
-         4            0.6087612237       16.5652350789
+         1            0.2843957524        7.7388020863
+         2            0.3848739653       10.4729533433
+         3            0.5313011154       14.4574387829
+         4            0.6087612237       16.5652355489
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -24.722309384354102
-@@    1    2           -24.621831171412733
-@@    1    3           -24.475404021333102
-@@    1    4           -24.397943913102761
+@@    1    1           -24.722309384353956
+@@    1    2           -24.621831171412662
+@@    1    3           -24.475404021333333
+@@    1    4           -24.397943913103145
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1696,7 +1732,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      2      3      4      5     13     18     43
-  MIN AND MAX IN SELECTED SUPSPACE   0.18017076459843448       0.97721281774867075     
+  MIN AND MAX IN SELECTED SUPSPACE   0.18017076459885023       0.97721281774882340     
  Start vector guessed from diagonal
  ... selected element no.  2
  Start vector guessed from diagonal
@@ -1871,8 +1907,8 @@ Point group: C2v
        3      0.36065227
        4      0.40677812
   
- ROOT:  1 RESIDUAL TOT: 6.29319D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.29319D-11
+ ROOT:  1 RESIDUAL TOT: 6.29320D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.29320D-11
  ROOT:  2 RESIDUAL TOT: 9.07045D-08
  ROOT:  3 RESIDUAL TOT: 2.10323D-07
  ROOT:  4 RESIDUAL TOT: 7.72543D-07
@@ -1897,8 +1933,8 @@ Point group: C2v
        3      0.36065227
        4      0.40677812
   
- ROOT:  1 RESIDUAL TOT: 5.34331D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.34331D-11
+ ROOT:  1 RESIDUAL TOT: 5.34332D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.34332D-11
  ROOT:  2 RESIDUAL TOT: 2.93372D-09
  ROOT:  3 RESIDUAL TOT: 8.53184D-09
  ROOT:  4 RESIDUAL TOT: 9.26989D-08
@@ -1951,11 +1987,11 @@ Point group: C2v
   
  ROOT:  1 RESIDUAL TOT: 3.11404D-11
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.11404D-11
- ROOT:  2 RESIDUAL TOT: 4.98969D-12
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.98969D-12
- ROOT:  3 RESIDUAL TOT: 2.15515D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.15515D-11
- ROOT:  4 RESIDUAL TOT: 1.77386D-10
+ ROOT:  2 RESIDUAL TOT: 4.98963D-12
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.98963D-12
+ ROOT:  3 RESIDUAL TOT: 2.15516D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.15516D-11
+ ROOT:  4 RESIDUAL TOT: 1.77385D-10
      10       3         0.00     0.18E-09
 
  Lowest eigenvalues in this iteration: 
@@ -1979,12 +2015,12 @@ Point group: C2v
   
  ROOT:  1 RESIDUAL TOT: 3.11267D-11
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.11267D-11
- ROOT:  2 RESIDUAL TOT: 4.83453D-12
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.83453D-12
- ROOT:  3 RESIDUAL TOT: 2.14728D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.14728D-11
- ROOT:  4 RESIDUAL TOT: 7.73705D-12
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 7.73705D-12
+ ROOT:  2 RESIDUAL TOT: 4.83456D-12
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.83456D-12
+ ROOT:  3 RESIDUAL TOT: 2.14729D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.14729D-11
+ ROOT:  4 RESIDUAL TOT: 7.73701D-12
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 7.73701D-12
      11       1         0.00     0.31E-10
 
  Lowest eigenvalues in this iteration: 
@@ -1995,7 +2031,7 @@ Point group: C2v
        3      0.36065227
        4      0.40677812
  Dimension of the reduced space:    38
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
     --------------------------------------
     converged in 11 iterations
@@ -2011,8 +2047,8 @@ Point group: C2v
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.45 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.44 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2039,19 +2075,19 @@ Point group: C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1           -0.0600236739       -1.6333272068
-         2            0.2998230553        8.1586001212
-         3            0.3606522654        9.8138470818
-         4            0.4067781237       11.0689954989
+         1           -0.0600236739       -1.6333272532
+         2            0.2998230553        8.1586003530
+         3            0.3606522654        9.8138473604
+         4            0.4067781237       11.0689958130
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -25.066728810690975
-@@    2    2           -24.706882081457771
-@@    2    3           -24.646052871343144
-@@    2    4           -24.599927013025120
+@@    2    1           -25.066728810691359
+@@    2    2           -24.706882081448203
+@@    2    3           -24.646052871339158
+@@    2    4           -24.599927013025432
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2264,7 +2300,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :     16      1     17     18     22     19      2
-  MIN AND MAX IN SELECTED SUPSPACE   0.48454728349291254        1.1071873633006035     
+  MIN AND MAX IN SELECTED SUPSPACE   0.48454728349335191        1.1071873633007017     
  Start vector guessed from diagonal
  ... selected element no. 16
  Start vector guessed from diagonal
@@ -2296,15 +2332,15 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  2
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  1.87297D-32
+ norm of vector after Gram-Schmidt's orthogonalization  2.84075D-32
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  1.66713D-32
+ norm of vector after Gram-Schmidt's orthogonalization  1.43121D-32
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.41343D-32
+ norm of vector after Gram-Schmidt's orthogonalization  1.21935D-32
   After Gram Schmidt orthonormalization
           -3  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2337,11 +2373,11 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.29736D-30
+ norm of vector after Gram-Schmidt's orthogonalization  2.49396D-30
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  3.26432D-30
+ norm of vector after Gram-Schmidt's orthogonalization  2.64443D-30
   After Gram Schmidt orthonormalization
           -2  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2356,7 +2392,7 @@ Point group: C2v
        3      0.80829131
        4      0.88272885
  Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
  REDUCED EIGENVALUES real part:
@@ -2374,7 +2410,7 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  6.15024D-31
+ norm of vector after Gram-Schmidt's orthogonalization  7.16693D-31
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2407,11 +2443,11 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  5.50603D-24
+ norm of vector after Gram-Schmidt's orthogonalization  1.01719D-23
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  7.43165D-24
+ norm of vector after Gram-Schmidt's orthogonalization  1.37134D-23
   After Gram Schmidt orthonormalization
           -2  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2444,11 +2480,11 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  4.56154D-22
+ norm of vector after Gram-Schmidt's orthogonalization  6.02664D-22
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  5.75485D-22
+ norm of vector after Gram-Schmidt's orthogonalization  7.72381D-22
   After Gram Schmidt orthonormalization
           -2  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2481,7 +2517,7 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  1.55614D-22
+ norm of vector after Gram-Schmidt's orthogonalization  1.89806D-22
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2504,17 +2540,17 @@ Point group: C2v
               Column   1
        1      0.40858931
        2      0.49694300
-       3      0.78318719
-       4      0.80882943
+       3      0.78318994
+       4      0.80882956
   
- ROOT:  1 RESIDUAL TOT: 6.87285D-08
- ROOT:  2 RESIDUAL TOT: 1.52989D-07
- ROOT:  3 RESIDUAL TOT: 2.27830D-04
- ROOT:  4 RESIDUAL TOT: 5.28879D-05
+ ROOT:  1 RESIDUAL TOT: 6.82585D-08
+ ROOT:  2 RESIDUAL TOT: 1.51777D-07
+ ROOT:  3 RESIDUAL TOT: 2.29721D-04
+ ROOT:  4 RESIDUAL TOT: 5.34372D-05
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  3.77922D-21
+ norm of vector after Gram-Schmidt's orthogonalization  2.08905D-21
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2526,8 +2562,8 @@ Point group: C2v
               Column   1
        1      0.40858931
        2      0.49694300
-       3      0.78318719
-       4      0.80882943
+       3      0.78318994
+       4      0.80882956
  Dimension of the reduced space:    20
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
@@ -2537,31 +2573,23 @@ Point group: C2v
               Column   1
        1      0.40858931
        2      0.49694300
-       3      0.78318510
-       4      0.80882932
+       3      0.78318497
+       4      0.80882931
   
- ROOT:  1 RESIDUAL TOT: 2.86212D-09
- ROOT:  2 RESIDUAL TOT: 8.44158D-09
- ROOT:  3 RESIDUAL TOT: 2.87739D-05
- ROOT:  4 RESIDUAL TOT: 7.19501D-06
-
- (CCORT) new  b-vector no.  4
- is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  4.25890D-21
-  After Gram Schmidt orthonormalization
-          -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
-
- (CCORT)  trial vectors reduced from  4 to  3
-      8       3         0.00     0.29E-04
+ ROOT:  1 RESIDUAL TOT: 7.71155D-10
+ ROOT:  2 RESIDUAL TOT: 2.29190D-09
+ ROOT:  3 RESIDUAL TOT: 7.89107D-06
+ ROOT:  4 RESIDUAL TOT: 1.98641D-06
+      8       3         0.00     0.79E-05
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
        1      0.40858931
        2      0.49694300
-       3      0.78318510
-       4      0.80882932
- Dimension of the reduced space:    23
+       3      0.78318497
+       4      0.80882931
+ Dimension of the reduced space:    24
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
@@ -2570,22 +2598,23 @@ Point group: C2v
               Column   1
        1      0.40858931
        2      0.49694300
-       3      0.78318505
+       3      0.78318503
        4      0.80882932
   
- ROOT:  1 RESIDUAL TOT: 3.03081D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.03081D-11
- ROOT:  2 RESIDUAL TOT: 1.16351D-10
- ROOT:  3 RESIDUAL TOT: 8.04025D-07
- ROOT:  4 RESIDUAL TOT: 2.13237D-07
-      9       3         0.00     0.80E-06
+ ROOT:  1 RESIDUAL TOT: 8.00288D-12
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.00288D-12
+ ROOT:  2 RESIDUAL TOT: 3.15984D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 3.15984D-11
+ ROOT:  3 RESIDUAL TOT: 2.88110D-07
+ ROOT:  4 RESIDUAL TOT: 7.96009D-08
+      9       4         0.00     0.29E-06
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
        1      0.40858931
        2      0.49694300
-       3      0.78318505
+       3      0.78318503
        4      0.80882932
  Dimension of the reduced space:    26
  >>> TIME USED IN THIS MICRO ITERATION        0.04
@@ -2599,15 +2628,15 @@ Point group: C2v
        3      0.78318504
        4      0.80882932
   
- ROOT:  1 RESIDUAL TOT: 7.14605D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.14605D-16
- ROOT:  2 RESIDUAL TOT: 4.33007D-16
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.33007D-16
- ROOT:  3 RESIDUAL TOT: 1.97692D-15
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.97692D-15
- ROOT:  4 RESIDUAL TOT: 1.67918D-15
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 1.67918D-15
-     10       3         0.00     0.20E-14
+ ROOT:  1 RESIDUAL TOT: 6.99104D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.99104D-16
+ ROOT:  2 RESIDUAL TOT: 1.31462D-15
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.31462D-15
+ ROOT:  3 RESIDUAL TOT: 1.78712D-15
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.78712D-15
+ ROOT:  4 RESIDUAL TOT: 1.18540D-15
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 1.18540D-15
+     10       2         0.00     0.18E-14
 
  Lowest eigenvalues in this iteration: 
 
@@ -2634,7 +2663,7 @@ Point group: C2v
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.38 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2661,19 +2690,19 @@ Point group: C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4085893120       11.1182804365
-         2            0.4969430010       13.5225065475
-         3            0.7831850377       21.3115483626
-         4            0.8088293166       22.0093646694
+         1            0.4085893120       11.1182807520
+         2            0.4969430010       13.5225069313
+         3            0.7831850377       21.3115489673
+         4            0.8088293166       22.0093652943
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -24.598115824789822
-@@    3    2           -24.509762135732984
-@@    3    3           -24.223520099092287
-@@    3    4           -24.197875820168168
+@@    3    1           -24.598115824789964
+@@    3    2           -24.509762135733123
+@@    3    3           -24.223520099092266
+@@    3    4           -24.197875820155350
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2864,7 +2893,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1      2      4     15     20      5     16
-  MIN AND MAX IN SELECTED SUPSPACE   0.30437651889447803        1.1753075361758820     
+  MIN AND MAX IN SELECTED SUPSPACE   0.30437651889450168        1.1753075361894116     
  Start vector guessed from diagonal
  ... selected element no.  1
  Start vector guessed from diagonal
@@ -2896,11 +2925,11 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.51251D-32
+ norm of vector after Gram-Schmidt's orthogonalization  4.05789D-32
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.88987D-32
+ norm of vector after Gram-Schmidt's orthogonalization  1.11117D-32
   After Gram Schmidt orthonormalization
           -2  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2933,11 +2962,11 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.26330D-28
+ norm of vector after Gram-Schmidt's orthogonalization  1.52710D-27
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  7.67330D-31
+ norm of vector after Gram-Schmidt's orthogonalization  2.64372D-30
   After Gram Schmidt orthonormalization
           -2  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -2970,11 +2999,11 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  1.64044D-23
+ norm of vector after Gram-Schmidt's orthogonalization  3.76784D-24
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  2.71324D-26
+ norm of vector after Gram-Schmidt's orthogonalization  6.66640D-27
   After Gram Schmidt orthonormalization
           -2  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -3007,7 +3036,7 @@ Point group: C2v
 
  (CCORT) new  b-vector no.  4
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  1.37181D-26
+ norm of vector after Gram-Schmidt's orthogonalization  3.43365D-26
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -3029,22 +3058,22 @@ Point group: C2v
 
               Column   1
        1      0.04918762
-       2      0.45051501
+       2      0.45051500
        3      0.85300756
        4      0.85369676
   
- ROOT:  1 RESIDUAL TOT: 4.92098D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.92098D-11
- ROOT:  2 RESIDUAL TOT: 4.72181D-06
- ROOT:  3 RESIDUAL TOT: 3.03922D-07
- ROOT:  4 RESIDUAL TOT: 3.46729D-05
-      5       3         0.00     0.35E-04
+ ROOT:  1 RESIDUAL TOT: 5.04796D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.04796D-11
+ ROOT:  2 RESIDUAL TOT: 4.71691D-06
+ ROOT:  3 RESIDUAL TOT: 3.11101D-07
+ ROOT:  4 RESIDUAL TOT: 3.43715D-05
+      5       3         0.00     0.34E-04
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
        1      0.04918762
-       2      0.45051501
+       2      0.45051500
        3      0.85300756
        4      0.85369676
  Dimension of the reduced space:    16
@@ -3055,24 +3084,24 @@ Point group: C2v
 
               Column   1
        1      0.04918762
-       2      0.45051495
+       2      0.45051494
        3      0.85300756
-       4      0.85369673
+       4      0.85369672
   
- ROOT:  1 RESIDUAL TOT: 2.30972D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.30972D-13
- ROOT:  2 RESIDUAL TOT: 3.03445D-07
- ROOT:  3 RESIDUAL TOT: 6.93448D-08
- ROOT:  4 RESIDUAL TOT: 8.11831D-06
-      6       3         0.00     0.81E-05
+ ROOT:  1 RESIDUAL TOT: 2.28132D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.28132D-13
+ ROOT:  2 RESIDUAL TOT: 2.87577D-07
+ ROOT:  3 RESIDUAL TOT: 6.59604D-08
+ ROOT:  4 RESIDUAL TOT: 7.49118D-06
+      6       3         0.00     0.75E-05
 
  Lowest eigenvalues in this iteration: 
 
               Column   1
        1      0.04918762
-       2      0.45051495
+       2      0.45051494
        3      0.85300756
-       4      0.85369673
+       4      0.85369672
  Dimension of the reduced space:    19
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
@@ -3085,12 +3114,12 @@ Point group: C2v
        3      0.85300756
        4      0.85369673
   
- ROOT:  1 RESIDUAL TOT: 4.77305D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.77305D-16
- ROOT:  2 RESIDUAL TOT: 8.16681D-09
- ROOT:  3 RESIDUAL TOT: 5.32068D-09
- ROOT:  4 RESIDUAL TOT: 6.52383D-07
-      7       3         0.00     0.65E-06
+ ROOT:  1 RESIDUAL TOT: 5.41534D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.41534D-16
+ ROOT:  2 RESIDUAL TOT: 9.07952D-09
+ ROOT:  3 RESIDUAL TOT: 6.26899D-09
+ ROOT:  4 RESIDUAL TOT: 7.50276D-07
+      7       3         0.00     0.75E-06
 
  Lowest eigenvalues in this iteration: 
 
@@ -3111,12 +3140,12 @@ Point group: C2v
        3      0.85300756
        4      0.85369673
   
- ROOT:  1 RESIDUAL TOT: 1.04806D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.04806D-16
- ROOT:  2 RESIDUAL TOT: 3.16306D-10
- ROOT:  3 RESIDUAL TOT: 6.26608D-10
- ROOT:  4 RESIDUAL TOT: 8.30176D-08
-      8       3         0.00     0.83E-07
+ ROOT:  1 RESIDUAL TOT: 1.73684D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.73684D-16
+ ROOT:  2 RESIDUAL TOT: 1.98082D-10
+ ROOT:  3 RESIDUAL TOT: 4.68337D-10
+ ROOT:  4 RESIDUAL TOT: 5.25593D-08
+      8       3         0.00     0.53E-07
 
  Lowest eigenvalues in this iteration: 
 
@@ -3137,14 +3166,14 @@ Point group: C2v
        3      0.85300756
        4      0.85369673
   
- ROOT:  1 RESIDUAL TOT: 1.44864D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.44864D-16
- ROOT:  2 RESIDUAL TOT: 9.15811D-13
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.15811D-13
- ROOT:  3 RESIDUAL TOT: 2.59299D-12
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.59299D-12
- ROOT:  4 RESIDUAL TOT: 6.81738D-10
-      9       3         0.00     0.68E-09
+ ROOT:  1 RESIDUAL TOT: 1.35084D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.35084D-16
+ ROOT:  2 RESIDUAL TOT: 2.01617D-12
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.01617D-12
+ ROOT:  3 RESIDUAL TOT: 8.90592D-12
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 8.90592D-12
+ ROOT:  4 RESIDUAL TOT: 1.91801D-09
+      9       3         0.00     0.19E-08
 
  Lowest eigenvalues in this iteration: 
 
@@ -3165,15 +3194,15 @@ Point group: C2v
        3      0.85300756
        4      0.85369673
   
- ROOT:  1 RESIDUAL TOT: 1.62636D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.62636D-16
- ROOT:  2 RESIDUAL TOT: 9.56303D-16
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.56303D-16
- ROOT:  3 RESIDUAL TOT: 1.50017D-15
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.50017D-15
- ROOT:  4 RESIDUAL TOT: 1.54189D-15
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 1.54189D-15
-     10       1         0.00     0.15E-14
+ ROOT:  1 RESIDUAL TOT: 1.37009D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.37009D-16
+ ROOT:  2 RESIDUAL TOT: 7.92561D-16
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 7.92561D-16
+ ROOT:  3 RESIDUAL TOT: 2.39868D-15
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.39868D-15
+ ROOT:  4 RESIDUAL TOT: 2.39940D-15
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 2.39940D-15
+     10       1         0.00     0.24E-14
 
  Lowest eigenvalues in this iteration: 
 
@@ -3199,8 +3228,8 @@ Point group: C2v
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.39 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.38 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3227,19 +3256,19 @@ Point group: C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.0491876226        1.3384632591
-         2            0.4505149501       12.2591350519
-         3            0.8530075601       23.2115157944
-         4            0.8536967335       23.2302691556
+         1            0.0491876226        1.3384632971
+         2            0.4505149501       12.2591353998
+         3            0.8530075601       23.2115164530
+         4            0.8536967335       23.2302698148
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -24.957517514148208
-@@    4    2           -24.556190186645214
-@@    4    3           -24.153697576612700
-@@    4    4           -24.153008403226966
+@@    4    1           -24.957517514148677
+@@    4    2           -24.556190186645672
+@@    4    3           -24.153697576612586
+@@    4    4           -24.153008403226856
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3424,7 +3453,7 @@ Point group: C2v
 
  Ground state energy is target 
 
- Ecorr =                    -25.00670513675467176995
+ Ecorr =                    -25.00670513675510520102
 
  *******************************************************************
   
@@ -3451,25 +3480,25 @@ Point group: C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.2843958  |       7.73880  |     62417.653  |  82.03  |
- | ^1A1  |    2   |     0.3848740  |      10.47295  |     84470.072  |  36.27  |
- | ^1A1  |    3   |     0.5313011  |      14.45744  |    116607.116  |  92.75  |
- | ^1A1  |    4   |     0.6087612  |      16.56524  |    133607.645  |   0.05  |
+ | ^1A1  |    1   |     0.2843958  |       7.73880  |     62417.652  |  82.03  |
+ | ^1A1  |    2   |     0.3848740  |      10.47295  |     84470.071  |  36.27  |
+ | ^1A1  |    3   |     0.5313011  |      14.45744  |    116607.115  |  92.75  |
+ | ^1A1  |    4   |     0.6087612  |      16.56524  |    133607.644  |   0.05  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |    -0.0600237  |      -1.63333  |    -13173.674  |  98.99  |
- | ^1B1  |    2   |     0.2998231  |       8.15860  |     65803.555  |  96.69  |
- | ^1B1  |    3   |     0.3606523  |       9.81385  |     79154.023  |  96.13  |
- | ^1B1  |    4   |     0.4067781  |      11.06900  |     89277.479  |  96.71  |
+ | ^1B1  |    2   |     0.2998231  |       8.15860  |     65803.554  |  96.69  |
+ | ^1B1  |    3   |     0.3606523  |       9.81385  |     79154.022  |  96.13  |
+ | ^1B1  |    4   |     0.4067781  |      11.06900  |     89277.478  |  96.71  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.4085893  |      11.11828  |     89674.989  |  81.74  |
- | ^1B2  |    2   |     0.4969430  |      13.52251  |    109066.382  |  12.70  |
- | ^1B2  |    3   |     0.7831850  |      21.31155  |    171889.247  |  88.24  |
- | ^1B2  |    4   |     0.8088293  |      22.00936  |    177517.516  |   2.28  |
+ | ^1B2  |    1   |     0.4085893  |      11.11828  |     89674.988  |  81.74  |
+ | ^1B2  |    2   |     0.4969430  |      13.52251  |    109066.381  |  12.70  |
+ | ^1B2  |    3   |     0.7831850  |      21.31155  |    171889.246  |  88.24  |
+ | ^1B2  |    4   |     0.8088293  |      22.00937  |    177517.514  |   2.28  |
  +-----------------------------------------------------------------------------+
  | ^1A2  |    1   |     0.0491876  |       1.33846  |     10795.435  |  99.51  |
- | ^1A2  |    2   |     0.4505150  |      12.25914  |     98876.603  |  96.69  |
- | ^1A2  |    3   |     0.8530076  |      23.21152  |    187213.520  |   0.00  |
- | ^1A2  |    4   |     0.8536967  |      23.23027  |    187364.776  |   0.15  |
+ | ^1A2  |    2   |     0.4505150  |      12.25914  |     98876.602  |  96.69  |
+ | ^1A2  |    3   |     0.8530076  |      23.21152  |    187213.518  |   0.00  |
+ | ^1A2  |    4   |     0.8536967  |      23.23027  |    187364.774  |   0.15  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -3479,7 +3508,7 @@ Point group: C2v
              3 ^1A1       -24.4754040213                                        
              4 ^1A1       -24.3979439131                                        
              1 ^1B1       -25.0667288107                                        
-             2 ^1B1       -24.7068820815                                        
+             2 ^1B1       -24.7068820814                                        
              3 ^1B1       -24.6460528713                                        
              4 ^1B1       -24.5999270130                                        
              1 ^1B2       -24.5981158248                                        
@@ -3492,7 +3521,7 @@ Point group: C2v
              4 ^1A2       -24.1530084032                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -3511,9 +3540,9 @@ Point group: C2v
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   3.63 seconds
- >>>> Total wall time used in DALTON:  10.00 seconds
+ >>>> Total CPU  time used in DALTON:   3.59 seconds
+ >>>> Total wall time used in DALTON:  17.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:46:35 2010 
+     Date and time (Linux)  : Wed Mar 16 19:15:24 2011 
      Host name              : fe6                                     

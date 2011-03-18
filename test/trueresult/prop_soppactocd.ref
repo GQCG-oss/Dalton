@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:16:14 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:03 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -182,8 +183,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -249,15 +250,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -265,8 +266,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -274,7 +275,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -283,7 +284,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       0.616959          0.000000    1.000000    0.000000
-   IB       1.156693          0.000000    0.000000    1.000000
+   IB       1.156694          0.000000    0.000000    1.000000
    IC       1.773652          1.000000    0.000000    0.000000
 
 
@@ -294,8 +295,8 @@ Point group: C2v
 
                A                   B                   C
 
-         819145.5197         436916.9613         284936.9173 MHz
-           27.323753           14.573981            9.504473 cm-1
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
 
 
 @  Nuclear repulsion energy :    9.183706230245
@@ -387,9 +388,9 @@ Point group: C2v
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.17 seconds
- >>>> Total CPU  time used in HERMIT:   0.17 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>> Time used in TWOINT is   0.18 seconds
+ >>>> Total CPU  time used in HERMIT:   0.19 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -423,7 +424,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:03 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -438,8 +439,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -447,6 +447,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MP2      <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -482,32 +483,52 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.995901
+      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
    2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001342
+      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000717
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000873
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000774
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
-      MULPOP O   ******; H   ******; 
-  10  -76.0607842187       1.38D-06  -8.58D-12    3  1  1  0
-      MULPOP O   ******; H   ******; 
-  11  -76.0607842187       2.21D-07  -3.98D-13    3  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000810
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+  10  -76.0607842187       1.38D-06  -8.50D-12    3  1  1  0
+      Virial theorem: -V/T =      2.000810
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+  11  -76.0607842187       2.21D-07  -3.41D-13    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -522,8 +543,8 @@ Point group: C2v
     Number of electrons :   10
     Orbital occupations :    3    1    1    0
 
- Hartree-Fock electronic energy:         -85.244490448927
- Hartree-Fock total      energy:         -76.060784218682
+ Hartree-Fock electronic energy:         -85.244490448930
+ Hartree-Fock total      energy:         -76.060784218685
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  3.49D-08
 
@@ -593,23 +614,26 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
          0.00616699     0.00036350
 
- Time used for MP2 natural orbitals :       0.059 CPU seconds.
+ Time used for MP2 natural orbitals :       0.058 CPU seconds.
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218682                 
+     Final HF energy:             -76.060784218684                 
      Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448927
+     Electronic energy:           -85.244490448930
 
      Final gradient norm:           0.000000220760
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:03 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -617,7 +641,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
    2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
    3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
@@ -641,7 +665,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.0819  -0.0403   0.0108
    2 O   :px     0.1941  -0.1683   0.0187
    3 O   :px     0.3396  -0.0020   0.0667
@@ -653,7 +677,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :py     0.0653   0.0306   0.0081
    2 O   :py     0.1529   0.0600  -0.0127
    3 O   :py     0.2746   0.1667   0.0964
@@ -669,7 +693,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :dxy    0.9129   0.7003
    2 H   :px     0.1116  -0.8095
 
@@ -679,7 +703,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:03 2011 
      Host name              : fe6                                     
 
 
@@ -730,9 +754,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:03 2011 
      Host name              : fe6                                     
- >>> Time used in CTOABA is   0.31 seconds
+ >>> Time used in CTOABA is   0.33 seconds
 
 
    ***************************************************************************
@@ -741,7 +765,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:06 2011 
      Host name              : fe6                                     
 
 
@@ -749,8 +773,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
                              -----------------------
 
  O          0.0000000000            0.0000000000            0.1241444240
- H    1     0.0000000000            1.4315300000           -0.9852655760
- H    2     0.0000000000           -1.4315300000           -0.9852655760
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
 
 
 
@@ -762,8 +786,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0607842187 au (Hartrees)
-                         -2069.71916395 eV
-                           -199697.5603 kJ/mol
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
 
 
    ****************************************************************************
@@ -803,8 +827,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                        Bx                  By                  Bz
 
-  Bx        -2.415824080586     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -2.172349752187     -0.000000000000
+  Bx        -2.415824080592     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.172349752188     -0.000000000000
   Bz        -0.000000000000     -0.000000000000     -2.335258028608
 
 
@@ -814,9 +838,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                        Bx                  By                  Bz
 
-  Bx        -2.871431471224      0.000000000000      0.000000000000
-  By         0.000000000000     -2.300002106717      0.000000000000
-  Bz         0.000000000000      0.000000000000     -2.574539912270
+  Bx        -2.871431471227      0.000000000000      0.000000000000
+  By         0.000000000000     -2.300002106716      0.000000000000
+  Bz         0.000000000000      0.000000000000     -2.574539912269
 
 
 
@@ -825,9 +849,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                        Bx                  By                  Bz
 
-  Bx         0.455607390638     -0.000000000000     -0.000000000000
-  By        -0.000000000000      0.127652354530     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000      0.239281883662
+  Bx         0.455607390634     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.127652354528     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000      0.239281883661
 
 
 
@@ -893,9 +917,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   215.98205887     0.00000000     0.00000000
-  O      y     0.00000000   267.26289818     0.00000000
-  O      z     0.00000000     0.00000000   221.21579232
+  O      x   215.98205710     0.00000000     0.00000000
+  O      y     0.00000000   267.26289598     0.00000000
+  O      z     0.00000000     0.00000000   221.21579050
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -907,7 +931,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   O      y     0.0000   330.7274     0.0000        0.0000   -63.4645     0.0000
   O      z     0.0000     0.0000   331.9665        0.0000     0.0000  -110.7507
 
-  Diamagnetic contribution:    332.773808         Paramagnetic:     -97.953559
+  Diamagnetic contribution:    332.773806         Paramagnetic:     -97.953558
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -923,12 +947,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Principal values and axes:
   --------------------------
 
-  O         215.982059  =  234.82  -  18.84:     1.000000  0.000000  0.000000
-  O         221.215792  =  234.82  -  13.60:     0.000000  0.000000  1.000000
-  O         267.262898  =  234.82  +  32.44:     0.000000  1.000000  0.000000
+  O         215.982057  =  234.82  -  18.84:     1.000000  0.000000  0.000000
+  O         221.215791  =  234.82  -  13.60:     0.000000  0.000000  1.000000
+  O         267.262896  =  234.82  +  32.44:     0.000000  1.000000  0.000000
 
 
-  CTOCD-DZ: Chemical shielding for H    1:
+  CTOCD-DZ: Chemical shielding for H   _1:
   ========================================
 
 
@@ -948,13 +972,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    22.71933462     0.00000000     0.00000000
-  H    1 y     0.00000000    34.09908145    -7.70148500
-  H    1 z     0.00000000    -4.92357176    26.99834770
+  H   _1 x    22.71933443     0.00000000     0.00000000
+  H   _1 y     0.00000000    34.09908117    -7.70148494
+  H   _1 z     0.00000000    -4.92357172    26.99834748
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -962,11 +986,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x   120.0138     0.0000     0.0000      -97.2945     0.0000     0.0000
-  H    1 y     0.0000    67.0045    35.5132        0.0000   -32.9054   -43.2147
-  H    1 z     0.0000    37.2498    91.4994        0.0000   -42.1734   -64.5011
+  H   _1 x   120.0138     0.0000     0.0000      -97.2945     0.0000     0.0000
+  H   _1 y     0.0000    67.0045    35.5132        0.0000   -32.9054   -43.2147
+  H   _1 z     0.0000    37.2498    91.4994        0.0000   -42.1734   -64.5011
 
-  Diamagnetic contribution:     92.839248         Paramagnetic:     -64.900327
+  Diamagnetic contribution:     92.839247         Paramagnetic:     -64.900326
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -974,20 +998,20 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
-  H    1 y     0.0000     0.0000    -1.3890        0.0000     6.1602    -6.3125
-  H    1 z     0.0000     1.3890     0.0000        0.0000    -6.3125    -0.9406
+  H   _1 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -1.3890        0.0000     6.1602    -6.3125
+  H   _1 z     0.0000     1.3890     0.0000        0.0000    -6.3125    -0.9406
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     22.719335  =   27.94  -   5.22:     1.000000  0.000000  0.000000
-  H    1     23.306262  =   27.94  -   4.63:     0.000000  0.504868  0.863196
-  H    1     37.791167  =   27.94  +   9.85:     0.000000  0.863196 -0.504868
+  H   _1     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _1     23.306262  =   27.94  -   4.63:     0.000000  0.504868  0.863196
+  H   _1     37.791167  =   27.94  +   9.85:     0.000000  0.863196 -0.504868
 
 
-  CTOCD-DZ: Chemical shielding for H    2:
+  CTOCD-DZ: Chemical shielding for H   _2:
   ========================================
 
 
@@ -1007,13 +1031,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    22.71933462     0.00000000     0.00000000
-  H    2 y     0.00000000    34.09908145     7.70148500
-  H    2 z     0.00000000     4.92357176    26.99834770
+  H   _2 x    22.71933443     0.00000000     0.00000000
+  H   _2 y     0.00000000    34.09908117     7.70148494
+  H   _2 z     0.00000000     4.92357172    26.99834748
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1021,11 +1045,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x   120.0138     0.0000     0.0000      -97.2945     0.0000     0.0000
-  H    2 y     0.0000    67.0045   -35.5132        0.0000   -32.9054    43.2147
-  H    2 z     0.0000   -37.2498    91.4994        0.0000    42.1734   -64.5011
+  H   _2 x   120.0138     0.0000     0.0000      -97.2945     0.0000     0.0000
+  H   _2 y     0.0000    67.0045   -35.5132        0.0000   -32.9054    43.2147
+  H   _2 z     0.0000   -37.2498    91.4994        0.0000    42.1734   -64.5011
 
-  Diamagnetic contribution:     92.839248         Paramagnetic:     -64.900327
+  Diamagnetic contribution:     92.839247         Paramagnetic:     -64.900326
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1033,17 +1057,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
-  H    2 y     0.0000     0.0000     1.3890        0.0000     6.1602     6.3125
-  H    2 z     0.0000    -1.3890     0.0000        0.0000     6.3125    -0.9406
+  H   _2 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     1.3890        0.0000     6.1602     6.3125
+  H   _2 z     0.0000    -1.3890     0.0000        0.0000     6.3125    -0.9406
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     22.719335  =   27.94  -   5.22:     1.000000  0.000000  0.000000
-  H    2     23.306262  =   27.94  -   4.63:     0.000000 -0.504868  0.863196
-  H    2     37.791167  =   27.94  +   9.85:     0.000000  0.863196  0.504868
+  H   _2     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _2     23.306262  =   27.94  -   4.63:     0.000000 -0.504868  0.863196
+  H   _2     37.791167  =   27.94  +   9.85:     0.000000  0.863196  0.504868
 
 
                          +--------------------------------+
@@ -1055,8 +1079,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       234.8202  332.7738  -97.9536    0.7959   51.2808   48.6640    0.1613
- @1H    1   27.9389   92.8392  -64.9003    0.9221   15.0718   14.7784    0.0596
- @1H    2   27.9389   92.8392  -64.9003    0.9221   15.0718   14.7784    0.0596
+ @1H   _1   27.9389   92.8392  -64.9003    0.9221   15.0718   14.7784    0.0596
+ @1H   _2   27.9389   92.8392  -64.9003    0.9221   15.0718   14.7784    0.0596
 
 
 
@@ -1069,8 +1093,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       234.8202  332.7738  -97.9536   48.6640    0.1613   48.8746    0.0000
- @2H    1   27.9389   92.8392  -64.9003   14.7784    0.0596   14.7871    1.3890
- @2H    2   27.9389   92.8392  -64.9003   14.7784    0.0596   14.7871    1.3890
+ @2H   _1   27.9389   92.8392  -64.9003   14.7784    0.0596   14.7871    1.3890
+ @2H   _2   27.9389   92.8392  -64.9003   14.7784    0.0596   14.7871    1.3890
 
 
 
@@ -1131,9 +1155,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   215.98205887     0.00000000     0.00000000
-  O      y     0.00000000   267.26289818     0.00000000
-  O      z     0.00000000     0.00000000   221.21579232
+  O      x   215.98205710     0.00000000     0.00000000
+  O      y     0.00000000   267.26289598     0.00000000
+  O      z     0.00000000     0.00000000   221.21579050
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1145,7 +1169,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   O      y     0.0000   325.7027     0.0000        0.0000   -58.4398     0.0000
   O      z     0.0000     0.0000   331.9665        0.0000     0.0000  -110.7507
 
-  Diamagnetic contribution:    330.700676         Paramagnetic:     -95.880426
+  Diamagnetic contribution:    330.700673         Paramagnetic:     -95.880426
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1161,12 +1185,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Principal values and axes:
   --------------------------
 
-  O         215.982059  =  234.82  -  18.84:     1.000000  0.000000  0.000000
-  O         221.215792  =  234.82  -  13.60:     0.000000  0.000000  1.000000
-  O         267.262898  =  234.82  +  32.44:     0.000000  1.000000  0.000000
+  O         215.982057  =  234.82  -  18.84:     1.000000  0.000000  0.000000
+  O         221.215791  =  234.82  -  13.60:     0.000000  0.000000  1.000000
+  O         267.262896  =  234.82  +  32.44:     0.000000  1.000000  0.000000
 
 
-  CTOCD-DZ: Chemical shielding for H    1:
+  CTOCD-DZ: Chemical shielding for H   _1:
   ========================================
 
 
@@ -1181,13 +1205,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    22.71933462     0.00000000     0.00000000
-  H    1 y     0.00000000    34.09908145    -7.70148500
-  H    1 z     0.00000000    -4.92357176    26.99834770
+  H   _1 x    22.71933443     0.00000000     0.00000000
+  H   _1 y     0.00000000    34.09908117    -7.70148494
+  H   _1 z     0.00000000    -4.92357172    26.99834748
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1195,11 +1219,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x    13.3030     0.0000     0.0000        9.4163     0.0000     0.0000
-  H    1 y     0.0000    31.9191   -15.4645        0.0000     2.1800     7.7630
-  H    1 z     0.0000   -11.4539    20.7348        0.0000     6.5303     6.2635
+  H   _1 x    13.3030     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _1 y     0.0000    31.9191   -15.4645        0.0000     2.1800     7.7630
+  H   _1 z     0.0000   -11.4539    20.7348        0.0000     6.5303     6.2635
 
-  Diamagnetic contribution:     21.985631         Paramagnetic:       5.953291
+  Diamagnetic contribution:     21.985630         Paramagnetic:       5.953291
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1207,20 +1231,20 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
-  H    1 y     0.0000     0.0000    -1.3890        0.0000     6.1602    -6.3125
-  H    1 z     0.0000     1.3890     0.0000        0.0000    -6.3125    -0.9406
+  H   _1 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -1.3890        0.0000     6.1602    -6.3125
+  H   _1 z     0.0000     1.3890     0.0000        0.0000    -6.3125    -0.9406
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     22.719335  =   27.94  -   5.22:     1.000000  0.000000  0.000000
-  H    1     23.306262  =   27.94  -   4.63:     0.000000  0.504868  0.863196
-  H    1     37.791167  =   27.94  +   9.85:     0.000000  0.863196 -0.504868
+  H   _1     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _1     23.306262  =   27.94  -   4.63:     0.000000  0.504868  0.863196
+  H   _1     37.791167  =   27.94  +   9.85:     0.000000  0.863196 -0.504868
 
 
-  CTOCD-DZ: Chemical shielding for H    2:
+  CTOCD-DZ: Chemical shielding for H   _2:
   ========================================
 
 
@@ -1235,13 +1259,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    22.71933462     0.00000000     0.00000000
-  H    2 y     0.00000000    34.09908145     7.70148500
-  H    2 z     0.00000000     4.92357176    26.99834770
+  H   _2 x    22.71933443     0.00000000     0.00000000
+  H   _2 y     0.00000000    34.09908117     7.70148494
+  H   _2 z     0.00000000     4.92357172    26.99834748
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1249,11 +1273,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x    13.3030     0.0000     0.0000        9.4163     0.0000     0.0000
-  H    2 y     0.0000    31.9191    15.4645        0.0000     2.1800    -7.7630
-  H    2 z     0.0000    11.4539    20.7348        0.0000    -6.5303     6.2635
+  H   _2 x    13.3030     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _2 y     0.0000    31.9191    15.4645        0.0000     2.1800    -7.7630
+  H   _2 z     0.0000    11.4539    20.7348        0.0000    -6.5303     6.2635
 
-  Diamagnetic contribution:     21.985631         Paramagnetic:       5.953291
+  Diamagnetic contribution:     21.985630         Paramagnetic:       5.953291
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1261,17 +1285,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
-  H    2 y     0.0000     0.0000     1.3890        0.0000     6.1602     6.3125
-  H    2 z     0.0000    -1.3890     0.0000        0.0000     6.3125    -0.9406
+  H   _2 x     0.0000     0.0000     0.0000       -5.2196     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     1.3890        0.0000     6.1602     6.3125
+  H   _2 z     0.0000    -1.3890     0.0000        0.0000     6.3125    -0.9406
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     22.719335  =   27.94  -   5.22:     1.000000  0.000000  0.000000
-  H    2     23.306262  =   27.94  -   4.63:     0.000000 -0.504868  0.863196
-  H    2     37.791167  =   27.94  +   9.85:     0.000000  0.863196  0.504868
+  H   _2     22.719334  =   27.94  -   5.22:     1.000000  0.000000  0.000000
+  H   _2     23.306262  =   27.94  -   4.63:     0.000000 -0.504868  0.863196
+  H   _2     37.791167  =   27.94  +   9.85:     0.000000  0.863196  0.504868
 
 
                          +--------------------------------+
@@ -1283,8 +1307,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       234.8202  330.7007  -95.8804    0.7959   51.2808   48.6640    0.1613
- @1H    1   27.9389   21.9856    5.9533    0.9221   15.0718   14.7784    0.0596
- @1H    2   27.9389   21.9856    5.9533    0.9221   15.0718   14.7784    0.0596
+ @1H   _1   27.9389   21.9856    5.9533    0.9221   15.0718   14.7784    0.0596
+ @1H   _2   27.9389   21.9856    5.9533    0.9221   15.0718   14.7784    0.0596
 
 
 
@@ -1297,8 +1321,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       234.8202  330.7007  -95.8804   48.6640    0.1613   48.8746    0.0000
- @2H    1   27.9389   21.9856    5.9533   14.7784    0.0596   14.7871    1.3890
- @2H    2   27.9389   21.9856    5.9533   14.7784    0.0596   14.7871    1.3890
+ @2H   _1   27.9389   21.9856    5.9533   14.7784    0.0596   14.7871    1.3890
+ @2H   _2   27.9389   21.9856    5.9533   14.7784    0.0596   14.7871    1.3890
 
 
 
@@ -1317,7 +1341,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   ---------------------------------------------------------------
 
   Isotropic magnetizability:      -3.0371   -239.6605    -14.4327
-  Diamagnetic contribution:       -3.3113   -261.2961    -15.7356
+  Diamagnetic contribution:       -3.3113   -261.2962    -15.7356
   Paramagnetic contribution:       0.2742     21.6357      1.3029
   1st anisotropy:                 -0.0377     -2.9713     -0.1789
   2nd anisotropy:                  0.0626      4.9428      0.2977
@@ -1329,7 +1353,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
   khi_aa      -3.0538   -240.9748    -14.5118      1.0000    0.0000    0.0000
   khi_bb      -2.9954   -236.3653    -14.2343      0.0000    1.0000    0.0000
-  khi_cc      -3.0622   -241.6413    -14.5520      0.0000    0.0000    1.0000
+  khi_cc      -3.0622   -241.6414    -14.5520      0.0000    0.0000    1.0000
 
 
                         Total magnetizability tensor (au)
@@ -1337,8 +1361,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                        Bx                  By                  Bz
 
-  Bx        -3.053778606738     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -2.995363912271     -0.000000000000
+  Bx        -3.053778606741     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.995363912274     -0.000000000000
   Bz        -0.000000000000     -0.000000000000     -3.062225720384
 
 
@@ -1348,9 +1372,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                        Bx                  By                  Bz
 
-  Bx        -3.509385997376      0.000000000000      0.000000000000
-  By         0.000000000000     -3.123016266801      0.000000000000
-  Bz         0.000000000000      0.000000000000     -3.301507604046
+  Bx        -3.509385997375      0.000000000000      0.000000000000
+  By         0.000000000000     -3.123016266802      0.000000000000
+  Bz         0.000000000000      0.000000000000     -3.301507604045
 
 
 
@@ -1359,9 +1383,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                        Bx                  By                  Bz
 
-  Bx         0.455607390638     -0.000000000000     -0.000000000000
-  By        -0.000000000000      0.127652354530     -0.000000000000
-  Bz        -0.000000000000     -0.000000000000      0.239281883662
+  Bx         0.455607390634     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.127652354528     -0.000000000000
+  Bz        -0.000000000000     -0.000000000000      0.239281883661
 
 
 
@@ -1406,7 +1430,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
    A            0.94398430      0.00000000      0.00000000
    B            0.00000000      0.99945573      0.00000000
-   C            0.00000000      0.00000000      0.98016019
+   C            0.00000000      0.00000000      0.98016018
 
 
   Electronic contribution in principal axis system (a.u.):
@@ -1438,22 +1462,22 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
     Symmetry 2
                        By
 
-        O    y   355.21827761
-        H    y    78.24710872
-        H    z   -15.20512009
+        O    y   355.21827469
+        H    y    78.24710807
+        H    z   -15.20511996
 
     Symmetry 3
                        Bx
 
-        O    x   297.16195229
-        H    x    46.81780540
+        O    x   297.16194985
+        H    x    46.81780501
 
     Symmetry 4
                        Bz
 
-        O    z   304.75557679
-        H    y   -19.14051123
-        H    z    59.89596182
+        O    z   304.75557428
+        H    y   -19.14051108
+        H    z    59.89596133
 
 
 
@@ -1477,9 +1501,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   297.16195229     0.00000000     0.00000000
-  O      y     0.00000000   355.21827761     0.00000000
-  O      z     0.00000000     0.00000000   304.75557679
+  O      x   297.16194985     0.00000000     0.00000000
+  O      y     0.00000000   355.21827469     0.00000000
+  O      z     0.00000000     0.00000000   304.75557428
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1491,7 +1515,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   O      y     0.0000   413.6581     0.0000        0.0000   -58.4398     0.0000
   O      z     0.0000     0.0000   415.5063        0.0000     0.0000  -110.7507
 
-  Diamagnetic contribution:    414.925695         Paramagnetic:     -95.880426
+  Diamagnetic contribution:    414.925692         Paramagnetic:     -95.880426
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1507,12 +1531,12 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Principal values and axes:
   --------------------------
 
-  O         297.161952  =  319.05  -  21.88:     1.000000  0.000000  0.000000
-  O         304.755577  =  319.05  -  14.29:     0.000000  0.000000  1.000000
-  O         355.218278  =  319.05  +  36.17:     0.000000  1.000000  0.000000
+  O         297.161950  =  319.05  -  21.88:     1.000000  0.000000  0.000000
+  O         304.755574  =  319.05  -  14.29:     0.000000  0.000000  1.000000
+  O         355.218275  =  319.05  +  36.17:     0.000000  1.000000  0.000000
 
 
-  Chemical shielding for H    1:
+  Chemical shielding for H   _1:
   ==============================
 
 
@@ -1527,13 +1551,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    23.40890270     0.00000000     0.00000000
-  H    1 y     0.00000000    39.12355436    -9.57025562
-  H    1 z     0.00000000    -7.60256004    29.94798091
+  H   _1 x    23.40890251     0.00000000     0.00000000
+  H   _1 y     0.00000000    39.12355404    -9.57025554
+  H   _1 z     0.00000000    -7.60255998    29.94798067
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1541,9 +1565,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x    13.9926     0.0000     0.0000        9.4163     0.0000     0.0000
-  H    1 y     0.0000    36.9435   -17.3333        0.0000     2.1800     7.7630
-  H    1 z     0.0000   -14.1329    23.6845        0.0000     6.5303     6.2635
+  H   _1 x    13.9926     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _1 y     0.0000    36.9435   -17.3333        0.0000     2.1800     7.7630
+  H   _1 z     0.0000   -14.1329    23.6845        0.0000     6.5303     6.2635
 
   Diamagnetic contribution:     24.873522         Paramagnetic:       5.953291
 
@@ -1553,20 +1577,20 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
-  H    1 y     0.0000     0.0000    -0.9838        0.0000     8.2967    -8.5864
-  H    1 z     0.0000     0.9838     0.0000        0.0000    -8.5864    -0.8788
+  H   _1 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -0.9838        0.0000     8.2967    -8.5864
+  H   _1 z     0.0000     0.9838     0.0000        0.0000    -8.5864    -0.8788
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
-  H    1     24.800564  =   30.83  -   6.03:     0.000000  0.514170  0.857688
-  H    1     44.270971  =   30.83  +  13.44:     0.000000  0.857688 -0.514170
+  H   _1     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
+  H   _1     24.800564  =   30.83  -   6.03:     0.000000  0.514170  0.857688
+  H   _1     44.270971  =   30.83  +  13.44:     0.000000  0.857688 -0.514170
 
 
-  Chemical shielding for H    2:
+  Chemical shielding for H   _2:
   ==============================
 
 
@@ -1581,13 +1605,13 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    23.40890270     0.00000000     0.00000000
-  H    2 y     0.00000000    39.12355436     9.57025562
-  H    2 z     0.00000000     7.60256004    29.94798091
+  H   _2 x    23.40890251     0.00000000     0.00000000
+  H   _2 y     0.00000000    39.12355404     9.57025554
+  H   _2 z     0.00000000     7.60255998    29.94798067
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1595,9 +1619,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x    13.9926     0.0000     0.0000        9.4163     0.0000     0.0000
-  H    2 y     0.0000    36.9435    17.3333        0.0000     2.1800    -7.7630
-  H    2 z     0.0000    14.1329    23.6845        0.0000    -6.5303     6.2635
+  H   _2 x    13.9926     0.0000     0.0000        9.4163     0.0000     0.0000
+  H   _2 y     0.0000    36.9435    17.3333        0.0000     2.1800    -7.7630
+  H   _2 z     0.0000    14.1329    23.6845        0.0000    -6.5303     6.2635
 
   Diamagnetic contribution:     24.873522         Paramagnetic:       5.953291
 
@@ -1607,17 +1631,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
-  H    2 y     0.0000     0.0000     0.9838        0.0000     8.2967     8.5864
-  H    2 z     0.0000    -0.9838     0.0000        0.0000     8.5864    -0.8788
+  H   _2 x     0.0000     0.0000     0.0000       -7.4179     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     0.9838        0.0000     8.2967     8.5864
+  H   _2 z     0.0000    -0.9838     0.0000        0.0000     8.5864    -0.8788
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
-  H    2     24.800564  =   30.83  -   6.03:     0.000000 -0.514170  0.857688
-  H    2     44.270971  =   30.83  +  13.44:     0.000000  0.857688  0.514170
+  H   _2     23.408903  =   30.83  -   7.42:     1.000000  0.000000  0.000000
+  H   _2     24.800564  =   30.83  -   6.03:     0.000000 -0.514170  0.857688
+  H   _2     44.270971  =   30.83  +  13.44:     0.000000  0.857688  0.514170
 
 
                          +--------------------------------+
@@ -1629,8 +1653,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       319.0453  414.9257  -95.8804    0.7384   58.0563   54.2595    0.2099
- @1H    1   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
- @1H    2   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
+ @1H   _1   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
+ @1H   _2   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
 
 
 
@@ -1643,23 +1667,23 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       319.0453  414.9257  -95.8804   54.2595    0.2099   54.6566    0.0000
- @2H    1   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
- @2H    2   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
+ @2H   _1   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
+ @2H   _2   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
 
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1667,8 +1691,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -1676,7 +1700,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -1687,17 +1711,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.63 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.66 seconds
+ >>>> Total wall time used in ABACUS:   3.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.89 seconds
+ >>>> Total CPU  time used in DALTON:   0.94 seconds
  >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:06 2011 
      Host name              : fe6                                     

@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 23:57:12 2010 
+     Date and time (Linux)  : Wed Mar 16 20:27:23 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -230,21 +231,33 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           C    1     12.000000
-                           C    2     12.000000
-                           C    1     12.000000
-                           C    2     12.000000
-                           C    3     12.000000
-                           C    4     12.000000
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    3      1.007825
-                           H    4      1.007825
+                           C   _1     12.000000
+                           C   _2     12.000000
+                           C   _1     12.000000
+                           C   _2     12.000000
+                           C   _3     12.000000
+                           C   _4     12.000000
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _3      1.007825
+                           H   _4      1.007825
+                           C   _1      0.000000
+                           C   _2      0.000000
+                           C   _1      0.000000
+                           C   _2      0.000000
+                           C   _3      0.000000
+                           C   _4      0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H   _3      0.000000
+                           H   _4      0.000000
 
                        Total mass:    78.046950 amu
-                       Natural abundance:  93.495 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
@@ -278,7 +291,7 @@ Point group: D2h
   Number of coordinates in each symmetry:    12   12   12   12    8    4    8    4
 
   Max interatomic separation is    2.4871 Angstrom (    4.7000 Bohr)
-  between atoms   11 and   10, "H    3" and "H    2".
+  between atoms   11 and   10, "H   _3" and "H   _2".
 
 
   Bond distances (Angstrom):
@@ -286,39 +299,39 @@ Point group: D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  C    2     C    1       1.471113
-  bond distance:  C    1     C    1       0.735556
-  bond distance:  C    1     C    2       1.274021
-  bond distance:  C    2     C    1       0.735556
-  bond distance:  C    2     C    2       1.274021
-  bond distance:  C    2     C    1       1.274021
-  bond distance:  C    3     C    1       1.274021
-  bond distance:  C    3     C    2       0.735556
-  bond distance:  C    3     C    1       0.735556
-  bond distance:  C    3     C    2       1.471113
-  bond distance:  C    4     C    1       1.274021
-  bond distance:  C    4     C    2       0.735556
-  bond distance:  C    4     C    1       1.471113
-  bond distance:  C    4     C    2       0.735556
-  bond distance:  C    4     C    3       1.274021
-  bond distance:  H    1     C    1       0.508010
-  bond distance:  H    1     C    1       1.082953
-  bond distance:  H    1     C    2       1.082953
-  bond distance:  H    2     C    2       0.508010
-  bond distance:  H    2     C    3       1.082953
-  bond distance:  H    2     C    4       1.082953
-  bond distance:  H    1     C    1       1.082953
-  bond distance:  H    1     C    1       0.508010
-  bond distance:  H    1     C    3       1.082953
-  bond distance:  H    2     C    1       1.082953
-  bond distance:  H    2     C    2       0.508010
-  bond distance:  H    2     C    4       1.082953
-  bond distance:  H    3     C    2       1.082953
-  bond distance:  H    3     C    1       1.082953
-  bond distance:  H    3     C    3       0.508010
-  bond distance:  H    4     C    2       1.082953
-  bond distance:  H    4     C    2       1.082953
-  bond distance:  H    4     C    4       0.508010
+  bond distance:  C   _2     C   _1       1.471113
+  bond distance:  C   _1     C   _1       0.735556
+  bond distance:  C   _1     C   _2       1.274021
+  bond distance:  C   _2     C   _1       0.735556
+  bond distance:  C   _2     C   _2       1.274021
+  bond distance:  C   _2     C   _1       1.274021
+  bond distance:  C   _3     C   _1       1.274021
+  bond distance:  C   _3     C   _2       0.735556
+  bond distance:  C   _3     C   _1       0.735556
+  bond distance:  C   _3     C   _2       1.471113
+  bond distance:  C   _4     C   _1       1.274021
+  bond distance:  C   _4     C   _2       0.735556
+  bond distance:  C   _4     C   _1       1.471113
+  bond distance:  C   _4     C   _2       0.735556
+  bond distance:  C   _4     C   _3       1.274021
+  bond distance:  H   _1     C   _1       0.508010
+  bond distance:  H   _1     C   _1       1.082953
+  bond distance:  H   _1     C   _2       1.082953
+  bond distance:  H   _2     C   _2       0.508010
+  bond distance:  H   _2     C   _3       1.082953
+  bond distance:  H   _2     C   _4       1.082953
+  bond distance:  H   _1     C   _1       1.082953
+  bond distance:  H   _1     C   _1       0.508010
+  bond distance:  H   _1     C   _3       1.082953
+  bond distance:  H   _2     C   _1       1.082953
+  bond distance:  H   _2     C   _2       0.508010
+  bond distance:  H   _2     C   _4       1.082953
+  bond distance:  H   _3     C   _2       1.082953
+  bond distance:  H   _3     C   _1       1.082953
+  bond distance:  H   _3     C   _3       0.508010
+  bond distance:  H   _4     C   _2       1.082953
+  bond distance:  H   _4     C   _2       1.082953
+  bond distance:  H   _4     C   _4       0.508010
 
 
   Bond angles (degrees):
@@ -326,192 +339,192 @@ Point group: D2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C    2     C    1     C    1        60.000
-  bond angle:     C    2     C    1     C    2        60.000
-  bond angle:     C    2     C    1     C    3        30.000
-  bond angle:     C    2     C    1     C    4        30.000
-  bond angle:     C    2     C    1     H    1       180.000
-  bond angle:     C    2     C    1     H    1        83.969
-  bond angle:     C    2     C    1     H    2        83.969
-  bond angle:     C    1     C    1     C    2       120.000
-  bond angle:     C    1     C    1     C    3        30.000
-  bond angle:     C    1     C    1     C    4        90.000
-  bond angle:     C    1     C    1     H    1       120.000
-  bond angle:     C    1     C    1     H    1        23.969
-  bond angle:     C    1     C    1     H    2       143.969
-  bond angle:     C    2     C    1     C    3        90.000
-  bond angle:     C    2     C    1     C    4        30.000
-  bond angle:     C    2     C    1     H    1       120.000
-  bond angle:     C    2     C    1     H    1       143.969
-  bond angle:     C    2     C    1     H    2        23.969
-  bond angle:     C    3     C    1     C    4        60.000
-  bond angle:     C    3     C    1     H    1       150.000
-  bond angle:     C    3     C    1     H    1        53.969
-  bond angle:     C    3     C    1     H    2       113.969
-  bond angle:     C    4     C    1     H    1       150.000
-  bond angle:     C    4     C    1     H    1       113.969
-  bond angle:     C    4     C    1     H    2        53.969
-  bond angle:     H    1     C    1     H    1        96.031
-  bond angle:     H    1     C    1     H    2        96.031
-  bond angle:     H    1     C    1     H    2       167.939
-  bond angle:     C    1     C    2     C    1        30.000
-  bond angle:     C    1     C    2     C    2        30.000
-  bond angle:     C    1     C    2     C    3        60.000
-  bond angle:     C    1     C    2     C    4        60.000
-  bond angle:     C    1     C    2     H    2       180.000
-  bond angle:     C    1     C    2     H    3        83.969
-  bond angle:     C    1     C    2     H    4        83.969
-  bond angle:     C    1     C    2     C    2        60.000
-  bond angle:     C    1     C    2     C    3        30.000
-  bond angle:     C    1     C    2     C    4        90.000
-  bond angle:     C    1     C    2     H    2       150.000
-  bond angle:     C    1     C    2     H    3        53.969
-  bond angle:     C    1     C    2     H    4       113.969
-  bond angle:     C    2     C    2     C    3        90.000
-  bond angle:     C    2     C    2     C    4        30.000
-  bond angle:     C    2     C    2     H    2       150.000
-  bond angle:     C    2     C    2     H    3       113.969
-  bond angle:     C    2     C    2     H    4        53.969
-  bond angle:     C    3     C    2     C    4       120.000
-  bond angle:     C    3     C    2     H    2       120.000
-  bond angle:     C    3     C    2     H    3        23.969
-  bond angle:     C    3     C    2     H    4       143.969
-  bond angle:     C    4     C    2     H    2       120.000
-  bond angle:     C    4     C    2     H    3       143.969
-  bond angle:     C    4     C    2     H    4        23.969
-  bond angle:     H    2     C    2     H    3        96.031
-  bond angle:     H    2     C    2     H    4        96.031
-  bond angle:     H    3     C    2     H    4       167.939
-  bond angle:     C    1     C    1     C    2        90.000
-  bond angle:     C    1     C    1     C    2        30.000
-  bond angle:     C    1     C    1     C    3       120.000
-  bond angle:     C    1     C    1     C    4        60.000
-  bond angle:     C    1     C    1     H    1        23.969
-  bond angle:     C    1     C    1     H    1       120.000
-  bond angle:     C    1     C    1     H    3       143.969
-  bond angle:     C    2     C    1     C    2        60.000
-  bond angle:     C    2     C    1     C    3        30.000
-  bond angle:     C    2     C    1     C    4        30.000
-  bond angle:     C    2     C    1     H    1       113.969
-  bond angle:     C    2     C    1     H    1       150.000
-  bond angle:     C    2     C    1     H    3        53.969
-  bond angle:     C    2     C    1     C    3        90.000
-  bond angle:     C    2     C    1     C    4        30.000
-  bond angle:     C    2     C    1     H    1        53.969
-  bond angle:     C    2     C    1     H    1       150.000
-  bond angle:     C    2     C    1     H    3       113.969
-  bond angle:     C    3     C    1     C    4        60.000
-  bond angle:     C    3     C    1     H    1       143.969
-  bond angle:     C    3     C    1     H    1       120.000
-  bond angle:     C    3     C    1     H    3        23.969
-  bond angle:     C    4     C    1     H    1        83.969
-  bond angle:     C    4     C    1     H    1       180.000
-  bond angle:     C    4     C    1     H    3        83.969
-  bond angle:     H    1     C    1     H    1        96.031
-  bond angle:     H    1     C    1     H    3       167.939
-  bond angle:     H    1     C    1     H    3        96.031
-  bond angle:     C    1     C    2     C    2        90.000
-  bond angle:     C    1     C    2     C    1        30.000
-  bond angle:     C    1     C    2     C    3        60.000
-  bond angle:     C    1     C    2     C    4       120.000
-  bond angle:     C    1     C    2     H    1        23.969
-  bond angle:     C    1     C    2     H    2       120.000
-  bond angle:     C    1     C    2     H    4       143.969
-  bond angle:     C    2     C    2     C    1        60.000
-  bond angle:     C    2     C    2     C    3        30.000
-  bond angle:     C    2     C    2     C    4        30.000
-  bond angle:     C    2     C    2     H    1       113.969
-  bond angle:     C    2     C    2     H    2       150.000
-  bond angle:     C    2     C    2     H    4        53.969
-  bond angle:     C    1     C    2     C    3        30.000
-  bond angle:     C    1     C    2     C    4        90.000
-  bond angle:     C    1     C    2     H    1        53.969
-  bond angle:     C    1     C    2     H    2       150.000
-  bond angle:     C    1     C    2     H    4       113.969
-  bond angle:     C    3     C    2     C    4        60.000
-  bond angle:     C    3     C    2     H    1        83.969
-  bond angle:     C    3     C    2     H    2       180.000
-  bond angle:     C    3     C    2     H    4        83.969
-  bond angle:     C    4     C    2     H    1       143.969
-  bond angle:     C    4     C    2     H    2       120.000
-  bond angle:     C    4     C    2     H    4        23.969
-  bond angle:     H    1     C    2     H    2        96.031
-  bond angle:     H    1     C    2     H    4       167.939
-  bond angle:     H    2     C    2     H    4        96.031
-  bond angle:     C    1     C    3     C    2        90.000
-  bond angle:     C    1     C    3     C    1        30.000
-  bond angle:     C    1     C    3     C    2        30.000
-  bond angle:     C    1     C    3     C    4        60.000
-  bond angle:     C    1     C    3     H    2       113.969
-  bond angle:     C    1     C    3     H    1        53.969
-  bond angle:     C    1     C    3     H    3       150.000
-  bond angle:     C    2     C    3     C    1       120.000
-  bond angle:     C    2     C    3     C    2        60.000
-  bond angle:     C    2     C    3     C    4        30.000
-  bond angle:     C    2     C    3     H    2        23.969
-  bond angle:     C    2     C    3     H    1       143.969
-  bond angle:     C    2     C    3     H    3       120.000
-  bond angle:     C    1     C    3     C    2        60.000
-  bond angle:     C    1     C    3     C    4        90.000
-  bond angle:     C    1     C    3     H    2       143.969
-  bond angle:     C    1     C    3     H    1        23.969
-  bond angle:     C    1     C    3     H    3       120.000
-  bond angle:     C    2     C    3     C    4        30.000
-  bond angle:     C    2     C    3     H    2        83.969
-  bond angle:     C    2     C    3     H    1        83.969
-  bond angle:     C    2     C    3     H    3       180.000
-  bond angle:     C    4     C    3     H    2        53.969
-  bond angle:     C    4     C    3     H    1       113.969
-  bond angle:     C    4     C    3     H    3       150.000
-  bond angle:     H    2     C    3     H    1       167.939
-  bond angle:     H    2     C    3     H    3        96.031
-  bond angle:     H    1     C    3     H    3        96.031
-  bond angle:     C    1     C    4     C    2        90.000
-  bond angle:     C    1     C    4     C    1        30.000
-  bond angle:     C    1     C    4     C    2        30.000
-  bond angle:     C    1     C    4     C    3        60.000
-  bond angle:     C    1     C    4     H    2       113.969
-  bond angle:     C    1     C    4     H    2        53.969
-  bond angle:     C    1     C    4     H    4       150.000
-  bond angle:     C    2     C    4     C    1        60.000
-  bond angle:     C    2     C    4     C    2       120.000
-  bond angle:     C    2     C    4     C    3        30.000
-  bond angle:     C    2     C    4     H    2        23.969
-  bond angle:     C    2     C    4     H    2       143.969
-  bond angle:     C    2     C    4     H    4       120.000
-  bond angle:     C    1     C    4     C    2        60.000
-  bond angle:     C    1     C    4     C    3        30.000
-  bond angle:     C    1     C    4     H    2        83.969
-  bond angle:     C    1     C    4     H    2        83.969
-  bond angle:     C    1     C    4     H    4       180.000
-  bond angle:     C    2     C    4     C    3        90.000
-  bond angle:     C    2     C    4     H    2       143.969
-  bond angle:     C    2     C    4     H    2        23.969
-  bond angle:     C    2     C    4     H    4       120.000
-  bond angle:     C    3     C    4     H    2        53.969
-  bond angle:     C    3     C    4     H    2       113.969
-  bond angle:     C    3     C    4     H    4       150.000
-  bond angle:     H    2     C    4     H    2       167.939
-  bond angle:     H    2     C    4     H    4        96.031
-  bond angle:     H    2     C    4     H    4        96.031
-  bond angle:     C    1     H    1     C    1        36.031
-  bond angle:     C    1     H    1     C    2        36.031
-  bond angle:     C    1     H    1     C    2        72.061
-  bond angle:     C    2     H    2     C    3        36.031
-  bond angle:     C    2     H    2     C    4        36.031
-  bond angle:     C    3     H    2     C    4        72.061
-  bond angle:     C    1     H    1     C    1        36.031
-  bond angle:     C    1     H    1     C    3        72.061
-  bond angle:     C    1     H    1     C    3        36.031
-  bond angle:     C    1     H    2     C    2        36.031
-  bond angle:     C    1     H    2     C    4        72.061
-  bond angle:     C    2     H    2     C    4        36.031
-  bond angle:     C    2     H    3     C    1        72.061
-  bond angle:     C    2     H    3     C    3        36.031
-  bond angle:     C    1     H    3     C    3        36.031
-  bond angle:     C    2     H    4     C    2        72.061
-  bond angle:     C    2     H    4     C    4        36.031
-  bond angle:     C    2     H    4     C    4        36.031
+  bond angle:     C   _2     C   _1     C   _1        60.000
+  bond angle:     C   _2     C   _1     C   _2        60.000
+  bond angle:     C   _2     C   _1     C   _3        30.000
+  bond angle:     C   _2     C   _1     C   _4        30.000
+  bond angle:     C   _2     C   _1     H   _1       180.000
+  bond angle:     C   _2     C   _1     H   _1        83.969
+  bond angle:     C   _2     C   _1     H   _2        83.969
+  bond angle:     C   _1     C   _1     C   _2       120.000
+  bond angle:     C   _1     C   _1     C   _3        30.000
+  bond angle:     C   _1     C   _1     C   _4        90.000
+  bond angle:     C   _1     C   _1     H   _1       120.000
+  bond angle:     C   _1     C   _1     H   _1        23.969
+  bond angle:     C   _1     C   _1     H   _2       143.969
+  bond angle:     C   _2     C   _1     C   _3        90.000
+  bond angle:     C   _2     C   _1     C   _4        30.000
+  bond angle:     C   _2     C   _1     H   _1       120.000
+  bond angle:     C   _2     C   _1     H   _1       143.969
+  bond angle:     C   _2     C   _1     H   _2        23.969
+  bond angle:     C   _3     C   _1     C   _4        60.000
+  bond angle:     C   _3     C   _1     H   _1       150.000
+  bond angle:     C   _3     C   _1     H   _1        53.969
+  bond angle:     C   _3     C   _1     H   _2       113.969
+  bond angle:     C   _4     C   _1     H   _1       150.000
+  bond angle:     C   _4     C   _1     H   _1       113.969
+  bond angle:     C   _4     C   _1     H   _2        53.969
+  bond angle:     H   _1     C   _1     H   _1        96.031
+  bond angle:     H   _1     C   _1     H   _2        96.031
+  bond angle:     H   _1     C   _1     H   _2       167.939
+  bond angle:     C   _1     C   _2     C   _1        30.000
+  bond angle:     C   _1     C   _2     C   _2        30.000
+  bond angle:     C   _1     C   _2     C   _3        60.000
+  bond angle:     C   _1     C   _2     C   _4        60.000
+  bond angle:     C   _1     C   _2     H   _2       180.000
+  bond angle:     C   _1     C   _2     H   _3        83.969
+  bond angle:     C   _1     C   _2     H   _4        83.969
+  bond angle:     C   _1     C   _2     C   _2        60.000
+  bond angle:     C   _1     C   _2     C   _3        30.000
+  bond angle:     C   _1     C   _2     C   _4        90.000
+  bond angle:     C   _1     C   _2     H   _2       150.000
+  bond angle:     C   _1     C   _2     H   _3        53.969
+  bond angle:     C   _1     C   _2     H   _4       113.969
+  bond angle:     C   _2     C   _2     C   _3        90.000
+  bond angle:     C   _2     C   _2     C   _4        30.000
+  bond angle:     C   _2     C   _2     H   _2       150.000
+  bond angle:     C   _2     C   _2     H   _3       113.969
+  bond angle:     C   _2     C   _2     H   _4        53.969
+  bond angle:     C   _3     C   _2     C   _4       120.000
+  bond angle:     C   _3     C   _2     H   _2       120.000
+  bond angle:     C   _3     C   _2     H   _3        23.969
+  bond angle:     C   _3     C   _2     H   _4       143.969
+  bond angle:     C   _4     C   _2     H   _2       120.000
+  bond angle:     C   _4     C   _2     H   _3       143.969
+  bond angle:     C   _4     C   _2     H   _4        23.969
+  bond angle:     H   _2     C   _2     H   _3        96.031
+  bond angle:     H   _2     C   _2     H   _4        96.031
+  bond angle:     H   _3     C   _2     H   _4       167.939
+  bond angle:     C   _1     C   _1     C   _2        90.000
+  bond angle:     C   _1     C   _1     C   _2        30.000
+  bond angle:     C   _1     C   _1     C   _3       120.000
+  bond angle:     C   _1     C   _1     C   _4        60.000
+  bond angle:     C   _1     C   _1     H   _1        23.969
+  bond angle:     C   _1     C   _1     H   _1       120.000
+  bond angle:     C   _1     C   _1     H   _3       143.969
+  bond angle:     C   _2     C   _1     C   _2        60.000
+  bond angle:     C   _2     C   _1     C   _3        30.000
+  bond angle:     C   _2     C   _1     C   _4        30.000
+  bond angle:     C   _2     C   _1     H   _1       113.969
+  bond angle:     C   _2     C   _1     H   _1       150.000
+  bond angle:     C   _2     C   _1     H   _3        53.969
+  bond angle:     C   _2     C   _1     C   _3        90.000
+  bond angle:     C   _2     C   _1     C   _4        30.000
+  bond angle:     C   _2     C   _1     H   _1        53.969
+  bond angle:     C   _2     C   _1     H   _1       150.000
+  bond angle:     C   _2     C   _1     H   _3       113.969
+  bond angle:     C   _3     C   _1     C   _4        60.000
+  bond angle:     C   _3     C   _1     H   _1       143.969
+  bond angle:     C   _3     C   _1     H   _1       120.000
+  bond angle:     C   _3     C   _1     H   _3        23.969
+  bond angle:     C   _4     C   _1     H   _1        83.969
+  bond angle:     C   _4     C   _1     H   _1       180.000
+  bond angle:     C   _4     C   _1     H   _3        83.969
+  bond angle:     H   _1     C   _1     H   _1        96.031
+  bond angle:     H   _1     C   _1     H   _3       167.939
+  bond angle:     H   _1     C   _1     H   _3        96.031
+  bond angle:     C   _1     C   _2     C   _2        90.000
+  bond angle:     C   _1     C   _2     C   _1        30.000
+  bond angle:     C   _1     C   _2     C   _3        60.000
+  bond angle:     C   _1     C   _2     C   _4       120.000
+  bond angle:     C   _1     C   _2     H   _1        23.969
+  bond angle:     C   _1     C   _2     H   _2       120.000
+  bond angle:     C   _1     C   _2     H   _4       143.969
+  bond angle:     C   _2     C   _2     C   _1        60.000
+  bond angle:     C   _2     C   _2     C   _3        30.000
+  bond angle:     C   _2     C   _2     C   _4        30.000
+  bond angle:     C   _2     C   _2     H   _1       113.969
+  bond angle:     C   _2     C   _2     H   _2       150.000
+  bond angle:     C   _2     C   _2     H   _4        53.969
+  bond angle:     C   _1     C   _2     C   _3        30.000
+  bond angle:     C   _1     C   _2     C   _4        90.000
+  bond angle:     C   _1     C   _2     H   _1        53.969
+  bond angle:     C   _1     C   _2     H   _2       150.000
+  bond angle:     C   _1     C   _2     H   _4       113.969
+  bond angle:     C   _3     C   _2     C   _4        60.000
+  bond angle:     C   _3     C   _2     H   _1        83.969
+  bond angle:     C   _3     C   _2     H   _2       180.000
+  bond angle:     C   _3     C   _2     H   _4        83.969
+  bond angle:     C   _4     C   _2     H   _1       143.969
+  bond angle:     C   _4     C   _2     H   _2       120.000
+  bond angle:     C   _4     C   _2     H   _4        23.969
+  bond angle:     H   _1     C   _2     H   _2        96.031
+  bond angle:     H   _1     C   _2     H   _4       167.939
+  bond angle:     H   _2     C   _2     H   _4        96.031
+  bond angle:     C   _1     C   _3     C   _2        90.000
+  bond angle:     C   _1     C   _3     C   _1        30.000
+  bond angle:     C   _1     C   _3     C   _2        30.000
+  bond angle:     C   _1     C   _3     C   _4        60.000
+  bond angle:     C   _1     C   _3     H   _2       113.969
+  bond angle:     C   _1     C   _3     H   _1        53.969
+  bond angle:     C   _1     C   _3     H   _3       150.000
+  bond angle:     C   _2     C   _3     C   _1       120.000
+  bond angle:     C   _2     C   _3     C   _2        60.000
+  bond angle:     C   _2     C   _3     C   _4        30.000
+  bond angle:     C   _2     C   _3     H   _2        23.969
+  bond angle:     C   _2     C   _3     H   _1       143.969
+  bond angle:     C   _2     C   _3     H   _3       120.000
+  bond angle:     C   _1     C   _3     C   _2        60.000
+  bond angle:     C   _1     C   _3     C   _4        90.000
+  bond angle:     C   _1     C   _3     H   _2       143.969
+  bond angle:     C   _1     C   _3     H   _1        23.969
+  bond angle:     C   _1     C   _3     H   _3       120.000
+  bond angle:     C   _2     C   _3     C   _4        30.000
+  bond angle:     C   _2     C   _3     H   _2        83.969
+  bond angle:     C   _2     C   _3     H   _1        83.969
+  bond angle:     C   _2     C   _3     H   _3       180.000
+  bond angle:     C   _4     C   _3     H   _2        53.969
+  bond angle:     C   _4     C   _3     H   _1       113.969
+  bond angle:     C   _4     C   _3     H   _3       150.000
+  bond angle:     H   _2     C   _3     H   _1       167.939
+  bond angle:     H   _2     C   _3     H   _3        96.031
+  bond angle:     H   _1     C   _3     H   _3        96.031
+  bond angle:     C   _1     C   _4     C   _2        90.000
+  bond angle:     C   _1     C   _4     C   _1        30.000
+  bond angle:     C   _1     C   _4     C   _2        30.000
+  bond angle:     C   _1     C   _4     C   _3        60.000
+  bond angle:     C   _1     C   _4     H   _2       113.969
+  bond angle:     C   _1     C   _4     H   _2        53.969
+  bond angle:     C   _1     C   _4     H   _4       150.000
+  bond angle:     C   _2     C   _4     C   _1        60.000
+  bond angle:     C   _2     C   _4     C   _2       120.000
+  bond angle:     C   _2     C   _4     C   _3        30.000
+  bond angle:     C   _2     C   _4     H   _2        23.969
+  bond angle:     C   _2     C   _4     H   _2       143.969
+  bond angle:     C   _2     C   _4     H   _4       120.000
+  bond angle:     C   _1     C   _4     C   _2        60.000
+  bond angle:     C   _1     C   _4     C   _3        30.000
+  bond angle:     C   _1     C   _4     H   _2        83.969
+  bond angle:     C   _1     C   _4     H   _2        83.969
+  bond angle:     C   _1     C   _4     H   _4       180.000
+  bond angle:     C   _2     C   _4     C   _3        90.000
+  bond angle:     C   _2     C   _4     H   _2       143.969
+  bond angle:     C   _2     C   _4     H   _2        23.969
+  bond angle:     C   _2     C   _4     H   _4       120.000
+  bond angle:     C   _3     C   _4     H   _2        53.969
+  bond angle:     C   _3     C   _4     H   _2       113.969
+  bond angle:     C   _3     C   _4     H   _4       150.000
+  bond angle:     H   _2     C   _4     H   _2       167.939
+  bond angle:     H   _2     C   _4     H   _4        96.031
+  bond angle:     H   _2     C   _4     H   _4        96.031
+  bond angle:     C   _1     H   _1     C   _1        36.031
+  bond angle:     C   _1     H   _1     C   _2        36.031
+  bond angle:     C   _1     H   _1     C   _2        72.061
+  bond angle:     C   _2     H   _2     C   _3        36.031
+  bond angle:     C   _2     H   _2     C   _4        36.031
+  bond angle:     C   _3     H   _2     C   _4        72.061
+  bond angle:     C   _1     H   _1     C   _1        36.031
+  bond angle:     C   _1     H   _1     C   _3        72.061
+  bond angle:     C   _1     H   _1     C   _3        36.031
+  bond angle:     C   _1     H   _2     C   _2        36.031
+  bond angle:     C   _1     H   _2     C   _4        72.061
+  bond angle:     C   _2     H   _2     C   _4        36.031
+  bond angle:     C   _2     H   _3     C   _1        72.061
+  bond angle:     C   _2     H   _3     C   _3        36.031
+  bond angle:     C   _1     H   _3     C   _3        36.031
+  bond angle:     C   _2     H   _4     C   _2        72.061
+  bond angle:     C   _2     H   _4     C   _4        36.031
+  bond angle:     C   _2     H   _4     C   _4        36.031
 
 
 
@@ -521,7 +534,7 @@ Point group: D2h
 
    IA      24.153227          0.000000    1.000000    0.000000
    IB      24.153227          1.000000    0.000000    0.000000
-   IC      48.306454          0.000000    0.000000    1.000000
+   IC      48.306455          0.000000    0.000000    1.000000
 
 
  Rotational constants
@@ -531,7 +544,7 @@ Point group: D2h
 
                A                   B                   C
 
-          20923.8709          20923.8709          10461.9354 MHz
+          20923.8707          20923.8707          10461.9353 MHz
             0.697945            0.697945            0.348973 cm-1
 
 
@@ -680,6 +693,8 @@ Point group: D2h
   101     C    A   2pz       75 -   76 -   77 +   78
   102     C    A   2pz       87 -   88 -   89 +   90
 
+  Number of floating/multiple basis set orbitals :   12
+
   Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
 
   Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
@@ -702,7 +717,7 @@ Point group: D2h
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - second moment integrals
           - Cartesian multipole moment integrals of orders 2 and lower
@@ -717,7 +732,7 @@ Point group: D2h
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total CPU  time used in HERMIT:   0.09 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -743,7 +758,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 23:57:12 2010 
+     Date and time (Linux)  : Wed Mar 16 20:27:23 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -758,8 +773,7 @@ Point group: D2h
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -769,6 +783,10 @@ Point group: D2h
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         42
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -826,40 +844,71 @@ Point group: D2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   1  -185.117892192       1.88D+01  -1.85D+02    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   2  -209.192906663       4.72D+00  -2.41D+01    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   3  -209.967112774       3.73D-01  -7.74D-01    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   4  -209.972747927       4.56D-02  -5.64D-03    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -9    F
-   5  -209.972811153       1.27D-03  -6.32D-05    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -11    F
-   6  -209.972811214       6.47D-05  -6.12D-08    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -11    T
-   7  -209.972811214       2.89D-06  -1.63D-10    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -13    F
-   8  -209.972811214       1.37D-07  -1.02D-12    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -16    F
-   9  -209.972811214       4.92D-09   5.68D-13    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  10  -209.972811214       2.02D-10  -2.27D-13    6  4  5  3  1  1  1  0
-      MULPOP C      NaN; H      NaN; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  11  -209.972811214       1.12D-11   0.00D+00    6  4  5  3  1  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       2.10 seconds
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  -185.117892289       1.88D+01  -1.85D+02    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.585648
+      MULPOP  C   _1 -2.08; C   _2 -2.08; C   _1 -2.08; C   _2 -2.08; C   _3 -2.08; C   _4 -2.08; H   _1  2.08; H   _2  2.08; H   _1  2.08; H   _2  2.08; 
+              H   _3  2.08; H   _4  2.08; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -209.192906517       4.72D+00  -2.41D+01    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.796569
+      MULPOP  C   _1 -0.07; C   _2 -0.07; C   _1 -0.07; C   _2 -0.07; C   _3 -0.07; C   _4 -0.07; H   _1  0.07; H   _2  0.07; H   _1  0.07; H   _2  0.07; 
+              H   _3  0.07; H   _4  0.07; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -209.967112579       3.73D-01  -7.74D-01    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.789920
+      MULPOP  C   _1 -0.36; C   _2 -0.36; C   _1 -0.36; C   _2 -0.36; C   _3 -0.36; C   _4 -0.36; H   _1  0.36; H   _2  0.36; H   _1  0.36; H   _2  0.36; 
+              H   _3  0.36; H   _4  0.36; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -209.972747405       4.56D-02  -5.63D-03    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790030
+      MULPOP  C   _1 -0.34; C   _2 -0.34; C   _1 -0.34; C   _2 -0.34; C   _3 -0.34; C   _4 -0.34; H   _1  0.34; H   _2  0.34; H   _1  0.34; H   _2  0.34; 
+              H   _3  0.34; H   _4  0.34; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5  -209.972811153       1.27D-03  -6.37D-05    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790101
+      MULPOP  C   _1 -0.33; C   _2 -0.33; C   _1 -0.33; C   _2 -0.33; C   _3 -0.33; C   _4 -0.33; H   _1  0.33; H   _2  0.33; H   _1  0.33; H   _2  0.33; 
+              H   _3  0.33; H   _4  0.33; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6  -209.972811214       6.46D-05  -6.08D-08    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790098
+      MULPOP  C   _1 -0.33; C   _2 -0.33; C   _1 -0.33; C   _2 -0.33; C   _3 -0.33; C   _4 -0.33; H   _1  0.33; H   _2  0.33; H   _1  0.33; H   _2  0.33; 
+              H   _3  0.33; H   _4  0.33; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7  -209.972811214       2.88D-06  -1.57D-10    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790098
+      MULPOP  C   _1 -0.33; C   _2 -0.33; C   _1 -0.33; C   _2 -0.33; C   _3 -0.33; C   _4 -0.33; H   _1  0.33; H   _2  0.33; H   _1  0.33; H   _2  0.33; 
+              H   _3  0.33; H   _4  0.33; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -209.972811214       1.35D-07  -4.55D-13    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790098
+      MULPOP  C   _1 -0.33; C   _2 -0.33; C   _1 -0.33; C   _2 -0.33; C   _3 -0.33; C   _4 -0.33; H   _1  0.33; H   _2  0.33; H   _1  0.33; H   _2  0.33; 
+              H   _3  0.33; H   _4  0.33; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -209.972811214       4.75D-09   2.27D-13    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790098
+      MULPOP  C   _1 -0.33; C   _2 -0.33; C   _1 -0.33; C   _2 -0.33; C   _3 -0.33; C   _4 -0.33; H   _1  0.33; H   _2  0.33; H   _1  0.33; H   _2  0.33; 
+              H   _3  0.33; H   _4  0.33; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -209.972811214       1.96D-10  -2.27D-13    6  4  5  3  1  1  1  0
+      Virial theorem: -V/T =      1.790098
+      MULPOP  C   _1 -0.33; C   _2 -0.33; C   _1 -0.33; C   _2 -0.33; C   _3 -0.33; C   _4 -0.33; H   _1  0.33; H   _2  0.33; H   _1  0.33; H   _2  0.33; 
+              H   _3  0.33; H   _4  0.33; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -209.972811214       9.53D-12   0.00D+00    6  4  5  3  1  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              2.09 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -913,31 +962,34 @@ Point group: D2h
 
  AUXILIARY BASIS LOW EIGENVALUES
  ISYM         EIGENVALUE
-   1      0.008211764317
-   2      0.012963320990
-   3      0.005288452977
-   4      0.008211764318
-   5      0.077308595415
+   1      0.008211764319
+   2      0.012963320988
+   3      0.005288453022
+   4      0.008211764309
+   5      0.077308595416
    6      0.117166011780
    7      0.053998288891
    8      0.077308595420
- >>> Time used in R12AUX is   1.96 seconds
+ >>> Time used in R12AUX is   2.00 seconds
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -209.972811214400                 
+     Final HF energy:            -209.972811214377                 
      Nuclear repulsion:           392.925238986516
-     Electronic energy:          -602.898050200916
+     Electronic energy:          -602.898050200893
 
-     Final gradient norm:           0.000000000011
+     Final gradient norm:           0.000000000010
 
  
-     Date and time (Linux)  : Wed Dec 29 23:57:17 2010 
+     Date and time (Linux)  : Wed Mar 16 20:27:27 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -945,7 +997,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           2        3        4        5        6        7        8
+    Orbital         2        3        4        5        6        7        8
    1 C   :1s     0.5747  -0.1651  -0.0775  -0.1917   0.0256   0.0023   0.1417
    2 C   :1s    -0.0122  -0.0441   0.2309  -0.2671   0.0885  -1.1371   5.3338
    3 C   :2py   -0.0097  -0.2582   0.2038   0.1047   0.6617  -0.5556  -2.5093
@@ -959,7 +1011,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 C   :2px    0.0356   0.3137   0.4418   0.1920   1.1405  -2.2418
    2 C   :1s     0.4860  -0.2069  -0.0000  -0.1443  -0.0088   0.1467
    3 C   :1s    -0.0228   0.1087  -0.0000   0.1770  -0.1009   3.3844
@@ -970,7 +1022,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 C   :1s     0.5611  -0.4084  -0.2389   0.1666   0.1000   0.0101   0.1694
    2 C   :1s    -0.0263   0.0340   0.1255  -0.2044  -0.0580   0.1165   3.9079
    3 C   :2py   -0.0231  -0.0193  -0.0086   0.7511  -0.3389  -1.1710   0.3991
@@ -984,7 +1036,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 C   :2px    0.0151   0.4914  -0.5651  -1.0275   0.9394
    2 C   :1s     0.4977  -0.1660   0.0222   0.1227  -0.1357
    3 C   :1s    -0.0106  -0.2313   0.0766   4.6192  -4.9153
@@ -995,36 +1047,36 @@ Point group: D2h
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C   :2pz    0.2386   1.0252
    2 C   :2pz    0.2386  -0.5126
 
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 C   :2pz    0.4663
 
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C   :2pz    0.5384   1.0943
    2 C   :2pz    0.2692  -1.0943
 
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 C   :2pz    0.8878
 
 
 
- >>>> Total CPU  time used in SIRIUS :      4.10 seconds
- >>>> Total wall time used in SIRIUS :      5.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      4.12 seconds
+ >>>> Total wall time used in SIRIUS :      4.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:57:17 2010 
+     Date and time (Linux)  : Wed Mar 16 20:27:27 2011 
      Host name              : fe6                                     
 
 
@@ -1057,7 +1109,7 @@ Point group: D2h
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1     16     10      2     25     17
-  MIN AND MAX IN SELECTED SUPSPACE   -11.876008008333079       -11.598116046608650     
+  MIN AND MAX IN SELECTED SUPSPACE   -11.876008008342559       -11.598116046618138     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.8760
  Freezing HF-orbital  16 of symmetry   3 and with orbital energy  -11.8114
  Freezing HF-orbital  10 of symmetry   2 and with orbital energy  -11.8114
@@ -1113,7 +1165,7 @@ Point group: D2h
  Core memory required by CCSD_R12 :        1399119  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [6] is   8.79 seconds
+ >>> Time used in R  [6] is   8.45 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of CC-R12 VXINT response intermediates done
 
@@ -1121,16 +1173,16 @@ Point group: D2h
 
  Computation of V^aj_kl intermediate done
 
- >>> Time used for V^aj_kl is    0.09 seconds
+ >>> Time used for V^aj_kl is    0.08 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   3.23 seconds
+ >>> Time used in 1/R[5] is   3.12 seconds
  Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
  >>> Time used in RXR is   0.28 seconds
  Computation of (i'p'|r12|jq') integrals done
- >>> Time used in R  [6] is   9.35 seconds
+ >>> Time used in R  [6] is   8.54 seconds
  Computation of (ip'|[T,r12]|jq') integrals done
- >>> Time used in T,R[5] is   4.29 seconds
+ >>> Time used in T,R[5] is   4.03 seconds
 
 
                  +-----------------------------------------------+
@@ -1522,9 +1574,9 @@ Point group: D2h
        -0.084552631   -0.742692316   -0.060385480   -0.447230730
 
               MP2-R12/B   correlation energy =   -1.189923046
- >>> Time used in E(R12) is   7.74 seconds
- Time for MP2-R12 part cpu:   33.772868156433105     
- Time for MP2-R12 part wall:   34.000000000000000     
+ >>> Time used in E(R12) is   8.05 seconds
+ Time for MP2-R12 part cpu:   32.565049648284912     
+ Time for MP2-R12 part wall:   32.000000000000000     
 
   I am freezing!
   >> output from FNDMN3 <<
@@ -1532,7 +1584,7 @@ Point group: D2h
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1     16     10      2     25     17
-  MIN AND MAX IN SELECTED SUPSPACE   -11.876008008333079       -11.598116046608650     
+  MIN AND MAX IN SELECTED SUPSPACE   -11.876008008342559       -11.598116046618138     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -11.8760
  Freezing HF-orbital  16 of symmetry   3 and with orbital energy  -11.8114
  Freezing HF-orbital  10 of symmetry   2 and with orbital energy  -11.8114
@@ -1561,157 +1613,157 @@ Point group: D2h
           Number of t2' amplitudes for R12 part   :      3697
           Total number of amplitudes in ccsd      :      7432
 
- Iter.  1: Coupled cluster MP2-R12/B energy :    -211.1627342603395903
-     Conventional correlation energy:    -0.1449381110744525
-     R12 correlation energy         :    -1.0449849348649645
-     Total correlation energy       :    -1.1899230459394170
+ Iter.  1: Coupled cluster MP2-R12/B energy :    -211.1627342603102591
+     Conventional correlation energy:    -0.1449381110705019
+     R12 correlation energy         :    -1.0449849348627835
+     Total correlation energy       :    -1.1899230459332855
 
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
+       Time used in   RHS - TOTAL  :       1.32 seconds
        Norm^2 of omega1 after ccvec:        0.2893867758D-02
-       Norm^2 of omega2 after ccvec:        0.1768062399D-25
-       Norm^2 of Omegar12  in NXTAM:        0.4305614936D-26
- Iter.  1: Coupled cluster CC2-R12/B energy :    -211.1626374557405086
-     Conventional correlation energy:    -0.1448413064753709
-     R12 correlation energy         :    -1.0449849348649702
-     Total correlation energy       :    -1.1898262413403411
+       Norm^2 of omega2 after ccvec:        0.1754065769D-25
+       Norm^2 of Omegar12  in NXTAM:        0.4513538269D-26
+ Iter.  1: Coupled cluster CC2-R12/B energy :    -211.1626374557109216
+     Conventional correlation energy:    -0.1448413064711644
+     R12 correlation energy         :    -1.0449849348627858
+     Total correlation energy       :    -1.1898262413339502
 
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
+       Time used in   RHS - TOTAL  :       1.32 seconds
        Norm^2 of omega1 after ccvec:        0.1290620121D-04
        Norm^2 of omega2 after ccvec:        0.2869448492D-04
        Norm^2 of Omegar12  in NXTAM:        0.4823654618D-05
- Iter.  2: Coupled cluster CC2-R12/B energy :    -211.1645659659205876
-     Conventional correlation energy:    -0.1448714797152206
-     R12 correlation energy         :    -1.0468832718052103
-     Total correlation energy       :    -1.1917547515204310
+ Iter.  2: Coupled cluster CC2-R12/B energy :    -211.1645659658909153
+     Conventional correlation energy:    -0.1448714797109574
+     R12 correlation energy         :    -1.0468832718029797
+     Total correlation energy       :    -1.1917547515139371
 
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
+       Time used in   RHS - TOTAL  :       1.32 seconds
        Norm^2 of omega1 after ccvec:        0.1052296346D-05
        Norm^2 of omega2 after ccvec:        0.9658549239D-07
        Norm^2 of Omegar12  in NXTAM:        0.1082411460D-07
- Iter.  3: Coupled cluster CC2-R12/B energy :    -211.1646699055771421
-     Conventional correlation energy:    -0.1448846390470067
-     R12 correlation energy         :    -1.0469740521299595
-     Total correlation energy       :    -1.1918586911769662
+ Iter.  3: Coupled cluster CC2-R12/B energy :    -211.1646699055486351
+     Conventional correlation energy:    -0.1448846390439371
+     R12 correlation energy         :    -1.0469740521277200
+     Total correlation energy       :    -1.1918586911716571
 
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.6427268224D-08
+       Time used in   RHS - TOTAL  :       1.32 seconds
+       Norm^2 of omega1 after ccvec:        0.6427268231D-08
        Norm^2 of omega2 after ccvec:        0.6174398404D-08
-       Norm^2 of Omegar12  in NXTAM:        0.4377255899D-09
- Iter.  4: Coupled cluster CC2-R12/B energy :    -211.1646673051254766
-     Conventional correlation energy:    -0.1448881789673919
-     R12 correlation energy         :    -1.0469679117579280
-     Total correlation energy       :    -1.1918560907253199
+       Norm^2 of Omegar12  in NXTAM:        0.4377255898D-09
+ Iter.  4: Coupled cluster CC2-R12/B energy :    -211.1646673050973106
+     Conventional correlation energy:    -0.1448881789646350
+     R12 correlation energy         :    -1.0469679117556994
+     Total correlation energy       :    -1.1918560907203344
 
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.1253060659D-09
-       Norm^2 of omega2 after ccvec:        0.1377709442D-10
-       Norm^2 of Omegar12  in NXTAM:        0.6935250539D-12
- Iter.  5: Coupled cluster CC2-R12/B energy :    -211.1646674398313905
-     Conventional correlation energy:    -0.1448884174275520
-     R12 correlation energy         :    -1.0469678080036808
-     Total correlation energy       :    -1.1918562254312328
+       Time used in   RHS - TOTAL  :       1.32 seconds
+       Norm^2 of omega1 after ccvec:        0.1253060649D-09
+       Norm^2 of omega2 after ccvec:        0.1377709460D-10
+       Norm^2 of Omegar12  in NXTAM:        0.6935250664D-12
+ Iter.  5: Coupled cluster CC2-R12/B energy :    -211.1646674398018604
+     Conventional correlation energy:    -0.1448884174234308
+     R12 correlation energy         :    -1.0469678080014484
+     Total correlation energy       :    -1.1918562254248792
 
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.3738093784D-12
-       Norm^2 of omega2 after ccvec:        0.3843583650D-12
-       Norm^2 of Omegar12  in NXTAM:        0.1836928323D-13
- Iter.  6: Coupled cluster CC2-R12/B energy :    -211.1646674390262604
-     Conventional correlation energy:    -0.1448884184235908
-     R12 correlation energy         :    -1.0469678062024927
-     Total correlation energy       :    -1.1918562246260835
+       Time used in   RHS - TOTAL  :       1.30 seconds
+       Norm^2 of omega1 after ccvec:        0.3738093097D-12
+       Norm^2 of omega2 after ccvec:        0.3843583743D-12
+       Norm^2 of Omegar12  in NXTAM:        0.1836928364D-13
+ Iter.  6: Coupled cluster CC2-R12/B energy :    -211.1646674389957639
+     Conventional correlation energy:    -0.1448884184185317
+     R12 correlation energy         :    -1.0469678062002570
+     Total correlation energy       :    -1.1918562246187887
 
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.9000687068D-14
-       Norm^2 of omega2 after ccvec:        0.2603145757D-14
-       Norm^2 of Omegar12  in NXTAM:        0.2572489889D-15
- Iter.  7: Coupled cluster CC2-R12/B energy :    -211.1646674387413611
-     Conventional correlation energy:    -0.1448884179675929
-     R12 correlation energy         :    -1.0469678063735879
-     Total correlation energy       :    -1.1918562243411808
+       Time used in   RHS - TOTAL  :       1.32 seconds
+       Norm^2 of omega1 after ccvec:        0.9000660137D-14
+       Norm^2 of omega2 after ccvec:        0.2603144867D-14
+       Norm^2 of Omegar12  in NXTAM:        0.2572488625D-15
+ Iter.  7: Coupled cluster CC2-R12/B energy :    -211.1646674387114615
+     Conventional correlation energy:    -0.1448884179631307
+     R12 correlation energy         :    -1.0469678063713541
+     Total correlation energy       :    -1.1918562243344848
 
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.5415723388D-16
-       Norm^2 of omega2 after ccvec:        0.2537252224D-16
-       Norm^2 of Omegar12  in NXTAM:        0.1682085206D-17
- Iter.  8: Coupled cluster CC2-R12/B energy :    -211.1646674387658891
-     Conventional correlation energy:    -0.1448884178805656
-     R12 correlation energy         :    -1.0469678064851680
-     Total correlation energy       :    -1.1918562243657336
+       Time used in   RHS - TOTAL  :       1.32 seconds
+       Norm^2 of omega1 after ccvec:        0.5415507794D-16
+       Norm^2 of omega2 after ccvec:        0.2537250468D-16
+       Norm^2 of Omegar12  in NXTAM:        0.1682087983D-17
+ Iter.  8: Coupled cluster CC2-R12/B energy :    -211.1646674387375811
+     Conventional correlation energy:    -0.1448884178776666
+     R12 correlation energy         :    -1.0469678064829393
+     Total correlation energy       :    -1.1918562243606059
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.7860128154D-18
-       Norm^2 of omega2 after ccvec:        0.4435979828D-18
-       Norm^2 of Omegar12  in NXTAM:        0.2133403904D-19
- Iter.  9: Coupled cluster CC2-R12/B energy :    -211.1646674387558562
-     Conventional correlation energy:    -0.1448884178776950
-     R12 correlation energy         :    -1.0469678064780041
-     Total correlation energy       :    -1.1918562243556992
+       Time used in   RHS - TOTAL  :       1.32 seconds
+       Norm^2 of omega1 after ccvec:        0.7859607720D-18
+       Norm^2 of omega2 after ccvec:        0.4435864774D-18
+       Norm^2 of Omegar12  in NXTAM:        0.2133290707D-19
+ Iter.  9: Coupled cluster CC2-R12/B energy :    -211.1646674387280598
+     Conventional correlation energy:    -0.1448884178753076
+     R12 correlation energy         :    -1.0469678064757699
+     Total correlation energy       :    -1.1918562243510775
 
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.2663840746D-19
-       Norm^2 of omega2 after ccvec:        0.1311058029D-19
-       Norm^2 of Omegar12  in NXTAM:        0.7870104796D-21
- Iter. 10: Coupled cluster CC2-R12/B energy :    -211.1646674387555720
-     Conventional correlation energy:    -0.1448884178746823
-     R12 correlation energy         :    -1.0469678064807235
-     Total correlation energy       :    -1.1918562243554058
+       Time used in   RHS - TOTAL  :       1.29 seconds
+       Norm^2 of omega1 after ccvec:        0.2663523308D-19
+       Norm^2 of omega2 after ccvec:        0.1310923882D-19
+       Norm^2 of Omegar12  in NXTAM:        0.7871485876D-21
+ Iter. 10: Coupled cluster CC2-R12/B energy :    -211.1646674387286851
+     Conventional correlation energy:    -0.1448884178732328
+     R12 correlation energy         :    -1.0469678064784909
+     Total correlation energy       :    -1.1918562243517237
 
 
        Iteration no.: 11
        -----------------
 
-       Time used in   RHS - TOTAL  :       1.21 seconds
-       Norm^2 of omega1 after ccvec:        0.4522591292D-21
-       Norm^2 of omega2 after ccvec:        0.3349092931D-21
-       Norm^2 of Omegar12  in NXTAM:        0.2091262090D-22
- Iter. 11: Coupled cluster CC2-R12/B energy :    -211.1646674387560836
-     Conventional correlation energy:    -0.1448884178748813
-     R12 correlation energy         :    -1.0469678064810231
-     Total correlation energy       :    -1.1918562243559043
+       Time used in   RHS - TOTAL  :       1.32 seconds
+       Norm^2 of omega1 after ccvec:        0.4547475808D-21
+       Norm^2 of omega2 after ccvec:        0.3349071611D-21
+       Norm^2 of Omegar12  in NXTAM:        0.2091033456D-22
+ Iter. 11: Coupled cluster CC2-R12/B energy :    -211.1646674387290261
+     Conventional correlation energy:    -0.1448884178732612
+     R12 correlation energy         :    -1.0469678064787915
+     Total correlation energy       :    -1.1918562243520527
 
 
  CC2-R12/B energy converged to within   0.10D-11 is   -211.164667439
- Final 2-norm of the CC vector function:  2.80565219D-11
+ Final 2-norm of the CC vector function:  2.81007961D-11
  R12       energy converged to within   0.10D-11 is     -1.046967806
 
 
@@ -1772,7 +1824,7 @@ Point group: D2h
 
             Total MP2-R12/B energy:              -211.1627342603
 
-            Total CC2-R12/B energy:              -211.1646674388
+            Total CC2-R12/B energy:              -211.1646674387
 
 
 
@@ -1783,7 +1835,7 @@ Point group: D2h
 
 
 
-       Time used in   RHS - TOTAL  :       1.28 seconds
+       Time used in   RHS - TOTAL  :       1.40 seconds
 
 
             E-intermediates calculated 
@@ -1821,122 +1873,122 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 3.11141D-01
       1       1         0.01     0.31E+00
  Dimension of the reduced space:     2
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.61
 
   
  ROOT:  1 RESIDUAL TOT: 1.88182D-02
       2       1         0.01     0.19E-01
  Dimension of the reduced space:     3
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.60
 
   
  ROOT:  1 RESIDUAL TOT: 5.37348D-03
       3       1         0.01     0.54E-02
  Dimension of the reduced space:     4
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 2.64900D-03
       4       1         0.01     0.26E-02
  Dimension of the reduced space:     5
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.54
 
   
  ROOT:  1 RESIDUAL TOT: 7.66793D-04
       5       1         0.01     0.77E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 2.72618D-04
       6       1         0.01     0.27E-03
  Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 1.02202D-04
       7       1         0.01     0.10E-03
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 3.62901D-05
       8       1         0.01     0.36E-04
  Dimension of the reduced space:     9
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 1.35983D-05
       9       1         0.01     0.14E-04
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.63
+ >>> TIME USED IN THIS MICRO ITERATION        0.59
 
   
  ROOT:  1 RESIDUAL TOT: 2.47844D-06
      10       1         0.01     0.25E-05
  Dimension of the reduced space:    11
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 8.75337D-07
      11       1         0.01     0.88E-06
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 3.47158D-07
      12       1         0.01     0.35E-06
  Dimension of the reduced space:    13
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 9.30073D-08
      13       1         0.01     0.93E-07
  Dimension of the reduced space:    14
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 4.81540D-08
      14       1         0.01     0.48E-07
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 1.35857D-08
      15       1         0.01     0.14E-07
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.56
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 3.87025D-09
      16       1         0.01     0.39E-08
  Dimension of the reduced space:    17
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 1.48171D-09
      17       1         0.01     0.15E-08
  Dimension of the reduced space:    18
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 3.73912D-10
      18       1         0.01     0.37E-09
  Dimension of the reduced space:    19
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 1.18996D-10
      19       1         0.01     0.12E-09
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.57
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
   
  ROOT:  1 RESIDUAL TOT: 2.74353D-11
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.74353D-11
      20       1         0.01     0.27E-10
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.55
+ >>> TIME USED IN THIS MICRO ITERATION        0.54
 
     --------------------------------------
     converged in 20 iterations
@@ -1952,8 +2004,8 @@ Point group: D2h
          Total time          0.19
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  11.36 seconds
- >>>> Total wall time used in CCEQ_SOLV:  13.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  11.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  12.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2030,7 +2082,7 @@ Point group: D2h
 
  Ground state energy is target 
 
- Ecorr =                   -211.16466743875608358394
+ Ecorr =                   -211.16466743872902611656
 
  *******************************************************************
   
@@ -2049,7 +2101,7 @@ Point group: D2h
                                                                                 
             Total SCF   energy:                  -209.9728112144                
             Total MP2-R12/B energy:              -211.1627342603                
-            Total CC2-R12/B energy:              -211.1646674388                
+            Total CC2-R12/B energy:              -211.1646674387                
   
 
  *******************************************************************************
@@ -2068,9 +2120,9 @@ Point group: D2h
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute   5 seconds
- >>>> Total wall time used in DALTON:  1 minute   8 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute   4 seconds
+ >>>> Total wall time used in DALTON:  1 minute   7 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:58:20 2010 
+     Date and time (Linux)  : Wed Mar 16 20:28:30 2011 
      Host name              : fe6                                     

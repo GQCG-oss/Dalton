@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:43:35 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:31 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -183,8 +184,8 @@ Point group: C2v
                                  ---------------
 
                            Cl         34.968853
-                           O1   1     15.994915
-                           O1   2     15.994915
+                           O1  _1     15.994915
+                           O1  _2     15.994915
 
                        Total mass:    66.958683 amu
                        Natural abundance:  75.407 %
@@ -251,15 +252,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            Cl          O1   1      O1   2
+            Cl          O1  _1      O1  _2
             ------      ------      ------
  Cl    :    0.000000
- O1   1:    1.470000    0.000000
- O1   2:    1.470000    2.512110    0.000000
+ O1  _1:    1.470000    0.000000
+ O1  _2:    1.470000    2.512110    0.000000
 
 
   Max interatomic separation is    2.5121 Angstrom (    4.7472 Bohr)
-  between atoms    3 and    2, "O1   2" and "O1   1".
+  between atoms    3 and    2, "O1  _2" and "O1  _1".
 
 
   Bond distances (Angstrom):
@@ -267,8 +268,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O1   1     Cl           1.470000
-  bond distance:  O1   2     Cl           1.470000
+  bond distance:  O1  _1     Cl           1.470000
+  bond distance:  O1  _2     Cl           1.470000
 
 
   Bond angles (degrees):
@@ -276,7 +277,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     O1   1     Cl         O1   2       117.400
+  bond angle:     O1  _1     Cl         O1  _2       117.400
 
 
 
@@ -296,7 +297,7 @@ Point group: C2v
 
                A                   B                   C
 
-          51867.2872          10013.5469           8393.1563 MHz
+          51867.2867          10013.5468           8393.1562 MHz
             1.730106            0.334016            0.279966 cm-1
 
 
@@ -444,8 +445,8 @@ Point group: C2v
  Number of two-electron integrals written:     2299042 ( 23.1% )
  Megabytes written:                             26.327
 
- >>> Time used in TWOINT is   1.23 seconds
- >>>> Total CPU  time used in HERMIT:   1.26 seconds
+ >>> Time used in TWOINT is   1.26 seconds
+ >>>> Total CPU  time used in HERMIT:   1.34 seconds
  >>>> Total wall time used in HERMIT:   2.00 seconds
 
 
@@ -486,7 +487,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:33 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -502,8 +503,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, one open shell Hartree-Fock calculation
-
+               a restricted, one open shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -511,6 +511,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons         14
      Number of electrons in active shells     19
      Total charge of the molecule              0
@@ -560,36 +561,58 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
- >>> Time used in FORMSUP is   0.11 seconds
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
+ >>> Time used in FORMSUP is   0.12 seconds
    1    -608.401702182        4.16554D+00   -6.08D+02    1
-      MULPOP Cl   -8.94; O1   -3.06; 
+      Virial theorem: -V/T =      1.998840
+      MULPOP  Cl      1.70; O1  _1 -0.85; O1  _2 -0.85; 
+ -----------------------------------------------------------------------------
    2    -608.760918192        2.47348D+00   -3.59D-01    2
-      MULPOP Cl   -0.68; O1    0.59; 
+      Virial theorem: -V/T =      2.000080
+      MULPOP  Cl     -0.02; O1  _1  0.01; O1  _2  0.01; 
+ -----------------------------------------------------------------------------
    3    -609.027607964        7.00862D-01   -2.67D-01    3
-      MULPOP Cl   -0.34; O1    0.76; 
+      Virial theorem: -V/T =      2.000077
+      MULPOP  Cl      1.09; O1  _1 -0.54; O1  _2 -0.54; 
+ -----------------------------------------------------------------------------
    4    -609.051567921        1.13125D-01   -2.40D-02    4
-      MULPOP Cl   -0.46; O1    1.42; 
+      Virial theorem: -V/T =      2.000929
+      MULPOP  Cl      0.90; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    5    -609.053074759        4.88443D-02   -1.51D-03    5
-      MULPOP Cl   -0.49; O1    1.28; 
+      Virial theorem: -V/T =      2.000508
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    6    -609.053614079        1.67789D-02   -5.39D-04    6
-      MULPOP Cl   -0.50; O1    1.25; 
+      Virial theorem: -V/T =      2.000515
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    7    -609.053693087        3.45596D-03   -7.90D-05    7
-      MULPOP Cl   -0.51; O1    1.20; 
+      Virial theorem: -V/T =      2.000474
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    8    -609.053695499        6.51692D-04   -2.41D-06    8
-      MULPOP Cl   -0.51; O1    1.17; 
+      Virial theorem: -V/T =      2.000474
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
    9    -609.053695561        1.33425D-04   -6.21D-08    9
-      MULPOP Cl   -0.51; O1    1.14; 
+      Virial theorem: -V/T =      2.000473
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   10    -609.053695566        5.44996D-05   -4.06D-09   10
-      MULPOP Cl   -0.51; O1    1.11; 
+      Virial theorem: -V/T =      2.000473
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
   11    -609.053695566        1.18512D-05   -6.80D-10   10
-      MULPOP Cl   -0.51; O1    1.08; 
-  12    -609.053695566        8.02685D-06   -5.74D-11   10
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000473
+      MULPOP  Cl      0.89; O1  _1 -0.45; O1  _2 -0.45; 
+ -----------------------------------------------------------------------------
+  12    -609.053695566        8.02685D-06   -5.87D-11   10
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -623,10 +646,10 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1     -609.112168914799440       5.08D-02
+    1     -609.112168914807967       5.08D-02
 
 
- Final CI energy:     -609.112168914799440
+ Final CI energy:     -609.112168914807967
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -653,16 +676,17 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -609.112168914798           (MACRO    1)
+ Total MCSCF energy       :    -609.112168914806           (MACRO    1)
 
  - Nuclear repulsion      :     111.397397857680    
  - Inactive energy        :    -636.535257758136    
- - Active energy          :    -83.9743090143418    
+ - Active energy          :    -83.9743090143501    
 
- Norm of total gradient   :        0.201791466477
- -    of CI gradient      :        0.101667310316
- -    of orbital gradient :        0.174308789095
-      MULPOP Cl   -4.40; O1   -8.94; 
+ Norm of total gradient   :        0.201791466483
+ -    of CI gradient      :        0.101667310321
+ -    of orbital gradient :        0.174308789100
+      Virial theorem: -V/T =      2.000606
+      MULPOP  Cl      0.77; O1  _1 -0.38; O1  _2 -0.38; 
 
  Residual norm when dim(red L) =  10
  NEO root     CSF        orbital          total
@@ -695,16 +719,17 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -609.152697463893           (MACRO    2)
+ Total MCSCF energy       :    -609.152697463897           (MACRO    2)
 
  - Nuclear repulsion      :     111.397397857680    
- - Inactive energy        :    -636.532822787070    
- - Active energy          :    -84.0172725345037    
+ - Inactive energy        :    -636.532822787068    
+ - Active energy          :    -84.0172725345096    
 
- Norm of total gradient   :        0.260751560596
- -    of CI gradient      :        0.238786660341
- -    of orbital gradient :        0.104748781359
-      MULPOP Cl   -7.06; O1   -7.57; 
+ Norm of total gradient   :        0.260751560620
+ -    of CI gradient      :        0.238786660365
+ -    of orbital gradient :        0.104748781363
+      Virial theorem: -V/T =      1.999647
+      MULPOP  Cl      0.76; O1  _1 -0.38; O1  _2 -0.38; 
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
@@ -737,16 +762,17 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -609.165029817997           (MACRO    3)
+ Total MCSCF energy       :    -609.165029818003           (MACRO    3)
 
  - Nuclear repulsion      :     111.397397857680    
- - Inactive energy        :    -636.478665770603    
- - Active energy          :    -84.0837619050745    
+ - Inactive energy        :    -636.478665770607    
+ - Active energy          :    -84.0837619050762    
 
  Norm of total gradient   :        0.048701563057
- -    of CI gradient      :        0.044293848459
- -    of orbital gradient :        0.020245918920
-      MULPOP Cl   -7.64; O1   -7.48; 
+ -    of CI gradient      :        0.044293848458
+ -    of orbital gradient :        0.020245918921
+      Virial theorem: -V/T =      1.999865
+      MULPOP  Cl      0.75; O1  _1 -0.38; O1  _2 -0.38; 
 
  Residual norm when dim(red L) =  12
  NEO root     CSF        orbital          total
@@ -779,16 +805,17 @@ Point group: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -609.165586810019           (MACRO    4)
+ Total MCSCF energy       :    -609.165586810024           (MACRO    4)
 
  - Nuclear repulsion      :     111.397397857680    
- - Inactive energy        :    -636.446176956816    
- - Active energy          :    -84.1168077108837    
+ - Inactive energy        :    -636.446176956817    
+ - Active energy          :    -84.1168077108878    
 
  Norm of total gradient   :        0.005120252623
  -    of CI gradient      :        0.003155807570
  -    of orbital gradient :        0.004032104352
-      MULPOP Cl   -8.41; O1   -8.83; 
+      Virial theorem: -V/T =      1.999874
+      MULPOP  Cl      0.76; O1  _1 -0.38; O1  _2 -0.38; 
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -821,16 +848,17 @@ Point group: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -609.165589621729           (MACRO    5)
+ Total MCSCF energy       :    -609.165589621734           (MACRO    5)
 
  - Nuclear repulsion      :     111.397397857680    
- - Inactive energy        :    -636.442570055453    
- - Active energy          :    -84.1204174239564    
+ - Inactive energy        :    -636.442570055452    
+ - Active energy          :    -84.1204174239618    
 
  Norm of total gradient   :        0.000124134493
  -    of CI gradient      :        0.000112845814
  -    of orbital gradient :        0.000051722283
-      MULPOP Cl   -8.40; O1   -8.85; 
+      Virial theorem: -V/T =      1.999871
+      MULPOP  Cl      0.76; O1  _1 -0.38; O1  _2 -0.38; 
 
  Residual norm when dim(red L) =  11
  NEO root     CSF        orbital          total
@@ -863,45 +891,49 @@ Point group: C2v
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :    -609.165589624199           (MACRO    6)
+ Total MCSCF energy       :    -609.165589624204           (MACRO    6)
 
  - Nuclear repulsion      :     111.397397857680    
- - Inactive energy        :    -636.442641017361    
- - Active energy          :    -84.1203464645191    
+ - Inactive energy        :    -636.442641017360    
+ - Active energy          :    -84.1203464645246    
 
  Norm of total gradient   :        0.000008395365
- -    of CI gradient      :        0.000008206610
+ -    of CI gradient      :        0.000008206611
  -    of orbital gradient :        0.000001770225
-      MULPOP Cl   -8.40; O1   -8.85; 
+      Virial theorem: -V/T =      1.999871
+      MULPOP  Cl      0.76; O1  _1 -0.38; O1  _2 -0.38; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -2.47041D-09   -2.47120D-09
+ Energy difference; actual and predicted:   -2.47019D-09   -2.47120D-09
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    9.99680D-01
+ Energy difference; actual and predicted:    9.99588D-01
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            6
      Number of micro iterations used           44
-     Total number of CPU seconds used         6.84
+     Total number of CPU seconds used         7.10
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:47 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:45 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    8   -609.112168914798   0.2017914665  0.000000   0.7589657232
-    2    5   -609.152697463893   0.2607515606  0.515625   0.1814206358
-    3   10   -609.165029817997   0.0487015631  0.992298   0.0650785119
-    4   12   -609.165586810019   0.0051202526  0.995689   0.0028150653
-    5    9   -609.165589621729   0.0001241345  1.000375   0.0001049373
-    6    0   -609.165589624199   0.0000083954  1.000000   0.0000000000
+    1    8   -609.112168914806   0.2017914665  0.000000   0.7589657232
+    2    5   -609.152697463897   0.2607515606  0.515625   0.1814206358
+    3   10   -609.165029818003   0.0487015631  0.992298   0.0650785118
+    4   12   -609.165586810024   0.0051202526  0.995689   0.0028150653
+    5    9   -609.165589621734   0.0001241345  1.000375   0.0001049373
+    6    0   -609.165589624204   0.0000083954  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -917,39 +949,39 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     8     6     3      1.10      0.59      0.47      0.45      0.06
-    2     5     3     3      0.99      0.59      0.35      0.34      0.07
-    3    10     7     4      1.22      0.59      0.58      0.57      0.06
-    4    12     8     5      1.33      0.59      0.70      0.68      0.06
-    5     9     6     4      1.18      0.59      0.54      0.53      0.06
+    1     8     6     3      1.25      0.66      0.53      0.51      0.07
+    2     5     3     3      1.06      0.66      0.35      0.34      0.07
+    3    10     7     4      1.22      0.59      0.59      0.57      0.06
+    4    12     8     5      1.34      0.59      0.70      0.69      0.06
+    5     9     6     4      1.18      0.59      0.55      0.53      0.06
     6     0     0     0      0.63      0.59      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -636.535257758136    -83.974309014342   -609.112168914798
-    2   -636.532822787070    -84.017272534504   -609.152697463893
-    3   -636.478665770603    -84.083761905074   -609.165029817997
-    4   -636.446176956816    -84.116807710884   -609.165586810019
-    5   -636.442570055453    -84.120417423956   -609.165589621729
-    6   -636.442641017361    -84.120346464519   -609.165589624199
+    1   -636.535257758136    -83.974309014350   -609.112168914806
+    2   -636.532822787068    -84.017272534510   -609.152697463897
+    3   -636.478665770607    -84.083761905076   -609.165029818003
+    4   -636.446176956817    -84.116807710888   -609.165586810024
+    5   -636.442570055452    -84.120417423962   -609.165589621734
+    6   -636.442641017360    -84.120346464525   -609.165589624204
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.078600802052     -0.040528549096      0.515625134065
-    3     -0.012428072123     -0.012332354104      0.992298240816
-    4     -0.000559403473     -0.000556992022      0.995689245783
-    5     -0.000002810655     -0.000002811710      1.000375150432
+    2     -0.078600802052     -0.040528549091      0.515625134010
+    3     -0.012428072123     -0.012332354106      0.992298240920
+    4     -0.000559403473     -0.000556992021      0.995689244172
+    5     -0.000002810655     -0.000002811709      1.000375109990
     6     -0.000000002471     -0.000000002470      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      1.34525666  1.00000000      0.758965723156      0.700000000000
-    2      0.20000000  1.00000000      0.181420635796      0.700000000000
-    3      0.20000000  1.00000000      0.065078511852      0.700000000000
+    1      1.34525666  1.00000000      0.758965723175      0.700000000000
+    2      0.20000000  1.00000000      0.181420635759      0.700000000000
+    3      0.20000000  1.00000000      0.065078511848      0.700000000000
     4      0.20000000  1.00000000      0.002815065302      0.700000000000
     5      0.20000000  1.00000000      0.000104937348      0.700000000000
     6      0.00000000  0.00000000      0.000000000000      0.700000000000
@@ -958,29 +990,32 @@ Point group: C2v
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.139288785792   -0.699720241529    0.080268309593    0.676381926341
-    2   -0.000992938529    0.999342380323   -0.017684274070   -0.021979080388
-    3   -0.000044744698    0.999915306507   -0.004113035149   -0.010668230987
+    1   -0.139288785778   -0.699720241543    0.080268309594    0.676381926328
+    2   -0.000992938529    0.999342380323   -0.017684274071   -0.021979080374
+    3   -0.000044744698    0.999915306507   -0.004113035149   -0.010668230986
     4   -0.000000224852    0.999999841508   -0.000289687359   -0.000335639089
     5   -0.000000000198    0.999999999780   -0.000011053054   -0.000015495980
     6    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           2
      Spatial symmetry:            2
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -609.165589624199                 
+     Final MCSCF energy:         -609.165589624204                 
      Nuclear repulsion:           111.397397857680
-     Electronic energy:          -720.562987481880
+     Electronic energy:          -720.562987481884
 
      Final gradient norm:           0.000008395365
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:47 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:45 2011 
      Host name              : fe6                                     
 
 
@@ -1010,7 +1045,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           5        6        7        8        9       10       11
+    Orbital         5        6        7        8        9       10       11
    1 Cl  :1s    -0.0011   0.0012  -0.0028   0.0055  -0.0047   0.0064   0.1248
    2 Cl  :1s    -0.0087   0.0354  -0.0153   0.0234  -0.0540   0.0464   0.8695
    3 Cl  :1s     0.3555   0.8768  -0.3913  -0.0495  -0.5389  -0.0108   2.2721
@@ -1044,7 +1079,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 Cl  :2px    1.0010  -0.0077   0.0222  -0.3726   0.1106
    2 Cl  :2px    0.0069   0.8249   0.7486  -1.8175   0.4836
    3 Cl  :2px   -0.0019  -0.0005  -0.0084   0.4587  -0.1381
@@ -1062,7 +1097,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           2        3        4        5        6        7        8
+    Orbital         2        3        4        5        6        7        8
    1 Cl  :2py    0.9980  -0.0329  -0.0324   0.0232   0.0665   0.0068  -0.6375
    2 Cl  :2py    0.0044   0.0846   0.5655  -0.3437   1.1325  -0.3749  -2.5434
    3 Cl  :2py    0.0028   0.0157   0.0177  -0.0245  -0.0228  -0.0557   0.7775
@@ -1091,7 +1126,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Cl  :3d2-   0.0634   0.2252  -0.0172
    2 Cl  :3d2-   0.0853   0.8915  -0.3204
    3 Cl  :4f2-  -0.0220   0.0130   0.0638
@@ -1154,16 +1189,16 @@ Point group: C2v
   10- 5 to 10- 4       699    0.17587826E-05      0.9999999932
   10- 6 to 10- 5       186    0.68110174E-08      1.0000000000
   10- 7 to 10- 6        19    0.56951294E-11      1.0000000000
-  10- 8 to 10- 7         3    0.10390763E-13      1.0000000000
+  10- 8 to 10- 7         3    0.10390764E-13      1.0000000000
   Number of coefficients less than 10^-11 times norm is            0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      7.84 seconds
- >>>> Total wall time used in SIRIUS :     10.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      8.11 seconds
+ >>>> Total wall time used in SIRIUS :     12.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:47 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:45 2011 
      Host name              : fe6                                     
 
 
@@ -1197,7 +1232,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:46 2011 
      Host name              : fe6                                     
 
 
@@ -1207,7 +1242,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:46 2011 
      Host name              : fe6                                     
 
 
@@ -1215,8 +1250,8 @@ Point group: C2v
                              -----------------------
 
  Cl         0.0000000000            0.0000000000            1.0000000000
- O1   1     0.0000000000            2.3736000000           -0.4431700000
- O1   2     0.0000000000           -2.3736000000           -0.4431700000
+ O1  _1     0.0000000000            2.3736000000           -0.4431700000
+ O1  _2     0.0000000000           -2.3736000000           -0.4431700000
 
 
 
@@ -1228,18 +1263,18 @@ Point group: C2v
      Spin multiplicity  2     State number       1     Total charge       0
 
      Total energy       -609.1655896242 au (Hartrees)
-                        -16576.23843638 eV
-                          -1599364.0259 kJ/mol
+                        -16576.23890675 eV
+                          -1599364.0090 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          4.9133750314 au
-     Mass-velocity correction:                  -6.4195855002 au
+     Darwin correction:                          4.9133749910 au
+     Mass-velocity correction:                  -6.4195854474 au
 
-     Total relativistic correction:             -1.5062104688 au (0.2473%)
-     Non-relativistic + relativistic energy:  -610.6718000930 au
+     Total relativistic correction:             -1.5062104564 au (0.2473%)
+     Non-relativistic + relativistic energy:  -610.6718000806 au
 
 
 
@@ -1256,7 +1291,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.77307361         1.96495691         6.55439072
+      z      0.77307361         1.96495700         6.55439103
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1271,10 +1306,10 @@ Point group: C2v
 
  String on input: "Cl      "
  String on input: "Cl      "
- String on input: "O1   1  "
- String on input: "O1_1    "
- String on input: "O1   2  "
- String on input: "O1_2    "
+ String on input: "O1  _1  "
+ String on input: "O1__1   "
+ String on input: "O1  _2  "
+ String on input: "O1__2   "
 
 
                          Nuclear quadrupole moment for Cl
@@ -1282,9 +1317,9 @@ Point group: C2v
 
           Spin     :  1.5          Quadrupole moment:-.08165000
                             au           MHz        Gauss
- Cl     35    Vx =      -0.272172     5.221582     1.865351
- Cl     35    Vy =      -2.394414    45.936530    16.410304
- Cl     35    Vz =       2.666586   -51.158112   -18.275654
+ Cl     35    Vx =      -0.272172     5.221581     1.865351
+ Cl     35    Vy =      -2.394414    45.936529    16.410304
+ Cl     35    Vz =       2.666586   -51.158111   -18.275655
                  Asymmetry constant eta:      0.795865
                  Auxiliary value au  1/T  0.574137D-02
           Spin     :  1.5          Quadrupole moment:-.06435000
@@ -1296,26 +1331,26 @@ Point group: C2v
                  Auxiliary value au  1/T  0.356616D-02
 
 
-                       Nuclear quadrupole moment for O1   1
+                       Nuclear quadrupole moment for O1  _1
                        ------------------------------------
 
           Spin     :  2.5          Quadrupole moment:-.02558000
                             au           MHz        Gauss
- O1   1 17    Vx =      -0.494790     2.973886     1.062387
- O1   1 17    Vy =      -1.185839     7.127367     2.546171
- O1   1 17    Vz =       1.680629   -10.101253    -3.608558
+ O1  _1 17    Vx =      -0.494790     2.973886     1.062387
+ O1  _1 17    Vy =      -1.185839     7.127367     2.546171
+ O1  _1 17    Vz =       1.680629   -10.101253    -3.608558
                  Asymmetry constant eta:      0.411185
                  Auxiliary value au  1/T  0.468562D-04
 
 
-                       Nuclear quadrupole moment for O1   2
+                       Nuclear quadrupole moment for O1  _2
                        ------------------------------------
 
           Spin     :  2.5          Quadrupole moment:-.02558000
                             au           MHz        Gauss
- O1   2 17    Vx =      -0.494790     2.973886     1.062387
- O1   2 17    Vy =      -1.185839     7.127367     2.546171
- O1   2 17    Vz =       1.680629   -10.101253    -3.608558
+ O1  _2 17    Vx =      -0.494790     2.973886     1.062387
+ O1  _2 17    Vy =      -1.185839     7.127367     2.546171
+ O1  _2 17    Vz =       1.680629   -10.101253    -3.608558
                  Asymmetry constant eta:      0.411185
                  Auxiliary value au  1/T  0.468562D-04
 
@@ -1323,15 +1358,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            Cl          O1   1      O1   2
+            Cl          O1  _1      O1  _2
             ------      ------      ------
  Cl    :    0.000000
- O1   1:    1.470000    0.000000
- O1   2:    1.470000    2.512110    0.000000
+ O1  _1:    1.470000    0.000000
+ O1  _2:    1.470000    2.512110    0.000000
 
 
   Max interatomic separation is    2.5121 Angstrom (    4.7472 Bohr)
-  between atoms    3 and    2, "O1   2" and "O1   1".
+  between atoms    3 and    2, "O1  _2" and "O1  _1".
 
 
   Bond distances (Angstrom):
@@ -1339,8 +1374,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O1   1     Cl           1.470000
-  bond distance:  O1   2     Cl           1.470000
+  bond distance:  O1  _1     Cl           1.470000
+  bond distance:  O1  _2     Cl           1.470000
 
 
   Bond angles (degrees):
@@ -1348,7 +1383,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     O1   1     Cl         O1   2       117.400
+  bond angle:     O1  _1     Cl         O1  _2       117.400
 
 
 
@@ -1367,9 +1402,9 @@ Point group: C2v
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   9.18 seconds
- >>>> Total wall time used in DALTON:  13.00 seconds
+ >>>> Total CPU  time used in DALTON:   9.53 seconds
+ >>>> Total wall time used in DALTON:  15.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:43:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:10:46 2011 
      Host name              : fe6                                     

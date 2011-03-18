@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:18:53 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:26 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -188,8 +189,8 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           O    1     15.994915
-                           O    2     15.994915
+                           O   _1     15.994915
+                           O   _2     15.994915
 
                        Total mass:    31.989830 amu
                        Natural abundance:  99.521 %
@@ -256,14 +257,14 @@ Point group: D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O    1      O    2
+            O   _1      O   _2
             ------      ------
- O    1:    0.000000
- O    2:    1.207053    0.000000
+ O   _1:    0.000000
+ O   _2:    1.207053    0.000000
 
 
   Max interatomic separation is    1.2071 Angstrom (    2.2810 Bohr)
-  between atoms    2 and    1, "O    2" and "O    1".
+  between atoms    2 and    1, "O   _2" and "O   _1".
 
 
   Bond distances (Angstrom):
@@ -271,7 +272,7 @@ Point group: D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O    2     O    1       1.207053
+  bond distance:  O   _2     O   _1       1.207053
 
 
 
@@ -384,7 +385,7 @@ Point group: D2h
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - spatial spin-orbit integrals
 
@@ -404,13 +405,13 @@ Point group: D2h
  Megabytes written:                              0.179
 
  >>> Time used in TWOINT is   0.25 seconds
- >>> Time used in TWOINT is   0.66 seconds
+ >>> Time used in TWOINT 2-el spin-orbit is   0.58 seconds
 
    Two-electron spin-orbit integrals
    =================================
-   Spin-orbit 2-electron CPU  time    1. seconds
-   Spin-orbit 2-electron wall time    1. seconds
- >>>> Total CPU  time used in HERMIT:   0.93 seconds
+   Spin-orbit 2-electron CPU  time      1. seconds
+   Spin-orbit 2-electron wall time      1. seconds
+ >>>> Total CPU  time used in HERMIT:   0.88 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
@@ -454,7 +455,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:54 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:27 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -473,8 +474,7 @@ Point group: D2h
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -482,6 +482,7 @@ Point group: D2h
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      2
      Total charge of the molecule              0
@@ -529,27 +530,41 @@ Point group: D2h
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-12
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
    1    -149.350604155        2.39900D+00   -1.49D+02    1
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      2.004196
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
+ -----------------------------------------------------------------------------
    2    -149.571396536        4.93826D-01   -2.21D-01    2
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      1.995014
+      MULPOP  O   _1  0.00; O   _2  0.00; 
+ -----------------------------------------------------------------------------
    3    -149.584216153        1.17155D-01   -1.28D-02    3
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      2.001327
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
+ -----------------------------------------------------------------------------
    4    -149.585121770        2.43643D-02   -9.06D-04    4
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      1.999742
+      MULPOP  O   _1  0.00; O   _2  0.00; 
+ -----------------------------------------------------------------------------
    5    -149.585175656        3.26057D-03   -5.39D-05    5
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      1.999959
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
+ -----------------------------------------------------------------------------
    6    -149.585176499        4.35145D-04   -8.42D-07    6
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      1.999932
+      MULPOP  O   _1  0.00; O   _2  0.00; 
+ -----------------------------------------------------------------------------
    7    -149.585176515        4.30824D-05   -1.68D-08    7
-      MULPOP O   ******; 
-   8    -149.585176516        5.16494D-06   -2.05D-10    8
- DIIS converged in   8 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      1.999935
+      MULPOP  O   _1  0.00; O   _2  0.00; 
+ -----------------------------------------------------------------------------
+   8    -149.585176516        5.16494D-06   -2.04D-10    8
+
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -565,11 +580,11 @@ Point group: D2h
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.622863895296           (MACRO    1)
+ Total MCSCF energy       :    -149.622863895297           (MACRO    1)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -176.079203884447    
- - Active energy          :    -1.60152936639427    
+ - Inactive energy        :    -176.079203884448    
+ - Active energy          :    -1.60152936639450    
 
  Norm of total gradient   :        0.391883903970
  -    of CI gradient      :        0.000000000000
@@ -596,16 +611,17 @@ Point group: D2h
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.648964334470           (MACRO    2)
+ Total MCSCF energy       :    -149.648964334471           (MACRO    2)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -176.079334972354    
- - Active energy          :    -1.62749871766175    
+ - Inactive energy        :    -176.079334972355    
+ - Active energy          :    -1.62749871766194    
 
  Norm of total gradient   :        0.029992704402
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.029992704402
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      2.000042
+      MULPOP  O   _1  0.00; O   _2  0.00; 
 
  Residual norm when dim(red L) =   3
  NEO root     CSF        orbital          total
@@ -620,16 +636,17 @@ Point group: D2h
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.649025337858           (MACRO    3)
+ Total MCSCF energy       :    -149.649025337859           (MACRO    3)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -176.082603745448    
- - Active energy          :    -1.62429094795608    
+ - Inactive energy        :    -176.082603745449    
+ - Active energy          :    -1.62429094795632    
 
  Norm of total gradient   :        0.001071339384
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.001071339384
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      1.999870
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -644,16 +661,17 @@ Point group: D2h
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -149.649025434184           (MACRO    4)
+ Total MCSCF energy       :    -149.649025434185           (MACRO    4)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -176.082736129698    
- - Active energy          :    -1.62415866003180    
+ - Inactive energy        :    -176.082736129699    
+ - Active energy          :    -1.62415866003204    
 
  Norm of total gradient   :        0.000002075586
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.000002075586
-      MULPOP O   ******; 
+      Virial theorem: -V/T =      1.999865
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            4
@@ -661,19 +679,22 @@ Point group: D2h
      Total number of CPU seconds used         0.03
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:54 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:27 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    2   -149.622863895296   0.3918839040  0.000000   0.1573732828
-    2    2   -149.648964334470   0.0299927044  0.984067   0.0051338419
-    3    4   -149.649025337858   0.0010713394  1.000197   0.0002382017
-    4    0   -149.649025434184   0.0000020756  1.000021   0.0000000000
+    1    2   -149.622863895297   0.3918839040  0.000000   0.1573732828
+    2    2   -149.648964334471   0.0299927044  0.984067   0.0051338419
+    3    4   -149.649025337859   0.0010713394  1.000197   0.0002382017
+    4    0   -149.649025434185   0.0000020756  1.000020   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -695,18 +716,18 @@ Point group: D2h
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -176.079203884447     -1.601529366394   -149.622863895296
-    2   -176.079334972354     -1.627498717662   -149.648964334470
-    3   -176.082603745448     -1.624290947956   -149.649025337858
-    4   -176.082736129698     -1.624158660032   -149.649025434184
+    1   -176.079203884448     -1.601529366394   -149.622863895297
+    2   -176.079334972355     -1.627498717662   -149.648964334471
+    3   -176.082603745449     -1.624290947956   -149.649025337859
+    4   -176.082736129699     -1.624158660032   -149.649025434185
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.026523031108     -0.026100439174      0.984066981911
-    3     -0.000060991401     -0.000061003388      1.000196535561
-    4     -0.000000096324     -0.000000096326      1.000020976011
+    2     -0.026523031108     -0.026100439174      0.984066981910
+    3     -0.000060991401     -0.000061003388      1.000196538363
+    4     -0.000000096324     -0.000000096326      1.000020385914
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -726,21 +747,24 @@ Point group: D2h
     4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           3
      Spatial symmetry:            4
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -149.649025434184                 
+     Final MCSCF energy:         -149.649025434185                 
      Nuclear repulsion:            28.057869355546
-     Electronic energy:          -177.706894789730
+     Electronic energy:          -177.706894789731
 
      Final gradient norm:           0.000002075586
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:54 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:27 2011 
      Host name              : fe6                                     
 
 
@@ -780,7 +804,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :s      0.7072  -0.0251   0.0271   0.0833   0.0606
    2 O   :s      0.0011   0.5346   0.3784   0.8135   0.2875
    3 O   :s      0.0001  -0.0327   0.0713   0.8126   0.0779
@@ -793,7 +817,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.6303   0.0853   0.2013
    2 O   :px    -0.0306  -0.5830  -0.0502
    3 O   :dxz   -0.0396  -0.0625   0.6383
@@ -801,7 +825,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :py     0.6303   0.0853   0.2013
    2 O   :py    -0.0306  -0.5830  -0.0502
    3 O   :dyz   -0.0396  -0.0625   0.6383
@@ -809,13 +833,13 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :dxy    0.6484
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 O   :s      0.7074   0.0167  -0.2537   0.0225
    2 O   :s      0.0021   0.7887  -1.9901  -0.0409
    3 O   :s      0.0010   0.0489  -0.8780   0.1148
@@ -828,7 +852,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.8242  -0.4217  -0.6232
    2 O   :px     0.0409  -1.1747  -0.5654
    3 O   :dxz    0.0067   0.0058   1.0168
@@ -836,7 +860,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :py     0.8242  -0.4217  -0.6232
    2 O   :py     0.0409  -1.1747  -0.5654
    3 O   :dyz    0.0067   0.0058   1.0168
@@ -844,7 +868,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :dxy    0.7853
 
 
@@ -853,7 +877,7 @@ Point group: D2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:54 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:27 2011 
      Host name              : fe6                                     
 
  NOTE:    1 warnings have been issued.
@@ -910,9 +934,9 @@ Point group: D2h
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :     -149.649025434184040
- -- inactive part     :     -176.082736129698048
- --   active part     :       -1.624158660031802
+ MCSCF energy         :     -149.649025434185290
+ -- inactive part     :     -176.082736129699072
+ --   active part     :       -1.624158660032036
  -- nuclear repulsion :       28.057869355545812
 
 
@@ -922,9 +946,9 @@ Point group: D2h
 
 
 
- MCSCF energy         :     -149.649025434184040
- -- inactive part     :     -176.082736129698048
- --   active part     :       -1.624158660031802
+ MCSCF energy         :     -149.649025434185290
+ -- inactive part     :     -176.082736129699072
+ --   active part     :       -1.624158660032036
  -- nuclear repulsion :       28.057869355545812
 
 
@@ -959,6 +983,7 @@ Point group: D2h
  RSPLR -- linear response calculation for symmetry  4
  RSPLR -- operator label : ZANGMOM 
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -988,9 +1013,8 @@ Point group: D2h
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< ZANGMOM  ; ZANGMOM  >> =  2.799281557369D-13
+@ -<< ZANGMOM  ; ZANGMOM  >> =  2.799281343082D-13
  opened with lu T          11
- >>> Time used in TRAHSO is   0.10 seconds
 
 
  Perturbation symmetry.     KSYMOP:       5
@@ -1010,6 +1034,7 @@ Point group: D2h
  RSPLR -- linear response calculation for symmetry  6
  RSPLR -- operator label : YANGMOM 
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -1039,7 +1064,7 @@ Point group: D2h
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< YANGMOM  ; YANGMOM  >> =  2.490592221738D+01
+@ -<< YANGMOM  ; YANGMOM  >> =  2.490592221731D+01
  opened with lu T          11
 
 
@@ -1053,6 +1078,7 @@ Point group: D2h
  RSPLR -- linear response calculation for symmetry  7
  RSPLR -- operator label : XANGMOM 
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -1082,7 +1108,7 @@ Point group: D2h
 
 @ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@ -<< XANGMOM  ; XANGMOM  >> =  2.490591584435D+01
+@ -<< XANGMOM  ; XANGMOM  >> =  2.490591584429D+01
  opened with lu T          11
 
 
@@ -1148,17 +1174,17 @@ Point group: D2h
        3      0.000000      2.002319  0.0000  0.0000  1.0000
      ave      0.002426      2.004746
 
- >>>> Total CPU  time used in RESPONSE:   0.34 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.32 seconds
+ >>>> Total wall time used in RESPONSE:   0.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.33 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.25 seconds
+ >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:46:27 2011 
      Host name              : fe6                                     

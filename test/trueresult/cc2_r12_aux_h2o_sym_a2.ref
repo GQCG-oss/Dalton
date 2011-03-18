@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 23:19:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:49:55 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -217,11 +218,14 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           O           0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
 
                        Total mass:    18.010565 amu
-                       Natural abundance:  99.730 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000   -0.099054    0.000000
 
@@ -301,18 +305,18 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2      O           H    1      H    2
+            O           H   _1      H   _2      O           H   _1      H   _2
             ------      ------      ------      ------      ------      ------
  O     :    0.000000
- H    1:    0.972000    0.000000
- H    2:    0.972000    1.537101    0.000000
+ H   _1:    0.972000    0.000000
+ H   _2:    0.972000    1.537101    0.000000
  O     :    0.000000    0.972000    0.972000    0.000000
- H    1:    0.972000    0.000000    1.537101    0.972000    0.000000
- H    2:    0.972000    1.537101    0.000000    0.972000    1.537101    0.000000
+ H   _1:    0.972000    0.000000    1.537101    0.972000    0.000000
+ H   _2:    0.972000    1.537101    0.000000    0.972000    1.537101    0.000000
 
 
   Max interatomic separation is    1.5371 Angstrom (    2.9047 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -320,8 +324,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.972000
-  bond distance:  H    2     O            0.972000
+  bond distance:  H   _1     O            0.972000
+  bond distance:  H   _2     O            0.972000
 
 
   Bond angles (degrees):
@@ -329,7 +333,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.500
+  bond angle:     H   _1     O          H   _2       104.500
 
 
 
@@ -349,7 +353,7 @@ Point group: C2v
 
                A                   B                   C
 
-         797267.3440         424480.0013         277000.0234 MHz
+         797267.3370         424479.9976         277000.0210 MHz
            26.593976           14.159129            9.239726 cm-1
 
 
@@ -435,6 +439,8 @@ Point group: C2v
    54     O    A   3d1+      40
    55     H    A   2pz       54 -   55
 
+  Number of floating/multiple basis set orbitals :    3
+
   Symmetries of electric field:  B2 (2)  A1 (1)  B1 (3)
 
   Symmetries of magnetic field:  B1 (3)  A2 (4)  B2 (2)
@@ -457,7 +463,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Cartesian multipole moment integrals of orders 2 and lower
 
@@ -476,8 +482,8 @@ Point group: C2v
  Number of two-electron integrals written:        5362 (  0.5% )
  Megabytes written:                              0.062
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -503,7 +509,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 23:19:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:49:55 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -518,8 +524,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -529,6 +534,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -582,57 +591,88 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
 
 *** WARNING  GETGAB: GABAOXXX not found on AOPROPER. Regenerating.
    1  -61.9064868849       2.30D+01  -6.19D+01    3  1  1  0
-      MULPOP O     0.62; H     0.11; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   2  -67.5183719652       8.24D+00  -5.61D+00    3  2  0  0
-      MULPOP O     0.50; H     0.00; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   3  -73.7989315582       7.48D+00  -6.28D+00    3  1  1  0
-      MULPOP O     1.95; H     0.02; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
+      Virial theorem: -V/T =      1.513486
+      MULPOP  O      -1.89; H   _1  0.95; H   _2  0.95; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -67.5183719651       8.24D+00  -5.61D+00    3  2  0  0
+      Virial theorem: -V/T =      2.101881
+      MULPOP  O       5.53; H   _1 -2.77; H   _2 -2.77; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -73.7989315581       7.48D+00  -6.28D+00    3  1  1  0
+      Virial theorem: -V/T =      1.837753
+      MULPOP  O      -1.68; H   _1  0.84; H   _2  0.84; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4  -75.6877048599       2.59D+00  -1.89D+00    3  1  1  0
-      MULPOP O     1.49; H     0.04; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -7    T
+      Virial theorem: -V/T =      1.948019
+      MULPOP  O      -1.30; H   _1  0.65; H   _2  0.65; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5  -76.0063796622       1.33D-01  -3.19D-01    3  1  1  0
-      MULPOP O     1.30; H     0.04; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -7    T
+      Virial theorem: -V/T =      1.999631
+      MULPOP  O      -0.88; H   _1  0.44; H   _2  0.44; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6  -76.0082538736       7.29D-02  -1.87D-03    3  1  1  0
-      MULPOP O     1.33; H     0.04; 
-   7  Screening settings (-IFTHRS, DIFDEN)   -9    F
+      Virial theorem: -V/T =      2.001202
+      MULPOP  O      -0.80; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
    7  -76.0085436998       8.05D-03  -2.90D-04    3  1  1  0
-      MULPOP O     1.35; H     0.04; 
-   8  Screening settings (-IFTHRS, DIFDEN)   -9    T
+      Virial theorem: -V/T =      1.999713
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
    8  -76.0085548901       1.45D-03  -1.12D-05    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-   9  Screening settings (-IFTHRS, DIFDEN)   -9    T
+      Virial theorem: -V/T =      1.999736
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
    9  -76.0085552884       2.64D-04  -3.98D-07    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -11    F
+      Virial theorem: -V/T =      1.999736
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
   10  -76.0085552985       6.66D-05  -1.01D-08    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -11    T
+      Virial theorem: -V/T =      1.999736
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
   11  -76.0085552989       1.06D-05  -3.37D-10    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -13    F
-  12  -76.0085552989       8.17D-07  -7.59D-12    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -16    F
-  13  -76.0085552989       1.03D-07  -5.68D-14    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  14  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  14  -76.0085552989       9.30D-09  -1.42D-14    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  15  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  15  -76.0085552989       7.17D-10  -2.84D-14    3  1  1  0
-      MULPOP O     1.36; H     0.04; 
-  16  Screening settings (-IFTHRS, DIFDEN)  -16    T
-  16  -76.0085552989       6.72D-11   0.00D+00    3  1  1  0
- DIIS converged in  16 iterations !
- - total time used in SIRFCK        :       0.08 seconds
+      Virial theorem: -V/T =      1.999735
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -76.0085552989       8.17D-07  -7.55D-12    3  1  1  0
+      Virial theorem: -V/T =      1.999735
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -76.0085552989       1.03D-07  -1.56D-13    3  1  1  0
+      Virial theorem: -V/T =      1.999735
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -76.0085552989       9.30D-09   4.26D-14    3  1  1  0
+      Virial theorem: -V/T =      1.999735
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  15  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  15  -76.0085552989       7.17D-10  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      1.999735
+      MULPOP  O      -0.79; H   _1  0.40; H   _2  0.40; 
+ -----------------------------------------------------------------------------
+  16  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  16  -76.0085552989       6.72D-11   2.84D-14    3  1  1  0
+
+ *** DIIS converged in  16 iterations !
+   - total time used in SIRFCK :              0.08 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -676,7 +716,10 @@ Point group: C2v
    4      0.085169844552
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -689,7 +732,7 @@ Point group: C2v
      Final gradient norm:           0.000000000067
 
  
-     Date and time (Linux)  : Wed Dec 29 23:19:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:49:56 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -697,7 +740,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 O   :1s     0.5515  -0.1134  -0.0407   0.0336  -0.0333  -0.0212
    2 O   :1s     0.4717  -0.1903  -0.0688   0.0549  -0.0581  -0.0380
    3 O   :1s     0.0054   0.5437   0.2107  -0.1062   0.1510   0.1495
@@ -712,7 +755,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px   -0.2202   0.1268   0.1298
    2 O   :2px   -0.3665   0.1479   0.1938
    3 O   :2px   -0.2281   0.5262   1.0399
@@ -723,18 +766,18 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2pz    0.2938   0.2410  -1.2700
    2 O   :2pz    0.4406   0.8364   1.3705
    3 O   :2pz    0.4866  -1.1368  -0.5240
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.18 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.19 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:19:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:49:56 2011 
      Host name              : fe6                                     
 
 
@@ -767,7 +810,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1
-  MIN AND MAX IN SELECTED SUPSPACE   -20.555921468345087       -20.555921468345087     
+  MIN AND MAX IN SELECTED SUPSPACE   -20.555921468344003       -20.555921468344003     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -20.5559
  In total frozen-core per symmetry-class:  1  0  0  0
  
@@ -813,17 +856,17 @@ Point group: C2v
  Core memory required by CCSD_R12 :          67363  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [6] is   1.51 seconds
+ >>> Time used in R  [6] is   1.62 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
- >>> Time used for V^aj_kl is    0.00 seconds
+ >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   0.54 seconds
+ >>> Time used in 1/R[5] is   0.55 seconds
  Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
  Computation of (i'p'|r12|jq') integrals done
- >>> Time used in R  [6] is   1.51 seconds
+ >>> Time used in R  [6] is   1.54 seconds
  Computation of (ip'|[T,r12]|jq') integrals done
  >>> Time used in T,R[5] is   0.74 seconds
 
@@ -873,7 +916,7 @@ Point group: C2v
 
               MP2-R12/B   correlation energy =   -0.251923390
  >>> Time used in E(R12) is   0.13 seconds
- Time for MP2-R12 part cpu:   4.4413247853517532     
+ Time for MP2-R12 part cpu:   4.5953009575605392     
  Time for MP2-R12 part wall:   4.0000000000000000     
 
   I am freezing!
@@ -882,7 +925,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1
-  MIN AND MAX IN SELECTED SUPSPACE   -20.555921468345087       -20.555921468345087     
+  MIN AND MAX IN SELECTED SUPSPACE   -20.555921468344003       -20.555921468344003     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -20.5559
  In total frozen-core per symmetry-class:  1  0  0  0
  
@@ -907,10 +950,10 @@ Point group: C2v
           Number of t2' amplitudes for R12 part   :        69
           Total number of amplitudes in ccsd      :       568
 
- Iter.  1: Coupled cluster MP2-R12/B energy :     -76.2604786890922526
-     Conventional correlation energy:    -0.0836012860511204
-     R12 correlation energy         :    -0.1683221041789421
-     Total correlation energy       :    -0.2519233902300625
+ Iter.  1: Coupled cluster MP2-R12/B energy :     -76.2604786890923663
+     Conventional correlation energy:    -0.0836012860509783
+     R12 correlation energy         :    -0.1683221041790266
+     Total correlation energy       :    -0.2519233902300049
 
 
        Iteration no.:  1
@@ -918,12 +961,12 @@ Point group: C2v
 
        Time used in   RHS - TOTAL  :       0.17 seconds
        Norm^2 of omega1 after ccvec:        0.3670044148D-02
-       Norm^2 of omega2 after ccvec:        0.1297141642D-28
-       Norm^2 of Omegar12  in NXTAM:        0.3322788526D-24
- Iter.  1: Coupled cluster CC2-R12/B energy :     -76.2604577838018116
-     Conventional correlation energy:    -0.0835803807607931
-     R12 correlation energy         :    -0.1683221041788210
-     Total correlation energy       :    -0.2519024849396141
+       Norm^2 of omega2 after ccvec:        0.1063280017D-28
+       Norm^2 of Omegar12  in NXTAM:        0.2065094319D-25
+ Iter.  1: Coupled cluster CC2-R12/B energy :     -76.2604577838019821
+     Conventional correlation energy:    -0.0835803807606084
+     R12 correlation energy         :    -0.1683221041790181
+     Total correlation energy       :    -0.2519024849396264
 
 
        Iteration no.:  2
@@ -931,25 +974,25 @@ Point group: C2v
 
        Time used in   RHS - TOTAL  :       0.17 seconds
        Norm^2 of omega1 after ccvec:        0.4270520818D-04
-       Norm^2 of omega2 after ccvec:        0.6518824556D-04
+       Norm^2 of omega2 after ccvec:        0.6518824555D-04
        Norm^2 of Omegar12  in NXTAM:        0.1413048645D-04
- Iter.  2: Coupled cluster CC2-R12/B energy :     -76.2631390415006507
-     Conventional correlation energy:    -0.0853552763466183
-     R12 correlation energy         :    -0.1692284662918343
-     Total correlation energy       :    -0.2545837426384526
+ Iter.  2: Coupled cluster CC2-R12/B energy :     -76.2631390415008497
+     Conventional correlation energy:    -0.0853552763464620
+     R12 correlation energy         :    -0.1692284662920284
+     Total correlation energy       :    -0.2545837426384904
 
 
        Iteration no.:  3
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.4572783647D-05
+       Norm^2 of omega1 after ccvec:        0.4572783646D-05
        Norm^2 of omega2 after ccvec:        0.5494504911D-05
-       Norm^2 of Omegar12  in NXTAM:        0.1631055978D-04
- Iter.  3: Coupled cluster CC2-R12/B energy :     -76.2624981039433152
-     Conventional correlation energy:    -0.0852298906545741
-     R12 correlation energy         :    -0.1687129144265465
-     Total correlation energy       :    -0.2539428050811205
+       Norm^2 of Omegar12  in NXTAM:        0.1631055977D-04
+ Iter.  3: Coupled cluster CC2-R12/B energy :     -76.2624981039434715
+     Conventional correlation energy:    -0.0852298906543609
+     R12 correlation energy         :    -0.1687129144267486
+     Total correlation energy       :    -0.2539428050811096
 
 
        Iteration no.:  4
@@ -957,25 +1000,25 @@ Point group: C2v
 
        Time used in   RHS - TOTAL  :       0.17 seconds
        Norm^2 of omega1 after ccvec:        0.3770608551D-06
-       Norm^2 of omega2 after ccvec:        0.8918470833D-06
-       Norm^2 of Omegar12  in NXTAM:        0.2820297593D-05
- Iter.  4: Coupled cluster CC2-R12/B energy :     -76.2624953490281854
-     Conventional correlation energy:    -0.0853341052659289
-     R12 correlation energy         :    -0.1686059449000610
-     Total correlation energy       :    -0.2539400501659899
+       Norm^2 of omega2 after ccvec:        0.8918470831D-06
+       Norm^2 of Omegar12  in NXTAM:        0.2820297592D-05
+ Iter.  4: Coupled cluster CC2-R12/B energy :     -76.2624953490283843
+     Conventional correlation energy:    -0.0853341052657299
+     R12 correlation energy         :    -0.1686059449002856
+     Total correlation energy       :    -0.2539400501660155
 
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.6930847899D-07
-       Norm^2 of omega2 after ccvec:        0.3788612784D-06
-       Norm^2 of Omegar12  in NXTAM:        0.5396318723D-05
- Iter.  5: Coupled cluster CC2-R12/B energy :     -76.2624917112222391
-     Conventional correlation energy:    -0.0853766223481642
-     R12 correlation energy         :    -0.1685597900118885
-     Total correlation energy       :    -0.2539364123600528
+       Norm^2 of omega1 after ccvec:        0.6930847897D-07
+       Norm^2 of omega2 after ccvec:        0.3788612783D-06
+       Norm^2 of Omegar12  in NXTAM:        0.5396318721D-05
+ Iter.  5: Coupled cluster CC2-R12/B energy :     -76.2624917112223955
+     Conventional correlation energy:    -0.0853766223479226
+     R12 correlation energy         :    -0.1685597900121178
+     Total correlation energy       :    -0.2539364123600404
 
 
        Iteration no.:  6
@@ -985,10 +1028,10 @@ Point group: C2v
        Norm^2 of omega1 after ccvec:        0.1308025736D-07
        Norm^2 of omega2 after ccvec:        0.1118223743D-06
        Norm^2 of Omegar12  in NXTAM:        0.5556011733D-06
- Iter.  6: Coupled cluster CC2-R12/B energy :     -76.2624709962681777
-     Conventional correlation energy:    -0.0853818641945878
-     R12 correlation energy         :    -0.1685338332113958
-     Total correlation energy       :    -0.2539156974059836
+ Iter.  6: Coupled cluster CC2-R12/B energy :     -76.2624709962685472
+     Conventional correlation energy:    -0.0853818641945594
+     R12 correlation energy         :    -0.1685338332116244
+     Total correlation energy       :    -0.2539156974061837
 
 
        Iteration no.:  7
@@ -998,10 +1041,10 @@ Point group: C2v
        Norm^2 of omega1 after ccvec:        0.2184854843D-08
        Norm^2 of omega2 after ccvec:        0.2541788914D-07
        Norm^2 of Omegar12  in NXTAM:        0.5652701120D-06
- Iter.  7: Coupled cluster CC2-R12/B energy :     -76.2624748741663296
-     Conventional correlation energy:    -0.0853922363198478
-     R12 correlation energy         :    -0.1685273389842857
-     Total correlation energy       :    -0.2539195753041335
+ Iter.  7: Coupled cluster CC2-R12/B energy :     -76.2624748741666139
+     Conventional correlation energy:    -0.0853922363197341
+     R12 correlation energy         :    -0.1685273389845130
+     Total correlation energy       :    -0.2539195753042471
 
 
        Iteration no.:  8
@@ -1009,666 +1052,666 @@ Point group: C2v
 
        Time used in   RHS - TOTAL  :       0.17 seconds
        Norm^2 of omega1 after ccvec:        0.1643706892D-09
-       Norm^2 of omega2 after ccvec:        0.2770203479D-07
+       Norm^2 of omega2 after ccvec:        0.2770203478D-07
        Norm^2 of Omegar12  in NXTAM:        0.2066786398D-06
- Iter.  8: Coupled cluster CC2-R12/B energy :     -76.2624761415202386
-     Conventional correlation energy:    -0.0853946811104578
-     R12 correlation energy         :    -0.1685261615475935
-     Total correlation energy       :    -0.2539208426580513
+ Iter.  8: Coupled cluster CC2-R12/B energy :     -76.2624761415199401
+     Conventional correlation energy:    -0.0853946811097614
+     R12 correlation energy         :    -0.1685261615478204
+     Total correlation energy       :    -0.2539208426575819
 
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.16 seconds
-       Norm^2 of omega1 after ccvec:        0.5466172250D-10
-       Norm^2 of omega2 after ccvec:        0.2078694494D-07
+       Time used in   RHS - TOTAL  :       0.17 seconds
+       Norm^2 of omega1 after ccvec:        0.5466172254D-10
+       Norm^2 of omega2 after ccvec:        0.2078694493D-07
        Norm^2 of Omegar12  in NXTAM:        0.1945547185D-06
- Iter.  9: Coupled cluster CC2-R12/B energy :     -76.2624766939661782
-     Conventional correlation energy:    -0.0853970814360423
-     R12 correlation energy         :    -0.1685243136679384
-     Total correlation energy       :    -0.2539213951039807
+ Iter.  9: Coupled cluster CC2-R12/B energy :     -76.2624766939664767
+     Conventional correlation energy:    -0.0853970814359570
+     R12 correlation energy         :    -0.1685243136681639
+     Total correlation energy       :    -0.2539213951041210
 
 
        Iteration no.: 10
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1434964529D-10
-       Norm^2 of omega2 after ccvec:        0.7997655023D-08
-       Norm^2 of Omegar12  in NXTAM:        0.4485927018D-06
- Iter. 10: Coupled cluster CC2-R12/B energy :     -76.2624759336341640
-     Conventional correlation energy:    -0.0853984677399211
-     R12 correlation energy         :    -0.1685221670320565
-     Total correlation energy       :    -0.2539206347719776
+       Norm^2 of omega1 after ccvec:        0.1434964530D-10
+       Norm^2 of omega2 after ccvec:        0.7997655024D-08
+       Norm^2 of Omegar12  in NXTAM:        0.4485927017D-06
+ Iter. 10: Coupled cluster CC2-R12/B energy :     -76.2624759336341782
+     Conventional correlation energy:    -0.0853984677395374
+     R12 correlation energy         :    -0.1685221670322823
+     Total correlation energy       :    -0.2539206347718197
 
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1543205041D-10
-       Norm^2 of omega2 after ccvec:        0.1887931973D-07
+       Norm^2 of omega1 after ccvec:        0.1543205042D-10
+       Norm^2 of omega2 after ccvec:        0.1887931972D-07
        Norm^2 of Omegar12  in NXTAM:        0.1644970282D-06
- Iter. 11: Coupled cluster CC2-R12/B energy :     -76.2624759942555954
-     Conventional correlation energy:    -0.0854064648822970
-     R12 correlation energy         :    -0.1685142305111032
-     Total correlation energy       :    -0.2539206953934002
+ Iter. 11: Coupled cluster CC2-R12/B energy :     -76.2624759942558370
+     Conventional correlation energy:    -0.0854064648821407
+     R12 correlation energy         :    -0.1685142305113281
+     Total correlation energy       :    -0.2539206953934687
 
 
        Iteration no.: 12
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.8995632345D-11
+       Norm^2 of omega1 after ccvec:        0.8995632410D-11
        Norm^2 of omega2 after ccvec:        0.1089055908D-07
        Norm^2 of Omegar12  in NXTAM:        0.1071955392D-06
- Iter. 12: Coupled cluster CC2-R12/B energy :     -76.2624752939754842
-     Conventional correlation energy:    -0.0854097385044099
-     R12 correlation energy         :    -0.1685102566088799
-     Total correlation energy       :    -0.2539199951132898
+ Iter. 12: Coupled cluster CC2-R12/B energy :     -76.2624752939756831
+     Conventional correlation energy:    -0.0854097385042110
+     R12 correlation energy         :    -0.1685102566091040
+     Total correlation energy       :    -0.2539199951133150
 
 
        Iteration no.: 13
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5376108858D-11
-       Norm^2 of omega2 after ccvec:        0.8676931181D-08
-       Norm^2 of Omegar12  in NXTAM:        0.7127442627D-07
- Iter. 13: Coupled cluster CC2-R12/B energy :     -76.2624764753247320
-     Conventional correlation energy:    -0.0854175520248504
-     R12 correlation energy         :    -0.1685036244376917
-     Total correlation energy       :    -0.2539211764625420
+       Norm^2 of omega1 after ccvec:        0.5376108859D-11
+       Norm^2 of omega2 after ccvec:        0.8676931179D-08
+       Norm^2 of Omegar12  in NXTAM:        0.7127442629D-07
+ Iter. 13: Coupled cluster CC2-R12/B energy :     -76.2624764753247177
+     Conventional correlation energy:    -0.0854175520244382
+     R12 correlation energy         :    -0.1685036244379155
+     Total correlation energy       :    -0.2539211764623537
 
 
        Iteration no.: 14
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2382087338D-10
-       Norm^2 of omega2 after ccvec:        0.1954571030D-08
+       Norm^2 of omega1 after ccvec:        0.2382087343D-10
+       Norm^2 of omega2 after ccvec:        0.1954571029D-08
        Norm^2 of Omegar12  in NXTAM:        0.1735799717D-07
- Iter. 14: Coupled cluster CC2-R12/B energy :     -76.2624767209246528
-     Conventional correlation energy:    -0.0854192665646991
-     R12 correlation energy         :    -0.1685021554977645
-     Total correlation energy       :    -0.2539214220624636
+ Iter. 14: Coupled cluster CC2-R12/B energy :     -76.2624767209249939
+     Conventional correlation energy:    -0.0854192665646423
+     R12 correlation energy         :    -0.1685021554979889
+     Total correlation energy       :    -0.2539214220626311
 
 
        Iteration no.: 15
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1519444291D-10
-       Norm^2 of omega2 after ccvec:        0.7388473487D-09
-       Norm^2 of Omegar12  in NXTAM:        0.2756155537D-08
- Iter. 15: Coupled cluster CC2-R12/B energy :     -76.2624765622302476
-     Conventional correlation energy:    -0.0854208289579361
-     R12 correlation energy         :    -0.1685004344101198
-     Total correlation energy       :    -0.2539212633680559
+       Norm^2 of omega1 after ccvec:        0.1519444297D-10
+       Norm^2 of omega2 after ccvec:        0.7388473470D-09
+       Norm^2 of Omegar12  in NXTAM:        0.2756155532D-08
+ Iter. 15: Coupled cluster CC2-R12/B energy :     -76.2624765622302760
+     Conventional correlation energy:    -0.0854208289575666
+     R12 correlation energy         :    -0.1685004344103483
+     Total correlation energy       :    -0.2539212633679149
 
 
        Iteration no.: 16
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5169709825D-11
-       Norm^2 of omega2 after ccvec:        0.2976806920D-10
-       Norm^2 of Omegar12  in NXTAM:        0.7796892853D-09
- Iter. 16: Coupled cluster CC2-R12/B energy :     -76.2624774376761678
-     Conventional correlation energy:    -0.0854207491929486
-     R12 correlation energy         :    -0.1685013896210259
-     Total correlation energy       :    -0.2539221388139745
+       Norm^2 of omega1 after ccvec:        0.5169709898D-11
+       Norm^2 of omega2 after ccvec:        0.2976806916D-10
+       Norm^2 of Omegar12  in NXTAM:        0.7796892827D-09
+ Iter. 16: Coupled cluster CC2-R12/B energy :     -76.2624774376763810
+     Conventional correlation energy:    -0.0854207491927639
+     R12 correlation energy         :    -0.1685013896212542
+     Total correlation energy       :    -0.2539221388140180
 
 
        Iteration no.: 17
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.6305085878D-12
-       Norm^2 of omega2 after ccvec:        0.3872823782D-10
-       Norm^2 of Omegar12  in NXTAM:        0.4880116059D-10
- Iter. 17: Coupled cluster CC2-R12/B energy :     -76.2624772595420382
-     Conventional correlation energy:    -0.0854206769944739
-     R12 correlation energy         :    -0.1685012836853662
-     Total correlation energy       :    -0.2539219606798401
+       Norm^2 of omega1 after ccvec:        0.6305085943D-12
+       Norm^2 of omega2 after ccvec:        0.3872823769D-10
+       Norm^2 of Omegar12  in NXTAM:        0.4880116060D-10
+ Iter. 17: Coupled cluster CC2-R12/B energy :     -76.2624772595422655
+     Conventional correlation energy:    -0.0854206769943033
+     R12 correlation energy         :    -0.1685012836855935
+     Total correlation energy       :    -0.2539219606798969
 
 
        Iteration no.: 18
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1758734700D-12
-       Norm^2 of omega2 after ccvec:        0.4308820967D-11
-       Norm^2 of Omegar12  in NXTAM:        0.8351501610D-09
- Iter. 18: Coupled cluster CC2-R12/B energy :     -76.2624772950994299
-     Conventional correlation energy:    -0.0854207050081328
-     R12 correlation energy         :    -0.1685012912291033
-     Total correlation energy       :    -0.2539219962372361
+       Norm^2 of omega1 after ccvec:        0.1758734693D-12
+       Norm^2 of omega2 after ccvec:        0.4308820950D-11
+       Norm^2 of Omegar12  in NXTAM:        0.8351501581D-09
+ Iter. 18: Coupled cluster CC2-R12/B energy :     -76.2624772950995720
+     Conventional correlation energy:    -0.0854207050078770
+     R12 correlation energy         :    -0.1685012912293304
+     Total correlation energy       :    -0.2539219962372075
 
 
        Iteration no.: 19
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.8499100468D-13
-       Norm^2 of omega2 after ccvec:        0.2888725769D-10
-       Norm^2 of Omegar12  in NXTAM:        0.3970673600D-10
- Iter. 19: Coupled cluster CC2-R12/B energy :     -76.2624773188195491
-     Conventional correlation energy:    -0.0854207459479284
-     R12 correlation energy         :    -0.1685012740094259
-     Total correlation energy       :    -0.2539220199573543
+       Norm^2 of omega1 after ccvec:        0.8499100505D-13
+       Norm^2 of omega2 after ccvec:        0.2888725759D-10
+       Norm^2 of Omegar12  in NXTAM:        0.3970673607D-10
+ Iter. 19: Coupled cluster CC2-R12/B energy :     -76.2624773188196059
+     Conventional correlation energy:    -0.0854207459475873
+     R12 correlation energy         :    -0.1685012740096529
+     Total correlation energy       :    -0.2539220199572402
 
 
        Iteration no.: 20
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5081545587D-13
-       Norm^2 of omega2 after ccvec:        0.2255246904D-10
-       Norm^2 of Omegar12  in NXTAM:        0.3869785075D-10
- Iter. 20: Coupled cluster CC2-R12/B energy :     -76.2624772505520525
-     Conventional correlation energy:    -0.0854207719952029
-     R12 correlation energy         :    -0.1685011796946538
-     Total correlation energy       :    -0.2539219516898568
+       Norm^2 of omega1 after ccvec:        0.5081545560D-13
+       Norm^2 of omega2 after ccvec:        0.2255246899D-10
+       Norm^2 of Omegar12  in NXTAM:        0.3869785085D-10
+ Iter. 20: Coupled cluster CC2-R12/B energy :     -76.2624772505520383
+     Conventional correlation energy:    -0.0854207719947908
+     R12 correlation energy         :    -0.1685011796948802
+     Total correlation energy       :    -0.2539219516896710
 
 
        Iteration no.: 21
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2725255642D-13
-       Norm^2 of omega2 after ccvec:        0.2082523617D-10
-       Norm^2 of Omegar12  in NXTAM:        0.3011295338D-10
- Iter. 21: Coupled cluster CC2-R12/B energy :     -76.2624772627509770
-     Conventional correlation energy:    -0.0854208255369429
-     R12 correlation energy         :    -0.1685011383518469
-     Total correlation energy       :    -0.2539219638887897
+       Norm^2 of omega1 after ccvec:        0.2725255626D-13
+       Norm^2 of omega2 after ccvec:        0.2082523610D-10
+       Norm^2 of Omegar12  in NXTAM:        0.3011295337D-10
+ Iter. 21: Coupled cluster CC2-R12/B energy :     -76.2624772627511476
+     Conventional correlation energy:    -0.0854208255367155
+     R12 correlation energy         :    -0.1685011383520737
+     Total correlation energy       :    -0.2539219638887892
 
 
        Iteration no.: 22
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2281051962D-13
-       Norm^2 of omega2 after ccvec:        0.1744543685D-10
-       Norm^2 of Omegar12  in NXTAM:        0.2698004247D-10
- Iter. 22: Coupled cluster CC2-R12/B energy :     -76.2624772827240633
-     Conventional correlation energy:    -0.0854209655536522
-     R12 correlation energy         :    -0.1685010183082223
-     Total correlation energy       :    -0.2539219838618745
+       Norm^2 of omega1 after ccvec:        0.2281051970D-13
+       Norm^2 of omega2 after ccvec:        0.1744543681D-10
+       Norm^2 of Omegar12  in NXTAM:        0.2698004258D-10
+ Iter. 22: Coupled cluster CC2-R12/B energy :     -76.2624772827241628
+     Conventional correlation energy:    -0.0854209655533538
+     R12 correlation energy         :    -0.1685010183084458
+     Total correlation energy       :    -0.2539219838617996
 
 
        Iteration no.: 23
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1647526546D-13
-       Norm^2 of omega2 after ccvec:        0.1160807730D-10
-       Norm^2 of Omegar12  in NXTAM:        0.1621213998D-10
- Iter. 23: Coupled cluster CC2-R12/B energy :     -76.2624772895949832
-     Conventional correlation energy:    -0.0854212090509066
-     R12 correlation energy         :    -0.1685007816818860
-     Total correlation energy       :    -0.2539219907327925
+       Norm^2 of omega1 after ccvec:        0.1647526715D-13
+       Norm^2 of omega2 after ccvec:        0.1160807712D-10
+       Norm^2 of Omegar12  in NXTAM:        0.1621213967D-10
+ Iter. 23: Coupled cluster CC2-R12/B energy :     -76.2624772895950400
+     Conventional correlation energy:    -0.0854212090505655
+     R12 correlation energy         :    -0.1685007816821099
+     Total correlation energy       :    -0.2539219907326754
 
 
        Iteration no.: 24
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.8007483163D-14
-       Norm^2 of omega2 after ccvec:        0.2950327650D-11
-       Norm^2 of Omegar12  in NXTAM:        0.6712427897D-11
- Iter. 24: Coupled cluster CC2-R12/B energy :     -76.2624773129262366
-     Conventional correlation energy:    -0.0854213723640811
-     R12 correlation energy         :    -0.1685006416999603
-     Total correlation energy       :    -0.2539220140640415
+       Norm^2 of omega1 after ccvec:        0.8007483637D-14
+       Norm^2 of omega2 after ccvec:        0.2950327572D-11
+       Norm^2 of Omegar12  in NXTAM:        0.6712427748D-11
+ Iter. 24: Coupled cluster CC2-R12/B energy :     -76.2624773129264639
+     Conventional correlation energy:    -0.0854213723639106
+     R12 correlation energy         :    -0.1685006417001889
+     Total correlation energy       :    -0.2539220140640995
 
 
        Iteration no.: 25
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.4210327228D-14
-       Norm^2 of omega2 after ccvec:        0.8359590527D-12
-       Norm^2 of Omegar12  in NXTAM:        0.9182429112D-12
- Iter. 25: Coupled cluster CC2-R12/B energy :     -76.2624773250498009
-     Conventional correlation energy:    -0.0854213856546551
-     R12 correlation energy         :    -0.1685006405329578
-     Total correlation energy       :    -0.2539220261876128
+       Norm^2 of omega1 after ccvec:        0.4210327070D-14
+       Norm^2 of omega2 after ccvec:        0.8359590663D-12
+       Norm^2 of Omegar12  in NXTAM:        0.9182428488D-12
+ Iter. 25: Coupled cluster CC2-R12/B energy :     -76.2624773250499146
+     Conventional correlation energy:    -0.0854213856543709
+     R12 correlation energy         :    -0.1685006405331835
+     Total correlation energy       :    -0.2539220261875543
 
 
        Iteration no.: 26
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1025685306D-14
-       Norm^2 of omega2 after ccvec:        0.5625204646D-13
-       Norm^2 of Omegar12  in NXTAM:        0.1846825903D-10
- Iter. 26: Coupled cluster CC2-R12/B energy :     -76.2624773193826826
-     Conventional correlation energy:    -0.0854213872266456
-     R12 correlation energy         :    -0.1685006332938497
-     Total correlation energy       :    -0.2539220205204953
+       Norm^2 of omega1 after ccvec:        0.1025685341D-14
+       Norm^2 of omega2 after ccvec:        0.5625204179D-13
+       Norm^2 of Omegar12  in NXTAM:        0.1846825935D-10
+ Iter. 26: Coupled cluster CC2-R12/B energy :     -76.2624773193828958
+     Conventional correlation energy:    -0.0854213872264609
+     R12 correlation energy         :    -0.1685006332940776
+     Total correlation energy       :    -0.2539220205205384
 
 
        Iteration no.: 27
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.9295245611D-15
-       Norm^2 of omega2 after ccvec:        0.6277045116D-12
-       Norm^2 of Omegar12  in NXTAM:        0.8082459139D-12
- Iter. 27: Coupled cluster CC2-R12/B energy :     -76.2624773205588156
-     Conventional correlation energy:    -0.0854213965131123
-     R12 correlation energy         :    -0.1685006251835133
-     Total correlation energy       :    -0.2539220216966256
+       Norm^2 of omega1 after ccvec:        0.9295245318D-15
+       Norm^2 of omega2 after ccvec:        0.6277045201D-12
+       Norm^2 of Omegar12  in NXTAM:        0.8082458529D-12
+ Iter. 27: Coupled cluster CC2-R12/B energy :     -76.2624773205589435
+     Conventional correlation energy:    -0.0854213965128423
+     R12 correlation energy         :    -0.1685006251837422
+     Total correlation energy       :    -0.2539220216965845
 
 
        Iteration no.: 28
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.4225463200D-15
-       Norm^2 of omega2 after ccvec:        0.4898248196D-12
-       Norm^2 of Omegar12  in NXTAM:        0.8220827474D-12
+       Norm^2 of omega1 after ccvec:        0.4225463330D-15
+       Norm^2 of omega2 after ccvec:        0.4898248361D-12
+       Norm^2 of Omegar12  in NXTAM:        0.8220826924D-12
  Iter. 28: Coupled cluster CC2-R12/B energy :     -76.2624773185131346
-     Conventional correlation energy:    -0.0854214080036968
-     R12 correlation energy         :    -0.1685006116472506
-     Total correlation energy       :    -0.2539220196509474
+     Conventional correlation energy:    -0.0854214080032989
+     R12 correlation energy         :    -0.1685006116474795
+     Total correlation energy       :    -0.2539220196507783
 
 
        Iteration no.: 29
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.3703434820D-15
-       Norm^2 of omega2 after ccvec:        0.4207147276D-12
-       Norm^2 of Omegar12  in NXTAM:        0.5999261419D-12
- Iter. 29: Coupled cluster CC2-R12/B energy :     -76.2624773229604642
-     Conventional correlation energy:    -0.0854214273614105
-     R12 correlation energy         :    -0.1685005967368681
-     Total correlation energy       :    -0.2539220240982786
+       Norm^2 of omega1 after ccvec:        0.3703436329D-15
+       Norm^2 of omega2 after ccvec:        0.4207147459D-12
+       Norm^2 of Omegar12  in NXTAM:        0.5999260741D-12
+ Iter. 29: Coupled cluster CC2-R12/B energy :     -76.2624773229606490
+     Conventional correlation energy:    -0.0854214273611831
+     R12 correlation energy         :    -0.1685005967370974
+     Total correlation energy       :    -0.2539220240982805
 
 
        Iteration no.: 30
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.3763957859D-15
-       Norm^2 of omega2 after ccvec:        0.2898459250D-12
-       Norm^2 of Omegar12  in NXTAM:        0.4491418899D-12
- Iter. 30: Coupled cluster CC2-R12/B energy :     -76.2624773182406415
-     Conventional correlation energy:    -0.0854214507057947
-     R12 correlation energy         :    -0.1685005686726492
-     Total correlation energy       :    -0.2539220193784438
+       Norm^2 of omega1 after ccvec:        0.3763956774D-15
+       Norm^2 of omega2 after ccvec:        0.2898459391D-12
+       Norm^2 of Omegar12  in NXTAM:        0.4491418531D-12
+ Iter. 30: Coupled cluster CC2-R12/B energy :     -76.2624773182407836
+     Conventional correlation energy:    -0.0854214507055531
+     R12 correlation energy         :    -0.1685005686728705
+     Total correlation energy       :    -0.2539220193784236
 
 
        Iteration no.: 31
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2990960269D-15
-       Norm^2 of omega2 after ccvec:        0.1523570419D-12
-       Norm^2 of Omegar12  in NXTAM:        0.1996662214D-12
- Iter. 31: Coupled cluster CC2-R12/B energy :     -76.2624773252824895
-     Conventional correlation energy:    -0.0854214921562857
-     R12 correlation energy         :    -0.1685005342640137
-     Total correlation energy       :    -0.2539220264202994
+       Norm^2 of omega1 after ccvec:        0.2990959969D-15
+       Norm^2 of omega2 after ccvec:        0.1523570354D-12
+       Norm^2 of Omegar12  in NXTAM:        0.1996661427D-12
+ Iter. 31: Coupled cluster CC2-R12/B energy :     -76.2624773252825037
+     Conventional correlation energy:    -0.0854214921558878
+     R12 correlation energy         :    -0.1685005342642598
+     Total correlation energy       :    -0.2539220264201476
 
 
        Iteration no.: 32
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1521358074D-15
-       Norm^2 of omega2 after ccvec:        0.2226050610D-13
-       Norm^2 of Omegar12  in NXTAM:        0.6446856082D-13
- Iter. 32: Coupled cluster CC2-R12/B energy :     -76.2624773271593739
-     Conventional correlation energy:    -0.0854214985436670
-     R12 correlation energy         :    -0.1685005297535162
-     Total correlation energy       :    -0.2539220282971831
+       Norm^2 of omega1 after ccvec:        0.1521354131D-15
+       Norm^2 of omega2 after ccvec:        0.2226054635D-13
+       Norm^2 of Omegar12  in NXTAM:        0.6446862870D-13
+ Iter. 32: Coupled cluster CC2-R12/B energy :     -76.2624773271595586
+     Conventional correlation energy:    -0.0854214985434538
+     R12 correlation energy         :    -0.1685005297537418
+     Total correlation energy       :    -0.2539220282971956
 
 
        Iteration no.: 33
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5295301430D-16
-       Norm^2 of omega2 after ccvec:        0.1300233516D-13
-       Norm^2 of Omegar12  in NXTAM:        0.2169062881D-13
- Iter. 33: Coupled cluster CC2-R12/B energy :     -76.2624773269085381
-     Conventional correlation energy:    -0.0854214986767374
-     R12 correlation energy         :    -0.1685005293696121
-     Total correlation energy       :    -0.2539220280463496
+       Norm^2 of omega1 after ccvec:        0.5295310921D-16
+       Norm^2 of omega2 after ccvec:        0.1300233988D-13
+       Norm^2 of Omegar12  in NXTAM:        0.2169060740D-13
+ Iter. 33: Coupled cluster CC2-R12/B energy :     -76.2624773269088365
+     Conventional correlation energy:    -0.0854214986766380
+     R12 correlation energy         :    -0.1685005293698385
+     Total correlation energy       :    -0.2539220280464765
 
 
        Iteration no.: 34
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2224799200D-16
-       Norm^2 of omega2 after ccvec:        0.9308465716D-15
-       Norm^2 of Omegar12  in NXTAM:        0.2947666085D-12
- Iter. 34: Coupled cluster CC2-R12/B energy :     -76.2624773262341478
-     Conventional correlation energy:    -0.0854214986137691
-     R12 correlation energy         :    -0.1685005287581928
-     Total correlation energy       :    -0.2539220273719619
+       Norm^2 of omega1 after ccvec:        0.2224804080D-16
+       Norm^2 of omega2 after ccvec:        0.9308457465D-15
+       Norm^2 of Omegar12  in NXTAM:        0.2947667209D-12
+ Iter. 34: Coupled cluster CC2-R12/B energy :     -76.2624773262343183
+     Conventional correlation energy:    -0.0854214986135418
+     R12 correlation energy         :    -0.1685005287584188
+     Total correlation energy       :    -0.2539220273719606
 
 
        Iteration no.: 35
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1163215835D-16
-       Norm^2 of omega2 after ccvec:        0.1004736315D-13
-       Norm^2 of Omegar12  in NXTAM:        0.2275097305D-13
- Iter. 35: Coupled cluster CC2-R12/B energy :     -76.2624773265016387
-     Conventional correlation energy:    -0.0854214995139415
-     R12 correlation energy         :    -0.1685005281255082
-     Total correlation energy       :    -0.2539220276394497
+       Norm^2 of omega1 after ccvec:        0.1163218005D-16
+       Norm^2 of omega2 after ccvec:        0.1004736488D-13
+       Norm^2 of Omegar12  in NXTAM:        0.2275096050D-13
+ Iter. 35: Coupled cluster CC2-R12/B energy :     -76.2624773265018518
+     Conventional correlation energy:    -0.0854214995137568
+     R12 correlation energy         :    -0.1685005281257347
+     Total correlation energy       :    -0.2539220276394915
 
 
        Iteration no.: 36
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.8836487702D-17
-       Norm^2 of omega2 after ccvec:        0.8342651581D-14
-       Norm^2 of Omegar12  in NXTAM:        0.2207536663D-13
- Iter. 36: Coupled cluster CC2-R12/B energy :     -76.2624773260877333
-     Conventional correlation energy:    -0.0854215007591819
-     R12 correlation energy         :    -0.1685005264663566
-     Total correlation energy       :    -0.2539220272255385
+       Norm^2 of omega1 after ccvec:        0.8836510175D-17
+       Norm^2 of omega2 after ccvec:        0.8342652841D-14
+       Norm^2 of Omegar12  in NXTAM:        0.2207535712D-13
+ Iter. 36: Coupled cluster CC2-R12/B energy :     -76.2624773260882591
+     Conventional correlation energy:    -0.0854215007593098
+     R12 correlation energy         :    -0.1685005264665835
+     Total correlation energy       :    -0.2539220272258933
 
 
        Iteration no.: 37
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5340735097D-17
-       Norm^2 of omega2 after ccvec:        0.7088862826D-14
-       Norm^2 of Omegar12  in NXTAM:        0.1598419825D-13
- Iter. 37: Coupled cluster CC2-R12/B energy :     -76.2624773263752758
-     Conventional correlation energy:    -0.0854215034138548
-     R12 correlation energy         :    -0.1685005240992271
-     Total correlation energy       :    -0.2539220275130819
+       Norm^2 of omega1 after ccvec:        0.5340746958D-17
+       Norm^2 of omega2 after ccvec:        0.7088866514D-14
+       Norm^2 of Omegar12  in NXTAM:        0.1598419158D-13
+ Iter. 37: Coupled cluster CC2-R12/B energy :     -76.2624773263752900
+     Conventional correlation energy:    -0.0854215034134711
+     R12 correlation energy         :    -0.1685005240994538
+     Total correlation energy       :    -0.2539220275129249
 
 
        Iteration no.: 38
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.4337631060D-17
-       Norm^2 of omega2 after ccvec:        0.4527717824D-14
-       Norm^2 of Omegar12  in NXTAM:        0.1226045826D-13
- Iter. 38: Coupled cluster CC2-R12/B energy :     -76.2624773271370060
-     Conventional correlation energy:    -0.0854215079621383
-     R12 correlation energy         :    -0.1685005203126708
-     Total correlation energy       :    -0.2539220282748091
+       Norm^2 of omega1 after ccvec:        0.4337637236D-17
+       Norm^2 of omega2 after ccvec:        0.4527722451D-14
+       Norm^2 of Omegar12  in NXTAM:        0.1226045273D-13
+ Iter. 38: Coupled cluster CC2-R12/B energy :     -76.2624773271371339
+     Conventional correlation energy:    -0.0854215079618683
+     R12 correlation energy         :    -0.1685005203129024
+     Total correlation energy       :    -0.2539220282747707
 
 
        Iteration no.: 39
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2963217017D-17
-       Norm^2 of omega2 after ccvec:        0.1894005652D-14
-       Norm^2 of Omegar12  in NXTAM:        0.4002181818D-14
- Iter. 39: Coupled cluster CC2-R12/B energy :     -76.2624773270256924
-     Conventional correlation energy:    -0.0854215124189608
-     R12 correlation energy         :    -0.1685005157445389
-     Total correlation energy       :    -0.2539220281634997
+       Norm^2 of omega1 after ccvec:        0.2963185289D-17
+       Norm^2 of omega2 after ccvec:        0.1894007793D-14
+       Norm^2 of Omegar12  in NXTAM:        0.4002179470D-14
+ Iter. 39: Coupled cluster CC2-R12/B energy :     -76.2624773270256355
+     Conventional correlation energy:    -0.0854215124184918
+     R12 correlation energy         :    -0.1685005157447828
+     Total correlation energy       :    -0.2539220281632746
 
 
        Iteration no.: 40
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5616491885D-18
-       Norm^2 of omega2 after ccvec:        0.1620713778D-15
-       Norm^2 of Omegar12  in NXTAM:        0.1296288722D-14
+       Norm^2 of omega1 after ccvec:        0.5616380282D-18
+       Norm^2 of omega2 after ccvec:        0.1620742544D-15
+       Norm^2 of Omegar12  in NXTAM:        0.1296295774D-14
  Iter. 40: Coupled cluster CC2-R12/B energy :     -76.2624773270988356
-     Conventional correlation energy:    -0.0854215134211529
-     R12 correlation energy         :    -0.1685005148154856
-     Total correlation energy       :    -0.2539220282366386
+     Conventional correlation energy:    -0.0854215134207692
+     R12 correlation energy         :    -0.1685005148157100
+     Total correlation energy       :    -0.2539220282364792
 
 
        Iteration no.: 41
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.3803709770D-18
-       Norm^2 of omega2 after ccvec:        0.7261671980D-16
-       Norm^2 of Omegar12  in NXTAM:        0.2232363013D-15
- Iter. 41: Coupled cluster CC2-R12/B energy :     -76.2624773272720802
-     Conventional correlation energy:    -0.0854215135651657
-     R12 correlation energy         :    -0.1685005148447216
-     Total correlation energy       :    -0.2539220284098873
+       Norm^2 of omega1 after ccvec:        0.3803711761D-18
+       Norm^2 of omega2 after ccvec:        0.7261662818D-16
+       Norm^2 of Omegar12  in NXTAM:        0.2232356994D-15
+ Iter. 41: Coupled cluster CC2-R12/B energy :     -76.2624773272721939
+     Conventional correlation energy:    -0.0854215135648815
+     R12 correlation energy         :    -0.1685005148449466
+     Total correlation energy       :    -0.2539220284098281
 
 
        Iteration no.: 42
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.6489568103D-19
-       Norm^2 of omega2 after ccvec:        0.1082464478D-16
-       Norm^2 of Omegar12  in NXTAM:        0.1583987240D-14
- Iter. 42: Coupled cluster CC2-R12/B energy :     -76.2624773271965353
-     Conventional correlation energy:    -0.0854215135643415
-     R12 correlation energy         :    -0.1685005147699979
-     Total correlation energy       :    -0.2539220283343394
+       Norm^2 of omega1 after ccvec:        0.6489437379D-19
+       Norm^2 of omega2 after ccvec:        0.1082463323D-16
+       Norm^2 of Omegar12  in NXTAM:        0.1583985518D-14
+ Iter. 42: Coupled cluster CC2-R12/B energy :     -76.2624773271969616
+     Conventional correlation energy:    -0.0854215135643699
+     R12 correlation energy         :    -0.1685005147702244
+     Total correlation energy       :    -0.2539220283345943
 
 
        Iteration no.: 43
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.5754595737D-19
-       Norm^2 of omega2 after ccvec:        0.5453745669D-16
-       Norm^2 of Omegar12  in NXTAM:        0.2257970113D-15
- Iter. 43: Coupled cluster CC2-R12/B energy :     -76.2624773271886340
-     Conventional correlation energy:    -0.0854215136446470
-     R12 correlation energy         :    -0.1685005146818001
-     Total correlation energy       :    -0.2539220283264471
+       Norm^2 of omega1 after ccvec:        0.5754597509D-19
+       Norm^2 of omega2 after ccvec:        0.5453749035D-16
+       Norm^2 of Omegar12  in NXTAM:        0.2257958362D-15
+ Iter. 43: Coupled cluster CC2-R12/B energy :     -76.2624773271888898
+     Conventional correlation energy:    -0.0854215136445049
+     R12 correlation energy         :    -0.1685005146820275
+     Total correlation energy       :    -0.2539220283265324
 
 
        Iteration no.: 44
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1722198553D-19
-       Norm^2 of omega2 after ccvec:        0.3881036682D-16
-       Norm^2 of Omegar12  in NXTAM:        0.2468787852D-15
- Iter. 44: Coupled cluster CC2-R12/B energy :     -76.2624773272034986
-     Conventional correlation energy:    -0.0854215137339480
-     R12 correlation energy         :    -0.1685005146073556
-     Total correlation energy       :    -0.2539220283413036
+       Norm^2 of omega1 after ccvec:        0.1722095967D-19
+       Norm^2 of omega2 after ccvec:        0.3881036484D-16
+       Norm^2 of Omegar12  in NXTAM:        0.2468780560D-15
+ Iter. 44: Coupled cluster CC2-R12/B energy :     -76.2624773272037402
+     Conventional correlation energy:    -0.0854215137337917
+     R12 correlation energy         :    -0.1685005146075828
+     Total correlation energy       :    -0.2539220283413745
 
 
        Iteration no.: 45
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1259044877D-19
-       Norm^2 of omega2 after ccvec:        0.3427768664D-16
-       Norm^2 of Omegar12  in NXTAM:        0.1905212008D-15
- Iter. 45: Coupled cluster CC2-R12/B energy :     -76.2624773272169847
-     Conventional correlation energy:    -0.0854215138532197
-     R12 correlation energy         :    -0.1685005145015798
-     Total correlation energy       :    -0.2539220283547995
+       Norm^2 of omega1 after ccvec:        0.1259103719D-19
+       Norm^2 of omega2 after ccvec:        0.3427772363D-16
+       Norm^2 of Omegar12  in NXTAM:        0.1905208090D-15
+ Iter. 45: Coupled cluster CC2-R12/B energy :     -76.2624773272173115
+     Conventional correlation energy:    -0.0854215138531487
+     R12 correlation energy         :    -0.1685005145018053
+     Total correlation energy       :    -0.2539220283549540
 
 
        Iteration no.: 46
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1532719895D-19
-       Norm^2 of omega2 after ccvec:        0.2462567256D-16
-       Norm^2 of Omegar12  in NXTAM:        0.1519690461D-15
- Iter. 46: Coupled cluster CC2-R12/B energy :     -76.2624773271805765
-     Conventional correlation energy:    -0.0854215140665247
-     R12 correlation energy         :    -0.1685005142518666
-     Total correlation energy       :    -0.2539220283183913
+       Norm^2 of omega1 after ccvec:        0.1532665248D-19
+       Norm^2 of omega2 after ccvec:        0.2462556075D-16
+       Norm^2 of Omegar12  in NXTAM:        0.1519684343D-15
+ Iter. 46: Coupled cluster CC2-R12/B energy :     -76.2624773271808181
+     Conventional correlation energy:    -0.0854215140663683
+     R12 correlation energy         :    -0.1685005142520863
+     Total correlation energy       :    -0.2539220283184546
 
 
        Iteration no.: 47
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2238763153D-19
-       Norm^2 of omega2 after ccvec:        0.1310452208D-16
-       Norm^2 of Omegar12  in NXTAM:        0.6037213641D-16
- Iter. 47: Coupled cluster CC2-R12/B energy :     -76.2624773272128493
-     Conventional correlation energy:    -0.0854215143587993
-     R12 correlation energy         :    -0.1685005139918559
-     Total correlation energy       :    -0.2539220283506552
+       Norm^2 of omega1 after ccvec:        0.2238885333D-19
+       Norm^2 of omega2 after ccvec:        0.1310424917D-16
+       Norm^2 of Omegar12  in NXTAM:        0.6037013995D-16
+ Iter. 47: Coupled cluster CC2-R12/B energy :     -76.2624773272132188
+     Conventional correlation energy:    -0.0854215143587709
+     R12 correlation energy         :    -0.1685005139920908
+     Total correlation energy       :    -0.2539220283508616
 
 
        Iteration no.: 48
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.16 seconds
-       Norm^2 of omega1 after ccvec:        0.1299923229D-19
-       Norm^2 of omega2 after ccvec:        0.2334420081D-17
-       Norm^2 of Omegar12  in NXTAM:        0.1755628247D-16
- Iter. 48: Coupled cluster CC2-R12/B energy :     -76.2624773272457048
-     Conventional correlation energy:    -0.0854215144935040
-     R12 correlation energy         :    -0.1685005138900085
-     Total correlation energy       :    -0.2539220283835125
+       Time used in   RHS - TOTAL  :       0.17 seconds
+       Norm^2 of omega1 after ccvec:        0.1299554071D-19
+       Norm^2 of omega2 after ccvec:        0.2334590529D-17
+       Norm^2 of Omegar12  in NXTAM:        0.1755765719D-16
+ Iter. 48: Coupled cluster CC2-R12/B energy :     -76.2624773272461738
+     Conventional correlation energy:    -0.0854215144935750
+     R12 correlation energy         :    -0.1685005138902340
+     Total correlation energy       :    -0.2539220283838090
 
 
        Iteration no.: 49
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.8760295789D-20
-       Norm^2 of omega2 after ccvec:        0.6068236516D-18
-       Norm^2 of Omegar12  in NXTAM:        0.2201204092D-17
- Iter. 49: Coupled cluster CC2-R12/B energy :     -76.2624773272351320
-     Conventional correlation energy:    -0.0854215144857591
-     R12 correlation energy         :    -0.1685005138871801
-     Total correlation energy       :    -0.2539220283729391
+       Norm^2 of omega1 after ccvec:        0.8757600710D-20
+       Norm^2 of omega2 after ccvec:        0.6068103475D-18
+       Norm^2 of Omegar12  in NXTAM:        0.2200977081D-17
+ Iter. 49: Coupled cluster CC2-R12/B energy :     -76.2624773272353309
+     Conventional correlation energy:    -0.0854215144855601
+     R12 correlation energy         :    -0.1685005138874042
+     Total correlation energy       :    -0.2539220283729643
 
 
        Iteration no.: 50
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1806436945D-20
-       Norm^2 of omega2 after ccvec:        0.9983986329D-19
-       Norm^2 of Omegar12  in NXTAM:        0.1319189273D-16
- Iter. 50: Coupled cluster CC2-R12/B energy :     -76.2624773272334977
-     Conventional correlation energy:    -0.0854215144846222
-     R12 correlation energy         :    -0.1685005138866816
-     Total correlation energy       :    -0.2539220283713038
+       Norm^2 of omega1 after ccvec:        0.1805759079D-20
+       Norm^2 of omega2 after ccvec:        0.9982807488D-19
+       Norm^2 of Omegar12  in NXTAM:        0.1319164706D-16
+ Iter. 50: Coupled cluster CC2-R12/B energy :     -76.2624773272334693
+     Conventional correlation energy:    -0.0854215144841959
+     R12 correlation energy         :    -0.1685005138869064
+     Total correlation energy       :    -0.2539220283711023
 
 
        Iteration no.: 51
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.7183345887D-21
-       Norm^2 of omega2 after ccvec:        0.3675995910D-18
-       Norm^2 of Omegar12  in NXTAM:        0.2590117082D-17
- Iter. 51: Coupled cluster CC2-R12/B energy :     -76.2624773272359846
-     Conventional correlation energy:    -0.0854215144876207
-     R12 correlation energy         :    -0.1685005138861673
-     Total correlation energy       :    -0.2539220283737880
+       Norm^2 of omega1 after ccvec:        0.7183045000D-21
+       Norm^2 of omega2 after ccvec:        0.3675634589D-18
+       Norm^2 of Omegar12  in NXTAM:        0.2590004310D-17
+ Iter. 51: Coupled cluster CC2-R12/B energy :     -76.2624773272360414
+     Conventional correlation energy:    -0.0854215144872938
+     R12 correlation energy         :    -0.1685005138863919
+     Total correlation energy       :    -0.2539220283736857
 
 
        Iteration no.: 52
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.2947957138D-21
-       Norm^2 of omega2 after ccvec:        0.2675494082D-18
-       Norm^2 of Omegar12  in NXTAM:        0.2616624643D-17
- Iter. 52: Coupled cluster CC2-R12/B energy :     -76.2624773272309113
-     Conventional correlation energy:    -0.0854215144910029
-     R12 correlation energy         :    -0.1685005138777214
-     Total correlation energy       :    -0.2539220283687242
+       Norm^2 of omega1 after ccvec:        0.2947342911D-21
+       Norm^2 of omega2 after ccvec:        0.2675273969D-18
+       Norm^2 of Omegar12  in NXTAM:        0.2616479312D-17
+ Iter. 52: Coupled cluster CC2-R12/B energy :     -76.2624773272310250
+     Conventional correlation energy:    -0.0854215144907187
+     R12 correlation energy         :    -0.1685005138779462
+     Total correlation energy       :    -0.2539220283686648
 
 
        Iteration no.: 53
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1030664626D-21
-       Norm^2 of omega2 after ccvec:        0.2464395702D-18
-       Norm^2 of Omegar12  in NXTAM:        0.2068227253D-17
- Iter. 53: Coupled cluster CC2-R12/B energy :     -76.2624773272343219
-     Conventional correlation energy:    -0.0854215145028832
-     R12 correlation energy         :    -0.1685005138692539
-     Total correlation energy       :    -0.2539220283721371
+       Norm^2 of omega1 after ccvec:        0.1031413442D-21
+       Norm^2 of omega2 after ccvec:        0.2464208237D-18
+       Norm^2 of Omegar12  in NXTAM:        0.2068149787D-17
+ Iter. 53: Coupled cluster CC2-R12/B energy :     -76.2624773272346488
+     Conventional correlation energy:    -0.0854215145028121
+     R12 correlation energy         :    -0.1685005138694773
+     Total correlation energy       :    -0.2539220283722894
 
 
        Iteration no.: 54
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.1016120163D-21
-       Norm^2 of omega2 after ccvec:        0.1749896235D-18
-       Norm^2 of Omegar12  in NXTAM:        0.1666066204D-17
- Iter. 54: Coupled cluster CC2-R12/B energy :     -76.2624773272360272
-     Conventional correlation energy:    -0.0854215145217410
-     R12 correlation energy         :    -0.1685005138520932
-     Total correlation energy       :    -0.2539220283738342
+       Norm^2 of omega1 after ccvec:        0.1016522953D-21
+       Norm^2 of omega2 after ccvec:        0.1749664780D-18
+       Norm^2 of Omegar12  in NXTAM:        0.1665875216D-17
+ Iter. 54: Coupled cluster CC2-R12/B energy :     -76.2624773272360699
+     Conventional correlation energy:    -0.0854215145213857
+     R12 correlation energy         :    -0.1685005138523264
+     Total correlation energy       :    -0.2539220283737120
 
 
        Iteration no.: 55
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.9569874494D-22
-       Norm^2 of omega2 after ccvec:        0.1039604120D-18
-       Norm^2 of Omegar12  in NXTAM:        0.7022343674D-18
- Iter. 55: Coupled cluster CC2-R12/B energy :     -76.2624773272341230
-     Conventional correlation energy:    -0.0854215145467521
-     R12 correlation energy         :    -0.1685005138251806
-     Total correlation energy       :    -0.2539220283719327
+       Norm^2 of omega1 after ccvec:        0.9564528175D-22
+       Norm^2 of omega2 after ccvec:        0.1039677599D-18
+       Norm^2 of Omegar12  in NXTAM:        0.7025529743D-18
+ Iter. 55: Coupled cluster CC2-R12/B energy :     -76.2624773272341372
+     Conventional correlation energy:    -0.0854215145463542
+     R12 correlation energy         :    -0.1685005138254169
+     Total correlation energy       :    -0.2539220283717710
 
 
        Iteration no.: 56
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.6175349321D-22
-       Norm^2 of omega2 after ccvec:        0.1293102097D-19
-       Norm^2 of Omegar12  in NXTAM:        0.2243557128D-18
- Iter. 56: Coupled cluster CC2-R12/B energy :     -76.2624773272349046
-     Conventional correlation energy:    -0.0854215145529906
-     R12 correlation energy         :    -0.1685005138197247
-     Total correlation energy       :    -0.2539220283727153
+       Norm^2 of omega1 after ccvec:        0.6160765752D-22
+       Norm^2 of omega2 after ccvec:        0.1294380787D-19
+       Norm^2 of Omegar12  in NXTAM:        0.2244884174D-18
+ Iter. 56: Coupled cluster CC2-R12/B energy :     -76.2624773272350325
+     Conventional correlation energy:    -0.0854215145527206
+     R12 correlation energy         :    -0.1685005138199480
+     Total correlation energy       :    -0.2539220283726686
 
 
        Iteration no.: 57
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.4407759090D-22
-       Norm^2 of omega2 after ccvec:        0.1081977094D-19
-       Norm^2 of Omegar12  in NXTAM:        0.3282057869D-19
- Iter. 57: Coupled cluster CC2-R12/B energy :     -76.2624773272364394
-     Conventional correlation energy:    -0.0854215145543122
-     R12 correlation energy         :    -0.1685005138199348
-     Total correlation energy       :    -0.2539220283742470
+       Norm^2 of omega1 after ccvec:        0.4402370200D-22
+       Norm^2 of omega2 after ccvec:        0.1080881666D-19
+       Norm^2 of Omegar12  in NXTAM:        0.3281720328D-19
+ Iter. 57: Coupled cluster CC2-R12/B energy :     -76.2624773272367094
+     Conventional correlation energy:    -0.0854215145541843
+     R12 correlation energy         :    -0.1685005138201572
+     Total correlation energy       :    -0.2539220283743415
 
 
        Iteration no.: 58
        -----------------
 
        Time used in   RHS - TOTAL  :       0.17 seconds
-       Norm^2 of omega1 after ccvec:        0.9206025830D-23
-       Norm^2 of omega2 after ccvec:        0.1501522956D-20
-       Norm^2 of Omegar12  in NXTAM:        0.2394167652D-18
- Iter. 58: Coupled cluster CC2-R12/B energy :     -76.2624773272359135
-     Conventional correlation energy:    -0.0854215145544686
-     R12 correlation energy         :    -0.1685005138192517
-     Total correlation energy       :    -0.2539220283737203
+       Norm^2 of omega1 after ccvec:        0.9203701930D-23
+       Norm^2 of omega2 after ccvec:        0.1501625349D-20
+       Norm^2 of Omegar12  in NXTAM:        0.2391562533D-18
+ Iter. 58: Coupled cluster CC2-R12/B energy :     -76.2624773272360841
+     Conventional correlation energy:    -0.0854215145542412
+     R12 correlation energy         :    -0.1685005138194753
+     Total correlation energy       :    -0.2539220283737165
 
 
  CC2-R12/B energy converged to within   0.10D-11 is    -76.262477327
- Final 2-norm of the CC vector function:  3.88680972D-11
+ Final 2-norm of the CC vector function:  3.88693845D-11
  R12       energy converged to within   0.10D-11 is     -0.168500514
 
 
@@ -1802,7 +1845,7 @@ Point group: C2v
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      8     15      9     16    420     57    477
-  MIN AND MAX IN SELECTED SUPSPACE   0.70107096021615223        1.4302370192580769     
+  MIN AND MAX IN SELECTED SUPSPACE   0.70107096022526583        1.4302370192300136     
  Start vector guessed from diagonal
  ... selected element no.  8
  Start vector guessed from diagonal
@@ -1841,7 +1884,7 @@ Point group: C2v
        3      0.88588686
        4      1.03043425
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -1866,7 +1909,7 @@ Point group: C2v
        3      0.78808638
        4      0.95468521
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.70
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -1891,7 +1934,7 @@ Point group: C2v
        3      0.77766839
        4      0.94311530
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -1916,7 +1959,7 @@ Point group: C2v
        3      0.77663157
        4      0.94142118
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.70
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -1941,7 +1984,7 @@ Point group: C2v
        3      0.77620428
        4      0.94077140
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -1956,7 +1999,7 @@ Point group: C2v
  ROOT:  2 RESIDUAL TOT: 1.60342D-02
  ROOT:  3 RESIDUAL TOT: 1.52197D-02
  ROOT:  4 RESIDUAL TOT: 1.31072D-02
- (CCORT) Norm^2 (R12-part) =  -9.16780162694566386E-002
+ (CCORT) Norm^2 (R12-part) =  -9.16780162852741110E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
       6       4         0.01     0.23E-01
 
@@ -1968,7 +2011,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      0.77612770
        4      0.94034791
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -1993,7 +2036,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      0.77624971
        4      0.94026372
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -2008,7 +2051,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 1.33464D-02
  ROOT:  3 RESIDUAL TOT: 1.01126D-02
  ROOT:  4 RESIDUAL TOT: 8.54035D-03
- (CCORT) Norm^2 (R12-part) =  -0.13493921402417444     
+ (CCORT) Norm^2 (R12-part) =  -0.13493921391046407     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
       8       4         0.01     0.22E-01
 
@@ -2020,7 +2063,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77612458
        4      0.94022005
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.70
+ >>> TIME USED IN THIS MICRO ITERATION        0.68
 
 
  REDUCED EIGENVALUES real part:
@@ -2035,9 +2078,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 1.10168D-02
  ROOT:  3 RESIDUAL TOT: 7.45252D-03
  ROOT:  4 RESIDUAL TOT: 7.33653D-03
- (CCORT) Norm^2 (R12-part) =  -0.15459719665257696     
+ (CCORT) Norm^2 (R12-part) =  -0.15459719669764824     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.20348867298641579     
+ (CCORT) Norm^2 (R12-part) =  -0.20348867291255307     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
       9       4         0.01     0.14E-01
 
@@ -2049,7 +2092,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77595315
        4      0.94018987
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.68
 
 
  REDUCED EIGENVALUES real part:
@@ -2064,7 +2107,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 7.24526D-03
  ROOT:  3 RESIDUAL TOT: 4.04655D-03
  ROOT:  4 RESIDUAL TOT: 5.61994D-03
- (CCORT) Norm^2 (R12-part) =  -2.19950155172265946E-002
+ (CCORT) Norm^2 (R12-part) =  -2.19950155201499888E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      10       4         0.01     0.72E-02
 
@@ -2076,7 +2119,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77597450
        4      0.94021452
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -2101,7 +2144,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77597771
        4      0.94015417
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -2141,7 +2184,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 6.65424D-04
  ROOT:  3 RESIDUAL TOT: 1.13629D-03
  ROOT:  4 RESIDUAL TOT: 3.94423D-03
- (CCORT) Norm^2 (R12-part) =  -0.37545541900386964     
+ (CCORT) Norm^2 (R12-part) =  -0.37545541867569765     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      13       4         0.01     0.39E-02
 
@@ -2153,7 +2196,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77595452
        4      0.94017130
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -2168,11 +2211,11 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 3.32575D-04
  ROOT:  3 RESIDUAL TOT: 8.60055D-04
  ROOT:  4 RESIDUAL TOT: 2.94396D-03
- (CCORT) Norm^2 (R12-part) =  -9.69697613774921363E-002
+ (CCORT) Norm^2 (R12-part) =  -9.69697596581755028E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -4.10266007373147057E-002
+ (CCORT) Norm^2 (R12-part) =  -4.10265999789964364E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.44222044865748494     
+ (CCORT) Norm^2 (R12-part) =  -0.44222044832681873     
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      14       4         0.01     0.29E-02
 
@@ -2184,7 +2227,7 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
        3      0.77595579
        4      0.94015971
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -2199,11 +2242,11 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 1.80969D-04
  ROOT:  3 RESIDUAL TOT: 4.90138D-04
  ROOT:  4 RESIDUAL TOT: 1.62736D-03
- (CCORT) Norm^2 (R12-part) =  -0.46452891824345460     
+ (CCORT) Norm^2 (R12-part) =  -0.46452891521579298     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -5.43231870842575959E-002
+ (CCORT) Norm^2 (R12-part) =  -5.43231853575547041E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -4.77184789067778559E-002
+ (CCORT) Norm^2 (R12-part) =  -4.77184791685880613E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      15       4         0.01     0.16E-02
 
@@ -2230,9 +2273,9 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 1.32949D-04
  ROOT:  3 RESIDUAL TOT: 3.49594D-04
  ROOT:  4 RESIDUAL TOT: 8.32156D-04
- (CCORT) Norm^2 (R12-part) =  -0.43323881439125289     
+ (CCORT) Norm^2 (R12-part) =  -0.43323881056638591     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.18071289420926545     
+ (CCORT) Norm^2 (R12-part) =  -0.18071289247566313     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      16       4         0.01     0.83E-03
 
@@ -2244,7 +2287,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77595820
        4      0.94015096
  Dimension of the reduced space:    68
- >>> TIME USED IN THIS MICRO ITERATION        0.70
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -2259,11 +2302,11 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 6.74624D-05
  ROOT:  3 RESIDUAL TOT: 1.97293D-04
  ROOT:  4 RESIDUAL TOT: 5.85528D-04
- (CCORT) Norm^2 (R12-part) =  -0.42065854176873207     
+ (CCORT) Norm^2 (R12-part) =  -0.42065853811537440     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =   -1.5277410507664777     
+ (CCORT) Norm^2 (R12-part) =   -1.5277410495161381     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -6.23670827705480046E-002
+ (CCORT) Norm^2 (R12-part) =  -6.23670824597106210E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      17       4         0.01     0.59E-03
 
@@ -2275,7 +2318,7 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
        3      0.77595622
        4      0.94014979
  Dimension of the reduced space:    72
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -2290,7 +2333,7 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 8.81673D-05
  ROOT:  3 RESIDUAL TOT: 1.59370D-04
  ROOT:  4 RESIDUAL TOT: 3.09444D-04
- (CCORT) Norm^2 (R12-part) =  -4.59089147836417924E-002
+ (CCORT) Norm^2 (R12-part) =  -4.59089128491441123E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      18       4         0.01     0.31E-03
 
@@ -2302,7 +2345,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595564
        4      0.94015230
  Dimension of the reduced space:    76
- >>> TIME USED IN THIS MICRO ITERATION        0.72
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -2317,7 +2360,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 5.56730D-05
  ROOT:  3 RESIDUAL TOT: 9.01129D-05
  ROOT:  4 RESIDUAL TOT: 1.79739D-04
- (CCORT) Norm^2 (R12-part) =  -3.67367745067964241E-002
+ (CCORT) Norm^2 (R12-part) =  -3.67367718726552620E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      19       4         0.01     0.18E-03
 
@@ -2329,7 +2372,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595755
        4      0.94014985
  Dimension of the reduced space:    80
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -2344,11 +2387,11 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 4.50317D-05
  ROOT:  3 RESIDUAL TOT: 7.66405D-05
  ROOT:  4 RESIDUAL TOT: 1.20551D-04
- (CCORT) Norm^2 (R12-part) =  -0.28018644530354897     
+ (CCORT) Norm^2 (R12-part) =  -0.28018649669013429     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -6.22371350923071887E-002
+ (CCORT) Norm^2 (R12-part) =  -6.22371405388121163E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.24108204385563713E-003
+ (CCORT) Norm^2 (R12-part) =  -1.24108115800041288E-003
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      20       4         0.01     0.12E-03
 
@@ -2360,7 +2403,7 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        3      0.77595760
        4      0.94015006
  Dimension of the reduced space:    84
- >>> TIME USED IN THIS MICRO ITERATION        0.70
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -2375,9 +2418,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 1.60037D-05
  ROOT:  3 RESIDUAL TOT: 2.76142D-05
  ROOT:  4 RESIDUAL TOT: 4.33075D-05
- (CCORT) Norm^2 (R12-part) =  -0.92107664005934231     
+ (CCORT) Norm^2 (R12-part) =  -0.92107661568595911     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.25358944823444840     
+ (CCORT) Norm^2 (R12-part) =  -0.25358944277019552     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      21       4         0.01     0.43E-04
 
@@ -2404,7 +2447,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 6.33050D-06
  ROOT:  3 RESIDUAL TOT: 1.09990D-05
  ROOT:  4 RESIDUAL TOT: 1.88248D-05
- (CCORT) Norm^2 (R12-part) =  -7.39327738643901465E-003
+ (CCORT) Norm^2 (R12-part) =  -7.39327712624166227E-003
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      22       4         0.01     0.19E-04
 
@@ -2416,7 +2459,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595712
        4      0.94015007
  Dimension of the reduced space:    92
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -2441,7 +2484,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595703
        4      0.94015018
  Dimension of the reduced space:    96
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -2466,7 +2509,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595707
        4      0.94015018
  Dimension of the reduced space:   100
- >>> TIME USED IN THIS MICRO ITERATION        0.73
+ >>> TIME USED IN THIS MICRO ITERATION        0.74
 
 
  REDUCED EIGENVALUES real part:
@@ -2491,7 +2534,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   104
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -2516,7 +2559,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   108
- >>> TIME USED IN THIS MICRO ITERATION        0.74
+ >>> TIME USED IN THIS MICRO ITERATION        0.75
 
 
  REDUCED EIGENVALUES real part:
@@ -2541,7 +2584,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   112
- >>> TIME USED IN THIS MICRO ITERATION        0.73
+ >>> TIME USED IN THIS MICRO ITERATION        0.74
 
 
  REDUCED EIGENVALUES real part:
@@ -2556,7 +2599,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 3.13391D-08
  ROOT:  3 RESIDUAL TOT: 5.38400D-08
  ROOT:  4 RESIDUAL TOT: 7.90873D-08
- (CCORT) Norm^2 (R12-part) =  -4.59285925877131549E-003
+ (CCORT) Norm^2 (R12-part) =  -4.59286231598751357E-003
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      28       4         0.01     0.79E-07
 
@@ -2568,7 +2611,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   116
- >>> TIME USED IN THIS MICRO ITERATION        0.74
+ >>> TIME USED IN THIS MICRO ITERATION        0.75
 
 
  REDUCED EIGENVALUES real part:
@@ -2593,7 +2636,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   120
- >>> TIME USED IN THIS MICRO ITERATION        0.72
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -2604,7 +2647,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
   
- ROOT:  1 RESIDUAL TOT: 4.64167D-09
+ ROOT:  1 RESIDUAL TOT: 4.64166D-09
  ROOT:  2 RESIDUAL TOT: 5.35202D-09
  ROOT:  3 RESIDUAL TOT: 7.83400D-09
  ROOT:  4 RESIDUAL TOT: 1.17387D-08
@@ -2631,8 +2674,8 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
   
  ROOT:  1 RESIDUAL TOT: 1.22624D-09
  ROOT:  2 RESIDUAL TOT: 1.51266D-09
- ROOT:  3 RESIDUAL TOT: 2.00130D-09
- ROOT:  4 RESIDUAL TOT: 2.77988D-09
+ ROOT:  3 RESIDUAL TOT: 2.00131D-09
+ ROOT:  4 RESIDUAL TOT: 2.77987D-09
      31       4         0.01     0.28E-08
 
  Lowest eigenvalues in this iteration: 
@@ -2643,7 +2686,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   128
- >>> TIME USED IN THIS MICRO ITERATION        0.75
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -2654,9 +2697,9 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
   
- ROOT:  1 RESIDUAL TOT: 4.18340D-10
- ROOT:  2 RESIDUAL TOT: 5.35221D-10
- ROOT:  3 RESIDUAL TOT: 7.42315D-10
+ ROOT:  1 RESIDUAL TOT: 4.18342D-10
+ ROOT:  2 RESIDUAL TOT: 5.35223D-10
+ ROOT:  3 RESIDUAL TOT: 7.42314D-10
  ROOT:  4 RESIDUAL TOT: 1.16043D-09
      32       4         0.01     0.12E-08
 
@@ -2668,7 +2711,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   132
- >>> TIME USED IN THIS MICRO ITERATION        0.76
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -2679,10 +2722,10 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
   
- ROOT:  1 RESIDUAL TOT: 1.35576D-10
- ROOT:  2 RESIDUAL TOT: 1.83437D-10
- ROOT:  3 RESIDUAL TOT: 2.21875D-10
- ROOT:  4 RESIDUAL TOT: 3.40803D-10
+ ROOT:  1 RESIDUAL TOT: 1.35577D-10
+ ROOT:  2 RESIDUAL TOT: 1.83438D-10
+ ROOT:  3 RESIDUAL TOT: 2.21874D-10
+ ROOT:  4 RESIDUAL TOT: 3.40800D-10
      33       4         0.01     0.34E-09
 
  Lowest eigenvalues in this iteration: 
@@ -2693,7 +2736,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   136
- >>> TIME USED IN THIS MICRO ITERATION        0.76
+ >>> TIME USED IN THIS MICRO ITERATION        0.74
 
 
  REDUCED EIGENVALUES real part:
@@ -2704,12 +2747,12 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
   
- ROOT:  1 RESIDUAL TOT: 5.23127D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.23127D-11
- ROOT:  2 RESIDUAL TOT: 7.68275D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 7.68275D-11
- ROOT:  3 RESIDUAL TOT: 9.08747D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 9.08747D-11
+ ROOT:  1 RESIDUAL TOT: 5.23147D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.23147D-11
+ ROOT:  2 RESIDUAL TOT: 7.68281D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 7.68281D-11
+ ROOT:  3 RESIDUAL TOT: 9.08735D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 9.08735D-11
  ROOT:  4 RESIDUAL TOT: 1.12293D-10
      34       4         0.01     0.11E-09
 
@@ -2721,7 +2764,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   137
- >>> TIME USED IN THIS MICRO ITERATION        0.77
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -2732,14 +2775,14 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
   
- ROOT:  1 RESIDUAL TOT: 4.53688D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.53688D-11
- ROOT:  2 RESIDUAL TOT: 5.69541D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.69541D-11
- ROOT:  3 RESIDUAL TOT: 5.71266D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.71266D-11
- ROOT:  4 RESIDUAL TOT: 3.47037D-11
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 3.47037D-11
+ ROOT:  1 RESIDUAL TOT: 4.53683D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.53683D-11
+ ROOT:  2 RESIDUAL TOT: 5.69563D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.69563D-11
+ ROOT:  3 RESIDUAL TOT: 5.71304D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.71304D-11
+ ROOT:  4 RESIDUAL TOT: 3.47023D-11
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 3.47023D-11
      35       1         0.00     0.57E-10
 
  Lowest eigenvalues in this iteration: 
@@ -2750,7 +2793,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.77595705
        4      0.94015018
  Dimension of the reduced space:   137
- >>> TIME USED IN THIS MICRO ITERATION        0.25
+ >>> TIME USED IN THIS MICRO ITERATION        0.21
 
     --------------------------------------
     converged in 35 iterations
@@ -2759,14 +2802,14 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.39
+         CC_TRDRV            0.40
          CCRED               0.01
          CCNEX               0.00
          ---------------------------
          Total time          0.41
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  24.42 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  24.59 seconds
  >>>> Total wall time used in CCEQ_SOLV:  32.00 seconds
 
 
@@ -2780,7 +2823,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
     1   0.3722282456
     2   0.6531960512
-    3   0.7759570494
+    3   0.7759570493
     4   0.9401501823
 
 
@@ -2794,19 +2837,19 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3722282456       10.1288455169
-         2            0.6531960512       17.7743682102
-         3            0.7759570494       21.1148648013
-         4            0.9401501823       25.5827870996
+         1            0.3722282456       10.1288458045
+         2            0.6531960512       17.7743687143
+         3            0.7759570493       21.1148654001
+         4            0.9401501823       25.5827878253
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.890249081653579
-@@    1    2           -75.609281276000786
-@@    1    3           -75.486520277878611
-@@    1    4           -75.322327144940942
+@@    1    1           -75.890249081646203
+@@    1    2           -75.609281276013036
+@@    1    3           -75.486520277892893
+@@    1    4           -75.322327144947906
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3019,7 +3062,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      6     11      7     12    401    130    235
-  MIN AND MAX IN SELECTED SUPSPACE   0.77355463036671723        1.5439877292520974     
+  MIN AND MAX IN SELECTED SUPSPACE   0.77355463035298910        1.5439877292705377     
  Start vector guessed from diagonal
  ... selected element no.  6
  Start vector guessed from diagonal
@@ -3058,7 +3101,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.85227260
        4      1.05299211
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3108,7 +3151,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75295611
        4      0.97344746
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -3133,7 +3176,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75232810
        4      0.97267860
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -3158,7 +3201,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75209592
        4      0.97256366
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3183,7 +3226,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75198049
        4      0.97247969
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.67
 
 
  REDUCED EIGENVALUES real part:
@@ -3208,7 +3251,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75198119
        4      0.97250948
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3233,7 +3276,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75197208
        4      0.97248372
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.72
+ >>> TIME USED IN THIS MICRO ITERATION        0.67
 
 
  REDUCED EIGENVALUES real part:
@@ -3258,7 +3301,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194984
        4      0.97245180
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.72
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3308,7 +3351,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194246
        4      0.97245761
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.67
 
 
  REDUCED EIGENVALUES real part:
@@ -3333,7 +3376,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194580
        4      0.97246237
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -3358,7 +3401,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75195575
        4      0.97246267
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -3383,7 +3426,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194933
        4      0.97246169
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3408,7 +3451,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194848
        4      0.97246170
  Dimension of the reduced space:    64
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -3433,7 +3476,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194860
        4      0.97246158
  Dimension of the reduced space:    68
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3458,7 +3501,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194853
        4      0.97246157
  Dimension of the reduced space:    72
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -3483,7 +3526,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194867
        4      0.97246157
  Dimension of the reduced space:    76
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -3533,7 +3576,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194867
        4      0.97246156
  Dimension of the reduced space:    84
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -3558,7 +3601,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:    88
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -3583,7 +3626,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:    92
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -3608,7 +3651,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:    96
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -3633,7 +3676,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:   100
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -3647,7 +3690,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  ROOT:  1 RESIDUAL TOT: 3.06276D-09
  ROOT:  2 RESIDUAL TOT: 4.15358D-09
  ROOT:  3 RESIDUAL TOT: 5.12690D-09
- ROOT:  4 RESIDUAL TOT: 4.21784D-09
+ ROOT:  4 RESIDUAL TOT: 4.21785D-09
      25       4         0.01     0.51E-08
 
  Lowest eigenvalues in this iteration: 
@@ -3658,7 +3701,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:   104
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.74
 
 
  REDUCED EIGENVALUES real part:
@@ -3669,7 +3712,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
   
- ROOT:  1 RESIDUAL TOT: 7.31987D-10
+ ROOT:  1 RESIDUAL TOT: 7.31984D-10
  ROOT:  2 RESIDUAL TOT: 1.57303D-09
  ROOT:  3 RESIDUAL TOT: 1.49326D-09
  ROOT:  4 RESIDUAL TOT: 1.62417D-09
@@ -3683,7 +3726,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:   108
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -3694,10 +3737,10 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
   
- ROOT:  1 RESIDUAL TOT: 2.45678D-10
- ROOT:  2 RESIDUAL TOT: 4.18713D-10
- ROOT:  3 RESIDUAL TOT: 4.08276D-10
- ROOT:  4 RESIDUAL TOT: 3.76853D-10
+ ROOT:  1 RESIDUAL TOT: 2.45679D-10
+ ROOT:  2 RESIDUAL TOT: 4.18714D-10
+ ROOT:  3 RESIDUAL TOT: 4.08278D-10
+ ROOT:  4 RESIDUAL TOT: 3.76854D-10
      27       4         0.01     0.42E-09
 
  Lowest eigenvalues in this iteration: 
@@ -3708,7 +3751,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:   112
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -3719,11 +3762,11 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
   
- ROOT:  1 RESIDUAL TOT: 8.12192D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.12192D-11
+ ROOT:  1 RESIDUAL TOT: 8.12182D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.12182D-11
  ROOT:  2 RESIDUAL TOT: 1.35811D-10
- ROOT:  3 RESIDUAL TOT: 1.26703D-10
- ROOT:  4 RESIDUAL TOT: 1.09882D-10
+ ROOT:  3 RESIDUAL TOT: 1.26707D-10
+ ROOT:  4 RESIDUAL TOT: 1.09883D-10
      28       4         0.01     0.14E-09
 
  Lowest eigenvalues in this iteration: 
@@ -3734,7 +3777,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:   115
- >>> TIME USED IN THIS MICRO ITERATION        0.70
+ >>> TIME USED IN THIS MICRO ITERATION        0.75
 
 
  REDUCED EIGENVALUES real part:
@@ -3745,14 +3788,14 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
   
- ROOT:  1 RESIDUAL TOT: 3.78906D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.78906D-11
- ROOT:  2 RESIDUAL TOT: 4.87711D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.87711D-11
- ROOT:  3 RESIDUAL TOT: 4.22232D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.22232D-11
- ROOT:  4 RESIDUAL TOT: 3.96678D-11
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 3.96678D-11
+ ROOT:  1 RESIDUAL TOT: 3.78892D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.78892D-11
+ ROOT:  2 RESIDUAL TOT: 4.87714D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.87714D-11
+ ROOT:  3 RESIDUAL TOT: 4.22255D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.22255D-11
+ ROOT:  4 RESIDUAL TOT: 3.96685D-11
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 3.96685D-11
      29       3         0.01     0.49E-10
 
  Lowest eigenvalues in this iteration: 
@@ -3763,7 +3806,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      0.75194866
        4      0.97246156
  Dimension of the reduced space:   115
- >>> TIME USED IN THIS MICRO ITERATION        0.53
+ >>> TIME USED IN THIS MICRO ITERATION        0.55
 
     --------------------------------------
     converged in 29 iterations
@@ -3776,11 +3819,11 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.33
+         Total time          0.34
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  19.96 seconds
- >>>> Total wall time used in CCEQ_SOLV:  27.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  20.28 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  26.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3793,7 +3836,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
     1   0.4653244810
     2   0.5388018792
-    3   0.7519486617
+    3   0.7519486616
     4   0.9724615570
 
 
@@ -3807,19 +3850,19 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4653244810       12.6621228755
-         2            0.5388018792       14.6615445310
-         3            0.7519486617       20.4615633578
-         4            0.9724615570       26.4620243055
+         1            0.4653244810       12.6621232345
+         2            0.5388018792       14.6615449473
+         3            0.7519486616       20.4615639382
+         4            0.9724615570       26.4620250560
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.797152846234297
-@@    2    2           -75.723675448068875
-@@    2    3           -75.510528665581973
-@@    2    4           -75.290015770256176
+@@    2    1           -75.797152846245993
+@@    2    2           -75.723675448060519
+@@    2    3           -75.510528665590172
+@@    2    4           -75.290015770270415
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4032,7 +4075,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      5      6    103    282      7    110    287
-  MIN AND MAX IN SELECTED SUPSPACE   0.64263483947847355        1.5580352786649838     
+  MIN AND MAX IN SELECTED SUPSPACE   0.64263483948728350        1.5580352786602787     
  Start vector guessed from diagonal
  ... selected element no.  5
  Start vector guessed from diagonal
@@ -4071,7 +4114,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.34758754
        4      1.48888381
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -4096,7 +4139,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.34192813
        4      1.48595976
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -4121,7 +4164,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.33573537
        4      1.47704570
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4146,7 +4189,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.28497605
        4      1.33468228
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4171,7 +4214,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.13914262
        4      1.33103352
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4221,7 +4264,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.07567968
        4      1.19788907
  Dimension of the reduced space:    32
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4246,7 +4289,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06893730
        4      1.14096682
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4271,7 +4314,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06768304
        4      1.12853836
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -4296,7 +4339,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06736615
        4      1.12563530
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4321,7 +4364,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06737081
        4      1.12398622
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -4346,7 +4389,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06730949
        4      1.12331828
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4371,7 +4414,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732882
        4      1.12316304
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4396,7 +4439,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732665
        4      1.12314336
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -4421,7 +4464,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732185
        4      1.12313759
  Dimension of the reduced space:    64
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -4446,7 +4489,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732237
        4      1.12313866
  Dimension of the reduced space:    68
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4471,7 +4514,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732285
        4      1.12313700
  Dimension of the reduced space:    72
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4496,7 +4539,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732298
        4      1.12313693
  Dimension of the reduced space:    76
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -4521,7 +4564,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313689
  Dimension of the reduced space:    80
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4546,7 +4589,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313692
  Dimension of the reduced space:    84
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -4571,7 +4614,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313693
  Dimension of the reduced space:    88
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4596,7 +4639,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
  Dimension of the reduced space:    92
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4607,7 +4650,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 3.07427D-09
+ ROOT:  1 RESIDUAL TOT: 3.07426D-09
  ROOT:  2 RESIDUAL TOT: 3.96304D-09
  ROOT:  3 RESIDUAL TOT: 3.24984D-08
  ROOT:  4 RESIDUAL TOT: 2.32954D-07
@@ -4621,7 +4664,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
  Dimension of the reduced space:    96
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4632,7 +4675,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 9.91528D-10
+ ROOT:  1 RESIDUAL TOT: 9.91530D-10
  ROOT:  2 RESIDUAL TOT: 1.10605D-09
  ROOT:  3 RESIDUAL TOT: 1.00418D-08
  ROOT:  4 RESIDUAL TOT: 7.83301D-08
@@ -4646,7 +4689,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
  Dimension of the reduced space:   100
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4657,8 +4700,8 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 1.92547D-10
- ROOT:  2 RESIDUAL TOT: 2.51137D-10
+ ROOT:  1 RESIDUAL TOT: 1.92550D-10
+ ROOT:  2 RESIDUAL TOT: 2.51136D-10
  ROOT:  3 RESIDUAL TOT: 2.97103D-09
  ROOT:  4 RESIDUAL TOT: 2.58396D-08
      25       4         0.01     0.26E-07
@@ -4682,12 +4725,12 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 6.44920D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.44920D-11
- ROOT:  2 RESIDUAL TOT: 8.09898D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.09898D-11
- ROOT:  3 RESIDUAL TOT: 7.60880D-10
- ROOT:  4 RESIDUAL TOT: 6.32417D-09
+ ROOT:  1 RESIDUAL TOT: 6.44910D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.44910D-11
+ ROOT:  2 RESIDUAL TOT: 8.09903D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.09903D-11
+ ROOT:  3 RESIDUAL TOT: 7.60882D-10
+ ROOT:  4 RESIDUAL TOT: 6.32416D-09
      26       4         0.01     0.63E-08
 
  Lowest eigenvalues in this iteration: 
@@ -4698,7 +4741,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
  Dimension of the reduced space:   106
- >>> TIME USED IN THIS MICRO ITERATION        0.69
+ >>> TIME USED IN THIS MICRO ITERATION        0.71
 
 
  REDUCED EIGENVALUES real part:
@@ -4709,12 +4752,12 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 7.05799D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.05799D-11
- ROOT:  2 RESIDUAL TOT: 8.77188D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.77188D-11
- ROOT:  3 RESIDUAL TOT: 1.81565D-10
- ROOT:  4 RESIDUAL TOT: 1.56355D-09
+ ROOT:  1 RESIDUAL TOT: 7.05793D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.05793D-11
+ ROOT:  2 RESIDUAL TOT: 8.77212D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.77212D-11
+ ROOT:  3 RESIDUAL TOT: 1.81563D-10
+ ROOT:  4 RESIDUAL TOT: 1.56354D-09
      27       2         0.01     0.16E-08
 
  Lowest eigenvalues in this iteration: 
@@ -4725,7 +4768,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
  Dimension of the reduced space:   108
- >>> TIME USED IN THIS MICRO ITERATION        0.36
+ >>> TIME USED IN THIS MICRO ITERATION        0.38
 
 
  REDUCED EIGENVALUES real part:
@@ -4736,13 +4779,13 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 6.59618D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.59618D-11
- ROOT:  2 RESIDUAL TOT: 8.12607D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.12607D-11
- ROOT:  3 RESIDUAL TOT: 4.41393D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.41393D-11
- ROOT:  4 RESIDUAL TOT: 3.75144D-10
+ ROOT:  1 RESIDUAL TOT: 6.59612D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.59612D-11
+ ROOT:  2 RESIDUAL TOT: 8.12565D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.12565D-11
+ ROOT:  3 RESIDUAL TOT: 4.41427D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 4.41427D-11
+ ROOT:  4 RESIDUAL TOT: 3.75146D-10
      28       2         0.01     0.38E-09
 
  Lowest eigenvalues in this iteration: 
@@ -4764,14 +4807,14 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.06732291
        4      1.12313694
   
- ROOT:  1 RESIDUAL TOT: 6.53276D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.53276D-11
- ROOT:  2 RESIDUAL TOT: 8.19417D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.19417D-11
- ROOT:  3 RESIDUAL TOT: 2.24854D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.24854D-11
- ROOT:  4 RESIDUAL TOT: 9.12871D-11
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 9.12871D-11
+ ROOT:  1 RESIDUAL TOT: 6.53309D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.53309D-11
+ ROOT:  2 RESIDUAL TOT: 8.19368D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.19368D-11
+ ROOT:  3 RESIDUAL TOT: 2.24868D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.24868D-11
+ ROOT:  4 RESIDUAL TOT: 9.12865D-11
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 9.12865D-11
      29       1         0.00     0.91E-10
 
  Lowest eigenvalues in this iteration: 
@@ -4791,15 +4834,15 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.30
+         CC_TRDRV            0.32
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.31
+         Total time          0.32
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  18.54 seconds
- >>>> Total wall time used in CCEQ_SOLV:  25.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  19.30 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  24.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4826,19 +4869,19 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2914700959        7.9313045403
-         2            0.6963089535       18.9475299250
-         3            1.0673229106       29.0433329731
-         4            1.1231369422       30.5621099863
+         1            0.2914700959        7.9313047656
+         2            0.6963089535       18.9475304622
+         3            1.0673229106       29.0433337972
+         4            1.1231369422       30.5621108535
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.971007231330418
-@@    3    2           -75.566168373732793
-@@    3    3           -75.195154416607551
-@@    3    4           -75.139340385076721
+@@    3    1           -75.971007231322019
+@@    3    2           -75.566168373746464
+@@    3    3           -75.195154416607039
+@@    3    4           -75.139340385077801
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5045,7 +5088,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      3      4     81    244     86    251      5
-  MIN AND MAX IN SELECTED SUPSPACE   0.71511850962903856        1.6544847945005363     
+  MIN AND MAX IN SELECTED SUPSPACE   0.71511850961500678        1.6544847944923371     
  Start vector guessed from diagonal
  ... selected element no.  3
  Start vector guessed from diagonal
@@ -5084,7 +5127,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.41622938
        4      1.42222336
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5109,7 +5152,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.33250345
        4      1.41547293
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5134,7 +5177,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.19800620
        4      1.41502011
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5159,7 +5202,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.17514875
        4      1.41485632
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5184,7 +5227,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.17118569
        4      1.41481867
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5209,7 +5252,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.16839313
        4      1.41480289
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5259,7 +5302,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        3      1.16872481
        4      1.41479657
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5274,7 +5317,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  ROOT:  2 RESIDUAL TOT: 1.17432D-03
  ROOT:  3 RESIDUAL TOT: 8.34174D-03
  ROOT:  4 RESIDUAL TOT: 5.99242D-01
- (CCORT) Norm^2 (R12-part) =  -0.11028752631559428     
+ (CCORT) Norm^2 (R12-part) =  -0.11028752693025196     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
       9       4         0.01     0.60E+00
 
@@ -5286,7 +5329,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16871803
        4      1.41224128
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5311,7 +5354,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16865099
        4      1.32566627
  Dimension of the reduced space:    44
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5336,7 +5379,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16861368
        4      1.29842710
  Dimension of the reduced space:    48
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5361,7 +5404,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862566
        4      1.29462015
  Dimension of the reduced space:    52
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -5386,7 +5429,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862485
        4      1.29394789
  Dimension of the reduced space:    56
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5411,7 +5454,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862459
        4      1.29378982
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5436,7 +5479,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862513
        4      1.29378126
  Dimension of the reduced space:    64
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -5461,7 +5504,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862510
        4      1.29377719
  Dimension of the reduced space:    68
- >>> TIME USED IN THIS MICRO ITERATION        0.67
+ >>> TIME USED IN THIS MICRO ITERATION        0.72
 
 
  REDUCED EIGENVALUES real part:
@@ -5486,7 +5529,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862495
        4      1.29377434
  Dimension of the reduced space:    72
- >>> TIME USED IN THIS MICRO ITERATION        0.71
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5536,7 +5579,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377387
  Dimension of the reduced space:    80
- >>> TIME USED IN THIS MICRO ITERATION        0.72
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5561,7 +5604,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
  Dimension of the reduced space:    84
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.70
 
 
  REDUCED EIGENVALUES real part:
@@ -5611,7 +5654,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
  Dimension of the reduced space:    92
- >>> TIME USED IN THIS MICRO ITERATION        0.72
+ >>> TIME USED IN THIS MICRO ITERATION        0.69
 
 
  REDUCED EIGENVALUES real part:
@@ -5623,7 +5666,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        4      1.29377389
   
  ROOT:  1 RESIDUAL TOT: 7.26212D-10
- ROOT:  2 RESIDUAL TOT: 2.45750D-10
+ ROOT:  2 RESIDUAL TOT: 2.45754D-10
  ROOT:  3 RESIDUAL TOT: 5.07772D-09
  ROOT:  4 RESIDUAL TOT: 1.73668D-07
      23       4         0.01     0.17E-06
@@ -5636,7 +5679,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
  Dimension of the reduced space:    96
- >>> TIME USED IN THIS MICRO ITERATION        0.68
+ >>> TIME USED IN THIS MICRO ITERATION        0.73
 
 
  REDUCED EIGENVALUES real part:
@@ -5647,9 +5690,9 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
   
- ROOT:  1 RESIDUAL TOT: 1.65600D-10
- ROOT:  2 RESIDUAL TOT: 4.96818D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.96818D-11
+ ROOT:  1 RESIDUAL TOT: 1.65593D-10
+ ROOT:  2 RESIDUAL TOT: 4.96833D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.96833D-11
  ROOT:  3 RESIDUAL TOT: 1.16094D-09
  ROOT:  4 RESIDUAL TOT: 4.26095D-08
      24       4         0.01     0.43E-07
@@ -5673,11 +5716,11 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
   
- ROOT:  1 RESIDUAL TOT: 2.73333D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.73333D-11
- ROOT:  2 RESIDUAL TOT: 1.64226D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.64226D-11
- ROOT:  3 RESIDUAL TOT: 3.18493D-10
+ ROOT:  1 RESIDUAL TOT: 2.73344D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.73344D-11
+ ROOT:  2 RESIDUAL TOT: 1.64237D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.64237D-11
+ ROOT:  3 RESIDUAL TOT: 3.18496D-10
  ROOT:  4 RESIDUAL TOT: 1.10757D-08
      25       3         0.01     0.11E-07
 
@@ -5700,12 +5743,12 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
   
- ROOT:  1 RESIDUAL TOT: 2.63360D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.63360D-11
- ROOT:  2 RESIDUAL TOT: 1.70647D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.70647D-11
- ROOT:  3 RESIDUAL TOT: 7.90346D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.90346D-11
+ ROOT:  1 RESIDUAL TOT: 2.63415D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.63415D-11
+ ROOT:  2 RESIDUAL TOT: 1.70696D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.70696D-11
+ ROOT:  3 RESIDUAL TOT: 7.90347D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.90347D-11
  ROOT:  4 RESIDUAL TOT: 2.79249D-09
      26       2         0.01     0.28E-08
 
@@ -5717,7 +5760,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
  Dimension of the reduced space:   102
- >>> TIME USED IN THIS MICRO ITERATION        0.36
+ >>> TIME USED IN THIS MICRO ITERATION        0.38
 
 
  REDUCED EIGENVALUES real part:
@@ -5728,13 +5771,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
   
- ROOT:  1 RESIDUAL TOT: 2.64242D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.64242D-11
- ROOT:  2 RESIDUAL TOT: 1.71650D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.71650D-11
- ROOT:  3 RESIDUAL TOT: 6.97063D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.97063D-11
- ROOT:  4 RESIDUAL TOT: 8.09928D-10
+ ROOT:  1 RESIDUAL TOT: 2.64255D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.64255D-11
+ ROOT:  2 RESIDUAL TOT: 1.71632D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.71632D-11
+ ROOT:  3 RESIDUAL TOT: 6.97107D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.97107D-11
+ ROOT:  4 RESIDUAL TOT: 8.09925D-10
      27       1         0.00     0.81E-09
 
  Lowest eigenvalues in this iteration: 
@@ -5756,13 +5799,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
   
- ROOT:  1 RESIDUAL TOT: 2.68667D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.68667D-11
- ROOT:  2 RESIDUAL TOT: 1.72622D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.72622D-11
- ROOT:  3 RESIDUAL TOT: 7.01406D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.01406D-11
- ROOT:  4 RESIDUAL TOT: 2.01442D-10
+ ROOT:  1 RESIDUAL TOT: 2.68688D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.68688D-11
+ ROOT:  2 RESIDUAL TOT: 1.72603D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.72603D-11
+ ROOT:  3 RESIDUAL TOT: 7.01500D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.01500D-11
+ ROOT:  4 RESIDUAL TOT: 2.01448D-10
      28       1         0.00     0.20E-09
 
  Lowest eigenvalues in this iteration: 
@@ -5784,14 +5827,14 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        3      1.16862500
        4      1.29377389
   
- ROOT:  1 RESIDUAL TOT: 2.49588D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.49588D-11
- ROOT:  2 RESIDUAL TOT: 1.68285D-11
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.68285D-11
- ROOT:  3 RESIDUAL TOT: 6.93569D-11
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.93569D-11
- ROOT:  4 RESIDUAL TOT: 4.69319D-11
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 4.69319D-11
+ ROOT:  1 RESIDUAL TOT: 2.49598D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.49598D-11
+ ROOT:  2 RESIDUAL TOT: 1.68326D-11
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.68326D-11
+ ROOT:  3 RESIDUAL TOT: 6.93509D-11
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.93509D-11
+ ROOT:  4 RESIDUAL TOT: 4.69335D-11
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 4.69335D-11
      29       1         0.00     0.69E-10
 
  Lowest eigenvalues in this iteration: 
@@ -5811,14 +5854,14 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.29
+         CC_TRDRV            0.30
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
          Total time          0.30
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  17.84 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  18.28 seconds
  >>>> Total wall time used in CCEQ_SOLV:  24.00 seconds
 
 
@@ -5832,7 +5875,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
     1   0.3805394204
     2   0.6423459516
-    3   1.1686250023
+    3   1.1686250022
     4   1.2937738929
 
 
@@ -5846,19 +5889,19 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3805394204       10.3550040814
-         2            0.6423459516       17.4791219876
-         3            1.1686250023       31.7999030313
-         4            1.2937738929       35.2053774807
+         1            0.3805394204       10.3550043750
+         2            0.6423459516       17.4791224834
+         3            1.1686250022       31.7999039334
+         4            1.2937738929       35.2053784797
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.881937906846119
-@@    4    2           -75.620131375676593
-@@    4    3           -75.093852324984425
-@@    4    4           -74.968703434365466
+@@    4    1           -75.881937906856535
+@@    4    2           -75.620131375684949
+@@    4    3           -75.093852324992469
+@@    4    4           -74.968703434365779
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6057,7 +6100,7 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
 
  Ground state energy is target 
 
- Ecorr =                    -76.26247732723591354898
+ Ecorr =                    -76.26247732723608407923
 
  *******************************************************************
   
@@ -6084,30 +6127,30 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.3722282  |      10.12885  |     81694.657  |  95.56  |
- | ^1A1  |    2   |     0.6531961  |      17.77437  |    143359.962  |  97.43  |
- | ^1A1  |    3   |     0.7759570  |      21.11486  |    170302.887  |  96.27  |
- | ^1A1  |    4   |     0.9401502  |      25.58279  |    206339.115  |  97.82  |
+ | ^1A1  |    1   |     0.3722282  |      10.12885  |     81694.656  |  95.56  |
+ | ^1A1  |    2   |     0.6531961  |      17.77437  |    143359.961  |  97.43  |
+ | ^1A1  |    3   |     0.7759570  |      21.11487  |    170302.886  |  96.27  |
+ | ^1A1  |    4   |     0.9401502  |      25.58279  |    206339.113  |  97.82  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.4653245  |      12.66212  |    102126.919  |  96.26  |
- | ^1B2  |    2   |     0.5388019  |      14.66154  |    118253.344  |  96.60  |
- | ^1B2  |    3   |     0.7519487  |      20.46156  |    165033.655  |  96.62  |
- | ^1B2  |    4   |     0.9724616  |      26.46202  |    213430.642  |  97.08  |
+ | ^1B2  |    1   |     0.4653245  |      12.66212  |    102126.918  |  96.26  |
+ | ^1B2  |    2   |     0.5388019  |      14.66154  |    118253.343  |  96.60  |
+ | ^1B2  |    3   |     0.7519487  |      20.46156  |    165033.654  |  96.62  |
+ | ^1B2  |    4   |     0.9724616  |      26.46203  |    213430.640  |  97.08  |
  +-----------------------------------------------------------------------------+
- | ^1B1  |    1   |     0.2914701  |       7.93130  |     63970.292  |  95.17  |
- | ^1B1  |    2   |     0.6963090  |      18.94753  |    152822.151  |  95.99  |
- | ^1B1  |    3   |     1.0673229  |      29.04333  |    234250.302  |  96.92  |
- | ^1B1  |    4   |     1.1231369  |      30.56211  |    246500.066  |  95.06  |
+ | ^1B1  |    1   |     0.2914701  |       7.93130  |     63970.291  |  95.17  |
+ | ^1B1  |    2   |     0.6963090  |      18.94753  |    152822.149  |  95.99  |
+ | ^1B1  |    3   |     1.0673229  |      29.04333  |    234250.300  |  96.92  |
+ | ^1B1  |    4   |     1.1231369  |      30.56211  |    246500.064  |  95.06  |
  +-----------------------------------------------------------------------------+
- | ^1A2  |    1   |     0.3805394  |      10.35500  |     83518.749  |  96.36  |
- | ^1A2  |    2   |     0.6423460  |      17.47912  |    140978.641  |  96.65  |
- | ^1A2  |    3   |     1.1686250  |      31.79990  |    256483.541  |  96.11  |
- | ^1A2  |    4   |     1.2937739  |      35.20538  |    283950.548  |  96.16  |
+ | ^1A2  |    1   |     0.3805394  |      10.35500  |     83518.748  |  96.36  |
+ | ^1A2  |    2   |     0.6423460  |      17.47912  |    140978.640  |  96.65  |
+ | ^1A2  |    3   |     1.1686250  |      31.79990  |    256483.539  |  96.11  |
+ | ^1A2  |    4   |     1.2937739  |      35.20538  |    283950.546  |  96.16  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A1       -75.8902490817                                        
+             1 ^1A1       -75.8902490816                                        
              2 ^1A1       -75.6092812760                                        
              3 ^1A1       -75.4865202779                                        
              4 ^1A1       -75.3223271449                                        
@@ -6119,13 +6162,13 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
              2 ^1B1       -75.5661683737                                        
              3 ^1B1       -75.1951544166                                        
              4 ^1B1       -75.1393403851                                        
-             1 ^1A2       -75.8819379068                                        
+             1 ^1A2       -75.8819379069                                        
              2 ^1A2       -75.6201313757                                        
              3 ^1A2       -75.0938523250                                        
              4 ^1A2       -74.9687034344                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -6144,9 +6187,9 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute  35 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute  37 seconds
  >>>> Total wall time used in DALTON:  2 minutes 10 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:21:32 2010 
+     Date and time (Linux)  : Wed Mar 16 19:52:05 2011 
      Host name              : fe6                                     

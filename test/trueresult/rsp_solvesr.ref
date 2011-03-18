@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:47:36 2010 
+     Date and time (Linux)  : Wed Mar 16 18:14:11 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -173,8 +174,8 @@ Point group: Cs
 
                             C         12.000000
                             H1         1.007825
-                            H2  1      1.007825
-                            H2  2      1.007825
+                            H2 _1      1.007825
+                            H2 _2      1.007825
 
                        Total mass:    15.023475 amu
                        Natural abundance:  98.856 %
@@ -237,16 +238,16 @@ Point group: Cs
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-             C           H1          H2  1       H2  2
+             C           H1          H2 _1       H2 _2
             ------      ------      ------      ------
   C    :    0.000000
   H1   :    1.079362    0.000000
-  H2  1:    1.079361    1.866346    0.000000
-  H2  2:    1.079361    1.866346    1.866346    0.000000
+  H2 _1:    1.079361    1.866346    0.000000
+  H2 _2:    1.079361    1.866346    1.866346    0.000000
 
 
   Max interatomic separation is    1.8663 Angstrom (    3.5269 Bohr)
-  between atoms    3 and    2, " H2  1" and " H1   ".
+  between atoms    3 and    2, " H2 _1" and " H1   ".
 
 
   Bond distances (Angstrom):
@@ -255,8 +256,8 @@ Point group: Cs
                   atom 1     atom 2       distance
                   ------     ------       --------
   bond distance:   H1         C           1.079362
-  bond distance:   H2  1      C           1.079361
-  bond distance:   H2  2      C           1.079361
+  bond distance:   H2 _1      C           1.079361
+  bond distance:   H2 _2      C           1.079361
 
 
   Bond angles (degrees):
@@ -264,9 +265,9 @@ Point group: Cs
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:      H1         C          H2  1       119.665
-  bond angle:      H1         C          H2  2       119.665
-  bond angle:      H2  1      C          H2  2       119.665
+  bond angle:      H1         C          H2 _1       119.665
+  bond angle:      H1         C          H2 _2       119.665
+  bond angle:      H2 _1      C          H2 _2       119.665
 
 
 
@@ -284,8 +285,8 @@ Point group: Cs
 
                A                   B                   C
 
-         286372.1440         286371.8471         143961.9505 MHz
-            9.552347            9.552337            4.802054 cm-1
+         286372.1414         286371.8446         143961.9493 MHz
+            9.552346            9.552337            4.802054 cm-1
 
 
 @  Nuclear repulsion energy :    9.675446789642
@@ -418,7 +419,7 @@ Point group: Cs
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Fermi contact integrals
             (Dirac delta function integrals)
@@ -447,15 +448,15 @@ Point group: Cs
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>> Time used in RLMINT is   0.19 seconds
+ >>> Time used in RLMINT is   0.18 seconds
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:     3918122 ( 42.8% )
  Megabytes written:                             44.870
 
- >>> Time used in TWOINT is   0.74 seconds
- >>>> Total CPU  time used in HERMIT:   0.98 seconds
- >>>> Total wall time used in HERMIT:   3.00 seconds
+ >>> Time used in TWOINT is   0.68 seconds
+ >>>> Total CPU  time used in HERMIT:   0.93 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 
                         .----------------------------------.
@@ -487,7 +488,7 @@ Point group: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:47:39 2010 
+     Date and time (Linux)  : Wed Mar 16 18:14:13 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -506,8 +507,7 @@ Point group: Cs
 
      This is a combination run starting with
 
-               an restricted, one open shell Hartree-Fock calculation
-
+               a restricted, one open shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -520,6 +520,7 @@ Point group: Cs
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons          2
      Number of electrons in active shells      7
      Total charge of the molecule              0
@@ -569,32 +570,50 @@ Point group: Cs
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
- -----------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
  >>> Time used in FORMSUP is   0.23 seconds
    1  -39.4067014936     -8.643809320251E-06    2.28750D+01   -3.94D+01
-      MULPOP  C    0.28;  H1   0.01;  H2 ******; 
-   2  -39.5560324111     -3.917505669001E-04    4.48315D-01   -1.49D-01
-      MULPOP  C    0.24;  H1   0.01;  H2 ******; 
-   3  -39.5712077503     -2.965757594597E-04    2.04704D-01   -1.52D-02
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-   4  -39.5739908720     -3.703727804925E-04    2.51291D-02   -2.78D-03
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-   5  -39.5740791589     -3.893568813463E-04    2.93667D-03   -8.83D-05
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-   6  -39.5740808068     -3.913805178638E-04    5.38138D-04   -1.65D-06
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-   7  -39.5740808619     -3.914723654933E-04    1.61832D-04   -5.50D-08
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-   8  -39.5740808664     -3.915316754606E-04    3.88551D-05   -4.59D-09
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-   9  -39.5740808669     -3.915582961820E-04    1.30701D-05   -4.39D-10
-      MULPOP  C    0.23;  H1   0.01;  H2 ******; 
-  10  -39.5740808669     -3.915642044394E-04    4.86329D-06   -6.45D-11
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.019995
+      MULPOP   C     -0.18;  H1     0.06;  H2 _1  0.06;  H2 _2  0.06; 
+ -----------------------------------------------------------------------------
+   2  -39.5560324111     -3.917505669094E-04    4.48315D-01   -1.49D-01
+      Virial theorem: -V/T =      1.989063
+      MULPOP   C     -0.37;  H1     0.12;  H2 _1  0.12;  H2 _2  0.12; 
+ -----------------------------------------------------------------------------
+   3  -39.5712077503     -2.965757594716E-04    2.04704D-01   -1.52D-02
+      Virial theorem: -V/T =      2.007351
+      MULPOP   C     -0.15;  H1     0.05;  H2 _1  0.05;  H2 _2  0.05; 
+ -----------------------------------------------------------------------------
+   4  -39.5739908720     -3.703727805055E-04    2.51291D-02   -2.78D-03
+      Virial theorem: -V/T =      2.001727
+      MULPOP   C     -0.21;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   5  -39.5740791589     -3.893568813602E-04    2.93667D-03   -8.83D-05
+      Virial theorem: -V/T =      2.001155
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   6  -39.5740808069     -3.913805178777E-04    5.38138D-04   -1.65D-06
+      Virial theorem: -V/T =      2.001147
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   7  -39.5740808619     -3.914723655073E-04    1.61832D-04   -5.50D-08
+      Virial theorem: -V/T =      2.001151
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   8  -39.5740808664     -3.915316754747E-04    3.88551D-05   -4.59D-09
+      Virial theorem: -V/T =      2.001151
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+   9  -39.5740808669     -3.915582961960E-04    1.30701D-05   -4.39D-10
+      Virial theorem: -V/T =      2.001150
+      MULPOP   C     -0.22;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
+ -----------------------------------------------------------------------------
+  10  -39.5740808669     -3.915642044533E-04    4.86329D-06   -6.45D-11
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -628,10 +647,10 @@ Point group: Cs
 
 
  CI energies and residuals:
-    1      -39.578418481354340       2.83D-03
+    1      -39.578418481356252       2.83D-03
 
 
- Final CI energy:      -39.578418481354340
+ Final CI energy:      -39.578418481356252
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -667,17 +686,18 @@ Point group: Cs
              11   -0.0000000000
              12   -0.0000000000
 
- Total MCSCF energy       :    -39.5787430109635           (MACRO    1)
+ Total MCSCF energy       :    -39.5787430109654           (MACRO    1)
 
  - Nuclear repulsion      :     9.67544678964161    
- - Inactive energy        :    -35.3005744840221    
- - Active energy          :    -13.9532907869738    
- - Dielec. solvation ener.:   -3.245296091343367E-04
+ - Inactive energy        :    -35.3005744840222    
+ - Active energy          :    -13.9532907869757    
+ - Dielec. solvation ener.:   -3.245296091497135E-04
 
  Norm of total gradient   :        0.029089254840
- -    of CI gradient      :        0.006342523564
- -    of orbital gradient :        0.028389384318
-      MULPOP  C  ******;  H1 -68.40;  H2 ******; 
+ -    of CI gradient      :        0.006342523563
+ -    of orbital gradient :        0.028389384319
+      Virial theorem: -V/T =      2.002067
+      MULPOP   C     -0.14;  H1     0.05;  H2 _1  0.05;  H2 _2  0.05; 
 
  Residual norm when dim(red L) =  11
  NEO root     CSF        orbital          total
@@ -702,17 +722,18 @@ Point group: Cs
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -39.5998360349530           (MACRO    2)
+ Total MCSCF energy       :    -39.5998360349554           (MACRO    2)
 
  - Nuclear repulsion      :     9.67544678964161    
- - Inactive energy        :    -35.3014074018328    
- - Active energy          :    -13.9736627611739    
- - Dielec. solvation ener.:   -2.126615879062820E-04
+ - Inactive energy        :    -35.3014074018329    
+ - Active energy          :    -13.9736627611761    
+ - Dielec. solvation ener.:   -2.126615879184800E-04
 
- Norm of total gradient   :        0.084219958687
- -    of CI gradient      :        0.060568705077
+ Norm of total gradient   :        0.084219958686
+ -    of CI gradient      :        0.060568705075
  -    of orbital gradient :        0.058518658619
-      MULPOP  C  ******;  H1 -69.37;  H2 ******; 
+      Virial theorem: -V/T =      2.002148
+      MULPOP   C     -0.04;  H1     0.01;  H2 _1  0.01;  H2 _2  0.01; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -737,17 +758,18 @@ Point group: Cs
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -39.6255254069877           (MACRO    3)
+ Total MCSCF energy       :    -39.6255254069897           (MACRO    3)
 
  - Nuclear repulsion      :     9.67544678964161    
  - Inactive energy        :    -35.3010581412123    
- - Active energy          :    -13.9997038905144    
- - Dielec. solvation ener.:   -2.101649025439930E-04
+ - Active energy          :    -13.9997038905164    
+ - Dielec. solvation ener.:   -2.101649025520686E-04
 
- Norm of total gradient   :        0.118085732543
- -    of CI gradient      :        0.112798837949
- -    of orbital gradient :        0.034937979157
-      MULPOP  C  ******;  H1 -74.33;  H2 ******; 
+ Norm of total gradient   :        0.118085732544
+ -    of CI gradient      :        0.112798837951
+ -    of orbital gradient :        0.034937979155
+      Virial theorem: -V/T =      1.999206
+      MULPOP   C     -0.08;  H1     0.03;  H2 _1  0.03;  H2 _2  0.03; 
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
@@ -772,17 +794,18 @@ Point group: Cs
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -39.6331043156232           (MACRO    4)
+ Total MCSCF energy       :    -39.6331043156249           (MACRO    4)
 
  - Nuclear repulsion      :     9.67544678964161    
  - Inactive energy        :    -35.3013734785121    
- - Active energy          :    -14.0069026511318    
- - Dielec. solvation ener.:   -2.749756208813440E-04
+ - Active energy          :    -14.0069026511336    
+ - Dielec. solvation ener.:   -2.749756208934431E-04
 
  Norm of total gradient   :        0.043409970796
- -    of CI gradient      :        0.040174253659
+ -    of CI gradient      :        0.040174253658
  -    of orbital gradient :        0.016445513293
-      MULPOP  C  ******;  H1  -8.42;  H2 ******; 
+      Virial theorem: -V/T =      1.998613
+      MULPOP   C     -0.17;  H1     0.06;  H2 _1  0.06;  H2 _2  0.06; 
 
  Residual norm when dim(red L) =   9
  NEO root     CSF        orbital          total
@@ -807,17 +830,18 @@ Point group: Cs
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -39.6333663754572           (MACRO    5)
+ Total MCSCF energy       :    -39.6333663754589           (MACRO    5)
 
  - Nuclear repulsion      :     9.67544678964161    
- - Inactive energy        :    -35.3013512624544    
- - Active energy          :    -14.0071674655439    
- - Dielec. solvation ener.:   -2.944371004817082E-04
+ - Inactive energy        :    -35.3013512624543    
+ - Active energy          :    -14.0071674655457    
+ - Dielec. solvation ener.:   -2.944371004927689E-04
 
  Norm of total gradient   :        0.001186521409
- -    of CI gradient      :        0.001068046062
+ -    of CI gradient      :        0.001068046063
  -    of orbital gradient :        0.000516827498
-      MULPOP  C  ******;  H1  -8.07;  H2 ******; 
+      Virial theorem: -V/T =      1.998806
+      MULPOP   C     -0.20;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
 
  Residual norm when dim(red L) =  17
  NEO root     CSF        orbital          total
@@ -842,17 +866,18 @@ Point group: Cs
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :    -39.6333670869457           (MACRO    6)
+ Total MCSCF energy       :    -39.6333670869474           (MACRO    6)
 
  - Nuclear repulsion      :     9.67544678964161    
  - Inactive energy        :    -35.3013466257371    
- - Active energy          :    -14.0071730215782    
- - Dielec. solvation ener.:   -2.942292720416154E-04
+ - Active energy          :    -14.0071730215799    
+ - Dielec. solvation ener.:   -2.942292720524012E-04
 
  Norm of total gradient   :        0.000008645694
  -    of CI gradient      :        0.000008171287
  -    of orbital gradient :        0.000002824552
-      MULPOP  C  ******;  H1  -8.05;  H2 ******; 
+      Virial theorem: -V/T =      1.998815
+      MULPOP   C     -0.20;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
 
  Residual norm when dim(red L) =  20
  NEO root     CSF        orbital          total
@@ -877,47 +902,51 @@ Point group: Cs
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :    -39.6333670869586           (MACRO    7)
+ Total MCSCF energy       :    -39.6333670869604           (MACRO    7)
 
  - Nuclear repulsion      :     9.67544678964161    
  - Inactive energy        :    -35.3013466301962    
- - Active energy          :    -14.0071730143001    
- - Dielec. solvation ener.:   -2.942321039348012E-04
+ - Active energy          :    -14.0071730143019    
+ - Dielec. solvation ener.:   -2.942321039456395E-04
 
  Norm of total gradient   :        0.000000008186
  -    of CI gradient      :        0.000000005262
  -    of orbital gradient :        0.000000006271
-      MULPOP  C  ******;  H1  -8.05;  H2 ******; 
+      Virial theorem: -V/T =      1.998815
+      MULPOP   C     -0.20;  H1     0.07;  H2 _1  0.07;  H2 _2  0.07; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -1.28964D-11   -1.30806D-11
+ Energy difference; actual and predicted:   -1.29816D-11   -1.30806D-11
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    9.85915D-01
+ Energy difference; actual and predicted:    9.92434D-01
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            7
      Number of micro iterations used           61
-     Total number of CPU seconds used        18.13
+     Total number of CPU seconds used        18.25
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:48:02 2010 
+     Date and time (Linux)  : Wed Mar 16 18:14:37 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1   10    -39.578743010963   0.0290892548  0.000000   0.7135868715
-    2    6    -39.599836034953   0.0842199587  0.882186   0.7562346888
-    3    5    -39.625525406988   0.1180857325  0.708739   0.4581978488
-    4    7    -39.633104315623   0.0434099708  1.028605   0.0678055337
-    5   15    -39.633366375457   0.0011865214  1.014763   0.0054616199
-    6   18    -39.633367086946   0.0000086457  1.001032   0.0000153422
-    7    0    -39.633367086959   0.0000000082  1.000000   0.0000000000
+    1   10    -39.578743010965   0.0290892548  0.000000   0.7135868715
+    2    6    -39.599836034955   0.0842199587  0.882186   0.7562346888
+    3    5    -39.625525406990   0.1180857325  0.708739   0.4581978488
+    4    7    -39.633104315625   0.0434099708  1.028605   0.0678055337
+    5   15    -39.633366375459   0.0011865214  1.014763   0.0054616199
+    6   18    -39.633367086947   0.0000086457  1.001032   0.0000153422
+    7    0    -39.633367086960   0.0000000082  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -934,44 +963,44 @@ Point group: Cs
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1    10     6     4      2.60      0.82      1.61      1.56      0.16
-    2     6     4     3      2.12      0.83      1.13      1.09      0.19
-    3     5     3     3      1.99      0.83      1.00      0.96      0.20
-    4     7     4     4      2.32      0.83      1.33      1.28      0.19
-    5    15     9     7      3.56      0.83      2.57      2.52      0.17
-    6    18    12     7      3.94      0.83      2.95      2.90      0.16
+    1    10     6     4      2.61      0.83      1.61      1.57      0.16
+    2     6     4     3      2.13      0.83      1.14      1.09      0.19
+    3     5     3     3      2.00      0.83      1.01      0.97      0.20
+    4     7     4     4      2.33      0.83      1.34      1.30      0.19
+    5    15     9     7      3.62      0.83      2.62      2.57      0.17
+    6    18    12     7      3.96      0.83      2.97      2.91      0.16
     7     0     0     0      0.99      0.83      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1    -35.300574484022    -13.953290786974    -39.578743010963
-    2    -35.301407401833    -13.973662761174    -39.599836034953
-    3    -35.301058141212    -13.999703890514    -39.625525406988
-    4    -35.301373478512    -14.006902651132    -39.633104315623
-    5    -35.301351262454    -14.007167465544    -39.633366375457
-    6    -35.301346625737    -14.007173021578    -39.633367086946
-    7    -35.301346630196    -14.007173014300    -39.633367086959
+    1    -35.300574484022    -13.953290786976    -39.578743010965
+    2    -35.301407401833    -13.973662761176    -39.599836034955
+    3    -35.301058141212    -13.999703890516    -39.625525406990
+    4    -35.301373478512    -14.006902651134    -39.633104315625
+    5    -35.301351262454    -14.007167465546    -39.633366375459
+    6    -35.301346625737    -14.007173021580    -39.633367086947
+    7    -35.301346630196    -14.007173014302    -39.633367086960
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.023909950648     -0.021093023990      0.882186011179
-    3     -0.036246581702     -0.025689372035      0.708739164578
-    4     -0.007368140619     -0.007578908636      1.028605319479
-    5     -0.000258247411     -0.000262059834      1.014762675236
-    6     -0.000000710755     -0.000000711489      1.001032395899
+    2     -0.023909950648     -0.021093023990      0.882186011182
+    3     -0.036246581702     -0.025689372034      0.708739164575
+    4     -0.007368140619     -0.007578908635      1.028605319480
+    5     -0.000258247411     -0.000262059834      1.014762675168
+    6     -0.000000710755     -0.000000711489      1.001032375973
     7     -0.000000000013     -0.000000000013      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      2.36341274  1.00000000      0.713586871510      0.700000000000
-    2      1.43514991  1.00000000      0.756234688779      0.700000000000
-    3      0.20000000  1.00000000      0.458197848849      0.700000000000
-    4      0.20000000  1.00000000      0.067805533739      0.700000000000
-    5      0.20000000  1.00000000      0.005461619906      0.700000000000
+    1      2.36341274  1.00000000      0.713586871511      0.700000000000
+    2      1.43514991  1.00000000      0.756234688770      0.700000000000
+    3      0.20000000  1.00000000      0.458197848831      0.700000000000
+    4      0.20000000  1.00000000      0.067805533738      0.700000000000
+    5      0.20000000  1.00000000      0.005461619905      0.700000000000
     6      0.20000000  1.00000000      0.000015342227      0.700000000000
     7      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -979,16 +1008,19 @@ Point group: Cs
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.069482020406   -0.510025991021    0.839471880320   -0.096804632651
-    2   -0.068557350997   -0.677612207392    0.026534112371    0.712912007701
-    3   -0.000584542373    0.995827357110   -0.005205327041   -0.085709377640
+    1   -0.069482020407   -0.510025991021    0.839471880320   -0.096804632651
+    2   -0.068557350998   -0.677612207395    0.026534112371    0.712912007701
+    3   -0.000584542373    0.995827357111   -0.005205327042   -0.085709377636
     4   -0.000020655994    0.999908060873   -0.001479996125   -0.011482917119
     5   -0.000000056860    0.999999403415   -0.000110382131   -0.000983901993
     6   -0.000000000001    0.999999999995   -0.000000467839   -0.000002556516
     7    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           2
      Spatial symmetry:            1
@@ -1001,15 +1033,15 @@ Point group: Cs
           max l value         =          12
      State number:                1
 
-     Final MCSCF energy:          -39.633367086959                 
+     Final MCSCF energy:          -39.633367086960                 
      Nuclear repulsion:             9.675446789642
-     Electronic energy:           -49.308519644496
+     Electronic energy:           -49.308519644498
      Solvation  energy:            -0.000294232104
 
      Final gradient norm:           0.000000008186
 
  
-     Date and time (Linux)  : Wed Dec 29 21:48:02 2010 
+     Date and time (Linux)  : Wed Mar 16 18:14:37 2011 
      Host name              : fe6                                     
 
 
@@ -1030,7 +1062,7 @@ Point group: Cs
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           2        3        4        5        6        7        8
+    Orbital         2        3        4        5        6        7        8
    6  C  :1s    -0.0149  -0.0000  -0.0011   0.0189  -0.0000   0.0004  -0.0000
    7  C  :1s    -0.0462  -0.0000  -0.0035   0.0612  -0.0000   0.0004  -0.0000
    8  C  :1s    -0.1035  -0.0000  -0.0079   0.1324  -0.0000   0.0042  -0.0000
@@ -1073,7 +1105,7 @@ Point group: Cs
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1  C  :2py    0.6884  -1.5274   0.1181  -0.3073
    2  C  :2py   -0.0566  -0.0562  -0.0411   0.8606
    3  C  :2py   -0.1156   0.4880  -1.5396   3.4743
@@ -1147,16 +1179,16 @@ Point group: Cs
   10- 8 to 10- 7        15    0.28013196E-13    0.10000000E+01
   10- 9 to 10- 8        28    0.56068925E-15    0.10000000E+01
   10-10 to 10- 9        44    0.86381476E-17    0.10000000E+01
-  10-11 to 10-10        19    0.62364997E-19    0.10000000E+01
+  10-11 to 10-10        19    0.62365007E-19    0.10000000E+01
   Number of coefficients less than 10^-11 times norm is             0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     18.83 seconds
- >>>> Total wall time used in SIRIUS :     23.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     18.95 seconds
+ >>>> Total wall time used in SIRIUS :     24.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:48:02 2010 
+     Date and time (Linux)  : Wed Mar 16 18:14:37 2011 
      Host name              : fe6                                     
 
 
@@ -1249,9 +1281,9 @@ Point group: Cs
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :      -39.633367086958621
- -- inactive part     :      -35.301346630196186
- --   active part     :      -14.007173014300113
+ MCSCF energy         :      -39.633367086960405
+ -- inactive part     :      -35.301346630196214
+ --   active part     :      -14.007173014301856
  -- nuclear repulsion :        9.675446789641613
 
 
@@ -1299,7 +1331,7 @@ Point group: Cs
 
  Operator symmetry =  1; triplet =   T
 
-RSPORT:    3 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
@@ -1695,8 +1727,8 @@ TRIPLET OPERATOR: "SD 006 x" LAGRANGIAN:  0.041476 AVERAGE:  1.049195 TOTAL:  1.
      Active-active  2  2 in sym 2 :     0.00000098
 
      SD 006 z inactive part: 0.00000000D+00
-     SD 006 z active part  :-2.35472782D-09
-     SD 006 z total        :-2.35472782D-09
+     SD 006 z active part  :-2.35472862D-09
+     SD 006 z total        :-2.35472862D-09
 
 TRIPLET OPERATOR: "SD 006 z" LAGRANGIAN:  0.000000 AVERAGE: -0.000000 TOTAL: -0.000000
 
@@ -1734,8 +1766,8 @@ TRIPLET OPERATOR: "SD 006 z" LAGRANGIAN:  0.000000 AVERAGE: -0.000000 TOTAL: -0.
      Active-active  2  2 in sym 2 :     0.00000098
 
      SD 007 x inactive part: 0.00000000D+00
-     SD 007 x active part  :-2.35472782D-09
-     SD 007 x total        :-2.35472782D-09
+     SD 007 x active part  :-2.35472862D-09
+     SD 007 x total        :-2.35472862D-09
 
 TRIPLET OPERATOR: "SD 007 x" LAGRANGIAN:  0.000000 AVERAGE: -0.000000 TOTAL: -0.000000
 
@@ -2222,7 +2254,7 @@ TRIPLET OPERATOR: "SD 011 y" contribution = 0.0 by symmetry.
 TRIPLET OPERATOR: "SD 012 y" contribution = 0.0 by symmetry.
 - Operator is of symmetry no.  2
 
- >>>> Total CPU  time used in RESPONSE:   3.13 seconds
+ >>>> Total CPU  time used in RESPONSE:   3.14 seconds
  >>>> Total wall time used in RESPONSE:   5.00 seconds
 
 
@@ -2230,9 +2262,9 @@ TRIPLET OPERATOR: "SD 012 y" contribution = 0.0 by symmetry.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  22.97 seconds
+ >>>> Total CPU  time used in DALTON:  23.04 seconds
  >>>> Total wall time used in DALTON:  31.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:48:07 2010 
+     Date and time (Linux)  : Wed Mar 16 18:14:42 2011 
      Host name              : fe6                                     

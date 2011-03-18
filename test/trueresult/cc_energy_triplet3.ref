@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:58:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:24:20 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -218,8 +219,8 @@ Represented as:      C2v
                                  ---------------
 
                            O          15.994915
-                           H1   1      1.007825
-                           H1   2      1.007825
+                           H1  _1      1.007825
+                           H1  _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -285,15 +286,15 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H1   1      H1   2
+            O           H1  _1      H1  _2
             ------      ------      ------
  O     :    0.000000
- H1   1:    0.961506    0.000000
- H1   2:    0.961506    1.510461    0.000000
+ H1  _1:    0.961506    0.000000
+ H1  _2:    0.961506    1.510461    0.000000
 
 
   Max interatomic separation is    1.5105 Angstrom (    2.8544 Bohr)
-  between atoms    3 and    2, "H1   2" and "H1   1".
+  between atoms    3 and    2, "H1  _2" and "H1  _1".
 
 
   Bond distances (Angstrom):
@@ -301,8 +302,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H1   1     O            0.961506
-  bond distance:  H1   2     O            0.961506
+  bond distance:  H1  _1     O            0.961506
+  bond distance:  H1  _2     O            0.961506
 
 
   Bond angles (degrees):
@@ -310,7 +311,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H1   1     O          H1   2       103.528
+  bond angle:     H1  _1     O          H1  _2       103.528
 
 
 
@@ -330,8 +331,8 @@ Represented as:      C2v
 
                A                   B                   C
 
-         797252.3607         439585.1102         283351.9157 MHz
-           26.593476           14.662981            9.451603 cm-1
+         797252.3537         439585.1064         283351.9133 MHz
+           26.593476           14.662981            9.451602 cm-1
 
 
 @  Nuclear repulsion energy :    9.156145719818
@@ -433,7 +434,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:58:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:24:20 2011 
      Host name              : fe6                                     
 
  Title     : Triplet excitation energies, CH2 test                       
@@ -450,8 +451,7 @@ Represented as:      C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -459,6 +459,10 @@ Represented as:      C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -512,34 +516,56 @@ Represented as:      C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -75.7971101011       2.03D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      1.999635
+      MULPOP  O      -0.48; H1  _1  0.24; H1  _2  0.24; 
+ -----------------------------------------------------------------------------
    2  -75.9759353378       2.90D-01  -1.79D-01    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      1.999642
+      MULPOP  O      -0.74; H1  _1  0.37; H1  _2  0.37; 
+ -----------------------------------------------------------------------------
    3  -75.9831075358       8.25D-02  -7.17D-03    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      2.001388
+      MULPOP  O      -0.76; H1  _1  0.38; H1  _2  0.38; 
+ -----------------------------------------------------------------------------
    4  -75.9834409393       3.65D-02  -3.33D-04    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      1.999383
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
    5  -75.9835104272       2.64D-03  -6.95D-05    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      2.000028
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
    6  -75.9835111771       4.28D-04  -7.50D-07    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      2.000029
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
    7  -75.9835112014       4.53D-05  -2.43D-08    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
    8  -75.9835112017       9.71D-06  -3.16D-10    3  1  1  0
-      MULPOP O   ******; H1  ******; 
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
    9  -75.9835112017       1.92D-06  -1.89D-11    3  1  1  0
-      MULPOP O   ******; H1  ******; 
-  10  -75.9835112017       8.48D-08  -6.54D-13    3  1  1  0
-      MULPOP O   ******; H1  ******; 
-  11  -75.9835112017       7.71D-09   0.00D+00    3  1  1  0
-      MULPOP O   ******; H1  ******; 
-  12  -75.9835112017       6.22D-10   1.42D-14    3  1  1  0
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
+  10  -75.9835112017       8.48D-08  -6.82D-13    3  1  1  0
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
+  11  -75.9835112017       7.71D-09   2.84D-14    3  1  1  0
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H1  _1  0.39; H1  _2  0.39; 
+ -----------------------------------------------------------------------------
+  12  -75.9835112017       6.22D-10   2.84D-14    3  1  1  0
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -566,7 +592,10 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -579,7 +608,7 @@ Represented as:      C2v
      Final gradient norm:           0.000000000622
 
  
-     Date and time (Linux)  : Wed Dec 29 21:58:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:24:20 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -587,7 +616,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     0.9958  -0.2124   0.0764   0.0846   0.0472
    2 O   :1s     0.0219   0.4691  -0.1821  -0.1036  -0.2376
    3 O   :1s    -0.0080   0.4804  -0.3082  -1.1720   0.1869
@@ -599,14 +628,14 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :2px    0.6421  -0.9611
    2 O   :2px    0.5095   1.0375
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.5056  -0.3394   0.1040
    2 O   :2py    0.2714  -0.8200   0.7330
    3 H1  :1s     0.2623   0.0443  -0.9723
@@ -618,7 +647,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:58:48 2010 
+     Date and time (Linux)  : Wed Mar 16 18:24:20 2011 
      Host name              : fe6                                     
 
 
@@ -706,7 +735,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.7468910948627518     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.7468910948626784     
  Start vector guessed from diagonal
  ... selected element no.  9
  Start vector guessed from diagonal
@@ -809,11 +838,11 @@ Represented as:      C2v
        1      0.37679433
        2      0.56611173
   
- ROOT:  1 RESIDUAL TOT: 1.68034D-14
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.68034D-14
- ROOT:  2 RESIDUAL TOT: 1.79202D-14
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.79202D-14
-      8       2         0.00     0.18E-13
+ ROOT:  1 RESIDUAL TOT: 1.93026D-14
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.93026D-14
+ ROOT:  2 RESIDUAL TOT: 6.66509D-15
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 6.66509D-15
+      8       2         0.00     0.19E-13
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -856,15 +885,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3767943296       10.2530949808
-         2            0.5661117346       15.4046834792
+         1            0.3767943296       10.2530952722
+         2            0.5661117346       15.4046839163
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.606716872111363
-@@    1    2           -75.417399467130537
+@@    1    1           -75.606716872097039
+@@    1    2           -75.417399467133833
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -933,7 +962,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.70415878853843250        1.7259913070248483     
+  MIN AND MAX IN SELECTED SUPSPACE   0.70415878855603253        1.7259913070245767     
  Start vector guessed from diagonal
  ... selected element no.  4
 
@@ -1009,9 +1038,9 @@ Represented as:      C2v
               Column   1
        1      0.30935012
   
- ROOT:  1 RESIDUAL TOT: 1.98572D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.98572D-15
-      7       1         0.00     0.20E-14
+ ROOT:  1 RESIDUAL TOT: 5.86794D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.86794D-16
+      7       1         0.00     0.59E-15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -1028,7 +1057,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -1053,13 +1082,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3093501216        8.4178447743
+         1            0.3093501216        8.4178450135
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.674161080186209
+@@    2    1           -75.674161080173107
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1106,7 +1135,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.8910617654226731     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.8910617654228035     
  Start vector guessed from diagonal
  ... selected element no.  7
  Start vector guessed from diagonal
@@ -1197,10 +1226,10 @@ Represented as:      C2v
        1      0.44089928
        2      0.50610174
   
- ROOT:  1 RESIDUAL TOT: 8.08803D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.08803D-15
- ROOT:  2 RESIDUAL TOT: 1.28210D-14
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.28210D-14
+ ROOT:  1 RESIDUAL TOT: 1.25401D-14
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.25401D-14
+ ROOT:  2 RESIDUAL TOT: 9.85942D-15
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.85942D-15
       7       1         0.00     0.13E-13
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -1244,15 +1273,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4408992761       11.9974792590
-         2            0.5061017376       13.7717284400
+         1            0.4408992761       11.9974795994
+         2            0.5061017376       13.7717288311
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.542611925660125
-@@    3    2           -75.477409464156693
+@@    3    1           -75.542611925660268
+@@    3    2           -75.477409464146845
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1323,7 +1352,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.80015801895602823        1.8788588676023643     
+  MIN AND MAX IN SELECTED SUPSPACE   0.80015801894837213        1.8788588675927362     
  Start vector guessed from diagonal
  ... selected element no.  1
 
@@ -1369,9 +1398,9 @@ Represented as:      C2v
               Column   1
        1      0.39147387
   
- ROOT:  1 RESIDUAL TOT: 1.03751D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.03751D-15
-      4       1         0.00     0.10E-14
+ ROOT:  1 RESIDUAL TOT: 7.06136D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.06136D-16
+      4       1         0.00     0.71E-15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
@@ -1413,13 +1442,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3914738685       10.6525455412
+         1            0.3914738685       10.6525458433
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.592037333262496
+@@    4    1           -75.592037333266546
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1467,29 +1496,29 @@ Represented as:      C2v
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster MP2   energy :     -76.1127697563783272
-     Conventional correlation energy:    -0.1292585546336085
- Iter.  1: Coupled cluster CC2   energy :     -76.1127532164404812
-     Conventional correlation energy:    -0.1292420146957625
- Iter.  2: Coupled cluster CC2   energy :     -76.1134991365218241
-     Conventional correlation energy:    -0.1299879347771054
- Iter.  3: Coupled cluster CC2   energy :     -76.1135737797358729
-     Conventional correlation energy:    -0.1300625779911542
- Iter.  4: Coupled cluster CC2   energy :     -76.1135654610764760
-     Conventional correlation energy:    -0.1300542593317573
- Iter.  5: Coupled cluster CC2   energy :     -76.1135655715721100
-     Conventional correlation energy:    -0.1300543698273913
- Iter.  6: Coupled cluster CC2   energy :     -76.1135658915273865
-     Conventional correlation energy:    -0.1300546897826678
- Iter.  7: Coupled cluster CC2   energy :     -76.1135659175684083
-     Conventional correlation energy:    -0.1300547158236895
- Iter.  8: Coupled cluster CC2   energy :     -76.1135659209342208
-     Conventional correlation energy:    -0.1300547191895021
- Iter.  9: Coupled cluster CC2   energy :     -76.1135659205046409
-     Conventional correlation energy:    -0.1300547187599221
+ Iter.  1: Coupled cluster MP2   energy :     -76.1127697563778014
+     Conventional correlation energy:    -0.1292585546332390
+ Iter.  1: Coupled cluster CC2   energy :     -76.1127532164397849
+     Conventional correlation energy:    -0.1292420146952225
+ Iter.  2: Coupled cluster CC2   energy :     -76.1134991365212414
+     Conventional correlation energy:    -0.1299879347766790
+ Iter.  3: Coupled cluster CC2   energy :     -76.1135737797351482
+     Conventional correlation energy:    -0.1300625779905857
+ Iter.  4: Coupled cluster CC2   energy :     -76.1135654610761492
+     Conventional correlation energy:    -0.1300542593315868
+ Iter.  5: Coupled cluster CC2   energy :     -76.1135655715717121
+     Conventional correlation energy:    -0.1300543698271497
+ Iter.  6: Coupled cluster CC2   energy :     -76.1135658915267328
+     Conventional correlation energy:    -0.1300546897821704
+ Iter.  7: Coupled cluster CC2   energy :     -76.1135659175679251
+     Conventional correlation energy:    -0.1300547158233627
+ Iter.  8: Coupled cluster CC2   energy :     -76.1135659209337661
+     Conventional correlation energy:    -0.1300547191892036
+ Iter.  9: Coupled cluster CC2   energy :     -76.1135659205039872
+     Conventional correlation energy:    -0.1300547187594248
 
  CC2   energy converged to within   0.10D-08 is    -76.113565921
- Final 2-norm of the CC vector function:  7.55962471D-08
+ Final 2-norm of the CC vector function:  7.55962504D-08
 
 
 
@@ -1556,7 +1585,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.7468910948627518     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.7468910948626784     
  Start vector guessed from diagonal
  ... selected element no.  9
  Start vector guessed from diagonal
@@ -1578,7 +1607,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 2.48437D-01
  ROOT:  2 RESIDUAL TOT: 2.34699D-01
       1       2         0.00     0.25E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -1614,7 +1643,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 2.47288D-03
  ROOT:  2 RESIDUAL TOT: 1.33450D-02
       4       2         0.00     0.13E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -1626,7 +1655,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 5.71904D-04
  ROOT:  2 RESIDUAL TOT: 5.04208D-03
       5       2         0.00     0.50E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -1638,7 +1667,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 1.54529D-04
  ROOT:  2 RESIDUAL TOT: 1.83433D-03
       6       2         0.00     0.18E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -1662,7 +1691,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 4.79130D-06
  ROOT:  2 RESIDUAL TOT: 9.26163D-05
       8       2         0.00     0.93E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -1698,7 +1727,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 1.63312D-08
  ROOT:  2 RESIDUAL TOT: 7.75531D-07
      11       2         0.00     0.78E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -1720,8 +1749,8 @@ Represented as:      C2v
        1      0.36024416
        2      0.57886628
   
- ROOT:  1 RESIDUAL TOT: 8.72335D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.72335D-10
+ ROOT:  1 RESIDUAL TOT: 8.72329D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.72329D-10
  ROOT:  2 RESIDUAL TOT: 1.63549D-08
      13       1         0.00     0.16E-07
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -1733,8 +1762,8 @@ Represented as:      C2v
        1      0.36024416
        2      0.57886628
   
- ROOT:  1 RESIDUAL TOT: 9.13981D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13981D-10
+ ROOT:  1 RESIDUAL TOT: 9.13980D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13980D-10
  ROOT:  2 RESIDUAL TOT: 1.96503D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.96503D-09
      14       1         0.00     0.20E-08
@@ -1754,7 +1783,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -1780,15 +1809,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3602441612        9.8027420010
-         2            0.5788662760       15.7517521954
+         1            0.3602441612        9.8027422795
+         2            0.5788662760       15.7517526422
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.753321759329864
-@@    1    2           -75.534699644507413
+@@    1    1           -75.753321759314304
+@@    1    2           -75.534699644511207
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1899,7 +1928,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.70415878853843250        1.6866186882153213     
+  MIN AND MAX IN SELECTED SUPSPACE   0.70415878855603253        1.6866186882148009     
  Start vector guessed from diagonal
  ... selected element no.  4
 
@@ -1947,7 +1976,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.18238D-03
       4       1         0.00     0.12E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2015,8 +2044,8 @@ Represented as:      C2v
               Column   1
        1      0.27785080
   
- ROOT:  1 RESIDUAL TOT: 9.92326D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.92326D-09
+ ROOT:  1 RESIDUAL TOT: 9.92327D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.92327D-09
      11       1         0.00     0.99E-08
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -2034,8 +2063,8 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2059,13 +2088,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2778507994        7.5607046398
+         1            0.2778507994        7.5607048548
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.835715121146194
+@@    2    1           -75.835715121130832
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2132,7 +2161,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.6248616207893216     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.6248616208001596     
  Start vector guessed from diagonal
  ... selected element no.  7
  Start vector guessed from diagonal
@@ -2154,7 +2183,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 2.45672D-01
  ROOT:  2 RESIDUAL TOT: 2.35527D-01
       1       2         0.00     0.25E+00
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2166,7 +2195,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 5.04893D-02
  ROOT:  2 RESIDUAL TOT: 5.45354D-02
       2       2         0.00     0.55E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2190,7 +2219,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 3.16965D-03
  ROOT:  2 RESIDUAL TOT: 3.43162D-03
       4       2         0.00     0.34E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2202,7 +2231,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 9.74708D-04
  ROOT:  2 RESIDUAL TOT: 1.00186D-03
       5       2         0.00     0.10E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2214,7 +2243,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 3.03834D-04
  ROOT:  2 RESIDUAL TOT: 2.52359D-04
       6       2         0.00     0.30E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -2238,7 +2267,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 5.76627D-06
  ROOT:  2 RESIDUAL TOT: 7.34862D-06
       8       2         0.00     0.73E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -2262,7 +2291,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 1.65754D-07
  ROOT:  2 RESIDUAL TOT: 3.57152D-07
      10       2         0.00     0.36E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2304,7 +2333,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2330,15 +2359,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4399339524       11.9712114660
-         2            0.5081098228       13.8263712157
+         1            0.4399339524       11.9712118056
+         2            0.5081098228       13.8263716083
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.673631968105454
-@@    3    2           -75.605456097743982
+@@    3    1           -75.673631968108737
+@@    3    2           -75.605456097730780
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2451,7 +2480,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            2
-  MIN AND MAX IN SELECTED SUPSPACE   0.80015801895602823        1.5521820417133037     
+  MIN AND MAX IN SELECTED SUPSPACE   0.80015801894837213        1.5521820417153023     
  Start vector guessed from diagonal
  ... selected element no.  1
 
@@ -2601,13 +2630,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3716140408       10.1121321539
+         1            0.3716140408       10.1121324407
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.741951879746466
+@@    4    1           -75.741951879751198
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2675,33 +2704,33 @@ Represented as:      C2v
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.1135659205046409
-     Conventional correlation energy:    -0.1300547187599221
- Iter.  1: Coupled cluster CCSD  energy :     -76.1156354204384371
-     Conventional correlation energy:    -0.1321242186937184
- Iter.  2: Coupled cluster CCSD  energy :     -76.1190447298397714
-     Conventional correlation energy:    -0.1355335280950527
- Iter.  3: Coupled cluster CCSD  energy :     -76.1192245650807280
-     Conventional correlation energy:    -0.1357133633360093
- Iter.  4: Coupled cluster CCSD  energy :     -76.1193015209930337
-     Conventional correlation energy:    -0.1357903192483150
- Iter.  5: Coupled cluster CCSD  energy :     -76.1193135772464302
-     Conventional correlation energy:    -0.1358023755017115
- Iter.  6: Coupled cluster CCSD  energy :     -76.1193129273924001
-     Conventional correlation energy:    -0.1358017256476813
- Iter.  7: Coupled cluster CCSD  energy :     -76.1193132133570316
-     Conventional correlation energy:    -0.1358020116123129
- Iter.  8: Coupled cluster CCSD  energy :     -76.1193132105818790
-     Conventional correlation energy:    -0.1358020088371603
- Iter.  9: Coupled cluster CCSD  energy :     -76.1193132044061542
-     Conventional correlation energy:    -0.1358020026614355
- Iter. 10: Coupled cluster CCSD  energy :     -76.1193132018473477
-     Conventional correlation energy:    -0.1358020001026290
- Iter. 11: Coupled cluster CCSD  energy :     -76.1193132019038359
-     Conventional correlation energy:    -0.1358020001591171
+ Iter.  1: Coupled cluster RSTAR energy :     -76.1135659205039872
+     Conventional correlation energy:    -0.1300547187594248
+ Iter.  1: Coupled cluster CCSD  energy :     -76.1156354204380818
+     Conventional correlation energy:    -0.1321242186935194
+ Iter.  2: Coupled cluster CCSD  energy :     -76.1190447298392456
+     Conventional correlation energy:    -0.1355335280946832
+ Iter.  3: Coupled cluster CCSD  energy :     -76.1192245650804011
+     Conventional correlation energy:    -0.1357133633358387
+ Iter.  4: Coupled cluster CCSD  energy :     -76.1193015209925790
+     Conventional correlation energy:    -0.1357903192480165
+ Iter.  5: Coupled cluster CCSD  energy :     -76.1193135772460181
+     Conventional correlation energy:    -0.1358023755014557
+ Iter.  6: Coupled cluster CCSD  energy :     -76.1193129273918174
+     Conventional correlation energy:    -0.1358017256472550
+ Iter.  7: Coupled cluster CCSD  energy :     -76.1193132133566053
+     Conventional correlation energy:    -0.1358020116120429
+ Iter.  8: Coupled cluster CCSD  energy :     -76.1193132105814527
+     Conventional correlation energy:    -0.1358020088368903
+ Iter.  9: Coupled cluster CCSD  energy :     -76.1193132044057990
+     Conventional correlation energy:    -0.1358020026612365
+ Iter. 10: Coupled cluster CCSD  energy :     -76.1193132018467367
+     Conventional correlation energy:    -0.1358020001021742
+ Iter. 11: Coupled cluster CCSD  energy :     -76.1193132019031395
+     Conventional correlation energy:    -0.1358020001585771
 
  CCSD  energy converged to within   0.10D-08 is    -76.119313202
- Final 2-norm of the CC vector function:  3.23307827D-08
+ Final 2-norm of the CC vector function:  3.23307823D-08
 
 
 
@@ -2783,7 +2812,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.7468910948627518     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.7468910948626784     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
@@ -2841,7 +2870,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 9.60129D-04
  ROOT:  2 RESIDUAL TOT: 1.84482D-03
       4       2         0.00     0.18E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -2993,7 +3022,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.19 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -3019,15 +3048,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3628937007        9.8748396368
-         2            0.5791535109       15.7595682533
+         1            0.3628937007        9.8748399174
+         2            0.5791535109       15.7595687004
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.756419501207830
-@@    1    2           -75.540159691045531
+@@    1    1           -75.756419501192298
+@@    1    2           -75.540159691049084
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3135,7 +3164,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.70415878853843250        1.6866186882153213     
+  MIN AND MAX IN SELECTED SUPSPACE   0.70415878855603253        1.6866186882148009     
  Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -3163,7 +3192,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.22653D-02
       2       1         0.00     0.12E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -3183,7 +3212,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 8.28443D-04
       4       1         0.00     0.83E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -3203,7 +3232,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 8.74756D-05
       6       1         0.00     0.87E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -3213,7 +3242,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 2.03785D-05
       7       1         0.00     0.20E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -3233,7 +3262,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 9.70488D-07
       9       1         0.00     0.97E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -3290,8 +3319,8 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3315,13 +3344,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2796555226        7.6098136554
+         1            0.2796555226        7.6098138717
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.839657679324816
+@@    2    1           -75.839657679309596
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3387,7 +3416,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.6248616207893216     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.6248616208001596     
  Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
@@ -3505,7 +3534,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 2.82109D-06
  ROOT:  2 RESIDUAL TOT: 7.20803D-06
       9       2         0.00     0.72E-05
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
 
  REDUCED EIGENVALUES real part:
@@ -3596,7 +3625,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.18 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.19 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -3622,15 +3651,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4421498094       12.0315080013
-         2            0.5104261642       13.8894020701
+         1            0.4421498094       12.0315083426
+         2            0.5104261642       13.8894024646
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.677163392475904
-@@    3    2           -75.608887037725722
+@@    3    1           -75.677163392479017
+@@    3    2           -75.608887037712392
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3739,7 +3768,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            2
-  MIN AND MAX IN SELECTED SUPSPACE   0.80015801895602823        1.5521820417133037     
+  MIN AND MAX IN SELECTED SUPSPACE   0.80015801894837213        1.5521820417153023     
  Vector nr.  6 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -3757,7 +3786,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 3.56841D-02
       1       1         0.00     0.36E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -3767,7 +3796,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.39757D-02
       2       1         0.00     0.14E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -3787,7 +3816,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.32119D-03
       4       1         0.00     0.13E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  REDUCED EIGENVALUES real part:
@@ -3797,7 +3826,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 5.23338D-04
       5       1         0.00     0.52E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -3847,7 +3876,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 5.00543D-07
      10       1         0.00     0.50E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -3877,7 +3906,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.59429D-08
      13       1         0.00     0.16E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -3905,7 +3934,7 @@ Represented as:      C2v
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3929,13 +3958,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3719429277       10.1210816225
+         1            0.3719429277       10.1210819095
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.747370274209743
+@@    4    1           -75.747370274214191
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4003,33 +4032,33 @@ Represented as:      C2v
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.1193132019038359
-     Conventional correlation energy:    -0.1358020001591171
- Iter.  1: Coupled cluster CC3   energy :     -76.1203652396502690
-     Conventional correlation energy:    -0.1368540379055503
- Iter.  2: Coupled cluster CC3   energy :     -76.1203352508180160
-     Conventional correlation energy:    -0.1368240490732973
- Iter.  3: Coupled cluster CC3   energy :     -76.1203590064582301
-     Conventional correlation energy:    -0.1368478047135113
- Iter.  4: Coupled cluster CC3   energy :     -76.1203609500528557
-     Conventional correlation energy:    -0.1368497483081370
- Iter.  5: Coupled cluster CC3   energy :     -76.1203606138882520
-     Conventional correlation energy:    -0.1368494121435333
- Iter.  6: Coupled cluster CC3   energy :     -76.1203605826559340
-     Conventional correlation energy:    -0.1368493809112152
- Iter.  7: Coupled cluster CC3   energy :     -76.1203605669543322
-     Conventional correlation energy:    -0.1368493652096134
- Iter.  8: Coupled cluster CC3   energy :     -76.1203605720226761
-     Conventional correlation energy:    -0.1368493702779574
- Iter.  9: Coupled cluster CC3   energy :     -76.1203605736321407
-     Conventional correlation energy:    -0.1368493718874220
- Iter. 10: Coupled cluster CC3   energy :     -76.1203605746662646
-     Conventional correlation energy:    -0.1368493729215459
- Iter. 11: Coupled cluster CC3   energy :     -76.1203605746194540
-     Conventional correlation energy:    -0.1368493728747353
+ Iter.  1: Coupled cluster RSTAR energy :     -76.1193132019031395
+     Conventional correlation energy:    -0.1358020001585771
+ Iter.  1: Coupled cluster CC3   energy :     -76.1203652396498569
+     Conventional correlation energy:    -0.1368540379052945
+ Iter.  2: Coupled cluster CC3   energy :     -76.1203352508175470
+     Conventional correlation energy:    -0.1368240490729846
+ Iter.  3: Coupled cluster CC3   energy :     -76.1203590064577327
+     Conventional correlation energy:    -0.1368478047131703
+ Iter.  4: Coupled cluster CC3   energy :     -76.1203609500522731
+     Conventional correlation energy:    -0.1368497483077107
+ Iter.  5: Coupled cluster CC3   energy :     -76.1203606138875557
+     Conventional correlation energy:    -0.1368494121429933
+ Iter.  6: Coupled cluster CC3   energy :     -76.1203605826557208
+     Conventional correlation energy:    -0.1368493809111584
+ Iter.  7: Coupled cluster CC3   energy :     -76.1203605669537779
+     Conventional correlation energy:    -0.1368493652092155
+ Iter.  8: Coupled cluster CC3   energy :     -76.1203605720218945
+     Conventional correlation energy:    -0.1368493702773321
+ Iter.  9: Coupled cluster CC3   energy :     -76.1203605736318565
+     Conventional correlation energy:    -0.1368493718872941
+ Iter. 10: Coupled cluster CC3   energy :     -76.1203605746658951
+     Conventional correlation energy:    -0.1368493729213327
+ Iter. 11: Coupled cluster CC3   energy :     -76.1203605746189140
+     Conventional correlation energy:    -0.1368493728743516
 
  CC3   energy converged to within   0.10D-08 is    -76.120360575
- Final 2-norm of the CC vector function:  3.63318548D-09
+ Final 2-norm of the CC vector function:  3.63318424D-09
 
 
 
@@ -4111,7 +4140,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.7468910948627518     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.7468910948626784     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      RE  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
@@ -4157,7 +4186,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 8.63711D-04
  ROOT:  2 RESIDUAL TOT: 1.10942D-03
       3       2         0.00     0.11E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
 
  REDUCED EIGENVALUES real part:
@@ -4262,8 +4291,8 @@ Represented as:      C2v
        1      0.36612302
        2      0.57960712
   
- ROOT:  1 RESIDUAL TOT: 3.37349D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.37349D-09
+ ROOT:  1 RESIDUAL TOT: 3.37348D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.37348D-09
  ROOT:  2 RESIDUAL TOT: 1.46858D-07
      12       2         0.00     0.15E-06
  >>> TIME USED IN THIS MICRO ITERATION        0.04
@@ -4275,8 +4304,8 @@ Represented as:      C2v
        1      0.36612302
        2      0.57960712
   
- ROOT:  1 RESIDUAL TOT: 2.87337D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.87337D-09
+ ROOT:  1 RESIDUAL TOT: 2.87336D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.87336D-09
  ROOT:  2 RESIDUAL TOT: 4.85301D-08
      13       1         0.00     0.49E-07
  >>> TIME USED IN THIS MICRO ITERATION        0.02
@@ -4322,7 +4351,7 @@ Represented as:      C2v
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.56 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.52 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -4348,15 +4377,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3661230167        9.9627137928
-         2            0.5796071157       15.7719114695
+         1            0.3661230167        9.9627140759
+         2            0.5796071157       15.7719119170
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.754237557922337
-@@    1    2           -75.540753458885021
+@@    1    1           -75.754237557907089
+@@    1    2           -75.540753458888616
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4442,7 +4471,7 @@ Represented as:      C2v
           Printed all double excitations greater than 0.019692
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.7468910948627518     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.7468910948626784     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
@@ -4500,7 +4529,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 4.27878D-08
  ROOT:  2 RESIDUAL TOT: 6.30137D-08
       4       2         0.00     0.63E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
  REDUCED EIGENVALUES real part:
@@ -4593,7 +4622,7 @@ Represented as:      C2v
  Total excited state energies for states of symmetry/spin   1  3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@@    1    2           -75.540753437660612
+@@@    1    2           -75.540753437664222
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4679,7 +4708,7 @@ Represented as:      C2v
           Printed all double excitations greater than 0.019692
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.6657189003774180     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.6657189003766992     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
 
@@ -4824,7 +4853,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.25 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.23 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -4854,7 +4883,7 @@ Represented as:      C2v
 
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.76443119518586289        1.6657189003774180     
+  MIN AND MAX IN SELECTED SUPSPACE   0.76443119520391001        1.6657189003766992     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
 
@@ -4975,7 +5004,7 @@ Represented as:      C2v
  Total excited state energies for states of symmetry/spin   1  3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@@    1    1           -75.754448316214720
+@@@    1    1           -75.754448316199458
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5043,7 +5072,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.70415878853843250        1.6866186882153213     
+  MIN AND MAX IN SELECTED SUPSPACE   0.70415878855603253        1.6866186882148009     
  Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CCSD      RE  vector
 
@@ -5061,7 +5090,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.35717D-02
       1       1         0.00     0.14E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -5071,7 +5100,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 3.24540D-03
       2       1         0.00     0.32E-02
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -5091,7 +5120,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 3.17306D-04
       4       1         0.00     0.32E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -5101,7 +5130,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.78158D-04
       5       1         0.00     0.18E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -5111,7 +5140,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 5.56952D-05
       6       1         0.00     0.56E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -5151,13 +5180,13 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.21180D-07
      10       1         0.00     0.12E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.28310328
+       1      0.28310329
   
  ROOT:  1 RESIDUAL TOT: 2.77168D-08
      11       1         0.00     0.28E-07
@@ -5172,7 +5201,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 9.74855D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.74855D-09
      12       1         0.00     0.97E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
     --------------------------------------
     converged in 12 iterations
@@ -5188,8 +5217,8 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.22 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.19 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5213,13 +5242,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2831032858        7.7036320624
+         1            0.2831032858        7.7036322814
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.837257288820339
+@@    2    1           -75.837257288805432
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5263,7 +5292,7 @@ Represented as:      C2v
           Printed all double excitations greater than 0.027250
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.70415878853843250        1.6866186882153213     
+  MIN AND MAX IN SELECTED SUPSPACE   0.70415878855603253        1.6866186882148009     
  Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
 
@@ -5341,7 +5370,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.58522D-08
       7       1         0.00     0.16E-07
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -5368,7 +5397,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.15 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -5404,7 +5433,7 @@ Represented as:      C2v
  Total excited state energies for states of symmetry/spin   2  3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@@    2    1           -75.837253669129396
+@@@    2    1           -75.837253669114489
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5470,7 +5499,7 @@ Represented as:      C2v
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.6248616207893216     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.6248616208001596     
  Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CCSD      RE  vector
  Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
@@ -5667,7 +5696,7 @@ Represented as:      C2v
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.56 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.52 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -5680,7 +5709,7 @@ Represented as:      C2v
  (convergence threshold:  1.00D-08)
 
     1   0.4440374486
-    2   0.5110067403
+    2   0.5110067404
 
 
  SYMMETRY CLASS NR.    3
@@ -5693,15 +5722,15 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4440374486       12.0828732751
-         2            0.5110067403       13.9052003507
+         1            0.4440374486       12.0828736179
+         2            0.5110067404       13.9052007457
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.676323126000739
-@@    3    2           -75.609353834277954
+@@    3    1           -75.676323126003751
+@@    3    2           -75.609353834264894
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5789,7 +5818,7 @@ Represented as:      C2v
           Printed all double excitations greater than 0.022014
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.6248616207893216     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.6248616208001596     
  Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
  Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
@@ -5847,7 +5876,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 9.15512D-08
  ROOT:  2 RESIDUAL TOT: 1.06929D-07
       4       2         0.00     0.11E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
 
  REDUCED EIGENVALUES real part:
@@ -5901,8 +5930,8 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.28 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.27 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5924,7 +5953,7 @@ Represented as:      C2v
  Excitation no.       Hartree               eV
  --------------       -------               --
 
-         1            0.444038           12.082881
+         1            0.444038           12.082882
          2            0.511007           13.905202
 
  Omega in the  2-th iteration:     0.511007
@@ -5939,7 +5968,7 @@ Represented as:      C2v
  Total excited state energies for states of symmetry/spin   3  3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@@    3    2           -75.609353778533674
+@@@    3    2           -75.609353778520614
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6027,7 +6056,7 @@ Represented as:      C2v
           Printed all double excitations greater than 0.022014
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.6124544483607339     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.6124544483631797     
  Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
 
@@ -6192,7 +6221,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.29 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.27 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -6222,7 +6251,7 @@ Represented as:      C2v
 
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.86043042560345862        1.6124544483607339     
+  MIN AND MAX IN SELECTED SUPSPACE   0.86043042559624960        1.6124544483631797     
  Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
 
@@ -6287,8 +6316,8 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6323,7 +6352,7 @@ Represented as:      C2v
  Total excited state energies for states of symmetry/spin   3  3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@@    3    1           -75.676356484916724
+@@@    3    1           -75.676356484919751
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6392,7 +6421,7 @@ Represented as:      C2v
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            2
-  MIN AND MAX IN SELECTED SUPSPACE   0.80015801895602823        1.5521820417133037     
+  MIN AND MAX IN SELECTED SUPSPACE   0.80015801894837213        1.5521820417153023     
  Vector nr.  6 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CCSD      RE  vector
 
@@ -6410,7 +6439,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.33874D-02
       1       1         0.00     0.13E-01
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -6450,7 +6479,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 2.27842D-04
       5       1         0.00     0.23E-03
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -6480,7 +6509,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.03803D-05
       8       1         0.00     0.10E-04
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -6541,7 +6570,7 @@ Represented as:      C2v
  ROOT:  1 RESIDUAL TOT: 3.17510D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.17510D-09
      14       1         0.00     0.32E-08
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
     --------------------------------------
     converged in 14 iterations
@@ -6557,7 +6586,7 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.26 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.23 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -6569,7 +6598,7 @@ Represented as:      C2v
  =====================
  (convergence threshold:  1.00D-08)
 
-    1   0.3737293974
+    1   0.3737293973
 
 
  SYMMETRY CLASS NR.    4
@@ -6582,13 +6611,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3737293974       10.1696939334
+         1            0.3737293973       10.1696942218
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.746631177265826
+@@    4    1           -75.746631177270217
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6633,7 +6662,7 @@ Represented as:      C2v
           Printed all double excitations greater than 0.026736
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            2
-  MIN AND MAX IN SELECTED SUPSPACE   0.80015801895602823        1.5521820417133037     
+  MIN AND MAX IN SELECTED SUPSPACE   0.80015801894837213        1.5521820417153023     
  Vector nr.  6 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC3       RE  vector
 
@@ -6671,7 +6700,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 9.15317D-07
       3       1         0.00     0.92E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -6681,7 +6710,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 2.76957D-07
       4       1         0.00     0.28E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -6691,7 +6720,7 @@ Represented as:      C2v
   
  ROOT:  1 RESIDUAL TOT: 1.44706D-07
       5       1         0.00     0.14E-06
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  REDUCED EIGENVALUES real part:
@@ -6738,8 +6767,8 @@ Represented as:      C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.15 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6760,7 +6789,7 @@ Represented as:      C2v
  Excitation no.       Hartree               eV
  --------------       -------               --
 
-         1            0.373730           10.169714
+         1            0.373730           10.169715
 
  Omega in the  2-th iteration:     0.373730
  Omega in previous iteration:      0.373729
@@ -6774,7 +6803,7 @@ Represented as:      C2v
  Total excited state energies for states of symmetry/spin   4  3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@@    4    1           -75.746630422417567
+@@@    4    1           -75.746630422421958
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6840,15 +6869,15 @@ Represented as:      C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^3A1  |    1   |     0.3767943  |      10.25309  |     82696.797  | 100.00  |
- | ^3A1  |    2   |     0.5661117  |      15.40468  |    124247.164  | 100.00  |
+ | ^3A1  |    1   |     0.3767943  |      10.25310  |     82696.796  | 100.00  |
+ | ^3A1  |    2   |     0.5661117  |      15.40468  |    124247.163  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B1  |    1   |     0.3093501  |       8.41784  |     67894.504  | 100.00  |
+ | ^3B1  |    1   |     0.3093501  |       8.41785  |     67894.503  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4408993  |      11.99748  |     96766.206  | 100.00  |
- | ^3B2  |    2   |     0.5061017  |      13.77173  |    111076.492  | 100.00  |
+ | ^3B2  |    1   |     0.4408993  |      11.99748  |     96766.205  | 100.00  |
+ | ^3B2  |    2   |     0.5061017  |      13.77173  |    111076.491  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3A2  |    1   |     0.3914739  |      10.65255  |     85918.583  | 100.00  |
+ | ^3A2  |    1   |     0.3914739  |      10.65255  |     85918.582  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -6857,7 +6886,7 @@ Represented as:      C2v
              2 ^3A1       -75.4173994671                                        
              1 ^3B1       -75.6741610802                                        
              1 ^3B2       -75.5426119257                                        
-             2 ^3B2       -75.4774094642                                        
+             2 ^3B2       -75.4774094641                                        
              1 ^3A2       -75.5920373333                                        
                                                                                 
                                                                                 
@@ -6872,14 +6901,14 @@ Represented as:      C2v
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
  | ^3A1  |    1   |     0.3602442  |       9.80274  |     79064.454  |  99.22  |
- | ^3A1  |    2   |     0.5788663  |      15.75175  |    127046.462  |  99.55  |
+ | ^3A1  |    2   |     0.5788663  |      15.75175  |    127046.461  |  99.55  |
  +-----------------------------------------------------------------------------+
- | ^3B1  |    1   |     0.2778508  |       7.56070  |     60981.202  |  99.05  |
+ | ^3B1  |    1   |     0.2778508  |       7.56070  |     60981.201  |  99.05  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4399340  |      11.97121  |     96554.342  |  99.39  |
- | ^3B2  |    2   |     0.5081098  |      13.82637  |    111517.216  |  99.42  |
+ | ^3B2  |    1   |     0.4399340  |      11.97121  |     96554.341  |  99.39  |
+ | ^3B2  |    2   |     0.5081098  |      13.82637  |    111517.215  |  99.42  |
  +-----------------------------------------------------------------------------+
- | ^3A2  |    1   |     0.3716140  |      10.11213  |     81559.855  |  99.15  |
+ | ^3A2  |    1   |     0.3716140  |      10.11213  |     81559.854  |  99.15  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -6889,7 +6918,7 @@ Represented as:      C2v
              1 ^3B1       -75.8357151211                                        
              1 ^3B2       -75.6736319681                                        
              2 ^3B2       -75.6054560977                                        
-             1 ^3A2       -75.7419518797                                        
+             1 ^3A2       -75.7419518798                                        
                                                                                 
                                                                                 
             Total SCF   energy:                   -75.9835112017                
@@ -6902,15 +6931,15 @@ Represented as:      C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^3A1  |    1   |     0.3628937  |       9.87484  |     79645.961  |  99.18  |
- | ^3A1  |    2   |     0.5791535  |      15.75957  |    127109.503  |  99.46  |
+ | ^3A1  |    1   |     0.3628937  |       9.87484  |     79645.960  |  99.18  |
+ | ^3A1  |    2   |     0.5791535  |      15.75957  |    127109.502  |  99.46  |
  +-----------------------------------------------------------------------------+
- | ^3B1  |    1   |     0.2796555  |       7.60981  |     61377.293  |  98.98  |
+ | ^3B1  |    1   |     0.2796555  |       7.60981  |     61377.292  |  98.98  |
  +-----------------------------------------------------------------------------+
  | ^3B2  |    1   |     0.4421498  |      12.03151  |     97040.666  |  99.34  |
- | ^3B2  |    2   |     0.5104262  |      13.88940  |    112025.594  |  99.32  |
+ | ^3B2  |    2   |     0.5104262  |      13.88940  |    112025.593  |  99.32  |
  +-----------------------------------------------------------------------------+
- | ^3A2  |    1   |     0.3719429  |      10.12108  |     81632.037  |  99.02  |
+ | ^3A2  |    1   |     0.3719429  |      10.12108  |     81632.036  |  99.02  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -6933,13 +6962,13 @@ Represented as:      C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^3A1  |    1   |     0.3659123  |       9.95698  |     80308.458  |  99.08  |
- | ^3A1  |    2   |     0.5796071  |      15.77191  |    127209.063  |  99.38  |
+ | ^3A1  |    1   |     0.3659123  |       9.95698  |     80308.457  |  99.08  |
+ | ^3A1  |    2   |     0.5796071  |      15.77191  |    127209.062  |  99.38  |
  +-----------------------------------------------------------------------------+
- | ^3B1  |    1   |     0.2831069  |       7.70373  |     62134.784  |  98.81  |
+ | ^3B1  |    1   |     0.2831069  |       7.70373  |     62134.783  |  98.81  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4440041  |      12.08197  |     97447.634  |  99.26  |
- | ^3B2  |    2   |     0.5110068  |      13.90520  |    112153.028  |  99.22  |
+ | ^3B2  |    1   |     0.4440041  |      12.08197  |     97447.633  |  99.26  |
+ | ^3B2  |    2   |     0.5110068  |      13.90520  |    112153.027  |  99.22  |
  +-----------------------------------------------------------------------------+
  | ^3A2  |    1   |     0.3737302  |      10.16971  |     82024.287  |  98.86  |
  +=============================================================================+
@@ -6954,7 +6983,7 @@ Represented as:      C2v
              1 ^3A2       -75.7466304224                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -6973,9 +7002,9 @@ Represented as:      C2v
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   4.13 seconds
- >>>> Total wall time used in DALTON:  19.00 seconds
+ >>>> Total CPU  time used in DALTON:   3.89 seconds
+ >>>> Total wall time used in DALTON:  22.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:59:07 2010 
+     Date and time (Linux)  : Wed Mar 16 18:24:42 2011 
      Host name              : fe6                                     

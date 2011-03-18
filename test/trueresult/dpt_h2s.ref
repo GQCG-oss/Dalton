@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Thu Dec 30 00:14:07 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:38 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -182,8 +183,8 @@ Point group: C2v
                                  ---------------
 
                            S          31.972072
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    33.987722 amu
                        Natural abundance:  94.991 %
@@ -250,15 +251,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            S           H    1      H    2
+            S           H   _1      H   _2
             ------      ------      ------
  S     :    0.000000
- H    1:    1.337300    0.000000
- H    2:    1.337300    1.928723    0.000000
+ H   _1:    1.337300    0.000000
+ H   _2:    1.337300    1.928723    0.000000
 
 
   Max interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -266,8 +267,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     S            1.337300
-  bond distance:  H    2     S            1.337300
+  bond distance:  H   _1     S            1.337300
+  bond distance:  H   _2     S            1.337300
 
 
   Bond angles (degrees):
@@ -275,7 +276,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     S          H    2        92.295
+  bond angle:     H   _1     S          H   _2        92.295
 
 
 
@@ -295,7 +296,7 @@ Point group: C2v
 
                A                   B                   C
 
-         310509.3373         269601.6123         144306.5642 MHz
+         310509.3346         269601.6100         144306.5629 MHz
            10.357477            8.992942            4.813549 cm-1
 
 
@@ -373,7 +374,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -399,7 +400,7 @@ Point group: C2v
  Number of two-electron integrals written:       20351 ( 24.6% )
  Megabytes written:                              0.234
 
- >>>> Total CPU  time used in HERMIT:   0.09 seconds
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -438,7 +439,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:07 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:38 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -453,8 +454,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -462,6 +462,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         18
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -523,38 +527,64 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -398.605146572       1.34D+00  -3.99D+02    5  2  2  0
-      MULPOP S     0.12; H    -0.29; 
+      Virial theorem: -V/T =      2.001190
+      MULPOP  S       0.17; H   _1 -0.09; H   _2 -0.09; 
+ -----------------------------------------------------------------------------
    2  -398.689855047       2.11D-01  -8.47D-02    5  2  2  0
-      MULPOP S     0.94; H     0.23; 
+      Virial theorem: -V/T =      1.999130
+      MULPOP  S      -0.08; H   _1  0.04; H   _2  0.04; 
+ -----------------------------------------------------------------------------
    3  -398.694159169       5.32D-02  -4.30D-03    5  2  2  0
-      MULPOP S     0.94; H     0.26; 
+      Virial theorem: -V/T =      2.000191
+      MULPOP  S      -0.11; H   _1  0.06; H   _2  0.06; 
+ -----------------------------------------------------------------------------
    4  -398.694533879       1.45D-02  -3.75D-04    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
+      Virial theorem: -V/T =      2.000021
+      MULPOP  S      -0.15; H   _1  0.07; H   _2  0.07; 
+ -----------------------------------------------------------------------------
    5  -398.694571532       2.06D-03  -3.77D-05    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
+      Virial theorem: -V/T =      2.000062
+      MULPOP  S      -0.15; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
    6  -398.694572216       5.66D-04  -6.84D-07    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
+      Virial theorem: -V/T =      2.000058
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
    7  -398.694572274       8.88D-05  -5.78D-08    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
    8  -398.694572276       1.11D-05  -1.50D-09    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
-   9  -398.694572276       1.34D-06  -2.05D-11    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
-  10  -398.694572276       1.54D-07  -2.27D-13    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
-  11  -398.694572276       2.71D-08  -1.14D-13    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
-  12  -398.694572276       3.25D-09   1.14D-13    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
-  13  -398.694572276       5.40D-10  -2.27D-13    5  2  2  0
-      MULPOP S     0.95; H     0.26; 
-  14  -398.694572276       5.92D-11  -1.14D-13    5  2  2  0
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
+   9  -398.694572276       1.34D-06  -2.08D-11    5  2  2  0
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
+  10  -398.694572276       1.54D-07  -5.68D-14    5  2  2  0
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
+  11  -398.694572276       2.71D-08   1.14D-13    5  2  2  0
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
+  12  -398.694572276       3.25D-09  -2.84D-13    5  2  2  0
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
+  13  -398.694572276       5.40D-10   2.27D-13    5  2  2  0
+      Virial theorem: -V/T =      2.000059
+      MULPOP  S      -0.16; H   _1  0.08; H   _2  0.08; 
+ -----------------------------------------------------------------------------
+  14  -398.694572276       5.92D-11   0.00D+00    5  2  2  0
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -585,20 +615,23 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -398.694572275674                 
+     Final HF energy:            -398.694572275676                 
      Nuclear repulsion:            12.936949454995
-     Electronic energy:          -411.631521730669
+     Electronic energy:          -411.631521730671
 
      Final gradient norm:           0.000000000059
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:07 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:38 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -606,7 +639,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 S   :1s     1.0000   0.0002   0.0000   0.0001   0.0021   0.0197   0.0041
    2 S   :1s     0.0001   1.0019  -0.0061  -0.0064   0.0081   0.1264   0.0230
    3 S   :1s     0.0002   0.0056   0.0033   0.8568  -0.3660  -0.1283  -0.1190
@@ -624,7 +657,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 S   :2px    1.0001  -0.0140   0.0173   0.0674
    2 S   :2px    0.0013   0.6866  -0.4950   0.5167
    3 S   :2px   -0.0016  -0.1397  -0.8892  -0.5133
@@ -637,7 +670,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 S   :2py    0.9998  -0.0046  -0.2167  -0.0157
    2 S   :2py   -0.0030   0.9381  -2.0312  -0.2019
    3 S   :2py    0.0016   0.0588   2.2634   0.1207
@@ -647,7 +680,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 S   :3d2-   0.9033  -0.5486
    2 H   :2py    0.1610   0.7328
 
@@ -657,7 +690,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:07 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:38 2011 
      Host name              : fe6                                     
 
 
@@ -747,7 +780,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.51121899         1.29938891         4.33429487
+      z      0.51121899         1.29938897         4.33429507
 
 
 
@@ -805,14 +838,14 @@ Total non-diagonalized EFG Tensor   S
        2      0.00000000   -2.47477418    0.00000000
        3      0.00000000    0.00000000    0.44042887
 
-Total non-diagonalized EFG Tensor   H    1
+Total non-diagonalized EFG Tensor   H   _1
 
               Column   1    Column   2    Column   3
        1      0.08837848    0.00000000    0.18296151
        2      0.00000000   -0.15171274    0.00000000
        3      0.18296151    0.00000000    0.06333426
 
-Total non-diagonalized EFG Tensor   H    2
+Total non-diagonalized EFG Tensor   H   _2
 
               Column   1    Column   2    Column   3
        1      0.08837848    0.00000000   -0.18296151
@@ -820,10 +853,10 @@ Total non-diagonalized EFG Tensor   H    2
        3     -0.18296151    0.00000000    0.06333426
  String on input: "S       "
  String on input: "S       "
- String on input: "H    1  "
- String on input: "H_1     "
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
+ String on input: "H   _2  "
+ String on input: "H__2    "
 
 EFG Principal axis                  S     
 
@@ -832,14 +865,14 @@ EFG Principal axis                  S
        2      0.00000000    1.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000
 
-EFG Principal axis                  H    1
+EFG Principal axis                  H   _1
 
               Column   1    Column   2    Column   3
        1      0.73084933    0.00000000   -0.68253884
        2      0.00000000    1.00000000    0.00000000
        3      0.68253884    0.00000000    0.73084933
 
-EFG Principal axis                  H    2
+EFG Principal axis                  H   _2
 
               Column   1    Column   2    Column   3
        1      0.73084933    0.00000000    0.68253884
@@ -852,33 +885,33 @@ EFG Principal axis                  H    2
 
           Spin     :  1.5          Quadrupole moment:-.06780000
                             au           MHz        Gauss
- S      33    Vx =       0.440429    -7.016302    -2.506494
- S      33    Vy =       2.034345   -32.408366   -11.577521
- S      33    Vz =      -2.474774    39.424668    14.084015
+ S      33    Vx =       0.440429    -7.016301    -2.506494
+ S      33    Vy =       2.034345   -32.408365   -11.577521
+ S      33    Vz =      -2.474774    39.424667    14.084015
                  Asymmetry constant eta:      0.644065
                  Auxiliary value au  1/T  0.320462D-02
 
 
-                       Nuclear quadrupole moment for H    1
+                       Nuclear quadrupole moment for H   _1
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    1  2    Vx =      -0.107533    -0.072262    -0.025815
- H    1  2    Vy =      -0.151713    -0.101951    -0.036421
- H    1  2    Vz =       0.259246     0.174213     0.062236
+ H   _1  2    Vx =      -0.107533    -0.072262    -0.025815
+ H   _1  2    Vy =      -0.151713    -0.101951    -0.036421
+ H   _1  2    Vz =       0.259246     0.174213     0.062236
                  Asymmetry constant eta:      0.170416
                  Auxiliary value au  1/T  0.208147D-06
 
 
-                       Nuclear quadrupole moment for H    2
+                       Nuclear quadrupole moment for H   _2
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    2  2    Vx =      -0.107533    -0.072262    -0.025815
- H    2  2    Vy =      -0.151713    -0.101951    -0.036421
- H    2  2    Vz =       0.259246     0.174213     0.062236
+ H   _2  2    Vx =      -0.107533    -0.072262    -0.025815
+ H   _2  2    Vy =      -0.151713    -0.101951    -0.036421
+ H   _2  2    Vz =       0.259246     0.174213     0.062236
                  Asymmetry constant eta:      0.170416
                  Auxiliary value au  1/T  0.208147D-06
 
@@ -890,18 +923,18 @@ EFG Principal axis                  H    2
   
   
  One electron and reorthonormalization gradient calculation completed
- Total time used in CC_GRAD:  6.99999928474426270E-003
+ Total time used in CC_GRAD:  6.99900090694427490E-003
   
-         DPTONE:     -2.098783774638
+         DPTONE:     -2.098783757383
          ------ 
   
-         DPTREO:      0.621248675087
+         DPTREO:      0.621248669979
          ------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
 
  Number of two-electron spin-orbit integrals written:     23259 (22.7%)
- >>> Time used in TWOINT is   0.12 seconds
+ >>> Time used in TWOINT is   0.14 seconds
 
  Number of two-electron spin-orbit integrals written:     12435 (21.9%)
 
@@ -910,12 +943,12 @@ EFG Principal axis                  H    2
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
  Two-electron first-order property calculation completed
- Total time used in CC_2EEXP:  0.39193998277187347     
+ Total time used in CC_2EEXP:  0.43793296813964844     
   
-         DPTTWO:      0.367967784995
+         DPTTWO:      0.367967781969
          ------ 
   
-         Total first-order DPT correction:     -1.109567314556
+         Total first-order DPT correction:     -1.109567305434
          --------------------------------
 
 
@@ -924,13 +957,13 @@ EFG Principal axis                  H    2
            +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      3.473561489
+         1-elec. Darwin term:      3.473561460
          ------------------- 
   
-         Mass-Velocity term:      -4.548992379
+         Mass-Velocity term:      -4.548992342
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -1.075430890
+         Mass-Velocity + 1-elec. Darwin terms:      -1.075430882
          ------------------------------------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -946,17 +979,17 @@ EFG Principal axis                  H    2
          2-elec. Darwin term:      -0.034116691
          ------------------- 
   
-         Total relativistic correction:      -1.109547582
+         Total relativistic correction:      -1.109547572
          ----------------------------- 
   
  Two-electron first-order property calculation completed
- Total time used in CC_2EEXP:  0.11198300123214722     
+ Total time used in CC_2EEXP:  0.12298095226287842     
 
  *******************************************************************
 
  Ground state energy is target 
 
- Ecorr =                   -398.69457227567403378998
+ Ecorr =                   -398.69457227567596646622
 
  *******************************************************************
 
@@ -984,8 +1017,8 @@ EFG Principal axis                  H    2
           Number of t2 amplitudes                 :      4022
           Total number of amplitudes in ccsd      :      4080
 
- Iter.  1: Coupled cluster MP2   energy :    -398.8464115019140195
-     Conventional correlation energy:    -0.1518392262399857
+ Iter.  1: Coupled cluster MP2   energy :    -398.8464115019154406
+     Conventional correlation energy:    -0.1518392262394741
 
        Iteration no.:  1
        -----------------
@@ -993,8 +1026,8 @@ EFG Principal axis                  H    2
        Time used in   RHS - TOTAL  :       0.02 seconds
        Norm^2 of omega1 after ccvec:        0.6266139060D-03
        Norm^2 of omega2 after ccvec:        0.5642566461D-02
- Iter.  1: Coupled cluster CCSD  energy :    -398.8626765079337702
-     Conventional correlation energy:    -0.1681042322597364
+ Iter.  1: Coupled cluster CCSD  energy :    -398.8626765079357597
+     Conventional correlation energy:    -0.1681042322597932
 
        Iteration no.:  2
        -----------------
@@ -1002,8 +1035,8 @@ EFG Principal axis                  H    2
        Time used in   RHS - TOTAL  :       0.02 seconds
        Norm^2 of omega1 after ccvec:        0.4095286907D-04
        Norm^2 of omega2 after ccvec:        0.4852987397D-03
- Iter.  2: Coupled cluster CCSD  energy :    -398.8679384866900364
-     Conventional correlation energy:    -0.1733662110160026
+ Iter.  2: Coupled cluster CCSD  energy :    -398.8679384866920259
+     Conventional correlation energy:    -0.1733662110160594
 
        Iteration no.:  3
        -----------------
@@ -1011,101 +1044,101 @@ EFG Principal axis                  H    2
        Time used in   RHS - TOTAL  :       0.02 seconds
        Norm^2 of omega1 after ccvec:        0.1153953339D-05
        Norm^2 of omega2 after ccvec:        0.1386252235D-04
- Iter.  3: Coupled cluster CCSD  energy :    -398.8680948263608457
-     Conventional correlation energy:    -0.1735225506868119
+ Iter.  3: Coupled cluster CCSD  energy :    -398.8680948263626647
+     Conventional correlation energy:    -0.1735225506866982
 
        Iteration no.:  4
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
        Norm^2 of omega1 after ccvec:        0.4116742224D-07
-       Norm^2 of omega2 after ccvec:        0.8425101018D-06
- Iter.  4: Coupled cluster CCSD  energy :    -398.8681137814766657
-     Conventional correlation energy:    -0.1735415058026319
+       Norm^2 of omega2 after ccvec:        0.8425101017D-06
+ Iter.  4: Coupled cluster CCSD  energy :    -398.8681137814785416
+     Conventional correlation energy:    -0.1735415058025751
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.7111038362D-08
+       Norm^2 of omega1 after ccvec:        0.7111038363D-08
        Norm^2 of omega2 after ccvec:        0.5063138486D-07
- Iter.  5: Coupled cluster CCSD  energy :    -398.8681026723484706
-     Conventional correlation energy:    -0.1735303966744368
+ Iter.  5: Coupled cluster CCSD  energy :    -398.8681026723506875
+     Conventional correlation energy:    -0.1735303966747210
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.7765613689D-09
+       Norm^2 of omega1 after ccvec:        0.7765613683D-09
        Norm^2 of omega2 after ccvec:        0.3154014607D-08
- Iter.  6: Coupled cluster CCSD  energy :    -398.8681029148260109
-     Conventional correlation energy:    -0.1735306391519771
+ Iter.  6: Coupled cluster CCSD  energy :    -398.8681029148277730
+     Conventional correlation energy:    -0.1735306391518066
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.5471770670D-10
+       Norm^2 of omega1 after ccvec:        0.5471770672D-10
        Norm^2 of omega2 after ccvec:        0.2129919137D-09
- Iter.  7: Coupled cluster CCSD  energy :    -398.8681029923686765
-     Conventional correlation energy:    -0.1735307166946427
+ Iter.  7: Coupled cluster CCSD  energy :    -398.8681029923713481
+     Conventional correlation energy:    -0.1735307166953817
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.2401280086D-11
-       Norm^2 of omega2 after ccvec:        0.1400104569D-10
- Iter.  8: Coupled cluster CCSD  energy :    -398.8681028382768545
-     Conventional correlation energy:    -0.1735305626028207
+       Norm^2 of omega1 after ccvec:        0.2401280034D-11
+       Norm^2 of omega2 after ccvec:        0.1400104570D-10
+ Iter.  8: Coupled cluster CCSD  energy :    -398.8681028382785598
+     Conventional correlation energy:    -0.1735305626025934
 
        Iteration no.:  9
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.8934834326D-13
-       Norm^2 of omega2 after ccvec:        0.6432732304D-12
- Iter.  9: Coupled cluster CCSD  energy :    -398.8681028456206832
-     Conventional correlation energy:    -0.1735305699466494
+       Norm^2 of omega1 after ccvec:        0.8934834225D-13
+       Norm^2 of omega2 after ccvec:        0.6432732258D-12
+ Iter.  9: Coupled cluster CCSD  energy :    -398.8681028456221043
+     Conventional correlation energy:    -0.1735305699461378
 
        Iteration no.: 10
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.1655603403D-13
-       Norm^2 of omega2 after ccvec:        0.1043374812D-12
- Iter. 10: Coupled cluster CCSD  energy :    -398.8681028478911799
-     Conventional correlation energy:    -0.1735305722171461
+       Norm^2 of omega1 after ccvec:        0.1655603520D-13
+       Norm^2 of omega2 after ccvec:        0.1043374807D-12
+ Iter. 10: Coupled cluster CCSD  energy :    -398.8681028478925441
+     Conventional correlation energy:    -0.1735305722165776
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.1042402494D-14
-       Norm^2 of omega2 after ccvec:        0.3402523745D-14
- Iter. 11: Coupled cluster CCSD  energy :    -398.8681028477421364
-     Conventional correlation energy:    -0.1735305720681026
+       Norm^2 of omega1 after ccvec:        0.1042403224D-14
+       Norm^2 of omega2 after ccvec:        0.3402523561D-14
+ Iter. 11: Coupled cluster CCSD  energy :    -398.8681028477435575
+     Conventional correlation energy:    -0.1735305720675910
 
        Iteration no.: 12
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.6892949619D-16
-       Norm^2 of omega2 after ccvec:        0.5069196897D-15
- Iter. 12: Coupled cluster CCSD  energy :    -398.8681028479488759
-     Conventional correlation energy:    -0.1735305722748421
+       Norm^2 of omega1 after ccvec:        0.6892963535D-16
+       Norm^2 of omega2 after ccvec:        0.5069196293D-15
+ Iter. 12: Coupled cluster CCSD  energy :    -398.8681028479504675
+     Conventional correlation energy:    -0.1735305722745011
 
        Iteration no.: 13
        -----------------
 
        Time used in   RHS - TOTAL  :       0.02 seconds
-       Norm^2 of omega1 after ccvec:        0.4307620825D-17
-       Norm^2 of omega2 after ccvec:        0.2175511676D-16
- Iter. 13: Coupled cluster CCSD  energy :    -398.8681028480082205
-     Conventional correlation energy:    -0.1735305723341867
+       Norm^2 of omega1 after ccvec:        0.4307547665D-17
+       Norm^2 of omega2 after ccvec:        0.2175517115D-16
+ Iter. 13: Coupled cluster CCSD  energy :    -398.8681028480102100
+     Conventional correlation energy:    -0.1735305723342435
 
  CCSD  energy converged to within   0.10D-09 is   -398.868102848
- Final 2-norm of the CC vector function:  5.10516773D-09
+ Final 2-norm of the CC vector function:  5.10516590D-09
 
 
                     +------------------------------------------+
@@ -1247,7 +1280,7 @@ EFG Principal axis                  H    2
     Iter  #Vectors  time (min)   residual
     --------------------------------------
   
- Time used in CC_LHTR :  2.19969749450683594E-002
+ Time used in CC_LHTR :  1.99979543685913086E-002
   
   
  ROOT:  1 RESIDUAL TOT: 3.11751D-01
@@ -1256,7 +1289,7 @@ EFG Principal axis                  H    2
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  2.19979882240295410E-002
+ Time used in CC_LHTR :  2.19960212707519531E-002
   
   
  ROOT:  1 RESIDUAL TOT: 7.93225D-02
@@ -1274,7 +1307,7 @@ EFG Principal axis                  H    2
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  2.19970941543579102E-002
+ Time used in CC_LHTR :  2.09969282150268555E-002
   
   
  ROOT:  1 RESIDUAL TOT: 3.56244D-03
@@ -1283,77 +1316,77 @@ EFG Principal axis                  H    2
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  2.19960212707519531E-002
+ Time used in CC_LHTR :  2.19980478286743164E-002
   
   
  ROOT:  1 RESIDUAL TOT: 8.78136D-04
       5       1         0.00     0.88E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.03
-
-  
- Time used in CC_LHTR :  2.29960680007934570E-002
-  
-  
- ROOT:  1 RESIDUAL TOT: 2.54249D-04
-      6       1         0.00     0.25E-03
- Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.03
-
-  
- Time used in CC_LHTR :  2.29960680007934570E-002
-  
-  
- ROOT:  1 RESIDUAL TOT: 6.45516D-05
-      7       1         0.00     0.65E-04
- Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.03
-
-  
- Time used in CC_LHTR :  2.19980478286743164E-002
-  
-  
- ROOT:  1 RESIDUAL TOT: 1.52459D-05
-      8       1         0.00     0.15E-04
- Dimension of the reduced space:     9
- >>> TIME USED IN THIS MICRO ITERATION        0.03
-
-  
- Time used in CC_LHTR :  2.19980478286743164E-002
-  
-  
- ROOT:  1 RESIDUAL TOT: 3.44095D-06
-      9       1         0.00     0.34E-05
- Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
  Time used in CC_LHTR :  2.19969749450683594E-002
   
   
+ ROOT:  1 RESIDUAL TOT: 2.54249D-04
+      6       1         0.00     0.25E-03
+ Dimension of the reduced space:     7
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
+
+  
+ Time used in CC_LHTR :  2.09959745407104492E-002
+  
+  
+ ROOT:  1 RESIDUAL TOT: 6.45516D-05
+      7       1         0.00     0.65E-04
+ Dimension of the reduced space:     8
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
+
+  
+ Time used in CC_LHTR :  2.09969282150268555E-002
+  
+  
+ ROOT:  1 RESIDUAL TOT: 1.52459D-05
+      8       1         0.00     0.15E-04
+ Dimension of the reduced space:     9
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
+
+  
+ Time used in CC_LHTR :  2.09969282150268555E-002
+  
+  
+ ROOT:  1 RESIDUAL TOT: 3.44095D-06
+      9       1         0.00     0.34E-05
+ Dimension of the reduced space:    10
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
+
+  
+ Time used in CC_LHTR :  2.19960212707519531E-002
+  
+  
  ROOT:  1 RESIDUAL TOT: 7.58328D-07
      10       1         0.00     0.76E-06
  Dimension of the reduced space:    11
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  2.19979286193847656E-002
+ Time used in CC_LHTR :  2.19969749450683594E-002
   
   
  ROOT:  1 RESIDUAL TOT: 1.71142D-07
      11       1         0.00     0.17E-06
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  2.19960212707519531E-002
+ Time used in CC_LHTR :  2.09980010986328125E-002
   
   
  ROOT:  1 RESIDUAL TOT: 4.32925D-08
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.32925D-08
      12       1         0.00     0.43E-07
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in 12 iterations
@@ -1366,11 +1399,11 @@ EFG Principal axis                  H    2
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.01
+         Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.31 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.29 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1515,7 +1548,7 @@ EFG Principal axis                  H    2
   
  Requested density dependent quantities calculated
  Total time used in CC_DEN:  6.59900903701782227E-002
- CC_FOP> Norm of RHS vector:  4.57240090753073913E-005
+ CC_FOP> Norm of RHS vector:  4.57240090745096150E-005
 
 
                       Solving for orbital relaxation vector
@@ -1603,7 +1636,7 @@ EFG Principal axis                  H    2
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  2.64221086154865783E-005
+ Norm of zeta-kappa-0:  2.64221086152364021E-005
 
 
                             +--------------------------+
@@ -1666,7 +1699,7 @@ EFG Principal axis                  H    2
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.47916301         1.21791075         4.06251298
+      z      0.47916301         1.21791081         4.06251318
 
 
 
@@ -1724,14 +1757,14 @@ Total non-diagonalized EFG Tensor   S
        2      0.00000000   -2.44598584    0.00000000
        3      0.00000000    0.00000000    0.52259856
 
-Total non-diagonalized EFG Tensor   H    1
+Total non-diagonalized EFG Tensor   H   _1
 
               Column   1    Column   2    Column   3
        1      0.08955940    0.00000000    0.18803123
        2      0.00000000   -0.15417681    0.00000000
        3      0.18803123    0.00000000    0.06461740
 
-Total non-diagonalized EFG Tensor   H    2
+Total non-diagonalized EFG Tensor   H   _2
 
               Column   1    Column   2    Column   3
        1      0.08955940    0.00000000   -0.18803123
@@ -1739,10 +1772,10 @@ Total non-diagonalized EFG Tensor   H    2
        3     -0.18803123    0.00000000    0.06461740
  String on input: "S       "
  String on input: "S       "
- String on input: "H    1  "
- String on input: "H_1     "
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
+ String on input: "H   _2  "
+ String on input: "H__2    "
 
 EFG Principal axis                  S     
 
@@ -1751,14 +1784,14 @@ EFG Principal axis                  S
        2      0.00000000    1.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000
 
-EFG Principal axis                  H    1
+EFG Principal axis                  H   _1
 
               Column   1    Column   2    Column   3
        1      0.73012968    0.00000000   -0.68330861
        2      0.00000000    1.00000000    0.00000000
        3      0.68330861    0.00000000    0.73012968
 
-EFG Principal axis                  H    2
+EFG Principal axis                  H   _2
 
               Column   1    Column   2    Column   3
        1      0.73012968    0.00000000    0.68330861
@@ -1772,32 +1805,32 @@ EFG Principal axis                  H    2
           Spin     :  1.5          Quadrupole moment:-.06780000
                             au           MHz        Gauss
  S      33    Vx =       0.522599    -8.325315    -2.974124
- S      33    Vy =       1.923387   -30.640737   -10.946055
- S      33    Vz =      -2.445986    38.966052    13.920179
+ S      33    Vy =       1.923387   -30.640736   -10.946055
+ S      33    Vz =      -2.445986    38.966051    13.920180
                  Asymmetry constant eta:      0.572689
                  Auxiliary value au  1/T  0.305088D-02
 
 
-                       Nuclear quadrupole moment for H    1
+                       Nuclear quadrupole moment for H   _1
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    1  2    Vx =      -0.111356    -0.074831    -0.026733
- H    1  2    Vy =      -0.154177    -0.103607    -0.037012
- H    1  2    Vz =       0.265533     0.178438     0.063745
+ H   _1  2    Vx =      -0.111356    -0.074831    -0.026733
+ H   _1  2    Vy =      -0.154177    -0.103607    -0.037012
+ H   _1  2    Vz =       0.265533     0.178438     0.063745
                  Asymmetry constant eta:      0.161264
                  Auxiliary value au  1/T  0.218146D-06
 
 
-                       Nuclear quadrupole moment for H    2
+                       Nuclear quadrupole moment for H   _2
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    2  2    Vx =      -0.111356    -0.074831    -0.026733
- H    2  2    Vy =      -0.154177    -0.103607    -0.037012
- H    2  2    Vz =       0.265533     0.178438     0.063745
+ H   _2  2    Vx =      -0.111356    -0.074831    -0.026733
+ H   _2  2    Vy =      -0.154177    -0.103607    -0.037012
+ H   _2  2    Vz =       0.265533     0.178438     0.063745
                  Asymmetry constant eta:      0.161264
                  Auxiliary value au  1/T  0.218146D-06
 
@@ -1809,12 +1842,12 @@ EFG Principal axis                  H    2
   
   
  One electron and reorthonormalization gradient calculation completed
- Total time used in CC_GRAD:  5.79921007156372070E-002
+ Total time used in CC_GRAD:  5.79910278320312500E-002
   
-         DPTONE:     -2.098702008357
+         DPTONE:     -2.098701991104
          ------ 
   
-         DPTREO:      0.621290959245
+         DPTREO:      0.621290954137
          ------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -1829,12 +1862,12 @@ EFG Principal axis                  H    2
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
  Two-electron first-order property calculation completed
- Total time used in CC_2EEXP:  0.43193387985229492     
+ Total time used in CC_2EEXP:  0.43293392658233643     
   
-         DPTTWO:      0.367893453088
+         DPTTWO:      0.367893450064
          ------ 
   
-         Total first-order DPT correction:     -1.109517596024
+         Total first-order DPT correction:     -1.109517586903
          --------------------------------
 
 
@@ -1843,13 +1876,13 @@ EFG Principal axis                  H    2
            +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      3.473603460
+         1-elec. Darwin term:      3.473603431
          ------------------- 
   
-         Mass-Velocity term:      -4.549007622
+         Mass-Velocity term:      -4.549007584
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -1.075404162
+         Mass-Velocity + 1-elec. Darwin terms:      -1.075404153
          ------------------------------------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -1865,17 +1898,17 @@ EFG Principal axis                  H    2
          2-elec. Darwin term:      -0.034102620
          ------------------- 
   
-         Total relativistic correction:      -1.109506782
+         Total relativistic correction:      -1.109506773
          ----------------------------- 
   
  Two-electron first-order property calculation completed
- Total time used in CC_2EEXP:  0.16397500038146973     
+ Total time used in CC_2EEXP:  0.16297495365142822     
 
  *******************************************************************
 
  Ground state energy is target 
 
- Ecorr =                   -398.86810284800822046236
+ Ecorr =                   -398.86810284801020998202
 
  *******************************************************************
   
@@ -1915,9 +1948,9 @@ EFG Principal axis                  H    2
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.02 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.08 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:10 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:42 2011 
      Host name              : fe6                                     

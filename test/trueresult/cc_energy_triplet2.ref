@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:26:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -215,8 +216,8 @@ Represented as:      C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -282,15 +283,15 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.961506    0.000000
- H    2:    0.961506    1.510461    0.000000
+ H   _1:    0.961506    0.000000
+ H   _2:    0.961506    1.510461    0.000000
 
 
   Max interatomic separation is    1.5105 Angstrom (    2.8544 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -298,8 +299,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.961506
-  bond distance:  H    2     O            0.961506
+  bond distance:  H   _1     O            0.961506
+  bond distance:  H   _2     O            0.961506
 
 
   Bond angles (degrees):
@@ -307,7 +308,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       103.528
+  bond angle:     H   _1     O          H   _2       103.528
 
 
 
@@ -327,8 +328,8 @@ Represented as:      C2v
 
                A                   B                   C
 
-         797252.3607         439585.1102         283351.9157 MHz
-           26.593476           14.662981            9.451603 cm-1
+         797252.3537         439585.1064         283351.9133 MHz
+           26.593476           14.662981            9.451602 cm-1
 
 
 @  Nuclear repulsion energy :    9.156145719818
@@ -393,7 +394,7 @@ Represented as:      C2v
  Number of two-electron integrals written:        1270 ( 30.3% )
  Megabytes written:                              0.021
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -430,7 +431,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:26:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
      Host name              : fe6                                     
 
  Title     :   Triplet excitation energies                               
@@ -447,8 +448,7 @@ Represented as:      C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -456,6 +456,10 @@ Represented as:      C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -505,31 +509,49 @@ Represented as:      C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -75.7971101011        2.02548D+00   -7.58D+01    1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999635
+      MULPOP  O      -0.48; H   _1  0.24; H   _2  0.24; 
+ -----------------------------------------------------------------------------
    2    -75.9759353378        2.90461D-01   -1.79D-01    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999642
+      MULPOP  O      -0.74; H   _1  0.37; H   _2  0.37; 
+ -----------------------------------------------------------------------------
    3    -75.9831075358        8.25352D-02   -7.17D-03    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001388
+      MULPOP  O      -0.76; H   _1  0.38; H   _2  0.38; 
+ -----------------------------------------------------------------------------
    4    -75.9834409393        3.65147D-02   -3.33D-04    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.999383
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    5    -75.9835104272        2.64415D-03   -6.95D-05    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000028
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    6    -75.9835111771        4.27857D-04   -7.50D-07    6
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000029
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    7    -75.9835112014        4.53036D-05   -2.43D-08    7
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    8    -75.9835112017        9.71259D-06   -3.16D-10    8
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    9    -75.9835112017        1.91660D-06   -1.89D-11    9
-      MULPOP O   ******; H   ******; 
-  10    -75.9835112017        8.47828D-08   -6.54D-13   10
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000031
+      MULPOP  O      -0.79; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  10    -75.9835112017        8.47828D-08   -6.82D-13   10
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -556,7 +578,10 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -569,7 +594,7 @@ Represented as:      C2v
      Final gradient norm:           0.000000084783
 
  
-     Date and time (Linux)  : Wed Dec 29 21:26:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -577,7 +602,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     0.9958  -0.2124   0.0764   0.0846   0.0472
    2 O   :1s     0.0219   0.4691  -0.1821  -0.1036  -0.2376
    3 O   :1s    -0.0080   0.4804  -0.3082  -1.1720   0.1869
@@ -589,14 +614,14 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :2px    0.6421  -0.9611
    2 O   :2px    0.5095   1.0375
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.5056  -0.3394   0.1040
    2 O   :2py    0.2714  -0.8200   0.7330
    3 H   :1s     0.2623   0.0443  -0.9723
@@ -608,7 +633,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:26:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:53:16 2011 
      Host name              : fe6                                     
 
 
@@ -700,13 +725,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4363385828       11.8733764863
+         1            0.4363385828       11.8733768236
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.547172618907510
+@@    1    1           -75.547172618894663
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -759,21 +784,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3767943351       10.2530951309
-         2            0.5661117339       15.4046834589
-         3            0.9735760507       26.4923512212
-         4            1.1092572218       30.1844235934
-         5            1.1492083653       31.2715494787
+         1            0.3767943352       10.2530954222
+         2            0.5661117339       15.4046838959
+         3            0.9735760507       26.4923519729
+         4            1.1092572218       30.1844244499
+         5            1.1492083653       31.2715503664
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.606716866597381
-@@    1    2           -75.417399467878738
-@@    1    3           -75.009935151053583
-@@    1    4           -74.874253979950481
-@@    1    5           -74.834302836422026
+@@    1    1           -75.606716866583085
+@@    1    2           -75.417399467882078
+@@    1    3           -75.009935151054833
+@@    1    4           -74.874253979952684
+@@    1    5           -74.834302836411325
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -873,7 +898,7 @@ Represented as:      C2v
  Analysis of the Coupled Cluster Excitation Vector Number :  5
  -------------------------------------------------------------
 
-          Excitation Energy :                            31.2715 eV
+          Excitation Energy :                            31.2716 eV
 
      Norm of Total Amplitude Vector :          1.0000
 
@@ -916,13 +941,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3446332584        9.3779477403
+         1            0.3446332584        9.3779480068
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.638877943325141
+@@    2    1           -75.638877943310263
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -978,21 +1003,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3093501212        8.4178447651
-         2            1.0803782743       29.3985874794
-         3            1.1554560823       31.4415585019
-         4            1.2364892284       33.6465825110
-         5            1.6097865255       43.8045183995
+         1            0.3093501212        8.4178450043
+         2            1.0803782743       29.3985883135
+         3            1.1554560823       31.4415593940
+         4            1.2364892284       33.6465834659
+         5            1.6097865256       43.8045196432
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.674161080521841
-@@    2    2           -74.903132927463048
-@@    2    3           -74.828055119413960
-@@    2    4           -74.747021973334924
-@@    2    5           -74.373724676205882
+@@    2    1           -75.674161080508782
+@@    2    2           -74.903132927465407
+@@    2    3           -74.828055119414074
+@@    2    4           -74.747021973328756
+@@    2    5           -74.373724676179549
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1134,13 +1159,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5122611873       13.9393355880
+         1            0.5122611873       13.9393359834
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.471250014440926
+@@    3    1           -75.471250014445772
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1196,21 +1221,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4408992791       11.9974793414
-         2            0.5061017363       13.7717284043
-         3            1.1426064748       31.0919029041
-         4            1.2121831544       32.9851806109
-         5            1.3110291763       35.6749176133
+         1            0.4408992791       11.9974796818
+         2            0.5061017363       13.7717287953
+         3            1.1426064748       31.0919037864
+         4            1.2121831544       32.9851815469
+         5            1.3110291763       35.6749186256
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.542611922632744
-@@    3    2           -75.477409465472135
-@@    3    3           -74.840904726953809
-@@    3    4           -74.771328047355198
-@@    3    5           -74.672482025487398
+@@    3    1           -75.542611922632929
+@@    3    2           -75.477409465462330
+@@    3    3           -74.840904726951806
+@@    3    4           -74.771328047357429
+@@    3    5           -74.672482025489074
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1351,13 +1376,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4152526327       11.2995986116
+         1            0.4152526327       11.2995989321
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.568258569057704
+@@    4    1           -75.568258569062237
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1414,19 +1439,19 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3914738661       10.6525454770
-         2            1.1143837120       30.3239224837
-         3            1.2866024850       35.0102335500
-         4            1.3413222549       36.4992341929
+         1            0.3914738661       10.6525457791
+         2            1.1143837120       30.3239233442
+         3            1.2866024849       35.0102345432
+         4            1.3413222549       36.4992352285
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.592037335621100
-@@    4    2           -74.869127489759478
-@@    4    3           -74.696908716794510
-@@    4    4           -74.642188946803003
+@@    4    1           -75.592037335625207
+@@    4    2           -74.869127489758242
+@@    4    3           -74.696908716804302
+@@    4    4           -74.642188946805092
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1542,21 +1567,21 @@ Represented as:      C2v
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster MP2   energy :     -76.1127697555070739
- Iter.  1: Coupled cluster CC2   energy :     -76.1127532155598630
- Iter.  2: Coupled cluster CC2   energy :     -76.1134991359773920
- Iter.  3: Coupled cluster CC2   energy :     -76.1135737792674405
- Iter.  4: Coupled cluster CC2   energy :     -76.1135654605344172
- Iter.  5: Coupled cluster CC2   energy :     -76.1135655710270242
- Iter.  6: Coupled cluster CC2   energy :     -76.1135658909817323
- Iter.  7: Coupled cluster CC2   energy :     -76.1135659170226688
- Iter.  8: Coupled cluster CC2   energy :     -76.1135659203885950
- Iter.  9: Coupled cluster CC2   energy :     -76.1135659199589014
- Iter. 10: Coupled cluster CC2   energy :     -76.1135659203054331
- Iter. 11: Coupled cluster CC2   energy :     -76.1135659202967219
+ Iter.  1: Coupled cluster MP2   energy :     -76.1127697555067471
+ Iter.  1: Coupled cluster CC2   energy :     -76.1127532155594224
+ Iter.  2: Coupled cluster CC2   energy :     -76.1134991359769231
+ Iter.  3: Coupled cluster CC2   energy :     -76.1135737792669005
+ Iter.  4: Coupled cluster CC2   energy :     -76.1135654605338630
+ Iter.  5: Coupled cluster CC2   energy :     -76.1135655710265979
+ Iter.  6: Coupled cluster CC2   energy :     -76.1135658909811212
+ Iter.  7: Coupled cluster CC2   energy :     -76.1135659170222993
+ Iter.  8: Coupled cluster CC2   energy :     -76.1135659203881545
+ Iter.  9: Coupled cluster CC2   energy :     -76.1135659199584040
+ Iter. 10: Coupled cluster CC2   energy :     -76.1135659203049357
+ Iter. 11: Coupled cluster CC2   energy :     -76.1135659202963950
 
  CC2   energy converged to within   0.10D-09 is    -76.113565920
- Final 2-norm of the CC vector function:  3.86033512D-09
+ Final 2-norm of the CC vector function:  3.86033321D-09
 
 
 
@@ -1625,13 +1650,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3995022729       10.8710095325
+         1            0.3995022729       10.8710098414
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.714063647383909
+@@    1    1           -75.714063647369102
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1706,21 +1731,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3602442725        9.8027450302
-         2            0.5788662540       15.7517515979
-         3            1.0010705603       27.2405148654
-         4            1.1076975945       30.1419839767
-         5            1.1563652049       31.4662969839
+         1            0.3602442725        9.8027453088
+         2            0.5788662540       15.7517520448
+         3            1.0010705603       27.2405156384
+         4            1.1076975945       30.1419848323
+         5            1.1563652049       31.4662978769
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.753321647797847
-@@    1    2           -75.534699666255179
-@@    1    3           -75.112495359968833
-@@    1    4           -75.005868325809445
-@@    1    5           -74.957200715423610
+@@    1    1           -75.753321647782613
+@@    1    2           -75.534699666259314
+@@    1    3           -75.112495359968065
+@@    1    4           -75.005868325800961
+@@    1    5           -74.957200715421919
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1975,13 +2000,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3061571535        8.3309596959
+         1            0.3061571535        8.3309599328
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.807408766802936
+@@    2    1           -75.807408766786054
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2060,21 +2085,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2778507978        7.5607045975
-         2            1.1050869020       30.0709434224
-         3            1.1729383296       31.9172746366
-         4            1.2220811138       33.2545177809
-         5            1.4699987351       40.0006992342
+         1            0.2778507978        7.5607048124
+         2            1.1050869020       30.0709442757
+         3            1.1729383296       31.9172755424
+         4            1.2220811138       33.2545187246
+         5            1.4699987351       40.0007003702
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.835715122494960
-@@    2    2           -75.008479018296796
-@@    2    3           -74.940627590662430
-@@    2    4           -74.891484806451714
-@@    2    5           -74.643567185185901
+@@    2    1           -75.835715122479940
+@@    2    2           -75.008479018297180
+@@    2    3           -74.940627590659119
+@@    2    4           -74.891484806451174
+@@    2    5           -74.643567185151156
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2325,13 +2350,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4914133184       13.3720362343
+         1            0.4914133184       13.3720366135
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.622152601865722
+@@    3    1           -75.622152601872173
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2408,21 +2433,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4399339505       11.9712114151
-         2            0.5081098263       13.8263713112
-         3            1.1120858261       30.2613938286
-         4            1.1853632601       32.2553741850
-         5            1.3138540570       35.7517865255
+         1            0.4399339505       11.9712117547
+         2            0.5081098263       13.8263717039
+         3            1.1120858261       30.2613946873
+         4            1.1853632601       32.2553751002
+         5            1.3138540570       35.7517875400
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.673631969769531
-@@    3    2           -75.605456094025612
-@@    3    3           -75.001480094238957
-@@    3    4           -74.928202660148258
-@@    3    5           -74.799711863327133
+@@    3    1           -75.673631969773140
+@@    3    2           -75.605456094012737
+@@    3    3           -75.001480094237564
+@@    3    4           -74.928202660151314
+@@    3    5           -74.799711863327062
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2678,13 +2703,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3906129774       10.6291195046
+         1            0.3906129774       10.6291198060
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.722952942868901
+@@    4    1           -75.722952942874386
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2761,19 +2786,19 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3716140402       10.1121321382
-         2            1.0572242874       28.7685354630
-         3            1.2804530348       34.8428985030
-         4            1.3887417390       37.7895839547
+         1            0.3716140402       10.1121324250
+         2            1.0572242874       28.7685362794
+         3            1.2804530348       34.8428994915
+         4            1.3887417390       37.7895850270
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.741951880115636
-@@    4    2           -75.056341632941638
-@@    4    3           -74.833112885535087
-@@    4    4           -74.724824181343479
+@@    4    1           -75.741951880120709
+@@    4    2           -75.056341632939834
+@@    4    3           -74.833112885543571
+@@    4    4           -74.724824181343820
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2978,21 +3003,21 @@ Represented as:      C2v
           Number of t2 amplitudes                 :       265
           Total number of amplitudes in ccsd      :       281
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.1135659202967219
- Iter.  1: Coupled cluster CCSD  energy :     -76.1156354200709870
- Iter.  2: Coupled cluster CCSD  energy :     -76.1190447295899020
- Iter.  3: Coupled cluster CCSD  energy :     -76.1192245647746972
- Iter.  4: Coupled cluster CCSD  energy :     -76.1193015206437451
- Iter.  5: Coupled cluster CCSD  energy :     -76.1193135769044602
- Iter.  6: Coupled cluster CCSD  energy :     -76.1193129270532864
- Iter.  7: Coupled cluster CCSD  energy :     -76.1193132130180601
- Iter.  8: Coupled cluster CCSD  energy :     -76.1193132102430070
- Iter.  9: Coupled cluster CCSD  energy :     -76.1193132040678080
- Iter. 10: Coupled cluster CCSD  energy :     -76.1193132015086036
- Iter. 11: Coupled cluster CCSD  energy :     -76.1193132015651344
+ Iter.  1: Coupled cluster RSTAR energy :     -76.1135659202963950
+ Iter.  1: Coupled cluster CCSD  energy :     -76.1156354200707739
+ Iter.  2: Coupled cluster CCSD  energy :     -76.1190447295893762
+ Iter.  3: Coupled cluster CCSD  energy :     -76.1192245647741004
+ Iter.  4: Coupled cluster CCSD  energy :     -76.1193015206434183
+ Iter.  5: Coupled cluster CCSD  energy :     -76.1193135769039912
+ Iter.  6: Coupled cluster CCSD  energy :     -76.1193129270529170
+ Iter.  7: Coupled cluster CCSD  energy :     -76.1193132130178327
+ Iter.  8: Coupled cluster CCSD  energy :     -76.1193132102426944
+ Iter.  9: Coupled cluster CCSD  energy :     -76.1193132040672253
+ Iter. 10: Coupled cluster CCSD  energy :     -76.1193132015081773
+ Iter. 11: Coupled cluster CCSD  energy :     -76.1193132015647507
 
  CCSD  energy converged to within   0.10D-09 is    -76.119313202
- Final 2-norm of the CC vector function:  3.23304629D-08
+ Final 2-norm of the CC vector function:  3.23304630D-08
 
 
 
@@ -3076,13 +3101,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4020773537       10.9410810435
+         1            0.4020773537       10.9410813544
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.717235847852365
+@@    1    1           -75.717235847837770
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3158,21 +3183,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3628937676        9.8748414564
-         2            0.5791532735       15.7595617942
-         3            0.9893882095       26.9226219384
-         4            1.0786191517       29.3507193193
-         5            1.1342686068       30.8650179814
+         1            0.3628937676        9.8748417371
+         2            0.5791532735       15.7595622413
+         3            0.9893882095       26.9226227024
+         4            1.0786191517       29.3507201524
+         5            1.1342686068       30.8650188573
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -75.756419433998815
-@@    1    2           -75.540159928073450
-@@    1    3           -75.129924992034361
-@@    1    4           -75.040694049901347
-@@    1    5           -74.985044594753603
+@@    1    1           -75.756419433983595
+@@    1    2           -75.540159928077315
+@@    1    3           -75.129924992032073
+@@    1    4           -75.040694049892309
+@@    1    5           -74.985044594752253
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3417,13 +3442,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3067176971        8.3462128633
+         1            0.3067176971        8.3462131005
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.812595504453427
+@@    2    1           -75.812595504436572
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3502,21 +3527,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2796550611        7.6098010967
-         2            0.9244514536       25.1556029746
-         3            1.0318432574       28.0778825248
-         4            1.0906819444       29.6789645967
-         5            1.1040985216       30.0440482232
+         1            0.2796550611        7.6098013131
+         2            0.9244514537       25.1556036889
+         3            1.0318432574       28.0778833218
+         4            1.0906819444       29.6789654389
+         5            1.1040985216       30.0440490758
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -75.839658140508135
-@@    2    2           -75.194861747927845
-@@    2    3           -75.087469944167296
-@@    2    4           -75.028631257205660
-@@    2    5           -75.015214680006551
+@@    2    1           -75.839658140493214
+@@    2    2           -75.194861747909201
+@@    2    3           -75.087469944157547
+@@    2    4           -75.028631257203585
+@@    2    5           -75.015214680005002
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3758,13 +3783,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4916071349       13.3773102472
+         1            0.4916071348       13.3773106266
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.627706066713372
+@@    3    1           -75.627706066719455
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3841,21 +3866,21 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4421496341       12.0315032297
-         2            0.5104260652       13.8893993765
-         3            0.9663231089       26.2949886407
-         4            1.0456791870       28.4543773110
-         5            1.1064049262       30.1068086852
+         1            0.4421496341       12.0315035710
+         2            0.5104260652       13.8893997709
+         3            0.9663231089       26.2949893871
+         4            1.0456791870       28.4543781189
+         5            1.1064049262       30.1068095396
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -75.677163567489103
-@@    3    2           -75.608887136377902
-@@    3    3           -75.152990092679730
-@@    3    4           -75.073634014543003
-@@    3    5           -75.012908275331299
+@@    3    1           -75.677163567492542
+@@    3    2           -75.608887136364871
+@@    3    3           -75.152990092671772
+@@    3    4           -75.073634014526604
+@@    3    5           -75.012908275328471
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4102,13 +4127,13 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3901101379       10.6154365449
+         1            0.3901101379       10.6154368460
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.729203063681027
+@@    4    1           -75.729203063686256
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4185,19 +4210,19 @@ Represented as:      C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3719424450       10.1210684888
-         2            0.9679943389       26.3404651223
-         3            0.9918527205       26.9896846903
-         4            1.0414121585       28.3382655624
+         1            0.3719424450       10.1210687758
+         2            0.9679943389       26.3404658701
+         3            0.9918527205       26.9896854566
+         4            1.0414121585       28.3382663667
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -75.747370756524859
-@@    4    2           -75.151318862632081
-@@    4    3           -75.127460481102261
-@@    4    4           -75.077901043040882
+@@    4    1           -75.747370756529634
+@@    4    2           -75.151318862619618
+@@    4    3           -75.127460481089031
+@@    4    4           -75.077901043034700
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4391,36 +4416,36 @@ Represented as:      C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.4363386  |      11.87338  |     95765.250  | 100.00  |
+ | ^1A1  |    1   |     0.4363386  |      11.87338  |     95765.249  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3A1  |    1   |     0.3767943  |      10.25310  |     82696.798  | 100.00  |
- | ^3A1  |    2   |     0.5661117  |      15.40468  |    124247.164  | 100.00  |
- | ^3A1  |    3   |     0.9735761  |      26.49235  |    213675.245  | 100.00  |
- | ^3A1  |    4   |     1.1092572  |      30.18442  |    243453.820  | 100.00  |
- | ^3A1  |    5   |     1.1492084  |      31.27155  |    252222.082  | 100.00  |
+ | ^3A1  |    1   |     0.3767943  |      10.25310  |     82696.797  | 100.00  |
+ | ^3A1  |    2   |     0.5661117  |      15.40468  |    124247.163  | 100.00  |
+ | ^3A1  |    3   |     0.9735761  |      26.49235  |    213675.243  | 100.00  |
+ | ^3A1  |    4   |     1.1092572  |      30.18442  |    243453.818  | 100.00  |
+ | ^3A1  |    5   |     1.1492084  |      31.27155  |    252222.080  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |     0.3446333  |       9.37795  |     75638.257  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B1  |    1   |     0.3093501  |       8.41784  |     67894.504  | 100.00  |
- | ^3B1  |    2   |     1.0803783  |      29.39859  |    237115.623  | 100.00  |
- | ^3B1  |    3   |     1.1554561  |      31.44156  |    253593.298  | 100.00  |
- | ^3B1  |    4   |     1.2364892  |      33.64658  |    271378.017  | 100.00  |
- | ^3B1  |    5   |     1.6097865  |      43.80452  |    353307.304  | 100.00  |
+ | ^3B1  |    1   |     0.3093501  |       8.41785  |     67894.503  | 100.00  |
+ | ^3B1  |    2   |     1.0803783  |      29.39859  |    237115.621  | 100.00  |
+ | ^3B1  |    3   |     1.1554561  |      31.44156  |    253593.295  | 100.00  |
+ | ^3B1  |    4   |     1.2364892  |      33.64658  |    271378.015  | 100.00  |
+ | ^3B1  |    5   |     1.6097865  |      43.80452  |    353307.301  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.5122612  |      13.93934  |    112428.335  | 100.00  |
+ | ^1B2  |    1   |     0.5122612  |      13.93934  |    112428.334  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4408993  |      11.99748  |     96766.207  | 100.00  |
- | ^3B2  |    2   |     0.5061017  |      13.77173  |    111076.492  | 100.00  |
- | ^3B2  |    3   |     1.1426065  |      31.09190  |    250773.135  | 100.00  |
- | ^3B2  |    4   |     1.2121832  |      32.98518  |    266043.451  | 100.00  |
- | ^3B2  |    5   |     1.3110292  |      35.67492  |    287737.645  | 100.00  |
+ | ^3B2  |    1   |     0.4408993  |      11.99748  |     96766.206  | 100.00  |
+ | ^3B2  |    2   |     0.5061017  |      13.77173  |    111076.491  | 100.00  |
+ | ^3B2  |    3   |     1.1426065  |      31.09190  |    250773.133  | 100.00  |
+ | ^3B2  |    4   |     1.2121832  |      32.98518  |    266043.449  | 100.00  |
+ | ^3B2  |    5   |     1.3110292  |      35.67492  |    287737.643  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^1A2  |    1   |     0.4152526  |      11.29960  |     91137.418  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^3A2  |    1   |     0.3914739  |      10.65255  |     85918.582  | 100.00  |
- | ^3A2  |    2   |     1.1143837  |      30.32392  |    244578.954  | 100.00  |
- | ^3A2  |    3   |     1.2866025  |      35.01023  |    282376.606  | 100.00  |
- | ^3A2  |    4   |     1.3413223  |      36.49923  |    294386.207  | 100.00  |
+ | ^3A2  |    2   |     1.1143837  |      30.32392  |    244578.952  | 100.00  |
+ | ^3A2  |    3   |     1.2866025  |      35.01023  |    282376.603  | 100.00  |
+ | ^3A2  |    4   |     1.3413223  |      36.49924  |    294386.205  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -4460,36 +4485,36 @@ Represented as:      C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.3995023  |      10.87101  |     87680.614  |  97.15  |
+ | ^1A1  |    1   |     0.3995023  |      10.87101  |     87680.613  |  97.15  |
  +-----------------------------------------------------------------------------+
- | ^3A1  |    1   |     0.3602443  |       9.80275  |     79064.479  |  99.22  |
- | ^3A1  |    2   |     0.5788663  |      15.75175  |    127046.458  |  99.55  |
- | ^3A1  |    3   |     1.0010706  |      27.24051  |    219709.592  |  99.63  |
- | ^3A1  |    4   |     1.1076976  |      30.14198  |    243111.521  |  99.21  |
- | ^3A1  |    5   |     1.1563652  |      31.46630  |    253792.827  |  99.63  |
+ | ^3A1  |    1   |     0.3602443  |       9.80275  |     79064.478  |  99.22  |
+ | ^3A1  |    2   |     0.5788663  |      15.75175  |    127046.457  |  99.55  |
+ | ^3A1  |    3   |     1.0010706  |      27.24052  |    219709.590  |  99.63  |
+ | ^3A1  |    4   |     1.1076976  |      30.14198  |    243111.519  |  99.21  |
+ | ^3A1  |    5   |     1.1563652  |      31.46630  |    253792.825  |  99.63  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |     0.3061572  |       8.33096  |     67193.728  |  96.95  |
  +-----------------------------------------------------------------------------+
  | ^3B1  |    1   |     0.2778508  |       7.56070  |     60981.201  |  99.05  |
- | ^3B1  |    2   |     1.1050869  |      30.07094  |    242538.540  |  99.36  |
- | ^3B1  |    3   |     1.1729383  |      31.91727  |    257430.207  |  99.25  |
- | ^3B1  |    4   |     1.2220811  |      33.25452  |    268215.802  |  99.60  |
- | ^3B1  |    5   |     1.4699987  |      40.00070  |    322627.430  |  11.78  |
+ | ^3B1  |    2   |     1.1050869  |      30.07094  |    242538.538  |  99.36  |
+ | ^3B1  |    3   |     1.1729383  |      31.91728  |    257430.205  |  99.25  |
+ | ^3B1  |    4   |     1.2220811  |      33.25452  |    268215.799  |  99.60  |
+ | ^3B1  |    5   |     1.4699987  |      40.00070  |    322627.428  |  11.78  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.4914133  |      13.37204  |    107852.757  |  97.04  |
+ | ^1B2  |    1   |     0.4914133  |      13.37204  |    107852.756  |  97.04  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4399340  |      11.97121  |     96554.342  |  99.39  |
- | ^3B2  |    2   |     0.5081098  |      13.82637  |    111517.217  |  99.42  |
- | ^3B2  |    3   |     1.1120858  |      30.26139  |    244074.627  |  99.04  |
- | ^3B2  |    4   |     1.1853633  |      32.25537  |    260157.164  |  98.97  |
- | ^3B2  |    5   |     1.3138541  |      35.75179  |    288357.635  |  99.19  |
+ | ^3B2  |    1   |     0.4399340  |      11.97121  |     96554.341  |  99.39  |
+ | ^3B2  |    2   |     0.5081098  |      13.82637  |    111517.216  |  99.42  |
+ | ^3B2  |    3   |     1.1120858  |      30.26139  |    244074.624  |  99.04  |
+ | ^3B2  |    4   |     1.1853633  |      32.25538  |    260157.162  |  98.97  |
+ | ^3B2  |    5   |     1.3138541  |      35.75179  |    288357.632  |  99.19  |
  +-----------------------------------------------------------------------------+
- | ^1A2  |    1   |     0.3906130  |      10.62912  |     85729.639  |  97.25  |
+ | ^1A2  |    1   |     0.3906130  |      10.62912  |     85729.638  |  97.25  |
  +-----------------------------------------------------------------------------+
  | ^3A2  |    1   |     0.3716140  |      10.11213  |     81559.854  |  99.15  |
- | ^3A2  |    2   |     1.0572243  |      28.76854  |    232033.911  |  98.77  |
- | ^3A2  |    3   |     1.2804530  |      34.84290  |    281026.958  |  98.63  |
- | ^3A2  |    4   |     1.3887417  |      37.78958  |    304793.581  |  99.77  |
+ | ^3A2  |    2   |     1.0572243  |      28.76854  |    232033.909  |  98.77  |
+ | ^3A2  |    3   |     1.2804530  |      34.84290  |    281026.955  |  98.63  |
+ | ^3A2  |    4   |     1.3887417  |      37.78959  |    304793.578  |  99.77  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -4510,7 +4535,7 @@ Represented as:      C2v
              1 ^3B2       -75.6736319698                                        
              2 ^3B2       -75.6054560940                                        
              3 ^3B2       -75.0014800942                                        
-             4 ^3B2       -74.9282026601                                        
+             4 ^3B2       -74.9282026602                                        
              5 ^3B2       -74.7997118633                                        
              1 ^1A2       -75.7229529429                                        
              1 ^3A2       -75.7419518801                                        
@@ -4529,47 +4554,47 @@ Represented as:      C2v
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     0.4020774  |      10.94108  |     88245.779  |  96.33  |
+ | ^1A1  |    1   |     0.4020774  |      10.94108  |     88245.778  |  96.33  |
  +-----------------------------------------------------------------------------+
- | ^3A1  |    1   |     0.3628938  |       9.87484  |     79645.976  |  99.18  |
- | ^3A1  |    2   |     0.5791533  |      15.75956  |    127109.451  |  99.46  |
- | ^3A1  |    3   |     0.9893882  |      26.92262  |    217145.612  |  98.09  |
- | ^3A1  |    4   |     1.0786192  |      29.35072  |    236729.541  |  91.53  |
- | ^3A1  |    5   |     1.1342686  |      30.86502  |    248943.184  |  90.68  |
+ | ^3A1  |    1   |     0.3628938  |       9.87484  |     79645.975  |  99.18  |
+ | ^3A1  |    2   |     0.5791533  |      15.75956  |    127109.450  |  99.46  |
+ | ^3A1  |    3   |     0.9893882  |      26.92262  |    217145.611  |  98.09  |
+ | ^3A1  |    4   |     1.0786192  |      29.35072  |    236729.539  |  91.53  |
+ | ^3A1  |    5   |     1.1342686  |      30.86502  |    248943.182  |  90.68  |
  +-----------------------------------------------------------------------------+
  | ^1B1  |    1   |     0.3067177  |       8.34621  |     67316.753  |  95.88  |
  +-----------------------------------------------------------------------------+
  | ^3B1  |    1   |     0.2796551  |       7.60980  |     61377.191  |  98.98  |
- | ^3B1  |    2   |     0.9244515  |      25.15560  |    202893.642  |   2.23  |
- | ^3B1  |    3   |     1.0318433  |      28.07788  |    226463.418  |   0.33  |
- | ^3B1  |    4   |     1.0906819  |      29.67896  |    239377.018  |  78.54  |
- | ^3B1  |    5   |     1.1040985  |      30.04405  |    242321.616  |  62.39  |
+ | ^3B1  |    2   |     0.9244515  |      25.15560  |    202893.640  |   2.23  |
+ | ^3B1  |    3   |     1.0318433  |      28.07788  |    226463.416  |   0.33  |
+ | ^3B1  |    4   |     1.0906819  |      29.67897  |    239377.015  |  78.54  |
+ | ^3B1  |    5   |     1.1040985  |      30.04405  |    242321.614  |  62.39  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.4916071  |      13.37731  |    107895.295  |  95.71  |
+ | ^1B2  |    1   |     0.4916071  |      13.37731  |    107895.294  |  95.71  |
  +-----------------------------------------------------------------------------+
- | ^3B2  |    1   |     0.4421496  |      12.03150  |     97040.628  |  99.34  |
- | ^3B2  |    2   |     0.5104261  |      13.88940  |    112025.572  |  99.32  |
- | ^3B2  |    3   |     0.9663231  |      26.29499  |    212083.408  |   8.55  |
- | ^3B2  |    4   |     1.0456792  |      28.45438  |    229500.054  |   4.64  |
- | ^3B2  |    5   |     1.1064049  |      30.10681  |    242827.813  |  95.05  |
+ | ^3B2  |    1   |     0.4421496  |      12.03150  |     97040.627  |  99.34  |
+ | ^3B2  |    2   |     0.5104261  |      13.88940  |    112025.571  |  99.32  |
+ | ^3B2  |    3   |     0.9663231  |      26.29499  |    212083.406  |   8.55  |
+ | ^3B2  |    4   |     1.0456792  |      28.45438  |    229500.052  |   4.64  |
+ | ^3B2  |    5   |     1.1064049  |      30.10681  |    242827.811  |  95.05  |
  +-----------------------------------------------------------------------------+
- | ^1A2  |    1   |     0.3901101  |      10.61544  |     85619.279  |  96.04  |
+ | ^1A2  |    1   |     0.3901101  |      10.61544  |     85619.278  |  96.04  |
  +-----------------------------------------------------------------------------+
- | ^3A2  |    1   |     0.3719424  |      10.12107  |     81631.931  |  99.02  |
- | ^3A2  |    2   |     0.9679943  |      26.34047  |    212450.201  |   0.34  |
- | ^3A2  |    3   |     0.9918527  |      26.98968  |    217686.510  |   1.52  |
- | ^3A2  |    4   |     1.0414122  |      28.33827  |    228563.550  |  77.78  |
+ | ^3A2  |    1   |     0.3719424  |      10.12107  |     81631.930  |  99.02  |
+ | ^3A2  |    2   |     0.9679943  |      26.34047  |    212450.199  |   0.34  |
+ | ^3A2  |    3   |     0.9918527  |      26.98969  |    217686.508  |   1.52  |
+ | ^3A2  |    4   |     1.0414122  |      28.33827  |    228563.547  |  77.78  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A1       -75.7172358479                                        
+             1 ^1A1       -75.7172358478                                        
              1 ^3A1       -75.7564194340                                        
              2 ^3A1       -75.5401599281                                        
              3 ^3A1       -75.1299249920                                        
              4 ^3A1       -75.0406940499                                        
              5 ^3A1       -74.9850445948                                        
-             1 ^1B1       -75.8125955045                                        
+             1 ^1B1       -75.8125955044                                        
              1 ^3B1       -75.8396581405                                        
              2 ^3B1       -75.1948617479                                        
              3 ^3B1       -75.0874699442                                        
@@ -4588,7 +4613,7 @@ Represented as:      C2v
              4 ^3A2       -75.0779010430                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -4607,9 +4632,9 @@ Represented as:      C2v
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.02 seconds
- >>>> Total wall time used in DALTON:  16.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.06 seconds
+ >>>> Total wall time used in DALTON:  22.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:26:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:53:38 2011 
      Host name              : fe6                                     

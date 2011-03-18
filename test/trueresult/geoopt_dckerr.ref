@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:40:10 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:09 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -198,8 +199,8 @@ Point group: C2v
                                  ---------------
 
                            OS         15.994915
-                           OP   1     15.994915
-                           OP   2     15.994915
+                           OP  _1     15.994915
+                           OP  _2     15.994915
 
                        Total mass:    47.984745 amu
                        Natural abundance:  99.282 %
@@ -265,15 +266,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            OS          OP   1      OP   2
+            OS          OP  _1      OP  _2
             ------      ------      ------
  OS    :    0.000000
- OP   1:    1.272001    0.000000
- OP   2:    1.272001    2.164231    0.000000
+ OP  _1:    1.272001    0.000000
+ OP  _2:    1.272001    2.164231    0.000000
 
 
   Max interatomic separation is    2.1642 Angstrom (    4.0898 Bohr)
-  between atoms    3 and    2, "OP   2" and "OP   1".
+  between atoms    3 and    2, "OP  _2" and "OP  _1".
 
 
   Bond distances (Angstrom):
@@ -281,8 +282,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  OP   1     OS           1.272001
-  bond distance:  OP   2     OS           1.272001
+  bond distance:  OP  _1     OS           1.272001
+  bond distance:  OP  _2     OS           1.272001
 
 
   Bond angles (degrees):
@@ -290,7 +291,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     OP   1     OS         OP   2       116.580
+  bond angle:     OP  _1     OS         OP  _2       116.580
 
 
 
@@ -300,7 +301,7 @@ Point group: C2v
 
    IA       4.766606          0.000000    1.000000    0.000000
    IB      37.459257          1.000000    0.000000    0.000000
-   IC      42.225862          0.000000    0.000000    1.000000
+   IC      42.225863          0.000000    0.000000    1.000000
 
 
  Rotational constants
@@ -310,7 +311,7 @@ Point group: C2v
 
                A                   B                   C
 
-         106024.9231          13491.4318          11968.4709 MHz
+         106024.9222          13491.4317          11968.4708 MHz
             3.536611            0.450026            0.399225 cm-1
 
 
@@ -433,7 +434,7 @@ Point group: C2v
  Number of two-electron integrals written:      672537 ( 23.1% )
  Megabytes written:                              7.702
 
- >>> Time used in TWOINT is   0.32 seconds
+ >>> Time used in TWOINT is   0.29 seconds
  >>>> Total CPU  time used in HERMIT:   0.33 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
@@ -473,7 +474,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:10 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:09 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -489,8 +490,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
                an MP2 calculation
 
 
@@ -499,6 +499,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons         12
      Number of electrons in active shells     12
      Total charge of the molecule              0
@@ -557,37 +558,61 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -223.582328824        4.04374D+00   -2.24D+02    1
-      MULPOP OS    0.24; OP    6.88; 
+      Virial theorem: -V/T =      2.002837
+      MULPOP  OS      1.10; OP  _1 -0.55; OP  _2 -0.55; 
+ -----------------------------------------------------------------------------
    2    -223.870441217        3.17808D+00   -2.88D-01    2
-      MULPOP OS   32.69; OP    4.23; 
+      Virial theorem: -V/T =      1.994180
+      MULPOP  OS     -0.48; OP  _1  0.24; OP  _2  0.24; 
+ -----------------------------------------------------------------------------
    3    -224.276125959        5.39063D-01   -4.06D-01    3
-      MULPOP OS    1.24; OP   14.13; 
+      Virial theorem: -V/T =      2.002210
+      MULPOP  OS      0.47; OP  _1 -0.24; OP  _2 -0.24; 
+ -----------------------------------------------------------------------------
    4    -224.289820916        8.05870D-02   -1.37D-02    4
-      MULPOP OS    3.13; OP   14.60; 
+      Virial theorem: -V/T =      2.002842
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
    5    -224.290386085        2.51761D-02   -5.65D-04    5
-      MULPOP OS    3.04; OP   14.41; 
+      Virial theorem: -V/T =      2.002216
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
    6    -224.290475206        9.25693D-03   -8.91D-05    6
-      MULPOP OS    3.30; OP   14.47; 
+      Virial theorem: -V/T =      2.002333
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
    7    -224.290495903        3.80667D-03   -2.07D-05    7
-      MULPOP OS    3.30; OP   14.45; 
+      Virial theorem: -V/T =      2.002297
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
    8    -224.290499746        1.50370D-03   -3.84D-06    8
-      MULPOP OS    3.34; OP   14.46; 
+      Virial theorem: -V/T =      2.002299
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
    9    -224.290500230        2.74074D-04   -4.84D-07    9
-      MULPOP OS    3.33; OP   14.45; 
+      Virial theorem: -V/T =      2.002296
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
   10    -224.290500243        4.26559D-05   -1.33D-08   10
-      MULPOP OS    3.33; OP   14.45; 
+      Virial theorem: -V/T =      2.002296
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
   11    -224.290500244        8.04962D-06   -2.46D-10   10
-      MULPOP OS    3.33; OP   14.45; 
-  12    -224.290500244        2.83044D-06   -1.13D-11   10
-      MULPOP OS    3.33; OP   14.45; 
-  13    -224.290500244        4.96605D-07   -1.59D-12   10
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.002296
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
+  12    -224.290500244        2.83044D-06   -1.10D-11   10
+      Virial theorem: -V/T =      2.002296
+      MULPOP  OS      0.34; OP  _1 -0.17; OP  _2 -0.17; 
+ -----------------------------------------------------------------------------
+  13    -224.290500244        4.96605D-07   -1.82D-12   10
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -602,8 +627,8 @@ Point group: C2v
     Number of electrons :   24
     Orbital occupations :    6    4    1    1
 
- Hartree-Fock electronic energy:        -293.189688334520
- Hartree-Fock total      energy:        -224.290500243741
+ Hartree-Fock electronic energy:        -293.189688334524
+ Hartree-Fock total      energy:        -224.290500243745
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  7.84D-08
 
@@ -626,7 +651,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
        -20.72029375    -1.44160595    -0.80567920    -0.56538615     0.12634724
          0.22629885     0.28964271     0.39158511     0.45833442     0.98680545
-         1.04725242     1.21463458     1.27464439     1.41332967     1.75858145
+         1.04725242     1.21463458     1.27464438     1.41332967     1.75858145
          2.44224814     3.10080986     3.29956962     3.56030892     3.64014471
          4.29747343
 
@@ -717,10 +742,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  CI energies and residuals:
-    1     -224.494783095032545       9.25D-02
+    1     -224.494783095035984       9.25D-02
 
 
- Final CI energy:     -224.494783095032545
+ Final CI energy:     -224.494783095035984
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -751,20 +776,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.494783095032           (MACRO    1)
+ Total MCSCF energy       :    -224.494783095036           (MACRO    1)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -254.323242918460    
- - Active energy          :    -39.0707282673514    
+ - Inactive energy        :    -254.323242918453    
+ - Active energy          :    -39.0707282673622    
 
- Norm of total gradient   :        0.270878567259
- -    of CI gradient      :        0.185061812919
- -    of orbital gradient :        0.197806277958
+ Norm of total gradient   :        0.270878567258
+ -    of CI gradient      :        0.185061812918
+ -    of orbital gradient :        0.197806277957
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999874
+      MULPOP  OS      0.21; OP  _1 -0.11; OP  _2 -0.11; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -801,20 +827,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.508883596219           (MACRO    2)
+ Total MCSCF energy       :    -224.508883596223           (MACRO    2)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.377034187472    
- - Active energy          :    -40.0310374995264    
+ - Inactive energy        :    -253.377034187456    
+ - Active energy          :    -40.0310374995459    
 
- Norm of total gradient   :        0.095191883941
- -    of CI gradient      :        0.085404864264
+ Norm of total gradient   :        0.095191883943
+ -    of CI gradient      :        0.085404864266
  -    of orbital gradient :        0.042041692737
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999599
+      MULPOP  OS      0.18; OP  _1 -0.09; OP  _2 -0.09; 
 
  Residual norm when dim(red L) =  15
  NEO root     CSF        orbital          total
@@ -851,20 +878,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510632951188           (MACRO    3)
+ Total MCSCF energy       :    -224.510632951192           (MACRO    3)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.364611557393    
- - Active energy          :    -40.0452094845741    
+ - Inactive energy        :    -253.364611557382    
+ - Active energy          :    -40.0452094845893    
 
- Norm of total gradient   :        0.024011358059
+ Norm of total gradient   :        0.024011358058
  -    of CI gradient      :        0.019877697280
- -    of orbital gradient :        0.013469315748
+ -    of orbital gradient :        0.013469315746
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999498
+      MULPOP  OS      0.13; OP  _1 -0.06; OP  _2 -0.06; 
 
  Residual norm when dim(red L) =  24
  NEO root     CSF        orbital          total
@@ -901,11 +929,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510747872452           (MACRO    4)
+ Total MCSCF energy       :    -224.510747872456           (MACRO    4)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.422506575864    
- - Active energy          :    -39.9874293873671    
+ - Inactive energy        :    -253.422506575869    
+ - Active energy          :    -39.9874293873659    
 
  Norm of total gradient   :        0.002032557509
  -    of CI gradient      :        0.001924000789
@@ -914,7 +942,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999641
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  (SIRNEO) iteration (  4, 24)
  maximum number of microiterations reached
@@ -948,11 +977,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510748512916           (MACRO    5)
+ Total MCSCF energy       :    -224.510748512919           (MACRO    5)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.423429371235    
- - Active energy          :    -39.9865072324590    
+ - Inactive energy        :    -253.423429371228    
+ - Active energy          :    -39.9865072324696    
 
  Norm of total gradient   :        0.000075568352
  -    of CI gradient      :        0.000072153094
@@ -961,7 +990,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999635
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  (SIRNEO) iteration (  5, 24)
  maximum number of microiterations reached
@@ -995,26 +1025,27 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510748516307           (MACRO    6)
+ Total MCSCF energy       :    -224.510748516311           (MACRO    6)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.423464259227    
- - Active energy          :    -39.9864723478588    
+ - Inactive energy        :    -253.423464259220    
+ - Active energy          :    -39.9864723478697    
 
- Norm of total gradient   :        0.000015748654
+ Norm of total gradient   :        0.000015748655
  -    of CI gradient      :        0.000011604054
  -    of orbital gradient :        0.000010647349
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999635
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -3.39162D-09   -3.39006D-09
+ Energy difference; actual and predicted:   -3.39148D-09   -3.39006D-09
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00046D+00
+ Energy difference; actual and predicted:    1.00042D+00
  Close to convergence, ratio set to one.
 
  Residual norm when dim(red L) =   4
@@ -1052,11 +1083,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510748516331           (MACRO    7)
+ Total MCSCF energy       :    -224.510748516335           (MACRO    7)
 
  - Nuclear repulsion      :     68.8991880907788    
- - Inactive energy        :    -253.423475545512    
- - Active energy          :    -39.9864610615976    
+ - Inactive energy        :    -253.423475545505    
+ - Active energy          :    -39.9864610616087    
 
  Norm of total gradient   :        0.000006314226
  -    of CI gradient      :        0.000005916107
@@ -1065,37 +1096,41 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999635
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -2.36184D-11   -2.49355D-11
+ Energy difference; actual and predicted:   -2.41300D-11   -2.49355D-11
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    9.47180D-01
+ Energy difference; actual and predicted:    9.67697D-01
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            7
      Number of micro iterations used           91
-     Total number of CPU seconds used         3.05
+     Total number of CPU seconds used         3.08
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:15 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:14 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    6   -224.494783095032   0.2708785673  0.000000   0.4495547970
-    2   13   -224.508883596219   0.0951918839  0.913791   0.1305438795
-    3   22   -224.510632951188   0.0240113581  0.977019   0.0439066577
-    4   24   -224.510747872452   0.0020325575  1.000772   0.0018160590
-    5   24   -224.510748512916   0.0000755684  1.000373   0.0002760775
-    6    2   -224.510748516307   0.0000157487  1.000000   0.0000089304
-    7    0   -224.510748516331   0.0000063142  1.000000   0.0000000000
+    1    6   -224.494783095036   0.2708785673  0.000000   0.4495547970
+    2   13   -224.508883596223   0.0951918839  0.913791   0.1305438795
+    3   22   -224.510632951192   0.0240113581  0.977019   0.0439066577
+    4   24   -224.510747872456   0.0020325575  1.000772   0.0018160590
+    5   24   -224.510748512919   0.0000755684  1.000373   0.0002760775
+    6    2   -224.510748516311   0.0000157487  1.000000   0.0000089304
+    7    0   -224.510748516335   0.0000063142  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -1112,44 +1147,44 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     3     4      0.32      0.17      0.13      0.12      0.02
+    1     6     3     4      0.32      0.18      0.13      0.12      0.02
     2    13     8     6      0.42      0.18      0.23      0.22      0.02
-    3    22    13    10      0.57      0.18      0.38      0.37      0.02
+    3    22    13    10      0.58      0.18      0.38      0.37      0.02
     4    24    14    11      0.61      0.18      0.42      0.40      0.02
-    5    24    14    11      0.61      0.17      0.42      0.40      0.02
+    5    24    14    11      0.61      0.18      0.42      0.40      0.02
     6     2     1     2      0.25      0.18      0.06      0.05      0.03
     7     0     0     0      0.19      0.18      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -254.323242918460    -39.070728267351   -224.494783095032
-    2   -253.377034187472    -40.031037499526   -224.508883596219
-    3   -253.364611557393    -40.045209484574   -224.510632951188
-    4   -253.422506575864    -39.987429387367   -224.510747872452
-    5   -253.423429371235    -39.986507232459   -224.510748512916
-    6   -253.423464259227    -39.986472347859   -224.510748516307
-    7   -253.423475545512    -39.986461061598   -224.510748516331
+    1   -254.323242918453    -39.070728267362   -224.494783095036
+    2   -253.377034187456    -40.031037499546   -224.508883596223
+    3   -253.364611557382    -40.045209484589   -224.510632951192
+    4   -253.422506575869    -39.987429387366   -224.510747872456
+    5   -253.423429371228    -39.986507232470   -224.510748512919
+    6   -253.423464259220    -39.986472347870   -224.510748516311
+    7   -253.423475545505    -39.986461061609   -224.510748516335
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.015430780373     -0.014100501187      0.913790543688
-    3     -0.001790501713     -0.001749354969      0.977019433430
-    4     -0.000114832590     -0.000114921264      1.000772196923
-    5     -0.000000640225     -0.000000640464      1.000372979309
-    6     -0.000000003390     -0.000000003392      1.000000000000
+    2     -0.015430780373     -0.014100501187      0.913790543697
+    3     -0.001790501713     -0.001749354969      0.977019433716
+    4     -0.000114832590     -0.000114921264      1.000772194540
+    5     -0.000000640225     -0.000000640463      1.000372757366
+    6     -0.000000003390     -0.000000003391      1.000000000000
     7     -0.000000000025     -0.000000000024      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.449554797034      0.700000000000
-    2      0.20000000  1.00000000      0.130543879538      0.700000000000
-    3      0.20000000  1.00000000      0.043906657664      0.700000000000
-    4      0.20000000  1.00000000      0.001816059022      0.700000000000
-    5      0.20000000  1.00000000      0.000276077532      0.700000000000
+    1      0.20000000  1.00000000      0.449554797037      0.700000000000
+    2      0.20000000  1.00000000      0.130543879542      0.700000000000
+    3      0.20000000  1.00000000      0.043906657661      0.700000000000
+    4      0.20000000  1.00000000      0.001816059021      0.700000000000
+    5      0.20000000  1.00000000      0.000276077522      0.700000000000
     6      0.20000000  1.00000000      0.000008930446      0.700000000000
     7      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -1157,30 +1192,33 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.001224563086    0.995982352285   -0.016057948369   -0.083918123049
-    2   -0.000143142561    0.999659340063   -0.007385831625   -0.013208254136
-    3   -0.000009185899    0.999961446338   -0.001703305460   -0.005100145377
+    1   -0.001224563086    0.995982352285   -0.016057948368   -0.083918123049
+    2   -0.000143142561    0.999659340063   -0.007385831625   -0.013208254137
+    3   -0.000009185899    0.999961446338   -0.001703305460   -0.005100145376
     4   -0.000000051218    0.999999934039   -0.000113249346   -0.000103011656
     5   -0.000000000271    0.999999998476   -0.000020909119   -0.000004483453
     6   -0.000000000002    0.999999999998   -0.000000563521   -0.000001641499
     7    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -224.510748516331                 
+     Final MCSCF energy:         -224.510748516335                 
      Nuclear repulsion:            68.899188090779
-     Electronic energy:          -293.409936607110
+     Electronic energy:          -293.409936607114
 
      Final gradient norm:           0.000006314226
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:15 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:14 2011 
      Host name              : fe6                                     
 
 
@@ -1196,7 +1234,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
    2.000000000   2.000000000   1.994295999   1.955706250   0.042292264
 
- Symmetry  3 -- Total occupation in this symmetry is   2.222880800
+ Symmetry  3 -- Total occupation in this symmetry is   2.222880799
 
    1.971894810   0.250985990
 
@@ -1213,7 +1251,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           3        4        5        6        7        8        9
+    Orbital         3        4        5        6        7        8        9
    1 OS  :1s    -0.0020   0.0041   0.0046  -0.0000  -0.0703   0.0059   0.0158
    2 OS  :1s     0.5671   0.5877   0.5117  -0.2036  -0.7431  -0.0744  -0.0302
    3 OS  :1s    -0.0743   0.1127   0.1025   0.1238  -0.0268  -0.2632  -0.3551
@@ -1243,7 +1281,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 OS  :2py    0.0010   0.0715   0.1815  -0.6977   1.1271   0.0275   0.0694
    2 OS  :2py    0.0104  -0.1415  -0.0230   0.0711  -0.2436  -0.4684   0.0385
    3 OS  :2py    0.0008  -0.0200   0.0068   0.0068   0.0113  -3.3188  -0.0293
@@ -1268,7 +1306,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 OS  :2pz    0.8365   0.6200  -0.1462  -0.1291
    2 OS  :2pz   -0.0294   0.0020  -0.0968  -0.1693
    3 OS  :2pz    0.0006  -0.0047   0.0558   2.8867
@@ -1284,7 +1322,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 OS  :3d1-   0.0294  -0.0030   0.0162
    2 OS  :3d1-   0.0177  -0.0167   0.4429
    3 OP  :2pz    0.6919  -0.1458  -0.0897
@@ -1373,11 +1411,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      3.65 seconds
+ >>>> Total CPU  time used in SIRIUS :      3.67 seconds
  >>>> Total wall time used in SIRIUS :      5.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:15 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:14 2011 
      Host name              : fe6                                     
 
  NOTE:    7 warnings have been issued.
@@ -1401,7 +1439,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:16 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:15 2011 
      Host name              : fe6                                     
 
 
@@ -1411,7 +1449,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:17 2011 
      Host name              : fe6                                     
 
 
@@ -1419,8 +1457,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                              -----------------------
 
  OS         0.0000000000            0.0000000000            0.0000000000
- OP   1     1.2634502500            2.0449019100            0.0000000000
- OP   2     1.2634502500           -2.0449019100            0.0000000000
+ OP  _1     1.2634502500            2.0449019100            0.0000000000
+ OP  _2     1.2634502500           -2.0449019100            0.0000000000
 
 
 
@@ -1432,18 +1470,18 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -224.5107485163 au (Hartrees)
-                         -6109.24806379 eV
-                           -589452.8856 kJ/mol
+                         -6109.24823714 eV
+                           -589452.8794 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.5988663893 au
-     Mass-velocity correction:                  -0.7545386655 au
+     Darwin correction:                          0.5988663844 au
+     Mass-velocity correction:                  -0.7545386593 au
 
-     Total relativistic correction:             -0.1556722762 au (0.0693%)
-     Non-relativistic + relativistic energy:  -224.6664207925 au
+     Total relativistic correction:             -0.1556722749 au (0.0693%)
+     Non-relativistic + relativistic energy:  -224.6664207913 au
 
 
 
@@ -1458,8 +1496,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  OS         0.0013032736            0.0000000000            0.0000000000
- OP   1    -0.0006516368           -0.0009442363            0.0000000000
- OP   2    -0.0006516368            0.0009442363            0.0000000000
+ OP  _1    -0.0006516368           -0.0009442363            0.0000000000
+ OP  _2    -0.0006516368            0.0009442363            0.0000000000
 
 
 
@@ -1477,7 +1515,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.20476269        -0.52045480        -1.73605034
+      x     -0.20476269        -0.52045482        -1.73605042
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1489,15 +1527,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            OS          OP   1      OP   2
+            OS          OP  _1      OP  _2
             ------      ------      ------
  OS    :    0.000000
- OP   1:    1.272001    0.000000
- OP   2:    1.272001    2.164231    0.000000
+ OP  _1:    1.272001    0.000000
+ OP  _2:    1.272001    2.164231    0.000000
 
 
   Max interatomic separation is    2.1642 Angstrom (    4.0898 Bohr)
-  between atoms    3 and    2, "OP   2" and "OP   1".
+  between atoms    3 and    2, "OP  _2" and "OP  _1".
 
 
   Bond distances (Angstrom):
@@ -1505,8 +1543,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  OP   1     OS           1.272001
-  bond distance:  OP   2     OS           1.272001
+  bond distance:  OP  _1     OS           1.272001
+  bond distance:  OP  _2     OS           1.272001
 
 
   Bond angles (degrees):
@@ -1514,7 +1552,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     OP   1     OS         OP   2       116.580
+  bond angle:     OP  _1     OS         OP  _2       116.580
 
 
 
@@ -1547,8 +1585,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                                 ------------------
 
  OS        -0.0006824555            0.0000000000            0.0000000000
- OP   1     1.2637914777            2.0456985880            0.0000000000
- OP   2     1.2637914777           -2.0456985880            0.0000000000
+ OP  _1     1.2637914777            2.0456985880            0.0000000000
+ OP  _2     1.2637914777           -2.0456985880            0.0000000000
 
 
 
@@ -1590,7 +1628,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Megabytes written:                              7.702
 
  >>> Time used in TWOINT is   0.28 seconds
- >>>> Total CPU  time used in HERMIT:   0.29 seconds
+ >>>> Total CPU  time used in HERMIT:   0.31 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
@@ -1618,9 +1656,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
 
  "Occupations" of RAS pseudo-natural orbitals:
 
@@ -1648,20 +1685,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510749725225           (MACRO    1)
+ Total MCSCF energy       :    -224.510749725230           (MACRO    1)
 
- - Nuclear repulsion      :     68.8661722076628    
- - Inactive energy        :    -253.399928778759    
- - Active energy          :    -39.9769931541285    
+ - Nuclear repulsion      :     68.8661722076124    
+ - Inactive energy        :    -253.399928778718    
+ - Active energy          :    -39.9769931541244    
 
  Norm of total gradient   :        0.003432453120
  -    of CI gradient      :        0.001180868377
- -    of orbital gradient :        0.003222931011
+ -    of orbital gradient :        0.003222931010
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999653
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -1698,20 +1736,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510750609579           (MACRO    2)
+ Total MCSCF energy       :    -224.510750609584           (MACRO    2)
 
- - Nuclear repulsion      :     68.8661722076628    
- - Inactive energy        :    -253.402173460882    
- - Active energy          :    -39.9747493563594    
+ - Nuclear repulsion      :     68.8661722076124    
+ - Inactive energy        :    -253.402173460843    
+ - Active energy          :    -39.9747493563538    
 
  Norm of total gradient   :        0.000047458330
  -    of CI gradient      :        0.000045721443
- -    of orbital gradient :        0.000012721742
+ -    of orbital gradient :        0.000012721743
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999648
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  Residual norm when dim(red L) =  20
  NEO root     CSF        orbital          total
@@ -1748,11 +1787,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510750613342           (MACRO    3)
+ Total MCSCF energy       :    -224.510750613348           (MACRO    3)
 
- - Nuclear repulsion      :     68.8661722076628    
- - Inactive energy        :    -253.402250303115    
- - Active energy          :    -39.9746725178902    
+ - Nuclear repulsion      :     68.8661722076124    
+ - Inactive energy        :    -253.402250303076    
+ - Active energy          :    -39.9746725178843    
 
  Norm of total gradient   :        0.000009616240
  -    of CI gradient      :        0.000009102625
@@ -1761,13 +1800,14 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999648
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -3.76355D-09   -3.76388D-09
+ Energy difference; actual and predicted:   -3.76369D-09   -3.76388D-09
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    9.99910D-01
+ Energy difference; actual and predicted:    9.99948D-01
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
@@ -1776,18 +1816,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
      Total number of CPU seconds used         1.21
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:21 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:20 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1   13   -224.510749725225   0.0034324531  0.000000   0.0009439596
-    2   18   -224.510750609579   0.0000474583  1.000071   0.0003231343
-    3    0   -224.510750613342   0.0000096162  1.000000   0.0000000000
+    1   13   -224.510749725230   0.0034324531  0.000000   0.0009439596
+    2   18   -224.510750609584   0.0000474583  1.000072   0.0003231343
+    3    0   -224.510750613348   0.0000096162  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -1801,27 +1844,27 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  ------------------------------------------------------------------------------
 
     1    13     6     7      0.47      0.22      0.23      0.22      0.02
-    2    18    10     9      0.51      0.18      0.32      0.31      0.02
+    2    18    10     9      0.52      0.18      0.32      0.31      0.02
     3     0     0     0      0.19      0.18      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.399928778759    -39.976993154128   -224.510749725225
-    2   -253.402173460882    -39.974749356359   -224.510750609579
-    3   -253.402250303115    -39.974672517890   -224.510750613342
+    1   -253.399928778718    -39.976993154124   -224.510749725230
+    2   -253.402173460843    -39.974749356354   -224.510750609584
+    3   -253.402250303076    -39.974672517884   -224.510750613348
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000000884291     -0.000000884354      1.000071214153
+    2     -0.000000884291     -0.000000884354      1.000071665123
     3     -0.000000003764     -0.000000003764      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.000943959597      0.700000000000
+    1      0.20000000  1.00000000      0.000943959600      0.700000000000
     2      0.20000000  1.00000000      0.000323134258      0.700000000000
     3      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -1829,26 +1872,29 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000000070743    0.999999982179   -0.000062404933   -0.000079804876
-    2   -0.000000000301    0.999999997912   -0.000043888092   -0.000004530122
+    1   -0.000000070743    0.999999982179   -0.000062404932   -0.000079804876
+    2   -0.000000000301    0.999999997912   -0.000043888092   -0.000004530123
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -224.510750613342                 
-     Nuclear repulsion:            68.866172207663
-     Electronic energy:          -293.376922821005
+     Final MCSCF energy:         -224.510750613348                 
+     Nuclear repulsion:            68.866172207612
+     Electronic energy:          -293.376922820960
 
      Final gradient norm:           0.000009616240
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:21 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:20 2011 
      Host name              : fe6                                     
 
 
@@ -1882,7 +1928,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  >>>> Total wall time used in SIRIUS :      2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:21 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:20 2011 
      Host name              : fe6                                     
 
  NOTE:   10 warnings have been issued.
@@ -1908,7 +1954,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:21 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:20 2011 
      Host name              : fe6                                     
 
 
@@ -1918,7 +1964,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:24 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:23 2011 
      Host name              : fe6                                     
 
 
@@ -1950,8 +1996,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                                 ------------------
 
  OS        -0.0014058808            0.0000000000            0.0000000000
- OP   1     1.2641531904            2.0463395075            0.0000000000
- OP   2     1.2641531904           -2.0463395075            0.0000000000
+ OP  _1     1.2641531904            2.0463395075            0.0000000000
+ OP  _2     1.2641531904           -2.0463395075            0.0000000000
 
 
 
@@ -1994,8 +2040,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Megabytes written:                              7.702
 
  >>> Time used in TWOINT is   0.28 seconds
- >>>> Total CPU  time used in HERMIT:   0.29 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.31 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -2022,9 +2068,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
 
  "Occupations" of RAS pseudo-natural orbitals:
 
@@ -2052,20 +2097,21 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510750449484           (MACRO    1)
+ Total MCSCF energy       :    -224.510750449489           (MACRO    1)
 
- - Nuclear repulsion      :     68.8365908560378    
- - Inactive energy        :    -253.381125541961    
- - Active energy          :    -39.9662157635609    
+ - Nuclear repulsion      :     68.8365908564257    
+ - Inactive energy        :    -253.381125542233    
+ - Active energy          :    -39.9662157636820    
 
- Norm of total gradient   :        0.003227926680
- -    of CI gradient      :        0.001089232277
- -    of orbital gradient :        0.003038598969
+ Norm of total gradient   :        0.003227926644
+ -    of CI gradient      :        0.001089232262
+ -    of orbital gradient :        0.003038598937
 
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999664
+      MULPOP  OS      0.15; OP  _1 -0.07; OP  _2 -0.07; 
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -2102,11 +2148,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510751242420           (MACRO    2)
+ Total MCSCF energy       :    -224.510751242425           (MACRO    2)
 
- - Nuclear repulsion      :     68.8365908560378    
- - Inactive energy        :    -253.383146242702    
- - Active energy          :    -39.9641958557558    
+ - Nuclear repulsion      :     68.8365908564257    
+ - Inactive energy        :    -253.383146242943    
+ - Active energy          :    -39.9641958559075    
 
  Norm of total gradient   :        0.000045400632
  -    of CI gradient      :        0.000043527093
@@ -2115,7 +2161,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999660
+      MULPOP  OS      0.14; OP  _1 -0.07; OP  _2 -0.07; 
 
  Residual norm when dim(red L) =  16
  NEO root     CSF        orbital          total
@@ -2152,11 +2199,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -224.510751245879           (MACRO    3)
+ Total MCSCF energy       :    -224.510751245885           (MACRO    3)
 
- - Nuclear repulsion      :     68.8365908560378    
- - Inactive energy        :    -253.383222416213    
- - Active energy          :    -39.9641196857036    
+ - Nuclear repulsion      :     68.8365908564257    
+ - Inactive energy        :    -253.383222416456    
+ - Active energy          :    -39.9641196858543    
 
  Norm of total gradient   :        0.000009635354
  -    of CI gradient      :        0.000008983903
@@ -2165,33 +2212,37 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  WARNING, population analysis for RAS wave functions uses pseudo-natural orbitals,
           that is, the off-diagonal elements of the one-electron density matrix which
           couple the different RAS spaces are ignored.
-      MULPOP OS  ******; OP  ******; 
+      Virial theorem: -V/T =      1.999660
+      MULPOP  OS      0.14; OP  _1 -0.07; OP  _2 -0.07; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -3.45946D-09   -3.45932D-09
+ Energy difference; actual and predicted:   -3.45980D-09   -3.45932D-09
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00004D+00
+ Energy difference; actual and predicted:    1.00014D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            3
      Number of micro iterations used           27
-     Total number of CPU seconds used         1.14
+     Total number of CPU seconds used         1.15
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:27 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:26 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1   13   -224.510750449484   0.0032279267  0.000000   0.0008899917
-    2   14   -224.510751242420   0.0000454006  1.000066   0.0003096377
-    3    0   -224.510751245879   0.0000096354  1.000000   0.0000000000
+    1   13   -224.510750449489   0.0032279266  0.000000   0.0008899917
+    2   14   -224.510751242425   0.0000454006  1.000066   0.0003096377
+    3    0   -224.510751245885   0.0000096354  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -2205,54 +2256,57 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  ------------------------------------------------------------------------------
 
     1    13     6     7      0.47      0.22      0.23      0.23      0.02
-    2    14     8     7      0.44      0.18      0.25      0.24      0.02
+    2    14     8     7      0.45      0.18      0.25      0.24      0.02
     3     0     0     0      0.19      0.18      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.381125541961    -39.966215763561   -224.510750449484
-    2   -253.383146242702    -39.964195855756   -224.510751242420
-    3   -253.383222416213    -39.964119685704   -224.510751245879
+    1   -253.381125542233    -39.966215763682   -224.510750449489
+    2   -253.383146242943    -39.964195855908   -224.510751242425
+    3   -253.383222416456    -39.964119685854   -224.510751245885
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000000792883     -0.000000792936      1.000066429503
-    3     -0.000000003459     -0.000000003459      1.000000000000
+    2     -0.000000792883     -0.000000792936      1.000066310099
+    3     -0.000000003459     -0.000000003460      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.000889991692      0.700000000000
-    2      0.20000000  1.00000000      0.000309637695      0.700000000000
+    1      0.20000000  1.00000000      0.000889991673      0.700000000000
+    2      0.20000000  1.00000000      0.000309637686      0.700000000000
     3      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000000063431    0.999999984158   -0.000066530513   -0.000075743565
+    1   -0.000000063431    0.999999984158   -0.000066530512   -0.000075743564
     2   -0.000000000277    0.999999998082   -0.000041958548   -0.000006522080
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
      State number:                1
 
-     Final MCSCF energy:         -224.510751245879                 
-     Nuclear repulsion:            68.836590856038
-     Electronic energy:          -293.347342101917
+     Final MCSCF energy:         -224.510751245885                 
+     Nuclear repulsion:            68.836590856426
+     Electronic energy:          -293.347342102310
 
      Final gradient norm:           0.000009635354
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:27 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:26 2011 
      Host name              : fe6                                     
 
 
@@ -2282,11 +2336,11 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.36 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.37 seconds
+ >>>> Total wall time used in SIRIUS :      3.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:27 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:26 2011 
      Host name              : fe6                                     
 
  NOTE:   13 warnings have been issued.
@@ -2312,7 +2366,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:27 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:26 2011 
      Host name              : fe6                                     
 
 
@@ -2322,7 +2376,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:30 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:29 2011 
      Host name              : fe6                                     
 
 
@@ -2354,8 +2408,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                                -------------------
 
  OS        -0.0014058808            0.0000000000            0.0000000000
- OP   1     1.2641531904            2.0463395075            0.0000000000
- OP   2     1.2641531904           -2.0463395075            0.0000000000
+ OP  _1     1.2641531904            2.0463395075            0.0000000000
+ OP  _2     1.2641531904           -2.0463395075            0.0000000000
 
 
 
@@ -2384,7 +2438,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:30 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:29 2011 
      Host name              : fe6                                     
 
 
@@ -2394,7 +2448,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:30 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:29 2011 
      Host name              : fe6                                     
 
 
@@ -2402,8 +2456,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                              -----------------------
 
  OS        -0.0014058808            0.0000000000            0.0000000000
- OP   1     1.2641531904            2.0463395075            0.0000000000
- OP   2     1.2641531904           -2.0463395075            0.0000000000
+ OP  _1     1.2641531904            2.0463395075            0.0000000000
+ OP  _2     1.2641531904           -2.0463395075            0.0000000000
 
 
 
@@ -2415,18 +2469,18 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -224.5107512459 au (Hartrees)
-                         -6109.24813806 eV
-                           -589452.8927 kJ/mol
+                         -6109.24831142 eV
+                           -589452.8865 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.5988721305 au
-     Mass-velocity correction:                  -0.7545454078 au
+     Darwin correction:                          0.5988721255 au
+     Mass-velocity correction:                  -0.7545454016 au
 
-     Total relativistic correction:             -0.1556732774 au (0.0693%)
-     Non-relativistic + relativistic energy:  -224.6664245232 au
+     Total relativistic correction:             -0.1556732761 au (0.0693%)
+     Non-relativistic + relativistic energy:  -224.6664245220 au
 
 
 
@@ -2443,7 +2497,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                  au               Debye          C m (/(10**-30)
 
-      x     -0.20412142        -0.51882484        -1.73061339
+      x     -0.20412142        -0.51882487        -1.73061347
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -2455,15 +2509,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            OS          OP   1      OP   2
+            OS          OP  _1      OP  _2
             ------      ------      ------
  OS    :    0.000000
- OP   1:    1.273234    0.000000
- OP   2:    1.273234    2.165752    0.000000
+ OP  _1:    1.273234    0.000000
+ OP  _2:    1.273234    2.165752    0.000000
 
 
   Max interatomic separation is    2.1658 Angstrom (    4.0927 Bohr)
-  between atoms    3 and    2, "OP   2" and "OP   1".
+  between atoms    3 and    2, "OP  _2" and "OP  _1".
 
 
   Bond distances (Angstrom):
@@ -2471,8 +2525,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  OP   1     OS           1.273234
-  bond distance:  OP   2     OS           1.273234
+  bond distance:  OP  _1     OS           1.273234
+  bond distance:  OP  _2     OS           1.273234
 
 
   Bond angles (degrees):
@@ -2480,7 +2534,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     OP   1     OS         OP   2       116.531
+  bond angle:     OP  _1     OS         OP  _2       116.531
 
 
 
@@ -2546,10 +2600,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :     -224.510751245879050
- -- inactive part     :     -253.383222416213243
- --   active part     :      -39.964119685703558
- -- nuclear repulsion :       68.836590856037759
+ MCSCF energy         :     -224.510751245884563
+ -- inactive part     :     -253.383222416455965
+ --   active part     :      -39.964119685854286
+ -- nuclear repulsion :       68.836590856425701
 
 
                         **********************************
@@ -2615,7 +2669,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Orbital variables.         KZWOPT:     173
  Configuration variables.   KZCONF:     262
  Total number of variables. KZVAR :     435
- >>> Time used in CRVEC1 is   0.98 seconds
+ >>> Time used in CRVEC1 is   0.99 seconds
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -2682,7 +2736,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
     ZDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
                           0.059200  0.000000          8.87149190
- >>> Time used in CRVEC2 is   2.35 seconds
+ >>> Time used in CRVEC2 is   2.37 seconds
 
 
  <<<<< CALCULATING CONTRIBUTIONS TO SECOND HYPERPOLARIZABILITY >>>>>
@@ -2720,7 +2774,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
    Contribution                Term         Accumulated
  ------------------------------------------------------
  Na T[4] Nb Nc Nd       -4.08737582         -4.08737582
- Na T[3] Nx Nyz         34.62819975         30.54082394
+ Na T[3] Nx Nyz         34.62819975         30.54082393
  Na X[3] Ny Nz          42.97438969         73.51521363
  Nx A[3] Ny Nz          14.16235740         87.67757103
  Na X[2] Nyz          -151.91461682        -64.23704579
@@ -2745,8 +2799,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
 @ gamma(Z;Z,Z,Z)        214.8176
 
- >>>> Total CPU  time used in RESPONSE:  11.67 seconds
- >>>> Total wall time used in RESPONSE:  13.00 seconds
+ >>>> Total CPU  time used in RESPONSE:  11.71 seconds
+ >>>> Total wall time used in RESPONSE:  12.00 seconds
 
 
           <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -2759,8 +2813,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
                                   --------------
 
  OS        -0.0014058808            0.0000000000            0.0000000000
- OP   1     1.2641531904            2.0463395075            0.0000000000
- OP   2     1.2641531904           -2.0463395075            0.0000000000
+ OP  _1     1.2641531904            2.0463395075            0.0000000000
+ OP  _2     1.2641531904           -2.0463395075            0.0000000000
 
 
 
@@ -2776,15 +2830,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            OS          OP   1      OP   2
+            OS          OP  _1      OP  _2
             ------      ------      ------
  OS    :    0.000000
- OP   1:    1.273234    0.000000
- OP   2:    1.273234    2.165752    0.000000
+ OP  _1:    1.273234    0.000000
+ OP  _2:    1.273234    2.165752    0.000000
 
 
   Max interatomic separation is    2.1658 Angstrom (    4.0927 Bohr)
-  between atoms    3 and    2, "OP   2" and "OP   1".
+  between atoms    3 and    2, "OP  _2" and "OP  _1".
 
 
   Bond distances (Angstrom):
@@ -2792,8 +2846,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  OP   1     OS           1.273234
-  bond distance:  OP   2     OS           1.273234
+  bond distance:  OP  _1     OS           1.273234
+  bond distance:  OP  _2     OS           1.273234
 
 
   Bond angles (degrees):
@@ -2801,7 +2855,7 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     OP   1     OS         OP   2       116.531
+  bond angle:     OP  _1     OS         OP  _2       116.531
 
 
 
@@ -2811,9 +2865,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  2.76D-0
  Energy change during optimization :      -0.000003 a.u.
                                              -0.007 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  23.02 seconds
- >>>> Total wall time used in DALTON:  33.00 seconds
+ >>>> Total CPU  time used in DALTON:  23.15 seconds
+ >>>> Total wall time used in DALTON:  32.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:40:43 2010 
+     Date and time (Linux)  : Wed Mar 16 18:07:41 2011 
      Host name              : fe6                                     

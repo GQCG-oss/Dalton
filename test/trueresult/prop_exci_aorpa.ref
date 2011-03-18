@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:21:30 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:55 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -179,8 +180,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -246,15 +247,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -262,8 +263,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -271,7 +272,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -280,7 +281,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       0.616959          0.000000    1.000000    0.000000
-   IB       1.156693          0.000000    0.000000    1.000000
+   IB       1.156694          0.000000    0.000000    1.000000
    IC       1.773652          1.000000    0.000000    0.000000
 
 
@@ -291,8 +292,8 @@ Point group: C2v
 
                A                   B                   C
 
-         819145.5197         436916.9613         284936.9173 MHz
-           27.323753           14.573981            9.504473 cm-1
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
 
 
 @  Nuclear repulsion energy :    9.183706230245
@@ -395,8 +396,8 @@ Point group: C2v
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.17 seconds
- >>>> Total CPU  time used in HERMIT:   0.17 seconds
+ >>> Time used in TWOINT is   0.18 seconds
+ >>>> Total CPU  time used in HERMIT:   0.19 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 
@@ -431,7 +432,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:56 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -443,12 +444,12 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -485,24 +486,41 @@ Point group: C2v
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
    1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.995901
+      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
    2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001342
+      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000717
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000873
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000774
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.01 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.01 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -533,20 +551,23 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218673                 
+     Final HF energy:             -76.060784218676                 
      Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448918
+     Electronic energy:           -85.244490448921
 
      Final gradient norm:           0.000007644696
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:56 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -554,7 +575,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
    2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
    3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
@@ -578,7 +599,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.0819  -0.0403   0.0108
    2 O   :px     0.1941  -0.1683   0.0187
    3 O   :px     0.3396  -0.0020   0.0667
@@ -590,7 +611,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :py     0.0653   0.0306   0.0081
    2 O   :py     0.1529   0.0600  -0.0127
    3 O   :py     0.2746   0.1667   0.0964
@@ -606,7 +627,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :dxy    0.9129   0.7003
    2 H   :px     0.1116  -0.8095
 
@@ -616,7 +637,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:56 2011 
      Host name              : fe6                                     
 
 
@@ -675,8 +696,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -692,7 +713,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:56 2011 
      Host name              : fe6                                     
 
 
@@ -846,7 +867,7 @@ Point group: C2v
 
  RPA excitation energy :  0.42380586     au
                            11.532344     eV
-                           93014.634     cm-1
+                           93014.633     cm-1
                            1112.7021     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.11 + -0.11  = 100.00 %
@@ -855,9 +876,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |   -0.979170  |
- |    exci. | 1   1   |   3       3     |    0.141817  |
- |    exci. | 2   2   |   1       1     |   -0.100550  |
+ |    exci. | 1   1   |   1       3     |    0.979170  |
+ |    exci. | 1   1   |   3       3     |   -0.141817  |
+ |    exci. | 2   2   |   1       1     |    0.100550  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -868,7 +889,7 @@ Point group: C2v
  RPA excitation energy :  0.61178377     au
                            16.647483     eV
                            134271.02     cm-1
-                           1606.2381     kj / mole
+                           1606.2380     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.10 + -0.10  = 100.00 %
 
@@ -876,9 +897,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   2   |   1       1     |    0.628156  |
- |    exci. | 3   3   |   1       1     |    0.750068  |
- |    exci. | 3   3   |   3       1     |   -0.187245  |
+ |    exci. | 2   2   |   1       1     |   -0.628156  |
+ |    exci. | 3   3   |   1       1     |   -0.750068  |
+ |    exci. | 3   3   |   3       1     |    0.187245  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -910,7 +931,7 @@ Point group: C2v
  Excitation symmetry  1, state no.  4
 
  RPA excitation energy :  0.78081889     au
-                           21.247162     eV
+                           21.247163     eV
                            171369.94     cm-1
                            2050.0397     kj / mole
 
@@ -920,12 +941,12 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |    0.101758  |
- |    exci. | 1   1   |   2       3     |   -0.737944  |
- |    exci. | 1   1   |   3       3     |    0.358505  |
- |    exci. | 2   2   |   1       1     |   -0.394604  |
- |    exci. | 3   3   |   1       1     |    0.370547  |
- |    exci. | 3   3   |   3       1     |    0.153964  |
+ |    exci. | 1   1   |   1       3     |   -0.101758  |
+ |    exci. | 1   1   |   2       3     |    0.737944  |
+ |    exci. | 1   1   |   3       3     |   -0.358505  |
+ |    exci. | 2   2   |   1       1     |    0.394604  |
+ |    exci. | 3   3   |   1       1     |   -0.370547  |
+ |    exci. | 3   3   |   3       1     |   -0.153964  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -960,10 +981,10 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1    -0.69872 +    0.02901 =   -0.66971
-   2     0.38136 +   -0.01330 =    0.36806
+   1     0.69872 +   -0.02901 =    0.66971
+   2    -0.38136 +    0.01330 =   -0.36806
    3     0.39650 +   -0.02683 =    0.36966
-   4     0.03837 +   -0.04539 =   -0.00702
+   4    -0.03837 +    0.04539 =    0.00702
    5    -0.03003 +    0.03426 =    0.00423
  =========================================
 
@@ -971,10 +992,10 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.28534 +    0.00968 =    0.29502
-   2    -0.20289 +   -0.01944 =   -0.22233
+   1    -0.28534 +   -0.00968 =   -0.29502
+   2     0.20289 +    0.01944 =    0.22233
    3    -0.23806 +   -0.00959 =   -0.24765
-   4     0.02285 +   -0.03618 =   -0.01333
+   4    -0.02285 +    0.03618 =    0.01333
    5     0.00267 +    0.01603 =    0.01870
  =========================================
 
@@ -1078,9 +1099,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  1
 
  RPA excitation energy :  0.33209968     au
-                           9.0368916     eV
-                           72887.454     cm-1
-                           871.92758     kj / mole
+                           9.0368919     eV
+                           72887.453     cm-1
+                           871.92757     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.16 + -0.16  = 100.00 %
 
@@ -1119,7 +1140,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  3
 
  RPA excitation energy :  0.68970122     au
-                           18.767724     eV
+                           18.767725     eV
                            151371.92     cm-1
                            1810.8103     kj / mole
 
@@ -1138,9 +1159,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  4
 
  RPA excitation energy :  0.74419807     au
-                           20.250659     eV
+                           20.250660     eV
                            163332.60     cm-1
-                           1953.8918     kj / mole
+                           1953.8917     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.16 + -0.16  = 100.00 %
 
@@ -1159,9 +1180,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  5
 
  RPA excitation energy :   1.0679130     au
-                           29.059390     eV
+                           29.059391     eV
                            234379.81     cm-1
-                           2803.8052     kj / mole
+                           2803.8051     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.05 + -0.05  = 100.00 %
 
@@ -1333,8 +1354,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |   -0.964430  |
- |    exci. | 3   1   |   3       3     |    0.254027  |
+ |    exci. | 3   1   |   1       3     |    0.964430  |
+ |    exci. | 3   1   |   3       3     |   -0.254027  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1343,7 +1364,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  2
 
  RPA excitation energy :  0.54399495     au
-                           14.802855     eV
+                           14.802856     eV
                            119393.09     cm-1
                            1428.2585     kj / mole
 
@@ -1363,7 +1384,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  3
 
  RPA excitation energy :  0.75461173     au
-                           20.534029     eV
+                           20.534030     eV
                            165618.13     cm-1
                            1981.2328     kj / mole
 
@@ -1373,8 +1394,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   3       1     |   -0.112377  |
- |    exci. | 3   1   |   2       3     |   -0.982496  |
+ |    exci. | 1   3   |   3       1     |    0.112377  |
+ |    exci. | 3   1   |   2       3     |    0.982496  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1384,8 +1405,8 @@ Point group: C2v
 
  RPA excitation energy :  0.83980433     au
                            22.852238     eV
-                           184315.75     cm-1
-                           2204.9060     kj / mole
+                           184315.74     cm-1
+                           2204.9059     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.14 + -0.14  = 100.00 %
 
@@ -1393,9 +1414,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |    0.121412  |
- |    exci. | 1   3   |   2       1     |    0.966594  |
- |    exci. | 1   3   |   3       1     |    0.203854  |
+ |    exci. | 1   3   |   1       1     |   -0.121412  |
+ |    exci. | 1   3   |   2       1     |   -0.966594  |
+ |    exci. | 1   3   |   3       1     |   -0.203854  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1404,7 +1425,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  5
 
  RPA excitation energy :  0.87364922     au
-                           23.773204     eV
+                           23.773205     eV
                            191743.84     cm-1
                            2293.7657     kj / mole
 
@@ -1427,10 +1448,10 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1    -0.52293 +    0.04300 =   -0.47992
+   1     0.52293 +   -0.04300 =    0.47992
    2    -0.86259 +    0.02735 =   -0.83524
-   3    -0.67596 +    0.06698 =   -0.60898
-   4     0.21974 +   -0.02585 =    0.19389
+   3     0.67596 +   -0.06698 =    0.60898
+   4    -0.21974 +    0.02585 =   -0.19389
    5     0.00076 +    0.01972 =    0.02048
  =========================================
 
@@ -1438,10 +1459,10 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.18552 +    0.05019 =    0.23571
+   1    -0.18552 +   -0.05019 =   -0.23571
    2     0.44290 +    0.01178 =    0.45468
-   3     0.38019 +    0.06899 =    0.44917
-   4    -0.13937 +   -0.01044 =   -0.14980
+   3    -0.38019 +   -0.06899 =   -0.44917
+   4     0.13937 +    0.01044 =    0.14980
    5    -0.06073 +    0.02970 =   -0.03104
  =========================================
 
@@ -1449,10 +1470,10 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.21364 +   -0.00368 =    0.20996
+   1    -0.21364 +    0.00368 =   -0.20996
    2    -0.13160 +   -0.00546 =   -0.13706
-   3     0.44888 +   -0.00992 =    0.43896
-   4     0.10916 +   -0.00612 =    0.10303
+   3    -0.44888 +    0.00992 =   -0.43896
+   4    -0.10916 +    0.00612 =   -0.10303
    5     0.16335 +   -0.00426 =    0.15908
  =========================================
 
@@ -1543,7 +1564,7 @@ Point group: C2v
 
  RPA excitation energy :  0.39497412     au
                            10.747792     eV
-                           86686.799     cm-1
+                           86686.798     cm-1
                            1037.0044     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.18 + -0.18  = 100.00 %
@@ -1552,9 +1573,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.948033  |
- |    exci. | 3   2   |   2       1     |    0.108720  |
- |    exci. | 3   2   |   3       1     |   -0.298130  |
+ |    exci. | 3   2   |   1       1     |   -0.948033  |
+ |    exci. | 3   2   |   2       1     |   -0.108720  |
+ |    exci. | 3   2   |   3       1     |    0.298130  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1563,7 +1584,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  2
 
  RPA excitation energy :  0.65410777     au
-                           17.799177     eV
+                           17.799178     eV
                            143560.06     cm-1
                            1717.3597     kj / mole
 
@@ -1584,7 +1605,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  3
 
  RPA excitation energy :  0.78672722     au
-                           21.407936     eV
+                           21.407937     eV
                            172666.67     cm-1
                            2065.5520     kj / mole
 
@@ -1594,9 +1615,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.268698  |
- |    exci. | 3   2   |   2       1     |    0.233518  |
- |    exci. | 3   2   |   3       1     |    0.926596  |
+ |    exci. | 3   2   |   1       1     |   -0.268698  |
+ |    exci. | 3   2   |   2       1     |   -0.233518  |
+ |    exci. | 3   2   |   3       1     |   -0.926596  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1615,7 +1636,7 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   3   |   1       1     |    0.994574  |
+ |    exci. | 2   3   |   1       1     |   -0.994574  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1624,9 +1645,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  5
 
  RPA excitation energy :   1.3495788     au
-                           36.723907     eV
+                           36.723908     eV
                            296198.31     cm-1
-                           3543.3187     kj / mole
+                           3543.3186     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.04 + -0.04  = 100.00 %
 
@@ -1645,10 +1666,10 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.19225 +   -0.00632 =    0.18593
+   1    -0.19225 +    0.00632 =   -0.18593
    2    -0.26077 +    0.00652 =   -0.25424
-   3    -0.09573 +    0.00324 =   -0.09248
-   4    -0.10767 +    0.00937 =   -0.09830
+   3     0.09573 +   -0.00324 =    0.09248
+   4     0.10767 +   -0.00937 =    0.09830
    5    -0.28586 +    0.00705 =   -0.27882
  =========================================
 
@@ -1661,7 +1682,7 @@ Point group: C2v
  |  SO_EXCIT1.1                     40           0.0   |
  |  SO_PRPINT                     3281           0.0   |
  |  RP_ERES.2                     4797           0.0   |
- |  SO_AODENS                 99996791         762.9   |
+ |  SO_AODENS                 99996793         762.9   |
  |=====================================================| 
 
  |=====================================================| 
@@ -1669,58 +1690,58 @@ Point group: C2v
  |=====================================================| 
  |   Routine            cpu time   of total        sum |
  |-----------------------------------------------------| 
- |   CC_AOFOCK           0: 0: 0     38.5 %     38.5 % |
- |   CCTRBT              0: 0: 0     19.2 %     57.7 % |
- |   CCRDAO              0: 0: 0     14.0 %     71.7 % |
- |   SO_ORTH_TRN         0: 0: 0      4.5 %     76.2 % |
- |   SO_ERES             0: 0: 0      3.5 %     79.7 % |
- |   SO_OPTVEC           0: 0: 0      3.5 %     83.2 % |
- |   SO_REDEV            0: 0: 0      3.1 %     86.4 % |
- |   SO_RES_OVLR         0: 0: 0      2.1 %     88.5 % |
- |   SO_ROPT             0: 0: 0      1.4 %     89.9 % |
- |   SO_INCRED           0: 0: 0      1.4 %     91.3 % |
- |   CC_FCKMO            0: 0: 0      1.0 %     92.3 % |
- |   LAMMAT              0: 0: 0      0.7 %     93.0 % |
- |   SO_AODENS           0: 0: 0      0.7 %     93.7 % |
- |   SO_TRIAL1           0: 0: 0      0.3 %     94.1 % |
- |   SO_DIAG             0: 0: 0      0.3 %     94.4 % |
- |   SO_SRES             0: 0: 0      0.3 %     94.8 % |
- |   SO_INIT             0: 0: 0      0.0 %     94.8 % |
- |   SO_MOENERGY         0: 0: 0      0.0 %     94.8 % |
- |   SO_DENS             0: 0: 0      0.0 %     94.8 % |
- |   SO_T2MP             0: 0: 0      0.0 %     94.8 % |
- |   SO_BCKTR            0: 0: 0      0.0 %     94.8 % |
- |   ERIDI1              0: 0: 0      0.0 %     94.8 % |
- |   ERIDI2              0: 0: 0      0.0 %     94.8 % |
- |   SO_T2M1             0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_A            0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_CB           0: 0: 0      0.0 %     94.8 % |
- |   SO_SIGDA            0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_B            0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_C            0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_SYM          0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_FCK          0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_OVL          0: 0: 0      0.0 %     94.8 % |
- |   SO_TWOFOCK          0: 0: 0      0.0 %     94.8 % |
- |   SO_ONEFOCK          0: 0: 0      0.0 %     94.8 % |
- |   SO_CHECK            0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_TCB          0: 0: 0      0.0 %     94.8 % |
- |   SO_RES_CD           0: 0: 0      0.0 %     94.8 % |
- |   SO_ORDEIG           0: 0: 0      0.0 %     94.8 % |
- |   SO_DENSAI           0: 0: 0      0.0 %     94.8 % |
- |   ???????????         0: 0: 0      0.0 %     94.8 % |
- |   ?????????           0: 0: 0      0.0 %     94.8 % |
- |   SO_SIGAI            0: 0: 0     -0.3 %     94.4 % |
- |   SO_TRIAL2           0: 0: 0     -1.0 %     93.4 % |
+ |   CC_AOFOCK           0: 0: 0     37.2 %     37.2 % |
+ |   CCRDAO              0: 0: 0     17.7 %     54.9 % |
+ |   CCTRBT              0: 0: 0     17.7 %     72.6 % |
+ |   SO_OPTVEC           0: 0: 0      4.2 %     76.7 % |
+ |   SO_REDEV            0: 0: 0      3.5 %     80.2 % |
+ |   SO_ERES             0: 0: 0      2.8 %     83.0 % |
+ |   SO_ORTH_TRN         0: 0: 0      2.4 %     85.4 % |
+ |   SO_ROPT             0: 0: 0      2.4 %     87.8 % |
+ |   SO_SRES             0: 0: 0      1.0 %     88.9 % |
+ |   SO_AODENS           0: 0: 0      0.7 %     89.6 % |
+ |   SO_TRIAL1           0: 0: 0      0.7 %     90.3 % |
+ |   SO_BCKTR            0: 0: 0      0.3 %     90.6 % |
+ |   SO_RES_OVLR         0: 0: 0      0.3 %     91.0 % |
+ |   SO_ORDEIG           0: 0: 0      0.3 %     91.3 % |
+ |   SO_TRIAL2           0: 0: 0      0.0 %     91.3 % |
+ |   LAMMAT              0: 0: 0      0.0 %     91.3 % |
+ |   SO_INIT             0: 0: 0      0.0 %     91.3 % |
+ |   SO_MOENERGY         0: 0: 0      0.0 %     91.3 % |
+ |   SO_DENS             0: 0: 0      0.0 %     91.3 % |
+ |   SO_T2MP             0: 0: 0      0.0 %     91.3 % |
+ |   ERIDI1              0: 0: 0      0.0 %     91.3 % |
+ |   ERIDI2              0: 0: 0      0.0 %     91.3 % |
+ |   SO_T2M1             0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_A            0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_CB           0: 0: 0      0.0 %     91.3 % |
+ |   SO_SIGDA            0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_B            0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_C            0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_SYM          0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_FCK          0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_OVL          0: 0: 0      0.0 %     91.3 % |
+ |   CC_FCKMO            0: 0: 0      0.0 %     91.3 % |
+ |   SO_TWOFOCK          0: 0: 0      0.0 %     91.3 % |
+ |   SO_ONEFOCK          0: 0: 0      0.0 %     91.3 % |
+ |   SO_CHECK            0: 0: 0      0.0 %     91.3 % |
+ |   SO_INCRED           0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_TCB          0: 0: 0      0.0 %     91.3 % |
+ |   SO_RES_CD           0: 0: 0      0.0 %     91.3 % |
+ |   SO_DIAG             0: 0: 0      0.0 %     91.3 % |
+ |   SO_DENSAI           0: 0: 0      0.0 %     91.3 % |
+ |   ???????????         0: 0: 0      0.0 %     91.3 % |
+ |   ?????????           0: 0: 0      0.0 %     91.3 % |
+ |   SO_SIGAI            0: 0: 0     -1.0 %     90.3 % |
  |-----------------------------------------------------| 
  |   Total CPU time      0: 0: 0                       |
  |=====================================================| 
 
  |-----------------------------------------------------| 
- |   SO_READ             0: 0: 0      2.1 %            |
- |   SO_WRITE            0: 0: 0      0.3 %            |
- |   SO_OPEN             0: 0: 0      0.0 %            |
- |   SO_CLOSE            0: 0: 0      2.1 %            |
+ |   SO_READ             0: 0: 0      1.4 %            |
+ |   SO_WRITE            0: 0: 0      0.7 %            |
+ |   SO_OPEN             0: 0: 0      0.3 %            |
+ |   SO_CLOSE            0: 0: 0      1.7 %            |
  |-----------------------------------------------------| 
 
  |=====================================================| 
@@ -1744,7 +1765,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:56 2011 
      Host name              : fe6                                     
 
 
@@ -1752,8 +1773,8 @@ Point group: C2v
                              -----------------------
 
  O          0.0000000000            0.0000000000            0.1241444240
- H    1     0.0000000000            1.4315300000           -0.9852655760
- H    2     0.0000000000           -1.4315300000           -0.9852655760
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
 
 
 
@@ -1765,8 +1786,8 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0607842187 au (Hartrees)
-                         -2069.71916395 eV
-                           -199697.5603 kJ/mol
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
 
 
  ======================================================================
@@ -1783,26 +1804,26 @@ Point group: C2v
                    1        1    0.423806   11.532344
                    1        2    0.611784   16.647483
                    1        3    0.656751   17.871098
-                   1        4    0.780819   21.247162
+                   1        4    0.780819   21.247163
                    1        5    0.838821   22.825477
                 ---------------------------------------
                    2        1    0.332100    9.036892
                    2        2    0.611755   16.646688
-                   2        3    0.689701   18.767724
-                   2        4    0.744198   20.250659
-                   2        5    1.067913   29.059390
+                   2        3    0.689701   18.767725
+                   2        4    0.744198   20.250660
+                   2        5    1.067913   29.059391
                 ---------------------------------------
                    3        1    0.488861   13.302595
-                   3        2    0.543995   14.802855
-                   3        3    0.754612   20.534029
+                   3        2    0.543995   14.802856
+                   3        3    0.754612   20.534030
                    3        4    0.839804   22.852238
-                   3        5    0.873649   23.773204
+                   3        5    0.873649   23.773205
                 ---------------------------------------
                    4        1    0.394974   10.747792
-                   4        2    0.654108   17.799177
-                   4        3    0.786727   21.407936
+                   4        2    0.654108   17.799178
+                   4        3    0.786727   21.407937
                    4        4    0.830477   22.598434
-                   4        5    1.349579   36.723907
+                   4        5    1.349579   36.723908
                 ---------------------------------------
 
 
@@ -1812,10 +1833,10 @@ Point group: C2v
   Sym.   Mode    Frequency       Velocity/Frequency              Length
  ex. st.  No.      (au)          x       y       z         x       y       z
  ==============================================================================
-   1        1     0.423806     0.0000  0.0000 -0.6961    0.0000  0.0000 -0.6697
-   1        2     0.611784     0.0000  0.0000  0.3634    0.0000  0.0000  0.3681
+   1        1     0.423806     0.0000  0.0000  0.6961    0.0000  0.0000  0.6697
+   1        2     0.611784     0.0000  0.0000 -0.3634    0.0000  0.0000 -0.3681
    1        3     0.656751     0.0000  0.0000  0.3771    0.0000  0.0000  0.3697
-   1        4     0.780819     0.0000  0.0000  0.0171    0.0000  0.0000 -0.0070
+   1        4     0.780819     0.0000  0.0000 -0.0171    0.0000  0.0000  0.0070
    1        5     0.838821     0.0000  0.0000 -0.0223    0.0000  0.0000  0.0042
  ------------------------------------------------------------------------------
    2        1     0.332100    -0.5201  0.0000  0.0000   -0.4627  0.0000  0.0000
@@ -1824,10 +1845,10 @@ Point group: C2v
    2        4     0.744198     0.4429  0.0000  0.0000    0.4961  0.0000  0.0000
    2        5     1.067913     0.5400  0.0000  0.0000    0.6277  0.0000  0.0000
  ------------------------------------------------------------------------------
-   3        1     0.488861     0.0000 -0.4822  0.0000    0.0000 -0.4799  0.0000
+   3        1     0.488861     0.0000  0.4822  0.0000    0.0000  0.4799  0.0000
    3        2     0.543995     0.0000 -0.8358  0.0000    0.0000 -0.8352  0.0000
-   3        3     0.754612     0.0000 -0.5952  0.0000    0.0000 -0.6090  0.0000
-   3        4     0.839804     0.0000  0.1784  0.0000    0.0000  0.1939  0.0000
+   3        3     0.754612     0.0000  0.5952  0.0000    0.0000  0.6090  0.0000
+   3        4     0.839804     0.0000 -0.1784  0.0000    0.0000 -0.1939  0.0000
    3        5     0.873649     0.0000  0.0355  0.0000    0.0000  0.0205  0.0000
  ------------------------------------------------------------------------------
    4        1     0.394974     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -1858,16 +1879,16 @@ Point group: C2v
    2      4    20.2507   -0.00000  0.10037 -0.00000  -0.00000 -0.00000 -0.00000
    2      5    29.0594   -0.00000  0.02311 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    13.3026    0.10498 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      1    13.3026   -0.10498 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      2    14.8029   -0.06853 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      3    20.5340    0.21948 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      4    22.8522    0.05152 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      3    20.5340   -0.21948 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.8522   -0.05152 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      5    23.7732    0.07954 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   4      1    10.7478   -0.00000 -0.00000  0.09297  -0.00000 -0.00000 -0.00000
+   4      1    10.7478   -0.00000 -0.00000 -0.09297  -0.00000 -0.00000 -0.00000
    4      2    17.7992   -0.00000 -0.00000 -0.12712  -0.00000 -0.00000 -0.00000
-   4      3    21.4079   -0.00000 -0.00000 -0.04624  -0.00000 -0.00000 -0.00000
-   4      4    22.5984   -0.00000 -0.00000 -0.04915  -0.00000 -0.00000 -0.00000
+   4      3    21.4079   -0.00000 -0.00000  0.04624  -0.00000 -0.00000 -0.00000
+   4      4    22.5984   -0.00000 -0.00000  0.04915  -0.00000 -0.00000 -0.00000
    4      5    36.7239   -0.00000 -0.00000 -0.13941  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
@@ -1990,15 +2011,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -2006,8 +2027,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -2015,7 +2036,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -2034,9 +2055,9 @@ Point group: C2v
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.50 seconds
+ >>>> Total CPU  time used in DALTON:   0.52 seconds
  >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:31 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:56 2011 
      Host name              : fe6                                     

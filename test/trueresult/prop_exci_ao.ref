@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:21:15 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:41 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -179,8 +180,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -246,15 +247,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -262,8 +263,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -271,7 +272,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -280,7 +281,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       0.616959          0.000000    1.000000    0.000000
-   IB       1.156693          0.000000    0.000000    1.000000
+   IB       1.156694          0.000000    0.000000    1.000000
    IC       1.773652          1.000000    0.000000    0.000000
 
 
@@ -291,8 +292,8 @@ Point group: C2v
 
                A                   B                   C
 
-         819145.5197         436916.9613         284936.9173 MHz
-           27.323753           14.573981            9.504473 cm-1
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
 
 
 @  Nuclear repulsion energy :    9.183706230245
@@ -395,9 +396,9 @@ Point group: C2v
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.17 seconds
- >>>> Total CPU  time used in HERMIT:   0.17 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>> Time used in TWOINT is   0.19 seconds
+ >>>> Total CPU  time used in HERMIT:   0.20 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -431,7 +432,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:16 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:41 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -446,8 +447,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -455,6 +455,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -507,28 +511,49 @@ Point group: C2v
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
    1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.995901
+      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
    2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001342
+      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000717
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000873
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000774
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
-      MULPOP O   ******; H   ******; 
-  10  -76.0607842187       1.38D-06  -8.55D-12    3  1  1  0
-      MULPOP O   ******; H   ******; 
-  11  -76.0607842187       2.21D-07  -3.69D-13    3  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.02 seconds
+      Virial theorem: -V/T =      2.000810
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+  10  -76.0607842187       1.38D-06  -8.47D-12    3  1  1  0
+      Virial theorem: -V/T =      2.000810
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
+  11  -76.0607842187       2.21D-07  -4.55D-13    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.02 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -559,20 +584,23 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218682                 
+     Final HF energy:             -76.060784218685                 
      Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448927
+     Electronic energy:           -85.244490448930
 
      Final gradient norm:           0.000000220760
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:16 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:41 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -580,7 +608,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
    2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
    3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
@@ -604,7 +632,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.0819  -0.0403   0.0108
    2 O   :px     0.1941  -0.1683   0.0187
    3 O   :px     0.3396  -0.0020   0.0667
@@ -616,7 +644,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :py     0.0653   0.0306   0.0081
    2 O   :py     0.1529   0.0600  -0.0127
    3 O   :py     0.2746   0.1667   0.0964
@@ -632,7 +660,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :dxy    0.9129   0.7003
    2 H   :px     0.1116  -0.8095
 
@@ -642,7 +670,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:16 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:41 2011 
      Host name              : fe6                                     
 
 
@@ -693,22 +721,22 @@ Point group: C2v
           Number of t2 amplitudes                 :      4175
           Total number of amplitudes in ccsd      :      4239
 
- Iter.  1: Coupled cluster MP2   energy :     -76.3109682847482560
- Iter.  1: Coupled cluster CCSD  energy :     -76.3113973905190619
- Iter.  2: Coupled cluster CCSD  energy :     -76.3163485442820217
- Iter.  3: Coupled cluster CCSD  energy :     -76.3173818481702000
- Iter.  4: Coupled cluster CCSD  energy :     -76.3173248684483667
- Iter.  5: Coupled cluster CCSD  energy :     -76.3173563339617829
- Iter.  6: Coupled cluster CCSD  energy :     -76.3173581686921523
- Iter.  7: Coupled cluster CCSD  energy :     -76.3173567457327238
- Iter.  8: Coupled cluster CCSD  energy :     -76.3173571750271265
- Iter.  9: Coupled cluster CCSD  energy :     -76.3173570801205585
- Iter. 10: Coupled cluster CCSD  energy :     -76.3173570614255965
- Iter. 11: Coupled cluster CCSD  energy :     -76.3173570479915355
- Iter. 12: Coupled cluster CCSD  energy :     -76.3173570524791955
+ Iter.  1: Coupled cluster MP2   energy :     -76.3109682847503734
+ Iter.  1: Coupled cluster CCSD  energy :     -76.3113973905222025
+ Iter.  2: Coupled cluster CCSD  energy :     -76.3163485442844518
+ Iter.  3: Coupled cluster CCSD  energy :     -76.3173818481727864
+ Iter.  4: Coupled cluster CCSD  energy :     -76.3173248684510952
+ Iter.  5: Coupled cluster CCSD  energy :     -76.3173563339645824
+ Iter.  6: Coupled cluster CCSD  energy :     -76.3173581686940139
+ Iter.  7: Coupled cluster CCSD  energy :     -76.3173567457352817
+ Iter.  8: Coupled cluster CCSD  energy :     -76.3173571750292581
+ Iter.  9: Coupled cluster CCSD  energy :     -76.3173570801229459
+ Iter. 10: Coupled cluster CCSD  energy :     -76.3173570614278987
+ Iter. 11: Coupled cluster CCSD  energy :     -76.3173570479936814
+ Iter. 12: Coupled cluster CCSD  energy :     -76.3173570524814693
 
  CCSD  energy converged to within   0.10D-07 is    -76.317357052
- Final 2-norm of the CC vector function:  1.11806154D-07
+ Final 2-norm of the CC vector function:  1.11806167D-07
 
 
 
@@ -722,7 +750,7 @@ Point group: C2v
 
             Total SCF   energy:                   -76.0607842187
 
-            Total MP2   energy:                   -76.3109682847
+            Total MP2   energy:                   -76.3109682848
 
             Total CCSD  energy:                   -76.3173570525
   
@@ -740,7 +768,7 @@ Point group: C2v
                                                                                 
                                                                                 
             Total SCF   energy:                   -76.0607842187                
-            Total MP2   energy:                   -76.3109682847                
+            Total MP2   energy:                   -76.3109682848                
             Total CCSD  energy:                   -76.3173570525                
   
 
@@ -823,8 +851,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -840,7 +868,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:42 2011 
      Host name              : fe6                                     
 
 
@@ -978,7 +1006,7 @@ Point group: C2v
 
  RPA excitation energy :  0.42380590     au
                            11.532345     eV
-                           93014.644     cm-1
+                           93014.643     cm-1
                            1112.7022     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.11 + -0.11  = 100.00 %
@@ -987,9 +1015,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |   -0.979170  |
- |    exci. | 1   1   |   3       3     |    0.141817  |
- |    exci. | 2   2   |   1       1     |   -0.100550  |
+ |    exci. | 1   1   |   1       3     |    0.979170  |
+ |    exci. | 1   1   |   3       3     |   -0.141817  |
+ |    exci. | 2   2   |   1       1     |    0.100550  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -998,9 +1026,9 @@ Point group: C2v
  Excitation symmetry  1, state no.  2
 
  RPA excitation energy :  0.61178343     au
-                           16.647473     eV
+                           16.647474     eV
                            134270.94     cm-1
-                           1606.2372     kj / mole
+                           1606.2371     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.10 + -0.10  = 100.00 %
 
@@ -1019,7 +1047,7 @@ Point group: C2v
  Excitation symmetry  1, state no.  3
 
  RPA excitation energy :  0.65675071     au
-                           17.871095     eV
+                           17.871096     eV
                            144140.12     cm-1
                            1724.2987     kj / mole
 
@@ -1044,7 +1072,7 @@ Point group: C2v
  RPA excitation energy :  0.78081899     au
                            21.247165     eV
                            171369.96     cm-1
-                           2050.0400     kj / mole
+                           2050.0399     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.72 + -0.72  = 100.00 %
 
@@ -1066,9 +1094,9 @@ Point group: C2v
  Excitation symmetry  1, state no.  5
 
  RPA excitation energy :  0.83882087     au
-                           22.825476     eV
+                           22.825477     eV
                            184099.90     cm-1
-                           2202.3239     kj / mole
+                           2202.3238     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.44 + -0.44  = 100.00 %
 
@@ -1092,7 +1120,7 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1    -0.69871 +    0.02901 =   -0.66970
+   1     0.69871 +   -0.02901 =    0.66970
    2     0.38135 +   -0.01329 =    0.36807
    3     0.39649 +   -0.02683 =    0.36966
    4     0.03835 +   -0.04539 =   -0.00704
@@ -1103,7 +1131,7 @@ Point group: C2v
  =========================================
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
-   1     0.28534 +    0.00968 =    0.29501
+   1    -0.28534 +   -0.00968 =   -0.29501
    2    -0.20289 +   -0.01943 =   -0.22232
    3    -0.23805 +   -0.00958 =   -0.24763
    4     0.02287 +   -0.03618 =   -0.01331
@@ -1129,8 +1157,8 @@ Point group: C2v
 
  DCRPA excitation energy :  0.36834407     au
                              10.023152     eV
-                             80842.180     cm-1
-                             967.08723     kj / mole
+                             80842.179     cm-1
+                             967.08722     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.83 + -0.11  =  93.72 %
  2p-2h + 2h-2p excitation weight:   6.28 + -0.00  =   6.28 %
@@ -1139,11 +1167,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |   -0.958034  |
- |    exci. | 1   1   |   3       3     |    0.138756  |
+ |    exci. | 1   1   |   1       3     |    0.958034  |
+ |    exci. | 1   1   |   3       3     |   -0.138756  |
  |-----------------------------------------------------|
- |    exci. | 1 1 1 1 |   2   1   3   3 |    0.125085  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |    0.115115  |
+ |    exci. | 1 1 1 1 |   2   1   3   3 |   -0.125085  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.115115  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1204,7 +1232,7 @@ Point group: C2v
  Excitation symmetry  1, state no.  3
 
  DCRPA excitation energy :  0.63086021     au
-                             17.166579     eV
+                             17.166580     eV
                              138457.81     cm-1
                              1656.3232     kj / mole
 
@@ -1344,7 +1372,7 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.66856 +   -0.03901 +    0.02763 +    0.00090 =   -0.67903
+   1     0.66856 +    0.03901 +   -0.02763 +   -0.00090 =    0.67903
    2     0.36689 +    0.01225 +   -0.01296 +   -0.00030 =    0.36588
    3     0.38263 +    0.01805 +   -0.02567 +   -0.00098 =    0.37404
    4     0.03547 +    0.00996 +   -0.04265 +   -0.00105 =    0.00173
@@ -1355,7 +1383,7 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.27243 +    0.00931 +    0.00903 +    0.00028 =    0.29104
+   1    -0.27243 +   -0.00931 +   -0.00903 +   -0.00028 =   -0.29104
    2    -0.19490 +   -0.00597 +   -0.01888 +   -0.00005 =   -0.21980
    3    -0.22900 +   -0.00732 +   -0.00901 +   -0.00038 =   -0.24571
    4     0.02244 +   -0.00354 +   -0.03414 +   -0.00074 =   -0.01598
@@ -1503,9 +1531,9 @@ Point group: C2v
  Excitation symmetry  1, state no.  1
 
  SOPPA excitation energy :  0.36733094     au
-                             9.9955832     eV
-                             80619.824     cm-1
-                             964.42726     kj / mole
+                             9.9955835     eV
+                             80619.823     cm-1
+                             964.42725     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.92 + -0.09  =  93.83 %
  2p-2h + 2h-2p excitation weight:   6.17 + -0.00  =   6.17 %
@@ -1528,9 +1556,9 @@ Point group: C2v
  Excitation symmetry  1, state no.  2
 
  SOPPA excitation energy :  0.58971810     au
-                             16.047045     eV
+                             16.047046     eV
                              129428.16     cm-1
-                             1548.3047     kj / mole
+                             1548.3046     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.43 + -0.02  =  95.41 %
  2p-2h + 2h-2p excitation weight:   4.59 + -0.00  =   4.59 %
@@ -1539,37 +1567,37 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   2   |   1       1     |   -0.609541  |
- |    exci. | 3   3   |   1       1     |   -0.762036  |
- |    exci. | 3   3   |   3       1     |    0.140359  |
+ |    exci. | 2   2   |   1       1     |    0.609541  |
+ |    exci. | 3   3   |   1       1     |    0.762036  |
+ |    exci. | 3   3   |   3       1     |   -0.140359  |
  |-----------------------------------------------------|
- |    exci. | 2 1 2 1 |   1   1   1   2 |    0.025890  |
- |    exci. | 2 1 2 1 |   1   4   1   2 |   -0.023837  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.022740  |
- |    exci. | 2 1 2 1 |   1   2   1   3 |    0.052415  |
- |    exci. | 2 1 2 1 |   1   3   1   3 |    0.026799  |
- |    exci. | 3 1 3 1 |   1   1   1   2 |    0.037081  |
- |    exci. | 3 1 3 1 |   1   4   1   2 |   -0.029872  |
- |    exci. | 3 1 3 1 |   1   1   1   3 |   -0.036992  |
- |    exci. | 3 1 3 1 |   1   2   1   3 |    0.063139  |
- |    exci. | 3 1 3 1 |   1   3   1   3 |    0.026772  |
- |    exci. | 2 2 2 2 |   1   1   1   1 |    0.079639  |
- |    exci. | 3 2 3 2 |   1   1   1   1 |    0.037101  |
- |    exci. | 3 2 3 2 |   3   1   1   1 |    0.059225  |
- |    exci. | 3 2 3 2 |   5   1   1   1 |   -0.027026  |
- |    exci. | 3 2 3 2 |   1   3   1   1 |    0.034377  |
- |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.071578  |
- |    exci. | 3 3 3 3 |   3   1   1   1 |    0.048956  |
- |    exci. | 3 3 3 3 |   4   1   1   1 |    0.022711  |
- |    exci. | 2 2 1 1 |   2   1   3   2 |   -0.021389  |
- |    exci. | 4 2 3 1 |   1   1   1   2 |   -0.023736  |
- |    exci. | 1 1 2 2 |   3   1   1   1 |    0.020132  |
- |    exci. | 3 3 1 1 |   2   1   3   2 |   -0.025213  |
- |    exci. | 3 3 1 1 |   3   1   3   2 |    0.021888  |
- |    exci. | 3 3 1 1 |   4   1   3   2 |   -0.024618  |
- |    exci. | 4 3 2 1 |   1   1   1   2 |   -0.036889  |
- |    exci. | 1 3 3 1 |   3   1   1   2 |    0.022553  |
- |    exci. | 1 1 3 3 |   3   1   1   1 |    0.029160  |
+ |    exci. | 2 1 2 1 |   1   1   1   2 |   -0.025890  |
+ |    exci. | 2 1 2 1 |   1   4   1   2 |    0.023837  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |    0.022740  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.052415  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |   -0.026799  |
+ |    exci. | 3 1 3 1 |   1   1   1   2 |   -0.037081  |
+ |    exci. | 3 1 3 1 |   1   4   1   2 |    0.029872  |
+ |    exci. | 3 1 3 1 |   1   1   1   3 |    0.036992  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.063139  |
+ |    exci. | 3 1 3 1 |   1   3   1   3 |   -0.026772  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |   -0.079639  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.037101  |
+ |    exci. | 3 2 3 2 |   3   1   1   1 |   -0.059225  |
+ |    exci. | 3 2 3 2 |   5   1   1   1 |    0.027026  |
+ |    exci. | 3 2 3 2 |   1   3   1   1 |   -0.034377  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |    0.071578  |
+ |    exci. | 3 3 3 3 |   3   1   1   1 |   -0.048956  |
+ |    exci. | 3 3 3 3 |   4   1   1   1 |   -0.022711  |
+ |    exci. | 2 2 1 1 |   2   1   3   2 |    0.021389  |
+ |    exci. | 4 2 3 1 |   1   1   1   2 |    0.023736  |
+ |    exci. | 1 1 2 2 |   3   1   1   1 |   -0.020132  |
+ |    exci. | 3 3 1 1 |   2   1   3   2 |    0.025213  |
+ |    exci. | 3 3 1 1 |   3   1   3   2 |   -0.021888  |
+ |    exci. | 3 3 1 1 |   4   1   3   2 |    0.024618  |
+ |    exci. | 4 3 2 1 |   1   1   1   2 |    0.036889  |
+ |    exci. | 1 3 3 1 |   3   1   1   2 |   -0.022553  |
+ |    exci. | 1 1 3 3 |   3   1   1   1 |   -0.029160  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1579,7 +1607,7 @@ Point group: C2v
  Excitation symmetry  1, state no.  3
 
  SOPPA excitation energy :  0.62889548     au
-                             17.113116     eV
+                             17.113117     eV
                              138026.60     cm-1
                              1651.1648     kj / mole
 
@@ -1590,12 +1618,12 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   2       3     |    0.547822  |
- |    exci. | 1   1   |   3       3     |    0.117515  |
- |    exci. | 2   2   |   1       1     |   -0.638554  |
- |    exci. | 3   3   |   1       1     |    0.493811  |
+ |    exci. | 1   1   |   2       3     |   -0.547822  |
+ |    exci. | 1   1   |   3       3     |   -0.117515  |
+ |    exci. | 2   2   |   1       1     |    0.638554  |
+ |    exci. | 3   3   |   1       1     |   -0.493811  |
  |-----------------------------------------------------|
- |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.102654  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |    0.102654  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1632,9 +1660,9 @@ Point group: C2v
  Excitation symmetry  1, state no.  5
 
  SOPPA excitation energy :  0.78693588     au
-                             21.413614     eV
+                             21.413615     eV
                              172712.46     cm-1
-                             2066.0999     kj / mole
+                             2066.0998     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.81 + -0.51  =  94.30 %
  2p-2h + 2h-2p excitation weight:   5.71 + -0.00  =   5.70 %
@@ -1643,46 +1671,46 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   2       3     |    0.259651  |
- |    exci. | 1   1   |   3       3     |    0.861189  |
- |    exci. | 2   2   |   1       1     |    0.209817  |
- |    exci. | 3   3   |   1       1     |   -0.220465  |
- |    exci. | 3   3   |   2       1     |    0.100678  |
- |    exci. | 3   3   |   3       1     |   -0.196800  |
+ |    exci. | 1   1   |   2       3     |   -0.259651  |
+ |    exci. | 1   1   |   3       3     |   -0.861189  |
+ |    exci. | 2   2   |   1       1     |   -0.209817  |
+ |    exci. | 3   3   |   1       1     |    0.220465  |
+ |    exci. | 3   3   |   2       1     |   -0.100678  |
+ |    exci. | 3   3   |   3       1     |    0.196800  |
  |-----------------------------------------------------|
- |    exci. | 1 1 1 1 |   1   1   3   2 |   -0.020348  |
- |    exci. | 1 1 1 1 |   3   2   3   2 |   -0.021820  |
- |    exci. | 1 1 1 1 |   5   3   3   2 |   -0.036510  |
- |    exci. | 1 1 1 1 |   3   4   3   2 |    0.024866  |
- |    exci. | 1 1 1 1 |   2   1   3   3 |   -0.038327  |
- |    exci. | 1 1 1 1 |   3   1   3   3 |    0.029377  |
- |    exci. | 1 1 1 1 |   2   2   3   3 |   -0.023380  |
- |    exci. | 1 1 1 1 |   3   2   3   3 |   -0.077853  |
- |    exci. | 1 1 1 1 |   3   3   3   3 |   -0.053833  |
- |    exci. | 1 1 1 1 |   5   3   3   3 |   -0.049586  |
- |    exci. | 2 1 2 1 |   2   3   1   2 |    0.033699  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.037514  |
- |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.041821  |
- |    exci. | 2 1 2 1 |   1   3   1   3 |   -0.082682  |
- |    exci. | 2 1 2 1 |   2   3   1   3 |    0.044023  |
- |    exci. | 2 1 2 1 |   3   3   1   3 |   -0.026438  |
- |    exci. | 3 1 3 1 |   2   3   1   2 |    0.025209  |
- |    exci. | 3 1 3 1 |   3   3   1   2 |   -0.027237  |
- |    exci. | 3 1 3 1 |   4   3   1   2 |    0.022782  |
- |    exci. | 3 1 3 1 |   1   2   1   3 |    0.041003  |
- |    exci. | 3 1 3 1 |   1   3   1   3 |    0.071926  |
- |    exci. | 3 1 3 1 |   2   3   1   3 |    0.026283  |
- |    exci. | 3 1 3 1 |   3   3   1   3 |   -0.072554  |
- |    exci. | 3 1 3 1 |   5   3   1   3 |    0.026270  |
- |    exci. | 2 2 2 2 |   1   1   1   1 |   -0.034762  |
- |    exci. | 3 2 3 2 |   1   1   1   1 |    0.057465  |
- |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.033374  |
- |    exci. | 1 2 2 1 |   3   2   1   3 |    0.024448  |
- |    exci. | 3 3 1 1 |   2   2   3   3 |   -0.022991  |
- |    exci. | 3 3 1 1 |   3   2   3   3 |    0.032650  |
- |    exci. | 1 3 3 1 |   1   2   1   3 |   -0.023419  |
- |    exci. | 1 3 3 1 |   3   2   1   3 |    0.021242  |
- |    exci. | 1 3 3 1 |   3   3   1   3 |   -0.035377  |
+ |    exci. | 1 1 1 1 |   1   1   3   2 |    0.020348  |
+ |    exci. | 1 1 1 1 |   3   2   3   2 |    0.021820  |
+ |    exci. | 1 1 1 1 |   5   3   3   2 |    0.036510  |
+ |    exci. | 1 1 1 1 |   3   4   3   2 |   -0.024866  |
+ |    exci. | 1 1 1 1 |   2   1   3   3 |    0.038327  |
+ |    exci. | 1 1 1 1 |   3   1   3   3 |   -0.029377  |
+ |    exci. | 1 1 1 1 |   2   2   3   3 |    0.023380  |
+ |    exci. | 1 1 1 1 |   3   2   3   3 |    0.077853  |
+ |    exci. | 1 1 1 1 |   3   3   3   3 |    0.053833  |
+ |    exci. | 1 1 1 1 |   5   3   3   3 |    0.049586  |
+ |    exci. | 2 1 2 1 |   2   3   1   2 |   -0.033699  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |    0.037514  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |    0.041821  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |    0.082682  |
+ |    exci. | 2 1 2 1 |   2   3   1   3 |   -0.044023  |
+ |    exci. | 2 1 2 1 |   3   3   1   3 |    0.026438  |
+ |    exci. | 3 1 3 1 |   2   3   1   2 |   -0.025209  |
+ |    exci. | 3 1 3 1 |   3   3   1   2 |    0.027237  |
+ |    exci. | 3 1 3 1 |   4   3   1   2 |   -0.022782  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.041003  |
+ |    exci. | 3 1 3 1 |   1   3   1   3 |   -0.071926  |
+ |    exci. | 3 1 3 1 |   2   3   1   3 |   -0.026283  |
+ |    exci. | 3 1 3 1 |   3   3   1   3 |    0.072554  |
+ |    exci. | 3 1 3 1 |   5   3   1   3 |   -0.026270  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |    0.034762  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.057465  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |    0.033374  |
+ |    exci. | 1 2 2 1 |   3   2   1   3 |   -0.024448  |
+ |    exci. | 3 3 1 1 |   2   2   3   3 |    0.022991  |
+ |    exci. | 3 3 1 1 |   3   2   3   3 |   -0.032650  |
+ |    exci. | 1 3 3 1 |   1   2   1   3 |    0.023419  |
+ |    exci. | 1 3 3 1 |   3   2   1   3 |   -0.021242  |
+ |    exci. | 1 3 3 1 |   3   3   1   3 |    0.035377  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1695,10 +1723,10 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.69784 +    0.03859 +   -0.03251 +   -0.00066 =    0.70326
-   2    -0.38399 +   -0.01327 +    0.02001 +    0.00032 =   -0.37693
-   3     0.34668 +    0.01582 +   -0.02943 +   -0.00053 =    0.33255
+   2     0.38399 +    0.01327 +   -0.02001 +   -0.00032 =    0.37693
+   3    -0.34668 +   -0.01582 +    0.02943 +    0.00053 =   -0.33255
    4    -0.02252 +    0.00593 +   -0.03891 +   -0.00054 =   -0.05603
-   5    -0.00474 +    0.00058 +    0.03900 +    0.00059 =    0.03543
+   5     0.00474 +   -0.00058 +   -0.03900 +   -0.00059 =   -0.03543
  ===================================================================
 
  ZDIPVEL SOPPA transition moments for excitation symmetry  1
@@ -1706,10 +1734,10 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.26152 +   -0.00917 +   -0.01622 +   -0.00027 =   -0.28717
-   2     0.19476 +    0.00610 +    0.02090 +    0.00011 =    0.22187
-   3    -0.20321 +   -0.00683 +   -0.01344 +   -0.00030 =   -0.22378
+   2    -0.19476 +   -0.00610 +   -0.02090 +   -0.00011 =   -0.22187
+   3     0.20321 +    0.00683 +    0.01344 +    0.00030 =    0.22378
    4     0.05058 +   -0.00204 +   -0.03017 +   -0.00039 =    0.01798
-   5    -0.02567 +    0.00058 +    0.02049 +    0.00034 =   -0.00426
+   5     0.02567 +   -0.00058 +   -0.02049 +   -0.00034 =    0.00426
  ===================================================================
 
   ******************************************************************
@@ -1778,10 +1806,10 @@ Point group: C2v
 
 
  **WARNING** Eigenvalues not paired
-        16      9.48466159D+00      -9.48466156D+00
+        16      9.48466157D+00      -9.48466158D+00
 
  **WARNING** Eigenvalues not paired
-        17      1.11515475D+02      -1.11515475D+02
+        17      1.11515498D+02      -1.11515498D+02
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
@@ -1804,8 +1832,8 @@ Point group: C2v
 
  SOPPA(CCSD) excitation energy :  0.36832353     au
                                    10.022593     eV
-                                   80837.670     cm-1
-                                   967.03328     kj / mole
+                                   80837.669     cm-1
+                                   967.03327     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.90 + -0.09  =  93.81 %
  2p-2h + 2h-2p excitation weight:   6.19 + -0.00  =   6.19 %
@@ -1814,10 +1842,10 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   1       3     |    0.968840  |
+ |    exci. | 1   1   |   1       3     |   -0.968840  |
  |-----------------------------------------------------|
- |    exci. | 1 1 1 1 |   2   1   3   3 |   -0.124029  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.115296  |
+ |    exci. | 1 1 1 1 |   2   1   3   3 |    0.124029  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |    0.115296  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1838,37 +1866,37 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   2   |   1       1     |    0.618446  |
- |    exci. | 3   3   |   1       1     |    0.755803  |
- |    exci. | 3   3   |   3       1     |   -0.140689  |
+ |    exci. | 2   2   |   1       1     |   -0.618446  |
+ |    exci. | 3   3   |   1       1     |   -0.755803  |
+ |    exci. | 3   3   |   3       1     |    0.140689  |
  |-----------------------------------------------------|
- |    exci. | 2 1 2 1 |   1   1   1   2 |   -0.026270  |
- |    exci. | 2 1 2 1 |   1   4   1   2 |    0.024175  |
- |    exci. | 2 1 2 1 |   1   1   1   3 |    0.023328  |
- |    exci. | 2 1 2 1 |   1   2   1   3 |   -0.052690  |
- |    exci. | 2 1 2 1 |   1   3   1   3 |   -0.027128  |
- |    exci. | 3 1 3 1 |   1   1   1   2 |   -0.036803  |
- |    exci. | 3 1 3 1 |   1   4   1   2 |    0.029610  |
- |    exci. | 3 1 3 1 |   1   1   1   3 |    0.036539  |
- |    exci. | 3 1 3 1 |   1   2   1   3 |   -0.062892  |
- |    exci. | 3 1 3 1 |   1   3   1   3 |   -0.026586  |
- |    exci. | 2 2 2 2 |   1   1   1   1 |   -0.080841  |
- |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.035779  |
- |    exci. | 3 2 3 2 |   3   1   1   1 |   -0.059751  |
- |    exci. | 3 2 3 2 |   5   1   1   1 |    0.027214  |
- |    exci. | 3 2 3 2 |   1   3   1   1 |   -0.034265  |
- |    exci. | 3 3 3 3 |   1   1   1   1 |    0.070974  |
- |    exci. | 3 3 3 3 |   3   1   1   1 |   -0.048568  |
- |    exci. | 3 3 3 3 |   4   1   1   1 |   -0.022524  |
- |    exci. | 2 2 1 1 |   2   1   3   2 |    0.021735  |
- |    exci. | 4 2 3 1 |   1   1   1   2 |    0.024035  |
- |    exci. | 1 1 2 2 |   3   1   1   1 |   -0.020442  |
- |    exci. | 3 3 1 1 |   2   1   3   2 |    0.025006  |
- |    exci. | 3 3 1 1 |   3   1   3   2 |   -0.021696  |
- |    exci. | 3 3 1 1 |   4   1   3   2 |    0.024405  |
- |    exci. | 4 3 2 1 |   1   1   1   2 |    0.036626  |
- |    exci. | 1 3 3 1 |   3   1   1   2 |   -0.022363  |
- |    exci. | 1 1 3 3 |   3   1   1   1 |   -0.028965  |
+ |    exci. | 2 1 2 1 |   1   1   1   2 |    0.026270  |
+ |    exci. | 2 1 2 1 |   1   4   1   2 |   -0.024175  |
+ |    exci. | 2 1 2 1 |   1   1   1   3 |   -0.023328  |
+ |    exci. | 2 1 2 1 |   1   2   1   3 |    0.052690  |
+ |    exci. | 2 1 2 1 |   1   3   1   3 |    0.027128  |
+ |    exci. | 3 1 3 1 |   1   1   1   2 |    0.036803  |
+ |    exci. | 3 1 3 1 |   1   4   1   2 |   -0.029610  |
+ |    exci. | 3 1 3 1 |   1   1   1   3 |   -0.036539  |
+ |    exci. | 3 1 3 1 |   1   2   1   3 |    0.062892  |
+ |    exci. | 3 1 3 1 |   1   3   1   3 |    0.026586  |
+ |    exci. | 2 2 2 2 |   1   1   1   1 |    0.080841  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |    0.035779  |
+ |    exci. | 3 2 3 2 |   3   1   1   1 |    0.059751  |
+ |    exci. | 3 2 3 2 |   5   1   1   1 |   -0.027214  |
+ |    exci. | 3 2 3 2 |   1   3   1   1 |    0.034265  |
+ |    exci. | 3 3 3 3 |   1   1   1   1 |   -0.070974  |
+ |    exci. | 3 3 3 3 |   3   1   1   1 |    0.048568  |
+ |    exci. | 3 3 3 3 |   4   1   1   1 |    0.022524  |
+ |    exci. | 2 2 1 1 |   2   1   3   2 |   -0.021735  |
+ |    exci. | 4 2 3 1 |   1   1   1   2 |   -0.024035  |
+ |    exci. | 1 1 2 2 |   3   1   1   1 |    0.020442  |
+ |    exci. | 3 3 1 1 |   2   1   3   2 |   -0.025006  |
+ |    exci. | 3 3 1 1 |   3   1   3   2 |    0.021696  |
+ |    exci. | 3 3 1 1 |   4   1   3   2 |   -0.024405  |
+ |    exci. | 4 3 2 1 |   1   1   1   2 |   -0.036626  |
+ |    exci. | 1 3 3 1 |   3   1   1   2 |    0.022363  |
+ |    exci. | 1 1 3 3 |   3   1   1   1 |    0.028965  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1889,12 +1917,12 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   1   |   2       3     |    0.548772  |
- |    exci. | 1   1   |   3       3     |    0.117615  |
- |    exci. | 2   2   |   1       1     |   -0.630678  |
- |    exci. | 3   3   |   1       1     |    0.503585  |
+ |    exci. | 1   1   |   2       3     |   -0.548772  |
+ |    exci. | 1   1   |   3       3     |   -0.117615  |
+ |    exci. | 2   2   |   1       1     |    0.630678  |
+ |    exci. | 3   3   |   1       1     |   -0.503585  |
  |-----------------------------------------------------|
- |    exci. | 3 2 3 2 |   1   1   1   1 |   -0.103141  |
+ |    exci. | 3 2 3 2 |   1   1   1   1 |    0.103141  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -1904,8 +1932,8 @@ Point group: C2v
  Excitation symmetry  1, state no.  4
 
  SOPPA(CCSD) excitation energy :  0.72001021     au
-                                   19.592474     eV
-                                   158023.98     cm-1
+                                   19.592475     eV
+                                   158023.97     cm-1
                                    1890.3865     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.74 + -0.59  =  93.15 %
@@ -1931,7 +1959,7 @@ Point group: C2v
  Excitation symmetry  1, state no.  5
 
  SOPPA(CCSD) excitation energy :  0.78803417     au
-                                   21.443500     eV
+                                   21.443501     eV
                                    172953.51     cm-1
                                    2068.9834     kj / mole
 
@@ -1992,9 +2020,9 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.68284 +    0.03800 +   -0.03231 +   -0.00067 =    0.68786
-   2     0.37368 +    0.01360 +   -0.01958 +   -0.00032 =    0.36737
-   3     0.34697 +    0.01580 +   -0.02928 +   -0.00054 =    0.33295
+   1    -0.68284 +   -0.03800 +    0.03231 +    0.00067 =   -0.68786
+   2    -0.37368 +   -0.01360 +    0.01958 +    0.00032 =   -0.36737
+   3    -0.34697 +   -0.01580 +    0.02928 +    0.00054 =   -0.33295
    4    -0.02438 +    0.00506 +   -0.03910 +   -0.00056 =   -0.05898
    5    -0.00834 +   -0.00032 +    0.03903 +    0.00061 =    0.03098
  ===================================================================
@@ -2003,9 +2031,9 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.26315 +   -0.01013 +   -0.01649 +   -0.00031 =   -0.29008
-   2    -0.19151 +   -0.00663 +   -0.02086 +   -0.00012 =   -0.21912
-   3    -0.20532 +   -0.00710 +   -0.01353 +   -0.00034 =   -0.22628
+   1     0.26315 +    0.01013 +    0.01649 +    0.00031 =    0.29008
+   2     0.19151 +    0.00663 +    0.02086 +    0.00012 =    0.21912
+   3     0.20532 +    0.00710 +    0.01353 +    0.00034 =    0.22628
    4     0.05197 +   -0.00176 +   -0.03052 +   -0.00044 =    0.01926
    5    -0.02240 +    0.00122 +    0.02090 +    0.00039 =    0.00011
  ===================================================================
@@ -2101,9 +2129,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  1
 
  RPA excitation energy :  0.33209935     au
-                           9.0368827     eV
+                           9.0368830     eV
                            72887.382     cm-1
-                           871.92672     kj / mole
+                           871.92671     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.16 + -0.16  = 100.00 %
 
@@ -2123,7 +2151,7 @@ Point group: C2v
  RPA excitation energy :  0.61175429     au
                            16.646681     eV
                            134264.55     cm-1
-                           1606.1607     kj / mole
+                           1606.1606     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.14 + -0.14  = 100.00 %
 
@@ -2142,7 +2170,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  3
 
  RPA excitation energy :  0.68970126     au
-                           18.767725     eV
+                           18.767726     eV
                            151371.93     cm-1
                            1810.8104     kj / mole
 
@@ -2163,7 +2191,7 @@ Point group: C2v
  RPA excitation energy :  0.74419781     au
                            20.250652     eV
                            163332.54     cm-1
-                           1953.8911     kj / mole
+                           1953.8910     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.16 + -0.16  = 100.00 %
 
@@ -2171,9 +2199,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |    0.164775  |
- |    exci. | 1   2   |   2       1     |   -0.230658  |
- |    exci. | 1   2   |   3       1     |    0.951233  |
+ |    exci. | 1   2   |   1       1     |   -0.164775  |
+ |    exci. | 1   2   |   2       1     |    0.230658  |
+ |    exci. | 1   2   |   3       1     |   -0.951233  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2182,7 +2210,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  5
 
  RPA excitation energy :   1.0679128     au
-                           29.059385     eV
+                           29.059386     eV
                            234379.77     cm-1
                            2803.8047     kj / mole
 
@@ -2192,7 +2220,7 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   4       1     |   -0.987853  |
+ |    exci. | 1   2   |   4       1     |    0.987853  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2201,7 +2229,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  6
 
  RPA excitation energy :   1.2595656     au
-                           34.274522     eV
+                           34.274523     eV
                            276442.69     cm-1
                            3306.9890     kj / mole
 
@@ -2211,8 +2239,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   5       1     |    0.983287  |
- |    exci. | 2   1   |   2       3     |   -0.126958  |
+ |    exci. | 1   2   |   5       1     |   -0.983287  |
+ |    exci. | 2   1   |   2       3     |    0.126958  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2226,9 +2254,9 @@ Point group: C2v
    1     0.45142 +    0.01128 =    0.46270
    2    -0.18615 +    0.00180 =   -0.18435
    3     0.04492 +    0.01068 =    0.05560
-   4     0.54944 +   -0.05332 =    0.49612
-   5     0.65757 +   -0.02990 =    0.62767
-   6     0.33962 +   -0.02457 =    0.31505
+   4    -0.54944 +    0.05332 =   -0.49612
+   5    -0.65757 +    0.02990 =   -0.62767
+   6    -0.33962 +    0.02457 =   -0.31505
  =========================================
 
  XDIPVEL RPA transition moments for excitation symmetry  2
@@ -2238,9 +2266,9 @@ Point group: C2v
    1    -0.20423 +    0.03152 =   -0.17271
    2     0.07929 +   -0.00664 =    0.07265
    3    -0.07728 +    0.01443 =   -0.06285
-   4    -0.25407 +   -0.07550 =   -0.32958
-   5    -0.55956 +   -0.01716 =   -0.57671
-   6    -0.31762 +   -0.02842 =   -0.34603
+   4     0.25407 +    0.07550 =    0.32958
+   5     0.55956 +    0.01716 =    0.57671
+   6     0.31762 +    0.02842 =    0.34603
  =========================================
 
  YANGMOM RPA transition moments for excitation symmetry  2
@@ -2250,9 +2278,9 @@ Point group: C2v
    1    -0.13330 +   -0.00078 =   -0.13407
    2    -0.00416 +    0.00319 =   -0.00097
    3     0.07893 +   -0.00565 =    0.07328
-   4     0.20496 +   -0.00422 =    0.20074
-   5     0.05269 +   -0.00648 =    0.04621
-   6     0.06566 +   -0.00241 =    0.06325
+   4    -0.20496 +    0.00422 =   -0.20074
+   5    -0.05269 +    0.00648 =   -0.04621
+   6    -0.06566 +    0.00241 =   -0.06325
  =========================================
 
   ******************************************************************
@@ -2274,9 +2302,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  1
 
  DCRPA excitation energy :  0.27736779     au
-                             7.5475612     eV
-                             60875.193     cm-1
-                             728.22902     kj / mole
+                             7.5475614     eV
+                             60875.192     cm-1
+                             728.22901     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.00 + -0.15  =  93.85 %
  2p-2h + 2h-2p excitation weight:   6.15 + -0.00  =   6.15 %
@@ -2348,9 +2376,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  4
 
  DCRPA excitation energy :  0.67538911     au
-                             18.378272     eV
-                             148230.78     cm-1
-                             1773.2339     kj / mole
+                             18.378273     eV
+                             148230.77     cm-1
+                             1773.2338     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.38 + -0.15  =  93.24 %
  2p-2h + 2h-2p excitation weight:   6.76 + -0.00  =   6.76 %
@@ -2359,11 +2387,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   1       1     |    0.160695  |
- |    exci. | 1   2   |   2       1     |   -0.224946  |
- |    exci. | 1   2   |   3       1     |    0.927678  |
+ |    exci. | 1   2   |   1       1     |   -0.160695  |
+ |    exci. | 1   2   |   2       1     |    0.224946  |
+ |    exci. | 1   2   |   3       1     |   -0.927678  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.115148  |
+ |    exci. | 1 1 2 1 |  15   5   1   3 |    0.115148  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2375,7 +2403,7 @@ Point group: C2v
  DCRPA excitation energy :   1.0205167     au
                              27.769671     eV
                              223977.52     cm-1
-                             2679.3662     kj / mole
+                             2679.3661     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.97 + -0.05  =  93.92 %
  2p-2h + 2h-2p excitation weight:   6.08 + -0.00  =   6.08 %
@@ -2384,9 +2412,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   4       1     |   -0.966371  |
+ |    exci. | 1   2   |   4       1     |    0.966371  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |   7   7   1   3 |    0.126120  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.126120  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2396,9 +2424,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  6
 
  DCRPA excitation energy :   1.2545496     au
-                             34.138029     eV
+                             34.138030     eV
                              275341.80     cm-1
-                             3293.8194     kj / mole
+                             3293.8193     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.10 + -0.06  =  97.05 %
  2p-2h + 2h-2p excitation weight:   2.95 + -0.00  =   2.95 %
@@ -2407,33 +2435,33 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   5       1     |    0.978161  |
- |    exci. | 2   1   |   2       3     |   -0.126297  |
+ |    exci. | 1   2   |   5       1     |   -0.978161  |
+ |    exci. | 2   1   |   2       3     |    0.126297  |
  |-----------------------------------------------------|
- |    exci. | 2 1 1 1 |   1   2   3   3 |   -0.020250  |
- |    exci. | 2 1 1 1 |   5   4   1   3 |    0.029660  |
- |    exci. | 2 1 1 1 |   5   5   1   3 |    0.029463  |
- |    exci. | 2 1 1 1 |   2   9   1   3 |   -0.042525  |
- |    exci. | 2 1 1 1 |   3   9   1   3 |   -0.023621  |
- |    exci. | 2 1 1 1 |   6   9   1   3 |   -0.020375  |
- |    exci. | 2 1 1 1 |   1   9   2   3 |    0.030462  |
- |    exci. | 2 1 1 1 |   5   9   3   3 |   -0.081379  |
- |    exci. | 2 1 1 1 |   5  10   3   3 |   -0.038299  |
- |    exci. | 1 1 2 1 |   7   8   1   2 |    0.034100  |
- |    exci. | 1 1 2 1 |  15   1   1   3 |   -0.039817  |
- |    exci. | 1 1 2 1 |   8   3   1   3 |    0.037810  |
- |    exci. | 1 1 2 1 |   7   7   1   3 |    0.028896  |
- |    exci. | 1 1 2 1 |   3   8   1   3 |   -0.028954  |
- |    exci. | 1 1 2 1 |   5   8   1   3 |    0.031223  |
- |    exci. | 1 1 2 1 |   6   8   1   3 |    0.024736  |
- |    exci. | 1 1 2 1 |   7   8   1   3 |    0.029045  |
- |    exci. | 1 1 2 1 |   8   8   1   3 |   -0.021851  |
- |    exci. | 1 1 2 1 |   1   9   1   3 |   -0.047768  |
- |    exci. | 1 1 2 1 |   5   9   1   3 |    0.036598  |
- |    exci. | 1 1 2 1 |   7   9   1   3 |   -0.052712  |
- |    exci. | 1 1 2 1 |   9   9   1   3 |    0.026643  |
- |    exci. | 2 3 1 3 |   1   8   1   1 |    0.032446  |
- |    exci. | 3 3 2 1 |   9   7   1   2 |   -0.021817  |
+ |    exci. | 2 1 1 1 |   1   2   3   3 |    0.020250  |
+ |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.029660  |
+ |    exci. | 2 1 1 1 |   5   5   1   3 |   -0.029463  |
+ |    exci. | 2 1 1 1 |   2   9   1   3 |    0.042525  |
+ |    exci. | 2 1 1 1 |   3   9   1   3 |    0.023621  |
+ |    exci. | 2 1 1 1 |   6   9   1   3 |    0.020375  |
+ |    exci. | 2 1 1 1 |   1   9   2   3 |   -0.030462  |
+ |    exci. | 2 1 1 1 |   5   9   3   3 |    0.081379  |
+ |    exci. | 2 1 1 1 |   5  10   3   3 |    0.038299  |
+ |    exci. | 1 1 2 1 |   7   8   1   2 |   -0.034100  |
+ |    exci. | 1 1 2 1 |  15   1   1   3 |    0.039817  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.037810  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.028896  |
+ |    exci. | 1 1 2 1 |   3   8   1   3 |    0.028954  |
+ |    exci. | 1 1 2 1 |   5   8   1   3 |   -0.031223  |
+ |    exci. | 1 1 2 1 |   6   8   1   3 |   -0.024736  |
+ |    exci. | 1 1 2 1 |   7   8   1   3 |   -0.029045  |
+ |    exci. | 1 1 2 1 |   8   8   1   3 |    0.021851  |
+ |    exci. | 1 1 2 1 |   1   9   1   3 |    0.047768  |
+ |    exci. | 1 1 2 1 |   5   9   1   3 |   -0.036598  |
+ |    exci. | 1 1 2 1 |   7   9   1   3 |    0.052712  |
+ |    exci. | 1 1 2 1 |   9   9   1   3 |   -0.026643  |
+ |    exci. | 2 3 1 3 |   1   8   1   1 |   -0.032446  |
+ |    exci. | 3 3 2 1 |   9   7   1   2 |    0.021817  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2448,9 +2476,9 @@ Point group: C2v
    1     0.43437 +    0.02827 +    0.01077 +   -0.00026 =    0.47315
    2    -0.17944 +   -0.00805 +    0.00169 +    0.00020 =   -0.18560
    3     0.04466 +   -0.00170 +    0.01032 +   -0.00008 =    0.05320
-   4     0.52597 +    0.03577 +   -0.05094 +   -0.00066 =    0.51014
-   5     0.63066 +    0.01536 +   -0.02867 +   -0.00102 =    0.61633
-   6     0.33150 +    0.01099 +   -0.02394 +   -0.00053 =    0.31801
+   4    -0.52597 +   -0.03577 +    0.05094 +    0.00066 =   -0.51014
+   5    -0.63066 +   -0.01536 +    0.02867 +    0.00102 =   -0.61633
+   6    -0.33150 +   -0.01099 +    0.02394 +    0.00053 =   -0.31801
  ===================================================================
 
  XDIPVEL RPA(D) transition moments for excitation symmetry  2
@@ -2460,9 +2488,9 @@ Point group: C2v
    1    -0.19646 +   -0.00551 +    0.03037 +    0.00001 =   -0.17159
    2     0.07574 +    0.00151 +   -0.00654 +   -0.00000 =    0.07070
    3    -0.07567 +   -0.00119 +    0.01402 +   -0.00001 =   -0.06285
-   4    -0.24245 +   -0.00861 +   -0.07231 +   -0.00021 =   -0.32358
-   5    -0.53645 +   -0.00309 +   -0.01626 +   -0.00015 =   -0.55595
-   6    -0.30976 +   -0.00132 +   -0.02770 +   -0.00005 =   -0.33883
+   4     0.24245 +    0.00861 +    0.07231 +    0.00021 =    0.32358
+   5     0.53645 +    0.00309 +    0.01626 +    0.00015 =    0.55595
+   6     0.30976 +    0.00132 +    0.02770 +    0.00005 =    0.33883
  ===================================================================
 
  YANGMOM RPA(D) transition moments for excitation symmetry  2
@@ -2472,9 +2500,9 @@ Point group: C2v
    1    -0.12710 +   -0.00552 +   -0.00077 +   -0.00006 =   -0.13346
    2    -0.00326 +    0.00250 +    0.00308 +    0.00005 =    0.00237
    3     0.07596 +    0.00190 +   -0.00544 +   -0.00013 =    0.07228
-   4     0.19540 +    0.00648 +   -0.00402 +   -0.00008 =    0.19779
-   5     0.05080 +    0.00206 +   -0.00623 +   -0.00017 =    0.04645
-   6     0.06389 +    0.00117 +   -0.00234 +   -0.00010 =    0.06262
+   4    -0.19540 +   -0.00648 +    0.00402 +    0.00008 =   -0.19779
+   5    -0.05080 +   -0.00206 +    0.00623 +    0.00017 =   -0.04645
+   6    -0.06389 +   -0.00117 +    0.00234 +    0.00010 =   -0.06262
  ===================================================================
 
   ******************************************************************
@@ -2590,6 +2618,9 @@ Point group: C2v
                 8. SOPPA iteration, Excitation symmetry 2
   ==================================================================
 
+
+ **WARNING** Eigenvalues not paired
+        19      7.82431557D+02      -7.82431557D+02
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
@@ -2605,6 +2636,9 @@ Point group: C2v
                 9. SOPPA iteration, Excitation symmetry 2
   ==================================================================
 
+
+ **WARNING** Eigenvalues not paired
+        19      1.11470085D+02      -1.11470085D+02
             --------------------------------------------------
             Excitation   Energy (au)     Residual    Converged
             --------------------------------------------------
@@ -2642,9 +2676,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  1
 
  SOPPA excitation energy :  0.27616886     au
-                             7.5149367     eV
+                             7.5149369     eV
                              60612.058     cm-1
-                             725.08123     kj / mole
+                             725.08122     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.01 + -0.05  =  93.96 %
  2p-2h + 2h-2p excitation weight:   6.04 + -0.00  =   6.04 %
@@ -2666,7 +2700,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  2
 
  SOPPA excitation energy :  0.58421813     au
-                             15.897383     eV
+                             15.897384     eV
                              128221.06     cm-1
                              1533.8645     kj / mole
 
@@ -2714,7 +2748,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  4
 
  SOPPA excitation energy :  0.68244154     au
-                             18.570178     eV
+                             18.570179     eV
                              149778.60     cm-1
                              1791.7500     kj / mole
 
@@ -2725,10 +2759,10 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   3       1     |   -0.874485  |
- |    exci. | 2   1   |   1       3     |    0.423007  |
+ |    exci. | 1   2   |   3       1     |    0.874485  |
+ |    exci. | 2   1   |   1       3     |   -0.423007  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |  15   5   1   3 |    0.102475  |
+ |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.102475  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2738,7 +2772,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  5
 
  SOPPA excitation energy :   1.0235995     au
-                             27.853560     eV
+                             27.853561     eV
                              224654.13     cm-1
                              2687.4602     kj / mole
 
@@ -2749,9 +2783,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   4       1     |   -0.978183  |
+ |    exci. | 1   2   |   4       1     |    0.978183  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |   7   7   1   3 |    0.123978  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.123978  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2761,7 +2795,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  6
 
  SOPPA excitation energy :   1.2544392     au
-                             34.135025     eV
+                             34.135026     eV
                              275317.57     cm-1
                              3293.5295     kj / mole
 
@@ -2814,8 +2848,8 @@ Point group: C2v
    1    -0.48648 +   -0.02864 +   -0.00574 +    0.00015 =   -0.52071
    2     0.07421 +    0.00152 +    0.00622 +    0.00001 =    0.08196
    3    -0.23958 +   -0.01030 +    0.00960 +    0.00011 =   -0.24016
-   4    -0.48614 +   -0.03104 +    0.04783 +    0.00041 =   -0.46894
-   5     0.67337 +    0.01869 +   -0.03143 +   -0.00044 =    0.66019
+   4     0.48614 +    0.03104 +   -0.04783 +   -0.00041 =    0.46894
+   5    -0.67337 +   -0.01869 +    0.03143 +    0.00044 =   -0.66019
    6    -0.32462 +   -0.01041 +    0.02242 +    0.00018 =   -0.31243
  ===================================================================
 
@@ -2826,8 +2860,8 @@ Point group: C2v
    1     0.19395 +    0.00561 +   -0.02102 +    0.00003 =    0.17856
    2    -0.01807 +   -0.00001 +    0.01327 +    0.00000 =   -0.00480
    3     0.16381 +    0.00413 +    0.01258 +    0.00004 =    0.18056
-   4     0.19533 +    0.00695 +    0.06809 +    0.00011 =    0.27048
-   5    -0.53078 +   -0.00368 +   -0.02144 +   -0.00011 =   -0.55601
+   4    -0.19533 +   -0.00695 +   -0.06809 +   -0.00011 =   -0.27048
+   5     0.53078 +    0.00368 +    0.02144 +    0.00011 =    0.55601
    6     0.29447 +    0.00134 +    0.02615 +    0.00004 =    0.32200
  ===================================================================
 
@@ -2838,8 +2872,8 @@ Point group: C2v
    1     0.11845 +    0.00522 +    0.00207 +    0.00004 =    0.12578
    2    -0.02484 +   -0.00289 +   -0.00038 +    0.00000 =   -0.02810
    3    -0.13390 +   -0.00410 +    0.00222 +    0.00003 =   -0.13575
-   4    -0.16248 +   -0.00537 +    0.00202 +    0.00005 =   -0.16578
-   5     0.03884 +    0.00127 +   -0.00550 +   -0.00007 =    0.03454
+   4     0.16248 +    0.00537 +   -0.00202 +   -0.00005 =    0.16578
+   5    -0.03884 +   -0.00127 +    0.00550 +    0.00007 =   -0.03454
    6    -0.05417 +   -0.00092 +    0.00143 +    0.00003 =   -0.05362
  ===================================================================
 
@@ -2918,9 +2952,9 @@ Point group: C2v
  Excitation symmetry  2, state no.  1
 
  SOPPA(CCSD) excitation energy :  0.27659860     au
-                                   7.5266305     eV
+                                   7.5266307     eV
                                    60706.375     cm-1
-                                   726.20951     kj / mole
+                                   726.20950     kj / mole
 
  1p-1h + 1h-1p excitation weight:  93.99 + -0.05  =  93.95 %
  2p-2h + 2h-2p excitation weight:   6.05 + -0.00  =   6.05 %
@@ -2953,10 +2987,10 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   2       1     |   -0.979878  |
+ |    exci. | 1   2   |   2       1     |    0.979878  |
  |-----------------------------------------------------|
- |    exci. | 2 1 1 1 |   5   4   1   3 |    0.132376  |
- |    exci. | 1 1 2 1 |   8   3   1   3 |    0.103135  |
+ |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.132376  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.103135  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2966,7 +3000,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  3
 
  SOPPA(CCSD) excitation energy :  0.67580266     au
-                                   18.389525     eV
+                                   18.389526     eV
                                    148321.54     cm-1
                                    1774.3196     kj / mole
 
@@ -2977,10 +3011,10 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   3       1     |    0.391037  |
- |    exci. | 2   1   |   1       3     |    0.906167  |
+ |    exci. | 1   2   |   3       1     |   -0.391037  |
+ |    exci. | 2   1   |   1       3     |   -0.906167  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |   7   7   1   2 |   -0.105617  |
+ |    exci. | 1 1 2 1 |   7   7   1   2 |    0.105617  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -2991,7 +3025,7 @@ Point group: C2v
 
  SOPPA(CCSD) excitation energy :  0.68311848     au
                                    18.588599     eV
-                                   149927.18     cm-1
+                                   149927.17     cm-1
                                    1793.5273     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.54 + -0.13  =  94.41 %
@@ -3001,10 +3035,10 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   3       1     |   -0.886502  |
- |    exci. | 2   1   |   1       3     |    0.398281  |
+ |    exci. | 1   2   |   3       1     |    0.886502  |
+ |    exci. | 2   1   |   1       3     |   -0.398281  |
  |-----------------------------------------------------|
- |    exci. | 1 1 2 1 |  15   5   1   3 |    0.103761  |
+ |    exci. | 1 1 2 1 |  15   5   1   3 |   -0.103761  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3014,7 +3048,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  5
 
  SOPPA(CCSD) excitation energy :   1.0239287     au
-                                   27.862516     eV
+                                   27.862517     eV
                                    224726.37     cm-1
                                    2688.3244     kj / mole
 
@@ -3037,7 +3071,7 @@ Point group: C2v
  Excitation symmetry  2, state no.  6
 
  SOPPA(CCSD) excitation energy :   1.2547061     au
-                                   34.142289     eV
+                                   34.142290     eV
                                    275376.16     cm-1
                                    3294.2304     kj / mole
 
@@ -3048,34 +3082,34 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   2   |   5       1     |   -0.983263  |
- |    exci. | 2   1   |   2       3     |    0.107117  |
+ |    exci. | 1   2   |   5       1     |    0.983263  |
+ |    exci. | 2   1   |   2       3     |   -0.107117  |
  |-----------------------------------------------------|
- |    exci. | 2 1 1 1 |   1   2   3   3 |    0.021978  |
- |    exci. | 2 1 1 1 |   5   4   1   3 |   -0.024655  |
- |    exci. | 2 1 1 1 |   5   5   1   3 |   -0.030003  |
- |    exci. | 2 1 1 1 |   2   9   1   3 |    0.042524  |
- |    exci. | 2 1 1 1 |   3   9   1   3 |    0.024100  |
- |    exci. | 2 1 1 1 |   6   9   1   3 |    0.020428  |
- |    exci. | 2 1 1 1 |   1   9   2   3 |   -0.030688  |
- |    exci. | 2 1 1 1 |   5   9   3   3 |    0.081189  |
- |    exci. | 2 1 1 1 |   5  10   3   3 |    0.038684  |
- |    exci. | 1 1 2 1 |   7   8   1   2 |   -0.034128  |
- |    exci. | 1 1 2 1 |  15   1   1   3 |    0.035474  |
- |    exci. | 1 1 2 1 |   8   3   1   3 |   -0.033924  |
- |    exci. | 1 1 2 1 |   7   7   1   3 |   -0.024573  |
- |    exci. | 1 1 2 1 |   3   8   1   3 |    0.029132  |
- |    exci. | 1 1 2 1 |   5   8   1   3 |   -0.031610  |
- |    exci. | 1 1 2 1 |   6   8   1   3 |   -0.025208  |
- |    exci. | 1 1 2 1 |   7   8   1   3 |   -0.029174  |
- |    exci. | 1 1 2 1 |   8   8   1   3 |    0.021999  |
- |    exci. | 1 1 2 1 |   1   9   1   3 |    0.047530  |
- |    exci. | 1 1 2 1 |   5   9   1   3 |   -0.036685  |
- |    exci. | 1 1 2 1 |   7   9   1   3 |    0.053200  |
- |    exci. | 1 1 2 1 |   9   9   1   3 |   -0.026967  |
- |    exci. | 2 3 1 3 |   1   8   1   1 |   -0.032601  |
- |    exci. | 3 3 2 1 |   9   7   1   2 |    0.021849  |
- |    exci. | 3 3 2 1 |   7   6   1   3 |    0.020600  |
+ |    exci. | 2 1 1 1 |   1   2   3   3 |   -0.021978  |
+ |    exci. | 2 1 1 1 |   5   4   1   3 |    0.024655  |
+ |    exci. | 2 1 1 1 |   5   5   1   3 |    0.030003  |
+ |    exci. | 2 1 1 1 |   2   9   1   3 |   -0.042524  |
+ |    exci. | 2 1 1 1 |   3   9   1   3 |   -0.024100  |
+ |    exci. | 2 1 1 1 |   6   9   1   3 |   -0.020428  |
+ |    exci. | 2 1 1 1 |   1   9   2   3 |    0.030688  |
+ |    exci. | 2 1 1 1 |   5   9   3   3 |   -0.081189  |
+ |    exci. | 2 1 1 1 |   5  10   3   3 |   -0.038684  |
+ |    exci. | 1 1 2 1 |   7   8   1   2 |    0.034128  |
+ |    exci. | 1 1 2 1 |  15   1   1   3 |   -0.035474  |
+ |    exci. | 1 1 2 1 |   8   3   1   3 |    0.033924  |
+ |    exci. | 1 1 2 1 |   7   7   1   3 |    0.024573  |
+ |    exci. | 1 1 2 1 |   3   8   1   3 |   -0.029132  |
+ |    exci. | 1 1 2 1 |   5   8   1   3 |    0.031610  |
+ |    exci. | 1 1 2 1 |   6   8   1   3 |    0.025208  |
+ |    exci. | 1 1 2 1 |   7   8   1   3 |    0.029174  |
+ |    exci. | 1 1 2 1 |   8   8   1   3 |   -0.021999  |
+ |    exci. | 1 1 2 1 |   1   9   1   3 |   -0.047530  |
+ |    exci. | 1 1 2 1 |   5   9   1   3 |    0.036685  |
+ |    exci. | 1 1 2 1 |   7   9   1   3 |   -0.053200  |
+ |    exci. | 1 1 2 1 |   9   9   1   3 |    0.026967  |
+ |    exci. | 2 3 1 3 |   1   8   1   1 |    0.032601  |
+ |    exci. | 3 3 2 1 |   9   7   1   2 |   -0.021849  |
+ |    exci. | 3 3 2 1 |   7   6   1   3 |   -0.020600  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3088,11 +3122,11 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.47363 +    0.02799 +    0.00646 +   -0.00012 =    0.50796
-   2    -0.07378 +   -0.00177 +   -0.00648 +   -0.00002 =   -0.08206
-   3     0.22465 +    0.00966 +   -0.00824 +   -0.00010 =    0.22597
-   4    -0.48402 +   -0.03090 +    0.04844 +    0.00043 =   -0.46605
+   2     0.07378 +    0.00177 +    0.00648 +    0.00002 =    0.08206
+   3    -0.22465 +   -0.00966 +    0.00824 +    0.00010 =   -0.22597
+   4     0.48402 +    0.03090 +   -0.04844 +   -0.00043 =    0.46605
    5    -0.66902 +   -0.01909 +    0.03090 +    0.00043 =   -0.65678
-   6    -0.32339 +   -0.01061 +    0.02243 +    0.00021 =   -0.31136
+   6     0.32339 +    0.01061 +   -0.02243 +   -0.00021 =    0.31136
  ===================================================================
 
  XDIPVEL SOPPA(CCSD) transition moments for excitation symmetry  2
@@ -3100,11 +3134,11 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.19649 +   -0.00585 +    0.02133 +   -0.00002 =   -0.18103
-   2     0.01927 +    0.00011 +   -0.01351 +   -0.00001 =    0.00586
-   3    -0.15765 +   -0.00391 +   -0.01066 +   -0.00004 =   -0.17227
-   4     0.19786 +    0.00716 +    0.06887 +    0.00014 =    0.27403
+   2    -0.01927 +   -0.00011 +    0.01351 +    0.00001 =   -0.00586
+   3     0.15765 +    0.00391 +    0.01066 +    0.00004 =    0.17227
+   4    -0.19786 +   -0.00716 +   -0.06887 +   -0.00014 =   -0.27403
    5     0.53706 +    0.00403 +    0.02124 +    0.00012 =    0.56246
-   6     0.29692 +    0.00139 +    0.02629 +    0.00005 =    0.32465
+   6    -0.29692 +   -0.00139 +   -0.02629 +   -0.00005 =   -0.32465
  ===================================================================
 
  YANGMOM SOPPA(CCSD) transition moments for excitation symmetry  2
@@ -3112,11 +3146,11 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.11789 +   -0.00598 +   -0.00198 +   -0.00005 =   -0.12590
-   2     0.02220 +    0.00329 +    0.00048 +   -0.00000 =    0.02597
-   3     0.13141 +    0.00449 +   -0.00214 +   -0.00003 =    0.13373
-   4    -0.16686 +   -0.00696 +    0.00201 +    0.00005 =   -0.17177
+   2    -0.02220 +   -0.00329 +   -0.00048 +    0.00000 =   -0.02597
+   3    -0.13141 +   -0.00449 +    0.00214 +    0.00003 =   -0.13373
+   4     0.16686 +    0.00696 +   -0.00201 +   -0.00005 =    0.17177
    5    -0.03914 +   -0.00132 +    0.00544 +    0.00008 =   -0.03494
-   6    -0.05448 +   -0.00128 +    0.00145 +    0.00003 =   -0.05428
+   6     0.05448 +    0.00128 +   -0.00145 +   -0.00003 =    0.05428
  ===================================================================
 
   ******************************************************************
@@ -3219,7 +3253,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  1
 
  RPA excitation energy :  0.48886138     au
-                           13.302594     eV
+                           13.302595     eV
                            107292.67     cm-1
                            1283.5054     kj / mole
 
@@ -3249,8 +3283,8 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |   -0.979376  |
- |    exci. | 1   3   |   3       1     |    0.146909  |
+ |    exci. | 1   3   |   1       1     |    0.979376  |
+ |    exci. | 1   3   |   3       1     |   -0.146909  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3279,7 +3313,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  4
 
  RPA excitation energy :  0.83980409     au
-                           22.852231     eV
+                           22.852232     eV
                            184315.69     cm-1
                            2204.9053     kj / mole
 
@@ -3300,7 +3334,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  5
 
  RPA excitation energy :  0.87364931     au
-                           23.773206     eV
+                           23.773207     eV
                            191743.86     cm-1
                            2293.7659     kj / mole
 
@@ -3324,7 +3358,7 @@ Point group: C2v
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
    1    -0.52292 +    0.04300 =   -0.47992
-   2    -0.86259 +    0.02735 =   -0.83524
+   2     0.86259 +   -0.02735 =    0.83524
    3    -0.67597 +    0.06698 =   -0.60899
    4    -0.21973 +    0.02585 =   -0.19388
    5    -0.00084 +   -0.01971 =   -0.02054
@@ -3335,7 +3369,7 @@ Point group: C2v
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
    1     0.18552 +    0.05019 =    0.23571
-   2     0.44290 +    0.01178 =    0.45469
+   2    -0.44290 +   -0.01178 =   -0.45469
    3     0.38019 +    0.06898 =    0.44917
    4     0.13935 +    0.01043 =    0.14979
    5     0.06080 +   -0.02969 =    0.03111
@@ -3346,7 +3380,7 @@ Point group: C2v
  Exci.    1p-1h        1h-1p        Total
  -----------------------------------------
    1     0.21364 +   -0.00368 =    0.20997
-   2    -0.13159 +   -0.00546 =   -0.13705
+   2     0.13159 +    0.00546 =    0.13705
    3     0.44887 +   -0.00992 =    0.43895
    4    -0.10916 +    0.00612 =   -0.10304
    5    -0.16335 +    0.00426 =   -0.15909
@@ -3370,8 +3404,8 @@ Point group: C2v
  Excitation symmetry  3, state no.  1
 
  DCRPA excitation energy :  0.44691147     au
-                             12.161079     eV
-                             98085.730     cm-1
+                             12.161080     eV
+                             98085.729     cm-1
                              1173.3659     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.27 + -0.18  =  94.09 %
@@ -3395,7 +3429,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  2
 
  DCRPA excitation energy :  0.51913448     au
-                             14.126367     eV
+                             14.126368     eV
                              113936.85     cm-1
                              1362.9874     kj / mole
 
@@ -3406,11 +3440,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |   -0.966951  |
- |    exci. | 1   3   |   3       1     |    0.145045  |
+ |    exci. | 1   3   |   1       1     |    0.966951  |
+ |    exci. | 1   3   |   3       1     |   -0.145045  |
  |-----------------------------------------------------|
- |    exci. | 1 1 3 1 |   1  12   1   3 |    0.100413  |
- |    exci. | 1 1 3 1 |   7  12   1   3 |   -0.110124  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.100413  |
+ |    exci. | 1 1 3 1 |   7  12   1   3 |    0.110124  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3420,9 +3454,9 @@ Point group: C2v
  Excitation symmetry  3, state no.  3
 
  DCRPA excitation energy :  0.69692551     au
-                             18.964307     eV
+                             18.964308     eV
                              152957.47     cm-1
-                             1829.7777     kj / mole
+                             1829.7776     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.26 + -0.13  =  94.13 %
  2p-2h + 2h-2p excitation weight:   5.87 + -0.00  =   5.87 %
@@ -3445,7 +3479,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  4
 
  DCRPA excitation energy :  0.83077151     au
-                             22.606442     eV
+                             22.606443     eV
                              182333.27     cm-1
                              2181.1903     kj / mole
 
@@ -3494,7 +3528,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  5
 
  DCRPA excitation energy :  0.82912672     au
-                             22.561685     eV
+                             22.561686     eV
                              181972.28     cm-1
                              2176.8719     kj / mole
 
@@ -3557,7 +3591,7 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.49899 +   -0.02561 +    0.04134 +    0.00094 =   -0.48231
-   2    -0.83158 +   -0.03288 +    0.02645 +    0.00100 =   -0.83702
+   2     0.83158 +    0.03288 +   -0.02645 +   -0.00100 =    0.83702
    3    -0.64829 +   -0.03334 +    0.06418 +    0.00161 =   -0.61584
    4    -0.21555 +   -0.01501 +    0.02490 +    0.00099 =   -0.20468
    5    -0.00542 +   -0.01378 +   -0.01892 +   -0.00038 =   -0.03850
@@ -3568,7 +3602,7 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.17628 +    0.00819 +    0.04832 +    0.00028 =    0.23306
-   2     0.42634 +    0.01114 +    0.01124 +    0.00026 =    0.44898
+   2    -0.42634 +   -0.01114 +   -0.01124 +   -0.00026 =   -0.44898
    3     0.36417 +    0.01013 +    0.06621 +    0.00049 =    0.44100
    4     0.13574 +    0.00423 +    0.00997 +    0.00029 =    0.15023
    5     0.06079 +    0.00388 +   -0.02855 +   -0.00008 =    0.03604
@@ -3579,7 +3613,7 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.20350 +    0.00576 +   -0.00356 +   -0.00003 =    0.20566
-   2    -0.12709 +   -0.00533 +   -0.00524 +   -0.00015 =   -0.13781
+   2     0.12709 +    0.00533 +    0.00524 +    0.00015 =    0.13781
    3     0.43022 +    0.01635 +   -0.00953 +   -0.00018 =    0.43687
    4    -0.10590 +   -0.00411 +    0.00584 +    0.00021 =   -0.10397
    5    -0.15480 +   -0.00170 +    0.00409 +    0.00006 =   -0.15234
@@ -3751,11 +3785,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   1   |   1       3     |    0.964464  |
- |    exci. | 3   1   |   3       3     |   -0.163179  |
+ |    exci. | 3   1   |   1       3     |   -0.964464  |
+ |    exci. | 3   1   |   3       3     |    0.163179  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   8  12   2   2 |   -0.113250  |
- |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.117474  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |    0.113250  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |    0.117474  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3790,7 +3824,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  3
 
  SOPPA excitation energy :  0.69775869     au
-                             18.986979     eV
+                             18.986980     eV
                              153140.33     cm-1
                              1831.9652     kj / mole
 
@@ -3815,8 +3849,8 @@ Point group: C2v
  Excitation symmetry  3, state no.  4
 
  SOPPA excitation energy :  0.83015419     au
-                             22.589644     eV
-                             182197.79     cm-1
+                             22.589645     eV
+                             182197.78     cm-1
                              2179.5695     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.27 + -0.02  =  96.25 %
@@ -3826,32 +3860,32 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   2       1     |    0.974409  |
- |    exci. | 1   3   |   3       1     |    0.141721  |
+ |    exci. | 1   3   |   2       1     |   -0.974409  |
+ |    exci. | 1   3   |   3       1     |   -0.141721  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   8  13   2   2 |    0.031610  |
- |    exci. | 3 1 1 1 |   2  16   1   2 |    0.031431  |
- |    exci. | 3 1 1 1 |   8   9   2   3 |    0.044678  |
- |    exci. | 3 1 1 1 |   8  12   2   3 |   -0.021319  |
- |    exci. | 3 1 1 1 |   1  12   3   3 |    0.020685  |
- |    exci. | 3 1 1 1 |   7  13   2   3 |   -0.038753  |
- |    exci. | 3 1 1 1 |  10  13   2   3 |    0.036674  |
- |    exci. | 3 1 1 1 |   1  14   1   3 |   -0.086534  |
- |    exci. | 3 1 1 1 |   2  14   1   3 |   -0.026829  |
- |    exci. | 3 1 1 1 |   3  14   1   3 |   -0.030404  |
- |    exci. | 3 1 1 1 |   7  14   1   3 |    0.061124  |
- |    exci. | 3 1 1 1 |   8  14   1   3 |   -0.041388  |
- |    exci. | 3 1 1 1 |   9  14   1   3 |   -0.049555  |
- |    exci. | 3 1 1 1 |  10  14   1   3 |   -0.029645  |
- |    exci. | 1 1 3 1 |   2  14   1   2 |   -0.026156  |
- |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.020470  |
- |    exci. | 1 1 3 1 |   8  12   1   3 |   -0.035997  |
- |    exci. | 1 1 3 1 |   2  13   1   3 |   -0.087545  |
- |    exci. | 1 1 3 1 |   5  13   1   3 |    0.029624  |
- |    exci. | 1 1 3 1 |   7  13   1   3 |    0.022084  |
- |    exci. | 1 1 3 1 |   2  14   1   3 |   -0.029771  |
- |    exci. | 3 2 1 2 |   8   1   2   1 |    0.030176  |
- |    exci. | 1 2 3 2 |   2   2   1   1 |    0.023823  |
+ |    exci. | 3 1 1 1 |   8  13   2   2 |   -0.031610  |
+ |    exci. | 3 1 1 1 |   2  16   1   2 |   -0.031431  |
+ |    exci. | 3 1 1 1 |   8   9   2   3 |   -0.044678  |
+ |    exci. | 3 1 1 1 |   8  12   2   3 |    0.021319  |
+ |    exci. | 3 1 1 1 |   1  12   3   3 |   -0.020685  |
+ |    exci. | 3 1 1 1 |   7  13   2   3 |    0.038753  |
+ |    exci. | 3 1 1 1 |  10  13   2   3 |   -0.036674  |
+ |    exci. | 3 1 1 1 |   1  14   1   3 |    0.086534  |
+ |    exci. | 3 1 1 1 |   2  14   1   3 |    0.026829  |
+ |    exci. | 3 1 1 1 |   3  14   1   3 |    0.030404  |
+ |    exci. | 3 1 1 1 |   7  14   1   3 |   -0.061124  |
+ |    exci. | 3 1 1 1 |   8  14   1   3 |    0.041388  |
+ |    exci. | 3 1 1 1 |   9  14   1   3 |    0.049555  |
+ |    exci. | 3 1 1 1 |  10  14   1   3 |    0.029645  |
+ |    exci. | 1 1 3 1 |   2  14   1   2 |    0.026156  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |    0.020470  |
+ |    exci. | 1 1 3 1 |   8  12   1   3 |    0.035997  |
+ |    exci. | 1 1 3 1 |   2  13   1   3 |    0.087545  |
+ |    exci. | 1 1 3 1 |   5  13   1   3 |   -0.029624  |
+ |    exci. | 1 1 3 1 |   7  13   1   3 |   -0.022084  |
+ |    exci. | 1 1 3 1 |   2  14   1   3 |    0.029771  |
+ |    exci. | 3 2 1 2 |   8   1   2   1 |   -0.030176  |
+ |    exci. | 1 2 3 2 |   2   2   1   1 |   -0.023823  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3861,7 +3895,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  5
 
  SOPPA excitation energy :  0.83459832     au
-                             22.710575     eV
+                             22.710576     eV
                              183173.16     cm-1
                              2191.2376     kj / mole
 
@@ -3872,48 +3906,48 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   2       1     |   -0.103828  |
- |    exci. | 1   3   |   3       1     |    0.116933  |
- |    exci. | 3   1   |   1       3     |   -0.132480  |
- |    exci. | 3   1   |   3       3     |   -0.952470  |
+ |    exci. | 1   3   |   2       1     |    0.103828  |
+ |    exci. | 1   3   |   3       1     |   -0.116933  |
+ |    exci. | 3   1   |   1       3     |    0.132480  |
+ |    exci. | 3   1   |   3       3     |    0.952470  |
  |-----------------------------------------------------|
- |    exci. | 3 1 1 1 |   2   2   1   2 |   -0.036446  |
- |    exci. | 3 1 1 1 |   8   2   1   2 |   -0.022489  |
- |    exci. | 3 1 1 1 |   9   2   1   2 |    0.035039  |
- |    exci. | 3 1 1 1 |  10   2   1   2 |   -0.024567  |
- |    exci. | 3 1 1 1 |   1  12   1   2 |    0.023393  |
- |    exci. | 3 1 1 1 |   4  12   1   2 |   -0.021696  |
- |    exci. | 3 1 1 1 |   7  12   2   2 |   -0.026354  |
- |    exci. | 3 1 1 1 |   8  12   2   2 |    0.070765  |
- |    exci. | 3 1 1 1 |   1  14   1   2 |    0.025883  |
- |    exci. | 3 1 1 1 |   8  14   1   2 |    0.020639  |
- |    exci. | 3 1 1 1 |   1  15   1   2 |   -0.052554  |
- |    exci. | 3 1 1 1 |   2  15   1   2 |    0.063830  |
- |    exci. | 3 1 1 1 |   3  15   1   2 |    0.068289  |
- |    exci. | 3 1 1 1 |   5  15   1   2 |    0.037782  |
- |    exci. | 3 1 1 1 |   7  15   1   2 |   -0.021914  |
- |    exci. | 3 1 1 1 |   7  15   2   2 |    0.068631  |
- |    exci. | 3 1 1 1 |   8  15   2   2 |   -0.028027  |
- |    exci. | 3 1 1 1 |   9  15   2   2 |    0.023586  |
- |    exci. | 3 1 1 1 |   3  15   3   2 |   -0.048215  |
- |    exci. | 3 1 1 1 |   5  15   3   2 |    0.057893  |
- |    exci. | 3 1 1 1 |   1   2   1   3 |    0.023245  |
- |    exci. | 3 1 1 1 |   9   2   1   3 |    0.021025  |
- |    exci. | 3 1 1 1 |   3  15   1   3 |    0.034413  |
- |    exci. | 3 1 1 1 |   5  15   3   3 |   -0.026004  |
- |    exci. | 1 1 3 1 |   5   1   1   2 |    0.042404  |
- |    exci. | 1 1 3 1 |   1  12   1   2 |    0.071670  |
- |    exci. | 1 1 3 1 |   3  12   1   2 |    0.022144  |
- |    exci. | 1 1 3 1 |   7  12   1   2 |   -0.060129  |
- |    exci. | 1 1 3 1 |   9  12   1   2 |    0.043795  |
- |    exci. | 1 1 3 1 |   1  13   1   2 |    0.022312  |
- |    exci. | 1 1 3 1 |   2  13   1   2 |    0.040262  |
- |    exci. | 1 1 3 1 |   3  13   1   2 |   -0.023335  |
- |    exci. | 1 1 3 1 |   4  13   1   2 |   -0.025227  |
- |    exci. | 1 1 3 1 |   1  14   1   2 |    0.024247  |
- |    exci. | 1 1 3 1 |   3  14   1   2 |   -0.021800  |
- |    exci. | 1 1 3 1 |   4  14   1   2 |   -0.020324  |
- |    exci. | 1 1 3 1 |   2   1   1   3 |    0.020058  |
+ |    exci. | 3 1 1 1 |   2   2   1   2 |    0.036446  |
+ |    exci. | 3 1 1 1 |   8   2   1   2 |    0.022489  |
+ |    exci. | 3 1 1 1 |   9   2   1   2 |   -0.035039  |
+ |    exci. | 3 1 1 1 |  10   2   1   2 |    0.024567  |
+ |    exci. | 3 1 1 1 |   1  12   1   2 |   -0.023393  |
+ |    exci. | 3 1 1 1 |   4  12   1   2 |    0.021696  |
+ |    exci. | 3 1 1 1 |   7  12   2   2 |    0.026354  |
+ |    exci. | 3 1 1 1 |   8  12   2   2 |   -0.070765  |
+ |    exci. | 3 1 1 1 |   1  14   1   2 |   -0.025883  |
+ |    exci. | 3 1 1 1 |   8  14   1   2 |   -0.020639  |
+ |    exci. | 3 1 1 1 |   1  15   1   2 |    0.052554  |
+ |    exci. | 3 1 1 1 |   2  15   1   2 |   -0.063830  |
+ |    exci. | 3 1 1 1 |   3  15   1   2 |   -0.068289  |
+ |    exci. | 3 1 1 1 |   5  15   1   2 |   -0.037782  |
+ |    exci. | 3 1 1 1 |   7  15   1   2 |    0.021914  |
+ |    exci. | 3 1 1 1 |   7  15   2   2 |   -0.068631  |
+ |    exci. | 3 1 1 1 |   8  15   2   2 |    0.028027  |
+ |    exci. | 3 1 1 1 |   9  15   2   2 |   -0.023586  |
+ |    exci. | 3 1 1 1 |   3  15   3   2 |    0.048215  |
+ |    exci. | 3 1 1 1 |   5  15   3   2 |   -0.057893  |
+ |    exci. | 3 1 1 1 |   1   2   1   3 |   -0.023245  |
+ |    exci. | 3 1 1 1 |   9   2   1   3 |   -0.021025  |
+ |    exci. | 3 1 1 1 |   3  15   1   3 |   -0.034413  |
+ |    exci. | 3 1 1 1 |   5  15   3   3 |    0.026004  |
+ |    exci. | 1 1 3 1 |   5   1   1   2 |   -0.042404  |
+ |    exci. | 1 1 3 1 |   1  12   1   2 |   -0.071670  |
+ |    exci. | 1 1 3 1 |   3  12   1   2 |   -0.022144  |
+ |    exci. | 1 1 3 1 |   7  12   1   2 |    0.060129  |
+ |    exci. | 1 1 3 1 |   9  12   1   2 |   -0.043795  |
+ |    exci. | 1 1 3 1 |   1  13   1   2 |   -0.022312  |
+ |    exci. | 1 1 3 1 |   2  13   1   2 |   -0.040262  |
+ |    exci. | 1 1 3 1 |   3  13   1   2 |    0.023335  |
+ |    exci. | 1 1 3 1 |   4  13   1   2 |    0.025227  |
+ |    exci. | 1 1 3 1 |   1  14   1   2 |   -0.024247  |
+ |    exci. | 1 1 3 1 |   3  14   1   2 |    0.021800  |
+ |    exci. | 1 1 3 1 |   4  14   1   2 |    0.020324  |
+ |    exci. | 1 1 3 1 |   2   1   1   3 |   -0.020058  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -3925,33 +3959,33 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.49815 +    0.02543 +   -0.04696 +   -0.00078 =    0.47584
+   1    -0.49815 +   -0.02543 +    0.04696 +    0.00078 =   -0.47584
    2     0.83821 +    0.03292 +   -0.03740 +   -0.00081 =    0.83291
    3    -0.68664 +   -0.03383 +    0.06878 +    0.00104 =   -0.65065
-   4     0.20847 +    0.01359 +   -0.01611 +   -0.00027 =    0.20568
-   5     0.01864 +   -0.01023 +   -0.02962 +   -0.00041 =   -0.02162
+   4    -0.20847 +   -0.01359 +    0.01611 +    0.00027 =   -0.20568
+   5    -0.01864 +    0.01023 +    0.02962 +    0.00041 =    0.02162
  ===================================================================
 
  YDIPVEL SOPPA transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.16739 +   -0.00791 +   -0.04833 +   -0.00025 =   -0.22388
+   1     0.16739 +    0.00791 +    0.04833 +    0.00025 =    0.22388
    2    -0.40816 +   -0.01096 +   -0.01952 +   -0.00031 =   -0.43895
    3     0.37541 +    0.01028 +    0.06900 +    0.00034 =    0.45503
-   4    -0.13839 +   -0.00394 +   -0.01042 +   -0.00009 =   -0.15284
-   5     0.06670 +    0.00284 +   -0.03513 +   -0.00012 =    0.03429
+   4     0.13839 +    0.00394 +    0.01042 +    0.00009 =    0.15284
+   5    -0.06670 +   -0.00284 +    0.03513 +    0.00012 =   -0.03429
  ===================================================================
 
  XANGMOM SOPPA transition moments for excitation symmetry  3
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.17542 +   -0.00521 +    0.00196 +    0.00003 =   -0.17863
+   1     0.17542 +    0.00521 +   -0.00196 +   -0.00003 =    0.17863
    2     0.13288 +    0.00521 +    0.00088 +    0.00002 =    0.13899
    3     0.42536 +    0.01586 +   -0.00681 +   -0.00009 =    0.43432
-   4     0.11331 +    0.00463 +   -0.00031 +   -0.00002 =    0.11761
-   5    -0.17548 +   -0.00286 +    0.00255 +    0.00004 =   -0.17574
+   4    -0.11331 +   -0.00463 +    0.00031 +    0.00002 =   -0.11761
+   5     0.17548 +    0.00286 +   -0.00255 +   -0.00004 =    0.17574
  ===================================================================
 
   ******************************************************************
@@ -4041,7 +4075,7 @@ Point group: C2v
  SOPPA(CCSD) excitation energy :  0.44335198     au
                                    12.064221     eV
                                    97304.512     cm-1
-                                   1164.0205     kj / mole
+                                   1164.0204     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.00 + -0.08  =  93.93 %
  2p-2h + 2h-2p excitation weight:   6.07 + -0.00  =   6.07 %
@@ -4065,7 +4099,7 @@ Point group: C2v
 
  SOPPA(CCSD) excitation energy :  0.51906202     au
                                    14.124396     eV
-                                   113920.95     cm-1
+                                   113920.94     cm-1
                                    1362.7971     kj / mole
 
  1p-1h + 1h-1p excitation weight:  95.40 + -0.06  =  95.34 %
@@ -4075,11 +4109,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 1   3   |   1       1     |    0.977344  |
- |    exci. | 1   3   |   3       1     |   -0.109351  |
+ |    exci. | 1   3   |   1       1     |   -0.977344  |
+ |    exci. | 1   3   |   3       1     |    0.109351  |
  |-----------------------------------------------------|
- |    exci. | 1 1 3 1 |   1  12   1   3 |   -0.101390  |
- |    exci. | 1 1 3 1 |   7  12   1   3 |    0.109918  |
+ |    exci. | 1 1 3 1 |   1  12   1   3 |    0.101390  |
+ |    exci. | 1 1 3 1 |   7  12   1   3 |   -0.109918  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4089,7 +4123,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  3
 
  SOPPA(CCSD) excitation energy :  0.69870366     au
-                                   19.012693     eV
+                                   19.012694     eV
                                    153347.73     cm-1
                                    1834.4462     kj / mole
 
@@ -4114,9 +4148,9 @@ Point group: C2v
  Excitation symmetry  3, state no.  4
 
  SOPPA(CCSD) excitation energy :  0.83070781     au
-                                   22.604709     eV
+                                   22.604710     eV
                                    182319.29     cm-1
-                                   2181.0231     kj / mole
+                                   2181.0230     kj / mole
 
  1p-1h + 1h-1p excitation weight:  96.26 + -0.02  =  96.24 %
  2p-2h + 2h-2p excitation weight:   3.76 + -0.00  =   3.76 %
@@ -4160,7 +4194,7 @@ Point group: C2v
  Excitation symmetry  3, state no.  5
 
  SOPPA(CCSD) excitation energy :  0.83522748     au
-                                   22.727695     eV
+                                   22.727696     eV
                                    183311.24     cm-1
                                    2192.8894     kj / mole
 
@@ -4225,7 +4259,7 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1    -0.48971 +   -0.02595 +    0.04762 +    0.00080 =   -0.46723
-   2     0.82521 +    0.03246 +   -0.03746 +   -0.00082 =    0.81939
+   2    -0.82521 +   -0.03246 +    0.03746 +    0.00082 =   -0.81939
    3     0.68029 +    0.03386 +   -0.06954 +   -0.00107 =    0.64354
    4    -0.20775 +   -0.01253 +    0.01604 +    0.00028 =   -0.20397
    5     0.02614 +   -0.00885 +   -0.03087 +   -0.00044 =   -0.01402
@@ -4236,7 +4270,7 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.16672 +    0.00882 +    0.04922 +    0.00030 =    0.22506
-   2    -0.40882 +   -0.01242 +   -0.02006 +   -0.00036 =   -0.44167
+   2     0.40882 +    0.01242 +    0.02006 +    0.00036 =    0.44167
    3    -0.37588 +   -0.01115 +   -0.06987 +   -0.00041 =   -0.45730
    4     0.13809 +    0.00398 +    0.01036 +    0.00010 =    0.15254
    5     0.06254 +    0.00224 +   -0.03646 +   -0.00015 =    0.02817
@@ -4247,7 +4281,7 @@ Point group: C2v
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
    1     0.17616 +    0.00626 +   -0.00192 +   -0.00003 =    0.18048
-   2     0.13003 +    0.00614 +    0.00073 +    0.00002 =    0.13691
+   2    -0.13003 +   -0.00614 +   -0.00073 +   -0.00002 =   -0.13691
    3    -0.42329 +   -0.01793 +    0.00651 +    0.00009 =   -0.43461
    4    -0.11475 +   -0.00469 +    0.00031 +    0.00002 =   -0.11911
    5    -0.17960 +   -0.00411 +    0.00262 +    0.00004 =   -0.18105
@@ -4340,7 +4374,7 @@ Point group: C2v
 
  RPA excitation energy :  0.39497370     au
                            10.747781     eV
-                           86686.708     cm-1
+                           86686.707     cm-1
                            1037.0033     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.18 + -0.18  = 100.00 %
@@ -4382,7 +4416,7 @@ Point group: C2v
 
  RPA excitation energy :  0.78672694     au
                            21.407929     eV
-                           172666.61     cm-1
+                           172666.60     cm-1
                            2065.5513     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.09 + -0.09  = 100.00 %
@@ -4391,9 +4425,9 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.268698  |
- |    exci. | 3   2   |   2       1     |    0.233518  |
- |    exci. | 3   2   |   3       1     |    0.926596  |
+ |    exci. | 3   2   |   1       1     |   -0.268698  |
+ |    exci. | 3   2   |   2       1     |   -0.233518  |
+ |    exci. | 3   2   |   3       1     |   -0.926596  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4403,7 +4437,7 @@ Point group: C2v
 
  RPA excitation energy :  0.83047692     au
                            22.598426     eV
-                           182268.62     cm-1
+                           182268.61     cm-1
                            2180.4168     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.19 + -0.19  = 100.00 %
@@ -4412,7 +4446,7 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   3   |   1       1     |    0.994574  |
+ |    exci. | 2   3   |   1       1     |   -0.994574  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4421,9 +4455,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  5
 
  RPA excitation energy :   1.3495788     au
-                           36.723907     eV
+                           36.723908     eV
                            296198.31     cm-1
-                           3543.3187     kj / mole
+                           3543.3186     kj / mole
 
  1p-1h + 1h-1p excitation weight: 100.04 + -0.04  = 100.00 %
 
@@ -4431,7 +4465,7 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |    0.999805  |
+ |    exci. | 4   1   |   1       3     |   -0.999805  |
  |-----------------------------------------------------|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4444,9 +4478,9 @@ Point group: C2v
  -----------------------------------------
    1    -0.19225 +    0.00632 =   -0.18593
    2    -0.26077 +    0.00652 =   -0.25424
-   3    -0.09573 +    0.00324 =   -0.09248
-   4    -0.10767 +    0.00937 =   -0.09830
-   5     0.28587 +   -0.00705 =    0.27882
+   3     0.09573 +   -0.00324 =    0.09248
+   4     0.10767 +   -0.00937 =    0.09830
+   5    -0.28587 +    0.00705 =   -0.27882
  =========================================
 
   ******************************************************************
@@ -4467,9 +4501,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  1
 
  DCRPA excitation energy :  0.35275939     au
-                             9.5990710     eV
-                             77421.737     cm-1
-                             926.16965     kj / mole
+                             9.5990713     eV
+                             77421.736     cm-1
+                             926.16964     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.42 + -0.17  =  94.25 %
  2p-2h + 2h-2p excitation weight:   5.75 + -0.00  =   5.75 %
@@ -4493,7 +4527,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  2
 
  DCRPA excitation energy :  0.59075458     au
-                             16.075249     eV
+                             16.075250     eV
                              129655.64     cm-1
                              1551.0259     kj / mole
 
@@ -4518,7 +4552,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  3
 
  DCRPA excitation energy :  0.73460330     au
-                             19.989572     eV
+                             19.989573     eV
                              161226.79     cm-1
                              1928.7007     kj / mole
 
@@ -4529,11 +4563,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.262274  |
- |    exci. | 3   2   |   2       1     |    0.227935  |
- |    exci. | 3   2   |   3       1     |    0.904442  |
+ |    exci. | 3   2   |   1       1     |   -0.262274  |
+ |    exci. | 3   2   |   2       1     |   -0.227935  |
+ |    exci. | 3   2   |   3       1     |   -0.904442  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   9   4   1   2 |   -0.109997  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.109997  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4543,9 +4577,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  4
 
  DCRPA excitation energy :  0.83510469     au
-                             22.724354     eV
+                             22.724355     eV
                              183284.29     cm-1
-                             2192.5671     kj / mole
+                             2192.5670     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.00 + -0.18  =  96.83 %
  2p-2h + 2h-2p excitation weight:   3.18 + -0.01  =   3.17 %
@@ -4554,29 +4588,29 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 2   3   |   1       1     |    0.990994  |
+ |    exci. | 2   3   |   1       1     |   -0.990994  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   6   2   3 |    0.031683  |
- |    exci. | 4 2 2 1 |   1   5   1   3 |   -0.028261  |
- |    exci. | 1 2 3 1 |  11   4   1   3 |    0.032346  |
- |    exci. | 3 1 1 2 |   7  10   1   1 |    0.025316  |
- |    exci. | 4 1 2 2 |   1   5   1   1 |    0.044848  |
- |    exci. | 4 1 2 2 |   1   8   1   1 |   -0.034707  |
- |    exci. | 1 1 3 2 |   3   7   1   1 |   -0.026568  |
- |    exci. | 1 1 3 2 |  15   9   1   1 |    0.021316  |
- |    exci. | 1 1 3 2 |  11  10   1   1 |    0.028648  |
- |    exci. | 3 1 2 1 |   5  10   1   2 |   -0.022205  |
- |    exci. | 3 1 2 1 |   1  16   1   3 |   -0.034322  |
- |    exci. | 3 1 2 1 |   4  16   1   3 |    0.036193  |
- |    exci. | 4 2 1 2 |   1   1   1   1 |    0.021345  |
- |    exci. | 4 2 1 2 |   2   1   1   1 |   -0.066680  |
- |    exci. | 4 2 1 2 |   1   2   1   1 |    0.063331  |
- |    exci. | 4 2 1 2 |   2   2   1   1 |   -0.031646  |
- |    exci. | 4 2 1 2 |   1   2   2   1 |   -0.049189  |
- |    exci. | 4 2 1 2 |   2   2   2   1 |   -0.022832  |
- |    exci. | 2 2 3 2 |   1   1   1   1 |   -0.092265  |
- |    exci. | 2 2 3 2 |   3   1   1   1 |   -0.026892  |
- |    exci. | 3 3 2 3 |   7   1   1   1 |    0.025867  |
+ |    exci. | 3 2 1 1 |   9   6   2   3 |   -0.031683  |
+ |    exci. | 4 2 2 1 |   1   5   1   3 |    0.028261  |
+ |    exci. | 1 2 3 1 |  11   4   1   3 |   -0.032346  |
+ |    exci. | 3 1 1 2 |   7  10   1   1 |   -0.025316  |
+ |    exci. | 4 1 2 2 |   1   5   1   1 |   -0.044848  |
+ |    exci. | 4 1 2 2 |   1   8   1   1 |    0.034707  |
+ |    exci. | 1 1 3 2 |   3   7   1   1 |    0.026568  |
+ |    exci. | 1 1 3 2 |  15   9   1   1 |   -0.021316  |
+ |    exci. | 1 1 3 2 |  11  10   1   1 |   -0.028648  |
+ |    exci. | 3 1 2 1 |   5  10   1   2 |    0.022205  |
+ |    exci. | 3 1 2 1 |   1  16   1   3 |    0.034322  |
+ |    exci. | 3 1 2 1 |   4  16   1   3 |   -0.036193  |
+ |    exci. | 4 2 1 2 |   1   1   1   1 |   -0.021345  |
+ |    exci. | 4 2 1 2 |   2   1   1   1 |    0.066680  |
+ |    exci. | 4 2 1 2 |   1   2   1   1 |   -0.063331  |
+ |    exci. | 4 2 1 2 |   2   2   1   1 |    0.031646  |
+ |    exci. | 4 2 1 2 |   1   2   2   1 |    0.049189  |
+ |    exci. | 4 2 1 2 |   2   2   2   1 |    0.022832  |
+ |    exci. | 2 2 3 2 |   1   1   1   1 |    0.092265  |
+ |    exci. | 2 2 3 2 |   3   1   1   1 |    0.026892  |
+ |    exci. | 3 3 2 3 |   7   1   1   1 |   -0.025867  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4586,9 +4620,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  5
 
  DCRPA excitation energy :   1.3516746     au
-                             36.780937     eV
+                             36.780938     eV
                              296658.29     cm-1
-                             3548.8213     kj / mole
+                             3548.8212     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.16 + -0.04  =  97.12 %
  2p-2h + 2h-2p excitation weight:   2.89 + -0.00  =   2.88 %
@@ -4597,30 +4631,30 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |    0.995326  |
+ |    exci. | 4   1   |   1       3     |   -0.995326  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   4   2   3 |    0.080431  |
- |    exci. | 3 1 1 2 |   3   7   2   1 |   -0.022149  |
- |    exci. | 1 1 3 2 |   6   5   1   1 |    0.023413  |
- |    exci. | 4 1 1 1 |   2   9   1   1 |    0.037458  |
- |    exci. | 4 1 1 1 |   1  14   2   1 |    0.024729  |
- |    exci. | 4 1 1 1 |   2  14   2   1 |   -0.059531  |
- |    exci. | 4 1 1 1 |   1  14   3   1 |   -0.043801  |
- |    exci. | 4 1 1 1 |   1  15   2   1 |    0.029475  |
- |    exci. | 4 1 1 1 |   1  15   3   1 |   -0.042763  |
- |    exci. | 3 1 2 1 |   5   8   1   1 |   -0.052632  |
- |    exci. | 3 1 2 1 |   2   9   1   1 |    0.023863  |
- |    exci. | 3 1 2 1 |   3   9   1   1 |   -0.022721  |
- |    exci. | 3 1 2 1 |   4   9   1   1 |    0.025236  |
- |    exci. | 3 1 2 1 |   6  13   1   1 |    0.022858  |
- |    exci. | 3 1 2 1 |   7  13   1   1 |   -0.028063  |
- |    exci. | 3 1 2 1 |   1  14   1   1 |   -0.039433  |
- |    exci. | 3 1 2 1 |   3  14   1   1 |    0.031014  |
- |    exci. | 3 1 2 1 |   1  15   1   1 |    0.026452  |
- |    exci. | 2 1 3 1 |   3  14   1   1 |   -0.050077  |
- |    exci. | 2 1 3 1 |   4  14   1   1 |    0.027615  |
- |    exci. | 2 1 3 1 |   5  14   1   1 |   -0.034543  |
- |    exci. | 2 1 3 1 |   5   3   1   2 |    0.043572  |
+ |    exci. | 3 2 1 1 |   9   4   2   3 |   -0.080431  |
+ |    exci. | 3 1 1 2 |   3   7   2   1 |    0.022149  |
+ |    exci. | 1 1 3 2 |   6   5   1   1 |   -0.023413  |
+ |    exci. | 4 1 1 1 |   2   9   1   1 |   -0.037458  |
+ |    exci. | 4 1 1 1 |   1  14   2   1 |   -0.024729  |
+ |    exci. | 4 1 1 1 |   2  14   2   1 |    0.059531  |
+ |    exci. | 4 1 1 1 |   1  14   3   1 |    0.043801  |
+ |    exci. | 4 1 1 1 |   1  15   2   1 |   -0.029475  |
+ |    exci. | 4 1 1 1 |   1  15   3   1 |    0.042763  |
+ |    exci. | 3 1 2 1 |   5   8   1   1 |    0.052632  |
+ |    exci. | 3 1 2 1 |   2   9   1   1 |   -0.023863  |
+ |    exci. | 3 1 2 1 |   3   9   1   1 |    0.022721  |
+ |    exci. | 3 1 2 1 |   4   9   1   1 |   -0.025236  |
+ |    exci. | 3 1 2 1 |   6  13   1   1 |   -0.022858  |
+ |    exci. | 3 1 2 1 |   7  13   1   1 |    0.028063  |
+ |    exci. | 3 1 2 1 |   1  14   1   1 |    0.039433  |
+ |    exci. | 3 1 2 1 |   3  14   1   1 |   -0.031014  |
+ |    exci. | 3 1 2 1 |   1  15   1   1 |   -0.026452  |
+ |    exci. | 2 1 3 1 |   3  14   1   1 |    0.050077  |
+ |    exci. | 2 1 3 1 |   4  14   1   1 |   -0.027615  |
+ |    exci. | 2 1 3 1 |   5  14   1   1 |    0.034543  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.043572  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4634,9 +4668,9 @@ Point group: C2v
  -------------------------------------------------------------------
    1    -0.18324 +   -0.00455 +    0.00605 +    0.00003 =   -0.18170
    2    -0.24969 +   -0.01193 +    0.00626 +    0.00004 =   -0.25532
-   3    -0.09025 +    0.00054 +    0.00309 +    0.00000 =   -0.08662
-   4    -0.10365 +   -0.00077 +    0.00904 +    0.00023 =   -0.09514
-   5     0.27849 +    0.00518 +   -0.00685 +   -0.00027 =    0.27656
+   3     0.09025 +   -0.00054 +   -0.00309 +   -0.00000 =    0.08662
+   4     0.10365 +    0.00077 +   -0.00904 +   -0.00023 =    0.09514
+   5    -0.27849 +   -0.00518 +    0.00685 +    0.00027 =   -0.27656
  ===================================================================
 
   ******************************************************************
@@ -4752,9 +4786,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  1
 
  SOPPA excitation energy :  0.34843730     au
-                             9.4814610     eV
-                             76473.148     cm-1
-                             914.82200     kj / mole
+                             9.4814612     eV
+                             76473.147     cm-1
+                             914.82199     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.09 + -0.02  =  94.07 %
  2p-2h + 2h-2p excitation weight:   5.93 + -0.00  =   5.93 %
@@ -4763,11 +4797,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.957747  |
- |    exci. | 3   2   |   3       1     |   -0.192607  |
+ |    exci. | 3   2   |   1       1     |   -0.957747  |
+ |    exci. | 3   2   |   3       1     |    0.192607  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   9   4   1   2 |   -0.141664  |
- |    exci. | 2 1 3 1 |   5   4   1   2 |    0.102808  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |    0.141664  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.102808  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4777,7 +4811,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  2
 
  SOPPA excitation energy :  0.59369904     au
-                             16.155372     eV
+                             16.155373     eV
                              130301.88     cm-1
                              1558.7566     kj / mole
 
@@ -4788,11 +4822,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |    0.109924  |
- |    exci. | 3   2   |   2       1     |   -0.954468  |
- |    exci. | 3   2   |   3       1     |    0.190021  |
+ |    exci. | 3   2   |   1       1     |   -0.109924  |
+ |    exci. | 3   2   |   2       1     |    0.954468  |
+ |    exci. | 3   2   |   3       1     |   -0.190021  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   7   7   1   2 |    0.137953  |
+ |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.137953  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -4802,7 +4836,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  3
 
  SOPPA excitation energy :  0.74256072     au
-                             20.206104     eV
+                             20.206105     eV
                              162973.24     cm-1
                              1949.5929     kj / mole
 
@@ -4861,7 +4895,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  4
 
  SOPPA excitation energy :  0.83358029     au
-                             22.682873     eV
+                             22.682874     eV
                              182949.73     cm-1
                              2188.5647     kj / mole
 
@@ -4904,8 +4938,8 @@ Point group: C2v
  Excitation symmetry  4, state no.  5
 
  SOPPA excitation energy :   1.3506994     au
-                             36.754399     eV
-                             296444.25     cm-1
+                             36.754400     eV
+                             296444.24     cm-1
                              3546.2607     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.06 + -0.02  =  97.04 %
@@ -4950,8 +4984,8 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1     0.14942 +    0.00394 +   -0.00188 +   -0.00001 =    0.15147
-   2    -0.26572 +   -0.01191 +    0.00472 +    0.00004 =   -0.27287
+   1    -0.14942 +   -0.00394 +    0.00188 +    0.00001 =   -0.15147
+   2     0.26572 +    0.01191 +   -0.00472 +   -0.00004 =    0.27287
    3    -0.10801 +   -0.00040 +    0.00139 +    0.00000 =   -0.10703
    4    -0.07594 +   -0.00068 +    0.00102 +    0.00002 =   -0.07558
    5     0.26645 +    0.00515 +   -0.00430 +   -0.00006 =    0.26724
@@ -5028,7 +5062,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  1
 
  SOPPA(CCSD) excitation energy :  0.34843166     au
-                                   9.4813075     eV
+                                   9.4813078     eV
                                    76471.910     cm-1
                                    914.80719     kj / mole
 
@@ -5039,11 +5073,11 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |   -0.958277  |
- |    exci. | 3   2   |   3       1     |    0.192710  |
+ |    exci. | 3   2   |   1       1     |    0.958277  |
+ |    exci. | 3   2   |   3       1     |   -0.192710  |
  |-----------------------------------------------------|
- |    exci. | 3 1 2 1 |   9   4   1   2 |    0.141747  |
- |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.102864  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |   -0.141747  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |    0.102864  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -5053,7 +5087,7 @@ Point group: C2v
  Excitation symmetry  4, state no.  2
 
  SOPPA(CCSD) excitation energy :  0.59422823     au
-                                   16.169772     eV
+                                   16.169773     eV
                                    130418.02     cm-1
                                    1560.1460     kj / mole
 
@@ -5078,9 +5112,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  3
 
  SOPPA(CCSD) excitation energy :  0.74258478     au
-                                   20.206759     eV
+                                   20.206760     eV
                                    162978.52     cm-1
-                                   1949.6561     kj / mole
+                                   1949.6560     kj / mole
 
  1p-1h + 1h-1p excitation weight:  94.69 + -0.01  =  94.68 %
  2p-2h + 2h-2p excitation weight:   5.32 + -0.00  =   5.32 %
@@ -5089,46 +5123,46 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 3   2   |   1       1     |   -0.143119  |
- |    exci. | 3   2   |   2       1     |   -0.201319  |
- |    exci. | 3   2   |   3       1     |   -0.948350  |
+ |    exci. | 3   2   |   1       1     |    0.143119  |
+ |    exci. | 3   2   |   2       1     |    0.201319  |
+ |    exci. | 3   2   |   3       1     |    0.948350  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   4   4   2   2 |   -0.032811  |
- |    exci. | 3 2 1 1 |   1   4   3   2 |   -0.031572  |
- |    exci. | 3 2 1 1 |   4   4   3   2 |    0.034694  |
- |    exci. | 3 2 1 1 |   9   5   1   3 |   -0.021775  |
- |    exci. | 1 2 3 1 |   3   4   1   2 |   -0.031930  |
- |    exci. | 1 1 3 2 |  11   5   1   1 |    0.022623  |
- |    exci. | 1 1 3 2 |  13   5   1   1 |   -0.020067  |
- |    exci. | 1 1 3 2 |  14   5   1   1 |   -0.024859  |
- |    exci. | 1 1 3 2 |  13   8   1   1 |    0.033522  |
- |    exci. | 4 1 1 1 |   1   3   3   2 |    0.026368  |
- |    exci. | 4 1 1 1 |   1   4   1   2 |    0.025708  |
- |    exci. | 4 1 1 1 |   1   5   1   2 |    0.040981  |
- |    exci. | 4 1 1 1 |   1   9   1   2 |    0.036576  |
- |    exci. | 4 1 1 1 |   1   9   2   2 |   -0.037640  |
- |    exci. | 4 1 1 1 |   2   9   2   2 |   -0.023066  |
- |    exci. | 4 1 1 1 |   2   9   3   2 |    0.020355  |
- |    exci. | 4 1 1 1 |   1  10   1   2 |   -0.021760  |
- |    exci. | 3 1 2 1 |   2   3   1   2 |   -0.021742  |
- |    exci. | 3 1 2 1 |   9   4   1   2 |    0.079923  |
- |    exci. | 3 1 2 1 |   7   7   1   2 |    0.049268  |
- |    exci. | 3 1 2 1 |   5  10   1   2 |    0.091564  |
- |    exci. | 3 1 2 1 |   7  10   1   2 |    0.031693  |
- |    exci. | 3 1 2 1 |   1  16   1   2 |    0.022705  |
- |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.033852  |
- |    exci. | 2 1 3 1 |   6   3   1   2 |    0.058243  |
- |    exci. | 2 1 3 1 |   1   4   1   2 |    0.025668  |
- |    exci. | 2 1 3 1 |   5   4   1   2 |   -0.060386  |
- |    exci. | 2 1 3 1 |   4   6   1   2 |    0.034262  |
- |    exci. | 2 1 3 1 |   3   7   1   2 |   -0.020300  |
- |    exci. | 2 1 3 1 |   4   7   1   2 |    0.021519  |
- |    exci. | 2 1 3 1 |   1   9   1   2 |   -0.035773  |
- |    exci. | 2 1 3 1 |   2   9   1   2 |    0.058507  |
- |    exci. | 2 1 3 1 |   3   9   1   2 |    0.042203  |
- |    exci. | 2 1 3 1 |   6   9   1   2 |    0.021038  |
- |    exci. | 2 1 3 1 |   1  10   1   2 |   -0.052094  |
- |    exci. | 2 1 3 1 |   3  10   1   2 |    0.071351  |
+ |    exci. | 3 2 1 1 |   4   4   2   2 |    0.032811  |
+ |    exci. | 3 2 1 1 |   1   4   3   2 |    0.031572  |
+ |    exci. | 3 2 1 1 |   4   4   3   2 |   -0.034694  |
+ |    exci. | 3 2 1 1 |   9   5   1   3 |    0.021775  |
+ |    exci. | 1 2 3 1 |   3   4   1   2 |    0.031930  |
+ |    exci. | 1 1 3 2 |  11   5   1   1 |   -0.022623  |
+ |    exci. | 1 1 3 2 |  13   5   1   1 |    0.020067  |
+ |    exci. | 1 1 3 2 |  14   5   1   1 |    0.024859  |
+ |    exci. | 1 1 3 2 |  13   8   1   1 |   -0.033522  |
+ |    exci. | 4 1 1 1 |   1   3   3   2 |   -0.026368  |
+ |    exci. | 4 1 1 1 |   1   4   1   2 |   -0.025708  |
+ |    exci. | 4 1 1 1 |   1   5   1   2 |   -0.040981  |
+ |    exci. | 4 1 1 1 |   1   9   1   2 |   -0.036576  |
+ |    exci. | 4 1 1 1 |   1   9   2   2 |    0.037640  |
+ |    exci. | 4 1 1 1 |   2   9   2   2 |    0.023066  |
+ |    exci. | 4 1 1 1 |   2   9   3   2 |   -0.020355  |
+ |    exci. | 4 1 1 1 |   1  10   1   2 |    0.021760  |
+ |    exci. | 3 1 2 1 |   2   3   1   2 |    0.021742  |
+ |    exci. | 3 1 2 1 |   9   4   1   2 |   -0.079923  |
+ |    exci. | 3 1 2 1 |   7   7   1   2 |   -0.049268  |
+ |    exci. | 3 1 2 1 |   5  10   1   2 |   -0.091564  |
+ |    exci. | 3 1 2 1 |   7  10   1   2 |   -0.031693  |
+ |    exci. | 3 1 2 1 |   1  16   1   2 |   -0.022705  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.033852  |
+ |    exci. | 2 1 3 1 |   6   3   1   2 |   -0.058243  |
+ |    exci. | 2 1 3 1 |   1   4   1   2 |   -0.025668  |
+ |    exci. | 2 1 3 1 |   5   4   1   2 |    0.060386  |
+ |    exci. | 2 1 3 1 |   4   6   1   2 |   -0.034262  |
+ |    exci. | 2 1 3 1 |   3   7   1   2 |    0.020300  |
+ |    exci. | 2 1 3 1 |   4   7   1   2 |   -0.021519  |
+ |    exci. | 2 1 3 1 |   1   9   1   2 |    0.035773  |
+ |    exci. | 2 1 3 1 |   2   9   1   2 |   -0.058507  |
+ |    exci. | 2 1 3 1 |   3   9   1   2 |   -0.042203  |
+ |    exci. | 2 1 3 1 |   6   9   1   2 |   -0.021038  |
+ |    exci. | 2 1 3 1 |   1  10   1   2 |    0.052094  |
+ |    exci. | 2 1 3 1 |   3  10   1   2 |   -0.071351  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -5181,9 +5215,9 @@ Point group: C2v
  Excitation symmetry  4, state no.  5
 
  SOPPA(CCSD) excitation energy :   1.3515502     au
-                                   36.777550     eV
-                                   296630.98     cm-1
-                                   3548.4945     kj / mole
+                                   36.777551     eV
+                                   296630.97     cm-1
+                                   3548.4944     kj / mole
 
  1p-1h + 1h-1p excitation weight:  97.03 + -0.02  =  97.02 %
  2p-2h + 2h-2p excitation weight:   2.98 + -0.00  =   2.98 %
@@ -5192,30 +5226,30 @@ Point group: C2v
  |          | Symmetry|  Orbital index  |   Amplitude  |
  |          | index   |   a   b   i   j |              |
  |=====================================================|
- |    exci. | 4   1   |   1       3     |   -0.995404  |
+ |    exci. | 4   1   |   1       3     |    0.995404  |
  |-----------------------------------------------------|
- |    exci. | 3 2 1 1 |   9   4   2   3 |   -0.082892  |
- |    exci. | 3 1 1 2 |   3   7   2   1 |    0.022099  |
- |    exci. | 1 1 3 2 |   6   5   1   1 |   -0.025019  |
- |    exci. | 4 1 1 1 |   2   9   1   1 |   -0.037129  |
- |    exci. | 4 1 1 1 |   1  14   2   1 |   -0.025044  |
- |    exci. | 4 1 1 1 |   2  14   2   1 |    0.060337  |
- |    exci. | 4 1 1 1 |   1  14   3   1 |    0.044432  |
- |    exci. | 4 1 1 1 |   1  15   2   1 |   -0.030192  |
- |    exci. | 4 1 1 1 |   1  15   3   1 |    0.044041  |
- |    exci. | 3 1 2 1 |   5   8   1   1 |    0.052508  |
- |    exci. | 3 1 2 1 |   2   9   1   1 |   -0.023869  |
- |    exci. | 3 1 2 1 |   3   9   1   1 |    0.023747  |
- |    exci. | 3 1 2 1 |   4   9   1   1 |   -0.024960  |
- |    exci. | 3 1 2 1 |   6  13   1   1 |   -0.023033  |
- |    exci. | 3 1 2 1 |   7  13   1   1 |    0.027866  |
- |    exci. | 3 1 2 1 |   1  14   1   1 |    0.041109  |
- |    exci. | 3 1 2 1 |   3  14   1   1 |   -0.031404  |
- |    exci. | 3 1 2 1 |   1  15   1   1 |   -0.026742  |
- |    exci. | 2 1 3 1 |   3  14   1   1 |    0.050751  |
- |    exci. | 2 1 3 1 |   4  14   1   1 |   -0.029242  |
- |    exci. | 2 1 3 1 |   5  14   1   1 |    0.034762  |
- |    exci. | 2 1 3 1 |   5   3   1   2 |   -0.044827  |
+ |    exci. | 3 2 1 1 |   9   4   2   3 |    0.082892  |
+ |    exci. | 3 1 1 2 |   3   7   2   1 |   -0.022099  |
+ |    exci. | 1 1 3 2 |   6   5   1   1 |    0.025019  |
+ |    exci. | 4 1 1 1 |   2   9   1   1 |    0.037129  |
+ |    exci. | 4 1 1 1 |   1  14   2   1 |    0.025044  |
+ |    exci. | 4 1 1 1 |   2  14   2   1 |   -0.060337  |
+ |    exci. | 4 1 1 1 |   1  14   3   1 |   -0.044432  |
+ |    exci. | 4 1 1 1 |   1  15   2   1 |    0.030192  |
+ |    exci. | 4 1 1 1 |   1  15   3   1 |   -0.044041  |
+ |    exci. | 3 1 2 1 |   5   8   1   1 |   -0.052508  |
+ |    exci. | 3 1 2 1 |   2   9   1   1 |    0.023869  |
+ |    exci. | 3 1 2 1 |   3   9   1   1 |   -0.023747  |
+ |    exci. | 3 1 2 1 |   4   9   1   1 |    0.024960  |
+ |    exci. | 3 1 2 1 |   6  13   1   1 |    0.023033  |
+ |    exci. | 3 1 2 1 |   7  13   1   1 |   -0.027866  |
+ |    exci. | 3 1 2 1 |   1  14   1   1 |   -0.041109  |
+ |    exci. | 3 1 2 1 |   3  14   1   1 |    0.031404  |
+ |    exci. | 3 1 2 1 |   1  15   1   1 |    0.026742  |
+ |    exci. | 2 1 3 1 |   3  14   1   1 |   -0.050751  |
+ |    exci. | 2 1 3 1 |   4  14   1   1 |    0.029242  |
+ |    exci. | 2 1 3 1 |   5  14   1   1 |   -0.034762  |
+ |    exci. | 2 1 3 1 |   5   3   1   2 |    0.044827  |
  |=====================================================|
 
  Printed all single excitation amplitudes greater than 0.100000
@@ -5227,11 +5261,11 @@ Point group: C2v
  ===================================================================
  Exci.    1p-1h        2p-2h        1h-1p        2h-2p        Total
  -------------------------------------------------------------------
-   1    -0.15153 +   -0.00444 +    0.00202 +    0.00001 =   -0.15393
+   1     0.15153 +    0.00444 +   -0.00202 +   -0.00001 =    0.15393
    2    -0.26329 +   -0.01330 +    0.00460 +    0.00004 =   -0.27195
-   3     0.11283 +    0.00119 +   -0.00152 +   -0.00000 =    0.11250
+   3    -0.11283 +   -0.00119 +    0.00152 +    0.00000 =   -0.11250
    4    -0.08097 +   -0.00060 +    0.00104 +    0.00002 =   -0.08051
-   5    -0.26790 +   -0.00612 +    0.00421 +    0.00006 =   -0.26974
+   5     0.26790 +    0.00612 +   -0.00421 +   -0.00006 =    0.26974
  ===================================================================
 
  |=====================================================| 
@@ -5249,7 +5283,7 @@ Point group: C2v
  |  RP_ERES.1                     8447           0.1   |
  |  SO_GETMO                      8983           0.1   |
  |  RP_ERES.2                    10843           0.1   |
- |  SO_AODENS                 99996109         762.9   |
+ |  SO_AODENS                 99996097         762.9   |
  |=====================================================| 
 
  |=====================================================| 
@@ -5257,45 +5291,45 @@ Point group: C2v
  |=====================================================| 
  |   Routine            cpu time   of total        sum |
  |-----------------------------------------------------| 
- |   SO_SIGAI            0: 0: 4     29.3 %     29.3 % |
- |   SO_OPTVEC           0: 0: 3     25.4 %     54.8 % |
- |   SO_RES_TCB          0: 0: 1     10.0 %     64.8 % |
- |   SO_SIGDA            0: 0: 1      7.8 %     72.5 % |
- |   SO_RES_A            0: 0: 1      6.0 %     78.5 % |
- |   SO_RES_CB           0: 0: 1      5.5 %     84.0 % |
- |   SO_ORTH_TRN         0: 0: 1      4.9 %     88.9 % |
- |   CC_AOFOCK           0: 0: 0      3.3 %     92.2 % |
- |   CCTRBT              0: 0: 0      1.5 %     93.7 % |
- |   SO_T2M1             0: 0: 0      1.4 %     95.1 % |
- |   CCRDAO              0: 0: 0      1.3 %     96.5 % |
- |   SO_INCRED           0: 0: 0      0.6 %     97.1 % |
- |   SO_REDEV            0: 0: 0      0.5 %     97.6 % |
- |   SO_TRIAL2           0: 0: 0      0.5 %     98.1 % |
- |   SO_ERES             0: 0: 0      0.5 %     98.5 % |
- |   SO_RES_OVL          0: 0: 0      0.4 %     98.9 % |
- |   SO_ROPT             0: 0: 0      0.1 %     99.0 % |
- |   SO_TRIAL1           0: 0: 0      0.1 %     99.1 % |
+ |   SO_SIGAI            0: 0: 4     29.2 %     29.2 % |
+ |   SO_OPTVEC           0: 0: 3     25.5 %     54.7 % |
+ |   SO_RES_TCB          0: 0: 1     10.1 %     64.9 % |
+ |   SO_SIGDA            0: 0: 1      7.3 %     72.2 % |
+ |   SO_RES_CB           0: 0: 1      6.0 %     78.2 % |
+ |   SO_RES_A            0: 0: 1      5.4 %     83.6 % |
+ |   SO_ORTH_TRN         0: 0: 1      4.9 %     88.5 % |
+ |   CC_AOFOCK           0: 0: 0      3.3 %     91.8 % |
+ |   SO_T2M1             0: 0: 0      1.6 %     93.3 % |
+ |   CCTRBT              0: 0: 0      1.5 %     94.8 % |
+ |   CCRDAO              0: 0: 0      1.3 %     96.2 % |
+ |   SO_INCRED           0: 0: 0      0.7 %     96.8 % |
+ |   SO_TRIAL2           0: 0: 0      0.6 %     97.4 % |
+ |   SO_ERES             0: 0: 0      0.6 %     97.9 % |
+ |   SO_REDEV            0: 0: 0      0.5 %     98.4 % |
+ |   SO_RES_OVL          0: 0: 0      0.2 %     98.7 % |
+ |   SO_ROPT             0: 0: 0      0.1 %     98.8 % |
+ |   SO_TRIAL1           0: 0: 0      0.1 %     98.9 % |
+ |   LAMMAT              0: 0: 0      0.1 %     99.0 % |
+ |   SO_DENSAI           0: 0: 0      0.1 %     99.1 % |
  |   SO_SRES             0: 0: 0      0.1 %     99.2 % |
- |   SO_DENSAI           0: 0: 0      0.1 %     99.3 % |
- |   SO_RES_OVLR         0: 0: 0      0.1 %     99.4 % |
- |   LAMMAT              0: 0: 0      0.1 %     99.5 % |
- |   SO_ORDEIG           0: 0: 0      0.0 %     99.5 % |
- |   CC_FCKMO            0: 0: 0      0.0 %     99.5 % |
- |   SO_DIAG             0: 0: 0      0.0 %     99.6 % |
- |   SO_DENS             0: 0: 0      0.0 %     99.6 % |
- |   SO_RES_CD           0: 0: 0      0.0 %     99.6 % |
- |   SO_RES_SYM          0: 0: 0      0.0 %     99.6 % |
- |   SO_RES_B            0: 0: 0      0.0 %     99.6 % |
+ |   SO_RES_OVLR         0: 0: 0      0.1 %     99.3 % |
+ |   CC_FCKMO            0: 0: 0      0.1 %     99.3 % |
+ |   SO_DENS             0: 0: 0      0.1 %     99.4 % |
+ |   SO_ORDEIG           0: 0: 0      0.0 %     99.4 % |
+ |   SO_RES_CD           0: 0: 0      0.0 %     99.5 % |
+ |   SO_DIAG             0: 0: 0      0.0 %     99.5 % |
+ |   SO_AODENS           0: 0: 0      0.0 %     99.5 % |
+ |   SO_RES_SYM          0: 0: 0      0.0 %     99.5 % |
+ |   SO_RES_C            0: 0: 0      0.0 %     99.6 % |
  |   SO_BCKTR            0: 0: 0      0.0 %     99.6 % |
- |   SO_RES_FCK          0: 0: 0      0.0 %     99.6 % |
+ |   SO_TWOFOCK          0: 0: 0      0.0 %     99.6 % |
  |   SO_INIT             0: 0: 0      0.0 %     99.6 % |
  |   SO_MOENERGY         0: 0: 0      0.0 %     99.6 % |
  |   SO_T2MP             0: 0: 0      0.0 %     99.6 % |
- |   SO_AODENS           0: 0: 0      0.0 %     99.6 % |
  |   ERIDI1              0: 0: 0      0.0 %     99.6 % |
  |   ERIDI2              0: 0: 0      0.0 %     99.6 % |
- |   SO_RES_C            0: 0: 0      0.0 %     99.6 % |
- |   SO_TWOFOCK          0: 0: 0      0.0 %     99.6 % |
+ |   SO_RES_B            0: 0: 0      0.0 %     99.6 % |
+ |   SO_RES_FCK          0: 0: 0      0.0 %     99.6 % |
  |   SO_ONEFOCK          0: 0: 0      0.0 %     99.6 % |
  |   SO_CHECK            0: 0: 0      0.0 %     99.6 % |
  |   ???????????         0: 0: 0      0.0 %     99.6 % |
@@ -5308,7 +5342,7 @@ Point group: C2v
  |   SO_READ             0: 0: 0      1.2 %            |
  |   SO_WRITE            0: 0: 0      0.5 %            |
  |   SO_OPEN             0: 0: 0      0.1 %            |
- |   SO_CLOSE            0: 0: 0      0.1 %            |
+ |   SO_CLOSE            0: 0: 0      0.2 %            |
  |-----------------------------------------------------| 
 
  |=====================================================| 
@@ -5316,14 +5350,14 @@ Point group: C2v
  |=====================================================| 
  |   Routine           wall time   of total       sum  |
  |-----------------------------------------------------| 
- |   SO_ERES             0: 0: 6     50.0 %     50.0 % |
- |   SO_SRES             0: 0: 0      0.0 %     50.0 % |
- |   SO_REDEV            0: 0: 6     50.0 %    100.0 % |
- |   SO_TRIAL2           0: 0: 0      0.0 %    100.0 % |
+ |   SO_ERES             0: 0: 8     66.7 %     66.7 % |
+ |   SO_SRES             0: 0: 0      0.0 %     66.7 % |
+ |   SO_REDEV            0: 0: 3     25.0 %     91.7 % |
+ |   SO_TRIAL2           0: 0: 0      0.0 %     91.7 % |
  |-----------------------------------------------------| 
  |   Total wall time     0: 0:12                       |
  |=====================================================| 
- >>> Time used in EXCITA is  12.45 seconds
+ >>> Time used in EXCITA is  12.03 seconds
 
 
    ***************************************************************************
@@ -5332,7 +5366,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:29 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:54 2011 
      Host name              : fe6                                     
 
 
@@ -5340,8 +5374,8 @@ Point group: C2v
                              -----------------------
 
  O          0.0000000000            0.0000000000            0.1241444240
- H    1     0.0000000000            1.4315300000           -0.9852655760
- H    2     0.0000000000           -1.4315300000           -0.9852655760
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
 
 
 
@@ -5353,8 +5387,8 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0607842187 au (Hartrees)
-                         -2069.71916395 eV
-                           -199697.5603 kJ/mol
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
 
 
  ======================================================================
@@ -5369,29 +5403,29 @@ Point group: C2v
                 ex. st.  No.      (au)          (eV)
                 =======================================
                    1        1    0.423806   11.532345
-                   1        2    0.611783   16.647473
-                   1        3    0.656751   17.871095
+                   1        2    0.611783   16.647474
+                   1        3    0.656751   17.871096
                    1        4    0.780819   21.247165
-                   1        5    0.838821   22.825476
+                   1        5    0.838821   22.825477
                 ---------------------------------------
                    2        1    0.332099    9.036883
                    2        2    0.611754   16.646681
-                   2        3    0.689701   18.767725
+                   2        3    0.689701   18.767726
                    2        4    0.744198   20.250652
-                   2        5    1.067913   29.059385
-                   2        6    1.259566   34.274522
+                   2        5    1.067913   29.059386
+                   2        6    1.259566   34.274523
                 ---------------------------------------
-                   3        1    0.488861   13.302594
+                   3        1    0.488861   13.302595
                    3        2    0.543995   14.802849
                    3        3    0.754612   20.534032
-                   3        4    0.839804   22.852231
-                   3        5    0.873649   23.773206
+                   3        4    0.839804   22.852232
+                   3        5    0.873649   23.773207
                 ---------------------------------------
                    4        1    0.394974   10.747781
                    4        2    0.654107   17.799169
                    4        3    0.786727   21.407929
                    4        4    0.830477   22.598426
-                   4        5    1.349579   36.723907
+                   4        5    1.349579   36.723908
                 ---------------------------------------
 
 
@@ -5401,7 +5435,7 @@ Point group: C2v
   Sym.   Mode    Frequency       Velocity/Frequency              Length
  ex. st.  No.      (au)          x       y       z         x       y       z
  ==============================================================================
-   1        1     0.423806     0.0000  0.0000 -0.6961    0.0000  0.0000 -0.6697
+   1        1     0.423806     0.0000  0.0000  0.6961    0.0000  0.0000  0.6697
    1        2     0.611783     0.0000  0.0000  0.3634    0.0000  0.0000  0.3681
    1        3     0.656751     0.0000  0.0000  0.3771    0.0000  0.0000  0.3697
    1        4     0.780819     0.0000  0.0000  0.0170    0.0000  0.0000 -0.0070
@@ -5410,12 +5444,12 @@ Point group: C2v
    2        1     0.332099     0.5201  0.0000  0.0000    0.4627  0.0000  0.0000
    2        2     0.611754    -0.1188  0.0000  0.0000   -0.1843  0.0000  0.0000
    2        3     0.689701     0.0911  0.0000  0.0000    0.0556  0.0000  0.0000
-   2        4     0.744198     0.4429  0.0000  0.0000    0.4961  0.0000  0.0000
-   2        5     1.067913     0.5400  0.0000  0.0000    0.6277  0.0000  0.0000
-   2        6     1.259566     0.2747  0.0000  0.0000    0.3151  0.0000  0.0000
+   2        4     0.744198    -0.4429  0.0000  0.0000   -0.4961  0.0000  0.0000
+   2        5     1.067913    -0.5400  0.0000  0.0000   -0.6277  0.0000  0.0000
+   2        6     1.259566    -0.2747  0.0000  0.0000   -0.3151  0.0000  0.0000
  ------------------------------------------------------------------------------
    3        1     0.488861     0.0000 -0.4822  0.0000    0.0000 -0.4799  0.0000
-   3        2     0.543995     0.0000 -0.8358  0.0000    0.0000 -0.8352  0.0000
+   3        2     0.543995     0.0000  0.8358  0.0000    0.0000  0.8352  0.0000
    3        3     0.754612     0.0000 -0.5952  0.0000    0.0000 -0.6090  0.0000
    3        4     0.839804     0.0000 -0.1784  0.0000    0.0000 -0.1939  0.0000
    3        5     0.873649     0.0000 -0.0356  0.0000    0.0000 -0.0205  0.0000
@@ -5445,21 +5479,21 @@ Point group: C2v
    2      1     9.0369   -0.00000 -0.06704 -0.00000  -0.00000 -0.00000 -0.00000
    2      2    16.6467   -0.00000 -0.00048 -0.00000  -0.00000 -0.00000 -0.00000
    2      3    18.7677   -0.00000  0.03664 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    20.2507   -0.00000  0.10037 -0.00000  -0.00000 -0.00000 -0.00000
-   2      5    29.0594   -0.00000  0.02310 -0.00000  -0.00000 -0.00000 -0.00000
-   2      6    34.2745   -0.00000  0.03163 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    20.2507   -0.00000 -0.10037 -0.00000  -0.00000 -0.00000 -0.00000
+   2      5    29.0594   -0.00000 -0.02310 -0.00000  -0.00000 -0.00000 -0.00000
+   2      6    34.2745   -0.00000 -0.03163 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    3      1    13.3026    0.10498 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    14.8028   -0.06853 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.8028    0.06853 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      3    20.5340    0.21948 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      4    22.8522   -0.05152 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      5    23.7732   -0.07954 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    4      1    10.7478   -0.00000 -0.00000 -0.09297  -0.00000 -0.00000 -0.00000
    4      2    17.7992   -0.00000 -0.00000 -0.12712  -0.00000 -0.00000 -0.00000
-   4      3    21.4079   -0.00000 -0.00000 -0.04624  -0.00000 -0.00000 -0.00000
-   4      4    22.5984   -0.00000 -0.00000 -0.04915  -0.00000 -0.00000 -0.00000
-   4      5    36.7239   -0.00000 -0.00000  0.13941  -0.00000 -0.00000 -0.00000
+   4      3    21.4079   -0.00000 -0.00000  0.04624  -0.00000 -0.00000 -0.00000
+   4      4    22.5984   -0.00000 -0.00000  0.04915  -0.00000 -0.00000 -0.00000
+   4      5    36.7239   -0.00000 -0.00000 -0.13941  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -5593,28 +5627,28 @@ Point group: C2v
                 =======================================
                    1        1    0.368344   10.023152
                    1        2    0.591502   16.095579
-                   1        3    0.630860   17.166579
+                   1        3    0.630860   17.166580
                    1        4    0.717240   19.517102
                    1        5    0.784284   21.341464
                 ---------------------------------------
                    2        1    0.277368    7.547561
                    2        2    0.585865   15.942209
                    2        3    0.679082   18.478767
-                   2        4    0.675389   18.378272
+                   2        4    0.675389   18.378273
                    2        5    1.020517   27.769671
-                   2        6    1.254550   34.138029
+                   2        6    1.254550   34.138030
                 ---------------------------------------
-                   3        1    0.446911   12.161079
-                   3        2    0.519134   14.126367
-                   3        3    0.696926   18.964307
-                   3        4    0.830772   22.606442
-                   3        5    0.829127   22.561685
+                   3        1    0.446911   12.161080
+                   3        2    0.519134   14.126368
+                   3        3    0.696926   18.964308
+                   3        4    0.830772   22.606443
+                   3        5    0.829127   22.561686
                 ---------------------------------------
                    4        1    0.352759    9.599071
-                   4        2    0.590755   16.075249
-                   4        3    0.734603   19.989572
-                   4        4    0.835105   22.724354
-                   4        5    1.351675   36.780937
+                   4        2    0.590755   16.075250
+                   4        3    0.734603   19.989573
+                   4        4    0.835105   22.724355
+                   4        5    1.351675   36.780938
                 ---------------------------------------
 
 
@@ -5624,7 +5658,7 @@ Point group: C2v
   Sym.   Mode    Frequency       Velocity/Frequency              Length
  ex. st.  No.      (au)          x       y       z         x       y       z
  ==============================================================================
-   1        1     0.368344     0.0000  0.0000 -0.7901    0.0000  0.0000 -0.6790
+   1        1     0.368344     0.0000  0.0000  0.7901    0.0000  0.0000  0.6790
    1        2     0.591502     0.0000  0.0000  0.3716    0.0000  0.0000  0.3659
    1        3     0.630860     0.0000  0.0000  0.3895    0.0000  0.0000  0.3740
    1        4     0.717240     0.0000  0.0000  0.0223    0.0000  0.0000  0.0017
@@ -5633,12 +5667,12 @@ Point group: C2v
    2        1     0.277368     0.6186  0.0000  0.0000    0.4732  0.0000  0.0000
    2        2     0.585865    -0.1207  0.0000  0.0000   -0.1856  0.0000  0.0000
    2        3     0.679082     0.0925  0.0000  0.0000    0.0532  0.0000  0.0000
-   2        4     0.675389     0.4791  0.0000  0.0000    0.5101  0.0000  0.0000
-   2        5     1.020517     0.5448  0.0000  0.0000    0.6163  0.0000  0.0000
-   2        6     1.254550     0.2701  0.0000  0.0000    0.3180  0.0000  0.0000
+   2        4     0.675389    -0.4791  0.0000  0.0000   -0.5101  0.0000  0.0000
+   2        5     1.020517    -0.5448  0.0000  0.0000   -0.6163  0.0000  0.0000
+   2        6     1.254550    -0.2701  0.0000  0.0000   -0.3180  0.0000  0.0000
  ------------------------------------------------------------------------------
    3        1     0.446911     0.0000 -0.5215  0.0000    0.0000 -0.4823  0.0000
-   3        2     0.519134     0.0000 -0.8649  0.0000    0.0000 -0.8370  0.0000
+   3        2     0.519134     0.0000  0.8649  0.0000    0.0000  0.8370  0.0000
    3        3     0.696926     0.0000 -0.6328  0.0000    0.0000 -0.6158  0.0000
    3        4     0.830772     0.0000 -0.1808  0.0000    0.0000 -0.2047  0.0000
    3        5     0.829127     0.0000 -0.0435  0.0000    0.0000 -0.0385  0.0000
@@ -5668,21 +5702,21 @@ Point group: C2v
    2      1     7.5476   -0.00000 -0.06673 -0.00000  -0.00000 -0.00000 -0.00000
    2      2    15.9422   -0.00000  0.00119 -0.00000  -0.00000 -0.00000 -0.00000
    2      3    18.4788   -0.00000  0.03614 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    18.3783   -0.00000  0.09890 -0.00000  -0.00000 -0.00000 -0.00000
-   2      5    27.7697   -0.00000  0.02323 -0.00000  -0.00000 -0.00000 -0.00000
-   2      6    34.1380   -0.00000  0.03131 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.3783   -0.00000 -0.09890 -0.00000  -0.00000 -0.00000 -0.00000
+   2      5    27.7697   -0.00000 -0.02323 -0.00000  -0.00000 -0.00000 -0.00000
+   2      6    34.1380   -0.00000 -0.03131 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    3      1    12.1611    0.10283 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    14.1264   -0.06890 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.1264    0.06890 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      3    18.9643    0.21843 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      4    22.6064   -0.05198 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      5    22.5617   -0.07617 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    4      1     9.5991   -0.00000 -0.00000 -0.09085  -0.00000 -0.00000 -0.00000
    4      2    16.0752   -0.00000 -0.00000 -0.12766  -0.00000 -0.00000 -0.00000
-   4      3    19.9896   -0.00000 -0.00000 -0.04331  -0.00000 -0.00000 -0.00000
-   4      4    22.7244   -0.00000 -0.00000 -0.04757  -0.00000 -0.00000 -0.00000
-   4      5    36.7809   -0.00000 -0.00000  0.13828  -0.00000 -0.00000 -0.00000
+   4      3    19.9896   -0.00000 -0.00000  0.04331  -0.00000 -0.00000 -0.00000
+   4      4    22.7244   -0.00000 -0.00000  0.04757  -0.00000 -0.00000 -0.00000
+   4      5    36.7809   -0.00000 -0.00000 -0.13828  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -5734,29 +5768,29 @@ Point group: C2v
                 ex. st.  No.      (au)          (eV)
                 =======================================
                    1        1    0.367331    9.995583
-                   1        2    0.589718   16.047045
-                   1        3    0.628895   17.113116
+                   1        2    0.589718   16.047046
+                   1        3    0.628895   17.113117
                    1        4    0.719365   19.574914
-                   1        5    0.786936   21.413614
+                   1        5    0.786936   21.413615
                 ---------------------------------------
                    2        1    0.276169    7.514937
-                   2        2    0.584218   15.897383
+                   2        2    0.584218   15.897384
                    2        3    0.675478   18.380693
-                   2        4    0.682442   18.570178
-                   2        5    1.023600   27.853560
-                   2        6    1.254439   34.135025
+                   2        4    0.682442   18.570179
+                   2        5    1.023600   27.853561
+                   2        6    1.254439   34.135026
                 ---------------------------------------
                    3        1    0.442852   12.050625
                    3        2    0.517705   14.087474
-                   3        3    0.697759   18.986979
-                   3        4    0.830154   22.589644
-                   3        5    0.834598   22.710575
+                   3        3    0.697759   18.986980
+                   3        4    0.830154   22.589645
+                   3        5    0.834598   22.710576
                 ---------------------------------------
                    4        1    0.348437    9.481461
-                   4        2    0.593699   16.155372
-                   4        3    0.742561   20.206104
-                   4        4    0.833580   22.682873
-                   4        5    1.350699   36.754399
+                   4        2    0.593699   16.155373
+                   4        3    0.742561   20.206105
+                   4        4    0.833580   22.682874
+                   4        5    1.350699   36.754400
                 ---------------------------------------
 
 
@@ -5767,23 +5801,23 @@ Point group: C2v
  ex. st.  No.      (au)          x       y       z         x       y       z
  ==============================================================================
    1        1     0.367331     0.0000  0.0000  0.7818    0.0000  0.0000  0.7033
-   1        2     0.589718     0.0000  0.0000 -0.3762    0.0000  0.0000 -0.3769
-   1        3     0.628895     0.0000  0.0000  0.3558    0.0000  0.0000  0.3325
+   1        2     0.589718     0.0000  0.0000  0.3762    0.0000  0.0000  0.3769
+   1        3     0.628895     0.0000  0.0000 -0.3558    0.0000  0.0000 -0.3325
    1        4     0.719365     0.0000  0.0000 -0.0250    0.0000  0.0000 -0.0560
-   1        5     0.786936     0.0000  0.0000  0.0054    0.0000  0.0000  0.0354
+   1        5     0.786936     0.0000  0.0000 -0.0054    0.0000  0.0000 -0.0354
  ------------------------------------------------------------------------------
    2        1     0.276169    -0.6466  0.0000  0.0000   -0.5207  0.0000  0.0000
    2        2     0.584218     0.0082  0.0000  0.0000    0.0820  0.0000  0.0000
    2        3     0.675478    -0.2673  0.0000  0.0000   -0.2402  0.0000  0.0000
-   2        4     0.682442    -0.3963  0.0000  0.0000   -0.4689  0.0000  0.0000
-   2        5     1.023600     0.5432  0.0000  0.0000    0.6602  0.0000  0.0000
+   2        4     0.682442     0.3963  0.0000  0.0000    0.4689  0.0000  0.0000
+   2        5     1.023600    -0.5432  0.0000  0.0000   -0.6602  0.0000  0.0000
    2        6     1.254439    -0.2567  0.0000  0.0000   -0.3124  0.0000  0.0000
  ------------------------------------------------------------------------------
-   3        1     0.442852     0.0000  0.5055  0.0000    0.0000  0.4758  0.0000
+   3        1     0.442852     0.0000 -0.5055  0.0000    0.0000 -0.4758  0.0000
    3        2     0.517705     0.0000  0.8479  0.0000    0.0000  0.8329  0.0000
    3        3     0.697759     0.0000 -0.6521  0.0000    0.0000 -0.6507  0.0000
-   3        4     0.830154     0.0000  0.1841  0.0000    0.0000  0.2057  0.0000
-   3        5     0.834598     0.0000 -0.0411  0.0000    0.0000 -0.0216  0.0000
+   3        4     0.830154     0.0000 -0.1841  0.0000    0.0000 -0.2057  0.0000
+   3        5     0.834598     0.0000  0.0411  0.0000    0.0000  0.0216  0.0000
  ------------------------------------------------------------------------------
    4        1     0.348437     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
    4        2     0.593699     0.0000  0.0000  0.0000    0.0000  0.0000  0.0000
@@ -5810,18 +5844,18 @@ Point group: C2v
    2      1     7.5149   -0.00000  0.06289 -0.00000  -0.00000 -0.00000 -0.00000
    2      2    15.8974   -0.00000 -0.01405 -0.00000  -0.00000 -0.00000 -0.00000
    2      3    18.3807   -0.00000 -0.06788 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    18.5702   -0.00000 -0.08289 -0.00000  -0.00000 -0.00000 -0.00000
-   2      5    27.8536   -0.00000  0.01727 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.5702   -0.00000  0.08289 -0.00000  -0.00000 -0.00000 -0.00000
+   2      5    27.8536   -0.00000 -0.01727 -0.00000  -0.00000 -0.00000 -0.00000
    2      6    34.1350   -0.00000 -0.02681 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   3      1    12.0506   -0.08932 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      1    12.0506    0.08932 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      2    14.0875    0.06949 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      3    18.9870    0.21716 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      4    22.5896    0.05880 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      5    22.7106   -0.08787 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      4    22.5896   -0.05880 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      5    22.7106    0.08787 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   4      1     9.4815   -0.00000 -0.00000  0.07574  -0.00000 -0.00000 -0.00000
-   4      2    16.1554   -0.00000 -0.00000 -0.13643  -0.00000 -0.00000 -0.00000
+   4      1     9.4815   -0.00000 -0.00000 -0.07574  -0.00000 -0.00000 -0.00000
+   4      2    16.1554   -0.00000 -0.00000  0.13643  -0.00000 -0.00000 -0.00000
    4      3    20.2061   -0.00000 -0.00000 -0.05351  -0.00000 -0.00000 -0.00000
    4      4    22.6829   -0.00000 -0.00000 -0.03779  -0.00000 -0.00000 -0.00000
    4      5    36.7544   -0.00000 -0.00000  0.13362  -0.00000 -0.00000 -0.00000
@@ -5878,27 +5912,27 @@ Point group: C2v
                    1        1    0.368324   10.022593
                    1        2    0.590161   16.059102
                    1        3    0.629072   17.117911
-                   1        4    0.720010   19.592474
-                   1        5    0.788034   21.443500
+                   1        4    0.720010   19.592475
+                   1        5    0.788034   21.443501
                 ---------------------------------------
-                   2        1    0.276599    7.526630
+                   2        1    0.276599    7.526631
                    2        2    0.583836   15.886991
-                   2        3    0.675803   18.389525
+                   2        3    0.675803   18.389526
                    2        4    0.683118   18.588599
-                   2        5    1.023929   27.862516
-                   2        6    1.254706   34.142289
+                   2        5    1.023929   27.862517
+                   2        6    1.254706   34.142290
                 ---------------------------------------
                    3        1    0.443352   12.064221
                    3        2    0.519062   14.124396
-                   3        3    0.698704   19.012693
-                   3        4    0.830708   22.604709
-                   3        5    0.835227   22.727695
+                   3        3    0.698704   19.012694
+                   3        4    0.830708   22.604710
+                   3        5    0.835227   22.727696
                 ---------------------------------------
                    4        1    0.348432    9.481308
-                   4        2    0.594228   16.169772
-                   4        3    0.742585   20.206759
+                   4        2    0.594228   16.169773
+                   4        3    0.742585   20.206760
                    4        4    0.834183   22.699273
-                   4        5    1.351550   36.777550
+                   4        5    1.351550   36.777551
                 ---------------------------------------
 
 
@@ -5908,21 +5942,21 @@ Point group: C2v
   Sym.   Mode    Frequency       Velocity/Frequency              Length
  ex. st.  No.      (au)          x       y       z         x       y       z
  ==============================================================================
-   1        1     0.368324     0.0000  0.0000  0.7876    0.0000  0.0000  0.6879
-   1        2     0.590161     0.0000  0.0000  0.3713    0.0000  0.0000  0.3674
-   1        3     0.629072     0.0000  0.0000  0.3597    0.0000  0.0000  0.3330
+   1        1     0.368324     0.0000  0.0000 -0.7876    0.0000  0.0000 -0.6879
+   1        2     0.590161     0.0000  0.0000 -0.3713    0.0000  0.0000 -0.3674
+   1        3     0.629072     0.0000  0.0000 -0.3597    0.0000  0.0000 -0.3330
    1        4     0.720010     0.0000  0.0000 -0.0268    0.0000  0.0000 -0.0590
    1        5     0.788034     0.0000  0.0000 -0.0001    0.0000  0.0000  0.0310
  ------------------------------------------------------------------------------
    2        1     0.276599     0.6545  0.0000  0.0000    0.5080  0.0000  0.0000
-   2        2     0.583836    -0.0100  0.0000  0.0000   -0.0821  0.0000  0.0000
-   2        3     0.675803     0.2549  0.0000  0.0000    0.2260  0.0000  0.0000
-   2        4     0.683118    -0.4011  0.0000  0.0000   -0.4660  0.0000  0.0000
+   2        2     0.583836     0.0100  0.0000  0.0000    0.0821  0.0000  0.0000
+   2        3     0.675803    -0.2549  0.0000  0.0000   -0.2260  0.0000  0.0000
+   2        4     0.683118     0.4011  0.0000  0.0000    0.4660  0.0000  0.0000
    2        5     1.023929    -0.5493  0.0000  0.0000   -0.6568  0.0000  0.0000
-   2        6     1.254706    -0.2587  0.0000  0.0000   -0.3114  0.0000  0.0000
+   2        6     1.254706     0.2587  0.0000  0.0000    0.3114  0.0000  0.0000
  ------------------------------------------------------------------------------
    3        1     0.443352     0.0000 -0.5076  0.0000    0.0000 -0.4672  0.0000
-   3        2     0.519062     0.0000  0.8509  0.0000    0.0000  0.8194  0.0000
+   3        2     0.519062     0.0000 -0.8509  0.0000    0.0000 -0.8194  0.0000
    3        3     0.698704     0.0000  0.6545  0.0000    0.0000  0.6435  0.0000
    3        4     0.830708     0.0000 -0.1836  0.0000    0.0000 -0.2040  0.0000
    3        5     0.835227     0.0000 -0.0337  0.0000    0.0000 -0.0140  0.0000
@@ -5950,23 +5984,23 @@ Point group: C2v
    1      5    21.4435   -0.00000 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    2      1     7.5266   -0.00000 -0.06295 -0.00000  -0.00000 -0.00000 -0.00000
-   2      2    15.8870   -0.00000  0.01299 -0.00000  -0.00000 -0.00000 -0.00000
-   2      3    18.3895   -0.00000  0.06687 -0.00000  -0.00000 -0.00000 -0.00000
-   2      4    18.5886   -0.00000 -0.08588 -0.00000  -0.00000 -0.00000 -0.00000
+   2      2    15.8870   -0.00000 -0.01299 -0.00000  -0.00000 -0.00000 -0.00000
+   2      3    18.3895   -0.00000 -0.06687 -0.00000  -0.00000 -0.00000 -0.00000
+   2      4    18.5886   -0.00000  0.08588 -0.00000  -0.00000 -0.00000 -0.00000
    2      5    27.8625   -0.00000 -0.01747 -0.00000  -0.00000 -0.00000 -0.00000
-   2      6    34.1423   -0.00000 -0.02714 -0.00000  -0.00000 -0.00000 -0.00000
+   2      6    34.1423   -0.00000  0.02714 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
    3      1    12.0642    0.09024 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
-   3      2    14.1244    0.06846 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
+   3      2    14.1244   -0.06846 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      3    19.0127   -0.21731 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      4    22.6047   -0.05956 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
    3      5    22.7277   -0.09053 -0.00000 -0.00000  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
-   4      1     9.4813   -0.00000 -0.00000 -0.07697  -0.00000 -0.00000 -0.00000
+   4      1     9.4813   -0.00000 -0.00000  0.07697  -0.00000 -0.00000 -0.00000
    4      2    16.1698   -0.00000 -0.00000 -0.13598  -0.00000 -0.00000 -0.00000
-   4      3    20.2068   -0.00000 -0.00000  0.05625  -0.00000 -0.00000 -0.00000
+   4      3    20.2068   -0.00000 -0.00000 -0.05625  -0.00000 -0.00000 -0.00000
    4      4    22.6993   -0.00000 -0.00000 -0.04026  -0.00000 -0.00000 -0.00000
-   4      5    36.7776   -0.00000 -0.00000 -0.13487  -0.00000 -0.00000 -0.00000
+   4      5    36.7776   -0.00000 -0.00000  0.13487  -0.00000 -0.00000 -0.00000
  ------------------------------------------------------------------------------
 
 
@@ -6009,15 +6043,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -6025,8 +6059,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -6034,7 +6068,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -6047,7 +6081,7 @@ Point group: C2v
  TOTAL      00:00:12     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  12.46 seconds
+ >>>> Total CPU  time used in ABACUS:  12.04 seconds
  >>>> Total wall time used in ABACUS:  12.00 seconds
 
 
@@ -6055,9 +6089,9 @@ Point group: C2v
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  13.04 seconds
- >>>> Total wall time used in DALTON:  14.00 seconds
+ >>>> Total CPU  time used in DALTON:  12.64 seconds
+ >>>> Total wall time used in DALTON:  13.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:21:29 2010 
+     Date and time (Linux)  : Wed Mar 16 17:48:54 2011 
      Host name              : fe6                                     

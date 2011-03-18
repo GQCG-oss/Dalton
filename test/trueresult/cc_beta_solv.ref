@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:01:09 2010 
+     Date and time (Linux)  : Wed Mar 16 18:26:39 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -191,8 +192,8 @@ Point group: C2v
                                  ---------------
 
                            S#1        31.972072
-                           H#2  1      1.007825
-                           H#2  2      1.007825
+                           H#2 _1      1.007825
+                           H#2 _2      1.007825
 
                        Total mass:    33.987722 amu
                        Natural abundance:  94.991 %
@@ -259,15 +260,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            S#1         H#2  1      H#2  2
+            S#1         H#2 _1      H#2 _2
             ------      ------      ------
  S#1   :    0.000000
- H#2  1:    1.328000    0.000000
- H#2  2:    1.328000    1.913784    0.000000
+ H#2 _1:    1.328000    0.000000
+ H#2 _2:    1.328000    1.913784    0.000000
 
 
   Max interatomic separation is    1.9138 Angstrom (    3.6165 Bohr)
-  between atoms    3 and    2, "H#2  2" and "H#2  1".
+  between atoms    3 and    2, "H#2 _2" and "H#2 _1".
 
 
   Bond distances (Angstrom):
@@ -275,8 +276,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H#2  1     S#1          1.328000
-  bond distance:  H#2  2     S#1          1.328000
+  bond distance:  H#2 _1     S#1          1.328000
+  bond distance:  H#2 _2     S#1          1.328000
 
 
   Bond angles (degrees):
@@ -284,7 +285,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H#2  1     S#1        H#2  2        92.200
+  bond angle:     H#2 _1     S#1        H#2 _2        92.200
 
 
 
@@ -293,7 +294,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       1.607792          1.000000    0.000000    0.000000
-   IB       1.845613          0.000000    0.000000    1.000000
+   IB       1.845614          0.000000    0.000000    1.000000
    IC       3.453405          0.000000    1.000000    0.000000
 
 
@@ -304,8 +305,8 @@ Point group: C2v
 
                A                   B                   C
 
-         314331.0903         273827.1097         146342.2153 MHz
-           10.484957            9.133889            4.881451 cm-1
+         314331.0876         273827.1073         146342.2140 MHz
+           10.484956            9.133889            4.881451 cm-1
 
 
 @  Nuclear repulsion energy :   13.027767958065
@@ -370,7 +371,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - dipole velocity integrals
@@ -444,7 +445,7 @@ Thus no Huckel projection in this symmetry!
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:01:09 2010 
+     Date and time (Linux)  : Wed Mar 16 18:26:39 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -459,8 +460,7 @@ Thus no Huckel projection in this symmetry!
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -468,6 +468,10 @@ Thus no Huckel projection in this symmetry!
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         18
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -523,34 +527,56 @@ Thus no Huckel projection in this symmetry!
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -398.547989424       1.27D+00  -3.99D+02    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      2.000926
+      MULPOP  S#1     0.26; H#2 _1 -0.13; H#2 _2 -0.13; 
+ -----------------------------------------------------------------------------
    2  -398.621862833       1.92D-01  -7.39D-02    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.998365
+      MULPOP  S#1    -0.07; H#2 _1  0.04; H#2 _2  0.04; 
+ -----------------------------------------------------------------------------
    3  -398.625923700       5.66D-02  -4.06D-03    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.999484
+      MULPOP  S#1    -0.07; H#2 _1  0.04; H#2 _2  0.04; 
+ -----------------------------------------------------------------------------
    4  -398.626291443       1.40D-02  -3.68D-04    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.999249
+      MULPOP  S#1    -0.10; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
    5  -398.626328840       1.39D-03  -3.74D-05    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.999283
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
    6  -398.626329232       2.13D-04  -3.92D-07    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.999284
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
    7  -398.626329241       3.01D-05  -8.87D-09    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.999285
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
    8  -398.626329241       4.12D-06  -1.98D-10    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
-   9  -398.626329241       4.12D-07  -3.41D-12    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
-  10  -398.626329241       7.73D-08  -4.55D-13    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
+      Virial theorem: -V/T =      1.999285
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
+   9  -398.626329241       4.12D-07  -3.69D-12    5  2  2  0
+      Virial theorem: -V/T =      1.999285
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
+  10  -398.626329241       7.73D-08   0.00D+00    5  2  2  0
+      Virial theorem: -V/T =      1.999285
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
   11  -398.626329241       3.28D-09   5.68D-14    5  2  2  0
-      MULPOP S#1 ******; H#2 ******; 
-  12  -398.626329241       4.18D-10   0.00D+00    5  2  2  0
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      1.999285
+      MULPOP  S#1    -0.11; H#2 _1  0.05; H#2 _2  0.05; 
+ -----------------------------------------------------------------------------
+  12  -398.626329241       4.18D-10  -1.14D-13    5  2  2  0
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -578,20 +604,23 @@ Thus no Huckel projection in this symmetry!
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -398.626329241197                 
+     Final HF energy:            -398.626329241198                 
      Nuclear repulsion:            13.027767958065
-     Electronic energy:          -411.654097199262
+     Electronic energy:          -411.654097199263
 
      Final gradient norm:           0.000000000418
 
  
-     Date and time (Linux)  : Wed Dec 29 22:01:10 2010 
+     Date and time (Linux)  : Wed Mar 16 18:26:39 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -599,7 +628,7 @@ Thus no Huckel projection in this symmetry!
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 S#1 :1s     0.9967  -0.2818   0.0043   0.0690  -0.0313  -0.0349   0.0386
    2 S#1 :1s     0.0123   1.0305  -0.0159  -0.3184   0.1476   0.1521   0.0048
    3 S#1 :1s    -0.0038   0.0213   0.0029   0.6505  -0.3141  -0.4391   1.1224
@@ -613,7 +642,7 @@ Thus no Huckel projection in this symmetry!
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 S#1 :2px    0.9930  -0.2028   0.1468  -0.2701
    2 S#1 :2px    0.0233   0.5153  -0.4026   1.1133
    3 S#1 :2px   -0.0068   0.0821  -1.1883  -1.2847
@@ -623,7 +652,7 @@ Thus no Huckel projection in this symmetry!
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 S#1 :2py    0.9939  -0.2606  -0.2916
    2 S#1 :2py    0.0203   0.6956   1.1882
    3 S#1 :2py   -0.0047   0.4373  -1.2371
@@ -631,10 +660,10 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:01:10 2010 
+     Date and time (Linux)  : Wed Mar 16 18:26:39 2011 
      Host name              : fe6                                     
 
 
@@ -664,7 +693,7 @@ Thus no Huckel projection in this symmetry!
   I am freezing!
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   -91.952488457484932       -6.6517487984733474     
+  MIN AND MAX IN SELECTED SUPSPACE   -91.952488457483298       -6.6517487984718784     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -91.9525
  Freezing HF-orbital   2 of symmetry   1 and with orbital energy   -8.9754
  Freezing HF-orbital  10 of symmetry   2 and with orbital energy   -6.6572
@@ -697,24 +726,24 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster MP2   energy :    -398.6841108325527898
- Iter.  1: Coupled cluster CC2   energy :    -398.6840935952001814
- Iter.  2: Coupled cluster CC2   energy :    -398.6843359116678016
- Iter.  3: Coupled cluster CC2   energy :    -398.6843533597121336
- Iter.  4: Coupled cluster CC2   energy :    -398.6843537108999840
- Iter.  5: Coupled cluster CC2   energy :    -398.6843536407972124
- Iter.  6: Coupled cluster CC2   energy :    -398.6843536122156024
- Iter.  7: Coupled cluster CC2   energy :    -398.6843536143021538
- Iter.  8: Coupled cluster CC2   energy :    -398.6843536142117728
- Iter.  9: Coupled cluster CC2   energy :    -398.6843536141106483
- Iter. 10: Coupled cluster CC2   energy :    -398.6843536141078062
- Iter. 11: Coupled cluster CC2   energy :    -398.6843536141104209
- Iter. 12: Coupled cluster CC2   energy :    -398.6843536141121263
- Iter. 13: Coupled cluster CC2   energy :    -398.6843536141126378
+ Iter.  1: Coupled cluster MP2   energy :    -398.6841108325535856
+ Iter.  1: Coupled cluster CC2   energy :    -398.6840935952010909
+ Iter.  2: Coupled cluster CC2   energy :    -398.6843359116687111
+ Iter.  3: Coupled cluster CC2   energy :    -398.6843533597129294
+ Iter.  4: Coupled cluster CC2   energy :    -398.6843537109003250
+ Iter.  5: Coupled cluster CC2   energy :    -398.6843536407971555
+ Iter.  6: Coupled cluster CC2   energy :    -398.6843536122169667
+ Iter.  7: Coupled cluster CC2   energy :    -398.6843536143022106
+ Iter.  8: Coupled cluster CC2   energy :    -398.6843536142124549
+ Iter.  9: Coupled cluster CC2   energy :    -398.6843536141117283
+ Iter. 10: Coupled cluster CC2   energy :    -398.6843536141082609
+ Iter. 11: Coupled cluster CC2   energy :    -398.6843536141115578
+ Iter. 12: Coupled cluster CC2   energy :    -398.6843536141134905
+ Iter. 13: Coupled cluster CC2   energy :    -398.6843536141137747
 
  CC2   energy converged to within   0.10D-11 is   -398.684353614
- Final 2-norm of the CC vector function:  1.75829009D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.69519278525938934E-002
+ Final 2-norm of the CC vector function:  1.75850404D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  1.69519278522257608E-002
 
 
 
@@ -800,8 +829,8 @@ Thus no Huckel projection in this symmetry!
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  9.76461161455760146E-002
- Total <Lambda|H|CC> energy:   -398.68435361411258     
+  Change in norm^2 of L-amplitudes in this solvent it.:  9.76461161439458325E-002
+ Total <Lambda|H|CC> energy:   -398.68435361411372     
             The singles contribution is:            -0.0000000000
             The doubles contribution is:             0.0000000000
    
@@ -826,7 +855,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.6886384008
  CC energy in the previous solvent iteration:         0.0000000000
  LSLECVG:  F
-  Change in Total energy in this solvent it.:  -398.68863840081713     
+  Change in Total energy in this solvent it.:  -398.68863840081843     
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -850,7 +879,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.70918774         1.80257523         6.01274376
+      z      0.70918774         1.80257531         6.01274404
 
 
    
@@ -872,24 +901,24 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6843536141126378
- Iter.  1: Coupled cluster CC2   energy :    -398.6843030288468981
- Iter.  2: Coupled cluster CC2   energy :    -398.6842204522007478
- Iter.  3: Coupled cluster CC2   energy :    -398.6842489726847134
- Iter.  4: Coupled cluster CC2   energy :    -398.6842505394566842
- Iter.  5: Coupled cluster CC2   energy :    -398.6842497671722185
- Iter.  6: Coupled cluster CC2   energy :    -398.6842495040615972
- Iter.  7: Coupled cluster CC2   energy :    -398.6842494803330510
- Iter.  8: Coupled cluster CC2   energy :    -398.6842494823261518
- Iter.  9: Coupled cluster CC2   energy :    -398.6842494823683865
- Iter. 10: Coupled cluster CC2   energy :    -398.6842494823757193
- Iter. 11: Coupled cluster CC2   energy :    -398.6842494823707739
- Iter. 12: Coupled cluster CC2   energy :    -398.6842494823683296
- Iter. 13: Coupled cluster CC2   energy :    -398.6842494823678749
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6843536141137747
+ Iter.  1: Coupled cluster CC2   energy :    -398.6843030288481486
+ Iter.  2: Coupled cluster CC2   energy :    -398.6842204522013162
+ Iter.  3: Coupled cluster CC2   energy :    -398.6842489726858503
+ Iter.  4: Coupled cluster CC2   energy :    -398.6842505394570821
+ Iter.  5: Coupled cluster CC2   energy :    -398.6842497671733554
+ Iter.  6: Coupled cluster CC2   energy :    -398.6842495040625636
+ Iter.  7: Coupled cluster CC2   energy :    -398.6842494803343584
+ Iter.  8: Coupled cluster CC2   energy :    -398.6842494823278571
+ Iter.  9: Coupled cluster CC2   energy :    -398.6842494823696370
+ Iter. 10: Coupled cluster CC2   energy :    -398.6842494823767424
+ Iter. 11: Coupled cluster CC2   energy :    -398.6842494823715128
+ Iter. 12: Coupled cluster CC2   energy :    -398.6842494823688412
+ Iter. 13: Coupled cluster CC2   energy :    -398.6842494823688412
 
  CC2   energy converged to within   0.10D-11 is   -398.684249482
- Final 2-norm of the CC vector function:  1.25926875D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  3.48279727906165848E-004
+ Final 2-norm of the CC vector function:  1.25867212D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  3.48279727955796287E-004
 
 
 
@@ -971,13 +1000,13 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  1.38454257091215338E-003
- Total <Lambda|H|CC> energy:   -398.68375778878806     
+  Change in norm^2 of L-amplitudes in this solvent it.:  1.38454257110029455E-003
+ Total <Lambda|H|CC> energy:   -398.68375778878897     
             The singles contribution is:             0.0005489112
             The doubles contribution is:            -0.0000572177
    
@@ -1002,7 +1031,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.6893495150
  CC energy in the previous solvent iteration:      -398.6886384008
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -7.11114186572103790E-004
+  Change in Total energy in this solvent it.: -7.11114186458416953E-004
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1026,7 +1055,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.83937240         2.13347160         7.11649525
+      z      0.83937240         2.13347171         7.11649559
 
 
    
@@ -1048,23 +1077,22 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6842494823678749
- Iter.  1: Coupled cluster CC2   energy :    -398.6842298966748217
- Iter.  2: Coupled cluster CC2   energy :    -398.6842077049604427
- Iter.  3: Coupled cluster CC2   energy :    -398.6842129489048716
- Iter.  4: Coupled cluster CC2   energy :    -398.6842133806902098
- Iter.  5: Coupled cluster CC2   energy :    -398.6842132497729949
- Iter.  6: Coupled cluster CC2   energy :    -398.6842132032550126
- Iter.  7: Coupled cluster CC2   energy :    -398.6842131989546942
- Iter.  8: Coupled cluster CC2   energy :    -398.6842131991113547
- Iter.  9: Coupled cluster CC2   energy :    -398.6842131991091378
- Iter. 10: Coupled cluster CC2   energy :    -398.6842131991062388
- Iter. 11: Coupled cluster CC2   energy :    -398.6842131991051019
- Iter. 12: Coupled cluster CC2   energy :    -398.6842131991041356
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6842494823688412
+ Iter.  1: Coupled cluster CC2   energy :    -398.6842298966757880
+ Iter.  2: Coupled cluster CC2   energy :    -398.6842077049617501
+ Iter.  3: Coupled cluster CC2   energy :    -398.6842129489050990
+ Iter.  4: Coupled cluster CC2   energy :    -398.6842133806920287
+ Iter.  5: Coupled cluster CC2   energy :    -398.6842132497741886
+ Iter.  6: Coupled cluster CC2   energy :    -398.6842132032546715
+ Iter.  7: Coupled cluster CC2   energy :    -398.6842131989554332
+ Iter.  8: Coupled cluster CC2   energy :    -398.6842131991127189
+ Iter.  9: Coupled cluster CC2   energy :    -398.6842131991096494
+ Iter. 10: Coupled cluster CC2   energy :    -398.6842131991072620
+ Iter. 11: Coupled cluster CC2   energy :    -398.6842131991063525
 
  CC2   energy converged to within   0.10D-11 is   -398.684213199
- Final 2-norm of the CC vector function:  1.86957752D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.84962979552026618E-004
+ Final 2-norm of the CC vector function:  9.76273382D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  1.84962980058562404E-004
 
 
 
@@ -1145,13 +1173,13 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  5.97809478994987264E-004
- Total <Lambda|H|CC> energy:   -398.68351970643585     
+  Change in norm^2 of L-amplitudes in this solvent it.:  5.97809479134583932E-004
+ Total <Lambda|H|CC> energy:   -398.68351970643698     
             The singles contribution is:             0.0007625555
             The doubles contribution is:            -0.0000690628
    
@@ -1176,7 +1204,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.6893737604
  CC energy in the previous solvent iteration:      -398.6893495150
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -2.42454234467004426E-005
+  Change in Total energy in this solvent it.: -2.42454235603872803E-005
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1200,7 +1228,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86378424         2.19552031         7.32346744
+      z      0.86378424         2.19552041         7.32346779
 
 
    
@@ -1222,20 +1250,20 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6842131991041356
- Iter.  1: Coupled cluster CC2   energy :    -398.6842093026320413
- Iter.  2: Coupled cluster CC2   energy :    -398.6842050556264212
- Iter.  3: Coupled cluster CC2   energy :    -398.6842060286404035
- Iter.  4: Coupled cluster CC2   energy :    -398.6842061108552571
- Iter.  5: Coupled cluster CC2   energy :    -398.6842060865824919
- Iter.  6: Coupled cluster CC2   energy :    -398.6842060780246584
- Iter.  7: Coupled cluster CC2   energy :    -398.6842060772384571
- Iter.  8: Coupled cluster CC2   energy :    -398.6842060772615923
- Iter.  9: Coupled cluster CC2   energy :    -398.6842060772612513
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6842131991063525
+ Iter.  1: Coupled cluster CC2   energy :    -398.6842093026336329
+ Iter.  2: Coupled cluster CC2   energy :    -398.6842050556275012
+ Iter.  3: Coupled cluster CC2   energy :    -398.6842060286414835
+ Iter.  4: Coupled cluster CC2   energy :    -398.6842061108563371
+ Iter.  5: Coupled cluster CC2   energy :    -398.6842060865830035
+ Iter.  6: Coupled cluster CC2   energy :    -398.6842060780248858
+ Iter.  7: Coupled cluster CC2   energy :    -398.6842060772393097
+ Iter.  8: Coupled cluster CC2   energy :    -398.6842060772619334
+ Iter.  9: Coupled cluster CC2   energy :    -398.6842060772615355
 
  CC2   energy converged to within   0.10D-11 is   -398.684206077
- Final 2-norm of the CC vector function:  5.09377868D-10
-  Change in norm^2 of T-amplitudes in this solvent it.:  3.86202372013866313E-005
+ Final 2-norm of the CC vector function:  5.09385979D-10
+  Change in norm^2 of T-amplitudes in this solvent it.:  3.86202366876621517E-005
 
 
 
@@ -1315,14 +1343,14 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  1.23559310389750876E-004
- Total <Lambda|H|CC> energy:   -398.68347125179287     
+  Change in norm^2 of L-amplitudes in this solvent it.:  1.23559310231474706E-004
+ Total <Lambda|H|CC> energy:   -398.68347125179309     
             The singles contribution is:             0.0008060206
             The doubles contribution is:            -0.0000711951
    
@@ -1347,7 +1375,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.6893745913
  CC energy in the previous solvent iteration:      -398.6893737604
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -8.30899750781100010E-007
+  Change in Total energy in this solvent it.: -8.30898954973235959E-007
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1371,7 +1399,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86830954         2.20702245         7.36183448
+      z      0.86830954         2.20702256         7.36183483
 
 
    
@@ -1393,20 +1421,20 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6842060772612513
- Iter.  1: Coupled cluster CC2   energy :    -398.6842053479720676
- Iter.  2: Coupled cluster CC2   energy :    -398.6842045586815289
- Iter.  3: Coupled cluster CC2   energy :    -398.6842047387872867
- Iter.  4: Coupled cluster CC2   energy :    -398.6842047540521321
- Iter.  5: Coupled cluster CC2   energy :    -398.6842047495601946
- Iter.  6: Coupled cluster CC2   energy :    -398.6842047479796634
- Iter.  7: Coupled cluster CC2   energy :    -398.6842047478348263
- Iter.  8: Coupled cluster CC2   energy :    -398.6842047478389759
- Iter.  9: Coupled cluster CC2   energy :    -398.6842047478388054
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6842060772615355
+ Iter.  1: Coupled cluster CC2   energy :    -398.6842053479734318
+ Iter.  2: Coupled cluster CC2   energy :    -398.6842045586814152
+ Iter.  3: Coupled cluster CC2   energy :    -398.6842047387874572
+ Iter.  4: Coupled cluster CC2   energy :    -398.6842047540537237
+ Iter.  5: Coupled cluster CC2   energy :    -398.6842047495604788
+ Iter.  6: Coupled cluster CC2   energy :    -398.6842047479796065
+ Iter.  7: Coupled cluster CC2   energy :    -398.6842047478355653
+ Iter.  8: Coupled cluster CC2   energy :    -398.6842047478397149
+ Iter.  9: Coupled cluster CC2   energy :    -398.6842047478389759
 
  CC2   energy converged to within   0.10D-11 is   -398.684204748
- Final 2-norm of the CC vector function:  9.41679771D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  7.29501071791011091E-006
+ Final 2-norm of the CC vector function:  9.41758387D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  7.29501073332139427E-006
 
 
 
@@ -1486,13 +1514,13 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  2.33055633849788002E-005
- Total <Lambda|H|CC> energy:   -398.68346214013900     
+  Change in norm^2 of L-amplitudes in this solvent it.:  2.33055634320106231E-005
+ Total <Lambda|H|CC> energy:   -398.68346214013911     
             The singles contribution is:             0.0008141945
             The doubles contribution is:            -0.0000715868
    
@@ -1517,7 +1545,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.6893746197
  CC energy in the previous solvent iteration:      -398.6893745913
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -2.84181851384346373E-008
+  Change in Total energy in this solvent it.: -2.84180714515969157E-008
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1541,7 +1569,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86914658         2.20915000         7.36893122
+      z      0.86914658         2.20915011         7.36893157
 
 
    
@@ -1563,19 +1591,19 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6842047478388054
- Iter.  1: Coupled cluster CC2   energy :    -398.6842046126984656
- Iter.  2: Coupled cluster CC2   energy :    -398.6842044666391303
- Iter.  3: Coupled cluster CC2   energy :    -398.6842044999468726
- Iter.  4: Coupled cluster CC2   energy :    -398.6842045027721610
- Iter.  5: Coupled cluster CC2   energy :    -398.6842045019407692
- Iter.  6: Coupled cluster CC2   energy :    -398.6842045016493330
- Iter.  7: Coupled cluster CC2   energy :    -398.6842045016222755
- Iter.  8: Coupled cluster CC2   energy :    -398.6842045016230145
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6842047478389759
+ Iter.  1: Coupled cluster CC2   energy :    -398.6842046126996593
+ Iter.  2: Coupled cluster CC2   energy :    -398.6842044666395850
+ Iter.  3: Coupled cluster CC2   energy :    -398.6842044999479526
+ Iter.  4: Coupled cluster CC2   energy :    -398.6842045027727863
+ Iter.  5: Coupled cluster CC2   energy :    -398.6842045019423040
+ Iter.  6: Coupled cluster CC2   energy :    -398.6842045016498446
+ Iter.  7: Coupled cluster CC2   energy :    -398.6842045016231850
+ Iter.  8: Coupled cluster CC2   energy :    -398.6842045016236398
 
  CC2   energy converged to within   0.10D-11 is   -398.684204502
- Final 2-norm of the CC vector function:  1.10421468D-10
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.35410133248262121E-006
+ Final 2-norm of the CC vector function:  1.10415511D-10
+  Change in norm^2 of T-amplitudes in this solvent it.:  1.35410133575430969E-006
 
 
 
@@ -1654,13 +1682,13 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  4.32491502376508574E-006
- Total <Lambda|H|CC> energy:   -398.68346045023526     
+  Change in norm^2 of L-amplitudes in this solvent it.:  4.32491503477017147E-006
+ Total <Lambda|H|CC> energy:   -398.68346045023583     
             The singles contribution is:             0.0008157105
             The doubles contribution is:            -0.0000716591
    
@@ -1685,7 +1713,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.6893746207
  CC energy in the previous solvent iteration:      -398.6893746197
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -9.71567715168930590E-010
+  Change in Total energy in this solvent it.: -9.72022462519817054E-010
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -1709,7 +1737,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86930135         2.20954340         7.37024344
+      z      0.86930135         2.20954350         7.37024379
 
 
    
@@ -1731,19 +1759,19 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6842045016230145
- Iter.  1: Coupled cluster CC2   energy :    -398.6842044766264621
- Iter.  2: Coupled cluster CC2   energy :    -398.6842044496171411
- Iter.  3: Coupled cluster CC2   energy :    -398.6842044557760687
- Iter.  4: Coupled cluster CC2   energy :    -398.6842044562982323
- Iter.  5: Coupled cluster CC2   energy :    -398.6842044561444141
- Iter.  6: Coupled cluster CC2   energy :    -398.6842044560906970
- Iter.  7: Coupled cluster CC2   energy :    -398.6842044560860359
- Iter.  8: Coupled cluster CC2   energy :    -398.6842044560857516
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6842045016236398
+ Iter.  1: Coupled cluster CC2   energy :    -398.6842044766275421
+ Iter.  2: Coupled cluster CC2   energy :    -398.6842044496179938
+ Iter.  3: Coupled cluster CC2   energy :    -398.6842044557769213
+ Iter.  4: Coupled cluster CC2   energy :    -398.6842044562993124
+ Iter.  5: Coupled cluster CC2   energy :    -398.6842044561455509
+ Iter.  6: Coupled cluster CC2   energy :    -398.6842044560921750
+ Iter.  7: Coupled cluster CC2   energy :    -398.6842044560865475
+ Iter.  8: Coupled cluster CC2   energy :    -398.6842044560872296
 
  CC2   energy converged to within   0.10D-11 is   -398.684204456
- Final 2-norm of the CC vector function:  2.04163822D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.50543799915070586E-007
+ Final 2-norm of the CC vector function:  2.04187459D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.50543800230790259E-007
 
 
 
@@ -1820,14 +1848,14 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  8.00190751160112512E-007
- Total <Lambda|H|CC> energy:   -398.68346013760726     
+  Change in norm^2 of L-amplitudes in this solvent it.:  8.00190755739782489E-007
+ Total <Lambda|H|CC> energy:   -398.68346013760868     
             The singles contribution is:             0.0008159909
             The doubles contribution is:            -0.0000716725
    
@@ -1849,17 +1877,17 @@ Thus no Huckel projection in this symmetry!
                          +-------------------------------+
 
  Solvent energy contribution in iteration  6:        -0.0059144831
- CC energy in the  current solvent iteration:      -398.6893746207
+ CC energy in the  current solvent iteration:      -398.6893746208
  CC energy in the previous solvent iteration:      -398.6893746207
  LSLECVG:  T
-  Change in Total energy in this solvent it.: -3.29123395204078406E-011
+  Change in Total energy in this solvent it.: -3.37649908033199608E-011
 
  Coupled cluster solvent equations are converged in   6 solvent iterations
 
- CC2     converged energy in solvent:           -398.6893746207495610
+ CC2     converged energy in solvent:           -398.6893746207512663
 
 
- CC2     solvation energy:                        -0.0059144831423088
+ CC2     solvation energy:                        -0.0059144831425919
 
  *******************************************************************
  *        End of coupled cluster solvent program                   *
@@ -1884,7 +1912,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86932997         2.20961613         7.37048606
+      z      0.86932997         2.20961624         7.37048641
 
 
      
@@ -2165,7 +2193,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.54 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.55 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2216,7 +2244,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.41 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.42 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2266,8 +2294,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.37 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.36 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2318,7 +2346,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.37 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.36 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2419,7 +2447,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.24 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.25 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2430,35 +2458,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   7.7855162679   0.1085468511
-     2     ZDIPLEN      1        -0.0040000000   7.9142754048   0.1104191484
-     3     ZDIPLEN      1         0.0040000000   8.1817191501   0.1143138734
-     4     ZDIPLEN      1         0.0080000000   8.3206354605   0.1163399324
-     5     XDIPLEN      2        -0.0080000000   9.3352105733   0.1404959481
-     6     XDIPLEN      2        -0.0040000000   9.4932943184   0.1429585572
-     7     XDIPLEN      2         0.0040000000   9.8219388671   0.1480841587
-     8     XDIPLEN      2         0.0080000000   9.9927978373   0.1507520723
-     9     YDIPLEN      3        -0.0080000000   3.6212291341   0.0504396677
-    10     YDIPLEN      3        -0.0040000000   3.6694561201   0.0511941839
-    11     YDIPLEN      3         0.0040000000   3.7688856206   0.0527550892
-    12     YDIPLEN      3         0.0080000000   3.8201441324   0.0535625708
+     1     ZDIPLEN      1        -0.0080000000   7.7855162677   0.1085468511
+     2     ZDIPLEN      1        -0.0040000000   7.9142754046   0.1104191484
+     3     ZDIPLEN      1         0.0040000000   8.1817191499   0.1143138734
+     4     ZDIPLEN      1         0.0080000000   8.3206354602   0.1163399324
+     5     XDIPLEN      2        -0.0080000000   9.3352105731   0.1404959481
+     6     XDIPLEN      2        -0.0040000000   9.4932943181   0.1429585572
+     7     XDIPLEN      2         0.0040000000   9.8219388668   0.1480841587
+     8     XDIPLEN      2         0.0080000000   9.9927978371   0.1507520723
+     9     YDIPLEN      3        -0.0080000000   3.6212291336   0.0504396677
+    10     YDIPLEN      3        -0.0040000000   3.6694561196   0.0511941839
+    11     YDIPLEN      3         0.0040000000   3.7688856200   0.0527550892
+    12     YDIPLEN      3         0.0080000000   3.8201441318   0.0535625708
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  29.2606273098   1.0746812079
-     2     ZDIPLEN      1        -0.0040000000  28.7255459171   1.0551558800
-     3     ZDIPLEN      1         0.0040000000  27.6946638074   1.0176374309
-     4     ZDIPLEN      1         0.0080000000  27.1979669071   0.9996082892
-     5     XDIPLEN      2        -0.0080000000  34.1872824147   0.9508575357
-     6     XDIPLEN      2        -0.0040000000  33.5364237305   0.9332829882
-     7     XDIPLEN      2         0.0040000000  32.2831015216   0.8995095761
-     8     XDIPLEN      2         0.0080000000  31.6795013819   0.8832782499
-     9     YDIPLEN      3        -0.0080000000  14.4969420601   0.4678329177
-    10     YDIPLEN      3        -0.0040000000  14.2949368875   0.4607096675
-    11     YDIPLEN      3         0.0040000000  13.9029597063   0.4469251655
-    12     YDIPLEN      3         0.0080000000  13.7127664112   0.4402548476
+     1     ZDIPLEN      1        -0.0080000000  29.2606273090   1.0746812078
+     2     ZDIPLEN      1        -0.0040000000  28.7255459164   1.0551558800
+     3     ZDIPLEN      1         0.0040000000  27.6946638067   1.0176374308
+     4     ZDIPLEN      1         0.0080000000  27.1979669065   0.9996082891
+     5     XDIPLEN      2        -0.0080000000  34.1872824138   0.9508575357
+     6     XDIPLEN      2        -0.0040000000  33.5364237297   0.9332829882
+     7     XDIPLEN      2         0.0040000000  32.2831015208   0.8995095761
+     8     XDIPLEN      2         0.0080000000  31.6795013811   0.8832782499
+     9     YDIPLEN      3        -0.0080000000  14.4969420581   0.4678329176
+    10     YDIPLEN      3        -0.0040000000  14.2949368856   0.4607096674
+    11     YDIPLEN      3         0.0040000000  13.9029597044   0.4469251655
+    12     YDIPLEN      3         0.0080000000  13.7127664094   0.4402548476
   Solvent 1-order response equations not converged in           1  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -2539,7 +2567,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.67 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.72 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2579,7 +2607,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.46 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.47 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2621,7 +2649,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.28 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.29 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2664,7 +2692,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.25 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2703,8 +2731,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.18 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2714,35 +2742,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   8.3435080681   0.1161109749
-     2     ZDIPLEN      1        -0.0040000000   8.4762069890   0.1180423781
-     3     ZDIPLEN      1         0.0040000000   8.7519550091   0.1220616174
-     4     ZDIPLEN      1         0.0080000000   8.8952422969   0.1241531910
-     5     XDIPLEN      2        -0.0080000000  10.1246363336   0.1517479080
-     6     XDIPLEN      2        -0.0040000000  10.2882691362   0.1542967565
-     7     XDIPLEN      2         0.0040000000  10.6286213023   0.1596042226
-     8     XDIPLEN      2         0.0080000000  10.8056479879   0.1623679151
-     9     YDIPLEN      3        -0.0080000000   3.7545430037   0.0523602126
-    10     YDIPLEN      3        -0.0040000000   3.8036068579   0.0531300984
-    11     YDIPLEN      3         0.0040000000   3.9047821421   0.0547230664
-    12     YDIPLEN      3         0.0080000000   3.9569505813   0.0555472645
+     1     ZDIPLEN      1        -0.0080000000   8.3435080679   0.1161109749
+     2     ZDIPLEN      1        -0.0040000000   8.4762069887   0.1180423781
+     3     ZDIPLEN      1         0.0040000000   8.7519550089   0.1220616174
+     4     ZDIPLEN      1         0.0080000000   8.8952422966   0.1241531910
+     5     XDIPLEN      2        -0.0080000000  10.1246363333   0.1517479080
+     6     XDIPLEN      2        -0.0040000000  10.2882691359   0.1542967565
+     7     XDIPLEN      2         0.0040000000  10.6286213020   0.1596042226
+     8     XDIPLEN      2         0.0080000000  10.8056479876   0.1623679151
+     9     YDIPLEN      3        -0.0080000000   3.7545430032   0.0523602126
+    10     YDIPLEN      3        -0.0040000000   3.8036068574   0.0531300984
+    11     YDIPLEN      3         0.0040000000   3.9047821416   0.0547230664
+    12     YDIPLEN      3         0.0080000000   3.9569505807   0.0555472645
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  29.0539224733   1.0706120990
-     2     ZDIPLEN      1        -0.0040000000  28.5227967516   1.0511825963
-     3     ZDIPLEN      1         0.0040000000  27.4994722449   1.0138462576
-     4     ZDIPLEN      1         0.0080000000  27.0063863644   0.9959036661
-     5     XDIPLEN      2        -0.0080000000  33.8445910649   0.9458233026
-     6     XDIPLEN      2        -0.0040000000  33.2005375372   0.9283746537
-     7     XDIPLEN      2         0.0040000000  31.9601806822   0.8948398021
-     8     XDIPLEN      2         0.0080000000  31.3627581331   0.8787215206
-     9     YDIPLEN      3        -0.0080000000  14.4761134736   0.4672739816
-    10     YDIPLEN      3        -0.0040000000  14.2744079615   0.4601605312
-    11     YDIPLEN      3         0.0040000000  13.8830059235   0.4463947670
-    12     YDIPLEN      3         0.0080000000  13.6930886325   0.4397334073
+     1     ZDIPLEN      1        -0.0080000000  29.0539224725   1.0706120989
+     2     ZDIPLEN      1        -0.0040000000  28.5227967509   1.0511825963
+     3     ZDIPLEN      1         0.0040000000  27.4994722441   1.0138462575
+     4     ZDIPLEN      1         0.0080000000  27.0063863637   0.9959036660
+     5     XDIPLEN      2        -0.0080000000  33.8445910641   0.9458233026
+     6     XDIPLEN      2        -0.0040000000  33.2005375364   0.9283746537
+     7     XDIPLEN      2         0.0040000000  31.9601806814   0.8948398021
+     8     XDIPLEN      2         0.0080000000  31.3627581323   0.8787215205
+     9     YDIPLEN      3        -0.0080000000  14.4761134716   0.4672739815
+    10     YDIPLEN      3        -0.0040000000  14.2744079596   0.4601605311
+    11     YDIPLEN      3         0.0040000000  13.8830059217   0.4463947669
+    12     YDIPLEN      3         0.0080000000  13.6930886307   0.4397334072
   Solvent 1-order response equations not converged in           2  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -2779,7 +2807,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.56 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.57 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2819,7 +2847,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.48 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.49 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2859,7 +2887,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.38 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2976,7 +3004,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -2987,35 +3015,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   8.3411687531   0.1160793995
-     2     ZDIPLEN      1        -0.0040000000   8.4738519826   0.1180105673
-     3     ZDIPLEN      1         0.0040000000   8.7495660034   0.1220292983
-     4     ZDIPLEN      1         0.0080000000   8.8928349445   0.1241205983
-     5     XDIPLEN      2        -0.0080000000  10.1204015525   0.1516879729
-     6     XDIPLEN      2        -0.0040000000  10.2840063427   0.1542363872
-     7     XDIPLEN      2         0.0040000000  10.6242974358   0.1595429099
-     8     XDIPLEN      2         0.0080000000  10.8012909876   0.1623060918
-     9     YDIPLEN      3        -0.0080000000   3.7544463391   0.0523587989
-    10     YDIPLEN      3        -0.0040000000   3.8035096048   0.0531286736
-    11     YDIPLEN      3         0.0040000000   3.9046836310   0.0547216179
-    12     YDIPLEN      3         0.0080000000   3.9568513995   0.0555458034
+     1     ZDIPLEN      1        -0.0080000000   8.3411687529   0.1160793995
+     2     ZDIPLEN      1        -0.0040000000   8.4738519824   0.1180105673
+     3     ZDIPLEN      1         0.0040000000   8.7495660032   0.1220292983
+     4     ZDIPLEN      1         0.0080000000   8.8928349443   0.1241205983
+     5     XDIPLEN      2        -0.0080000000  10.1204015522   0.1516879729
+     6     XDIPLEN      2        -0.0040000000  10.2840063424   0.1542363872
+     7     XDIPLEN      2         0.0040000000  10.6242974355   0.1595429099
+     8     XDIPLEN      2         0.0080000000  10.8012909873   0.1623060918
+     9     YDIPLEN      3        -0.0080000000   3.7544463385   0.0523587989
+    10     YDIPLEN      3        -0.0040000000   3.8035096042   0.0531286735
+    11     YDIPLEN      3         0.0040000000   3.9046836304   0.0547216179
+    12     YDIPLEN      3         0.0080000000   3.9568513989   0.0555458034
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  29.0547762808   1.0706289458
-     2     ZDIPLEN      1        -0.0040000000  28.5236340621   1.0511990439
-     3     ZDIPLEN      1         0.0040000000  27.5002783280   1.0138619521
-     4     ZDIPLEN      1         0.0080000000  27.0071776685   0.9959190054
-     5     XDIPLEN      2        -0.0080000000  33.8463889997   0.9458496512
-     6     XDIPLEN      2        -0.0040000000  33.2022993864   0.9284003371
-     7     XDIPLEN      2         0.0040000000  31.9618744985   0.8948642353
-     8     XDIPLEN      2         0.0080000000  31.3644198822   0.8787453664
-     9     YDIPLEN      3        -0.0080000000  14.4761285461   0.4672743894
-    10     YDIPLEN      3        -0.0040000000  14.2744228144   0.4601609317
-    11     YDIPLEN      3         0.0040000000  13.8830203592   0.4463951538
-    12     YDIPLEN      3         0.0080000000  13.6931028702   0.4397337877
+     1     ZDIPLEN      1        -0.0080000000  29.0547762800   1.0706289457
+     2     ZDIPLEN      1        -0.0040000000  28.5236340614   1.0511990438
+     3     ZDIPLEN      1         0.0040000000  27.5002783273   1.0138619520
+     4     ZDIPLEN      1         0.0080000000  27.0071776678   0.9959190053
+     5     XDIPLEN      2        -0.0080000000  33.8463889989   0.9458496512
+     6     XDIPLEN      2        -0.0040000000  33.2022993856   0.9284003370
+     7     XDIPLEN      2         0.0040000000  31.9618744977   0.8948642353
+     8     XDIPLEN      2         0.0080000000  31.3644198814   0.8787453664
+     9     YDIPLEN      3        -0.0080000000  14.4761285441   0.4672743893
+    10     YDIPLEN      3        -0.0040000000  14.2744228124   0.4601609316
+    11     YDIPLEN      3         0.0040000000  13.8830203574   0.4463951537
+    12     YDIPLEN      3         0.0080000000  13.6931028683   0.4397337876
   Solvent 1-order response equations not converged in           3  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -3089,7 +3117,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.29 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3124,7 +3152,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -3163,7 +3191,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3200,8 +3228,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3237,7 +3265,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3247,35 +3275,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   8.3411784580   0.1160795305
-     2     ZDIPLEN      1        -0.0040000000   8.4738617508   0.1180106993
-     3     ZDIPLEN      1         0.0040000000   8.7495759127   0.1220294324
-     4     ZDIPLEN      1         0.0080000000   8.8928449317   0.1241207336
-     5     XDIPLEN      2        -0.0080000000  10.1204238571   0.1516882885
-     6     XDIPLEN      2        -0.0040000000  10.2840287901   0.1542367051
-     7     XDIPLEN      2         0.0040000000  10.6243202048   0.1595432327
-     8     XDIPLEN      2         0.0080000000  10.8013139359   0.1623064173
-     9     YDIPLEN      3        -0.0080000000   3.7544464090   0.0523587999
-    10     YDIPLEN      3        -0.0040000000   3.8035096751   0.0531286745
-    11     YDIPLEN      3         0.0040000000   3.9046837022   0.0547216189
-    12     YDIPLEN      3         0.0080000000   3.9568514712   0.0555458044
+     1     ZDIPLEN      1        -0.0080000000   8.3411784577   0.1160795305
+     2     ZDIPLEN      1        -0.0040000000   8.4738617506   0.1180106993
+     3     ZDIPLEN      1         0.0040000000   8.7495759124   0.1220294324
+     4     ZDIPLEN      1         0.0080000000   8.8928449314   0.1241207336
+     5     XDIPLEN      2        -0.0080000000  10.1204238568   0.1516882885
+     6     XDIPLEN      2        -0.0040000000  10.2840287898   0.1542367051
+     7     XDIPLEN      2         0.0040000000  10.6243202046   0.1595432327
+     8     XDIPLEN      2         0.0080000000  10.8013139356   0.1623064173
+     9     YDIPLEN      3        -0.0080000000   3.7544464085   0.0523587999
+    10     YDIPLEN      3        -0.0040000000   3.8035096746   0.0531286745
+    11     YDIPLEN      3         0.0040000000   3.9046837017   0.0547216189
+    12     YDIPLEN      3         0.0080000000   3.9568514707   0.0555458044
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  29.0547727376   1.0706288764
-     2     ZDIPLEN      1        -0.0040000000  28.5236305881   1.0511989762
-     3     ZDIPLEN      1         0.0040000000  27.5002749837   1.0138618874
-     4     ZDIPLEN      1         0.0080000000  27.0071743850   0.9959189421
-     5     XDIPLEN      2        -0.0080000000  33.8463795276   0.9458495130
-     6     XDIPLEN      2        -0.0040000000  33.2022901064   0.9284002023
-     7     XDIPLEN      2         0.0040000000  31.9618655770   0.8948641072
-     8     XDIPLEN      2         0.0080000000  31.3644111278   0.8787452413
-     9     YDIPLEN      3        -0.0080000000  14.4761285354   0.4672743890
-    10     YDIPLEN      3        -0.0040000000  14.2744228039   0.4601609314
-    11     YDIPLEN      3         0.0040000000  13.8830203490   0.4463951535
-    12     YDIPLEN      3         0.0080000000  13.6931028600   0.4397337874
+     1     ZDIPLEN      1        -0.0080000000  29.0547727368   1.0706288763
+     2     ZDIPLEN      1        -0.0040000000  28.5236305873   1.0511989761
+     3     ZDIPLEN      1         0.0040000000  27.5002749830   1.0138618873
+     4     ZDIPLEN      1         0.0080000000  27.0071743843   0.9959189420
+     5     XDIPLEN      2        -0.0080000000  33.8463795268   0.9458495129
+     6     XDIPLEN      2        -0.0040000000  33.2022901056   0.9284002023
+     7     XDIPLEN      2         0.0040000000  31.9618655762   0.8948641071
+     8     XDIPLEN      2         0.0080000000  31.3644111270   0.8787452413
+     9     YDIPLEN      3        -0.0080000000  14.4761285334   0.4672743890
+    10     YDIPLEN      3        -0.0040000000  14.2744228019   0.4601609313
+    11     YDIPLEN      3         0.0040000000  13.8830203471   0.4463951534
+    12     YDIPLEN      3         0.0080000000  13.6931028582   0.4397337873
   Solvent 1-order response equations not converged in           4  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -3344,7 +3372,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -3401,7 +3429,7 @@ Thus no Huckel projection in this symmetry!
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-      1       4         0.00     0.16E-09
+      1       4         0.00     0.15E-09
     --------------------------------------
     converged in  1 iterations
     threshold:    0.10E-08
@@ -3452,8 +3480,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3488,7 +3516,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -3499,35 +3527,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   8.3411784177   0.1160795300
-     2     ZDIPLEN      1        -0.0040000000   8.4738617103   0.1180106987
-     3     ZDIPLEN      1         0.0040000000   8.7495758716   0.1220294319
-     4     ZDIPLEN      1         0.0080000000   8.8928448902   0.1241207330
-     5     XDIPLEN      2        -0.0080000000  10.1204237396   0.1516882868
-     6     XDIPLEN      2        -0.0040000000  10.2840286718   0.1542367034
-     7     XDIPLEN      2         0.0040000000  10.6243200849   0.1595432310
-     8     XDIPLEN      2         0.0080000000  10.8013138150   0.1623064156
-     9     YDIPLEN      3        -0.0080000000   3.7544464089   0.0523587999
-    10     YDIPLEN      3        -0.0040000000   3.8035096751   0.0531286745
-    11     YDIPLEN      3         0.0040000000   3.9046837022   0.0547216189
-    12     YDIPLEN      3         0.0080000000   3.9568514712   0.0555458044
+     1     ZDIPLEN      1        -0.0080000000   8.3411784175   0.1160795300
+     2     ZDIPLEN      1        -0.0040000000   8.4738617101   0.1180106987
+     3     ZDIPLEN      1         0.0040000000   8.7495758714   0.1220294319
+     4     ZDIPLEN      1         0.0080000000   8.8928448900   0.1241207330
+     5     XDIPLEN      2        -0.0080000000  10.1204237393   0.1516882868
+     6     XDIPLEN      2        -0.0040000000  10.2840286716   0.1542367034
+     7     XDIPLEN      2         0.0040000000  10.6243200846   0.1595432310
+     8     XDIPLEN      2         0.0080000000  10.8013138147   0.1623064156
+     9     YDIPLEN      3        -0.0080000000   3.7544464084   0.0523587999
+    10     YDIPLEN      3        -0.0040000000   3.8035096745   0.0531286745
+    11     YDIPLEN      3         0.0040000000   3.9046837016   0.0547216189
+    12     YDIPLEN      3         0.0080000000   3.9568514706   0.0555458044
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  29.0547727523   1.0706288767
-     2     ZDIPLEN      1        -0.0040000000  28.5236306026   1.0511989764
-     3     ZDIPLEN      1         0.0040000000  27.5002749976   1.0138618876
-     4     ZDIPLEN      1         0.0080000000  27.0071743987   0.9959189423
-     5     XDIPLEN      2        -0.0080000000  33.8463795776   0.9458495137
-     6     XDIPLEN      2        -0.0040000000  33.2022901554   0.9284002030
-     7     XDIPLEN      2         0.0040000000  31.9618656241   0.8948641078
-     8     XDIPLEN      2         0.0080000000  31.3644111740   0.8787452420
-     9     YDIPLEN      3        -0.0080000000  14.4761285354   0.4672743890
-    10     YDIPLEN      3        -0.0040000000  14.2744228039   0.4601609314
-    11     YDIPLEN      3         0.0040000000  13.8830203490   0.4463951535
-    12     YDIPLEN      3         0.0080000000  13.6931028601   0.4397337874
+     1     ZDIPLEN      1        -0.0080000000  29.0547727516   1.0706288766
+     2     ZDIPLEN      1        -0.0040000000  28.5236306018   1.0511989763
+     3     ZDIPLEN      1         0.0040000000  27.5002749969   1.0138618875
+     4     ZDIPLEN      1         0.0080000000  27.0071743980   0.9959189422
+     5     XDIPLEN      2        -0.0080000000  33.8463795768   0.9458495137
+     6     XDIPLEN      2        -0.0040000000  33.2022901546   0.9284002030
+     7     XDIPLEN      2         0.0040000000  31.9618656233   0.8948641078
+     8     XDIPLEN      2         0.0080000000  31.3644111732   0.8787452419
+     9     YDIPLEN      3        -0.0080000000  14.4761285334   0.4672743890
+    10     YDIPLEN      3        -0.0040000000  14.2744228019   0.4601609313
+    11     YDIPLEN      3         0.0040000000  13.8830203471   0.4463951534
+    12     YDIPLEN      3         0.0080000000  13.6931028582   0.4397337873
   Solvent 1-order response equations converged in           4  solvent iterations
 
  Solution of CC response equations completed.
@@ -3620,12 +3648,12 @@ Thus no Huckel projection in this symmetry!
  |     2    |     2    |      1       |       0.03  |
  |     2    |     4    |      1       |       0.04  |
  +--------------------------------------------------+
- | total time for  24 B transforms.:      0.80 secs.|
+ | total time for  24 B transforms.:      0.81 secs.|
  +==================================================+
 
 
 
->>> Time used for   24 B matrix transformations:        0.80 seconds.
+>>> Time used for   24 B matrix transformations:        0.81 seconds.
 
 
                                 +-----------------+
@@ -3648,216 +3676,216 @@ Thus no Huckel projection in this symmetry!
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   7.88495046304868163E-002
- Printing first contribution.                                     Norm2 of singles:   7.82205372165391960E-002 Norm2 of doubles:   8.43601721428995505E-002
- Printing second contribution.                                  Norm2 of singles:   0.11596662636736149      Norm2 of doubles:   0.13495659206150926     
+ Printing norm2 TGCMO in KMAT:   7.88495046280335288E-002
+ Printing first contribution.                                     Norm2 of singles:   7.82205372119687131E-002 Norm2 of doubles:   8.43601721376772140E-002
+ Printing second contribution.                                  Norm2 of singles:   0.11596662635851812      Norm2 of doubles:   0.13495659205332969     
  |     7    |     3    |      1       |       0.01  |
  K matrix transformation for ITRAN,           2
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            5
  ISYMA,ISYMB,ISYMAB:           1           2           2
- Printing norm2 TGCMO in KMAT:   0.20243229872655660     
- Printing first contribution.                                     Norm2 of singles:   0.12269149854764422      Norm2 of doubles:   0.14277001287276753     
- Printing second contribution.                                  Norm2 of singles:   8.29289983463129821E-002 Norm2 of doubles:   8.91735492475659169E-002
+ Printing norm2 TGCMO in KMAT:   0.20243229871816487     
+ Printing first contribution.                                     Norm2 of singles:   0.12269149853821990      Norm2 of doubles:   0.14277001286403174     
+ Printing second contribution.                                  Norm2 of singles:   8.29289983414633891E-002 Norm2 of doubles:   8.91735492419930692E-002
  |     3    |     5    |      1       |       0.01  |
  K matrix transformation for ITRAN,           3
  IADRTH:           1
  LISTA,IDLSTA:L1            5
  LISTB,IDLSTB:L1            7
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.19134013869006505     
- Printing first contribution.                                     Norm2 of singles:   0.12552185870836596      Norm2 of doubles:   0.92589985672363784     
- Printing second contribution.                                  Norm2 of singles:   0.12563733235431779      Norm2 of doubles:   0.92543512997066957     
+ Printing norm2 TGCMO in KMAT:   0.19134013868223940     
+ Printing first contribution.                                     Norm2 of singles:   0.12552185869862970      Norm2 of doubles:   0.92589985665381169     
+ Printing second contribution.                                  Norm2 of singles:   0.12563733234455543      Norm2 of doubles:   0.92543512990080701     
  |     5    |     7    |      1       |       0.01  |
  K matrix transformation for ITRAN,           4
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   8.17718720248537673E-002
- Printing first contribution.                                     Norm2 of singles:   8.43377491291434911E-002 Norm2 of doubles:   9.07774379947079435E-002
- Printing second contribution.                                  Norm2 of singles:   0.12488019875277670      Norm2 of doubles:   0.14506455770130655     
+ Printing norm2 TGCMO in KMAT:   8.17718720222717771E-002
+ Printing first contribution.                                     Norm2 of singles:   8.43377491241703720E-002 Norm2 of doubles:   9.07774379890089883E-002
+ Printing second contribution.                                  Norm2 of singles:   0.12488019874313207      Norm2 of doubles:   0.14506455769242310     
  |     6    |     2    |      1       |       0.01  |
  K matrix transformation for ITRAN,           5
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            8
  ISYMA,ISYMB,ISYMAB:           1           2           2
- Printing norm2 TGCMO in KMAT:   0.18781730519136189     
- Printing first contribution.                                     Norm2 of singles:   0.11807160575364967      Norm2 of doubles:   0.13716721147331057     
- Printing second contribution.                                  Norm2 of singles:   7.95791254453117186E-002 Norm2 of doubles:   8.59093787593209618E-002
+ Printing norm2 TGCMO in KMAT:   0.18781730518371470     
+ Printing first contribution.                                     Norm2 of singles:   0.11807160574459630      Norm2 of doubles:   0.13716721146498931     
+ Printing second contribution.                                  Norm2 of singles:   7.95791254406235105E-002 Norm2 of doubles:   8.59093787539777221E-002
  |     2    |     8    |      1       |       0.01  |
  K matrix transformation for ITRAN,           6
  IADRTH:           1
  LISTA,IDLSTA:L1            8
  LISTB,IDLSTB:L1            6
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.19864454423995220     
- Printing first contribution.                                     Norm2 of singles:   0.12105796241749020      Norm2 of doubles:   0.89120944910958588     
- Printing second contribution.                                  Norm2 of singles:   0.12094161802802023      Norm2 of doubles:   0.89164233099186385     
+ Printing norm2 TGCMO in KMAT:   0.19864454423175459     
+ Printing first contribution.                                     Norm2 of singles:   0.12105796240812425      Norm2 of doubles:   0.89120944904261912     
+ Printing second contribution.                                  Norm2 of singles:   0.12094161801867992      Norm2 of doubles:   0.89164233092493128     
  |     8    |     6    |      1       |       0.01  |
  K matrix transformation for ITRAN,           7
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   8.98222395129943084E-003
- Printing first contribution.                                     Norm2 of singles:   1.67369645509074516E-002 Norm2 of doubles:   0.16421321279501616     
- Printing second contribution.                                  Norm2 of singles:   2.25061520106254473E-003 Norm2 of doubles:   5.65616351189561356E-002
+ Printing norm2 TGCMO in KMAT:   8.98222395104293983E-003
+ Printing first contribution.                                     Norm2 of singles:   1.67369645468771408E-002 Norm2 of doubles:   0.16421321276706119     
+ Printing second contribution.                                  Norm2 of singles:   2.25061520101489058E-003 Norm2 of doubles:   5.65616351104926141E-002
  |    11    |     3    |      1       |       0.01  |
  K matrix transformation for ITRAN,           8
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            9
  ISYMA,ISYMB,ISYMAB:           1           3           3
- Printing norm2 TGCMO in KMAT:   4.70334039003007451E-003
- Printing first contribution.                                     Norm2 of singles:   2.34506108948327047E-003 Norm2 of doubles:   5.89731635340828494E-002
- Printing second contribution.                                  Norm2 of singles:   1.75051801009033225E-002 Norm2 of doubles:   0.17113686696122643     
+ Printing norm2 TGCMO in KMAT:   4.70334038943876799E-003
+ Printing first contribution.                                     Norm2 of singles:   2.34506108942683297E-003 Norm2 of doubles:   5.89731635250443711E-002
+ Printing second contribution.                                  Norm2 of singles:   1.75051800965445592E-002 Norm2 of doubles:   0.17113686693148494     
  |     3    |     9    |      1       |       0.01  |
  K matrix transformation for ITRAN,           9
  IADRTH:           1
  LISTA,IDLSTA:L1            9
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.51182405804811948E-003
- Printing first contribution.                                     Norm2 of singles:   1.48212281644787315E-002 Norm2 of doubles:   1.60495393412673874E-002
- Printing second contribution.                                  Norm2 of singles:   1.48253758815812767E-002 Norm2 of doubles:   1.60610610197818200E-002
+ Printing norm2 TGCMO in KMAT:   4.51182405749638287E-003
+ Printing first contribution.                                     Norm2 of singles:   1.48212281609084971E-002 Norm2 of doubles:   1.60495393364428612E-002
+ Printing second contribution.                                  Norm2 of singles:   1.48253758779957820E-002 Norm2 of doubles:   1.60610610149482282E-002
  |     9    |    11    |      1       |       0.01  |
  K matrix transformation for ITRAN,          10
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   9.31499853610146325E-003
- Printing first contribution.                                     Norm2 of singles:   1.78810840539737823E-002 Norm2 of doubles:   0.17504452636056875     
- Printing second contribution.                                  Norm2 of singles:   2.39396166066373076E-003 Norm2 of doubles:   6.03128986770962716E-002
+ Printing norm2 TGCMO in KMAT:   9.31499853583116037E-003
+ Printing first contribution.                                     Norm2 of singles:   1.78810840495627343E-002 Norm2 of doubles:   0.17504452633027318     
+ Printing second contribution.                                  Norm2 of singles:   2.39396166061177362E-003 Norm2 of doubles:   6.03128986678956869E-002
  |    10    |     2    |      1       |       0.01  |
  K matrix transformation for ITRAN,          11
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1           12
  ISYMA,ISYMB,ISYMAB:           1           3           3
- Printing norm2 TGCMO in KMAT:   4.45046372442694203E-003
- Printing first contribution.                                     Norm2 of singles:   2.29810126246477071E-003 Norm2 of doubles:   5.78611104633695306E-002
- Printing second contribution.                                  Norm2 of singles:   1.71020077967267252E-002 Norm2 of doubles:   0.16800439385741647     
+ Printing norm2 TGCMO in KMAT:   4.45046372388766334E-003
+ Printing first contribution.                                     Norm2 of singles:   2.29810126242144036E-003 Norm2 of doubles:   5.78611104547499394E-002
+ Printing second contribution.                                  Norm2 of singles:   1.71020077926451221E-002 Norm2 of doubles:   0.16800439382892698     
  |     2    |    12    |      1       |       0.01  |
  K matrix transformation for ITRAN,          12
  IADRTH:           1
  LISTA,IDLSTA:L1           12
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.63822822848751481E-003
- Printing first contribution.                                     Norm2 of singles:   1.44206802367600351E-002 Norm2 of doubles:   1.56254091724473271E-002
- Printing second contribution.                                  Norm2 of singles:   1.44172190431157768E-002 Norm2 of doubles:   1.56142244960415615E-002
+ Printing norm2 TGCMO in KMAT:   4.63822822790977297E-003
+ Printing first contribution.                                     Norm2 of singles:   1.44206802333027104E-002 Norm2 of doubles:   1.56254091677809313E-002
+ Printing second contribution.                                  Norm2 of singles:   1.44172190396727531E-002 Norm2 of doubles:   1.56142244913838601E-002
  |    12    |    10    |      1       |       0.01  |
  K matrix transformation for ITRAN,          13
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            7
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.19134013869006505     
- Printing first contribution.                                     Norm2 of singles:   0.11875435021819790      Norm2 of doubles:   0.87465104138467242     
- |     7    |     7    |      1       |       0.00  |
+ Printing norm2 TGCMO in KMAT:   0.19134013868223940     
+ Printing first contribution.                                     Norm2 of singles:   0.11875435020903814      Norm2 of doubles:   0.87465104131913340     
+ |     7    |     7    |      1       |       0.01  |
  K matrix transformation for ITRAN,          14
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   8.32870053708546221E-002
- Printing first contribution.                                     Norm2 of singles:   8.26306108764143787E-002 Norm2 of doubles:   8.91153328334698680E-002
- Printing second contribution.                                  Norm2 of singles:   0.12253088120884903      Norm2 of doubles:   0.14222065112069915     
+ Printing norm2 TGCMO in KMAT:   8.32870053682049638E-002
+ Printing first contribution.                                     Norm2 of singles:   8.26306108715230414E-002 Norm2 of doubles:   8.91153328278878609E-002
+ Printing second contribution.                                  Norm2 of singles:   0.12253088119939287      Norm2 of doubles:   0.14222065111202559     
  |     7    |     1    |      1       |       0.01  |
  K matrix transformation for ITRAN,          15
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            6
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.19864454423995220     
- Printing first contribution.                                     Norm2 of singles:   0.12791234435585713      Norm2 of doubles:   0.94312242651698419     
+ Printing norm2 TGCMO in KMAT:   0.19864454423175459     
+ Printing first contribution.                                     Norm2 of singles:   0.12791234434590557      Norm2 of doubles:   0.94312242644566335     
  |     6    |     6    |      1       |       0.01  |
  K matrix transformation for ITRAN,          16
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   7.74398583629838655E-002
- Printing first contribution.                                     Norm2 of singles:   7.98621441979518176E-002 Norm2 of doubles:   8.59610643890657417E-002
- Printing second contribution.                                  Norm2 of singles:   0.11823554947390762      Norm2 of doubles:   0.13771356319890474     
+ Printing norm2 TGCMO in KMAT:   7.74398583605922369E-002
+ Printing first contribution.                                     Norm2 of singles:   7.98621441933027310E-002 Norm2 of doubles:   8.59610643837315086E-002
+ Printing second contribution.                                  Norm2 of singles:   0.11823554946488271      Norm2 of doubles:   0.13771356319052216     
  |     6    |     4    |      1       |       0.01  |
  K matrix transformation for ITRAN,          17
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.51182405804811948E-003
- Printing first contribution.                                     Norm2 of singles:   1.42193255122852833E-002 Norm2 of doubles:   1.54046439996451019E-002
+ Printing norm2 TGCMO in KMAT:   4.51182405749638287E-003
+ Printing first contribution.                                     Norm2 of singles:   1.42193255088979408E-002 Norm2 of doubles:   1.54046439950654510E-002
  |    11    |    11    |      1       |       0.01  |
  K matrix transformation for ITRAN,          18
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   9.48754038195277066E-003
- Printing first contribution.                                     Norm2 of singles:   1.76768697549968476E-002 Norm2 of doubles:   0.17346365762771138     
- Printing second contribution.                                  Norm2 of singles:   2.37042299751873478E-003 Norm2 of doubles:   5.97521713828525550E-002
+ Printing norm2 TGCMO in KMAT:   9.48754038167521144E-003
+ Printing first contribution.                                     Norm2 of singles:   1.76768697507264892E-002 Norm2 of doubles:   0.17346365759805391     
+ Printing second contribution.                                  Norm2 of singles:   2.37042299747349102E-003 Norm2 of doubles:   5.97521713738654314E-002
  |    11    |     1    |      1       |       0.01  |
  K matrix transformation for ITRAN,          19
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.63822822848751481E-003
- Printing first contribution.                                     Norm2 of singles:   1.50279367739915432E-002 Norm2 of doubles:   1.62754943784419459E-002
- |    10    |    10    |      1       |       0.00  |
+ Printing norm2 TGCMO in KMAT:   4.63822822790977297E-003
+ Printing first contribution.                                     Norm2 of singles:   1.50279367703488979E-002 Norm2 of doubles:   1.62754943735282827E-002
+ |    10    |    10    |      1       |       0.01  |
  K matrix transformation for ITRAN,          20
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   8.82171559537010472E-003
- Printing first contribution.                                     Norm2 of singles:   1.69356788002393149E-002 Norm2 of doubles:   0.16576276694417097     
- Printing second contribution.                                  Norm2 of singles:   2.27400415564217064E-003 Norm2 of doubles:   5.71122148118620096E-002
+ Printing norm2 TGCMO in KMAT:   8.82171559512022821E-003
+ Printing first contribution.                                     Norm2 of singles:   1.69356787960737651E-002 Norm2 of doubles:   0.16576276691560282     
+ Printing second contribution.                                  Norm2 of singles:   2.27400415558810364E-003 Norm2 of doubles:   5.71122148031932078E-002
  |    10    |     4    |      1       |       0.01  |
  K matrix transformation for ITRAN,          21
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.11106492924620767     
- Printing first contribution.                                     Norm2 of singles:   8.27289894958195826E-002 Norm2 of doubles:   0.44985291713230835     
+ Printing norm2 TGCMO in KMAT:   0.11106492924261727     
+ Printing first contribution.                                     Norm2 of singles:   8.27289894883167370E-002 Norm2 of doubles:   0.44985291710578390     
  |     3    |     3    |      1       |       0.01  |
  K matrix transformation for ITRAN,          22
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.11731945102640573     
- Printing first contribution.                                     Norm2 of singles:   8.73933082163932951E-002 Norm2 of doubles:   0.47519006662746288     
- Printing second contribution.                                  Norm2 of singles:   8.77459482977920036E-002 Norm2 of doubles:   0.47509613377442955     
+ Printing norm2 TGCMO in KMAT:   0.11731945102252954     
+ Printing first contribution.                                     Norm2 of singles:   8.73933082084003277E-002 Norm2 of doubles:   0.47519006659909396     
+ Printing second contribution.                                  Norm2 of singles:   8.77459482897349208E-002 Norm2 of doubles:   0.47509613374610987     
  |     3    |     1    |      1       |       0.01  |
  K matrix transformation for ITRAN,          23
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.11518388642564492     
- Printing first contribution.                                     Norm2 of singles:   8.92222598295744490E-002 Norm2 of doubles:   0.48377860823961916     
+ Printing norm2 TGCMO in KMAT:   0.11518388642186715     
+ Printing first contribution.                                     Norm2 of singles:   8.92222598213714413E-002 Norm2 of doubles:   0.48377860821065216     
  |     2    |     2    |      1       |       0.01  |
  K matrix transformation for ITRAN,          24
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.10907813327657265     
- Printing first contribution.                                     Norm2 of singles:   8.44874235613414654E-002 Norm2 of doubles:   0.45812992346278791     
- Printing second contribution.                                  Norm2 of singles:   8.41572910386370332E-002 Norm2 of doubles:   0.45822479374583441     
+ Printing norm2 TGCMO in KMAT:   0.10907813327307200     
+ Printing first contribution.                                     Norm2 of singles:   8.44874235536371143E-002 Norm2 of doubles:   0.45812992343569126     
+ Printing second contribution.                                  Norm2 of singles:   8.41572910309934391E-002 Norm2 of doubles:   0.45822479371869101     
  |     2    |     4    |      1       |       0.01  |
  +==================================================+
 
 
 
->>> Time used for   24 K matrix transformations:        0.26 seconds.
+>>> Time used for   24 K matrix transformations:        0.27 seconds.
 
 >>> Time used for   18 F{O} matrix transform.:          0.01 seconds.
 
@@ -3865,7 +3893,7 @@ Thus no Huckel projection in this symmetry!
 
 >>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
 
->>> Total time for  27 quadratic response func.:        1.43 seconds.
+>>> Total time for  27 quadratic response func.:        1.46 seconds.
 
 
                   +--------------------------------------------------------------------------------------+
@@ -3920,26 +3948,26 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6842044560857516
- Iter.  1: Coupled cluster CCSD  energy :    -398.6948368408203578
- Iter.  2: Coupled cluster CCSD  energy :    -398.6988557894437690
- Iter.  3: Coupled cluster CCSD  energy :    -398.6990989504856202
- Iter.  4: Coupled cluster CCSD  energy :    -398.6991059442648861
- Iter.  5: Coupled cluster CCSD  energy :    -398.6991098797707878
- Iter.  6: Coupled cluster CCSD  energy :    -398.6991099718541136
- Iter.  7: Coupled cluster CCSD  energy :    -398.6991099545444399
- Iter.  8: Coupled cluster CCSD  energy :    -398.6991099390833710
- Iter.  9: Coupled cluster CCSD  energy :    -398.6991099354777361
- Iter. 10: Coupled cluster CCSD  energy :    -398.6991099327065058
- Iter. 11: Coupled cluster CCSD  energy :    -398.6991099327404413
- Iter. 12: Coupled cluster CCSD  energy :    -398.6991099327966595
- Iter. 13: Coupled cluster CCSD  energy :    -398.6991099328195673
- Iter. 14: Coupled cluster CCSD  energy :    -398.6991099328216137
- Iter. 15: Coupled cluster CCSD  energy :    -398.6991099328221821
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6842044560872296
+ Iter.  1: Coupled cluster CCSD  energy :    -398.6948368408206989
+ Iter.  2: Coupled cluster CCSD  energy :    -398.6988557894443375
+ Iter.  3: Coupled cluster CCSD  energy :    -398.6990989504859044
+ Iter.  4: Coupled cluster CCSD  energy :    -398.6991059442665346
+ Iter.  5: Coupled cluster CCSD  energy :    -398.6991098797711288
+ Iter.  6: Coupled cluster CCSD  energy :    -398.6991099718550231
+ Iter.  7: Coupled cluster CCSD  energy :    -398.6991099545452926
+ Iter.  8: Coupled cluster CCSD  energy :    -398.6991099390841100
+ Iter.  9: Coupled cluster CCSD  energy :    -398.6991099354781909
+ Iter. 10: Coupled cluster CCSD  energy :    -398.6991099327070174
+ Iter. 11: Coupled cluster CCSD  energy :    -398.6991099327414645
+ Iter. 12: Coupled cluster CCSD  energy :    -398.6991099327967163
+ Iter. 13: Coupled cluster CCSD  energy :    -398.6991099328209316
+ Iter. 14: Coupled cluster CCSD  energy :    -398.6991099328222390
+ Iter. 15: Coupled cluster CCSD  energy :    -398.6991099328225800
 
  CCSD  energy converged to within   0.10D-11 is   -398.699109933
- Final 2-norm of the CC vector function:  2.09085314D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  1.27557385193759337E-002
+ Final 2-norm of the CC vector function:  2.09074133D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  1.27557385191239235E-002
 
 
 
@@ -4026,14 +4054,14 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.:  -13.989802663224992     
- Total <Lambda|H|CC> energy:   -398.69845087100595     
+  Change in norm^2 of L-amplitudes in this solvent it.:  -13.989802661331899     
+ Total <Lambda|H|CC> energy:   -398.69845087100634     
             The singles contribution is:             0.0007739487
             The doubles contribution is:            -0.0001148869
    
@@ -4056,9 +4084,9 @@ Thus no Huckel projection in this symmetry!
 
  Solvent energy contribution in iteration  0:        -0.0058147760
  CC energy in the  current solvent iteration:      -398.7042656470
- CC energy in the previous solvent iteration:      -398.6893746207
+ CC energy in the previous solvent iteration:      -398.6893746208
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -1.48910262325898657E-002
+  Change in Total energy in this solvent it.: -1.48910262315666841E-002
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -4082,7 +4110,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.86086896         2.18811039         7.29875061
+      z      0.86086896         2.18811049         7.29875096
 
 
    
@@ -4104,22 +4132,24 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6991099328221821
- Iter.  1: Coupled cluster CCSD  energy :    -398.6991121556165467
- Iter.  2: Coupled cluster CCSD  energy :    -398.6991146558939363
- Iter.  3: Coupled cluster CCSD  energy :    -398.6991145421355895
- Iter.  4: Coupled cluster CCSD  energy :    -398.6991144185772669
- Iter.  5: Coupled cluster CCSD  energy :    -398.6991144295815275
- Iter.  6: Coupled cluster CCSD  energy :    -398.6991144465399657
- Iter.  7: Coupled cluster CCSD  energy :    -398.6991144488486043
- Iter.  8: Coupled cluster CCSD  energy :    -398.6991144489463750
- Iter.  9: Coupled cluster CCSD  energy :    -398.6991144489234671
- Iter. 10: Coupled cluster CCSD  energy :    -398.6991144489103363
- Iter. 11: Coupled cluster CCSD  energy :    -398.6991144489111321
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6991099328225800
+ Iter.  1: Coupled cluster CCSD  energy :    -398.6991121556168878
+ Iter.  2: Coupled cluster CCSD  energy :    -398.6991146558948458
+ Iter.  3: Coupled cluster CCSD  energy :    -398.6991145421359306
+ Iter.  4: Coupled cluster CCSD  energy :    -398.6991144185778353
+ Iter.  5: Coupled cluster CCSD  energy :    -398.6991144295825507
+ Iter.  6: Coupled cluster CCSD  energy :    -398.6991144465413868
+ Iter.  7: Coupled cluster CCSD  energy :    -398.6991144488494001
+ Iter.  8: Coupled cluster CCSD  energy :    -398.6991144489474550
+ Iter.  9: Coupled cluster CCSD  energy :    -398.6991144489247745
+ Iter. 10: Coupled cluster CCSD  energy :    -398.6991144489105068
+ Iter. 11: Coupled cluster CCSD  energy :    -398.6991144489118710
+ Iter. 12: Coupled cluster CCSD  energy :    -398.6991144489134058
+ Iter. 13: Coupled cluster CCSD  energy :    -398.6991144489138037
 
  CCSD  energy converged to within   0.10D-11 is   -398.699114449
- Final 2-norm of the CC vector function:  7.18032023D-11
-  Change in norm^2 of T-amplitudes in this solvent it.: -1.18562398208205133E-005
+ Final 2-norm of the CC vector function:  2.97789547D-12
+  Change in norm^2 of T-amplitudes in this solvent it.: -1.18562381261032301E-005
 
 
 
@@ -4209,8 +4239,8 @@ Thus no Huckel projection in this symmetry!
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.: -3.30263415298792662E-005
- Total <Lambda|H|CC> energy:   -398.69847040691616     
+  Change in norm^2 of L-amplitudes in this solvent it.: -3.30263418369391992E-005
+ Total <Lambda|H|CC> energy:   -398.69847040691531     
             The singles contribution is:             0.0007569037
             The doubles contribution is:            -0.0001128617
    
@@ -4235,7 +4265,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.7042657846
  CC energy in the previous solvent iteration:      -398.7042656470
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -1.37650374654185725E-007
+  Change in Total energy in this solvent it.: -1.37649180942389648E-007
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -4259,7 +4289,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.85907524         2.18355122         7.28354286
+      z      0.85907524         2.18355132         7.28354321
 
 
    
@@ -4281,22 +4311,22 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6991144489111321
- Iter.  1: Coupled cluster CCSD  energy :    -398.6991147674743274
- Iter.  2: Coupled cluster CCSD  energy :    -398.6991151702309821
- Iter.  3: Coupled cluster CCSD  energy :    -398.6991151362140045
- Iter.  4: Coupled cluster CCSD  energy :    -398.6991151108042004
- Iter.  5: Coupled cluster CCSD  energy :    -398.6991151115817047
- Iter.  6: Coupled cluster CCSD  energy :    -398.6991151145638241
- Iter.  7: Coupled cluster CCSD  energy :    -398.6991151150172072
- Iter.  8: Coupled cluster CCSD  energy :    -398.6991151150416499
- Iter.  9: Coupled cluster CCSD  energy :    -398.6991151150378982
- Iter. 10: Coupled cluster CCSD  energy :    -398.6991151150352266
- Iter. 11: Coupled cluster CCSD  energy :    -398.6991151150359087
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6991144489138037
+ Iter.  1: Coupled cluster CCSD  energy :    -398.6991147674766012
+ Iter.  2: Coupled cluster CCSD  energy :    -398.6991151702325737
+ Iter.  3: Coupled cluster CCSD  energy :    -398.6991151362148003
+ Iter.  4: Coupled cluster CCSD  energy :    -398.6991151108043709
+ Iter.  5: Coupled cluster CCSD  energy :    -398.6991151115826710
+ Iter.  6: Coupled cluster CCSD  energy :    -398.6991151145642789
+ Iter.  7: Coupled cluster CCSD  energy :    -398.6991151150185715
+ Iter.  8: Coupled cluster CCSD  energy :    -398.6991151150428436
+ Iter.  9: Coupled cluster CCSD  energy :    -398.6991151150386941
+ Iter. 10: Coupled cluster CCSD  energy :    -398.6991151150371593
+ Iter. 11: Coupled cluster CCSD  energy :    -398.6991151150369319
 
  CCSD  energy converged to within   0.10D-11 is   -398.699115115
- Final 2-norm of the CC vector function:  1.35688452D-11
-  Change in norm^2 of T-amplitudes in this solvent it.: -2.38408230712056080E-006
+ Final 2-norm of the CC vector function:  1.35658907D-11
+  Change in norm^2 of T-amplitudes in this solvent it.: -2.38408400017944833E-006
 
 
 
@@ -4385,8 +4415,8 @@ Thus no Huckel projection in this symmetry!
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.: -6.83574767570971353E-006
- Total <Lambda|H|CC> energy:   -398.69847388980736     
+  Change in norm^2 of L-amplitudes in this solvent it.: -6.83574736590197851E-006
+ Total <Lambda|H|CC> energy:   -398.69847388980833     
             The singles contribution is:             0.0007538335
             The doubles contribution is:            -0.0001126083
    
@@ -4411,7 +4441,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.7042657890
  CC energy in the previous solvent iteration:      -398.7042657846
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -4.35386482422472909E-009
+  Change in Total energy in this solvent it.: -4.35562697020941414E-009
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -4435,7 +4465,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.85875143         2.18272818         7.28079750
+      z      0.85875143         2.18272828         7.28079785
 
 
    
@@ -4457,21 +4487,21 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6991151150359087
- Iter.  1: Coupled cluster CCSD  energy :    -398.6991151715495789
- Iter.  2: Coupled cluster CCSD  energy :    -398.6991152433345746
- Iter.  3: Coupled cluster CCSD  energy :    -398.6991152371156204
- Iter.  4: Coupled cluster CCSD  energy :    -398.6991152325186931
- Iter.  5: Coupled cluster CCSD  energy :    -398.6991152326363590
- Iter.  6: Coupled cluster CCSD  energy :    -398.6991152331675607
- Iter.  7: Coupled cluster CCSD  energy :    -398.6991152332498700
- Iter.  8: Coupled cluster CCSD  energy :    -398.6991152332545880
- Iter.  9: Coupled cluster CCSD  energy :    -398.6991152332531101
- Iter. 10: Coupled cluster CCSD  energy :    -398.6991152332529964
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6991151150369319
+ Iter.  1: Coupled cluster CCSD  energy :    -398.6991151715507726
+ Iter.  2: Coupled cluster CCSD  energy :    -398.6991152433357684
+ Iter.  3: Coupled cluster CCSD  energy :    -398.6991152371159046
+ Iter.  4: Coupled cluster CCSD  energy :    -398.6991152325192047
+ Iter.  5: Coupled cluster CCSD  energy :    -398.6991152326369843
+ Iter.  6: Coupled cluster CCSD  energy :    -398.6991152331686976
+ Iter.  7: Coupled cluster CCSD  energy :    -398.6991152332503816
+ Iter.  8: Coupled cluster CCSD  energy :    -398.6991152332557249
+ Iter.  9: Coupled cluster CCSD  energy :    -398.6991152332541333
+ Iter. 10: Coupled cluster CCSD  energy :    -398.6991152332536217
 
  CCSD  energy converged to within   0.10D-11 is   -398.699115233
- Final 2-norm of the CC vector function:  1.74527934D-11
-  Change in norm^2 of T-amplitudes in this solvent it.: -4.28479153859184780E-007
+ Final 2-norm of the CC vector function:  1.74522816D-11
+  Change in norm^2 of T-amplitudes in this solvent it.: -4.28479155482885954E-007
 
 
 
@@ -4553,14 +4583,14 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.: -1.22956117909467366E-006
- Total <Lambda|H|CC> energy:   -398.69847451273313     
+  Change in norm^2 of L-amplitudes in this solvent it.: -1.22956117912242924E-006
+ Total <Lambda|H|CC> energy:   -398.69847451273370     
             The singles contribution is:             0.0007532841
             The doubles contribution is:            -0.0001125636
    
@@ -4585,7 +4615,7 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.7042657891
  CC energy in the previous solvent iteration:      -398.7042657890
  LSLECVG:  F
-  Change in Total energy in this solvent it.: -1.39095845952397212E-010
+  Change in Total energy in this solvent it.: -1.38697942020371556E-010
  *******************************************************************
  *        End of coupled cluster solvent program                   *
  *******************************************************************
@@ -4609,7 +4639,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.85869342         2.18258073         7.28030565
+      z      0.85869342         2.18258083         7.28030599
 
 
    
@@ -4631,20 +4661,20 @@ Thus no Huckel projection in this symmetry!
           Number of t2 amplitudes                 :       164
           Total number of amplitudes in ccsd      :       176
 
- Iter.  1: Coupled cluster RSTAR energy :    -398.6991152332529964
- Iter.  1: Coupled cluster CCSD  energy :    -398.6991152433669754
- Iter.  2: Coupled cluster CCSD  energy :    -398.6991152562167713
- Iter.  3: Coupled cluster CCSD  energy :    -398.6991152551021287
- Iter.  4: Coupled cluster CCSD  energy :    -398.6991152542781265
- Iter.  5: Coupled cluster CCSD  energy :    -398.6991152542985333
- Iter.  6: Coupled cluster CCSD  energy :    -398.6991152543935186
- Iter.  7: Coupled cluster CCSD  energy :    -398.6991152544075021
- Iter.  8: Coupled cluster CCSD  energy :    -398.6991152544085253
- Iter.  9: Coupled cluster CCSD  energy :    -398.6991152544085253
+ Iter.  1: Coupled cluster RSTAR energy :    -398.6991152332536217
+ Iter.  1: Coupled cluster CCSD  energy :    -398.6991152433675438
+ Iter.  2: Coupled cluster CCSD  energy :    -398.6991152562181355
+ Iter.  3: Coupled cluster CCSD  energy :    -398.6991152551027540
+ Iter.  4: Coupled cluster CCSD  energy :    -398.6991152542780128
+ Iter.  5: Coupled cluster CCSD  energy :    -398.6991152542995565
+ Iter.  6: Coupled cluster CCSD  energy :    -398.6991152543946555
+ Iter.  7: Coupled cluster CCSD  energy :    -398.6991152544085253
+ Iter.  8: Coupled cluster CCSD  energy :    -398.6991152544099464
+ Iter.  9: Coupled cluster CCSD  energy :    -398.6991152544096053
 
  CCSD  energy converged to within   0.10D-11 is   -398.699115254
- Final 2-norm of the CC vector function:  7.78377452D-12
-  Change in norm^2 of T-amplitudes in this solvent it.: -7.67343163905753745E-008
+ Final 2-norm of the CC vector function:  7.78533560D-12
+  Change in norm^2 of T-amplitudes in this solvent it.: -7.67343174452872478E-008
 
 
 
@@ -4731,8 +4761,8 @@ Thus no Huckel projection in this symmetry!
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
 
-  Change in norm^2 of L-amplitudes in this solvent it.: -2.20208630802298799E-007
- Total <Lambda|H|CC> energy:   -398.69847462425668     
+  Change in norm^2 of L-amplitudes in this solvent it.: -2.20208639073460333E-007
+ Total <Lambda|H|CC> energy:   -398.69847462425770     
             The singles contribution is:             0.0007531858
             The doubles contribution is:            -0.0001125556
    
@@ -4757,14 +4787,14 @@ Thus no Huckel projection in this symmetry!
  CC energy in the  current solvent iteration:      -398.7042657891
  CC energy in the previous solvent iteration:      -398.7042657891
  LSLECVG:  T
-  Change in Total energy in this solvent it.: -4.26325641456060112E-012
+  Change in Total energy in this solvent it.: -4.71800376544706523E-012
 
  Coupled cluster solvent equations are converged in   4 solvent iterations
 
- CCSD    converged energy in solvent:           -398.7042657891297495
+ CCSD    converged energy in solvent:           -398.7042657891310569
 
 
- CCSD    solvation energy:                        -0.0057911648730721
+ CCSD    solvation energy:                        -0.0057911648733541
 
  *******************************************************************
  *        End of coupled cluster solvent program                   *
@@ -4789,7 +4819,7 @@ Thus no Huckel projection in this symmetry!
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.85868303         2.18255432         7.28021757
+      z      0.85868303         2.18255442         7.28021791
 
 
      
@@ -5010,8 +5040,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.34 seconds
- >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.37 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5056,8 +5086,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.14 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.15 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5101,7 +5131,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.03 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.04 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -5148,7 +5178,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.50 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.52 seconds
  >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
@@ -5240,8 +5270,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.39 seconds
- >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.40 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5251,35 +5281,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   7.9244567613   0.2054238139
-     2     ZDIPLEN      1        -0.0040000000   8.0514920924   0.2089793132
-     3     ZDIPLEN      1         0.0040000000   8.3155570352   0.2163878454
-     4     ZDIPLEN      1         0.0080000000   8.4528195391   0.2202482385
-     5     XDIPLEN      2        -0.0080000000   9.4910533872   0.2746852083
-     6     XDIPLEN      2        -0.0040000000   9.6455307886   0.2795857555
-     7     XDIPLEN      2         0.0040000000   9.9669245910   0.2898091563
-     8     XDIPLEN      2         0.0080000000  10.1341363710   0.2951427025
-     9     YDIPLEN      3        -0.0080000000   3.7522286301   0.0951677386
-    10     YDIPLEN      3        -0.0040000000   3.8019030003   0.0967053136
-    11     YDIPLEN      3         0.0040000000   3.9043975538   0.0998975654
-    12     YDIPLEN      3         0.0080000000   3.9572784195   0.1015549795
+     1     ZDIPLEN      1        -0.0080000000   7.9244567611   0.2054238139
+     2     ZDIPLEN      1        -0.0040000000   8.0514920922   0.2089793132
+     3     ZDIPLEN      1         0.0040000000   8.3155570350   0.2163878454
+     4     ZDIPLEN      1         0.0080000000   8.4528195389   0.2202482385
+     5     XDIPLEN      2        -0.0080000000   9.4910533870   0.2746852083
+     6     XDIPLEN      2        -0.0040000000   9.6455307884   0.2795857555
+     7     XDIPLEN      2         0.0040000000   9.9669245907   0.2898091563
+     8     XDIPLEN      2         0.0080000000  10.1341363707   0.2951427025
+     9     YDIPLEN      3        -0.0080000000   3.7522286295   0.0951677385
+    10     YDIPLEN      3        -0.0040000000   3.8019029997   0.0967053136
+    11     YDIPLEN      3         0.0040000000   3.9043975532   0.0998975654
+    12     YDIPLEN      3         0.0080000000   3.9572784189   0.1015549795
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  28.2727910205   1.8218392636
-     2     ZDIPLEN      1        -0.0040000000  27.7522625785   1.7879344862
-     3     ZDIPLEN      1         0.0040000000  26.7496611881   1.7229232592
-     4     ZDIPLEN      1         0.0080000000  26.2667024099   1.6917492116
-     5     XDIPLEN      2        -0.0080000000  32.9104638630   1.6252707551
-     6     XDIPLEN      2        -0.0040000000  32.2797018217   1.5947273819
-     7     XDIPLEN      2         0.0040000000  31.0652834355   1.5361432349
-     8     XDIPLEN      2         0.0080000000  30.4805120074   1.5080423217
-     9     YDIPLEN      3        -0.0080000000  14.5225017582   0.7394477134
-    10     YDIPLEN      3        -0.0040000000  14.3177780679   0.7270359753
-    11     YDIPLEN      3         0.0040000000  13.9207482075   0.7030802840
-    12     YDIPLEN      3         0.0080000000  13.7282073408   0.6915180096
+     1     ZDIPLEN      1        -0.0080000000  28.2727910197   1.8218392635
+     2     ZDIPLEN      1        -0.0040000000  27.7522625778   1.7879344861
+     3     ZDIPLEN      1         0.0040000000  26.7496611874   1.7229232591
+     4     ZDIPLEN      1         0.0080000000  26.2667024093   1.6917492115
+     5     XDIPLEN      2        -0.0080000000  32.9104638622   1.6252707550
+     6     XDIPLEN      2        -0.0040000000  32.2797018209   1.5947273819
+     7     XDIPLEN      2         0.0040000000  31.0652834348   1.5361432349
+     8     XDIPLEN      2         0.0080000000  30.4805120067   1.5080423216
+     9     YDIPLEN      3        -0.0080000000  14.5225017561   0.7394477133
+    10     YDIPLEN      3        -0.0040000000  14.3177780660   0.7270359752
+    11     YDIPLEN      3         0.0040000000  13.9207482056   0.7030802839
+    12     YDIPLEN      3         0.0080000000  13.7282073389   0.6915180095
   Solvent 1-order response equations not converged in           1  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -5318,7 +5348,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.84 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.86 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -5360,7 +5390,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.73 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.74 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -5443,7 +5473,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.26 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5484,8 +5514,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.27 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.28 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5524,8 +5554,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.18 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.19 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5535,35 +5565,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   7.9203556009   0.2053294333
-     2     ZDIPLEN      1        -0.0040000000   8.0473427521   0.2088836383
-     3     ZDIPLEN      1         0.0040000000   8.3113085981   0.2162895057
-     4     ZDIPLEN      1         0.0080000000   8.4485200870   0.2201485255
-     5     XDIPLEN      2        -0.0080000000   9.4840100736   0.2745260118
-     6     XDIPLEN      2        -0.0040000000   9.6384042502   0.2794242234
-     7     XDIPLEN      2         0.0040000000   9.9596258446   0.2896427955
-     8     XDIPLEN      2         0.0080000000  10.1267484562   0.2949738428
-     9     YDIPLEN      3        -0.0080000000   3.7531233743   0.0951922625
-    10     YDIPLEN      3        -0.0040000000   3.8027923963   0.0967297641
-    11     YDIPLEN      3         0.0040000000   3.9052770279   0.0999218924
-    12     YDIPLEN      3         0.0080000000   3.9581533090   0.1015792562
+     1     ZDIPLEN      1        -0.0080000000   7.9203556007   0.2053294333
+     2     ZDIPLEN      1        -0.0040000000   8.0473427519   0.2088836383
+     3     ZDIPLEN      1         0.0040000000   8.3113085979   0.2162895057
+     4     ZDIPLEN      1         0.0080000000   8.4485200867   0.2201485255
+     5     XDIPLEN      2        -0.0080000000   9.4840100734   0.2745260118
+     6     XDIPLEN      2        -0.0040000000   9.6384042500   0.2794242234
+     7     XDIPLEN      2         0.0040000000   9.9596258443   0.2896427955
+     8     XDIPLEN      2         0.0080000000  10.1267484560   0.2949738428
+     9     YDIPLEN      3        -0.0080000000   3.7531233737   0.0951922624
+    10     YDIPLEN      3        -0.0040000000   3.8027923957   0.0967297641
+    11     YDIPLEN      3         0.0040000000   3.9052770274   0.0999218924
+    12     YDIPLEN      3         0.0080000000   3.9581533084   0.1015792562
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  28.2743953549   1.8218660316
-     2     ZDIPLEN      1        -0.0040000000  27.7538434253   1.7879604706
-     3     ZDIPLEN      1         0.0040000000  26.7511965758   1.7229477398
-     4     ZDIPLEN      1         0.0080000000  26.2682158080   1.6917729705
-     5     XDIPLEN      2        -0.0080000000  32.9137584224   1.6253183234
-     6     XDIPLEN      2        -0.0040000000  32.2829462985   1.5947736130
-     7     XDIPLEN      2         0.0040000000  31.0684316949   1.5361869127
-     8     XDIPLEN      2         0.0080000000  30.4836140662   1.5080847805
-     9     YDIPLEN      3        -0.0080000000  14.5223629073   0.7394400763
-    10     YDIPLEN      3        -0.0040000000  14.3176429568   0.7270285689
-    11     YDIPLEN      3         0.0040000000  13.9206201551   0.7030733111
-    12     YDIPLEN      3         0.0080000000  13.7280826206   0.6915112404
+     1     ZDIPLEN      1        -0.0080000000  28.2743953541   1.8218660315
+     2     ZDIPLEN      1        -0.0040000000  27.7538434245   1.7879604705
+     3     ZDIPLEN      1         0.0040000000  26.7511965751   1.7229477396
+     4     ZDIPLEN      1         0.0080000000  26.2682158073   1.6917729704
+     5     XDIPLEN      2        -0.0080000000  32.9137584217   1.6253183233
+     6     XDIPLEN      2        -0.0040000000  32.2829462977   1.5947736129
+     7     XDIPLEN      2         0.0040000000  31.0684316942   1.5361869126
+     8     XDIPLEN      2         0.0080000000  30.4836140655   1.5080847805
+     9     YDIPLEN      3        -0.0080000000  14.5223629052   0.7394400762
+    10     YDIPLEN      3        -0.0040000000  14.3176429548   0.7270285688
+    11     YDIPLEN      3         0.0040000000  13.9206201533   0.7030733110
+    12     YDIPLEN      3         0.0080000000  13.7280826188   0.6915112403
   Solvent 1-order response equations not converged in           2  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -5599,7 +5629,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.48 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.49 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -5675,8 +5705,8 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.20 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.21 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5752,7 +5782,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.15 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -5799,35 +5829,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   7.9203724643   0.2053298555
-     2     ZDIPLEN      1        -0.0040000000   8.0473598060   0.2088840658
-     3     ZDIPLEN      1         0.0040000000   8.3113260506   0.2162899444
-     4     ZDIPLEN      1         0.0080000000   8.4485377481   0.2201489700
-     5     XDIPLEN      2        -0.0080000000   9.4840479462   0.2745270260
-     6     XDIPLEN      2        -0.0040000000   9.6384425529   0.2794252508
-     7     XDIPLEN      2         0.0040000000   9.9596650550   0.2896438504
-     8     XDIPLEN      2         0.0080000000  10.1267881457   0.2949749124
-     9     YDIPLEN      3        -0.0080000000   3.7531227337   0.0951922454
-    10     YDIPLEN      3        -0.0040000000   3.8027917597   0.0967297471
-    11     YDIPLEN      3         0.0040000000   3.9052763987   0.0999218755
-    12     YDIPLEN      3         0.0080000000   3.9581526831   0.1015792393
+     1     ZDIPLEN      1        -0.0080000000   7.9203724641   0.2053298555
+     2     ZDIPLEN      1        -0.0040000000   8.0473598058   0.2088840658
+     3     ZDIPLEN      1         0.0040000000   8.3113260504   0.2162899443
+     4     ZDIPLEN      1         0.0080000000   8.4485377478   0.2201489700
+     5     XDIPLEN      2        -0.0080000000   9.4840479459   0.2745270260
+     6     XDIPLEN      2        -0.0040000000   9.6384425526   0.2794252508
+     7     XDIPLEN      2         0.0040000000   9.9596650547   0.2896438504
+     8     XDIPLEN      2         0.0080000000  10.1267881454   0.2949749124
+     9     YDIPLEN      3        -0.0080000000   3.7531227331   0.0951922454
+    10     YDIPLEN      3        -0.0040000000   3.8027917592   0.0967297471
+    11     YDIPLEN      3         0.0040000000   3.9052763981   0.0999218755
+    12     YDIPLEN      3         0.0080000000   3.9581526825   0.1015792393
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  28.2743889644   1.8218659197
-     2     ZDIPLEN      1        -0.0040000000  27.7538371297   1.7879603619
-     3     ZDIPLEN      1         0.0040000000  26.7511904617   1.7229476372
-     4     ZDIPLEN      1         0.0080000000  26.2682097806   1.6917728709
-     5     XDIPLEN      2        -0.0080000000  32.9137414073   1.6253180515
-     6     XDIPLEN      2        -0.0040000000  32.2829295478   1.5947733487
-     7     XDIPLEN      2         0.0040000000  31.0684154452   1.5361866628
-     8     XDIPLEN      2         0.0080000000  30.4835980535   1.5080845374
-     9     YDIPLEN      3        -0.0080000000  14.5223630049   0.7394400820
-    10     YDIPLEN      3        -0.0040000000  14.3176430518   0.7270285745
-    11     YDIPLEN      3         0.0040000000  13.9206202452   0.7030733163
-    12     YDIPLEN      3         0.0080000000  13.7280827083   0.6915112455
+     1     ZDIPLEN      1        -0.0080000000  28.2743889636   1.8218659196
+     2     ZDIPLEN      1        -0.0040000000  27.7538371290   1.7879603618
+     3     ZDIPLEN      1         0.0040000000  26.7511904610   1.7229476371
+     4     ZDIPLEN      1         0.0080000000  26.2682097800   1.6917728708
+     5     XDIPLEN      2        -0.0080000000  32.9137414065   1.6253180515
+     6     XDIPLEN      2        -0.0040000000  32.2829295470   1.5947733487
+     7     XDIPLEN      2         0.0040000000  31.0684154445   1.5361866627
+     8     XDIPLEN      2         0.0080000000  30.4835980527   1.5080845374
+     9     YDIPLEN      3        -0.0080000000  14.5223630029   0.7394400819
+    10     YDIPLEN      3        -0.0040000000  14.3176430498   0.7270285744
+    11     YDIPLEN      3         0.0040000000  13.9206202433   0.7030733162
+    12     YDIPLEN      3         0.0080000000  13.7280827065   0.6915112454
   Solvent 1-order response equations not converged in           3  solvent iterations
   A New iteration starts 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
@@ -5881,7 +5911,7 @@ Thus no Huckel projection in this symmetry!
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-      1       4         0.00     0.41E-09
+      1       4         0.00     0.42E-09
     --------------------------------------
     converged in  1 iterations
     threshold:    0.10E-08
@@ -5896,7 +5926,7 @@ Thus no Huckel projection in this symmetry!
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -6005,7 +6035,7 @@ Thus no Huckel projection in this symmetry!
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6051,35 +6081,35 @@ Thus no Huckel projection in this symmetry!
  Testing R1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000   7.9203723972   0.2053298538
-     2     ZDIPLEN      1        -0.0040000000   8.0473597382   0.2088840641
-     3     ZDIPLEN      1         0.0040000000   8.3113259811   0.2162899426
-     4     ZDIPLEN      1         0.0080000000   8.4485376778   0.2201489682
-     5     XDIPLEN      2        -0.0080000000   9.4840477533   0.2745270207
-     6     XDIPLEN      2        -0.0040000000   9.6384423578   0.2794252453
-     7     XDIPLEN      2         0.0040000000   9.9596648553   0.2896438448
-     8     XDIPLEN      2         0.0080000000  10.1267879436   0.2949749067
-     9     YDIPLEN      3        -0.0080000000   3.7531227341   0.0951922454
-    10     YDIPLEN      3        -0.0040000000   3.8027917602   0.0967297471
-    11     YDIPLEN      3         0.0040000000   3.9052763991   0.0999218755
-    12     YDIPLEN      3         0.0080000000   3.9581526835   0.1015792394
+     1     ZDIPLEN      1        -0.0080000000   7.9203723970   0.2053298538
+     2     ZDIPLEN      1        -0.0040000000   8.0473597380   0.2088840641
+     3     ZDIPLEN      1         0.0040000000   8.3113259809   0.2162899426
+     4     ZDIPLEN      1         0.0080000000   8.4485376776   0.2201489682
+     5     XDIPLEN      2        -0.0080000000   9.4840477530   0.2745270207
+     6     XDIPLEN      2        -0.0040000000   9.6384423575   0.2794252453
+     7     XDIPLEN      2         0.0040000000   9.9596648550   0.2896438448
+     8     XDIPLEN      2         0.0080000000  10.1267879433   0.2949749067
+     9     YDIPLEN      3        -0.0080000000   3.7531227336   0.0951922454
+    10     YDIPLEN      3        -0.0040000000   3.8027917596   0.0967297471
+    11     YDIPLEN      3         0.0040000000   3.9052763986   0.0999218755
+    12     YDIPLEN      3         0.0080000000   3.9581526829   0.1015792393
 
 
  Testing L1 list: 
 
  List nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     ZDIPLEN      1        -0.0080000000  28.2743889901   1.8218659200
-     2     ZDIPLEN      1        -0.0040000000  27.7538371551   1.7879603622
-     3     ZDIPLEN      1         0.0040000000  26.7511904864   1.7229476374
-     4     ZDIPLEN      1         0.0080000000  26.2682098050   1.6917728711
-     5     XDIPLEN      2        -0.0080000000  32.9137414941   1.6253180530
-     6     XDIPLEN      2        -0.0040000000  32.2829296332   1.5947733501
-     7     XDIPLEN      2         0.0040000000  31.0684155281   1.5361866641
-     8     XDIPLEN      2         0.0080000000  30.4835981351   1.5080845387
-     9     YDIPLEN      3        -0.0080000000  14.5223630048   0.7394400820
-    10     YDIPLEN      3        -0.0040000000  14.3176430517   0.7270285745
-    11     YDIPLEN      3         0.0040000000  13.9206202451   0.7030733163
-    12     YDIPLEN      3         0.0080000000  13.7280827083   0.6915112455
+     1     ZDIPLEN      1        -0.0080000000  28.2743889894   1.8218659198
+     2     ZDIPLEN      1        -0.0040000000  27.7538371544   1.7879603621
+     3     ZDIPLEN      1         0.0040000000  26.7511904857   1.7229476373
+     4     ZDIPLEN      1         0.0080000000  26.2682098043   1.6917728710
+     5     XDIPLEN      2        -0.0080000000  32.9137414933   1.6253180529
+     6     XDIPLEN      2        -0.0040000000  32.2829296325   1.5947733501
+     7     XDIPLEN      2         0.0040000000  31.0684155273   1.5361866641
+     8     XDIPLEN      2         0.0080000000  30.4835981344   1.5080845387
+     9     YDIPLEN      3        -0.0080000000  14.5223630028   0.7394400819
+    10     YDIPLEN      3        -0.0040000000  14.3176430497   0.7270285744
+    11     YDIPLEN      3         0.0040000000  13.9206202432   0.7030733162
+    12     YDIPLEN      3         0.0080000000  13.7280827064   0.6915112454
   Solvent 1-order response equations converged in           3  solvent iterations
 
  Solution of CC response equations completed.
@@ -6116,23 +6146,23 @@ Thus no Huckel projection in this symmetry!
  | L vec. | R vec. | R vec. |  # prod. |            |
  | L0  No.| R1  No.| R1  No.| with R1  | time/secs  |
  +--------------------------------------------------+
- |     0  |     5  |     7  |      1  |       0.03  |
+ |     0  |     5  |     7  |      1  |       0.04  |
  |     0  |     8  |     6  |      1  |       0.03  |
- |     0  |     9  |    11  |      1  |       0.03  |
+ |     0  |     9  |    11  |      1  |       0.04  |
  |     0  |    12  |    10  |      1  |       0.03  |
  |     0  |     1  |     7  |      1  |       0.04  |
  |     0  |     4  |     6  |      1  |       0.03  |
  |     0  |     1  |    11  |      1  |       0.03  |
- |     0  |     4  |    10  |      1  |       0.03  |
+ |     0  |     4  |    10  |      1  |       0.04  |
  |     0  |     1  |     3  |      1  |       0.04  |
  |     0  |     4  |     2  |      1  |       0.04  |
  +--------------------------------------------------+
- | total time for  10 G transforms.:      0.35 secs.|
+ | total time for  10 G transforms.:      0.36 secs.|
  +==================================================+
 
 
 
->>> Time used for   10 G matrix transformations:        0.35 seconds.
+>>> Time used for   10 G matrix transformations:        0.36 seconds.
 
 
  +==================================================+
@@ -6147,37 +6177,37 @@ Thus no Huckel projection in this symmetry!
  | R vector | R vector |  # products  |             |
  |  R1  No. |  R1  No. |   with L1    |  time/secs  |
  +--------------------------------------------------+
- |     7    |     3    |      1       |       0.03  |
+ |     7    |     3    |      1       |       0.04  |
  |     3    |     5    |      1       |       0.04  |
  |     5    |     7    |      1       |       0.04  |
- |     6    |     2    |      1       |       0.03  |
+ |     6    |     2    |      1       |       0.04  |
  |     2    |     8    |      1       |       0.04  |
  |     8    |     6    |      1       |       0.04  |
- |    11    |     3    |      1       |       0.03  |
- |     3    |     9    |      1       |       0.03  |
+ |    11    |     3    |      1       |       0.04  |
+ |     3    |     9    |      1       |       0.04  |
  |     9    |    11    |      1       |       0.04  |
- |    10    |     2    |      1       |       0.03  |
- |     2    |    12    |      1       |       0.03  |
+ |    10    |     2    |      1       |       0.04  |
+ |     2    |    12    |      1       |       0.04  |
  |    12    |    10    |      1       |       0.03  |
  |     7    |     7    |      1       |       0.03  |
  |     7    |     1    |      1       |       0.04  |
  |     6    |     6    |      1       |       0.03  |
  |     6    |     4    |      1       |       0.04  |
- |    11    |    11    |      1       |       0.02  |
+ |    11    |    11    |      1       |       0.03  |
  |    11    |     1    |      1       |       0.04  |
- |    10    |    10    |      1       |       0.02  |
+ |    10    |    10    |      1       |       0.03  |
  |    10    |     4    |      1       |       0.04  |
  |     3    |     3    |      1       |       0.03  |
  |     3    |     1    |      1       |       0.04  |
  |     2    |     2    |      1       |       0.03  |
  |     2    |     4    |      1       |       0.04  |
  +--------------------------------------------------+
- | total time for  24 B transforms.:      0.83 secs.|
+ | total time for  24 B transforms.:      0.85 secs.|
  +==================================================+
 
 
 
->>> Time used for   24 B matrix transformations:        0.83 seconds.
+>>> Time used for   24 B matrix transformations:        0.85 seconds.
 
 
                                 +-----------------+
@@ -6200,216 +6230,216 @@ Thus no Huckel projection in this symmetry!
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   7.40947753211815691E-002
- Printing first contribution.                                     Norm2 of singles:   7.12271816667046226E-002 Norm2 of doubles:   7.17975701786405796E-002
- Printing second contribution.                                  Norm2 of singles:   0.10412346848452222      Norm2 of doubles:   0.11280127955008903     
+ Printing norm2 TGCMO in KMAT:   7.40947753188104657E-002
+ Printing first contribution.                                     Norm2 of singles:   7.12271816625060644E-002 Norm2 of doubles:   7.17975701741524891E-002
+ Printing second contribution.                                  Norm2 of singles:   0.10412346847676454      Norm2 of doubles:   0.11280127954357838     
  |     7    |     3    |      1       |       0.01  |
  K matrix transformation for ITRAN,           2
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            5
  ISYMA,ISYMB,ISYMAB:           1           2           2
- Printing norm2 TGCMO in KMAT:   0.18635558317997991     
- Printing first contribution.                                     Norm2 of singles:   0.11018736294361572      Norm2 of doubles:   0.11935768279432918     
- Printing second contribution.                                  Norm2 of singles:   7.55397246180997683E-002 Norm2 of doubles:   7.58968711773692212E-002
+ Printing norm2 TGCMO in KMAT:   0.18635558317269779     
+ Printing first contribution.                                     Norm2 of singles:   0.11018736293534594      Norm2 of doubles:   0.11935768278737111     
+ Printing second contribution.                                  Norm2 of singles:   7.55397246136351452E-002 Norm2 of doubles:   7.58968711725817591E-002
  |     3    |     5    |      1       |       0.01  |
  K matrix transformation for ITRAN,           3
  IADRTH:           1
  LISTA,IDLSTA:L1            5
  LISTB,IDLSTB:L1            7
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.17610359268255008     
- Printing first contribution.                                     Norm2 of singles:   0.11106739568326923      Norm2 of doubles:   0.80704027287790470     
- Printing second contribution.                                  Norm2 of singles:   0.11116348598707758      Norm2 of doubles:   0.80654811029249596     
+ Printing norm2 TGCMO in KMAT:   0.17610359267576681     
+ Printing first contribution.                                     Norm2 of singles:   0.11106739567540853      Norm2 of doubles:   0.80704027282098145     
+ Printing second contribution.                                  Norm2 of singles:   0.11116348597918459      Norm2 of doubles:   0.80654811023552131     
  |     5    |     7    |      1       |       0.01  |
  K matrix transformation for ITRAN,           4
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   7.68511567564034576E-002
- Printing first contribution.                                     Norm2 of singles:   7.68247981628845666E-002 Norm2 of doubles:   7.72714331495423512E-002
- Printing second contribution.                                  Norm2 of singles:   0.11216702969293182      Norm2 of doubles:   0.12130271137231814     
+ Printing norm2 TGCMO in KMAT:   7.68511567539045953E-002
+ Printing first contribution.                                     Norm2 of singles:   7.68247981583054518E-002 Norm2 of doubles:   7.72714331446418545E-002
+ Printing second contribution.                                  Norm2 of singles:   0.11216702968445424      Norm2 of doubles:   0.12130271136522676     
  |     6    |     2    |      1       |       0.01  |
  K matrix transformation for ITRAN,           5
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            8
  ISYMA,ISYMB,ISYMAB:           1           2           2
- Printing norm2 TGCMO in KMAT:   0.17284829828330139     
- Printing first contribution.                                     Norm2 of singles:   0.10602710771827553      Norm2 of doubles:   0.11467451874124958     
- Printing second contribution.                                  Norm2 of singles:   7.24666927509605430E-002 Norm2 of doubles:   7.31250077344860056E-002
+ Printing norm2 TGCMO in KMAT:   0.17284829827667550     
+ Printing first contribution.                                     Norm2 of singles:   0.10602710771031987      Norm2 of doubles:   0.11467451873461136     
+ Printing second contribution.                                  Norm2 of singles:   7.24666927466525446E-002 Norm2 of doubles:   7.31250077298895296E-002
  |     2    |     8    |      1       |       0.01  |
  K matrix transformation for ITRAN,           6
  IADRTH:           1
  LISTA,IDLSTA:L1            8
  LISTB,IDLSTB:L1            6
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.18285434592035665     
- Printing first contribution.                                     Norm2 of singles:   0.10709267969937367      Norm2 of doubles:   0.77656527896760341     
- Printing second contribution.                                  Norm2 of singles:   0.10699559414544740      Norm2 of doubles:   0.77702965006493430     
+ Printing norm2 TGCMO in KMAT:   0.18285434591324606     
+ Printing first contribution.                                     Norm2 of singles:   0.10709267969180281      Norm2 of doubles:   0.77656527891301086     
+ Printing second contribution.                                  Norm2 of singles:   0.10699559413790813      Norm2 of doubles:   0.77702965001039004     
  |     8    |     6    |      1       |       0.01  |
  K matrix transformation for ITRAN,           7
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   8.47646251877522128E-003
- Printing first contribution.                                     Norm2 of singles:   1.57832393442032502E-002 Norm2 of doubles:   0.15182657629535032     
- Printing second contribution.                                  Norm2 of singles:   2.25500972243533907E-003 Norm2 of doubles:   5.53334101862356098E-002
+ Printing norm2 TGCMO in KMAT:   8.47646251852783930E-003
+ Printing first contribution.                                     Norm2 of singles:   1.57832393403808044E-002 Norm2 of doubles:   0.15182657626939017     
+ Printing second contribution.                                  Norm2 of singles:   2.25500972237480894E-003 Norm2 of doubles:   5.53334101780292437E-002
  |    11    |     3    |      1       |       0.01  |
  K matrix transformation for ITRAN,           8
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            9
  ISYMA,ISYMB,ISYMAB:           1           3           3
- Printing norm2 TGCMO in KMAT:   4.72552247556731579E-003
- Printing first contribution.                                     Norm2 of singles:   2.35045229348903716E-003 Norm2 of doubles:   5.77207417241686685E-002
- Printing second contribution.                                  Norm2 of singles:   1.65213398818368842E-002 Norm2 of doubles:   0.15823518566578867     
+ Printing norm2 TGCMO in KMAT:   4.72552247497763731E-003
+ Printing first contribution.                                     Norm2 of singles:   2.35045229341904888E-003 Norm2 of doubles:   5.77207417153940833E-002
+ Printing second contribution.                                  Norm2 of singles:   1.65213398776945415E-002 Norm2 of doubles:   0.15823518563816580     
  |     3    |     9    |      1       |       0.01  |
  K matrix transformation for ITRAN,           9
  IADRTH:           1
  LISTA,IDLSTA:L1            9
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.53101166010422881E-003
- Printing first contribution.                                     Norm2 of singles:   1.48671751559348066E-002 Norm2 of doubles:   1.51532078136489574E-002
- Printing second contribution.                                  Norm2 of singles:   1.48742495247693104E-002 Norm2 of doubles:   1.51635958722716110E-002
+ Printing norm2 TGCMO in KMAT:   4.53101165955472132E-003
+ Printing first contribution.                                     Norm2 of singles:   1.48671751523580184E-002 Norm2 of doubles:   1.51532078091802906E-002
+ Printing second contribution.                                  Norm2 of singles:   1.48742495211766322E-002 Norm2 of doubles:   1.51635958677947390E-002
  |     9    |    11    |      1       |       0.01  |
  K matrix transformation for ITRAN,          10
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   8.79171055535197914E-003
- Printing first contribution.                                     Norm2 of singles:   1.68734421441883546E-002 Norm2 of doubles:   0.16186722181985952     
- Printing second contribution.                                  Norm2 of singles:   2.39991460659943166E-003 Norm2 of doubles:   5.90298418465575736E-002
+ Printing norm2 TGCMO in KMAT:   8.79171055509088591E-003
+ Printing first contribution.                                     Norm2 of singles:   1.68734421399972002E-002 Norm2 of doubles:   0.16186722179171203     
+ Printing second contribution.                                  Norm2 of singles:   2.39991460653240238E-003 Norm2 of doubles:   5.90298418376242820E-002
  |    10    |     2    |      1       |       0.01  |
  K matrix transformation for ITRAN,          11
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1           12
  ISYMA,ISYMB,ISYMAB:           1           3           3
- Printing norm2 TGCMO in KMAT:   4.46873016861431410E-003
- Printing first contribution.                                     Norm2 of singles:   2.30303509621138450E-003 Norm2 of doubles:   5.66031468977284472E-002
- Printing second contribution.                                  Norm2 of singles:   1.61253751521797557E-002 Norm2 of doubles:   0.15535137792114656     
+ Printing norm2 TGCMO in KMAT:   4.46873016807743453E-003
+ Printing first contribution.                                     Norm2 of singles:   2.30303509615374180E-003 Norm2 of doubles:   5.66031468893695017E-002
+ Printing second contribution.                                  Norm2 of singles:   1.61253751483091540E-002 Norm2 of doubles:   0.15535137789467990     
  |     2    |    12    |      1       |       0.01  |
  K matrix transformation for ITRAN,          12
  IADRTH:           1
  LISTA,IDLSTA:L1           12
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.65937188129391094E-003
- Printing first contribution.                                     Norm2 of singles:   1.44644587598684784E-002 Norm2 of doubles:   1.47474189679460497E-002
- Printing second contribution.                                  Norm2 of singles:   1.44582624323729807E-002 Norm2 of doubles:   1.47374088792008359E-002
+ Printing norm2 TGCMO in KMAT:   4.65937188071799662E-003
+ Printing first contribution.                                     Norm2 of singles:   1.44644587564060449E-002 Norm2 of doubles:   1.47474189636269213E-002
+ Printing second contribution.                                  Norm2 of singles:   1.44582624289253305E-002 Norm2 of doubles:   1.47374088748895883E-002
  |    12    |    10    |      1       |       0.01  |
  K matrix transformation for ITRAN,          13
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            7
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.17610359268255008     
- Printing first contribution.                                     Norm2 of singles:   0.10504820961034841      Norm2 of doubles:   0.76210449323229879     
+ Printing norm2 TGCMO in KMAT:   0.17610359267576681     
+ Printing first contribution.                                     Norm2 of singles:   0.10504820960294914      Norm2 of doubles:   0.76210449317888673     
  |     7    |     7    |      1       |       0.01  |
  K matrix transformation for ITRAN,          14
  IADRTH:           1
  LISTA,IDLSTA:L1            7
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   7.82805970567477249E-002
- Printing first contribution.                                     Norm2 of singles:   7.52587693731612550E-002 Norm2 of doubles:   7.58601422785209617E-002
- Printing second contribution.                                  Norm2 of singles:   0.11005165181059581      Norm2 of doubles:   0.11892519506810491     
+ Printing norm2 TGCMO in KMAT:   7.82805970541819718E-002
+ Printing first contribution.                                     Norm2 of singles:   7.52587693686623260E-002 Norm2 of doubles:   7.58601422737177483E-002
+ Printing second contribution.                                  Norm2 of singles:   0.11005165180227741      Norm2 of doubles:   0.11892519506117524     
  |     7    |     1    |      1       |       0.01  |
  K matrix transformation for ITRAN,          15
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            6
  ISYMA,ISYMB,ISYMAB:           2           2           1
- Printing norm2 TGCMO in KMAT:   0.18285434592035665     
- Printing first contribution.                                     Norm2 of singles:   0.11318934751365926      Norm2 of doubles:   0.82208737744884697     
+ Printing norm2 TGCMO in KMAT:   0.18285434591324606     
+ Printing first contribution.                                     Norm2 of singles:   0.11318934750561951      Norm2 of doubles:   0.82208737739068738     
  |     6    |     6    |      1       |       0.01  |
  K matrix transformation for ITRAN,          16
  IADRTH:           1
  LISTA,IDLSTA:L1            6
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           2           1           2
- Printing norm2 TGCMO in KMAT:   7.27655251746932158E-002
- Printing first contribution.                                     Norm2 of singles:   7.27331158969215102E-002 Norm2 of doubles:   7.31571246001895409E-002
- Printing second contribution.                                  Norm2 of singles:   0.10616680714749915      Norm2 of doubles:   0.11510528103374031     
+ Printing norm2 TGCMO in KMAT:   7.27655251723828833E-002
+ Printing first contribution.                                     Norm2 of singles:   7.27331158926464993E-002 Norm2 of doubles:   7.31571245956080807E-002
+ Printing second contribution.                                  Norm2 of singles:   0.10616680713958812      Norm2 of doubles:   0.11510528102707270     
  |     6    |     4    |      1       |       0.01  |
  K matrix transformation for ITRAN,          17
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1           11
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.53101166010422881E-003
- Printing first contribution.                                     Norm2 of singles:   1.42592798926210636E-002 Norm2 of doubles:   1.45368948323660423E-002
+ Printing norm2 TGCMO in KMAT:   4.53101165955472132E-003
+ Printing first contribution.                                     Norm2 of singles:   1.42592798892299220E-002 Norm2 of doubles:   1.45368948281286315E-002
  |    11    |    11    |      1       |       0.01  |
  K matrix transformation for ITRAN,          18
  IADRTH:           1
  LISTA,IDLSTA:L1           11
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   8.95521050925080289E-003
- Printing first contribution.                                     Norm2 of singles:   1.66728157789491002E-002 Norm2 of doubles:   0.16041239007463576     
- Printing second contribution.                                  Norm2 of singles:   2.37615243295884486E-003 Norm2 of doubles:   5.84662390351262246E-002
+ Printing norm2 TGCMO in KMAT:   8.95521050898252270E-003
+ Printing first contribution.                                     Norm2 of singles:   1.66728157748974107E-002 Norm2 of doubles:   0.16041239004707777     
+ Printing second contribution.                                  Norm2 of singles:   2.37615243289814168E-003 Norm2 of doubles:   5.84662390264049647E-002
  |    11    |     1    |      1       |       0.01  |
  K matrix transformation for ITRAN,          19
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1           10
  ISYMA,ISYMB,ISYMAB:           3           3           1
- Printing norm2 TGCMO in KMAT:   4.65937188129391094E-003
- Printing first contribution.                                     Norm2 of singles:   1.50778840278041164E-002 Norm2 of doubles:   1.53687522443467142E-002
+ Printing norm2 TGCMO in KMAT:   4.65937188071799662E-003
+ Printing first contribution.                                     Norm2 of singles:   1.50778840241534966E-002 Norm2 of doubles:   1.53687522397940174E-002
  |    10    |    10    |      1       |       0.01  |
  K matrix transformation for ITRAN,          20
  IADRTH:           1
  LISTA,IDLSTA:L1           10
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           3           1           3
- Printing norm2 TGCMO in KMAT:   8.32444918753903751E-003
- Printing first contribution.                                     Norm2 of singles:   1.59783273113961073E-002 Norm2 of doubles:   0.15325356716885752     
- Printing second contribution.                                  Norm2 of singles:   2.27863101404817206E-003 Norm2 of doubles:   5.58866417003881094E-002
+ Printing norm2 TGCMO in KMAT:   8.32444918729817809E-003
+ Printing first contribution.                                     Norm2 of singles:   1.59783273074415692E-002 Norm2 of doubles:   0.15325356714232993     
+ Printing second contribution.                                  Norm2 of singles:   2.27863101398157646E-003 Norm2 of doubles:   5.58866416919777259E-002
  |    10    |     4    |      1       |       0.01  |
  K matrix transformation for ITRAN,          21
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            3
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.10431892165837699     
- Printing first contribution.                                     Norm2 of singles:   7.68532173066704266E-002 Norm2 of doubles:   0.39931923961855614     
+ Printing norm2 TGCMO in KMAT:   0.10431892165490476     
+ Printing first contribution.                                     Norm2 of singles:   7.68532172996001101E-002 Norm2 of doubles:   0.39931923959493315     
  |     3    |     3    |      1       |       0.01  |
  K matrix transformation for ITRAN,          22
  IADRTH:           1
  LISTA,IDLSTA:L1            3
  LISTB,IDLSTB:L1            1
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.11021623563708692     
- Printing first contribution.                                     Norm2 of singles:   8.12035390477927610E-002 Norm2 of doubles:   0.42189562771356581     
- Printing second contribution.                                  Norm2 of singles:   8.15563877418650357E-002 Norm2 of doubles:   0.42171687621519571     
+ Printing norm2 TGCMO in KMAT:   0.11021623563333154     
+ Printing first contribution.                                     Norm2 of singles:   8.12035390402543744E-002 Norm2 of doubles:   0.42189562768826572     
+ Printing second contribution.                                  Norm2 of singles:   8.15563877342577043E-002 Norm2 of doubles:   0.42171687618995052     
  |     3    |     1    |      1       |       0.01  |
  K matrix transformation for ITRAN,          23
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            2
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.10820229964988951     
- Printing first contribution.                                     Norm2 of singles:   8.29252897075403728E-002 Norm2 of doubles:   0.42948454163281463     
+ Printing norm2 TGCMO in KMAT:   0.10820229964623146     
+ Printing first contribution.                                     Norm2 of singles:   8.29252896997947214E-002 Norm2 of doubles:   0.42948454160697586     
  |     2    |     2    |      1       |       0.01  |
  K matrix transformation for ITRAN,          24
  IADRTH:           1
  LISTA,IDLSTA:L1            2
  LISTB,IDLSTB:L1            4
  ISYMA,ISYMB,ISYMAB:           1           1           1
- Printing norm2 TGCMO in KMAT:   0.10244622318791871     
- Printing first contribution.                                     Norm2 of singles:   7.85084551117136153E-002 Norm2 of doubles:   0.40663476273594135     
- Printing second contribution.                                  Norm2 of singles:   7.81781592696858957E-002 Norm2 of doubles:   0.40680717250863241     
- |     2    |     4    |      1       |       0.01  |
+ Printing norm2 TGCMO in KMAT:   0.10244622318453492     
+ Printing first contribution.                                     Norm2 of singles:   7.85084551044461787E-002 Norm2 of doubles:   0.40663476271180210     
+ Printing second contribution.                                  Norm2 of singles:   7.81781592624822552E-002 Norm2 of doubles:   0.40680717248444109     
+ |     2    |     4    |      1       |       0.02  |
  +==================================================+
 
 
 
->>> Time used for   24 K matrix transformations:        0.26 seconds.
+>>> Time used for   24 K matrix transformations:        0.30 seconds.
 
 >>> Time used for   18 F{O} matrix transform.:          0.01 seconds.
 
@@ -6417,7 +6447,7 @@ Thus no Huckel projection in this symmetry!
 
 >>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
 
->>> Total time for  27 quadratic response func.:        1.48 seconds.
+>>> Total time for  27 quadratic response func.:        1.54 seconds.
 
 
                  +---------------------------------------------------------------------------------------+
@@ -6496,7 +6526,7 @@ Thus no Huckel projection in this symmetry!
             Total CC2   energy:                  -398.6842044561                
                                                                                 
  Solvent: L_max=10, R_cav=  4.5300, Eps_st = 20.7000, Eps_op =  1.8410:         
-            CC2      Total energy:                -398.6893746207               
+            CC2      Total energy:                -398.6893746208               
             CC2      Solvation energy:              -0.0059144831               
                                                                                 
                                                                                 
@@ -6547,9 +6577,9 @@ Thus no Huckel projection in this symmetry!
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  23.41 seconds
- >>>> Total wall time used in DALTON:  1 minute  19 seconds
+ >>>> Total CPU  time used in DALTON:  23.79 seconds
+ >>>> Total wall time used in DALTON:  1 minute  22 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:02:28 2010 
+     Date and time (Linux)  : Wed Mar 16 18:28:01 2011 
      Host name              : fe6                                     

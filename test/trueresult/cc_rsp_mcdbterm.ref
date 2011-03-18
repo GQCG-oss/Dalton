@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:25:20 2010 
+     Date and time (Linux)  : Wed Mar 16 17:52:37 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -182,8 +183,8 @@ Point group: C2v
                                  ---------------
 
                            HC          1.007825
-                           HL   1      1.007825
-                           HL   2      1.007825
+                           HL  _1      1.007825
+                           HL  _2      1.007825
 
                        Total mass:     3.023475 amu
                        Natural abundance:  99.955 %
@@ -249,15 +250,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            HC          HL   1      HL   2
+            HC          HL  _1      HL  _2
             ------      ------      ------
  HC    :    0.000000
- HL   1:    0.796331    0.000000
- HL   2:    0.796331    1.058354    0.000000
+ HL  _1:    0.796331    0.000000
+ HL  _2:    0.796331    1.058354    0.000000
 
 
   Max interatomic separation is    1.0584 Angstrom (    2.0000 Bohr)
-  between atoms    3 and    2, "HL   2" and "HL   1".
+  between atoms    3 and    2, "HL  _2" and "HL  _1".
 
 
   Bond distances (Angstrom):
@@ -265,8 +266,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  HL   1     HC           0.796331
-  bond distance:  HL   2     HC           0.796331
+  bond distance:  HL  _1     HC           0.796331
+  bond distance:  HL  _2     HC           0.796331
 
 
   Bond angles (degrees):
@@ -274,7 +275,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     HL   1     HC         HL   2        83.291
+  bond angle:     HL  _1     HC         HL  _2        83.291
 
 
 
@@ -294,8 +295,8 @@ Point group: C2v
 
                A                   B                   C
 
-        2124121.6630         895364.3782         629863.1111 MHz
-           70.853072           29.866141           21.009972 cm-1
+        2124121.6445         895364.3703         629863.1056 MHz
+           70.853071           29.866141           21.009972 cm-1
 
 
 @  Nuclear repulsion energy :    1.829038172068
@@ -345,7 +346,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - electronic angular momentum around the origin
@@ -398,7 +399,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:25:20 2010 
+     Date and time (Linux)  : Wed Mar 16 17:52:37 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -413,8 +414,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -422,6 +422,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons          2
      Number of electrons in active shells      0
      Total charge of the molecule              1
@@ -473,20 +477,28 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-12
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
    1  -1.22073896792       2.03D-01  -1.22D+00    1  0  0  0
-      MULPOP HC    0.71; HL    1.24; 
+      Virial theorem: -V/T =      2.193568
+      MULPOP  HC      0.29; HL  _1  0.36; HL  _2  0.36; 
+ -----------------------------------------------------------------------------
    2  -1.22504462218       2.88D-02  -4.31D-03    1  0  0  0
-      MULPOP HC    0.79; HL    1.16; 
+      Virial theorem: -V/T =      2.190463
+      MULPOP  HC      0.18; HL  _1  0.41; HL  _2  0.41; 
+ -----------------------------------------------------------------------------
    3  -1.22513194636       7.78D-05  -8.73D-05    1  0  0  0
-      MULPOP HC    0.80; HL    1.15; 
+      Virial theorem: -V/T =      2.188696
+      MULPOP  HC      0.16; HL  _1  0.42; HL  _2  0.42; 
+ -----------------------------------------------------------------------------
    4  -1.22513194699       2.82D-08  -6.38D-10    1  0  0  0
-      MULPOP HC    0.80; HL    1.15; 
-   5  -1.22513194699       2.77D-14   0.00D+00    1  0  0  0
- DIIS converged in   5 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.188702
+      MULPOP  HC      0.16; HL  _1  0.42; HL  _2  0.42; 
+ -----------------------------------------------------------------------------
+   5  -1.22513194699       2.93D-14  -4.44D-16    1  0  0  0
+
+ *** DIIS converged in   5 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -510,7 +522,10 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -518,12 +533,12 @@ Point group: C2v
 
      Final HF energy:              -1.225131946994                 
      Nuclear repulsion:             1.829038172068
-     Electronic energy:            -3.054170119062
+     Electronic energy:            -3.054170119063
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 21:25:20 2010 
+     Date and time (Linux)  : Wed Mar 16 17:52:37 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -531,14 +546,14 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 HC  :1s     0.4602   1.3858
    2 HL  :1s     0.3588  -0.7746
 
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 HL  :1s     0.9647
 
 
@@ -547,7 +562,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:25:20 2010 
+     Date and time (Linux)  : Wed Mar 16 17:52:37 2011 
      Host name              : fe6                                     
 
 
@@ -598,22 +613,22 @@ Point group: C2v
           Number of t2 amplitudes                 :         2
           Total number of amplitudes in ccsd      :         3
 
- Iter.  1: Coupled cluster MP2   energy :      -1.2421296157437489
- Iter.  1: Coupled cluster CCSD  energy :      -1.2471680159013800
- Iter.  2: Coupled cluster CCSD  energy :      -1.2492888251309218
- Iter.  3: Coupled cluster CCSD  energy :      -1.2492888579597838
- Iter.  4: Coupled cluster CCSD  energy :      -1.2492939375657590
- Iter.  5: Coupled cluster CCSD  energy :      -1.2492937803701714
- Iter.  6: Coupled cluster CCSD  energy :      -1.2492929949839167
- Iter.  7: Coupled cluster CCSD  energy :      -1.2492928885454055
- Iter.  8: Coupled cluster CCSD  energy :      -1.2492964527184014
- Iter.  9: Coupled cluster CCSD  energy :      -1.2492937722297435
- Iter. 10: Coupled cluster CCSD  energy :      -1.2492926046151760
- Iter. 11: Coupled cluster CCSD  energy :      -1.2492926103286046
- Iter. 12: Coupled cluster CCSD  energy :      -1.2492926112746738
+ Iter.  1: Coupled cluster MP2   energy :      -1.2421296157441819
+ Iter.  1: Coupled cluster CCSD  energy :      -1.2471680159018097
+ Iter.  2: Coupled cluster CCSD  energy :      -1.2492888251313496
+ Iter.  3: Coupled cluster CCSD  energy :      -1.2492888579602117
+ Iter.  4: Coupled cluster CCSD  energy :      -1.2492939375661867
+ Iter.  5: Coupled cluster CCSD  energy :      -1.2492858460145606
+ Iter.  6: Coupled cluster CCSD  energy :      -1.2492927650022712
+ Iter.  7: Coupled cluster CCSD  energy :      -1.2492929472234517
+ Iter.  8: Coupled cluster CCSD  energy :      -1.2492944741537384
+ Iter.  9: Coupled cluster CCSD  energy :      -1.2492931741932176
+ Iter. 10: Coupled cluster CCSD  energy :      -1.2492926080833984
+ Iter. 11: Coupled cluster CCSD  energy :      -1.2492926108147007
+ Iter. 12: Coupled cluster CCSD  energy :      -1.2492926112748250
 
  CCSD  energy converged to within   0.10D-08 is     -1.249292611
- Final 2-norm of the CC vector function:  4.10831962D-08
+ Final 2-norm of the CC vector function:  1.99997316D-08
 
 
 
@@ -705,15 +720,15 @@ Point group: C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.0034384687       27.3049489277
-         2            1.4469431672       39.3733253359
+         1            1.0034384687       27.3049497025
+         2            1.4469431672       39.3733264532
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1            -0.245854142586450
-@@    1    2             0.197650555945164
+@@    1    1            -0.245854142586097
+@@    1    2             0.197650555944864
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -789,7 +804,7 @@ Point group: C2v
           Norm of Printed Amplitude Vector :             0.9909
 
 
-          Printed all single excitations greater than 0.502225
+          Printed all single excitations greater than 0.100445
 
 
           Printed all double excitations greater than 0.172947
@@ -828,15 +843,15 @@ Point group: C2v
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.7481213946       20.3574181276
-         2            1.6746675989       45.5700221659
+         1            0.7481213946       20.3574187053
+         2            1.6746675989       45.5700234590
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1            -0.501171216634004
-@@    2    2             0.425374987674039
+@@    2    1            -0.501171216634455
+@@    2    2             0.425374987674612
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1012,15 +1027,15 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            1.0034384687       27.3049489277
-         2            1.4469431672       39.3733253359
+         1            1.0034384687       27.3049497025
+         2            1.4469431672       39.3733264532
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1            -0.245854142586450
-@@    1    2             0.197650555945164
+@@    1    1            -0.245854142586098
+@@    1    2             0.197650555944865
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1096,7 +1111,7 @@ Try to use right eigenvector as start for a left eigenvector.
           Norm of Printed Amplitude Vector :             0.9882
 
 
-          Printed all single excitations greater than 0.056103
+          Printed all single excitations greater than 0.280516
 
 
           Printed all double excitations greater than 0.191970
@@ -1165,15 +1180,15 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.7481213946       20.3574181276
-         2            1.6746675989       45.5700221659
+         1            0.7481213946       20.3574187053
+         2            1.6746675989       45.5700234590
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1            -0.501171216634004
-@@    2    2             0.425374987674038
+@@    2    1            -0.501171216634455
+@@    2    2             0.425374987674612
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1810,11 +1825,11 @@ WARNING: irrep symmetry can not be determined.
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A1  |    1   |     1.0034385  |      27.30495  |    220229.288  |  91.99  |
- | ^1A1  |    2   |     1.4469432  |      39.37333  |    317567.318  |  25.22  |
+ | ^1A1  |    1   |     1.0034385  |      27.30495  |    220229.286  |  91.99  |
+ | ^1A1  |    2   |     1.4469432  |      39.37333  |    317567.315  |  25.22  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.7481214  |      20.35742  |    164193.667  |  94.51  |
- | ^1B2  |    2   |     1.6746676  |      45.57002  |    367547.054  |   5.24  |
+ | ^1B2  |    1   |     0.7481214  |      20.35742  |    164193.666  |  94.51  |
+ | ^1B2  |    2   |     1.6746676  |      45.57002  |    367547.051  |   5.24  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -1825,7 +1840,7 @@ WARNING: irrep symmetry can not be determined.
              2 ^1B2         0.4253749877                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -1845,8 +1860,8 @@ WARNING: irrep symmetry can not be determined.
                       `-------------------------------------'
 
  >>>> Total CPU  time used in DALTON:   0.19 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:25:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:52:41 2011 
      Host name              : fe6                                     

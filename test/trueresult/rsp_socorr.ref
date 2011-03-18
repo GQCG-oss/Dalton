@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:17:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -272,7 +273,7 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =      1143684.00 MHz     (   38.149192 cm-1)
+               B =      1143683.99 MHz     (   38.149192 cm-1)
 
 
 @  Nuclear repulsion energy :    1.428571428571
@@ -325,7 +326,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - spatial spin-orbit integrals
           - Fermi contact integrals
@@ -353,8 +354,8 @@ Point group: C2v
 
    Two-electron spin-orbit integrals
    =================================
-   Spin-orbit 2-electron CPU  time    0. seconds
-   Spin-orbit 2-electron wall time    0. seconds
+   Spin-orbit 2-electron CPU  time      0. seconds
+   Spin-orbit 2-electron wall time      0. seconds
  >>>> Total CPU  time used in HERMIT:   0.00 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
@@ -388,7 +389,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:30 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -400,7 +401,6 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
      Time-dependent Hartree-Fock calculation (random phase approximation).
 
 
@@ -409,6 +409,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons          2
      Number of electrons in active shells      0
      Total charge of the molecule              1
@@ -444,21 +445,29 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =    2
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -2.04792300806        1.65442D+00   -2.05D+00    1
-      MULPOP He    0.04; H     0.00; 
+      Virial theorem: -V/T =      1.496130
+      MULPOP  He      0.78; H       0.22; 
+ -----------------------------------------------------------------------------
    2    -2.14536213516        2.08086D-01   -9.74D-02    2
-      MULPOP He    0.00; H     0.00; 
+      Virial theorem: -V/T =      1.519230
+      MULPOP  He      0.74; H       0.26; 
+ -----------------------------------------------------------------------------
    3    -2.14691444287        1.61114D-03   -1.55D-03    2
-      MULPOP He    0.00; H     0.00; 
+      Virial theorem: -V/T =      1.518281
+      MULPOP  He      0.73; H       0.27; 
+ -----------------------------------------------------------------------------
    4    -2.14691462711        4.30583D-05   -1.84D-07    2
-      MULPOP He    0.00; H     0.00; 
+      Virial theorem: -V/T =      1.518373
+      MULPOP  He      0.73; H       0.27; 
+ -----------------------------------------------------------------------------
    5    -2.14691462719        3.79634D-06   -7.76D-11    2
- DIIS converged in   5 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   5 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -484,7 +493,10 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -497,7 +509,7 @@ Point group: C2v
      Final gradient norm:           0.000003796337
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:31 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -505,7 +517,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 He  :1s     0.7333  -0.7134   0.1818
    2 He  :2pz   -0.0009   0.0943   1.0999
    3 H   :1s     0.5223   0.8461  -0.5566
@@ -513,22 +525,22 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 He  :2px    1.0000
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 He  :2py    1.0000
 
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:31 2011 
      Host name              : fe6                                     
 
 
@@ -603,8 +615,8 @@ Point group: C2v
           X2SPNORB
 
 
-   SCF energy         :       -2.146914627188685
- -- inactive part     :       -3.575486055760114
+   SCF energy         :       -2.146914627188704
+ -- inactive part     :       -3.575486055760133
  -- nuclear repulsion :        1.428571428571429
 
 
@@ -641,7 +653,7 @@ Point group: C2v
  Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    2)
- RSP solution vector no.    1; norm of residual   5.29D-16
+ RSP solution vector no.    1; norm of residual   7.48D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -669,7 +681,7 @@ Point group: C2v
  Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    2)
- RSP solution vector no.    1; norm of residual   8.30D-16
+ RSP solution vector no.    1; norm of residual   0.00D+00
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -708,7 +720,7 @@ Point group: C2v
  Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    4)
- RSP solution vector no.    1; norm of residual   1.76D-16
+ RSP solution vector no.    1; norm of residual   2.50D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -729,7 +741,7 @@ Point group: C2v
  Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    4)
- RSP solution vector no.    1; norm of residual   3.02D-16
+ RSP solution vector no.    1; norm of residual   2.71D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -761,7 +773,7 @@ Point group: C2v
  Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    2)
- RSP solution vector no.    1; norm of residual   0.00D+00
+ RSP solution vector no.    1; norm of residual   6.03D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -782,7 +794,7 @@ Point group: C2v
  Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    2)
- RSP solution vector no.    1; norm of residual   0.00D+00
+ RSP solution vector no.    1; norm of residual   5.53D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -922,7 +934,7 @@ Point group: C2v
 @omega B, omega C, QR value :     0.00000000     0.00000000    -0.00006410
 
  >>>> Total CPU  time used in RESPONSE:   0.02 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total wall time used in RESPONSE:   0.00 seconds
 
 
                    .-------------------------------------------.
@@ -933,5 +945,5 @@ Point group: C2v
  >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:57 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:31 2011 
      Host name              : fe6                                     

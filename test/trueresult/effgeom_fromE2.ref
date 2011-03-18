@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -405,7 +406,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -417,12 +418,12 @@ Represented as:      C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -458,32 +459,52 @@ Represented as:      C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198926083       6.48D-01  -1.11D+02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220534553       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009378
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398443       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007002
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441461       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449512       1.33D-04  -5.94D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225449514       3.99D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.48D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       1.51D-14   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.49D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       1.74D-14   2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -502,7 +523,7 @@ Represented as:      C2v
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 3)
+    E(LUMO) :     0.30614399 au (symmetry 2)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
@@ -510,20 +531,23 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449514136                 
+     Final HF energy:            -111.225449514137                 
      Nuclear repulsion:            22.174535444365
-     Electronic energy:          -133.399984958501
+     Electronic energy:          -133.399984958502
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -531,7 +555,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 C   :1s     0.0004   0.9936  -0.1238  -0.1696  -0.1651  -0.1224
    2 C   :1s    -0.0083   0.0262   0.2437   0.5589   0.7477   0.9374
    3 C   :2pz   -0.0071   0.0068   0.1659   0.0649  -0.5747   1.2059
@@ -542,14 +566,14 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C   :2px   -0.4456  -0.9291
    2 O   :2px   -0.7942   0.6565
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C   :2py   -0.4456  -0.9291
    2 O   :2py   -0.7942   0.6565
 
@@ -559,7 +583,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -724,18 +748,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -777,7 +795,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -789,12 +807,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -830,32 +848,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.199470430       6.44D-01   2.60D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006705
+      MULPOP  C       0.30; O      -0.30; 
+ -----------------------------------------------------------------------------
    2  -111.220935422       2.58D-01  -2.15D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009217
+      MULPOP  C       0.09; O      -0.09; 
+ -----------------------------------------------------------------------------
    3  -111.224351942       1.23D-01  -3.42D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.006919
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225362629       7.89D-03  -1.01D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007460
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225369459       2.33D-03  -6.83D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007400
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225369950       1.29D-04  -4.91D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225369952       1.62D-05  -2.37D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225369952       1.08D-06  -2.85D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225369952       3.51D-09  -8.53D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225369952       2.22D-12  -2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225369952       5.66D-15   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225369952       3.51D-09  -5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225369952       2.22D-12  -5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225369952       1.59D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -874,7 +912,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.54331994     0.30834612
 
-    E(LUMO) :     0.30834612 au (symmetry 2)
+    E(LUMO) :     0.30834612 au (symmetry 3)
   - E(HOMO) :    -0.44554561 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75389173 au
@@ -882,20 +920,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225369952367                 
+     Final HF energy:            -111.225369952368                 
      Nuclear repulsion:            22.277450468327
-     Electronic energy:          -133.502820420694
+     Electronic energy:          -133.502820420695
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -904,7 +945,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -946,18 +987,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -999,7 +1034,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1011,12 +1046,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1052,32 +1087,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198191279       6.53D-01   2.72D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006696
+      MULPOP  C       0.32; O      -0.32; 
+ -----------------------------------------------------------------------------
    2  -111.219932651       2.86D-01  -2.17D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009535
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224292454       1.26D-01  -4.36D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007082
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225362776       8.36D-03  -1.07D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007608
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225370967       2.76D-03  -8.19D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007550
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225371678       1.39D-04  -7.11D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225371681       1.86D-05  -2.47D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   8  -111.225371681       1.28D-06  -3.75D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225371681       4.48D-09  -8.53D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225371681       2.74D-12   2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225371681       1.13D-14  -5.68D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   8  -111.225371681       1.28D-06  -3.74D-11    5  1  1  0
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225371681       4.48D-09  -2.27D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225371681       2.75D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225371681       1.83D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1104,20 +1159,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225371680644                 
+     Final HF energy:            -111.225371680649                 
      Nuclear repulsion:            22.072566919883
-     Electronic energy:          -133.297938600527
+     Electronic energy:          -133.297938600532
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -1126,7 +1184,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -1168,18 +1226,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -1221,7 +1273,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1233,12 +1285,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1274,32 +1326,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198191279       6.53D-01   2.72D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006696
+      MULPOP  C       0.32; O      -0.32; 
+ -----------------------------------------------------------------------------
    2  -111.219932651       2.86D-01  -2.17D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009535
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224292454       1.26D-01  -4.36D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007082
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225362776       8.36D-03  -1.07D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007608
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225370967       2.76D-03  -8.19D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007550
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225371678       1.39D-04  -7.11D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225371681       1.86D-05  -2.47D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   8  -111.225371681       1.28D-06  -3.75D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225371681       4.48D-09  -8.53D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225371681       2.74D-12   2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225371681       1.13D-14  -5.68D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   8  -111.225371681       1.28D-06  -3.74D-11    5  1  1  0
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225371681       4.48D-09  -2.27D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225371681       2.75D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007558
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225371681       1.83D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1326,20 +1398,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225371680644                 
+     Final HF energy:            -111.225371680649                 
      Nuclear repulsion:            22.072566919883
-     Electronic energy:          -133.297938600527
+     Electronic energy:          -133.297938600532
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -1348,7 +1423,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:16 2011 
      Host name              : fe6                                     
 
 
@@ -1389,12 +1464,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -1443,7 +1512,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1455,12 +1524,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1496,32 +1565,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.199470430       6.44D-01   2.59D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006705
+      MULPOP  C       0.30; O      -0.30; 
+ -----------------------------------------------------------------------------
    2  -111.220935422       2.58D-01  -2.15D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009217
+      MULPOP  C       0.09; O      -0.09; 
+ -----------------------------------------------------------------------------
    3  -111.224351942       1.23D-01  -3.42D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.006919
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225362629       7.89D-03  -1.01D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007460
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225369459       2.33D-03  -6.83D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007400
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225369950       1.29D-04  -4.91D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225369952       1.62D-05  -2.37D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225369952       1.08D-06  -2.85D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225369952       3.51D-09  -8.53D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225369952       2.22D-12  -2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225369952       5.66D-15   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225369952       3.51D-09  -5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225369952       2.22D-12  -5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007406
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225369952       1.59D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1540,7 +1629,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.54331994     0.30834612
 
-    E(LUMO) :     0.30834612 au (symmetry 2)
+    E(LUMO) :     0.30834612 au (symmetry 3)
   - E(HOMO) :    -0.44554561 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75389173 au
@@ -1548,20 +1637,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225369952367                 
+     Final HF energy:            -111.225369952368                 
      Nuclear repulsion:            22.277450468327
-     Electronic energy:          -133.502820420694
+     Electronic energy:          -133.502820420695
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -1570,7 +1662,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -1612,12 +1704,6 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
@@ -1665,7 +1751,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1677,12 +1763,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1718,32 +1804,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198924604       6.48D-01   2.64D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220533394       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009379
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398372       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007003
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441459       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449511       1.33D-04  -5.95D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.49D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       1.83D-14  -5.68D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.48D-12   5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       2.10D-14  -2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1762,7 +1868,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53991691     0.30613893
 
-    E(LUMO) :     0.30613893 au (symmetry 2)
+    E(LUMO) :     0.30613893 au (symmetry 3)
   - E(HOMO) :    -0.44513079 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75126971 au
@@ -1770,20 +1876,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449513703                 
+     Final HF energy:            -111.225449513704                 
      Nuclear repulsion:            22.174298828332
-     Electronic energy:          -133.399748342035
+     Electronic energy:          -133.399748342036
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -1792,7 +1901,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -1834,12 +1943,6 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
@@ -1887,7 +1990,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1899,12 +2002,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1940,32 +2043,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198924604       6.48D-01   2.65D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220533394       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009379
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398372       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007003
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441459       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449511       1.33D-04  -5.95D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.49D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       1.83D-14  -5.68D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.48D-12   5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       2.10D-14  -2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1984,7 +2107,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53991691     0.30613893
 
-    E(LUMO) :     0.30613893 au (symmetry 2)
+    E(LUMO) :     0.30613893 au (symmetry 3)
   - E(HOMO) :    -0.44513079 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75126971 au
@@ -1992,20 +2115,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449513703                 
+     Final HF energy:            -111.225449513704                 
      Nuclear repulsion:            22.174298828332
-     Electronic energy:          -133.399748342035
+     Electronic energy:          -133.399748342036
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -2014,7 +2140,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:22 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -2056,19 +2182,13 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
  >>>> Total CPU  time used in HERMIT:   0.01 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -2109,7 +2229,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -2121,12 +2241,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -2162,32 +2282,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198926083       6.48D-01   2.65D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220534553       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009378
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398443       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007002
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441461       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449512       1.33D-04  -5.94D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225449514       3.99D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.48D-12   2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       1.04D-14   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.47D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       1.58D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2206,7 +2346,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 3)
+    E(LUMO) :     0.30614399 au (symmetry 2)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
@@ -2214,20 +2354,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449514136                 
+     Final HF energy:            -111.225449514137                 
      Nuclear repulsion:            22.174535444365
-     Electronic energy:          -133.399984958501
+     Electronic energy:          -133.399984958502
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -2236,7 +2379,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:17 2011 
      Host name              : fe6                                     
 
 
@@ -2278,18 +2421,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -2331,7 +2468,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -2343,12 +2480,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -2384,32 +2521,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.199818998       6.41D-01   2.56D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006700
+      MULPOP  C       0.30; O      -0.30; 
+ -----------------------------------------------------------------------------
    2  -111.221132491       2.45D-01  -2.13D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009052
+      MULPOP  C       0.10; O      -0.10; 
+ -----------------------------------------------------------------------------
    3  -111.224148107       1.21D-01  -3.02D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.006833
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225120990       7.73D-03  -9.73D-04    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007377
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225127297       2.13D-03  -6.31D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007317
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225127697       1.27D-04  -4.01D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007322
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225127700       1.52D-05  -2.35D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   8  -111.225127700       9.81D-07  -2.48D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225127700       3.05D-09  -1.14D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225127700       1.96D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225127700       1.18D-14  -2.84D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007322
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   8  -111.225127700       9.81D-07  -2.49D-11    5  1  1  0
+      Virial theorem: -V/T =      2.007322
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225127700       3.05D-09  -8.53D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007322
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225127700       1.96D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007322
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225127700       2.60D-14   2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2436,20 +2593,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225127699826                 
+     Final HF energy:            -111.225127699832                 
      Nuclear repulsion:            22.381325231716
-     Electronic energy:          -133.606452931542
+     Electronic energy:          -133.606452931547
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -2458,7 +2618,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -2500,18 +2660,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -2553,7 +2707,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -2565,12 +2719,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -2606,32 +2760,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.197271171       6.58D-01   2.79D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006683
+      MULPOP  C       0.32; O      -0.32; 
+ -----------------------------------------------------------------------------
    2  -111.219132187       3.00D-01  -2.19D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009688
+      MULPOP  C       0.07; O      -0.07; 
+ -----------------------------------------------------------------------------
    3  -111.224038615       1.27D-01  -4.91D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007159
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225131712       8.68D-03  -1.09D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007674
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225140751       2.98D-03  -9.04D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007617
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225141594       1.46D-04  -8.43D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007625
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225141597       1.98D-05  -2.56D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007625
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225141597       1.38D-06  -4.29D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225141597       4.97D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225141597       2.98D-12   0.00D+00    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225141597       1.14D-14   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007625
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225141597       4.97D-09  -1.42D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007625
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225141597       2.99D-12  -2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007625
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225141597       2.08D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2650,7 +2824,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53320606     0.30179879
 
-    E(LUMO) :     0.30179879 au (symmetry 3)
+    E(LUMO) :     0.30179879 au (symmetry 2)
   - E(HOMO) :    -0.44428220 au (symmetry 1)
   ------------------------------------------
     gap     :     0.74608099 au
@@ -2658,20 +2832,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225141596582                 
+     Final HF energy:            -111.225141596585                 
      Nuclear repulsion:            21.971531897354
-     Electronic energy:          -133.196673493936
+     Electronic energy:          -133.196673493939
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -2680,7 +2857,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -2722,18 +2899,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -2775,7 +2946,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -2787,12 +2958,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -2828,32 +2999,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198926083       6.48D-01   2.62D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220534553       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009378
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398443       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007002
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441461       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449512       1.33D-04  -5.94D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225449514       3.99D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.48D-12   2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       1.04D-14   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.47D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       1.58D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2872,7 +3063,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 3)
+    E(LUMO) :     0.30614399 au (symmetry 2)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
@@ -2880,20 +3071,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449514136                 
+     Final HF energy:            -111.225449514137                 
      Nuclear repulsion:            22.174535444365
-     Electronic energy:          -133.399984958501
+     Electronic energy:          -133.399984958502
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -2902,7 +3096,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -2943,12 +3137,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -2997,7 +3185,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -3009,12 +3197,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3050,32 +3238,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198926083       6.48D-01   2.65D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220534553       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009378
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398443       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007002
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441461       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449512       1.33D-04  -5.94D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
   10  -111.225449514       2.48D-12   0.00D+00    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       1.51D-14   2.84D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       2.03D-14   2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3094,7 +3302,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 3)
+    E(LUMO) :     0.30614399 au (symmetry 2)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
@@ -3102,20 +3310,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449514136                 
+     Final HF energy:            -111.225449514137                 
      Nuclear repulsion:            22.174535444365
-     Electronic energy:          -133.399984958501
+     Electronic energy:          -133.399984958502
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -3124,7 +3335,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:18 2011 
      Host name              : fe6                                     
 
 
@@ -3166,18 +3377,12 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -3219,7 +3424,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -3231,12 +3436,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3272,32 +3477,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198920158       6.49D-01   2.65D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220529908       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009380
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398154       1.25D-01  -3.87D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007003
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441447       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448910       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449505       1.33D-04  -5.95D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007486
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449507       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225449507       1.18D-06  -3.27D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    9  -111.225449507       3.99D-09  -1.14D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449507       2.49D-12  -2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449507       1.17D-14  -2.84D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449507       2.47D-12   0.00D+00    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449507       1.58D-14   2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3316,7 +3541,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53989346     0.30612374
 
-    E(LUMO) :     0.30612374 au (symmetry 2)
+    E(LUMO) :     0.30612374 au (symmetry 3)
   - E(HOMO) :    -0.44512789 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75125163 au
@@ -3324,7 +3549,10 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -3332,12 +3560,12 @@ Symmetry   1       1       3       3       3       3
 
      Final HF energy:            -111.225449507367                 
      Nuclear repulsion:            22.173589025678
-     Electronic energy:          -133.399038533044
+     Electronic energy:          -133.399038533045
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -3346,7 +3574,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -3377,12 +3605,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -3431,7 +3653,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -3443,12 +3665,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3484,32 +3706,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198926083       6.48D-01   2.65D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220534553       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009378
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398443       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007002
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441461       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449512       1.33D-04  -5.94D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   8  -111.225449514       1.18D-06  -3.26D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225449514       3.99D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.47D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       9.86D-15  -2.84D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.47D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       1.69D-14  -2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3528,7 +3770,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 3)
+    E(LUMO) :     0.30614399 au (symmetry 2)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
@@ -3536,20 +3778,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449514136                 
+     Final HF energy:            -111.225449514137                 
      Nuclear repulsion:            22.174535444365
-     Electronic energy:          -133.399984958501
+     Electronic energy:          -133.399984958502
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -3558,7 +3803,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -3583,15 +3828,15 @@ Symmetry   1       1       3       3       3       3
                         Gradient in cartesian coordinates
                         ---------------------------------
 
- C          0.0000000000            0.0000000000            0.0000864138
- O          0.0000000000            0.0000000000           -0.0000864138
+ C          0.0000000000            0.0000000000            0.0000864141
+ O          0.0000000000            0.0000000000           -0.0000864141
 
 
                      Gradient in Dalton symmetry coordinates
                      ---------------------------------------
 
-                         C    z     0.0000864138
-                         O    z    -0.0000864138
+                         C    z     0.0000864141
+                         O    z    -0.0000864141
 
 
                     Numerical hessian in symmetry coordinates
@@ -3713,12 +3958,6 @@ Symmetry   1       1       3       3       3       3
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         512 ( 33.2% )
@@ -3766,7 +4005,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -3778,12 +4017,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3819,32 +4058,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.199633666       6.43D-01   2.58D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.30; O      -0.30; 
+ -----------------------------------------------------------------------------
    2  -111.221038877       2.53D-01  -2.14D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009152
+      MULPOP  C       0.09; O      -0.09; 
+ -----------------------------------------------------------------------------
    3  -111.224289561       1.22D-01  -3.25D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.006885
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225285804       7.82D-03  -9.96D-04    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007427
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225292413       2.25D-03  -6.61D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007367
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225292866       1.28D-04  -4.53D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007374
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225292868       1.58D-05  -2.36D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007373
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.225292868       1.04D-06  -2.70D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225292868       3.32D-09  -8.53D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225292868       2.11D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225292868       7.43D-15  -2.84D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007373
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225292868       3.32D-09  -5.68D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007373
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225292868       2.12D-12   0.00D+00    5  1  1  0
+      Virial theorem: -V/T =      2.007373
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225292868       2.10D-14  -5.68D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3863,7 +4122,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.54468487     0.30923262
 
-    E(LUMO) :     0.30923262 au (symmetry 2)
+    E(LUMO) :     0.30923262 au (symmetry 3)
   - E(HOMO) :    -0.44570926 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75494187 au
@@ -3871,20 +4130,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225292868345                 
-     Nuclear repulsion:            22.318887960581
-     Electronic energy:          -133.544180828926
+     Final HF energy:            -111.225292868346                 
+     Nuclear repulsion:            22.318887960609
+     Electronic energy:          -133.544180828955
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -3893,7 +4155,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:23 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -3934,12 +4196,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -3988,7 +4244,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -4000,12 +4256,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -4041,32 +4297,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.197845159       6.55D-01   2.74D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006692
+      MULPOP  C       0.32; O      -0.32; 
+ -----------------------------------------------------------------------------
    2  -111.219636138       2.92D-01  -2.18D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009597
+      MULPOP  C       0.07; O      -0.07; 
+ -----------------------------------------------------------------------------
    3  -111.224208399       1.27D-01  -4.57D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007113
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225288346       8.48D-03  -1.08D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007635
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225296862       2.84D-03  -8.52D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007577
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225297624       1.41D-04  -7.62D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007585
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225297627       1.91D-05  -2.50D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   8  -111.225297627       1.32D-06  -3.96D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007585
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   8  -111.225297627       1.32D-06  -3.95D-11    5  1  1  0
+      Virial theorem: -V/T =      2.007585
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    9  -111.225297627       4.68D-09  -1.42D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225297627       2.83D-12   2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225297627       1.45D-14   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007585
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225297627       2.84D-12   0.00D+00    5  1  1  0
+      Virial theorem: -V/T =      2.007585
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225297627       1.90D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4093,20 +4369,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225297626678                 
-     Nuclear repulsion:            22.032038194663
-     Electronic energy:          -133.257335821342
+     Final HF energy:            -111.225297626683                 
+     Nuclear repulsion:            22.032038194636
+     Electronic energy:          -133.257335821319
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -4115,7 +4394,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:19 2011 
      Host name              : fe6                                     
 
 
@@ -4156,12 +4435,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -4210,7 +4483,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -4222,12 +4495,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -4263,32 +4536,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.199953215       6.38D-01   2.53D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006692
+      MULPOP  C       0.29; O      -0.29; 
+ -----------------------------------------------------------------------------
    2  -111.221141362       2.35D-01  -2.12D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.008916
+      MULPOP  C       0.10; O      -0.10; 
+ -----------------------------------------------------------------------------
    3  -111.223868314       1.19D-01  -2.73D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.006761
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.224806771       7.66D-03  -9.38D-04    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007307
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.224812732       1.97D-03  -5.96D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007246
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.224813069       1.26D-04  -3.37D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007251
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.224813072       1.44D-05  -2.33D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007251
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.224813072       9.06D-07  -2.23D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.224813072       2.69D-09  -8.53D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.224813072       1.74D-12   2.84D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.224813072       1.12D-14   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007251
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.224813072       2.69D-09  -2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007251
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.224813072       1.74D-12  -2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007251
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.224813072       1.67D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4315,20 +4608,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.224813071598                 
-     Nuclear repulsion:            22.465132213149
-     Electronic energy:          -133.689945284748
+     Final HF energy:            -111.224813071599                 
+     Nuclear repulsion:            22.465132213206
+     Electronic energy:          -133.689945284806
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4337,7 +4633,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4378,12 +4674,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -4432,7 +4722,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -4444,12 +4734,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -4485,32 +4775,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.196404949       6.62D-01   2.84D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006669
+      MULPOP  C       0.33; O      -0.33; 
+ -----------------------------------------------------------------------------
    2  -111.218350252       3.12D-01  -2.19D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009807
+      MULPOP  C       0.06; O      -0.06; 
+ -----------------------------------------------------------------------------
    3  -111.223732067       1.28D-01  -5.38D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007217
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.224840477       8.96D-03  -1.11D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007724
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.224850281       3.16D-03  -9.80D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007667
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.224851241       1.52D-04  -9.61D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007676
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.224851244       2.09D-05  -2.64D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007675
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    8  -111.224851244       1.46D-06  -4.77D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007675
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    9  -111.224851244       5.36D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.224851244       3.17D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.224851244       9.74D-15   0.00D+00    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007675
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.224851244       3.19D-12   0.00D+00    5  1  1  0
+      Virial theorem: -V/T =      2.007675
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.224851244       2.36D-14   0.00D+00    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4537,20 +4847,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.224851244150                 
-     Nuclear repulsion:            21.891360673100
-     Electronic energy:          -133.116211917249
+     Final HF energy:            -111.224851244149                 
+     Nuclear repulsion:            21.891360673046
+     Electronic energy:          -133.116211917195
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4559,7 +4872,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4590,12 +4903,6 @@ Symmetry   1       1       3       3       3       3
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -4644,7 +4951,7 @@ Symmetry   1       1       3       3       3       3
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -4656,12 +4963,12 @@ Symmetry   1       1       3       3       3       3
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -4697,32 +5004,52 @@ Symmetry   1       1       3       3       3       3
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -111.198926083       6.48D-01   2.59D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.02; 
+      Virial theorem: -V/T =      2.006703
+      MULPOP  C       0.31; O      -0.31; 
+ -----------------------------------------------------------------------------
    2  -111.220534553       2.72D-01  -2.16D-02    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.009378
+      MULPOP  C       0.08; O      -0.08; 
+ -----------------------------------------------------------------------------
    3  -111.224398443       1.25D-01  -3.86D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007002
+      MULPOP  C       0.25; O      -0.25; 
+ -----------------------------------------------------------------------------
    4  -111.225441461       8.10D-03  -1.04D-03    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007537
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    5  -111.225448917       2.54D-03  -7.46D-06    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007478
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    6  -111.225449512       1.33D-04  -5.94D-07    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
    7  -111.225449514       1.74D-05  -2.41D-09    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   8  -111.225449514       1.18D-06  -3.26D-11    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-   9  -111.225449514       3.99D-09  -1.71D-13    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  10  -111.225449514       2.47D-12   5.68D-14    5  1  1  0
-      MULPOP C    -0.00; O    -0.03; 
-  11  -111.225449514       9.86D-15  -2.84D-14    5  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   8  -111.225449514       1.18D-06  -3.27D-11    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+   9  -111.225449514       3.99D-09  -1.42D-13    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  10  -111.225449514       2.47D-12   2.84D-14    5  1  1  0
+      Virial theorem: -V/T =      2.007485
+      MULPOP  C       0.20; O      -0.20; 
+ -----------------------------------------------------------------------------
+  11  -111.225449514       1.69D-14  -2.84D-14    5  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4741,7 +5068,7 @@ Symmetry   1       1       3       3       3       3
 
   3     -0.53992472     0.30614399
 
-    E(LUMO) :     0.30614399 au (symmetry 3)
+    E(LUMO) :     0.30614399 au (symmetry 2)
   - E(HOMO) :    -0.44513175 au (symmetry 1)
   ------------------------------------------
     gap     :     0.75127574 au
@@ -4749,20 +5076,23 @@ Symmetry   1       1       3       3       3       3
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -111.225449514136                 
+     Final HF energy:            -111.225449514137                 
      Nuclear repulsion:            22.174535444365
-     Electronic energy:          -133.399984958501
+     Electronic energy:          -133.399984958502
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4771,7 +5101,7 @@ Symmetry   1       1       3       3       3       3
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4795,15 +5125,15 @@ Symmetry   1       1       3       3       3       3
                         Gradient in cartesian coordinates
                         ---------------------------------
 
- C          0.0000000000            0.0000000000            0.0001903092
- O          0.0000000000            0.0000000000           -0.0001427822
+ C          0.0000000000            0.0000000000            0.0001903094
+ O          0.0000000000            0.0000000000           -0.0001427823
 
 
                      Gradient in Dalton symmetry coordinates
                      ---------------------------------------
 
-                         C    z     0.0001903092
-                         O    z    -0.0001427822
+                         C    z     0.0001903094
+                         O    z    -0.0001427823
 
 
                      Numerical hessian in normal coordinates
@@ -4827,7 +5157,7 @@ Symmetry   1       1       3       3       3       3
                      Diagonal of cubic force field, F(I,J,J)
                      ---------------------------------------
 
-        14.327942
+        14.327938
                                   
 
 
@@ -4870,8 +5200,8 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
                             Cartesian coordinates (au)
                             --------------------------
 
- C          0.0000000000            0.0000000000           -0.0033776818
- O          0.0000000000            0.0000000000            0.0025341533
+ C          0.0000000000            0.0000000000           -0.0033776808
+ O          0.0000000000            0.0000000000            0.0025341526
 
 
                           +------------------------------+
@@ -4883,8 +5213,8 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
                             Cartesian coordinates (au)
                             --------------------------
 
- C          0.0000000000            0.0000000000           -1.2401492435
- O          0.0000000000            0.0000000000            0.9304077144
+ C          0.0000000000            0.0000000000           -1.2401492425
+ O          0.0000000000            0.0000000000            0.9304077137
 
 
                           .-----------------------------.
@@ -4901,7 +5231,7 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4911,7 +5241,7 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     
 
 
@@ -4931,18 +5261,18 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -111.2254495141 au (Hartrees)
-                         -3026.59835477 eV
-                           -292022.3758 kJ/mol
+                         -3026.59844065 eV
+                           -292022.3727 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1690612594 au
-     Mass-velocity correction:                  -0.2171637223 au
+     Darwin correction:                          0.1690612580 au
+     Mass-velocity correction:                  -0.2171637205 au
 
-     Total relativistic correction:             -0.0481024629 au (0.0432%)
-     Non-relativistic + relativistic energy:  -111.2735519771 au
+     Total relativistic correction:             -0.0481024626 au (0.0432%)
+     Non-relativistic + relativistic energy:  -111.2735519767 au
 
 
 
@@ -4959,7 +5289,7 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.04893218         0.12437318         0.41486426
+      z      0.04893218         0.12437318         0.41486428
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -5005,9 +5335,9 @@ Normal mode:    1   Frequency:    0.0112   Displacement:   -0.0155
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.41 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.44 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:20 2011 
      Host name              : fe6                                     

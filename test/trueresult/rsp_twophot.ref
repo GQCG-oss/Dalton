@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:15:37 2010 
+     Date and time (Linux)  : Wed Mar 16 18:40:55 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -204,26 +205,26 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                            C1  1     12.000000
-                            C1  2     12.000000
-                            C2  1     12.000000
-                            C2  2     12.000000
-                            C3  1     12.000000
-                            C3  2     12.000000
-                            C3  3     12.000000
-                            C3  4     12.000000
-                            C4  1     12.000000
-                            C4  2     12.000000
-                            C4  3     12.000000
-                            C4  4     12.000000
-                            H1  1      1.007825
-                            H1  2      1.007825
-                            H1  3      1.007825
-                            H1  4      1.007825
-                            H2  1      1.007825
-                            H2  2      1.007825
-                            H2  3      1.007825
-                            H2  4      1.007825
+                            C1 _1     12.000000
+                            C1 _2     12.000000
+                            C2 _1     12.000000
+                            C2 _2     12.000000
+                            C3 _1     12.000000
+                            C3 _2     12.000000
+                            C3 _3     12.000000
+                            C3 _4     12.000000
+                            C4 _1     12.000000
+                            C4 _2     12.000000
+                            C4 _3     12.000000
+                            C4 _4     12.000000
+                            H1 _1      1.007825
+                            H1 _2      1.007825
+                            H1 _3      1.007825
+                            H1 _4      1.007825
+                            H2 _1      1.007825
+                            H2 _2      1.007825
+                            H2 _3      1.007825
+                            H2 _4      1.007825
 
                        Total mass:   152.062600 amu
                        Natural abundance:  87.465 %
@@ -256,7 +257,7 @@ Point group: D2h
   Number of coordinates in each symmetry:    10   10   10   10    6    6    4    4
 
   Max interatomic separation is   10.4237 Angstrom (   19.6979 Bohr)
-  between atoms   19 and   18, " H2  3" and " H2  2".
+  between atoms   19 and   18, " H2 _3" and " H2 _2".
 
 
   Bond distances (Angstrom):
@@ -264,27 +265,27 @@ Point group: D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:   C1  2      C1  1       1.257847
-  bond distance:   C2  1      C1  1       1.311498
-  bond distance:   C2  2      C1  2       1.311498
-  bond distance:   C3  1      C2  1       1.479069
-  bond distance:   C3  2      C2  2       1.479069
-  bond distance:   C3  3      C2  1       1.479069
-  bond distance:   C3  4      C2  2       1.479069
-  bond distance:   C4  1      C3  1       1.363780
-  bond distance:   C4  2      C3  2       1.363780
-  bond distance:   C4  3      C3  3       1.363780
-  bond distance:   C4  3      C4  1       1.457033
-  bond distance:   C4  4      C3  4       1.363780
-  bond distance:   C4  4      C4  2       1.457033
-  bond distance:   H1  1      C3  1       1.087844
-  bond distance:   H1  2      C3  2       1.087844
-  bond distance:   H1  3      C3  3       1.087844
-  bond distance:   H1  4      C3  4       1.087844
-  bond distance:   H2  1      C4  1       1.088725
-  bond distance:   H2  2      C4  2       1.088725
-  bond distance:   H2  3      C4  3       1.088725
-  bond distance:   H2  4      C4  4       1.088725
+  bond distance:   C1 _2      C1 _1       1.257847
+  bond distance:   C2 _1      C1 _1       1.311498
+  bond distance:   C2 _2      C1 _2       1.311498
+  bond distance:   C3 _1      C2 _1       1.479069
+  bond distance:   C3 _2      C2 _2       1.479069
+  bond distance:   C3 _3      C2 _1       1.479069
+  bond distance:   C3 _4      C2 _2       1.479069
+  bond distance:   C4 _1      C3 _1       1.363780
+  bond distance:   C4 _2      C3 _2       1.363780
+  bond distance:   C4 _3      C3 _3       1.363780
+  bond distance:   C4 _3      C4 _1       1.457033
+  bond distance:   C4 _4      C3 _4       1.363780
+  bond distance:   C4 _4      C4 _2       1.457033
+  bond distance:   H1 _1      C3 _1       1.087844
+  bond distance:   H1 _2      C3 _2       1.087844
+  bond distance:   H1 _3      C3 _3       1.087844
+  bond distance:   H1 _4      C3 _4       1.087844
+  bond distance:   H2 _1      C4 _1       1.088725
+  bond distance:   H2 _2      C4 _2       1.088725
+  bond distance:   H2 _3      C4 _3       1.088725
+  bond distance:   H2 _4      C4 _4       1.088725
 
 
   Bond angles (degrees):
@@ -292,38 +293,38 @@ Point group: D2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:      C1  2      C1  1      C2  1       180.000
-  bond angle:      C1  1      C1  2      C2  2       180.000
-  bond angle:      C1  1      C2  1      C3  1       127.447
-  bond angle:      C1  1      C2  1      C3  3       127.447
-  bond angle:      C3  1      C2  1      C3  3       105.106
-  bond angle:      C1  2      C2  2      C3  2       127.447
-  bond angle:      C1  2      C2  2      C3  4       127.447
-  bond angle:      C3  2      C2  2      C3  4       105.106
-  bond angle:      C2  1      C3  1      C4  1       108.370
-  bond angle:      C2  1      C3  1      H1  1       122.825
-  bond angle:      C4  1      C3  1      H1  1       128.805
-  bond angle:      C2  2      C3  2      C4  2       108.370
-  bond angle:      C2  2      C3  2      H1  2       122.825
-  bond angle:      C4  2      C3  2      H1  2       128.805
-  bond angle:      C2  1      C3  3      C4  3       108.370
-  bond angle:      C2  1      C3  3      H1  3       122.825
-  bond angle:      C4  3      C3  3      H1  3       128.805
-  bond angle:      C2  2      C3  4      C4  4       108.370
-  bond angle:      C2  2      C3  4      H1  4       122.825
-  bond angle:      C4  4      C3  4      H1  4       128.805
-  bond angle:      C3  1      C4  1      C4  3       109.077
-  bond angle:      C3  1      C4  1      H2  1       127.893
-  bond angle:      C4  3      C4  1      H2  1       123.030
-  bond angle:      C3  2      C4  2      C4  4       109.077
-  bond angle:      C3  2      C4  2      H2  2       127.893
-  bond angle:      C4  4      C4  2      H2  2       123.030
-  bond angle:      C3  3      C4  3      C4  1       109.077
-  bond angle:      C3  3      C4  3      H2  3       127.893
-  bond angle:      C4  1      C4  3      H2  3       123.030
-  bond angle:      C3  4      C4  4      C4  2       109.077
-  bond angle:      C3  4      C4  4      H2  4       127.893
-  bond angle:      C4  2      C4  4      H2  4       123.030
+  bond angle:      C1 _2      C1 _1      C2 _1       180.000
+  bond angle:      C1 _1      C1 _2      C2 _2       180.000
+  bond angle:      C1 _1      C2 _1      C3 _1       127.447
+  bond angle:      C1 _1      C2 _1      C3 _3       127.447
+  bond angle:      C3 _1      C2 _1      C3 _3       105.106
+  bond angle:      C1 _2      C2 _2      C3 _2       127.447
+  bond angle:      C1 _2      C2 _2      C3 _4       127.447
+  bond angle:      C3 _2      C2 _2      C3 _4       105.106
+  bond angle:      C2 _1      C3 _1      C4 _1       108.370
+  bond angle:      C2 _1      C3 _1      H1 _1       122.825
+  bond angle:      C4 _1      C3 _1      H1 _1       128.805
+  bond angle:      C2 _2      C3 _2      C4 _2       108.370
+  bond angle:      C2 _2      C3 _2      H1 _2       122.825
+  bond angle:      C4 _2      C3 _2      H1 _2       128.805
+  bond angle:      C2 _1      C3 _3      C4 _3       108.370
+  bond angle:      C2 _1      C3 _3      H1 _3       122.825
+  bond angle:      C4 _3      C3 _3      H1 _3       128.805
+  bond angle:      C2 _2      C3 _4      C4 _4       108.370
+  bond angle:      C2 _2      C3 _4      H1 _4       122.825
+  bond angle:      C4 _4      C3 _4      H1 _4       128.805
+  bond angle:      C3 _1      C4 _1      C4 _3       109.077
+  bond angle:      C3 _1      C4 _1      H2 _1       127.893
+  bond angle:      C4 _3      C4 _1      H2 _1       123.030
+  bond angle:      C3 _2      C4 _2      C4 _4       109.077
+  bond angle:      C3 _2      C4 _2      H2 _2       127.893
+  bond angle:      C4 _4      C4 _2      H2 _2       123.030
+  bond angle:      C3 _3      C4 _3      C4 _1       109.077
+  bond angle:      C3 _3      C4 _3      H2 _3       127.893
+  bond angle:      C4 _1      C4 _3      H2 _3       123.030
+  bond angle:      C3 _4      C4 _4      C4 _2       109.077
+  bond angle:      C3 _4      C4 _4      H2 _4       127.893
+  bond angle:      C4 _2      C4 _4      H2 _4       123.030
 
 
 
@@ -347,7 +348,7 @@ Point group: D2h
             0.142635            0.011770            0.010873 cm-1
 
 
-@  Nuclear repulsion energy :  534.957828329665
+@  Nuclear repulsion energy :  534.957830856974
 
 
   Symmetry Orbitals
@@ -533,7 +534,7 @@ Point group: D2h
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
 
@@ -552,9 +553,9 @@ Point group: D2h
  Number of two-electron integrals written:     4209303 ( 14.0% )
  Megabytes written:                             48.202
 
- >>> Time used in TWOINT is   1.51 seconds
- >>>> Total CPU  time used in HERMIT:   1.55 seconds
- >>>> Total wall time used in HERMIT:   2.00 seconds
+ >>> Time used in TWOINT is   1.77 seconds
+ >>>> Total CPU  time used in HERMIT:   1.83 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 
                         .----------------------------------.
@@ -613,7 +614,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:15:40 2010 
+     Date and time (Linux)  : Wed Mar 16 18:40:58 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -625,7 +626,6 @@ Point group: D2h
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
      Time-dependent Hartree-Fock calculation (random phase approximation).
 
 
@@ -634,6 +634,7 @@ Point group: D2h
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         80
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -669,35 +670,68 @@ Point group: D2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
  >>> Time used in FORMSUP is   0.16 seconds
-   1  -455.003002991       5.36D+00  -4.55D+02   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   2  -456.251586512       1.15D+00  -1.25D+00   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   3  -456.330196432       3.76D-01  -7.86D-02   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   4  -456.339908561       1.09D-01  -9.71D-03   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   5  -456.340947126       2.90D-02  -1.04D-03   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   6  -456.341078480       7.07D-03  -1.31D-04   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   7  -456.341087857       4.09D-03  -9.38D-06   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   8  -456.341090915       8.41D-04  -3.06D-06   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-   9  -456.341091072       2.26D-04  -1.57D-07   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-  10  -456.341091080       5.46D-05  -8.53D-09   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-  11  -456.341091081       1.34D-05  -4.23D-10   11 10  7  6  2  2  1  1
-      MULPOP  C1 ******;  C2 ******;  C3 ******;  C4 ******;  H1 ******;  H2 ******; 
-  12  -456.341091081       3.15D-06  -3.25D-11   11 10  7  6  2  2  1  1
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+   1  -455.003002974       5.36D+00  -4.55D+02   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.010306
+      MULPOP   C1 _1  0.03;  C1 _2  0.03;  C2 _1  0.43;  C2 _2  0.43;  C3 _1  0.00;  C3 _2  0.00;  C3 _3  0.00;  C3 _4  0.00;  C4 _1  0.21;  C4 _2  0.21; 
+               C4 _3  0.21;  C4 _4  0.21;  H1 _1 -0.22;  H1 _2 -0.22;  H1 _3 -0.22;  H1 _4 -0.22;  H2 _1 -0.22;  H2 _2 -0.22;  H2 _3 -0.22;  H2 _4 -0.22; 
+ -----------------------------------------------------------------------------
+   2  -456.251586513       1.15D+00  -1.25D+00   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      1.997775
+      MULPOP   C1 _1 -0.01;  C1 _2 -0.01;  C2 _1 -0.21;  C2 _2 -0.21;  C3 _1 -0.14;  C3 _2 -0.14;  C3 _3 -0.14;  C3 _4 -0.14;  C4 _1 -0.22;  C4 _2 -0.22; 
+               C4 _3 -0.22;  C4 _4 -0.22;  H1 _1  0.23;  H1 _2  0.23;  H1 _3  0.23;  H1 _4  0.23;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+   3  -456.330196435       3.76D-01  -7.86D-02   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.004486
+      MULPOP   C1 _1 -0.25;  C1 _2 -0.25;  C2 _1  0.14;  C2 _2  0.14;  C3 _1 -0.16;  C3 _2 -0.16;  C3 _3 -0.16;  C3 _4 -0.16;  C4 _1 -0.21;  C4 _2 -0.21; 
+               C4 _3 -0.21;  C4 _4 -0.21;  H1 _1  0.21;  H1 _2  0.21;  H1 _3  0.21;  H1 _4  0.21;  H2 _1  0.21;  H2 _2  0.21;  H2 _3  0.21;  H2 _4  0.21; 
+ -----------------------------------------------------------------------------
+   4  -456.339908563       1.09D-01  -9.71D-03   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003263
+      MULPOP   C1 _1 -0.14;  C1 _2 -0.14;  C2 _1  0.01;  C2 _2  0.01;  C3 _1 -0.18;  C3 _2 -0.18;  C3 _3 -0.18;  C3 _4 -0.18;  C4 _1 -0.23;  C4 _2 -0.23; 
+               C4 _3 -0.23;  C4 _4 -0.23;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+   5  -456.340947129       2.90D-02  -1.04D-03   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003165
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.18;  C3 _2 -0.18;  C3 _3 -0.18;  C3 _4 -0.18;  C4 _1 -0.23;  C4 _2 -0.23; 
+               C4 _3 -0.23;  C4 _4 -0.23;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+   6  -456.341078483       7.07D-03  -1.31D-04   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003158
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.18;  C3 _2 -0.18;  C3 _3 -0.18;  C3 _4 -0.18;  C4 _1 -0.24;  C4 _2 -0.24; 
+               C4 _3 -0.24;  C4 _4 -0.24;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+   7  -456.341087860       4.09D-03  -9.38D-06   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003161
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.19;  C3 _2 -0.19;  C3 _3 -0.19;  C3 _4 -0.19;  C4 _1 -0.24;  C4 _2 -0.24; 
+               C4 _3 -0.24;  C4 _4 -0.24;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+   8  -456.341090918       8.41D-04  -3.06D-06   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003160
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.19;  C3 _2 -0.19;  C3 _3 -0.19;  C3 _4 -0.19;  C4 _1 -0.24;  C4 _2 -0.24; 
+               C4 _3 -0.24;  C4 _4 -0.24;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+   9  -456.341091074       2.26D-04  -1.57D-07   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003160
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.19;  C3 _2 -0.19;  C3 _3 -0.19;  C3 _4 -0.19;  C4 _1 -0.24;  C4 _2 -0.24; 
+               C4 _3 -0.24;  C4 _4 -0.24;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+  10  -456.341091083       5.46D-05  -8.53D-09   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003160
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.19;  C3 _2 -0.19;  C3 _3 -0.19;  C3 _4 -0.19;  C4 _1 -0.24;  C4 _2 -0.24; 
+               C4 _3 -0.24;  C4 _4 -0.24;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+  11  -456.341091083       1.34D-05  -4.26D-10   11 10  7  6  2  2  1  1
+      Virial theorem: -V/T =      2.003160
+      MULPOP   C1 _1 -0.18;  C1 _2 -0.18;  C2 _1  0.04;  C2 _2  0.04;  C3 _1 -0.19;  C3 _2 -0.19;  C3 _3 -0.19;  C3 _4 -0.19;  C4 _1 -0.24;  C4 _2 -0.24; 
+               C4 _3 -0.24;  C4 _4 -0.24;  H1 _1  0.24;  H1 _2  0.24;  H1 _3  0.24;  H1 _4  0.24;  H2 _1  0.24;  H2 _2  0.24;  H2 _3  0.24;  H2 _4  0.24; 
+ -----------------------------------------------------------------------------
+  12  -456.341091083       3.15D-06  -2.92D-11   11 10  7  6  2  2  1  1
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -709,32 +743,32 @@ Point group: D2h
 
  Sym       Hartree-Fock orbital energies
 
-  1    -11.22974443   -11.22253295   -11.18967574   -11.18696973    -1.18092452
-        -1.09042826    -0.93431950    -0.79131779    -0.71754235    -0.59481384
-        -0.52972402     0.27994840     0.34164956     0.42931850     0.55398829
+  1    -11.22974443   -11.22253295   -11.18967574   -11.18696972    -1.18092453
+        -1.09042827    -0.93431950    -0.79131779    -0.71754236    -0.59481385
+        -0.52972402     0.27994840     0.34164956     0.42931850     0.55398830
          0.69269750
 
-  2    -11.22909119   -11.22255144   -11.18970490   -11.18699239    -1.17509034
-        -1.01746725    -0.82829016    -0.71929095    -0.60608083    -0.52975330
-         0.27882391     0.34280629     0.42280906     0.48732708     0.59244603
+  2    -11.22909119   -11.22255143   -11.18970490   -11.18699239    -1.17509034
+        -1.01746725    -0.82829017    -0.71929096    -0.60608083    -0.52975330
+         0.27882392     0.34280629     0.42280906     0.48732709     0.59244604
 
   3    -11.19009179   -11.18721878    -0.97282082    -0.74767274    -0.57405757
-        -0.55928447    -0.38779333     0.33919167     0.34656323     0.42324910
+        -0.55928448    -0.38779334     0.33919167     0.34656323     0.42324910
          0.63077225     0.67252443
 
-  4    -11.19011603   -11.18724084    -0.97244060    -0.74343934    -0.57268859
+  4    -11.19011603   -11.18724083    -0.97244060    -0.74343934    -0.57268859
         -0.53361841     0.16819853     0.34181530     0.34723492     0.46567385
          0.63159723
 
-  5     -0.54616873    -0.42824022    -0.00698535     0.25743760     0.92104133
+  5     -0.54616874    -0.42824023    -0.00698535     0.25743761     0.92104133
          0.99421629     1.09619918
 
-  6     -0.51056037    -0.30858330     0.13562491     0.41650400     0.96800636
-         1.03911610     1.13391593
+  6     -0.51056037    -0.30858330     0.13562491     0.41650401     0.96800636
+         1.03911610     1.13391594
 
-  7     -0.31442601     0.25160328     1.04510208     1.10835846
+  7     -0.31442601     0.25160329     1.04510208     1.10835846
 
-  8     -0.31440243     0.25143235     1.04514301     1.10840463
+  8     -0.31440243     0.25143236     1.04514301     1.10840463
 
     E(LUMO) :    -0.00698535 au (symmetry 5)
   - E(HOMO) :    -0.30858330 au (symmetry 6)
@@ -744,20 +778,23 @@ Point group: D2h
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -456.341091080926                 
-     Nuclear repulsion:           534.957828329665
-     Electronic energy:          -991.298919410591
+     Final HF energy:            -456.341091083410                 
+     Nuclear repulsion:           534.957830856974
+     Electronic energy:          -991.298921940384
 
      Final gradient norm:           0.000003152851
 
  
-     Date and time (Linux)  : Wed Dec 29 22:15:41 2010 
+     Date and time (Linux)  : Wed Mar 16 18:40:59 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -765,7 +802,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           7        8        9       10       11       12       13
+    Orbital         7        8        9       10       11       12       13
    1  C1 :1s     0.0701  -0.0039  -0.0014   0.0222  -0.0000  -0.0093  -0.0029
    2  C1 :1s    -0.0838   0.0026   0.0023  -0.0272   0.0018  -0.0053   0.0129
    3  C1 :1s    -0.1170  -0.0014  -0.0340  -0.0545  -0.0531   0.0698   0.1440
@@ -798,7 +835,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           6        7        8        9       10       11       12
+    Orbital         6        7        8        9       10       11       12
    1  C1 :1s    -0.0770   0.0667  -0.0141  -0.0501   0.0018  -0.0283  -0.0045
    2  C1 :1s     0.0933  -0.0801   0.0157   0.0606  -0.0012   0.0205   0.0105
    3  C1 :1s     0.0432  -0.1022   0.0917   0.0532  -0.0143   0.2730  -0.0441
@@ -831,7 +868,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           3        4        5        6        7        8        9
+    Orbital         3        4        5        6        7        8        9
    1  C1 :2py    0.0170  -0.0585   0.0548  -0.1563  -0.3018  -0.0302   0.0241
    2  C1 :2py    0.0085  -0.0342   0.0483  -0.1197  -0.3399   0.0393  -0.0083
    3  C2 :2py    0.0807  -0.1399   0.0271  -0.1901   0.1137  -0.0207  -0.0119
@@ -858,7 +895,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           2        3        4        5        6        7        8
+    Orbital         2        3        4        5        6        7        8
    1  C1 :2py   -0.0000   0.0110  -0.0268   0.0032  -0.0529   0.3177  -0.0119
    2  C1 :2py   -0.0062   0.0035   0.0020   0.0064  -0.0018   0.5593   0.0645
    3  C2 :2py   -0.0007   0.0795  -0.1348  -0.0151  -0.2249   0.0372  -0.0135
@@ -885,7 +922,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1  C1 :2pz    0.1982  -0.2053  -0.1739  -0.0886
    2  C1 :2pz    0.1616  -0.1957  -0.2483  -0.2410
    3  C2 :2pz    0.1770  -0.0683   0.1773   0.2513
@@ -898,7 +935,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1  C1 :2pz    0.0673   0.1583  -0.1813   0.2955
    2  C1 :2pz    0.0673   0.2184  -0.3202   0.8978
    3  C2 :2pz    0.1523   0.2247  -0.0446  -0.2580
@@ -911,7 +948,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1  C3 :2pz    0.1957  -0.1300  -0.4601
    2  C3 :2pz    0.2482  -0.3597   0.4091
    3  C4 :2pz    0.1376   0.1978  -0.2964
@@ -920,7 +957,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1  C3 :2pz    0.1957  -0.1299  -0.4599
    2  C3 :2pz    0.2482  -0.3597   0.4088
    3  C4 :2pz    0.1376   0.1978  -0.2967
@@ -928,11 +965,11 @@ Point group: D2h
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.41 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.40 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:15:41 2010 
+     Date and time (Linux)  : Wed Mar 16 18:40:59 2011 
      Host name              : fe6                                     
 
 
@@ -1001,9 +1038,9 @@ Point group: D2h
           ZDIPLEN 
 
 
-   SCF energy         :     -456.341091080926049
- -- inactive part     :     -991.298919410591452
- -- nuclear repulsion :      534.957828329665404
+   SCF energy         :     -456.341091083409879
+ -- inactive part     :     -991.298921940384048
+ -- nuclear repulsion :      534.957830856974169
 
 
                      ***************************************
@@ -1069,112 +1106,112 @@ Point group: D2h
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after    5 linear transformations is    -38.80903962
+ after    5 linear transformations is    -38.80903610
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -4.99 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   10 linear transformations is   -719.20092435
+ after   10 linear transformations is   -719.20090165
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -5.17 * 10 ** -1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   10 linear transformations is   -527.53363763
+ after   10 linear transformations is   -527.53362105
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -6.15 * 10 ** -1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   10 linear transformations is     82.65221436
+ after   10 linear transformations is     82.65221381
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -8.38 * 10 ** -1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   15 linear transformations is   -598.05315157
+ after   15 linear transformations is   -598.05313559
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -6.51 * 10 **  1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   15 linear transformations is   -447.42672928
+ after   15 linear transformations is   -447.42671702
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -7.36 * 10 **  1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   15 linear transformations is     98.45780935
+ after   15 linear transformations is     98.45780810
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -6.21 * 10 **  1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   20 linear transformations is   -594.90810254
+ after   20 linear transformations is   -594.90808676
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -1.33 * 10 **  4.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   20 linear transformations is   -445.22863374
+ after   20 linear transformations is   -445.22862161
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -1.47 * 10 **  4.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   20 linear transformations is     99.59165806
+ after   20 linear transformations is     99.59165677
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -8.28 * 10 **  3.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   25 linear transformations is   -594.86132649
+ after   25 linear transformations is   -594.86131071
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -1.57 * 10 **  7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   25 linear transformations is   -445.19525973
+ after   25 linear transformations is   -445.19524760
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -1.71 * 10 **  7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   25 linear transformations is     99.64238973
+ after   25 linear transformations is     99.64238843
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -7.66 * 10 **  6.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   26 linear transformations is   -594.86113210
+ after   26 linear transformations is   -594.86111631
  INERTIA (POS,ZER,NEG) of reduced matrix is   51    0    1
  Determinant of reduced matrix is -7.74 * 10 **  7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   26 linear transformations is   -445.19508541
+ after   26 linear transformations is   -445.19507328
  INERTIA (POS,ZER,NEG) of reduced matrix is   51    0    1
  Determinant of reduced matrix is -8.42 * 10 **  7.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   26 linear transformations is     99.64346450
+ after   26 linear transformations is     99.64346321
  INERTIA (POS,ZER,NEG) of reduced matrix is   51    0    1
  Determinant of reduced matrix is -3.68 * 10 **  7.0
 
@@ -1194,27 +1231,27 @@ Point group: D2h
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.127981D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.12798):     1052.66683353    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.12798):     1052.66682118    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.137898D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.13790):     1812.03275701    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.13790):     1812.03274336    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.169211D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.16921):    -594.861132096    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.16921):    -594.861116315    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.173616D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.17362):    -445.195085408    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.17362):    -445.195073279    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.231323D+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.23132):     99.6434645023    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.23132):     99.6434632092    
 
 
  Linear response calculations for quadratic response
@@ -1242,168 +1279,168 @@ Point group: D2h
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.13790 a.u.
- after    5 linear transformations is     14.59034983
+ after    5 linear transformations is     14.59036739
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -2.71 * 10 ** -3.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after    5 linear transformations is     87.15313299
+ after    5 linear transformations is     87.15313209
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -4.57 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after    5 linear transformations is     88.07885986
+ after    5 linear transformations is     88.07885896
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -5.06 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after    5 linear transformations is     99.20917518
+ after    5 linear transformations is     99.20917423
  INERTIA (POS,ZER,NEG) of reduced matrix is    9    0    1
  Determinant of reduced matrix is -7.83 * 10 ** -2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.12798 a.u.
- after   10 linear transformations is     14.65786963
+ after   10 linear transformations is     14.65787567
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -3.62 * 10 ** -1.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.13790 a.u.
- after   10 linear transformations is     75.44346595
+ after   10 linear transformations is     75.44346556
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -1.37 * 10 **  0.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   10 linear transformations is     93.15393456
+ after   10 linear transformations is     93.15393359
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -3.59 * 10 **  0.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   10 linear transformations is     94.33358541
+ after   10 linear transformations is     94.33358443
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -3.77 * 10 **  0.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   10 linear transformations is    111.42126170
+ after   10 linear transformations is    111.42126064
  INERTIA (POS,ZER,NEG) of reduced matrix is   19    0    1
  Determinant of reduced matrix is -3.23 * 10 **  0.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.12798 a.u.
- after   15 linear transformations is     33.81922708
+ after   15 linear transformations is     33.81922978
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -1.13 * 10 **  2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.13790 a.u.
- after   15 linear transformations is     76.81194884
+ after   15 linear transformations is     76.81194834
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -3.37 * 10 **  2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   15 linear transformations is     93.58613120
+ after   15 linear transformations is     93.58613021
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -7.58 * 10 **  2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   15 linear transformations is     94.77821765
+ after   15 linear transformations is     94.77821666
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -7.82 * 10 **  2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   15 linear transformations is    112.70805690
+ after   15 linear transformations is    112.70805582
  INERTIA (POS,ZER,NEG) of reduced matrix is   29    0    1
  Determinant of reduced matrix is -5.06 * 10 **  2.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.12798 a.u.
- after   20 linear transformations is     34.09387394
+ after   20 linear transformations is     34.09387660
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -1.58 * 10 **  5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.13790 a.u.
- after   20 linear transformations is     76.83267562
+ after   20 linear transformations is     76.83267512
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -4.61 * 10 **  5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   20 linear transformations is     93.58919826
+ after   20 linear transformations is     93.58919728
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -9.73 * 10 **  5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   20 linear transformations is     94.78138209
+ after   20 linear transformations is     94.78138110
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -9.94 * 10 **  5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   20 linear transformations is    112.72692116
+ after   20 linear transformations is    112.72692007
  INERTIA (POS,ZER,NEG) of reduced matrix is   39    0    1
  Determinant of reduced matrix is -5.47 * 10 **  5.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.12798 a.u.
- after   25 linear transformations is     34.09764273
+ after   25 linear transformations is     34.09764538
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -2.77 * 10 **  8.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.13790 a.u.
- after   25 linear transformations is     76.83294034
+ after   25 linear transformations is     76.83293984
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -7.96 * 10 **  8.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.16921 a.u.
- after   25 linear transformations is     93.58923202
+ after   25 linear transformations is     93.58923104
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -1.59 * 10 **  9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.17362 a.u.
- after   25 linear transformations is     94.78141850
+ after   25 linear transformations is     94.78141751
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -1.61 * 10 **  9.0
 
  *** INFO, negative eigenvalues in reduced matrix.
 
  GP * SOLUTION vector at frequency     0.23132 a.u.
- after   25 linear transformations is    112.72720427
+ after   25 linear transformations is    112.72720319
  INERTIA (POS,ZER,NEG) of reduced matrix is   49    0    1
  Determinant of reduced matrix is -7.71 * 10 **  8.0
 
@@ -1423,27 +1460,27 @@ Point group: D2h
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.127981D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.12798):     34.0976427267    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.12798):     34.0976453836    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.137898D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.13790):     76.8329403392    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.13790):     76.8329398384    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.169211D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.16921):     93.5892320211    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.16921):     93.5892310373    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.173616D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.17362):     94.7814185019    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.17362):     94.7814175070    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.231323D+00
  SYMMETRY    3
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.23132):     112.727204273    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.23132):     112.727203188    
 
 
  Linear response calculations for quadratic response
@@ -1484,27 +1521,27 @@ Point group: D2h
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.127981D+00
  SYMMETRY    5
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.12798):     28.1415233583    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.12798):     28.1415232876    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.137898D+00
  SYMMETRY    5
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.13790):     28.2381765251    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.13790):     28.2381764544    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.169211D+00
  SYMMETRY    5
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.16921):     28.6039357235    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.16921):     28.6039356541    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.173616D+00
  SYMMETRY    5
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.17362):     28.6634477545    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.17362):     28.6634476857    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.231323D+00
  SYMMETRY    5
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.23132):     29.6837599015    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.23132):     29.6837598357    
 
 
  Second order moment in a.u. for
@@ -1512,7 +1549,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             1    1    0
 
- omega B, excitation energy, moment :    0.127981    0.255962 -298.721971
+ omega B, excitation energy, moment :    0.127981    0.255962 -298.721974
 
 
  Second order moment in a.u. for
@@ -1520,7 +1557,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             2    1    0
 
- omega B, excitation energy, moment :    0.137898    0.275797 1166.548993
+ omega B, excitation energy, moment :    0.137898    0.275797 1166.548972
 
 
  Second order moment in a.u. for
@@ -1528,7 +1565,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             3    1    0
 
- omega B, excitation energy, moment :    0.169211    0.338422 -116.539539
+ omega B, excitation energy, moment :    0.169211    0.338422 -116.539538
 
 
  Second order moment in a.u. for
@@ -1536,7 +1573,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             4    1    0
 
- omega B, excitation energy, moment :    0.173616    0.347231  174.738808
+ omega B, excitation energy, moment :    0.173616    0.347231  174.738803
 
 
  Second order moment in a.u. for
@@ -1544,7 +1581,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             5    1    0
 
- omega B, excitation energy, moment :    0.231323    0.462646   77.827051
+ omega B, excitation energy, moment :    0.231323    0.462646   77.827049
 
 
  Second order moment in a.u. for
@@ -1552,7 +1589,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             1    1    0
 
- omega B, excitation energy, moment :    0.127981    0.255962 -162.277197
+ omega B, excitation energy, moment :    0.127981    0.255962 -162.277187
 
 
  Second order moment in a.u. for
@@ -1560,7 +1597,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             2    1    0
 
- omega B, excitation energy, moment :    0.137898    0.275797   15.327668
+ omega B, excitation energy, moment :    0.137898    0.275797   15.327667
 
 
  Second order moment in a.u. for
@@ -1584,7 +1621,7 @@ Point group: D2h
  B operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             5    1    0
 
- omega B, excitation energy, moment :    0.231323    0.462646  -35.380968
+ omega B, excitation energy, moment :    0.231323    0.462646  -35.380967
 
 
  Second order moment in a.u. for
@@ -1695,7 +1732,7 @@ Point group: D2h
      1   5   12.59   Circular     0.598E+02  0.244E+03  0.134E+04  0.112E+02    1.23
    ---------------------------------------------------------------------------------
 
- >>>> Total CPU  time used in RESPONSE:  11.14 seconds
+ >>>> Total CPU  time used in RESPONSE:  11.10 seconds
  >>>> Total wall time used in RESPONSE:  15.00 seconds
 
 
@@ -1703,9 +1740,9 @@ Point group: D2h
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  13.12 seconds
+ >>>> Total CPU  time used in DALTON:  13.36 seconds
  >>>> Total wall time used in DALTON:  19.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:15:56 2010 
+     Date and time (Linux)  : Wed Mar 16 18:41:14 2011 
      Host name              : fe6                                     

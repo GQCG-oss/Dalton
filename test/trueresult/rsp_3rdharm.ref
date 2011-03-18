@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:17:24 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:02 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -275,7 +276,7 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =       213942.92 MHz     (    7.136368 cm-1)
+               B =       213942.91 MHz     (    7.136367 cm-1)
 
 
 @  Nuclear repulsion energy :    0.969637476220
@@ -377,7 +378,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:02 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -396,8 +397,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
                an MP2 calculation
 
 
@@ -406,6 +406,7 @@ Point group: C2v
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons          2
      Number of electrons in active shells      2
      Total charge of the molecule              0
@@ -453,27 +454,41 @@ Point group: C2v
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.10D-11
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.10D-11 )
    1    -7.92585683519        6.75335D-01   -7.93D+00    1
-      MULPOP H    -0.10; Li   -0.05; 
+      Virial theorem: -V/T =      1.960277
+      MULPOP  H      -0.60; Li      0.60; 
+ -----------------------------------------------------------------------------
    2    -7.97650066943        6.69663D-02   -5.06D-02    2
-      MULPOP H    -0.02; Li    0.04; 
+      Virial theorem: -V/T =      1.997450
+      MULPOP  H      -0.30; Li      0.30; 
+ -----------------------------------------------------------------------------
    3    -7.97731201305        1.09818D-02   -8.11D-04    3
-      MULPOP H     0.00; Li    0.06; 
+      Virial theorem: -V/T =      1.998930
+      MULPOP  H      -0.27; Li      0.27; 
+ -----------------------------------------------------------------------------
    4    -7.97734917569        7.78801D-04   -3.72D-05    4
-      MULPOP H     0.00; Li    0.07; 
+      Virial theorem: -V/T =      1.998683
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
    5    -7.97734936902        9.67916D-05   -1.93D-07    5
-      MULPOP H     0.00; Li    0.07; 
+      Virial theorem: -V/T =      1.998653
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
    6    -7.97734937078        7.81039D-06   -1.76D-09    6
-      MULPOP H     0.00; Li    0.07; 
+      Virial theorem: -V/T =      1.998655
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
    7    -7.97734937080        1.74972D-06   -2.28D-11    7
-      MULPOP H     0.00; Li    0.07; 
-   8    -7.97734937081        3.22798D-07   -1.91D-12    8
- DIIS converged in   8 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      1.998655
+      MULPOP  H      -0.26; Li      0.26; 
+ -----------------------------------------------------------------------------
+   8    -7.97734937081        3.22805D-07   -1.91D-12    8
+
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -488,7 +503,7 @@ Point group: C2v
     Number of electrons :    4
     Orbital occupations :    2    0    0    0
 
- Hartree-Fock electronic energy:          -8.946986847026
+ Hartree-Fock electronic energy:          -8.946986847027
  Hartree-Fock total      energy:          -7.977349370806
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  7.83D-08
@@ -538,7 +553,7 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
          0.00114884     0.00002461
 
- Time used for MP2 natural orbitals :       0.002 CPU seconds.
+ Time used for MP2 natural orbitals :       0.003 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -571,10 +586,10 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  CI energies and residuals:
-    1       -7.993704636455787       1.74D-15
+    1       -7.993704636456084       3.31D-15
 
 
- Final CI energy:       -7.993704636455787
+ Final CI energy:       -7.993704636456084
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -589,16 +604,17 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99370463645579           (MACRO    1)
+ Total MCSCF energy       :    -7.99370463645608           (MACRO    1)
 
  - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87798442818331    
- - Active energy          :    -1.08535768449285    
+ - Inactive energy        :    -7.87798442818330    
+ - Active energy          :    -1.08535768449315    
 
- Norm of total gradient   :        0.028391664555
+ Norm of total gradient   :        0.028391664554
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.028391664555
-      MULPOP H     0.03; Li   -0.03; 
+ -    of orbital gradient :        0.028391664554
+      Virial theorem: -V/T =      1.997155
+      MULPOP  H      -0.24; Li      0.24; 
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -619,16 +635,17 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99406809869421           (MACRO    2)
+ Total MCSCF energy       :    -7.99406809869439           (MACRO    2)
 
  - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87924672004554    
- - Active energy          :    -1.08445885486904    
+ - Inactive energy        :    -7.87924672004552    
+ - Active energy          :    -1.08445885486924    
 
- Norm of total gradient   :        0.012923001202
- -    of CI gradient      :        0.005980050153
- -    of orbital gradient :        0.011456131993
-      MULPOP H     0.03; Li   -0.04; 
+ Norm of total gradient   :        0.012923001198
+ -    of CI gradient      :        0.005980050151
+ -    of orbital gradient :        0.011456131989
+      Virial theorem: -V/T =      1.996253
+      MULPOP  H      -0.19; Li      0.19; 
 
  Residual norm when dim(red L) =   6
  NEO root     CSF        orbital          total
@@ -649,16 +666,17 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99412988709229           (MACRO    3)
+ Total MCSCF energy       :    -7.99412988709244           (MACRO    3)
 
  - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87920437597994    
- - Active energy          :    -1.08456298733272    
+ - Inactive energy        :    -7.87920437597993    
+ - Active energy          :    -1.08456298733288    
 
- Norm of total gradient   :        0.000878463455
+ Norm of total gradient   :        0.000878463454
  -    of CI gradient      :        0.000224253669
  -    of orbital gradient :        0.000849357600
-      MULPOP H     0.03; Li   -0.03; 
+      Virial theorem: -V/T =      1.996702
+      MULPOP  H      -0.20; Li      0.20; 
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -679,16 +697,17 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99413053267337           (MACRO    4)
+ Total MCSCF energy       :    -7.99413053267353           (MACRO    4)
 
  - Nuclear repulsion      :    0.969637476220371    
- - Inactive energy        :    -7.87919013031195    
- - Active energy          :    -1.08457787858180    
+ - Inactive energy        :    -7.87919013031194    
+ - Active energy          :    -1.08457787858195    
 
  Norm of total gradient   :        0.000013256343
  -    of CI gradient      :        0.000005356702
  -    of orbital gradient :        0.000012125856
-      MULPOP H     0.03; Li   -0.03; 
+      Virial theorem: -V/T =      1.996707
+      MULPOP  H      -0.20; Li      0.20; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -709,22 +728,23 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :    -7.99413053271353           (MACRO    5)
+ Total MCSCF energy       :    -7.99413053271369           (MACRO    5)
 
  - Nuclear repulsion      :    0.969637476220371    
  - Inactive energy        :    -7.87918999658914    
- - Active energy          :    -1.08457801234476    
+ - Active energy          :    -1.08457801234492    
 
  Norm of total gradient   :        0.000002298171
  -    of CI gradient      :        0.000000000200
  -    of orbital gradient :        0.000002298171
-      MULPOP H     0.03; Li   -0.03; 
+      Virial theorem: -V/T =      1.996708
+      MULPOP  H      -0.20; Li      0.20; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -4.01563D-11   -4.01556D-11
+ Energy difference; actual and predicted:   -4.01599D-11   -4.01556D-11
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00002D+00
+ Energy difference; actual and predicted:    1.00011D+00
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
@@ -733,10 +753,13 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
      Total number of CPU seconds used         0.02
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:03 2011 
      Host name              : fe6                                     
 
 
@@ -745,13 +768,13 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
     1    4     -7.993704636456   0.0283916646  0.000000   0.1365634819
     2    4     -7.994068098694   0.0129230012  0.740014   0.0299004445
     3    7     -7.994129887092   0.0008784635  1.032047   0.0046463880
-    4    2     -7.994130532673   0.0000132563  1.002577   0.0000222813
+    4    2     -7.994130532674   0.0000132563  1.002577   0.0000222813
     5    0     -7.994130532714   0.0000022982  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      3    0.000000    0.000000     10   -0.026946    0.028392    0.028392
+    1      3   -0.000000    0.000000     10   -0.026946    0.028392    0.028392
     2      3    0.005685    0.005980     10    0.009902    0.011456    0.012923
     3      2   -0.000185    0.000224      2    0.000579    0.000849    0.000878
     4      3    0.000005    0.000005     10    0.000010    0.000012    0.000013
@@ -763,7 +786,7 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
     1     4     1     3      0.00      0.00      0.00      0.00      0.00
     2     4     2     3      0.00      0.00      0.00      0.00      0.00
-    3     7     2     5      0.01      0.00      0.00      0.00      0.00
+    3     7     2     5      0.00      0.00      0.00      0.00      0.00
     4     2     2     1      0.00      0.00      0.00      0.00      0.00
     5     0     0     0      0.00      0.00      0.00      0.00
 
@@ -773,24 +796,24 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
     1     -7.877984428183     -1.085357684493     -7.993704636456
     2     -7.879246720046     -1.084458854869     -7.994068098694
     3     -7.879204375980     -1.084562987333     -7.994129887092
-    4     -7.879190130312     -1.084577878582     -7.994130532673
+    4     -7.879190130312     -1.084577878582     -7.994130532674
     5     -7.879189996589     -1.084578012345     -7.994130532714
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000491155982     -0.000363462238      0.740013868430
-    3     -0.000059869730     -0.000061788398      1.032047381471
-    4     -0.000000643922     -0.000000645581      1.002576770622
+    2     -0.000491155982     -0.000363462238      0.740013868457
+    3     -0.000059869730     -0.000061788398      1.032047381511
+    4     -0.000000643922     -0.000000645581      1.002576767138
     5     -0.000000000040     -0.000000000040      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.136563481891      0.700000000000
-    2      0.20000000  1.00000000      0.029900444544      0.700000000000
-    3      0.20000000  1.00000000      0.004646387999      0.700000000000
+    1      0.20000000  1.00000000      0.136563481862      0.700000000000
+    2      0.20000000  1.00000000      0.029900444538      0.700000000000
+    3      0.20000000  1.00000000      0.004646387998      0.700000000000
     4      0.20000000  1.00000000      0.000022281347      0.700000000000
     5      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -798,14 +821,17 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000039263189    0.999627216863   -0.024440594141   -0.006084633392
-    2   -0.000004789407    0.999982119748   -0.000523073773   -0.005817219213
+    1   -0.000039263189    0.999627216863   -0.024440594136   -0.006084633391
+    2   -0.000004789407    0.999982119748   -0.000523073773   -0.005817219211
     3   -0.000000051514    0.999999568222   -0.000867607386   -0.000241607053
     4   -0.000000000003    0.999999999990   -0.000000060932   -0.000004442159
     5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -819,7 +845,7 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
      Final gradient norm:           0.000002298171
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:03 2011 
      Host name              : fe6                                     
 
 
@@ -841,7 +867,7 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 H   :1s    -0.0022  -0.3003  -0.7048  -0.0393  -0.0008
    2 H   :1s    -0.0013  -0.4029  -0.4595  -0.4282  -0.4534
    3 Li  :1s    -0.9986   0.1361  -0.1091   0.1027  -0.0150
@@ -853,14 +879,14 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Li  :2px    0.0101  -1.7072
    2 Li  :2px    0.9918   1.3896
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Li  :2py    0.0101  -1.7072
    2 Li  :2py    0.9918   1.3896
 
@@ -897,10 +923,10 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:25 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:03 2011 
      Host name              : fe6                                     
 
 
@@ -993,9 +1019,9 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :       -7.994130532713531
- -- inactive part     :       -7.879189996589142
- --   active part     :       -1.084578012344759
+ MCSCF energy         :       -7.994130532713686
+ -- inactive part     :       -7.879189996589140
+ --   active part     :       -1.084578012344916
  -- nuclear repulsion :        0.969637476220371
 
 
@@ -1026,7 +1052,7 @@ Symmetry  3 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
  Operator symmetry =  1; triplet =   F
 
-RSPORT:    7 out of    6 new trial vectors linear dependent
+RSPORT:    1 out of    6 new trial vectors linear dependent
 
  *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
 
@@ -1188,7 +1214,7 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     ZDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.030000  0.030000       2422.53686299
+                          0.030000  0.030000       2422.53686298
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1386,7 +1412,7 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.030000  0.030000       1277.05554207
+                          0.030000  0.030000       1277.05554206
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1452,7 +1478,7 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     YDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.030000  0.030000       1277.05554207
+                          0.030000  0.030000       1277.05554206
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -1492,12 +1518,12 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    67758.37878652      67758.37878652
- Na T[3] Nx Nyz     -59619.55349638       8138.82529014
- Na X[3] Ny Nz       -1053.44368218       7085.38160795
- Nx A[3] Ny Nz        -351.14789406       6734.23371389
- Na X[2] Nyz       -110165.01613382    -103430.78241993
- Nx A[2] Nyz       -112191.88010902    -215622.66252894
+ Na T[4] Nb Nc Nd    67758.37878579      67758.37878579
+ Na T[3] Nx Nyz     -59619.55349582       8138.82528997
+ Na X[3] Ny Nz       -1053.44368226       7085.38160770
+ Nx A[3] Ny Nz        -351.14789409       6734.23371362
+ Na X[2] Nyz       -110165.01613314    -103430.78241953
+ Nx A[2] Nyz       -112191.88010833    -215622.66252785
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.000000
@@ -1505,18 +1531,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =     -215622.66252894
+@ << A; B, C, D >>  =     -215622.66252785
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    17563.81908199      17563.81908199
- Na T[3] Nx Nyz       1272.37041480      18836.18949679
- Na X[3] Ny Nz        5588.14817713      24424.33767392
- Nx A[3] Ny Nz        1925.65916732      26349.99684124
- Na X[2] Nyz        -33204.12612175      -6854.12928051
- Nx A[2] Nyz        -51008.91502450     -57863.04430501
+ Na T[4] Nb Nc Nd    17563.81908188      17563.81908188
+ Na T[3] Nx Nyz       1272.37041479      18836.18949667
+ Na X[3] Ny Nz        5588.14817707      24424.33767374
+ Nx A[3] Ny Nz        1925.65916730      26349.99684104
+ Na X[2] Nyz        -33204.12612160      -6854.12928056
+ Nx A[2] Nyz        -51008.91502425     -57863.04430481
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.000000
@@ -1524,18 +1550,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =      -57863.04430501
+@ << A; B, C, D >>  =      -57863.04430481
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    17563.81908199      17563.81908199
- Na T[3] Nx Nyz       1272.37041480      18836.18949679
- Na X[3] Ny Nz        5588.14817713      24424.33767392
- Nx A[3] Ny Nz        1925.65916732      26349.99684124
- Na X[2] Nyz        -33204.12612175      -6854.12928051
- Nx A[2] Nyz        -51008.91502450     -57863.04430501
+ Na T[4] Nb Nc Nd    17563.81908188      17563.81908188
+ Na T[3] Nx Nyz       1272.37041479      18836.18949667
+ Na X[3] Ny Nz        5588.14817707      24424.33767374
+ Nx A[3] Ny Nz        1925.65916730      26349.99684104
+ Na X[2] Nyz        -33204.12612160      -6854.12928056
+ Nx A[2] Nyz        -51008.91502425     -57863.04430481
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.000000
@@ -1543,18 +1569,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.000000
 
-@ << A; B, C, D >>  =      -57863.04430501
+@ << A; B, C, D >>  =      -57863.04430481
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    36041.14474357      36041.14474357
- Na T[3] Nx Nyz     -10755.58391095      25285.56083262
- Na X[3] Ny Nz       96870.32981620     122155.89064882
- Nx A[3] Ny Nz       32290.10993873     154446.00058756
- Na X[2] Nyz        -97373.15689230      57072.84369526
- Nx A[2] Nyz        -97350.44532632     -40277.60163106
+ Na T[4] Nb Nc Nd    36041.14474353      36041.14474353
+ Na T[3] Nx Nyz     -10755.58391097      25285.56083257
+ Na X[3] Ny Nz       96870.32981569     122155.89064825
+ Nx A[3] Ny Nz       32290.10993856     154446.00058682
+ Na X[2] Nyz        -97373.15689194      57072.84369487
+ Nx A[2] Nyz        -97350.44532596     -40277.60163109
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.000000
@@ -1562,18 +1588,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.000000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ << A; B, C, D >>  =      -40277.60163106
+@ << A; B, C, D >>  =      -40277.60163109
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    12013.71491452      12013.71491452
- Na T[3] Nx Nyz      -3585.19463698       8428.52027754
- Na X[3] Ny Nz       32290.10993873      40718.63021627
- Nx A[3] Ny Nz       10763.36997958      51482.00019585
- Na X[2] Nyz        -32457.71896410      19024.28123175
- Nx A[2] Nyz        -32450.14844211     -13425.86721035
+ Na T[4] Nb Nc Nd    12013.71491451      12013.71491451
+ Na T[3] Nx Nyz      -3585.19463699       8428.52027752
+ Na X[3] Ny Nz       32290.10993856      40718.63021608
+ Nx A[3] Ny Nz       10763.36997952      51482.00019561
+ Na X[2] Nyz        -32457.71896398      19024.28123162
+ Nx A[2] Nyz        -32450.14844199     -13425.86721036
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.000000
@@ -1581,18 +1607,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.000000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ << A; B, C, D >>  =      -13425.86721035
+@ << A; B, C, D >>  =      -13425.86721036
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    36041.14474357      36041.14474357
- Na T[3] Nx Nyz     -10755.58391095      25285.56083262
- Na X[3] Ny Nz       96870.32981620     122155.89064882
- Nx A[3] Ny Nz       32290.10993873     154446.00058756
- Na X[2] Nyz        -97373.15689230      57072.84369526
- Nx A[2] Nyz        -97350.44532632     -40277.60163106
+ Na T[4] Nb Nc Nd    36041.14474353      36041.14474353
+ Na T[3] Nx Nyz     -10755.58391097      25285.56083257
+ Na X[3] Ny Nz       96870.32981569     122155.89064825
+ Nx A[3] Ny Nz       32290.10993856     154446.00058682
+ Na X[2] Nyz        -97373.15689194      57072.84369487
+ Nx A[2] Nyz        -97350.44532596     -40277.60163109
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.000000
@@ -1600,7 +1626,7 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.000000
 @ D operator, symmetry, frequency:   YDIPLEN    3  0.000000
 
-@ << A; B, C, D >>  =      -40277.60163106
+@ << A; B, C, D >>  =      -40277.60163109
 
 
 
@@ -1638,12 +1664,12 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd   214658.39948977     214658.39948977
- Na T[3] Nx Nyz    -304351.03100651     -89692.63151673
- Na X[3] Ny Nz      -17301.44064542    -106994.07216216
- Nx A[3] Ny Nz        -475.20675858    -107469.27892073
- Na X[2] Nyz       -540709.39081156    -648178.66973230
- Nx A[2] Nyz       -177182.94872064    -825361.61845294
+ Na T[4] Nb Nc Nd   214658.39948708     214658.39948708
+ Na T[3] Nx Nyz    -304351.03100313     -89692.63151605
+ Na X[3] Ny Nz      -17301.44064547    -106994.07216152
+ Nx A[3] Ny Nz        -475.20675861    -107469.27892013
+ Na X[2] Nyz       -540709.39080696    -648178.66972709
+ Nx A[2] Nyz       -177182.94871937    -825361.61844646
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.090000
@@ -1651,18 +1677,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 
-@ << A; B, C, D >>  =     -825361.61845294
+@ << A; B, C, D >>  =     -825361.61844646
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    38654.78988124      38654.78988124
- Na T[3] Nx Nyz     -19235.06150123      19419.72838002
- Na X[3] Ny Nz        8814.27308968      28234.00146969
- Nx A[3] Ny Nz        2089.91047567      30323.91194537
- Na X[2] Nyz        -89767.51539047     -59443.60344510
- Nx A[2] Nyz        -77677.34247798    -137120.94592309
+ Na T[4] Nb Nc Nd    38654.78988094      38654.78988094
+ Na T[3] Nx Nyz     -19235.06150106      19419.72837988
+ Na X[3] Ny Nz        8814.27308958      28234.00146946
+ Nx A[3] Ny Nz        2089.91047564      30323.91194510
+ Na X[2] Nyz        -89767.51538997     -59443.60344487
+ Nx A[2] Nyz        -77677.34247756    -137120.94592243
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.090000
@@ -1670,18 +1696,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 
-@ << A; B, C, D >>  =     -137120.94592309
+@ << A; B, C, D >>  =     -137120.94592243
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    38654.78988124      38654.78988124
- Na T[3] Nx Nyz     -19235.06150122      19419.72838002
- Na X[3] Ny Nz        8814.27308968      28234.00146969
- Nx A[3] Ny Nz        2089.91047567      30323.91194537
- Na X[2] Nyz        -89767.51539047     -59443.60344510
- Nx A[2] Nyz        -77677.34247798    -137120.94592309
+ Na T[4] Nb Nc Nd    38654.78988094      38654.78988094
+ Na T[3] Nx Nyz     -19235.06150106      19419.72837988
+ Na X[3] Ny Nz        8814.27308958      28234.00146946
+ Nx A[3] Ny Nz        2089.91047564      30323.91194510
+ Na X[2] Nyz        -89767.51538997     -59443.60344487
+ Nx A[2] Nyz        -77677.34247756    -137120.94592243
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.090000
@@ -1689,18 +1715,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 
-@ << A; B, C, D >>  =     -137120.94592309
+@ << A; B, C, D >>  =     -137120.94592243
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    44575.89161863      44575.89161863
- Na T[3] Nx Nyz     -50101.35471360      -5525.46309497
- Na X[3] Ny Nz       22453.78297945      16928.31988448
- Nx A[3] Ny Nz        2247.57074440      19175.89062888
- Na X[2] Nyz       -155504.04146161    -136328.15083274
- Nx A[2] Nyz        -39177.19308994    -175505.34392268
+ Na T[4] Nb Nc Nd    44575.89161829      44575.89161829
+ Na T[3] Nx Nyz     -50101.35471326      -5525.46309497
+ Na X[3] Ny Nz       22453.78297916      16928.31988419
+ Nx A[3] Ny Nz        2247.57074438      19175.89062857
+ Na X[2] Nyz       -155504.04146052    -136328.15083195
+ Nx A[2] Nyz        -39177.19308973    -175505.34392168
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.090000
@@ -1708,18 +1734,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.030000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 
-@ << A; B, C, D >>  =     -175505.34392268
+@ << A; B, C, D >>  =     -175505.34392168
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    44575.89161863      44575.89161863
- Na T[3] Nx Nyz     -50101.35471360      -5525.46309497
- Na X[3] Ny Nz       22453.78297945      16928.31988448
- Nx A[3] Ny Nz        2247.57074440      19175.89062888
- Na X[2] Nyz       -155504.04146161    -136328.15083274
- Nx A[2] Nyz        -39177.19308994    -175505.34392268
+ Na T[4] Nb Nc Nd    44575.89161829      44575.89161829
+ Na T[3] Nx Nyz     -50101.35471326      -5525.46309497
+ Na X[3] Ny Nz       22453.78297916      16928.31988419
+ Nx A[3] Ny Nz        2247.57074438      19175.89062857
+ Na X[2] Nyz       -155504.04146052    -136328.15083195
+ Nx A[2] Nyz        -39177.19308973    -175505.34392168
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.090000
@@ -1727,18 +1753,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.030000
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.030000
 
-@ << A; B, C, D >>  =     -175505.34392268
+@ << A; B, C, D >>  =     -175505.34392168
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    65129.51167316      65129.51167316
- Na T[3] Nx Nyz     -46690.55438217      18438.95729099
- Na X[3] Ny Nz      169832.26381576     188271.22110675
- Nx A[3] Ny Nz       34889.83773120     223161.05883794
- Na X[2] Nyz       -193092.57111590      30068.48772204
- Nx A[2] Nyz       -125103.81220023     -95035.32447819
+ Na T[4] Nb Nc Nd    65129.51167302      65129.51167302
+ Na T[3] Nx Nyz     -46690.55438198      18438.95729104
+ Na X[3] Ny Nz      169832.26381470     188271.22110575
+ Nx A[3] Ny Nz       34889.83773101     223161.05883675
+ Na X[2] Nyz       -193092.57111507      30068.48772168
+ Nx A[2] Nyz       -125103.81219974     -95035.32447806
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.090000
@@ -1746,18 +1772,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.030000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.030000
 
-@ << A; B, C, D >>  =      -95035.32447819
+@ << A; B, C, D >>  =      -95035.32447806
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    21709.83722439      21709.83722439
- Na T[3] Nx Nyz     -15563.51812739       6146.31909700
- Na X[3] Ny Nz       56610.75460525      62757.07370225
- Nx A[3] Ny Nz       11629.94591040      74387.01961265
- Na X[2] Nyz        -64364.19037197      10022.82924068
- Nx A[2] Nyz        -41701.27073341     -31678.44149273
+ Na T[4] Nb Nc Nd    21709.83722434      21709.83722434
+ Na T[3] Nx Nyz     -15563.51812733       6146.31909701
+ Na X[3] Ny Nz       56610.75460490      62757.07370192
+ Nx A[3] Ny Nz       11629.94591034      74387.01961225
+ Na X[2] Nyz        -64364.19037169      10022.82924056
+ Nx A[2] Nyz        -41701.27073325     -31678.44149269
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.090000
@@ -1765,18 +1791,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.030000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.030000
 
-@ << A; B, C, D >>  =      -31678.44149273
+@ << A; B, C, D >>  =      -31678.44149269
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    21709.83722439      21709.83722439
- Na T[3] Nx Nyz     -15563.51812739       6146.31909700
- Na X[3] Ny Nz       56610.75460525      62757.07370225
- Nx A[3] Ny Nz       11629.94591040      74387.01961265
- Na X[2] Nyz        -64364.19037197      10022.82924068
- Nx A[2] Nyz        -41701.27073341     -31678.44149273
+ Na T[4] Nb Nc Nd    21709.83722434      21709.83722434
+ Na T[3] Nx Nyz     -15563.51812733       6146.31909701
+ Na X[3] Ny Nz       56610.75460490      62757.07370192
+ Nx A[3] Ny Nz       11629.94591034      74387.01961225
+ Na X[2] Nyz        -64364.19037169      10022.82924056
+ Nx A[2] Nyz        -41701.27073325     -31678.44149269
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.090000
@@ -1784,18 +1810,18 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.030000
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.030000
 
-@ << A; B, C, D >>  =      -31678.44149273
+@ << A; B, C, D >>  =      -31678.44149269
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd    65129.51167316      65129.51167316
- Na T[3] Nx Nyz     -46690.55438217      18438.95729099
- Na X[3] Ny Nz      169832.26381575     188271.22110674
- Nx A[3] Ny Nz       34889.83773120     223161.05883794
- Na X[2] Nyz       -193092.57111590      30068.48772204
- Nx A[2] Nyz       -125103.81220023     -95035.32447819
+ Na T[4] Nb Nc Nd    65129.51167302      65129.51167302
+ Na T[3] Nx Nyz     -46690.55438198      18438.95729104
+ Na X[3] Ny Nz      169832.26381470     188271.22110575
+ Nx A[3] Ny Nz       34889.83773101     223161.05883675
+ Na X[2] Nyz       -193092.57111507      30068.48772168
+ Nx A[2] Nyz       -125103.81219974     -95035.32447806
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.090000
@@ -1803,7 +1829,7 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.030000
 @ D operator, symmetry, frequency:   YDIPLEN    3  0.030000
 
-@ << A; B, C, D >>  =      -95035.32447819
+@ << A; B, C, D >>  =      -95035.32447806
 
 
 
@@ -1834,21 +1860,21 @@ RSPORT:    7 out of    6 new trial vectors linear dependent
 @ gamma(Z;Z,Y,Y)     175505.3439
 @ gamma(Z;Y,Y,Z)     175505.3439
 @ gamma(Z;Y,Z,Y)     175505.3439
-@ gamma(Z;Z,Z,Z)     825361.6185
+@ gamma(Z;Z,Z,Z)     825361.6184
 
-@ Averaged gamma parallel to the applied field is    340808.346017
+@ Averaged gamma parallel to the applied field is    340808.346015
 
- >>>> Total CPU  time used in RESPONSE:   0.21 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.19 seconds
+ >>>> Total wall time used in RESPONSE:   2.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.25 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.24 seconds
+ >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:26 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:05 2011 
      Host name              : fe6                                     

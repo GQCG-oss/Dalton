@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -211,8 +212,8 @@ Represented as:      C2v
                                  ---------------
 
                            O          17.999159
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    20.014809 amu
                        Natural abundance:   0.200 %
@@ -278,15 +279,15 @@ Represented as:      C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.989410    0.000000
- H    2:    0.989410    1.516161    0.000000
+ H   _1:    0.989410    0.000000
+ H   _2:    0.989410    1.516161    0.000000
 
 
   Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -294,8 +295,8 @@ Represented as:      C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.989410
-  bond distance:  H    2     O            0.989410
+  bond distance:  H   _1     O            0.989410
+  bond distance:  H   _2     O            0.989410
 
 
   Bond angles (degrees):
@@ -303,7 +304,7 @@ Represented as:      C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.027
+  bond angle:     H   _1     O          H   _2       100.027
 
 
 
@@ -323,8 +324,8 @@ Represented as:      C2v
 
                A                   B                   C
 
-         697515.5778         436286.3616         268403.6100 MHz
-           23.266615           14.552947            8.952981 cm-1
+         697515.5717         436286.3577         268403.6077 MHz
+           23.266615           14.552946            8.952981 cm-1
 
 
 @  Nuclear repulsion energy :    8.906487554664
@@ -418,7 +419,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -430,12 +431,12 @@ Represented as:      C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -471,30 +472,48 @@ Represented as:      C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8614812061       1.78D+00  -7.49D+01    3  1  1  0
-      MULPOP O    -0.26; H     0.04; 
+      Virial theorem: -V/T =      2.003392
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602651426       2.38D-01  -9.88D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007483
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656615390       4.86D-02  -5.40D-03    3  1  1  0
-      MULPOP O    -0.35; H    -0.01; 
+      Virial theorem: -V/T =      2.006384
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658987284       3.52D-03  -2.37D-04    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006018
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    5  -74.9659011616       3.96D-04  -2.43D-06    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006002
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    6  -74.9659011927       2.87D-05  -3.10D-08    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    7  -74.9659011928       4.27D-08  -8.98D-11    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    8  -74.9659011928       9.69D-11   1.42D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   9  -74.9659011928       1.76D-12  -2.84D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  10  -74.9659011928       1.17D-13   2.84D-14    3  1  1  0
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   9  -74.9659011928       1.76D-12  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  10  -74.9659011928       1.11D-13   0.00D+00    3  1  1  0
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -520,7 +539,10 @@ Represented as:      C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -528,12 +550,12 @@ Represented as:      C2v
 
      Final HF energy:             -74.965901192777                 
      Nuclear repulsion:             8.906487554664
-     Electronic energy:           -83.872388747441
+     Electronic energy:           -83.872388747440
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -541,7 +563,7 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 O   :1s     0.9942  -0.2338   0.1040   0.1258
    2 O   :1s     0.0258   0.8444  -0.5382  -0.8201
    3 O   :2pz    0.0042   0.1228   0.7559  -0.7636
@@ -550,13 +572,13 @@ Represented as:      C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :2px    1.0000
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :2py    0.6127  -0.9598
    2 H   :1s     0.4492   0.8146
 
@@ -566,7 +588,7 @@ Represented as:      C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:24 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
 
@@ -700,12 +722,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -748,7 +764,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -760,12 +776,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -801,30 +817,48 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8614812061       1.78D+00   1.04D-01    3  1  1  0
-      MULPOP O    -0.26; H     0.04; 
+      Virial theorem: -V/T =      2.003392
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602651426       2.38D-01  -9.88D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007483
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656615390       4.86D-02  -5.40D-03    3  1  1  0
-      MULPOP O    -0.35; H    -0.01; 
+      Virial theorem: -V/T =      2.006384
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658987284       3.52D-03  -2.37D-04    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006018
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    5  -74.9659011616       3.96D-04  -2.43D-06    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006002
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    6  -74.9659011927       2.87D-05  -3.10D-08    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    7  -74.9659011928       4.27D-08  -8.98D-11    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   8  -74.9659011928       9.69D-11   1.42D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   9  -74.9659011928       1.76D-12   0.00D+00    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  10  -74.9659011928       1.16D-13   0.00D+00    3  1  1  0
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   8  -74.9659011928       9.69D-11   2.84D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   9  -74.9659011928       1.76D-12  -4.26D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  10  -74.9659011928       1.17D-13   1.42D-14    3  1  1  0
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -850,7 +884,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -858,12 +895,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Final HF energy:             -74.965901192777                 
      Nuclear repulsion:             8.906487554664
-     Electronic energy:           -83.872388747441
+     Electronic energy:           -83.872388747440
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
 
@@ -872,7 +909,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
 
@@ -891,7 +928,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -913,6 +950,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -927,7 +965,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Singlet linear response module for properties
  as VCD, MAGSUS, SPIN-SPIN, SHIELD, SPINRO, MOLGFA
- Print level in LINRES        :    0
+ Print level in LINRES        :   -2
  Threshold in LINRES          : 1.00D-12
  Maximum iterations in LINRES :   60
 
@@ -940,7 +978,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:21 2011 
      Host name              : fe6                                     
 
 
@@ -950,176 +988,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:25 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0000000000           -0.1209999235
- H    1     0.0000000000            1.4325641791            1.0804935688
- H    2     0.0000000000           -1.4325641791            1.0804935688
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9659011928 au (Hartrees)
-                         -2039.92588212 eV
-                           -196822.9453 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1294994111 au
-     Mass-velocity correction:                  -0.1669819759 au
-
-     Total relativistic correction:             -0.0374825648 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033837576 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O    z    -0.0000005771
-                         H    y    -0.0000000490
-                         H    z     0.0000005771
-
-
-
- O          0.0000000000            0.0000000000           -0.0000005771
- H    1     0.0000000000           -0.0000000245            0.0000002885
- H    2     0.0000000000            0.0000000245            0.0000002885
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O    z      H    y      H    z
-
- O    z    0.634900
- H    y   -0.432623    0.951695
- H    z   -0.634900    0.432623    0.634900
-
-
-           Symmetry 2
-
-           O    x      H    x
-
- O    x    0.000000
- H    x   -0.000000    0.000000
-
-
-           Symmetry 3
-
-           O    y      H    y      H    z
-
- O    y    0.803949
- H    y   -0.803949    0.803949
- H    z   -0.674273    0.674273    0.565513
-
-
-           Symmetry 4
-
-           H    x
-
- H    x   -0.000000
-
-
-
-
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
-
- O      x    0.000000
- O      y    0.000000    0.803949
- O      z    0.000000    0.000000    0.634900
-
- H    1 x   -0.000000    0.000000    0.000000    0.000000
- H    1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
- H    1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
-
- H    2 x   -0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
- H    2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
- H    2 z    0.000000    0.337136   -0.317450    0.000000   -0.060412    0.017347
-
-
-            H    2 x    H    2 y    H    2 z
-
- H    2 x    0.000000
- H    2 y    0.000000    0.438911
- H    2 z    0.000000   -0.276724    0.300103
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.672454           1.709208           5.701303
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      z      0.67245412         1.70920770         5.70130320
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
-
-
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H    1      H    2
-            ------      ------      ------
- O     :    0.000000
- H    1:    0.989410    0.000000
- H    2:    0.989410    1.516161    0.000000
-
-
-  Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H    1     O            0.989410
-  bond distance:  H    2     O            0.989410
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.027
-
-
 
 
  CPU time statistics for ABACUS
@@ -1129,7 +999,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  >>>> Total CPU  time used in ABACUS:   0.02 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
                    .-------------------------------------------.
@@ -1155,8 +1025,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
                         ---------------------------------
 
  O          0.0000000000            0.0000000000           -0.0000005771
- H    1     0.0000000000           -0.0000000245            0.0000002885
- H    2     0.0000000000            0.0000000245            0.0000002885
+ H   _1    -0.0000000000           -0.0000000245            0.0000002885
+ H   _2    -0.0000000000            0.0000000245            0.0000002885
 
 
                      Gradient in Dalton symmetry coordinates
@@ -1184,7 +1054,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
     3      0.000000    0.000000    0.000000    0.000000   -0.000000   -0.000000
     4      0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
     4      0.000000    0.000000    0.000000    0.000000    0.000000   -0.000000
-    4      0.000000    0.000000    0.000000    0.000000    0.000000   -0.000000
+    4      0.000000    0.000000    0.000000    0.000000   -0.000000   -0.000000
                                        
               4           4           4
     4      0.803949
@@ -1196,26 +1066,26 @@ Symmetry   1       1       1       2       2       3       4       4       4
                            Cartesian Hessian in GSPHES
                            ---------------------------
 
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
+            O      x    O      y    O      z    H   _1 x    H   _1 y    H   _1 z
 
  O      x    0.000000
  O      y    0.000000    0.803949
  O      z    0.000000    0.000000    0.634900
 
- H    1 x   -0.000000   -0.000000    0.000000    0.000000
- H    1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
- H    1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
+ H   _1 x   -0.000000   -0.000000   -0.000000    0.000000
+ H   _1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
+ H   _1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
 
- H    2 x   -0.000000    0.000000    0.000000    0.000000   -0.000000   -0.000000
- H    2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
- H    2 z    0.000000    0.337136   -0.317450   -0.000000   -0.060412    0.017347
+ H   _2 x   -0.000000    0.000000   -0.000000    0.000000   -0.000000   -0.000000
+ H   _2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
+ H   _2 z    0.000000    0.337136   -0.317450   -0.000000   -0.060412    0.017347
 
 
-            H    2 x    H    2 y    H    2 z
+            H   _2 x    H   _2 y    H   _2 z
 
- H    2 x    0.000000
- H    2 y   -0.000000    0.438911
- H    2 z    0.000000   -0.276724    0.300103
+ H   _2 x    0.000000
+ H   _2 y   -0.000000    0.438911
+ H   _2 z    0.000000   -0.276724    0.300103
 
 
 
@@ -1224,8 +1094,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
                                  ---------------
 
                            O          17.999159
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    20.014809 amu
                        Natural abundance:   0.200 %
@@ -1305,12 +1175,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -1353,7 +1217,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:26 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1365,12 +1229,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1406,34 +1270,56 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8616240071       1.78D+00   1.04D-01    3  1  1  0
-      MULPOP O    -0.27; H     0.04; 
+      Virial theorem: -V/T =      2.003449
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602323990       2.37D-01  -9.86D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007604
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656271879       4.86D-02  -5.39D-03    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006492
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658652210       3.53D-03  -2.38D-04    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
+      Virial theorem: -V/T =      2.006128
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    5  -74.9658676780       4.38D-04  -2.46D-06    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
+      Virial theorem: -V/T =      2.006111
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    6  -74.9658677153       3.90D-05  -3.72D-08    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
+      Virial theorem: -V/T =      2.006113
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    7  -74.9658677155       3.90D-08  -1.78D-10    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-   8  -74.9658677155       4.95D-10   2.84D-14    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-   9  -74.9658677155       9.03D-11  -2.84D-14    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-  10  -74.9658677155       1.97D-11   2.84D-14    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-  11  -74.9658677155       5.56D-12   0.00D+00    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-  12  -74.9658677155       2.52D-13  -2.84D-14    3  1  1  0
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006112
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   8  -74.9658677155       4.95D-10   0.00D+00    3  1  1  0
+      Virial theorem: -V/T =      2.006112
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   9  -74.9658677155       9.03D-11   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006112
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+  10  -74.9658677155       1.97D-11  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006112
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+  11  -74.9658677155       5.56D-12   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006112
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+  12  -74.9658677155       2.41D-13  -2.84D-14    3  1  1  0
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1459,20 +1345,23 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -74.965867715451                 
+     Final HF energy:             -74.965867715452                 
      Nuclear repulsion:             8.871614306203
      Electronic energy:           -83.837482021654
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:26 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
      Host name              : fe6                                     
 
 
@@ -1481,7 +1370,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:26 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
      Host name              : fe6                                     
 
  NOTE:    1 warnings have been issued.
@@ -1503,7 +1392,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -1525,6 +1414,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -1542,7 +1432,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:26 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:22 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
@@ -1553,143 +1443,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:30 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0000000000           -0.1214649408
- H    1     0.0000000000            1.4382781001            1.0846460363
- H    2     0.0000000000           -1.4382781001            1.0846460363
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9658677155 au (Hartrees)
-                         -2039.92497115 eV
-                           -196822.8574 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1295036764 au
-     Mass-velocity correction:                  -0.1669879152 au
-
-     Total relativistic correction:             -0.0374842389 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033519543 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O   z     -0.0053461533
-                         H   y      0.0073546843
-                         H   z      0.0053461533
-
-
-
- O          0.0000000000            0.0000000000           -0.0053461533
- H    1     0.0000000000            0.0036773422            0.0026730766
- H    2     0.0000000000           -0.0036773422            0.0026730766
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O   z       H   y       H   z 
-
- O   z     0.626628
- H   y    -0.419065    0.934463
- H   z    -0.626628    0.419065    0.626628
-
-
-           Symmetry 2
-
-           O   x       H   x 
-
- O   x     0.004433
- H   x    -0.004433    0.004433
-
-
-           Symmetry 3
-
-           O   y       H   y       H   z 
-
- O   y     0.789067
- H   y    -0.789067    0.789067
- H   z    -0.657978    0.657978    0.556881
-
-
-           Symmetry 4
-
-           H   x 
-
- H   x     0.005114
-
-
-
-
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
-
- O      x    0.004433
- O      y    0.000000    0.789067
- O      z    0.000000    0.000000    0.626628
-
- H    1 x   -0.002216    0.000000    0.000000    0.002387
- H    1 y    0.000000   -0.394533   -0.209533    0.000000    0.430882
- H    1 z    0.000000   -0.328989   -0.313314    0.000000    0.269261    0.295877
-
- H    2 x   -0.002216    0.000000    0.000000   -0.000170    0.000000    0.000000
- H    2 y    0.000000   -0.394533    0.209533    0.000000   -0.036349    0.059728
- H    2 z    0.000000    0.328989   -0.313314    0.000000   -0.059728    0.017437
-
-
-            H    2 x    H    2 y    H    2 z
-
- H    2 x    0.002387
- H    2 y    0.000000    0.430882
- H    2 z    0.000000   -0.269261    0.295877
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.670272           1.703663           5.682806
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      z      0.67027248         1.70366251         5.68280645
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -1706,7 +1461,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -1726,7 +1481,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -1746,7 +1501,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -1766,47 +1521,14 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H    1      H    2
-            ------      ------      ------
- O     :    0.000000
- H    1:    0.993296    0.000000
- H    2:    0.993296    1.522208    0.000000
-
-
-  Max interatomic separation is    1.5222 Angstrom (    2.8766 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H    1     O            0.993296
-  bond distance:  H    2     O            0.993296
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.035
-
-
-
-
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.13 seconds
- >>>> Total wall time used in ABACUS:   4.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.12 seconds
+ >>>> Total wall time used in ABACUS:   5.00 seconds
 
 
                    .-------------------------------------------.
@@ -1846,12 +1568,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -1895,7 +1611,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:30 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -1907,12 +1623,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -1948,32 +1664,52 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8612671236       1.79D+00   1.05D-01    3  1  1  0
-      MULPOP O    -0.26; H     0.04; 
+      Virial theorem: -V/T =      2.003333
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602309418       2.38D-01  -9.90D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007359
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656284760       4.86D-02  -5.40D-03    3  1  1  0
-      MULPOP O    -0.35; H    -0.01; 
+      Virial theorem: -V/T =      2.006273
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    4  -74.9658647959       3.50D-03  -2.36D-04    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.005905
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    5  -74.9658672009       3.82D-04  -2.40D-06    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.005890
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    6  -74.9658672303       2.03D-05  -2.94D-08    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.005891
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    7  -74.9658672303       4.79D-08  -4.17D-11    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   8  -74.9658672303       5.60D-10   0.00D+00    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   9  -74.9658672303       1.39D-11   2.84D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  10  -74.9658672303       2.20D-12  -2.84D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  11  -74.9658672303       7.03D-13   2.84D-14    3  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.005890
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   8  -74.9658672303       5.60D-10   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.005890
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   9  -74.9658672303       1.39D-11   0.00D+00    3  1  1  0
+      Virial theorem: -V/T =      2.005890
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  10  -74.9658672303       2.20D-12   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.005890
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  11  -74.9658672303       7.01D-13  -1.42D-14    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -1999,7 +1735,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -2012,7 +1751,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
      Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:30 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
      Host name              : fe6                                     
 
 
@@ -2021,7 +1760,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:30 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
      Host name              : fe6                                     
 
  NOTE:    2 warnings have been issued.
@@ -2043,7 +1782,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -2065,6 +1804,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -2073,7 +1813,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Threshold in TRPRSP          : 1.00E-12
  Maximum iterations in TRPRSP :   60
 
- Center of mass dipole origin  :    0.000000    0.000000    0.000000
+ Center of mass dipole origin  :    0.000000    0.000000   -0.000000
 
 
                  .------------------------------------------------.
@@ -2082,7 +1822,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:30 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:27 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
@@ -2093,143 +1833,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:35 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0000000000           -0.1205349062
- H    1     0.0000000000            1.4268502581            1.0763411013
- H    2     0.0000000000           -1.4268502581            1.0763411013
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9658672303 au (Hartrees)
-                         -2039.92495795 eV
-                           -196822.8561 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1294951453 au
-     Mass-velocity correction:                  -0.1669760564 au
-
-     Total relativistic correction:             -0.0374809111 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033481414 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O   z      0.0054619173
-                         H   y     -0.0075175051
-                         H   z     -0.0054619173
-
-
-
- O          0.0000000000            0.0000000000            0.0054619173
- H    1     0.0000000000           -0.0037587525           -0.0027309586
- H    2     0.0000000000            0.0037587525           -0.0027309586
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O   z       H   y       H   z 
-
- O   z     0.643311
- H   y    -0.446509    0.969244
- H   z    -0.643311    0.446509    0.643311
-
-
-           Symmetry 2
-
-           O   x       H   x 
-
- O   x    -0.004563
- H   x     0.004563   -0.004563
-
-
-           Symmetry 3
-
-           O   y       H   y       H   z 
-
- O   y     0.819113
- H   y    -0.819113    0.819113
- H   z    -0.690919    0.690919    0.574291
-
-
-           Symmetry 4
-
-           H   x 
-
- H   x    -0.005269
-
-
-
-
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
-
- O      x   -0.004563
- O      y    0.000000    0.819113
- O      z    0.000000    0.000000    0.643311
-
- H    1 x    0.002282    0.000000    0.000000   -0.002458
- H    1 y    0.000000   -0.409556   -0.223254    0.000000    0.447089
- H    1 z    0.000000   -0.345460   -0.321656    0.000000    0.284357    0.304401
-
- H    2 x    0.002282    0.000000    0.000000    0.000176    0.000000    0.000000
- H    2 y    0.000000   -0.409556    0.223254    0.000000   -0.037533    0.061103
- H    2 z    0.000000    0.345460   -0.321656    0.000000   -0.061103    0.017255
-
-
-            H    2 x    H    2 y    H    2 z
-
- H    2 x   -0.002458
- H    2 y    0.000000    0.447089
- H    2 z    0.000000   -0.284357    0.304401
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.674634           1.714747           5.719782
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      z      0.67463362         1.71474742         5.71978172
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -2246,7 +1851,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -2266,7 +1871,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -2286,7 +1891,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -2302,39 +1907,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic PSO contribution:      3.2532 Hz
   Isotropic SD contribution :      1.2227 Hz
   Isotropic FC contribution :    -25.4807 Hz
-
-
-
-
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H    1      H    2
-            ------      ------      ------
- O     :    0.000000
- H    1:    0.985523    0.000000
- H    2:    0.985523    1.510113    0.000000
-
-
-  Max interatomic separation is    1.5101 Angstrom (    2.8537 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H    1     O            0.985523
-  bond distance:  H    2     O            0.985523
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.019
 
 
 
@@ -2387,12 +1959,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         138 ( 34.0% )
@@ -2435,7 +2001,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:36 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -2447,12 +2013,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -2488,32 +2054,52 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8608836053       1.78D+00   1.05D-01    3  1  1  0
-      MULPOP O    -0.26; H     0.04; 
+      Virial theorem: -V/T =      2.003361
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602545864       2.38D-01  -9.94D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007498
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656551617       4.84D-02  -5.40D-03    3  1  1  0
-      MULPOP O    -0.35; H    -0.01; 
+      Virial theorem: -V/T =      2.006385
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658894449       3.37D-03  -2.34D-04    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006021
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    5  -74.9658916596       4.23D-04  -2.21D-06    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006005
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    6  -74.9658916946       3.41D-05  -3.51D-08    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006007
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    7  -74.9658916948       3.78D-08  -1.33D-10    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   8  -74.9658916948       1.98D-10   0.00D+00    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   9  -74.9658916948       1.90D-11   0.00D+00    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  10  -74.9658916948       2.87D-12   2.84D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  11  -74.9658916948       9.53D-13  -2.84D-14    3  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006006
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   8  -74.9658916948       1.98D-10  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006006
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+   9  -74.9658916948       1.90D-11   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006006
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+  10  -74.9658916948       2.88D-12  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006006
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
+  11  -74.9658916948       9.53D-13   0.00D+00    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -2539,7 +2125,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -2552,7 +2141,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
      Final gradient norm:           0.000000000001
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:36 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
      Host name              : fe6                                     
 
 
@@ -2561,7 +2150,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:36 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
      Host name              : fe6                                     
 
  NOTE:    3 warnings have been issued.
@@ -2583,7 +2172,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -2605,6 +2194,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -2613,7 +2203,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Threshold in TRPRSP          : 1.00E-12
  Maximum iterations in TRPRSP :   60
 
- Center of mass dipole origin  :    0.000000    0.000000   -0.000000
+ Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
 
                  .------------------------------------------------.
@@ -2622,7 +2212,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:36 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:32 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
@@ -2633,143 +2223,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:41 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0000000000           -0.1216146523
- H    1     0.0000000000            1.4281281754            1.0859829154
- H    2     0.0000000000           -1.4281281754            1.0859829154
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9658916948 au (Hartrees)
-                         -2039.92562366 eV
-                           -196822.9204 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1295037429 au
-     Mass-velocity correction:                  -0.1669885933 au
-
-     Total relativistic correction:             -0.0374848504 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033765451 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O   z     -0.0019657091
-                         H   y     -0.0015803102
-                         H   z      0.0019657091
-
-
-
- O          0.0000000000            0.0000000000           -0.0019657091
- H    1     0.0000000000           -0.0007901551            0.0009828546
- H    2     0.0000000000            0.0007901551            0.0009828546
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O   z       H   y       H   z 
-
- O   z     0.637468
- H   y    -0.432216    0.950831
- H   z    -0.637468    0.432216    0.637468
-
-
-           Symmetry 2
-
-           O   x       H   x 
-
- O   x     0.001628
- H   x    -0.001628    0.001628
-
-
-           Symmetry 3
-
-           O   y       H   y       H   z 
-
- O   y     0.798498
- H   y    -0.798498    0.798498
- H   z    -0.673818    0.673818    0.568661
-
-
-           Symmetry 4
-
-           H   x 
-
- H   x    -0.001107
-
-
-
-
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
-
- O      x    0.001628
- O      y    0.000000    0.798498
- O      z    0.000000    0.000000    0.637468
-
- H    1 x   -0.000814    0.000000    0.000000    0.000130
- H    1 y    0.000000   -0.399249   -0.216108    0.000000    0.437332
- H    1 z    0.000000   -0.336909   -0.318734    0.000000    0.276508    0.301532
-
- H    2 x   -0.000814    0.000000    0.000000    0.000684    0.000000    0.000000
- H    2 y    0.000000   -0.399249    0.216108    0.000000   -0.038083    0.060401
- H    2 z    0.000000    0.336909   -0.318734    0.000000   -0.060401    0.017202
-
-
-            H    2 x    H    2 y    H    2 z
-
- H    2 x    0.000130
- H    2 y    0.000000    0.437332
- H    2 z    0.000000   -0.276508    0.301532
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.673331           1.711436           5.708737
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      z      0.67333090         1.71143625         5.70873683
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -2786,7 +2241,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -2806,7 +2261,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -2826,7 +2281,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -2846,46 +2301,13 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H    1      H    2
-            ------      ------      ------
- O     :    0.000000
- H    1:    0.989695    0.000000
- H    2:    0.989695    1.511466    0.000000
-
-
-  Max interatomic separation is    1.5115 Angstrom (    2.8563 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H    1     O            0.989695
-  bond distance:  H    2     O            0.989695
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H    1     O          H    2        99.566
-
-
-
-
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.12 seconds
+ >>>> Total CPU  time used in ABACUS:   0.14 seconds
  >>>> Total wall time used in ABACUS:   5.00 seconds
 
 
@@ -2926,12 +2348,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -2975,7 +2391,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:41 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -2987,12 +2403,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3028,32 +2444,52 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8620575122       1.78D+00   1.04D-01    3  1  1  0
-      MULPOP O    -0.27; H     0.04; 
+      Virial theorem: -V/T =      2.003423
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602563329       2.37D-01  -9.82D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007468
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656488048       4.87D-02  -5.39D-03    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006382
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658890474       3.67D-03  -2.40D-04    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
+      Virial theorem: -V/T =      2.006014
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    5  -74.9658917069       3.80D-04  -2.66D-06    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
+      Virial theorem: -V/T =      2.005998
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    6  -74.9658917359       2.40D-05  -2.91D-08    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-   7  -74.9658917360       4.77D-08  -6.01D-11    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-   8  -74.9658917360       3.18D-10  -2.84D-14    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-   9  -74.9658917360       7.51D-12  -1.42D-14    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-  10  -74.9658917360       1.24D-12   1.42D-14    3  1  1  0
-      MULPOP O    -0.37; H    -0.01; 
-  11  -74.9658917360       3.85D-13   1.42D-14    3  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.005999
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   7  -74.9658917360       4.77D-08  -6.02D-11    3  1  1  0
+      Virial theorem: -V/T =      2.005999
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   8  -74.9658917360       3.18D-10  -1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.005999
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   9  -74.9658917360       7.51D-12   1.42D-14    3  1  1  0
+      Virial theorem: -V/T =      2.005999
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  10  -74.9658917360       1.25D-12  -2.84D-14    3  1  1  0
+      Virial theorem: -V/T =      2.005999
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  11  -74.9658917360       3.87D-13   2.84D-14    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3079,7 +2515,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -3092,7 +2531,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:41 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
      Host name              : fe6                                     
 
 
@@ -3101,7 +2540,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:41 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
      Host name              : fe6                                     
 
  NOTE:    4 warnings have been issued.
@@ -3123,7 +2562,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -3145,6 +2584,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -3153,7 +2593,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Threshold in TRPRSP          : 1.00E-12
  Maximum iterations in TRPRSP :   60
 
- Center of mass dipole origin  :    0.000000    0.000000   -0.000000
+ Center of mass dipole origin  :    0.000000    0.000000    0.000000
 
 
                  .------------------------------------------------.
@@ -3162,7 +2602,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:41 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:37 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
@@ -3173,143 +2613,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:46 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0000000000           -0.1203851947
- H    1     0.0000000000            1.4370001828            1.0750042222
- H    2     0.0000000000           -1.4370001828            1.0750042222
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9658917360 au (Hartrees)
-                         -2039.92562479 eV
-                           -196822.9205 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1294950738 au
-     Mass-velocity correction:                  -0.1669753555 au
-
-     Total relativistic correction:             -0.0374802817 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033720177 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O   z      0.0019468859
-                         H   y      0.0015816931
-                         H   z     -0.0019468859
-
-
-
- O          0.0000000000            0.0000000000            0.0019468859
- H    1     0.0000000000            0.0007908465           -0.0009734430
- H    2     0.0000000000           -0.0007908465           -0.0009734430
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O   z       H   y       H   z 
-
- O   z     0.632227
- H   y    -0.432969    0.952535
- H   z    -0.632227    0.432969    0.632227
-
-
-           Symmetry 2
-
-           O   x       H   x 
-
- O   x    -0.001629
- H   x     0.001629   -0.001629
-
-
-           Symmetry 3
-
-           O   y       H   y       H   z 
-
- O   y     0.809347
- H   y    -0.809347    0.809347
- H   z    -0.674622    0.674622    0.562295
-
-
-           Symmetry 4
-
-           H   x 
-
- H   x     0.001101
-
-
-
-
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
-
- O      x   -0.001629
- O      y    0.000000    0.809347
- O      z    0.000000    0.000000    0.632227
-
- H    1 x    0.000814    0.000000    0.000000   -0.000132
- H    1 y    0.000000   -0.404673   -0.216484    0.000000    0.440470
- H    1 z    0.000000   -0.337311   -0.316113    0.000000    0.276898    0.298630
-
- H    2 x    0.000814    0.000000    0.000000   -0.000682    0.000000    0.000000
- H    2 y    0.000000   -0.404673    0.216484    0.000000   -0.035797    0.060413
- H    2 z    0.000000    0.337311   -0.316113    0.000000   -0.060413    0.017483
-
-
-            H    2 x    H    2 y    H    2 z
-
- H    2 x   -0.000132
- H    2 y    0.000000    0.440470
- H    2 z    0.000000   -0.276898    0.298630
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.671564           1.706945           5.693754
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      z      0.67156371         1.70694451         5.69375399
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -3326,7 +2631,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -3346,7 +2651,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -3366,7 +2671,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -3386,46 +2691,13 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H    1      H    2
-            ------      ------      ------
- O     :    0.000000
- H    1:    0.989140    0.000000
- H    2:    0.989140    1.520855    0.000000
-
-
-  Max interatomic separation is    1.5209 Angstrom (    2.8740 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H    1     O            0.989140
-  bond distance:  H    2     O            0.989140
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.488
-
-
-
-
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.12 seconds
+ >>>> Total CPU  time used in ABACUS:   0.14 seconds
  >>>> Total wall time used in ABACUS:   5.00 seconds
 
 
@@ -3467,12 +2739,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         231 ( 56.9% )
@@ -3513,7 +2779,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:46 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -3525,12 +2791,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -3566,34 +2832,56 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8614441530       1.78D+00   1.04D-01    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.003391
+      MULPOP  O      -0.36; H       0.18; H       0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602266862       2.38D-01  -9.88D-02    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.007481
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656228157       4.86D-02  -5.40D-03    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006382
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
    4  -74.9658599841       3.52D-03  -2.37D-04    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006016
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
    5  -74.9658624167       3.96D-04  -2.43D-06    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
    6  -74.9658624478       2.39D-05  -3.11D-08    4  1
-      MULPOP O   ******; H   ******; 
-   7  -74.9658624479       1.38D-06  -7.10D-11    4  1
-      MULPOP O   ******; H   ******; 
-   8  -74.9658624479       4.31D-08  -3.27D-13    4  1
-      MULPOP O   ******; H   ******; 
-   9  -74.9658624479       6.31D-09   0.00D+00    4  1
-      MULPOP O   ******; H   ******; 
-  10  -74.9658624479       8.03D-10   0.00D+00    4  1
-      MULPOP O   ******; H   ******; 
-  11  -74.9658624479       2.77D-12   1.42D-14    4  1
-      MULPOP O   ******; H   ******; 
-  12  -74.9658624479       6.05D-14  -1.42D-14    4  1
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
+   7  -74.9658624479       1.38D-06  -7.11D-11    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
+   8  -74.9658624479       4.31D-08  -2.84D-13    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
+   9  -74.9658624479       6.31D-09  -1.42D-14    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
+  10  -74.9658624479       8.03D-10  -1.42D-14    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
+  11  -74.9658624479       2.76D-12   1.42D-14    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.16; H       0.17; 
+ -----------------------------------------------------------------------------
+  12  -74.9658624479       6.72D-14   0.00D+00    4  1
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -3618,7 +2906,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -3626,12 +2917,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Final HF energy:             -74.965862447903                 
      Nuclear repulsion:             8.906624129751
-     Electronic energy:           -83.872486577654
+     Electronic energy:           -83.872486577655
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:46 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
      Host name              : fe6                                     
 
 
@@ -3640,7 +2931,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:46 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
      Host name              : fe6                                     
 
  NOTE:    5 warnings have been issued.
@@ -3662,7 +2953,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -3684,6 +2975,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -3701,13 +2993,13 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:46 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:42 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
  (ORTBVC) new orbital b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 2.03235D-15
+ norm of vector after Gram-Schmidt's orthogonalization 3.57446D-15
 
  (ORTBVC) NBOSIM reduced from  3 to  2
 
@@ -3718,135 +3010,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:53 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000           -0.0006056047           -0.1209999235
- H          0.0000000000            1.4379720503            1.0850291559
- H          0.0000000000           -1.4271563079            1.0759579817
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9658624479 au (Hartrees)
-                         -2039.92482782 eV
-                           -196822.8436 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1294994010 au
-     Mass-velocity correction:                  -0.1669819713 au
-
-     Total relativistic correction:             -0.0374825703 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033450182 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O   y     -0.0078933094
-                         O   z      0.0000722323
-                         H   y      0.0039051378
-                         H   z      0.0032739686
-                         H   y      0.0039881716
-                         H   z     -0.0033462009
-
-
-
- O          0.0000000000           -0.0078933094            0.0000722323
- H          0.0000000000            0.0039051378            0.0032739686
- H          0.0000000000            0.0039881716           -0.0033462009
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y     0.804086
- O   z    -0.016780    0.634984
- H   y    -0.394381   -0.208017    0.431316
- H   z    -0.328840   -0.312563    0.268554    0.295217
- H   y    -0.409705    0.224797   -0.036935    0.060286    0.446640
- H   z     0.345620   -0.322422   -0.060537    0.017345   -0.285083    0.305076
-
-
-           Symmetry 2
-
-           O   x       H   x       H   x 
-
- O   x    -0.000081
- H   x    -0.002715    0.002715
- H   x     0.002796    0.000000   -0.002796
-
-
-
-
-            O      x    O      y    O      z    H      x    H      y    H      z
-
- O      x   -0.000081
- O      y    0.000000    0.804086
- O      z    0.000000   -0.016780    0.634984
-
- H      x   -0.002715    0.000000    0.000000    0.002715
- H      y    0.000000   -0.394381   -0.208017    0.000000    0.431316
- H      z    0.000000   -0.328840   -0.312563    0.000000    0.268554    0.295217
-
- H      x    0.002796    0.000000    0.000000    0.000000    0.000000    0.000000
- H      y    0.000000   -0.409705    0.224797    0.000000   -0.036935    0.060286
- H      z    0.000000    0.345620   -0.322422    0.000000   -0.060537    0.017345
-
-
-            H      x    H      y    H      z
-
- H      x   -0.002796
- H      y    0.000000    0.446640
- H      z    0.000000   -0.285083    0.305076
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.672464           1.709234           5.701391
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      y     -0.00182310        -0.00463385        -0.01545686
-      z      0.67246201         1.70922776         5.70137011
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -3923,47 +3088,14 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H           H     
-            ------      ------      ------
- O     :    0.000000
- H     :    0.993390    0.000000
- H     :    0.985429    1.516168    0.000000
-
-
-  Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H     " and "H     ".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H          O            0.993390
-  bond distance:  H          O            0.985429
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H          O          H            100.027
-
-
-
-
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     741 %
+ REST       00:00:01     809 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.17 seconds
+ >>>> Total CPU  time used in ABACUS:   0.16 seconds
  >>>> Total wall time used in ABACUS:   7.00 seconds
 
 
@@ -4005,12 +3137,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
-
  Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:         231 ( 56.9% )
@@ -4051,7 +3177,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:54 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -4063,12 +3189,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -4104,34 +3230,56 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8614441530       1.78D+00   1.04D-01    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.003391
+      MULPOP  O      -0.36; H       0.18; H       0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602266862       2.38D-01  -9.88D-02    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.007481
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656228157       4.86D-02  -5.40D-03    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006382
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658599841       3.52D-03  -2.37D-04    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006016
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
    5  -74.9658624167       3.96D-04  -2.43D-06    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
    6  -74.9658624478       2.39D-05  -3.11D-08    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
    7  -74.9658624479       1.38D-06  -7.10D-11    4  1
-      MULPOP O   ******; H   ******; 
-   8  -74.9658624479       4.31D-08  -3.41D-13    4  1
-      MULPOP O   ******; H   ******; 
-   9  -74.9658624479       6.31D-09   2.84D-14    4  1
-      MULPOP O   ******; H   ******; 
-  10  -74.9658624479       8.03D-10  -2.84D-14    4  1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
+   8  -74.9658624479       4.31D-08  -3.55D-13    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
+   9  -74.9658624479       6.31D-09   1.42D-14    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
+  10  -74.9658624479       8.03D-10   0.00D+00    4  1
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
   11  -74.9658624479       2.76D-12   0.00D+00    4  1
-      MULPOP O   ******; H   ******; 
-  12  -74.9658624479       6.03D-14   1.42D-14    4  1
- DIIS converged in  12 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006001
+      MULPOP  O      -0.33; H       0.17; H       0.16; 
+ -----------------------------------------------------------------------------
+  12  -74.9658624479       6.33D-14   1.42D-14    4  1
+
+ *** DIIS converged in  12 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4156,7 +3304,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -4164,21 +3315,21 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Final HF energy:             -74.965862447903                 
      Nuclear repulsion:             8.906624129751
-     Electronic energy:           -83.872486577654
+     Electronic energy:           -83.872486577655
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:54 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
      Host name              : fe6                                     
 
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:54 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
      Host name              : fe6                                     
 
  NOTE:    6 warnings have been issued.
@@ -4200,7 +3351,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -4222,6 +3373,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -4239,13 +3391,13 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:38:54 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:49 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
  (ORTBVC) new orbital b-vector no.  3
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization 5.50058D-15
+ norm of vector after Gram-Schmidt's orthogonalization 4.74708D-15
 
  (ORTBVC) NBOSIM reduced from  3 to  2
 
@@ -4256,135 +3408,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:01 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0006056047           -0.1209999235
- H          0.0000000000            1.4271563079            1.0759579817
- H          0.0000000000           -1.4379720503            1.0850291559
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9658624479 au (Hartrees)
-                         -2039.92482782 eV
-                           -196822.8436 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1294994010 au
-     Mass-velocity correction:                  -0.1669819713 au
-
-     Total relativistic correction:             -0.0374825703 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033450182 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O   y      0.0078933094
-                         O   z      0.0000722323
-                         H   y     -0.0039881716
-                         H   z     -0.0033462009
-                         H   y     -0.0039051378
-                         H   z      0.0032739686
-
-
-
- O          0.0000000000            0.0078933094            0.0000722323
- H          0.0000000000           -0.0039881716           -0.0033462009
- H          0.0000000000           -0.0039051378            0.0032739686
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O   y       O   z       H   y       H   z       H   y       H   z 
-
- O   y     0.804086
- O   z     0.016780    0.634984
- H   y    -0.409705   -0.224797    0.446640
- H   z    -0.345620   -0.322422    0.285083    0.305076
- H   y    -0.394381    0.208017   -0.036935    0.060537    0.431316
- H   z     0.328840   -0.312563   -0.060286    0.017345   -0.268554    0.295217
-
-
-           Symmetry 2
-
-           O   x       H   x       H   x 
-
- O   x    -0.000081
- H   x     0.002796   -0.002796
- H   x    -0.002715    0.000000    0.002715
-
-
-
-
-            O      x    O      y    O      z    H      x    H      y    H      z
-
- O      x   -0.000081
- O      y    0.000000    0.804086
- O      z    0.000000    0.016780    0.634984
-
- H      x    0.002796    0.000000    0.000000   -0.002796
- H      y    0.000000   -0.409705   -0.224797    0.000000    0.446640
- H      z    0.000000   -0.345620   -0.322422    0.000000    0.285083    0.305076
-
- H      x   -0.002715    0.000000    0.000000    0.000000    0.000000    0.000000
- H      y    0.000000   -0.394381    0.208017    0.000000   -0.036935    0.060537
- H      z    0.000000    0.328840   -0.312563    0.000000   -0.060286    0.017345
-
-
-            H      x    H      y    H      z
-
- H      x    0.002715
- H      y    0.000000    0.431316
- H      z    0.000000   -0.268554    0.295217
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.672464           1.709234           5.701391
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      y      0.00182310         0.00463385         0.01545686
-      z      0.67246201         1.70922776         5.70137011
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -4461,46 +3486,13 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H           H     
-            ------      ------      ------
- O     :    0.000000
- H     :    0.985429    0.000000
- H     :    0.993390    1.516168    0.000000
-
-
-  Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H     " and "H     ".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H          O            0.985429
-  bond distance:  H          O            0.993390
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H          O          H            100.027
-
-
-
-
  CPU time statistics for ABACUS
  ------------------------------
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.17 seconds
+ >>>> Total CPU  time used in ABACUS:   0.16 seconds
  >>>> Total wall time used in ABACUS:   7.00 seconds
 
 
@@ -4531,12 +3523,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
-
-
-     ************************************************************************
-     ************************** Output from HERINT **************************
-     ************************************************************************
 
  Threshold for neglecting two-electron integrals:  1.00D-15
 
@@ -4580,7 +3566,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  (Wave function specification NOT suppressed here, because symmetry has changed.)
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:01 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -4592,12 +3578,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -4633,30 +3619,48 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -74.8614812061       1.78D+00   1.04D-01    3  1  1  0
-      MULPOP O    -0.26; H     0.04; 
+      Virial theorem: -V/T =      2.003392
+      MULPOP  O      -0.36; H   _1  0.18; H   _2  0.18; 
+ -----------------------------------------------------------------------------
    2  -74.9602651426       2.38D-01  -9.88D-02    3  1  1  0
-      MULPOP O    -0.31; H    -0.01; 
+      Virial theorem: -V/T =      2.007483
+      MULPOP  O      -0.32; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    3  -74.9656615390       4.86D-02  -5.40D-03    3  1  1  0
-      MULPOP O    -0.35; H    -0.01; 
+      Virial theorem: -V/T =      2.006384
+      MULPOP  O      -0.33; H   _1  0.16; H   _2  0.16; 
+ -----------------------------------------------------------------------------
    4  -74.9658987284       3.52D-03  -2.37D-04    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006018
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    5  -74.9659011616       3.96D-04  -2.43D-06    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
+      Virial theorem: -V/T =      2.006002
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
    6  -74.9659011927       2.87D-05  -3.10D-08    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   7  -74.9659011928       4.27D-08  -8.98D-11    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   8  -74.9659011928       9.69D-11   0.00D+00    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-   9  -74.9659011928       1.76D-12  -1.42D-14    3  1  1  0
-      MULPOP O    -0.36; H    -0.01; 
-  10  -74.9659011928       1.15D-13  -1.42D-14    3  1  1  0
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   7  -74.9659011928       4.27D-08  -8.99D-11    3  1  1  0
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   8  -74.9659011928       9.69D-11   2.84D-14    3  1  1  0
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+   9  -74.9659011928       1.75D-12   0.00D+00    3  1  1  0
+      Virial theorem: -V/T =      2.006003
+      MULPOP  O      -0.33; H   _1  0.17; H   _2  0.17; 
+ -----------------------------------------------------------------------------
+  10  -74.9659011928       1.10D-13   1.42D-14    3  1  1  0
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -4682,7 +3686,10 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -4690,12 +3697,12 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
      Final HF energy:             -74.965901192777                 
      Nuclear repulsion:             8.906487554664
-     Electronic energy:           -83.872388747441
+     Electronic energy:           -83.872388747440
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:01 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
      Host name              : fe6                                     
 
 
@@ -4704,7 +3711,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:01 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
      Host name              : fe6                                     
 
  NOTE:    7 warnings have been issued.
@@ -4726,7 +3733,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
- Default print level:        0
+ Default print level:       -2
 
       The molecular gradient
       The molecular Hessian
@@ -4748,6 +3755,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
  Changes of defaults for SPIN-S:
  -------------------------------
 
+ Print level in spin-spin output routine:    -2
 
 
  Changes of defaults for TRPRSP:
@@ -4765,7 +3773,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:01 2010 
+     Date and time (Linux)  : Wed Mar 16 19:03:56 2011 
      Host name              : fe6                                     
  Symmetry -> DSO by analytical integration.
 
@@ -4776,143 +3784,8 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:06 2010 
+     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
      Host name              : fe6                                     
-
-
-                             Molecular geometry (au)
-                             -----------------------
-
- O          0.0000000000            0.0000000000           -0.1209999235
- H    1     0.0000000000            1.4325641791            1.0804935688
- H    2     0.0000000000           -1.4325641791            1.0804935688
-
-
-
-
-
-                        Molecular wave function and energy
-                        ----------------------------------
-
-     Spin multiplicity  1     State number       1     Total charge       0
-
-     Total energy        -74.9659011928 au (Hartrees)
-                         -2039.92588212 eV
-                           -196822.9453 kJ/mol
-
-
-                             Relativistic corrections
-                             ------------------------
-
-     Darwin correction:                          0.1294994111 au
-     Mass-velocity correction:                  -0.1669819759 au
-
-     Total relativistic correction:             -0.0374825648 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033837576 au
-
-
-
-
-                             Molecular gradient (au)
-                             -----------------------
-
-                         O    z    -0.0000005771
-                         H    y    -0.0000000490
-                         H    z     0.0000005771
-
-
-
- O          0.0000000000            0.0000000000           -0.0000005771
- H    1     0.0000000000           -0.0000000245            0.0000002885
- H    2     0.0000000000            0.0000000245            0.0000002885
-
-
-
-
-
-                              Molecular Hessian (au)
-                              ----------------------
-
-
-           Symmetry 1
-
-           O    z      H    y      H    z
-
- O    z    0.634900
- H    y   -0.432623    0.951695
- H    z   -0.634900    0.432623    0.634900
-
-
-           Symmetry 2
-
-           O    x      H    x
-
- O    x    0.000000
- H    x   -0.000000    0.000000
-
-
-           Symmetry 3
-
-           O    y      H    y      H    z
-
- O    y    0.803949
- H    y   -0.803949    0.803949
- H    z   -0.674273    0.674273    0.565513
-
-
-           Symmetry 4
-
-           H    x
-
- H    x   -0.000000
-
-
-
-
-            O      x    O      y    O      z    H    1 x    H    1 y    H    1 z
-
- O      x    0.000000
- O      y    0.000000    0.803949
- O      z    0.000000    0.000000    0.634900
-
- H    1 x   -0.000000    0.000000    0.000000    0.000000
- H    1 y    0.000000   -0.401975   -0.216312    0.000000    0.438911
- H    1 z    0.000000   -0.337136   -0.317450    0.000000    0.276724    0.300103
-
- H    2 x   -0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
- H    2 y    0.000000   -0.401975    0.216312    0.000000   -0.036936    0.060412
- H    2 z    0.000000    0.337136   -0.317450    0.000000   -0.060412    0.017347
-
-
-            H    2 x    H    2 y    H    2 z
-
- H    2 x    0.000000
- H    2 y    0.000000    0.438911
- H    2 z    0.000000   -0.276724    0.300103
-
-
-
-
-
-                                  Dipole moment
-                                  -------------
-
-                 au               Debye          C m (/(10**-30)
-              0.672454           1.709208           5.701303
-
-
-                             Dipole moment components
-                             ------------------------
-
-                 au               Debye          C m (/(10**-30)
-
-      z      0.67245412         1.70920770         5.70130320
-
-
-   Units:   1 a.u. =   2.54175 Debye 
-            1 a.u. =   8.47835 (10**-30) C m (SI)
-
-
 
 
  *******************************************************************************
@@ -4929,7 +3802,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -4949,7 +3822,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -4969,7 +3842,7 @@ Symmetry   1       1       1       2       2       3       4       4       4
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -4985,39 +3858,6 @@ Symmetry   1       1       1       2       2       3       4       4       4
   Isotropic PSO contribution:      3.2072 Hz
   Isotropic SD contribution :      1.2277 Hz
   Isotropic FC contribution :    -26.0863 Hz
-
-
-
-
-   Interatomic separations (in Angstrom):
-   --------------------------------------
-
-            O           H    1      H    2
-            ------      ------      ------
- O     :    0.000000
- H    1:    0.989410    0.000000
- H    2:    0.989410    1.516161    0.000000
-
-
-  Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
-
-
-  Bond distances (Angstrom):
-  --------------------------
-
-                  atom 1     atom 2       distance
-                  ------     ------       --------
-  bond distance:  H    1     O            0.989410
-  bond distance:  H    2     O            0.989410
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3         angle
-                  ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.027
 
 
 
@@ -5126,8 +3966,8 @@ Coordinate number   9
                         ---------------------------------
 
  O          0.0000000000            0.0000000000           -0.0000000341
- H    1    -0.0000000000           -0.0000000297            0.0000003043
- H    2    -0.0000000000            0.0000000297            0.0000003043
+ H   _1    -0.0000000000           -0.0000000297            0.0000003043
+ H   _2    -0.0000000000            0.0000000297            0.0000003043
 
 
                      Gradient in Dalton symmetry coordinates
@@ -5149,7 +3989,7 @@ Coordinate number   9
               1           1           4
     1      0.674372
     1     -0.000000    0.189549
-    4      0.000000    0.000000    0.774869
+    4     -0.000000    0.000000    0.774869
                                        
 
 
@@ -5163,7 +4003,7 @@ Coordinate number   9
 
         -1.469720    0.090044   -1.620801
          0.008182    0.101275   -0.152634
-         0.000000   -0.000000    0.000000
+        -0.000000   -0.000000   -0.000000
                                   
 
 
@@ -5209,8 +4049,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
                             --------------------------
 
  O          0.0000000000           -0.0000000000           -0.0012182044
- H    1     0.0000000000            0.0174427489            0.0108782058
- H    2     0.0000000000           -0.0174427489            0.0108782058
+ H   _1     0.0000000000            0.0174427489            0.0108782058
+ H   _2     0.0000000000           -0.0174427489            0.0108782058
 
 
                           +------------------------------+
@@ -5223,8 +4063,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
                             --------------------------
 
  O          0.0000000000           -0.0000000000           -0.1222181279
- H    1     0.0000000000            1.4500069280            1.0913717746
- H    2     0.0000000000           -1.4500069280            1.0913717746
+ H   _1     0.0000000000            1.4500069280            1.0913717746
+ H   _2     0.0000000000           -1.4500069280            1.0913717746
 
 
      ************************************************************************
@@ -5246,7 +4086,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -5266,7 +4106,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -5286,7 +4126,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -5319,7 +4159,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -5339,7 +4179,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -5359,7 +4199,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -5392,7 +4232,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    1 and O     :
+              Indirect spin-spin coupling between H   _1 and O     :
               ======================================================
 
 
@@ -5412,7 +4252,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    2 and O     :
+              Indirect spin-spin coupling between H   _2 and O     :
               ======================================================
 
 
@@ -5432,7 +4272,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
 
-              Indirect spin-spin coupling between H    2 and H    1:
+              Indirect spin-spin coupling between H   _2 and H   _1:
               ======================================================
 
 
@@ -5466,7 +4306,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:06 2010 
+     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
      Host name              : fe6                                     
 
 
@@ -5476,7 +4316,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:06 2010 
+     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
      Host name              : fe6                                     
 
 
@@ -5484,8 +4324,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
                              -----------------------
 
  O          0.0000000000            0.0000000000           -0.1209999235
- H    1     0.0000000000            1.4325641791            1.0804935688
- H    2     0.0000000000           -1.4325641791            1.0804935688
+ H   _1     0.0000000000            1.4325641791            1.0804935688
+ H   _2     0.0000000000           -1.4325641791            1.0804935688
 
 
 
@@ -5497,18 +4337,18 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -74.9659011928 au (Hartrees)
-                         -2039.92588212 eV
-                           -196822.9453 kJ/mol
+                         -2039.92594000 eV
+                           -196822.9432 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.1294994111 au
-     Mass-velocity correction:                  -0.1669819759 au
+     Darwin correction:                          0.1294994100 au
+     Mass-velocity correction:                  -0.1669819745 au
 
-     Total relativistic correction:             -0.0374825648 au (0.0500%)
-     Non-relativistic + relativistic energy:   -75.0033837576 au
+     Total relativistic correction:             -0.0374825645 au (0.0500%)
+     Non-relativistic + relativistic energy:   -75.0033837573 au
 
 
 
@@ -5525,7 +4365,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
                  au               Debye          C m (/(10**-30)
 
-      z      0.67245412         1.70920770         5.70130320
+      z      0.67245412         1.70920778         5.70130347
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -5537,15 +4377,15 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.989410    0.000000
- H    2:    0.989410    1.516161    0.000000
+ H   _1:    0.989410    0.000000
+ H   _2:    0.989410    1.516161    0.000000
 
 
   Max interatomic separation is    1.5162 Angstrom (    2.8651 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -5553,8 +4393,8 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.989410
-  bond distance:  H    2     O            0.989410
+  bond distance:  H   _1     O            0.989410
+  bond distance:  H   _2     O            0.989410
 
 
   Bond angles (degrees):
@@ -5562,7 +4402,7 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       100.027
+  bond angle:     H   _1     O          H   _2       100.027
 
 
 
@@ -5581,9 +4421,9 @@ Normal mode:    3   Frequency:    0.0199   Displacement:    0.0000
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.18 seconds
- >>>> Total wall time used in DALTON:  42.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.21 seconds
+ >>>> Total wall time used in DALTON:  40.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:39:06 2010 
+     Date and time (Linux)  : Wed Mar 16 19:04:01 2011 
      Host name              : fe6                                     

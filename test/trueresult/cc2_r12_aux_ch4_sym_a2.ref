@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 23:49:16 2010 
+     Date and time (Linux)  : Wed Mar 16 20:19:41 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -224,13 +225,18 @@ Point group: D2
                                  ---------------
 
                            C          12.000000
-                           H    1      1.007825
-                           H    2      1.007825
-                           H    3      1.007825
-                           H    4      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           H   _3      1.007825
+                           H   _4      1.007825
+                           C           0.000000
+                           H   _1      0.000000
+                           H   _2      0.000000
+                           H   _3      0.000000
+                           H   _4      0.000000
 
                        Total mass:    16.031300 amu
-                       Natural abundance:  98.841 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
@@ -326,29 +332,29 @@ Point group: D2
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C           H    1      H    2      H    3      H    4      C     
+            C           H   _1      H   _2      H   _3      H   _4      C     
             ------      ------      ------      ------      ------      ------
  C     :    0.000000
- H    1:    1.170203    0.000000
- H    2:    1.170203    1.910933    0.000000
- H    3:    1.170203    1.910933    1.910933    0.000000
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000
+ H   _1:    1.170203    0.000000
+ H   _2:    1.170203    1.910933    0.000000
+ H   _3:    1.170203    1.910933    1.910933    0.000000
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000
  C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
- H    1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
- H    2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
- H    3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
- H    4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+ H   _1:    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H   _2:    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H   _3:    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H   _4:    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
 
-            H    1      H    2      H    3      H    4
+            H   _1      H   _2      H   _3      H   _4
             ------      ------      ------      ------
- H    1:    0.000000
- H    2:    1.910933    0.000000
- H    3:    1.910933    1.910933    0.000000
- H    4:    1.910933    1.910933    1.910933    0.000000
+ H   _1:    0.000000
+ H   _2:    1.910933    0.000000
+ H   _3:    1.910933    1.910933    0.000000
+ H   _4:    1.910933    1.910933    1.910933    0.000000
 
 
   Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -356,10 +362,10 @@ Point group: D2
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     C            1.170203
-  bond distance:  H    2     C            1.170203
-  bond distance:  H    3     C            1.170203
-  bond distance:  H    4     C            1.170203
+  bond distance:  H   _1     C            1.170203
+  bond distance:  H   _2     C            1.170203
+  bond distance:  H   _3     C            1.170203
+  bond distance:  H   _4     C            1.170203
 
 
   Bond angles (degrees):
@@ -367,12 +373,12 @@ Point group: D2
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     C          H    2       109.471
-  bond angle:     H    1     C          H    3       109.471
-  bond angle:     H    1     C          H    4       109.471
-  bond angle:     H    2     C          H    3       109.471
-  bond angle:     H    2     C          H    4       109.471
-  bond angle:     H    3     C          H    4       109.471
+  bond angle:     H   _1     C          H   _2       109.471
+  bond angle:     H   _1     C          H   _3       109.471
+  bond angle:     H   _1     C          H   _4       109.471
+  bond angle:     H   _2     C          H   _3       109.471
+  bond angle:     H   _2     C          H   _4       109.471
+  bond angle:     H   _3     C          H   _4       109.471
 
 
 
@@ -390,7 +396,7 @@ Point group: D2
 
                A                   B                   C
 
-         137322.2826         137322.2826         137322.2826 MHz
+         137322.2814         137322.2814         137322.2814 MHz
             4.580578            4.580578            4.580578 cm-1
 
 
@@ -505,6 +511,8 @@ Point group: D2
    83     H    A   2py       77 +   78 -   79 -   80
    84     H    A   2pz       81 -   82 +   83 -   84
 
+  Number of floating/multiple basis set orbitals :    5
+
   Symmetries of electric field:  B3 (4)  B2 (2)  B1 (3)
 
   Symmetries of magnetic field:  B3 (4)  B2 (2)  B1 (3)
@@ -527,7 +535,7 @@ Point group: D2
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Cartesian multipole moment integrals of orders 2 and lower
 
@@ -541,7 +549,7 @@ Point group: D2
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -568,7 +576,7 @@ Point group: D2
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 23:49:17 2010 
+     Date and time (Linux)  : Wed Mar 16 20:19:41 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -583,8 +591,7 @@ Point group: D2
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -594,6 +601,10 @@ Point group: D2
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -653,52 +664,81 @@ Point group: D2
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   1  -26.9208461562       1.74D+01  -2.69D+01    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   2  -34.5740142129       5.98D+00  -7.65D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   3  -38.7812870349       4.97D+00  -4.21D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   4  -40.0920858983       1.21D+00  -1.31D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -7    T
-   5  -40.1914985533       6.81D-02  -9.94D-02    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
-   6  -40.1917302493       2.39D-02  -2.32D-04    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   7  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   7  -40.1917714460       1.96D-03  -4.12D-05    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   8  Screening settings (-IFTHRS, DIFDEN)   -9    T
-   8  -40.1917720843       2.24D-04  -6.38D-07    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -11    F
-   9  -40.1917720926       2.77D-05  -8.29D-09    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -11    T
-  10  -40.1917720926       1.91D-06  -7.56D-11    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -13    F
-  11  -40.1917720926       2.05D-07   5.94D-12    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -13    T
-  12  -40.1917720926       3.18D-08  -2.84D-14    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -17    F
-  13  -40.1917720926       6.90D-10   2.84D-14    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  14  Screening settings (-IFTHRS, DIFDEN)  -17    T
-  14  -40.1917720926       1.79D-11   0.00D+00    2  1  1  1
-      MULPOP C      NaN; H      NaN; 
-  15  Screening settings (-IFTHRS, DIFDEN)  -17    T
-  15  -40.1917720926       4.37D-13   0.00D+00    2  1  1  1
- DIIS converged in  15 iterations !
- - total time used in SIRFCK        :       0.54 seconds
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1  -26.9208461510       1.74D+01  -2.69D+01    2  1  1  1
+      Virial theorem: -V/T =      1.397424
+      MULPOP  C      -3.96; H   _1  0.99; H   _2  0.99; H   _3  0.99; H   _4  0.99; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -34.5740137487       5.98D+00  -7.65D+00    2  1  1  1
+      Virial theorem: -V/T =      2.092202
+      MULPOP  C       7.24; H   _1 -1.81; H   _2 -1.81; H   _3 -1.81; H   _4 -1.81; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -38.7812868927       4.97D+00  -4.21D+00    2  1  1  1
+      Virial theorem: -V/T =      1.865551
+      MULPOP  C      -2.05; H   _1  0.51; H   _2  0.51; H   _3  0.51; H   _4  0.51; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -40.0920858822       1.21D+00  -1.31D+00    2  1  1  1
+      Virial theorem: -V/T =      1.982551
+      MULPOP  C      -0.78; H   _1  0.19; H   _2  0.19; H   _3  0.19; H   _4  0.19; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5  -40.1914985475       6.81D-02  -9.94D-02    2  1  1  1
+      Virial theorem: -V/T =      2.012916
+      MULPOP  C      -0.36; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6  -40.1917302489       2.39D-02  -2.32D-04    2  1  1  1
+      Virial theorem: -V/T =      2.011954
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7  -40.1917714459       1.96D-03  -4.12D-05    2  1  1  1
+      Virial theorem: -V/T =      2.011289
+      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -40.1917720842       2.24D-04  -6.38D-07    2  1  1  1
+      Virial theorem: -V/T =      2.011253
+      MULPOP  C      -0.38; H   _1  0.10; H   _2  0.10; H   _3  0.10; H   _4  0.10; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -40.1917720926       2.77D-05  -8.32D-09    2  1  1  1
+      Virial theorem: -V/T =      2.011254
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -40.1917720926       1.90D-06  -6.95D-11    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -40.1917720926       2.04D-07  -2.56D-13    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -40.1917720926       3.20D-08   0.00D+00    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -40.1917720926       6.94D-10   1.42D-14    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -40.1917720926       1.71D-11  -4.26D-14    2  1  1  1
+      Virial theorem: -V/T =      2.011255
+      MULPOP  C      -0.38; H   _1  0.09; H   _2  0.09; H   _3  0.09; H   _4  0.09; 
+ -----------------------------------------------------------------------------
+  15  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  15  -40.1917720926       3.96D-13   4.26D-14    2  1  1  1
+
+ *** DIIS converged in  15 iterations !
+   - total time used in SIRFCK :              0.57 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -723,7 +763,7 @@ Point group: D2
          1.69778322
 
     E(LUMO) :     0.15222200 au (symmetry 1)
-  - E(HOMO) :    -0.52478334 au (symmetry 3)
+  - E(HOMO) :    -0.52478334 au (symmetry 2)
   ------------------------------------------
     gap     :     0.67700534 au
 
@@ -747,20 +787,23 @@ Point group: D2
  >>> Time used in R12AUX is   0.33 seconds
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -40.191772092640                 
+     Final HF energy:             -40.191772092642                 
      Nuclear repulsion:            12.514560078913
-     Electronic energy:           -52.706332171553
+     Electronic energy:           -52.706332171555
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 23:49:18 2010 
+     Date and time (Linux)  : Wed Mar 16 20:19:42 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -768,7 +811,7 @@ Point group: D2
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 C   :1s     0.5636  -0.1015   0.0530   0.0703
    2 C   :1s     0.4666  -0.1682   0.0852   0.1326
    3 C   :1s     0.0034   0.4331  -0.0983  -0.4555
@@ -783,7 +826,7 @@ Point group: D2
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C   :2py    0.1818  -0.1464   0.0159
    2 C   :2py    0.2931  -0.1083  -0.0054
    3 C   :2py    0.2049  -1.1248   1.3166
@@ -798,7 +841,7 @@ Point group: D2
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C   :2pz    0.1818  -0.1464   0.0159
    2 C   :2pz    0.2931  -0.1083  -0.0054
    3 C   :2pz    0.2049  -1.1248   1.3166
@@ -813,7 +856,7 @@ Point group: D2
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C   :2px    0.1818  -0.1464   0.0159
    2 C   :2px    0.2931  -0.1083  -0.0054
    3 C   :2px    0.2049  -1.1248   1.3166
@@ -827,11 +870,11 @@ Point group: D2
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.91 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.93 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:49:18 2010 
+     Date and time (Linux)  : Wed Mar 16 20:19:42 2011 
      Host name              : fe6                                     
 
 
@@ -894,19 +937,19 @@ Point group: D2
  Core memory required by CCSD_R12 :          81390  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [6] is   3.72 seconds
+ >>> Time used in R  [6] is   3.79 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
  >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   1.58 seconds
+ >>> Time used in 1/R[5] is   1.56 seconds
  Computation of (ip'|r12|jq')X(p'r')(kr'|r12|lq') integrals done
  Computation of (i'p'|r12|jq') integrals done
- >>> Time used in R  [6] is   3.58 seconds
+ >>> Time used in R  [6] is   3.55 seconds
  Computation of (ip'|[T,r12]|jq') integrals done
- >>> Time used in T,R[5] is   2.28 seconds
+ >>> Time used in T,R[5] is   2.25 seconds
 
 
                  +-----------------------------------------------+
@@ -954,8 +997,8 @@ Point group: D2
 
               MP2-R12/B   correlation energy =   -0.202263065
  >>> Time used in E(R12) is   0.19 seconds
- Time for MP2-R12 part cpu:   11.379269361495972     
- Time for MP2-R12 part wall:   11.000000000000000     
+ Time for MP2-R12 part cpu:   11.352274179458618     
+ Time for MP2-R12 part wall:   12.000000000000000     
  Preparing R12 Ansatz 2/3 ... ONEAUX= F
    
 
@@ -977,104 +1020,104 @@ Point group: D2
           Number of t2' amplitudes for R12 part   :        40
           Total number of amplitudes in ccsd      :      2889
 
- Iter.  1: Coupled cluster MP2-R12/B energy :     -40.3940351574691192
-       Norm^2 of Omegar12  in NXTAM:        0.1816724865D-27
- Iter.  1: Coupled cluster CC2-R12/B energy :     -40.3939356210676195
+ Iter.  1: Coupled cluster MP2-R12/B energy :     -40.3940351574709169
+       Norm^2 of Omegar12  in NXTAM:        0.2159386492D-26
+ Iter.  1: Coupled cluster CC2-R12/B energy :     -40.3939356210694385
        Norm^2 of Omegar12  in NXTAM:        0.1567276905D-05
- Iter.  2: Coupled cluster CC2-R12/B energy :     -40.3956699915175008
-       Norm^2 of Omegar12  in NXTAM:        0.6587482789D-06
- Iter.  3: Coupled cluster CC2-R12/B energy :     -40.3951748939069901
+ Iter.  2: Coupled cluster CC2-R12/B energy :     -40.3956699915192203
+       Norm^2 of Omegar12  in NXTAM:        0.6587482788D-06
+ Iter.  3: Coupled cluster CC2-R12/B energy :     -40.3951748939086741
        Norm^2 of Omegar12  in NXTAM:        0.2550693558D-06
- Iter.  4: Coupled cluster CC2-R12/B energy :     -40.3953622911446359
-       Norm^2 of Omegar12  in NXTAM:        0.9573860506D-08
- Iter.  5: Coupled cluster CC2-R12/B energy :     -40.3953268612030811
-       Norm^2 of Omegar12  in NXTAM:        0.3070580571D-07
- Iter.  6: Coupled cluster CC2-R12/B energy :     -40.3953420169066533
+ Iter.  4: Coupled cluster CC2-R12/B energy :     -40.3953622911463412
+       Norm^2 of Omegar12  in NXTAM:        0.9573860508D-08
+ Iter.  5: Coupled cluster CC2-R12/B energy :     -40.3953268612045804
+       Norm^2 of Omegar12  in NXTAM:        0.3070580572D-07
+ Iter.  6: Coupled cluster CC2-R12/B energy :     -40.3953420169080175
        Norm^2 of Omegar12  in NXTAM:        0.1142247068D-07
- Iter.  7: Coupled cluster CC2-R12/B energy :     -40.3953651015756208
-       Norm^2 of Omegar12  in NXTAM:        0.6497173955D-08
- Iter.  8: Coupled cluster CC2-R12/B energy :     -40.3953698044002323
+ Iter.  7: Coupled cluster CC2-R12/B energy :     -40.3953651015771982
+       Norm^2 of Omegar12  in NXTAM:        0.6497173956D-08
+ Iter.  8: Coupled cluster CC2-R12/B energy :     -40.3953698044017599
        Norm^2 of Omegar12  in NXTAM:        0.1880781625D-08
- Iter.  9: Coupled cluster CC2-R12/B energy :     -40.3953836714172496
+ Iter.  9: Coupled cluster CC2-R12/B energy :     -40.3953836714184362
        Norm^2 of Omegar12  in NXTAM:        0.1150533360D-08
- Iter. 10: Coupled cluster CC2-R12/B energy :     -40.3953741713825067
+ Iter. 10: Coupled cluster CC2-R12/B energy :     -40.3953741713836436
        Norm^2 of Omegar12  in NXTAM:        0.1181922838D-08
- Iter. 11: Coupled cluster CC2-R12/B energy :     -40.3953838472755464
+ Iter. 11: Coupled cluster CC2-R12/B energy :     -40.3953838472767757
        Norm^2 of Omegar12  in NXTAM:        0.3169798572D-09
- Iter. 12: Coupled cluster CC2-R12/B energy :     -40.3953860482050970
+ Iter. 12: Coupled cluster CC2-R12/B energy :     -40.3953860482065110
        Norm^2 of Omegar12  in NXTAM:        0.1806750375D-09
- Iter. 13: Coupled cluster CC2-R12/B energy :     -40.3953871587159554
-       Norm^2 of Omegar12  in NXTAM:        0.9114946944D-10
- Iter. 14: Coupled cluster CC2-R12/B energy :     -40.3953870079936834
-       Norm^2 of Omegar12  in NXTAM:        0.3680776529D-10
- Iter. 15: Coupled cluster CC2-R12/B energy :     -40.3953870869734502
-       Norm^2 of Omegar12  in NXTAM:        0.2200975005D-10
- Iter. 16: Coupled cluster CC2-R12/B energy :     -40.3953865492563224
-       Norm^2 of Omegar12  in NXTAM:        0.6274370415D-11
- Iter. 17: Coupled cluster CC2-R12/B energy :     -40.3953863722666853
-       Norm^2 of Omegar12  in NXTAM:        0.2830820381D-12
- Iter. 18: Coupled cluster CC2-R12/B energy :     -40.3953864368274225
-       Norm^2 of Omegar12  in NXTAM:        0.3794264816D-11
- Iter. 19: Coupled cluster CC2-R12/B energy :     -40.3953863460961813
-       Norm^2 of Omegar12  in NXTAM:        0.1180165453D-11
- Iter. 20: Coupled cluster CC2-R12/B energy :     -40.3953862374157353
-       Norm^2 of Omegar12  in NXTAM:        0.9273481812D-12
- Iter. 21: Coupled cluster CC2-R12/B energy :     -40.3953862273865525
-       Norm^2 of Omegar12  in NXTAM:        0.2750356682D-12
- Iter. 22: Coupled cluster CC2-R12/B energy :     -40.3953861888702477
-       Norm^2 of Omegar12  in NXTAM:        0.1870933963D-12
- Iter. 23: Coupled cluster CC2-R12/B energy :     -40.3953862015925580
-       Norm^2 of Omegar12  in NXTAM:        0.1033066379D-12
- Iter. 24: Coupled cluster CC2-R12/B energy :     -40.3953862057944093
-       Norm^2 of Omegar12  in NXTAM:        0.4593090366D-13
- Iter. 25: Coupled cluster CC2-R12/B energy :     -40.3953862406071167
-       Norm^2 of Omegar12  in NXTAM:        0.5583876598D-14
- Iter. 26: Coupled cluster CC2-R12/B energy :     -40.3953862186836119
-       Norm^2 of Omegar12  in NXTAM:        0.3154643093D-13
- Iter. 27: Coupled cluster CC2-R12/B energy :     -40.3953862365783110
-       Norm^2 of Omegar12  in NXTAM:        0.9488997927D-14
- Iter. 28: Coupled cluster CC2-R12/B energy :     -40.3953862491206337
-       Norm^2 of Omegar12  in NXTAM:        0.5844778943D-14
- Iter. 29: Coupled cluster CC2-R12/B energy :     -40.3953862535363157
-       Norm^2 of Omegar12  in NXTAM:        0.1791154434D-14
- Iter. 30: Coupled cluster CC2-R12/B energy :     -40.3953862554083827
-       Norm^2 of Omegar12  in NXTAM:        0.1042471474D-14
- Iter. 31: Coupled cluster CC2-R12/B energy :     -40.3953862555145093
-       Norm^2 of Omegar12  in NXTAM:        0.5147092399D-15
- Iter. 32: Coupled cluster CC2-R12/B energy :     -40.3953862555154686
-       Norm^2 of Omegar12  in NXTAM:        0.9541517783D-16
- Iter. 33: Coupled cluster CC2-R12/B energy :     -40.3953862548547136
-       Norm^2 of Omegar12  in NXTAM:        0.1574928447D-16
- Iter. 34: Coupled cluster CC2-R12/B energy :     -40.3953862550414442
-       Norm^2 of Omegar12  in NXTAM:        0.6037675488D-16
- Iter. 35: Coupled cluster CC2-R12/B energy :     -40.3953862547582574
-       Norm^2 of Omegar12  in NXTAM:        0.2368015792D-16
- Iter. 36: Coupled cluster CC2-R12/B energy :     -40.3953862543330331
-       Norm^2 of Omegar12  in NXTAM:        0.1593442599D-16
- Iter. 37: Coupled cluster CC2-R12/B energy :     -40.3953862543368061
-       Norm^2 of Omegar12  in NXTAM:        0.4510309118D-17
- Iter. 38: Coupled cluster CC2-R12/B energy :     -40.3953862541890487
-       Norm^2 of Omegar12  in NXTAM:        0.3346718978D-17
- Iter. 39: Coupled cluster CC2-R12/B energy :     -40.3953862542577511
-       Norm^2 of Omegar12  in NXTAM:        0.1792069045D-17
- Iter. 40: Coupled cluster CC2-R12/B energy :     -40.3953862542960849
-       Norm^2 of Omegar12  in NXTAM:        0.9281128330D-18
- Iter. 41: Coupled cluster CC2-R12/B energy :     -40.3953862544428546
-       Norm^2 of Omegar12  in NXTAM:        0.2700248826D-18
- Iter. 42: Coupled cluster CC2-R12/B energy :     -40.3953862543571702
-       Norm^2 of Omegar12  in NXTAM:        0.6398842341D-18
- Iter. 43: Coupled cluster CC2-R12/B energy :     -40.3953862544414051
-       Norm^2 of Omegar12  in NXTAM:        0.2261897906D-18
- Iter. 44: Coupled cluster CC2-R12/B energy :     -40.3953862545028386
-       Norm^2 of Omegar12  in NXTAM:        0.1106182559D-18
- Iter. 45: Coupled cluster CC2-R12/B energy :     -40.3953862545251638
-       Norm^2 of Omegar12  in NXTAM:        0.3839692587D-19
- Iter. 46: Coupled cluster CC2-R12/B energy :     -40.3953862545342659
-       Norm^2 of Omegar12  in NXTAM:        0.1828133695D-19
- Iter. 47: Coupled cluster CC2-R12/B energy :     -40.3953862545355307
+ Iter. 13: Coupled cluster CC2-R12/B energy :     -40.3953871587173339
+       Norm^2 of Omegar12  in NXTAM:        0.9114946942D-10
+ Iter. 14: Coupled cluster CC2-R12/B energy :     -40.3953870079951329
+       Norm^2 of Omegar12  in NXTAM:        0.3680776509D-10
+ Iter. 15: Coupled cluster CC2-R12/B energy :     -40.3953870869748926
+       Norm^2 of Omegar12  in NXTAM:        0.2200975009D-10
+ Iter. 16: Coupled cluster CC2-R12/B energy :     -40.3953865492574948
+       Norm^2 of Omegar12  in NXTAM:        0.6274370251D-11
+ Iter. 17: Coupled cluster CC2-R12/B energy :     -40.3953863722678008
+       Norm^2 of Omegar12  in NXTAM:        0.2830820254D-12
+ Iter. 18: Coupled cluster CC2-R12/B energy :     -40.3953864368292344
+       Norm^2 of Omegar12  in NXTAM:        0.3794264720D-11
+ Iter. 19: Coupled cluster CC2-R12/B energy :     -40.3953863460972684
+       Norm^2 of Omegar12  in NXTAM:        0.1180165442D-11
+ Iter. 20: Coupled cluster CC2-R12/B energy :     -40.3953862374174761
+       Norm^2 of Omegar12  in NXTAM:        0.9273481663D-12
+ Iter. 21: Coupled cluster CC2-R12/B energy :     -40.3953862273877178
+       Norm^2 of Omegar12  in NXTAM:        0.2750356578D-12
+ Iter. 22: Coupled cluster CC2-R12/B energy :     -40.3953861888720240
+       Norm^2 of Omegar12  in NXTAM:        0.1870933852D-12
+ Iter. 23: Coupled cluster CC2-R12/B energy :     -40.3953862015933751
+       Norm^2 of Omegar12  in NXTAM:        0.1033066317D-12
+ Iter. 24: Coupled cluster CC2-R12/B energy :     -40.3953862057960720
+       Norm^2 of Omegar12  in NXTAM:        0.4593091980D-13
+ Iter. 25: Coupled cluster CC2-R12/B energy :     -40.3953862406079551
+       Norm^2 of Omegar12  in NXTAM:        0.5583879001D-14
+ Iter. 26: Coupled cluster CC2-R12/B energy :     -40.3953862186845569
+       Norm^2 of Omegar12  in NXTAM:        0.3154644123D-13
+ Iter. 27: Coupled cluster CC2-R12/B energy :     -40.3953862365800731
+       Norm^2 of Omegar12  in NXTAM:        0.9488993721D-14
+ Iter. 28: Coupled cluster CC2-R12/B energy :     -40.3953862491220548
+       Norm^2 of Omegar12  in NXTAM:        0.5844783860D-14
+ Iter. 29: Coupled cluster CC2-R12/B energy :     -40.3953862535378789
+       Norm^2 of Omegar12  in NXTAM:        0.1791153508D-14
+ Iter. 30: Coupled cluster CC2-R12/B energy :     -40.3953862554098819
+       Norm^2 of Omegar12  in NXTAM:        0.1042471922D-14
+ Iter. 31: Coupled cluster CC2-R12/B energy :     -40.3953862555164207
+       Norm^2 of Omegar12  in NXTAM:        0.5147089715D-15
+ Iter. 32: Coupled cluster CC2-R12/B energy :     -40.3953862555165841
+       Norm^2 of Omegar12  in NXTAM:        0.9541517279D-16
+ Iter. 33: Coupled cluster CC2-R12/B energy :     -40.3953862548561204
+       Norm^2 of Omegar12  in NXTAM:        0.1574925362D-16
+ Iter. 34: Coupled cluster CC2-R12/B energy :     -40.3953862550426379
+       Norm^2 of Omegar12  in NXTAM:        0.6037673313D-16
+ Iter. 35: Coupled cluster CC2-R12/B energy :     -40.3953862547595506
+       Norm^2 of Omegar12  in NXTAM:        0.2368013311D-16
+ Iter. 36: Coupled cluster CC2-R12/B energy :     -40.3953862543342979
+       Norm^2 of Omegar12  in NXTAM:        0.1593436626D-16
+ Iter. 37: Coupled cluster CC2-R12/B energy :     -40.3953862543382627
+       Norm^2 of Omegar12  in NXTAM:        0.4510372231D-17
+ Iter. 38: Coupled cluster CC2-R12/B energy :     -40.3953862541905266
+       Norm^2 of Omegar12  in NXTAM:        0.3346774228D-17
+ Iter. 39: Coupled cluster CC2-R12/B energy :     -40.3953862542593924
+       Norm^2 of Omegar12  in NXTAM:        0.1792079004D-17
+ Iter. 40: Coupled cluster CC2-R12/B energy :     -40.3953862542971223
+       Norm^2 of Omegar12  in NXTAM:        0.9282063113D-18
+ Iter. 41: Coupled cluster CC2-R12/B energy :     -40.3953862544440554
+       Norm^2 of Omegar12  in NXTAM:        0.2700572999D-18
+ Iter. 42: Coupled cluster CC2-R12/B energy :     -40.3953862543583924
+       Norm^2 of Omegar12  in NXTAM:        0.6399508239D-18
+ Iter. 43: Coupled cluster CC2-R12/B energy :     -40.3953862544427054
+       Norm^2 of Omegar12  in NXTAM:        0.2261644133D-18
+ Iter. 44: Coupled cluster CC2-R12/B energy :     -40.3953862545041673
+       Norm^2 of Omegar12  in NXTAM:        0.1106145600D-18
+ Iter. 45: Coupled cluster CC2-R12/B energy :     -40.3953862545262794
+       Norm^2 of Omegar12  in NXTAM:        0.3839717364D-19
+ Iter. 46: Coupled cluster CC2-R12/B energy :     -40.3953862545356230
+       Norm^2 of Omegar12  in NXTAM:        0.1828139952D-19
+ Iter. 47: Coupled cluster CC2-R12/B energy :     -40.3953862545363123
 
  CC2-R12/B energy converged to within   0.10D-09 is    -40.395386255
- Final 2-norm of the CC vector function:  1.23615628D-10
+ Final 2-norm of the CC vector function:  1.23615715D-10
  R12       energy converged to within   0.10D-09 is     -0.138561123
 
 
@@ -1132,13 +1175,13 @@ Point group: D2
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626247880        1.0633632596757128     
- Start vector guessed from diagonal
- ... selected element no. 20
+  MIN AND MAX IN SELECTED SUPSPACE   0.75401585626269496        1.0633632596765348     
  Start vector guessed from diagonal
  ... selected element no. 11
  Start vector guessed from diagonal
  ... selected element no. 29
+ Start vector guessed from diagonal
+ ... selected element no. 20
  Start vector guessed from diagonal
  ... selected element no. 21
 
@@ -1161,85 +1204,85 @@ Point group: D2
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49875199
-       2      0.50046587
-       3      0.55342193
-       4      0.64937707
+       1      0.49875229
+       2      0.50046568
+       3      0.55342199
+       4      0.64937712
       2       4         0.03     0.11E+00
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49244781
-       2      0.49325776
-       3      0.54715699
-       4      0.64162963
+       1      0.49244756
+       2      0.49325791
+       3      0.54715694
+       4      0.64162966
       3       4         0.03     0.50E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49161918
-       2      0.49196008
-       3      0.54512465
-       4      0.64004413
+       1      0.49161930
+       2      0.49195988
+       3      0.54512464
+       4      0.64004408
       4       4         0.03     0.37E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49174856
+       1      0.49174864
        2      0.49206296
-       3      0.54447279
-       4      0.64065772
- (CCORT) Norm^2 (R12-part) =  -7.23831912807638284E-002
+       3      0.54447288
+       4      0.64065776
+ (CCORT) Norm^2 (R12-part) =  -7.23815547310968227E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
       5       4         0.03     0.30E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49165429
-       2      0.49186010
-       3      0.54406927
-       4      0.63973368
+       1      0.49165426
+       2      0.49186030
+       3      0.54406929
+       4      0.63973365
       6       4         0.03     0.20E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49147204
-       2      0.49149646
-       3      0.54309868
-       4      0.63917790
+       1      0.49147212
+       2      0.49149642
+       3      0.54309866
+       4      0.63917778
       7       4         0.03     0.17E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49150214
+       1      0.49150217
        2      0.49152286
-       3      0.54307362
-       4      0.63941186
+       3      0.54307363
+       4      0.63941187
       8       4         0.03     0.14E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49147076
-       2      0.49147803
-       3      0.54321575
-       4      0.63862051
+       1      0.49147075
+       2      0.49147807
+       3      0.54321576
+       4      0.63862034
       9       4         0.03     0.17E-01
 
  REDUCED EIGENVALUES real part:
 
               Column   1
-       1      0.49147730
-       2      0.49148066
-       3      0.54316315
-       4      0.63845314
- (CCORT) Norm^2 (R12-part) =  -4.54799703217730403E-002
+       1      0.49147731
+       2      0.49148064
+       3      0.54316314
+       4      0.63845305
+ (CCORT) Norm^2 (R12-part) =  -4.55053628557179415E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      10       4         0.03     0.16E-01
 
@@ -1247,9 +1290,9 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
 
               Column   1
        1      0.49148697
-       2      0.49149118
+       2      0.49149117
        3      0.54318563
-       4      0.63841059
+       4      0.63841064
      11       4         0.03     0.66E-02
 
  REDUCED EIGENVALUES real part:
@@ -1258,8 +1301,8 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
        1      0.49147755
        2      0.49147960
        3      0.54315169
-       4      0.63830157
- (CCORT) Norm^2 (R12-part) =  -7.61861818380647204E-002
+       4      0.63830158
+ (CCORT) Norm^2 (R12-part) =  -7.61677779997969595E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
      12       4         0.03     0.44E-02
 
@@ -1269,7 +1312,7 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
        1      0.49148758
        2      0.49149283
        3      0.54315816
-       4      0.63830200
+       4      0.63830199
      13       4         0.03     0.27E-02
 
  REDUCED EIGENVALUES real part:
@@ -1278,8 +1321,8 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
        1      0.49148396
        2      0.49148621
        3      0.54315492
-       4      0.63828326
- (CCORT) Norm^2 (R12-part) =  -3.72943444098592924E-002
+       4      0.63828328
+ (CCORT) Norm^2 (R12-part) =  -3.71641974991342369E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      14       4         0.03     0.23E-02
 
@@ -1290,11 +1333,11 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        2      0.49148314
        3      0.54315826
        4      0.63829940
- (CCORT) Norm^2 (R12-part) =  -8.35971771856484517E-012
+ (CCORT) Norm^2 (R12-part) =  -8.36499768905621984E-012
 WARNING: R12 part of input vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.11747777004569787     
+ (CCORT) Norm^2 (R12-part) =  -0.11745608994006101     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.17759343554501106     
+ (CCORT) Norm^2 (R12-part) =  -0.17759196921690781     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      15       4         0.03     0.14E-02
 
@@ -1305,7 +1348,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148445
        3      0.54315765
        4      0.63829555
- (CCORT) Norm^2 (R12-part) =  -2.26280388245763478E-002
+ (CCORT) Norm^2 (R12-part) =  -2.26263351535438278E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
      16       4         0.03     0.96E-03
 
@@ -1325,11 +1368,11 @@ WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
        2      0.49148396
        3      0.54315780
        4      0.63828598
- (CCORT) Norm^2 (R12-part) =  -0.16969656929636151     
+ (CCORT) Norm^2 (R12-part) =  -0.16969400556080866     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -8.32341763587008537E-002
+ (CCORT) Norm^2 (R12-part) =  -8.33021841102666860E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -7.38118657135173051E-002
+ (CCORT) Norm^2 (R12-part) =  -7.36857622831921383E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      18       4         0.03     0.52E-03
 
@@ -1349,9 +1392,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        2      0.49148368
        3      0.54315770
        4      0.63829371
- (CCORT) Norm^2 (R12-part) =  -7.29911583938808034E-002
+ (CCORT) Norm^2 (R12-part) =  -7.30967107492010160E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.18229837746392713     
+ (CCORT) Norm^2 (R12-part) =  -0.18230085586282202     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      20       4         0.03     0.16E-03
 
@@ -1362,9 +1405,9 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148371
        3      0.54315757
        4      0.63829353
- (CCORT) Norm^2 (R12-part) =  -8.35046909307261137E-003
+ (CCORT) Norm^2 (R12-part) =  -8.36291382032956082E-003
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.44116509252047650E-002
+ (CCORT) Norm^2 (R12-part) =  -1.44508064830420561E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      21       4         0.03     0.86E-04
 
@@ -1384,9 +1427,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        2      0.49148364
        3      0.54315751
        4      0.63829242
- (CCORT) Norm^2 (R12-part) =  -9.01628450825454897E-004
+ (CCORT) Norm^2 (R12-part) =  -1.00318844895000425E-003
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.45857195399199657     
+ (CCORT) Norm^2 (R12-part) =  -0.45839505817719273     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      23       4         0.03     0.19E-04
 
@@ -1397,9 +1440,9 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148364
        3      0.54315753
        4      0.63829247
- (CCORT) Norm^2 (R12-part) =  -7.06186691631833230E-002
+ (CCORT) Norm^2 (R12-part) =  -7.05135464159551972E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.35714001480629013E-002
+ (CCORT) Norm^2 (R12-part) =  -1.36381175146558960E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      24       4         0.03     0.10E-04
 
@@ -1419,9 +1462,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829240
- (CCORT) Norm^2 (R12-part) =  -3.29436032542414284E-002
+ (CCORT) Norm^2 (R12-part) =  -3.05084801736798111E-002
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.14441692999326947     
+ (CCORT) Norm^2 (R12-part) =  -0.14404543785238894     
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
      26       4         0.03     0.30E-05
 
@@ -1432,9 +1475,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829240
- (CCORT) Norm^2 (R12-part) =  -9.53039771236408040E-002
+ (CCORT) Norm^2 (R12-part) =  -0.11005275437116273     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -6.52414489218891142E-002
+ (CCORT) Norm^2 (R12-part) =  -5.09227708287076780E-002
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
      27       4         0.03     0.19E-05
 
@@ -1445,11 +1488,13 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829240
- (CCORT) Norm^2 (R12-part) =  -0.24827903067843538     
+ (CCORT) Norm^2 (R12-part) =  -0.41985073367470438     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -1.81954102697459014E-002
+ (CCORT) Norm^2 (R12-part) =  -0.11438175824868516     
+WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
+ (CCORT) Norm^2 (R12-part) =  -1.94825211088085135E-002
 WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
-     28       4         0.03     0.20E-05
+     28       4         0.03     0.19E-05
 
  REDUCED EIGENVALUES real part:
 
@@ -1458,13 +1503,13 @@ WARNING: R12 part of result vector no.    4 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829241
- (CCORT) Norm^2 (R12-part) =   -1.1786824122350397     
+ (CCORT) Norm^2 (R12-part) =  -0.98556073132288224     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.25682852082777552     
+ (CCORT) Norm^2 (R12-part) =  -0.22136016720182450     
 WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.12662960936023154     
+ (CCORT) Norm^2 (R12-part) =  -5.27594166950084570E-002
 WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
-     29       4         0.03     0.68E-06
+     29       4         0.03     0.74E-06
 
  REDUCED EIGENVALUES real part:
 
@@ -1473,11 +1518,9 @@ WARNING: R12 part of result vector no.    3 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829241
- (CCORT) Norm^2 (R12-part) =  -0.18003767825766648     
+ (CCORT) Norm^2 (R12-part) =  -0.46851050789843779     
 WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
- (CCORT) Norm^2 (R12-part) =  -0.28667178461499959     
-WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
-     30       4         0.03     0.42E-06
+     30       4         0.03     0.46E-06
 
  REDUCED EIGENVALUES real part:
 
@@ -1486,7 +1529,9 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829241
-     31       4         0.03     0.16E-06
+ (CCORT) Norm^2 (R12-part) =  -5.95315979460407044E-003
+WARNING: R12 part of result vector no.    1 in CCORT has norm < 0
+     31       3         0.02     0.17E-06
 
  REDUCED EIGENVALUES real part:
 
@@ -1495,7 +1540,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829241
-     32       2         0.02     0.11E-06
+     32       2         0.02     0.97E-07
 
  REDUCED EIGENVALUES real part:
 
@@ -1504,7 +1549,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829241
-     33       1         0.01     0.23E-07
+     33       1         0.01     0.22E-07
 
  REDUCED EIGENVALUES real part:
 
@@ -1513,7 +1558,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
        2      0.49148364
        3      0.54315754
        4      0.63829241
-     34       1         0.01     0.92E-08
+     34       1         0.01     0.84E-08
     --------------------------------------
     converged in 34 iterations
     threshold:    0.10E-07
@@ -1521,15 +1566,15 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            1.04
+         CC_TRDRV            1.01
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          1.06
+         Total time          1.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  1 minute   4 seconds
- >>>> Total wall time used in CCEQ_SOLV:  1 minute  11 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  1 minute   1 second 
+ >>>> Total wall time used in CCEQ_SOLV:  1 minute   8 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1549,7 +1594,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  eigenvector was orthogonalized against  1 degenerate vectors
 
 
- eigenvector for state  1      0.49148364has been renormalized... scaling factor:  0.99236168    
+ eigenvector for state  1      0.49148364has been renormalized... scaling factor:  0.80346993    
 
  degenerate eigenvector found:  2        0.4914836398
  eigenvector was orthogonalized against  1 degenerate vectors
@@ -1566,25 +1611,25 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4914836398       13.3739497764
-         2            0.4914836398       13.3739497769
-         3            0.5431575388       14.7800680552
-         4            0.6382924114       17.3688195521
+         1            0.4914836398       13.3739501557
+         2            0.4914836398       13.3739501569
+         3            0.5431575388       14.7800684747
+         4            0.6382924114       17.3688200445
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -39.903902614721936
-@@    1    2           -39.903902614703902
-@@    1    3           -39.852228715741958
-@@    1    4           -39.757093843132289
+@@    1    1           -39.903902614728814
+@@    1    2           -39.903902614686338
+@@    1    3           -39.852228715741724
+@@    1    4           -39.757093843150002
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
  -------------------------------------------------------------
 
-          Excitation Energy :                            13.3739 eV
+          Excitation Energy :                            13.3740 eV
 
 
           CC_PRAM:Overall Contribution of the Different Components
@@ -1592,11 +1637,11 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
 
 
-          Single Excitation Contribution :              97.4122 %
+          Single Excitation Contribution :              97.4123 %
 
-          Double Excitation Contribution :               2.5878 %
+          Double Excitation Contribution :               2.5877 %
 
-          ||T1||/||T2||                  :               6.1354
+          ||T1||/||T2||                  :               6.1355
 
           Norm of Total Amplitude Vector :               0.9992
 
@@ -1605,48 +1650,48 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |   -0.555832  |
- | 4   4   |   1       1     |       29          |              |    0.759639  |
+ | 2   2   |   1       1     |       11          |              |   -0.785352  |
  +-----------------------------------------------------------------------------+
- | 4 1 4 1 |   1   1   1   1 |       29        1 |          407 |   -0.020169  |
- | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.026670  |
- | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |    0.029646  |
- | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |   -0.024354  |
- | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |    0.025100  |
- | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.021692  |
- | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |   -0.017092  |
- | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |    0.019128  |
- | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.036448  |
- | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.018207  |
- | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.018054  |
- | 4 1 3 2 |   1   1   1   1 |       20       10 |          903 |    0.016106  |
- | 4 1 3 2 |   1   2   1   1 |       20       11 |          904 |    0.021484  |
- | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |   -0.023065  |
- | 3 4 4 3 |   2   1   1   1 |       30       20 |         1158 |   -0.023678  |
- | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.027056  |
- | 1 4 3 2 |   2   1   1   1 |       20       10 |         1606 |    0.023144  |
- | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.026874  |
- | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |    0.022868  |
- | 2 1 4 3 |   1   2   1   1 |       29       20 |         1832 |   -0.018599  |
- | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.023798  |
- | 3 4 2 1 |   2   1   1   1 |       11        1 |         2165 |   -0.024751  |
- | 2 4 3 1 |   2   1   1   1 |       20        1 |         2300 |   -0.024806  |
+ | 2 1 2 1 |   1   1   1   1 |       11        1 |           56 |    0.020851  |
+ | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.037682  |
+ | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |   -0.023447  |
+ | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |    0.022134  |
+ | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.016668  |
+ | 4 2 4 2 |   3   1   1   1 |       31       11 |          476 |   -0.022279  |
+ | 4 2 4 2 |   1   3   1   1 |       29       13 |          419 |    0.020715  |
+ | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.020492  |
+ | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.030649  |
+ | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.017190  |
+ | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.025612  |
+ | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.025623  |
+ | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.018691  |
+ | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.017425  |
+ | 2 4 4 2 |   1   2   1   1 |       29       11 |         1823 |    0.025819  |
+ | 2 1 4 3 |   1   1   1   1 |       29       19 |         1831 |   -0.016285  |
+ | 2 1 4 3 |   1   2   1   1 |       29       20 |         1832 |   -0.022907  |
+ | 2 2 4 4 |   2   1   1   1 |       30       29 |         1870 |    0.025519  |
+ | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |   -0.020572  |
+ | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |   -0.019402  |
+ | 2 3 3 2 |   1   2   1   1 |       19       11 |         2291 |    0.026444  |
+ | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |    0.026299  |
+ | 1 2 4 3 |   1   1   1   1 |       28       19 |         2506 |   -0.016114  |
+ | 1 2 4 3 |   2   1   1   1 |       29       19 |         2534 |   -0.023232  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.9481
+          Norm of Printed Amplitude Vector :             0.7935
 
 
           Printed all single excitations greater than 0.493488
 
 
-          Printed all double excitations greater than 0.016087
+          Printed all double excitations greater than 0.016086
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  2
  -------------------------------------------------------------
 
-          Excitation Energy :                            13.3739 eV
+          Excitation Energy :                            13.3740 eV
 
 
           CC_PRAM:Overall Contribution of the Different Components
@@ -1654,11 +1699,11 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
 
 
-          Single Excitation Contribution :              97.4131 %
+          Single Excitation Contribution :              97.4130 %
 
-          Double Excitation Contribution :               2.5869 %
+          Double Excitation Contribution :               2.5870 %
 
-          ||T1||/||T2||                  :               6.1365
+          ||T1||/||T2||                  :               6.1364
 
           Norm of Total Amplitude Vector :               0.9992
 
@@ -1667,37 +1712,37 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   2   |   1       1     |       11          |              |   -0.556245  |
- | 3   3   |   1       1     |       20          |              |    0.759486  |
+ | 3   3   |   1       1     |       20          |              |   -0.660268  |
+ | 4   4   |   1       1     |       29          |              |    0.700002  |
  +-----------------------------------------------------------------------------+
- | 3 1 3 1 |   1   1   1   1 |       20        1 |          191 |   -0.020165  |
- | 2 2 2 2 |   1   1   1   1 |       11       11 |           66 |    0.026689  |
- | 3 2 3 2 |   3   1   1   1 |       22       11 |          242 |   -0.024360  |
- | 3 2 3 2 |   1   3   1   1 |       20       13 |          203 |    0.025104  |
- | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |    0.029640  |
- | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |   -0.036441  |
- | 4 3 4 3 |   1   1   1   1 |       29       20 |          426 |   -0.021708  |
- | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |    0.019115  |
- | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |   -0.017078  |
- | 4 2 3 1 |   2   1   1   1 |       21        1 |          914 |    0.018068  |
- | 3 2 4 1 |   2   1   1   1 |       30        1 |         1139 |    0.018220  |
- | 3 1 4 2 |   1   1   1   1 |       29       10 |         1119 |    0.016104  |
- | 3 1 4 2 |   1   2   1   1 |       29       11 |         1120 |    0.021478  |
- | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |   -0.023669  |
- | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |   -0.023055  |
- | 4 3 2 1 |   2   1   1   1 |       11        1 |         1462 |   -0.024746  |
- | 1 3 3 1 |   5   1   1   1 |       23        1 |         1660 |   -0.016555  |
- | 2 3 4 1 |   2   1   1   1 |       30        1 |         1842 |   -0.024801  |
- | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |   -0.027056  |
- | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |   -0.026874  |
- | 2 3 3 2 |   1   2   1   1 |       19       11 |         2291 |    0.022879  |
- | 1 3 4 2 |   2   1   1   1 |       29       10 |         2525 |    0.023142  |
- | 2 2 3 3 |   2   1   1   1 |       20       19 |         2318 |    0.023807  |
- | 1 2 4 3 |   2   1   1   1 |       29       19 |         2534 |   -0.018609  |
+ | 3 1 3 1 |   1   1   1   1 |       20        1 |          191 |    0.017530  |
+ | 4 1 4 1 |   1   1   1   1 |       29        1 |          407 |   -0.018585  |
+ | 3 2 3 2 |   1   1   1   1 |       20       11 |          201 |    0.027319  |
+ | 4 2 4 2 |   1   1   1   1 |       29       11 |          417 |   -0.025768  |
+ | 3 3 3 3 |   1   1   1   1 |       20       20 |          210 |    0.031681  |
+ | 4 3 4 3 |   3   1   1   1 |       31       20 |          485 |   -0.025496  |
+ | 4 3 4 3 |   1   3   1   1 |       29       22 |          428 |    0.025642  |
+ | 4 4 4 4 |   1   1   1   1 |       29       29 |          435 |   -0.033587  |
+ | 4 1 3 2 |   1   2   1   1 |       20       11 |          904 |    0.022025  |
+ | 3 1 4 2 |   1   2   1   1 |       29       11 |         1120 |   -0.021139  |
+ | 4 4 3 3 |   2   1   1   1 |       21       20 |          933 |   -0.026610  |
+ | 3 4 4 3 |   2   1   1   1 |       30       20 |         1158 |   -0.026109  |
+ | 3 4 4 3 |   1   2   1   1 |       29       21 |         1130 |    0.025328  |
+ | 3 3 4 4 |   2   1   1   1 |       30       29 |         1167 |    0.025975  |
+ | 4 3 2 1 |   2   1   1   1 |       11        1 |         1462 |    0.021596  |
+ | 2 3 4 1 |   2   1   1   1 |       30        1 |         1842 |    0.021479  |
+ | 4 4 2 2 |   2   1   1   1 |       11       10 |         1471 |   -0.019576  |
+ | 1 4 3 2 |   2   1   1   1 |       20       10 |         1606 |    0.019100  |
+ | 2 4 4 2 |   2   1   1   1 |       30       10 |         1851 |   -0.020475  |
+ | 3 4 2 1 |   2   1   1   1 |       11        1 |         2165 |   -0.022882  |
+ | 2 4 3 1 |   2   1   1   1 |       20        1 |         2300 |   -0.022784  |
+ | 3 3 2 2 |   2   1   1   1 |       11       10 |         2174 |    0.017590  |
+ | 2 3 3 2 |   2   1   1   1 |       20       10 |         2309 |    0.018612  |
+ | 1 3 4 2 |   2   1   1   1 |       29       10 |         2525 |   -0.017652  |
  +=============================================================================+
 
 
-          Norm of Printed Amplitude Vector :             0.9483
+          Norm of Printed Amplitude Vector :             0.9691
 
 
           Printed all single excitations greater than 0.493490
@@ -1782,7 +1827,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 3   3   |   2       1     |       21          |              |    0.792578  |
+ | 3   3   |   2       1     |       21          |              |    0.792579  |
  +-----------------------------------------------------------------------------+
  | 3 2 3 2 |   2   1   1   1 |       21       11 |          221 |   -0.022949  |
  | 3 2 3 2 |   2   3   1   1 |       21       13 |          223 |    0.019004  |
@@ -1794,17 +1839,17 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 3 1 4 2 |   2   2   1   1 |       30       11 |         1149 |    0.028231  |
  | 4 4 3 3 |   2   2   1   1 |       21       21 |          934 |    0.020305  |
  | 4 4 3 3 |   3   2   1   1 |       22       21 |          955 |    0.021262  |
- | 3 3 4 4 |   2   2   1   1 |       30       30 |         1168 |   -0.025328  |
+ | 3 3 4 4 |   2   2   1   1 |       30       30 |         1168 |   -0.025329  |
  | 4 3 2 1 |   2   2   1   1 |       11        2 |         1463 |   -0.018763  |
- | 1 3 3 1 |   5   2   1   1 |       23        2 |         1661 |   -0.021609  |
+ | 1 3 3 1 |   5   2   1   1 |       23        2 |         1661 |   -0.021608  |
  | 2 3 4 1 |   2   2   1   1 |       30        2 |         1843 |   -0.018764  |
  | 1 4 3 2 |   2   2   1   1 |       20       11 |         1607 |   -0.020044  |
- | 1 1 3 3 |   5   2   1   1 |       23       20 |         1679 |   -0.016545  |
- | 2 1 4 3 |   2   2   1   1 |       30       20 |         1861 |   -0.020043  |
+ | 1 1 3 3 |   5   2   1   1 |       23       20 |         1679 |   -0.016544  |
+ | 2 1 4 3 |   2   2   1   1 |       30       20 |         1861 |   -0.020042  |
  | 2 4 3 1 |   2   2   1   1 |       20        2 |         2301 |    0.017924  |
  | 3 3 2 2 |   2   2   1   1 |       11       11 |         2175 |   -0.025328  |
  | 1 3 4 2 |   2   2   1   1 |       29       11 |         2526 |    0.028231  |
- | 2 2 3 3 |   2   2   1   1 |       20       20 |         2319 |    0.020304  |
+ | 2 2 3 3 |   2   2   1   1 |       20       20 |         2319 |    0.020303  |
  | 2 2 3 3 |   3   2   1   1 |       21       20 |         2339 |    0.021261  |
  +=============================================================================+
 
@@ -1837,13 +1882,13 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843943300        1.1959103517881333     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844037691        1.1959103517885588     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
- ... selected element no. 29
- Start vector guessed from diagonal
  ... selected element no. 20
+ Start vector guessed from diagonal
+ ... selected element no. 29
  Start vector guessed from diagonal
  ... selected element no. 30
 
@@ -2152,11 +2197,11 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          0.99
+         Total time          0.98
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  59.23 seconds
- >>>> Total wall time used in CCEQ_SOLV:  1 minute   6 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  59.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  1 minute   5 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2183,19 +2228,19 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4176046212       11.3635994738
-         2            0.4827790556       13.1370859967
-         3            0.4915542657       13.3758716047
-         4            0.6363613610       17.3162729979
+         1            0.4176046212       11.3635997963
+         2            0.4827790556       13.1370863695
+         3            0.4915542657       13.3758719842
+         4            0.6363613610       17.3162734893
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -39.977781633300118
-@@    2    2           -39.912607198970676
-@@    2    3           -39.903831988828138
-@@    2    4           -39.759024893582087
+@@    2    1           -39.977781633299422
+@@    2    2           -39.912607198972239
+@@    2    3           -39.903831988828962
+@@    2    4           -39.759024893581653
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2234,7 +2279,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 3 1 4 1 |   1  10   1   1 |       29       10 |          362 |   -0.043029  |
  | 3 1 4 1 |   2  10   1   1 |       30       10 |          363 |   -0.019308  |
  | 3 1 4 1 |   3  10   1   1 |       31       10 |          364 |    0.024787  |
- | 2 2 1 2 |   1   3   1   1 |        1       13 |          445 |    0.022080  |
+ | 2 2 1 2 |   1   3   1   1 |        1       13 |          445 |    0.021999  |
  | 2 3 1 3 |   1   2   1   1 |        1       21 |          741 |   -0.032259  |
  | 2 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.032259  |
  | 3 4 2 2 |   1   1   1   1 |       10       10 |         1712 |   -0.025093  |
@@ -2300,7 +2345,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 3 4 4 4 |   3   1   1   1 |       31       29 |         1067 |   -0.018840  |
  | 3 4 4 4 |   1   2   1   1 |       29       30 |         1102 |   -0.025781  |
  | 3 3 2 1 |   2   1   1   1 |       11        1 |         1380 |   -0.021453  |
- | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019308  |
+ | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019290  |
  | 1 3 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.022420  |
  | 4 4 1 2 |   1   2   1   1 |        1       11 |         1740 |    0.021453  |
  | 2 4 3 2 |   2   1   1   1 |       20       10 |         1722 |   -0.018666  |
@@ -2361,7 +2406,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 3 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.019073  |
  | 4 3 1 1 |   1   1   1   1 |        1        1 |         1370 |   -0.020141  |
  | 3 3 2 1 |   2   1   1   1 |       11        1 |         1380 |   -0.021736  |
- | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019400  |
+ | 2 3 3 1 |   5   1   1   1 |       23        1 |         1392 |   -0.019384  |
  | 1 3 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.020730  |
  | 4 4 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.021736  |
  | 3 4 2 2 |   2   1   1   1 |       11       10 |         1713 |   -0.020246  |
@@ -2473,7 +2518,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843942889        1.1959103517881291     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844037913        1.1959103517885610     
  Start vector guessed from diagonal
  ... selected element no. 19
  Start vector guessed from diagonal
@@ -2784,14 +2829,14 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.96
+         CC_TRDRV            0.97
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          0.97
+         Total time          0.98
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  58.18 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  59.00 seconds
  >>>> Total wall time used in CCEQ_SOLV:  1 minute   5 seconds
 
 
@@ -2819,19 +2864,19 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4176046212       11.3635994738
-         2            0.4827790556       13.1370859967
-         3            0.4915542657       13.3758716047
-         4            0.6363613610       17.3162729979
+         1            0.4176046212       11.3635997963
+         2            0.4827790556       13.1370863695
+         3            0.4915542657       13.3758719842
+         4            0.6363613610       17.3162734893
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -39.977781633300104
-@@    3    2           -39.912607198970669
-@@    3    3           -39.903831988828138
-@@    3    4           -39.759024893582094
+@@    3    1           -39.977781633299443
+@@    3    2           -39.912607198972225
+@@    3    3           -39.903831988828962
+@@    3    4           -39.759024893581646
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2871,7 +2916,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 2 2 4 2 |   1   9   1   1 |       29       19 |          695 |   -0.043029  |
  | 2 2 4 2 |   2   9   1   1 |       30       19 |          696 |   -0.019308  |
  | 2 2 4 2 |   3   9   1   1 |       31       19 |          697 |    0.024787  |
- | 3 3 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.025496  |
+ | 3 3 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.025495  |
  | 3 4 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.032259  |
  | 3 1 2 2 |   1   2   1   1 |       10       11 |         1749 |   -0.024493  |
  | 2 1 3 2 |   2  10   1   1 |       20       19 |         2055 |   -0.025093  |
@@ -2935,7 +2980,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.043849  |
  | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.018840  |
  | 2 4 4 4 |   1   2   1   1 |       29       30 |         1102 |    0.025781  |
- | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |   -0.018086  |
+ | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |   -0.018039  |
  | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |    0.021453  |
  | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |    0.022420  |
  | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.022420  |
@@ -2945,7 +2990,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 1 1 4 2 |   3  10   1   1 |       30       19 |         2065 |   -0.018483  |
  | 4 4 1 3 |   1   1   1   1 |        1       20 |         2073 |   -0.021453  |
  | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.020573  |
- | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018086  |
+ | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018132  |
  | 2 3 3 4 |   2   1   1   1 |       20       29 |         2425 |   -0.018666  |
  +=============================================================================+
 
@@ -2997,7 +3042,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 2 4 4 4 |   1   1   1   1 |       29       29 |         1065 |   -0.041083  |
  | 2 4 4 4 |   3   1   1   1 |       31       29 |         1067 |    0.019073  |
  | 4 2 1 1 |   1   1   1   1 |        1        1 |         1370 |   -0.020141  |
- | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |    0.018037  |
+ | 3 2 2 1 |   4   1   1   1 |       13        1 |         1382 |    0.017989  |
  | 2 2 3 1 |   3   1   1   1 |       21        1 |         1390 |   -0.021736  |
  | 1 2 4 1 |   3   1   1   1 |       30        1 |         1399 |   -0.020730  |
  | 4 1 1 2 |   1   2   1   1 |        1       11 |         1740 |   -0.020730  |
@@ -3013,7 +3058,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 2 4 3 3 |   3   9   1   1 |       21       28 |         2389 |    0.016895  |
  | 1 4 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.022466  |
  | 1 4 4 3 |   3   9   1   1 |       30       28 |         2398 |    0.017876  |
- | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018037  |
+ | 4 3 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.018085  |
  +=============================================================================+
 
 
@@ -3111,13 +3156,13 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.67700533843943400        1.1959103517881342     
+  MIN AND MAX IN SELECTED SUPSPACE   0.67700533844037847        1.1959103517885601     
  Start vector guessed from diagonal
  ... selected element no. 28
  Start vector guessed from diagonal
- ... selected element no. 10
- Start vector guessed from diagonal
  ... selected element no. 19
+ Start vector guessed from diagonal
+ ... selected element no. 10
  Start vector guessed from diagonal
  ... selected element no. 11
 
@@ -3422,15 +3467,15 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.96
+         CC_TRDRV            0.97
          CCRED               0.01
          CCNEX               0.01
          ---------------------------
-         Total time          0.97
+         Total time          0.98
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:  58.18 seconds
- >>>> Total wall time used in CCEQ_SOLV:  1 minute   6 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:  59.09 seconds
+ >>>> Total wall time used in CCEQ_SOLV:  1 minute   5 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3457,19 +3502,19 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4176046212       11.3635994738
-         2            0.4827790556       13.1370859967
-         3            0.4915542657       13.3758716047
-         4            0.6363613610       17.3162729979
+         1            0.4176046212       11.3635997963
+         2            0.4827790556       13.1370863695
+         3            0.4915542657       13.3758719842
+         4            0.6363613610       17.3162734893
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -39.977781633300104
-@@    4    2           -39.912607198970669
-@@    4    3           -39.903831988828138
-@@    4    4           -39.759024893582087
+@@    4    1           -39.977781633299436
+@@    4    2           -39.912607198972232
+@@    4    3           -39.903831988828962
+@@    4    4           -39.759024893581646
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3517,7 +3562,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 2 3 3 3 |   4   9   1   1 |       22       28 |         2390 |    0.024787  |
  | 1 3 4 3 |   2   9   1   1 |       29       28 |         2397 |   -0.062730  |
  | 1 3 4 3 |   4   9   1   1 |       31       28 |         2399 |    0.029646  |
- | 4 4 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.022080  |
+ | 4 4 1 4 |   1   3   1   1 |        1       31 |         2480 |   -0.022160  |
  +=============================================================================+
 
 
@@ -3563,7 +3608,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 4 1 2 2 |   1   1   1   1 |       10       10 |          343 |    0.020573  |
  | 1 1 3 2 |   2  10   1   1 |       20       19 |          686 |   -0.020573  |
  | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |    0.018483  |
- | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019308  |
+ | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019325  |
  | 2 4 4 3 |   1   1   1   1 |       29       20 |          732 |   -0.018666  |
  | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.021453  |
  | 4 3 2 4 |   2   1   1   1 |       11       29 |         1047 |    0.018666  |
@@ -3634,7 +3679,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  | 1 1 3 2 |   3  10   1   1 |       21       19 |          687 |    0.017876  |
  | 2 1 4 2 |   1   2   1   1 |       29       11 |          399 |   -0.021470  |
  | 2 1 4 2 |   2  10   1   1 |       30       19 |          696 |    0.016895  |
- | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019400  |
+ | 3 4 1 3 |   1   4   1   1 |        1       23 |          815 |   -0.019416  |
  | 3 3 1 4 |   1   2   1   1 |        1       30 |         1074 |   -0.021736  |
  | 4 3 2 4 |   1   2   1   1 |       10       30 |         1083 |    0.016895  |
  | 1 3 3 4 |   3   1   1   1 |       21       29 |         1057 |   -0.021470  |
@@ -3758,25 +3803,25 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4914836  |      13.37395  |    107868.191  |  97.41  |
- | ^1A   |    2   |     0.4914836  |      13.37395  |    107868.191  |  97.41  |
- | ^1A   |    3   |     0.5431575  |      14.78007  |    119209.301  |  97.11  |
- | ^1A   |    4   |     0.6382924  |      17.36882  |    140088.992  |  97.49  |
+ | ^1A   |    1   |     0.4914836  |      13.37395  |    107868.190  |  97.41  |
+ | ^1A   |    2   |     0.4914836  |      13.37395  |    107868.190  |  97.41  |
+ | ^1A   |    3   |     0.5431575  |      14.78007  |    119209.300  |  97.11  |
+ | ^1A   |    4   |     0.6382924  |      17.36882  |    140088.990  |  97.49  |
  +-----------------------------------------------------------------------------+
- | ^1B2  |    1   |     0.4176046  |      11.36360  |     91653.620  |  97.02  |
- | ^1B2  |    2   |     0.4827791  |      13.13709  |    105957.755  |  97.01  |
- | ^1B2  |    3   |     0.4915543  |      13.37587  |    107883.691  |  97.15  |
- | ^1B2  |    4   |     0.6363614  |      17.31627  |    139665.175  |  97.13  |
+ | ^1B2  |    1   |     0.4176046  |      11.36360  |     91653.619  |  97.02  |
+ | ^1B2  |    2   |     0.4827791  |      13.13709  |    105957.754  |  97.01  |
+ | ^1B2  |    3   |     0.4915543  |      13.37587  |    107883.690  |  97.15  |
+ | ^1B2  |    4   |     0.6363614  |      17.31627  |    139665.174  |  97.13  |
  +-----------------------------------------------------------------------------+
- | ^1B1  |    1   |     0.4176046  |      11.36360  |     91653.620  |  97.02  |
- | ^1B1  |    2   |     0.4827791  |      13.13709  |    105957.755  |  97.01  |
- | ^1B1  |    3   |     0.4915543  |      13.37587  |    107883.691  |  97.15  |
- | ^1B1  |    4   |     0.6363614  |      17.31627  |    139665.175  |  97.13  |
+ | ^1B1  |    1   |     0.4176046  |      11.36360  |     91653.619  |  97.02  |
+ | ^1B1  |    2   |     0.4827791  |      13.13709  |    105957.754  |  97.01  |
+ | ^1B1  |    3   |     0.4915543  |      13.37587  |    107883.690  |  97.15  |
+ | ^1B1  |    4   |     0.6363614  |      17.31627  |    139665.174  |  97.13  |
  +-----------------------------------------------------------------------------+
- | ^1B3  |    1   |     0.4176046  |      11.36360  |     91653.620  |  97.02  |
- | ^1B3  |    2   |     0.4827791  |      13.13709  |    105957.755  |  97.01  |
- | ^1B3  |    3   |     0.4915543  |      13.37587  |    107883.691  |  97.15  |
- | ^1B3  |    4   |     0.6363614  |      17.31627  |    139665.175  |  97.13  |
+ | ^1B3  |    1   |     0.4176046  |      11.36360  |     91653.619  |  97.02  |
+ | ^1B3  |    2   |     0.4827791  |      13.13709  |    105957.754  |  97.01  |
+ | ^1B3  |    3   |     0.4915543  |      13.37587  |    107883.690  |  97.15  |
+ | ^1B3  |    4   |     0.6363614  |      17.31627  |    139665.174  |  97.13  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -3784,7 +3829,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
              1 ^1A        -39.9039026147                                        
              2 ^1A        -39.9039026147                                        
              3 ^1A        -39.8522287157                                        
-             4 ^1A        -39.7570938431                                        
+             4 ^1A        -39.7570938432                                        
              1 ^1B2       -39.9777816333                                        
              2 ^1B2       -39.9126071990                                        
              3 ^1B2       -39.9038319888                                        
@@ -3799,7 +3844,7 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
              4 ^1B3       -39.7590248936                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -3818,9 +3863,9 @@ WARNING: R12 part of result vector no.    2 in CCORT has norm < 0
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  4 minutes 47 seconds
- >>>> Total wall time used in DALTON:  5 minutes 22 seconds
+ >>>> Total CPU  time used in DALTON:  4 minutes 46 seconds
+ >>>> Total wall time used in DALTON:  5 minutes 17 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:54:38 2010 
+     Date and time (Linux)  : Wed Mar 16 20:24:58 2011 
      Host name              : fe6                                     

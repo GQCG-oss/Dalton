@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:24:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:00:19 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T18_00-testjob-pid-752
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -235,7 +236,7 @@ Point group: C1
 
                A                   B                   C
 
-         683301.3918         427261.6989         262883.3210 MHz
+         683301.3858         427261.6951         262883.3187 MHz
            22.792481           14.251916            8.768844 cm-1
 
 
@@ -259,7 +260,7 @@ Point group: C1
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - second moment integrals
@@ -279,7 +280,7 @@ Point group: C1
  Number of two-electron integrals written:         228 ( 56.2% )
  Megabytes written:                              0.007
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -314,7 +315,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:00:19 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -329,8 +330,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -338,6 +338,10 @@ Point group: C1
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -397,27 +401,45 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -74.9072227630        7.77451D-01   -7.49D+01    1
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.004295
+      MULPOP  O      -0.46; H       0.23; H       0.23; 
+ -----------------------------------------------------------------------------
    2    -74.9626427304        1.80042D-01   -5.54D-02    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.007741
+      MULPOP  O      -0.30; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
    3    -74.9655974776        2.36787D-02   -2.95D-03    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006348
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    4    -74.9656564799        1.68648D-03   -5.90D-05    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006301
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    5    -74.9656569076        6.46801D-04   -4.28D-07    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.006291
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    6    -74.9656569916        8.65031D-06   -8.40D-08    6
-      MULPOP O   ******; H   ******; 
-   7    -74.9656569916        2.31090D-08   -1.22D-11    7
-      MULPOP O   ******; H   ******; 
-   8    -74.9656569916        3.02298D-09    2.84D-14    8
- DIIS converged in   8 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.006295
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+   7    -74.9656569916        2.31099D-08   -1.22D-11    7
+      Virial theorem: -V/T =      2.006295
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+   8    -74.9656569916        1.78846D-08    0.00D+00    8
+      Virial theorem: -V/T =      2.006295
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+   9    -74.9656569916        3.52914D-09   -1.42D-14    9
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -440,7 +462,10 @@ Point group: C1
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -450,10 +475,10 @@ Point group: C1
      Nuclear repulsion:             8.812229431637
      Electronic energy:           -83.777886423252
 
-     Final gradient norm:           0.000000003023
+     Final gradient norm:           0.000000003529
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:00:19 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -461,9 +486,9 @@ Point group: C1
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
-   1 O   :1s    -0.9942   0.2342  -0.0000   0.1033   0.0000   0.1243  -0.0000
-   2 O   :1s    -0.0256  -0.8485   0.0000  -0.5339  -0.0000  -0.8032   0.0000
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s    -0.9942   0.2342   0.0000   0.1033   0.0000   0.1243  -0.0000
+   2 O   :1s    -0.0256  -0.8485  -0.0000  -0.5339  -0.0000  -0.8032   0.0000
    3 O   :2px    0.0000   0.0000   0.0000  -0.0000   1.0000   0.0000  -0.0000
    4 O   :2py   -0.0000  -0.0000  -0.6127   0.0000   0.0000   0.0000   0.9543
    5 O   :2pz   -0.0041  -0.1192   0.0000   0.7537   0.0000  -0.7628   0.0000
@@ -476,7 +501,7 @@ Point group: C1
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:00:19 2011 
      Host name              : fe6                                     
 
 
@@ -571,7 +596,7 @@ Point group: C1
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      1.06996338         2.71957534         9.07152688
+      z      1.06996338         2.71957547         9.07152731
 
 
 
@@ -583,10 +608,10 @@ Point group: C1
 
       x     -0.00000000        -0.00000000        -0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z     -0.40335116        -1.02521628        -3.41975339
+      z     -0.40335116        -1.02521633        -3.41975356
 
 
- Electronic dipole moment (au): -0.9109891031E-16  0.1332267630E-14 -0.4033511610    
+ Electronic dipole moment (au): -0.9109891032E-16  0.3552713679E-14 -0.4033511613    
 
 
 
@@ -598,7 +623,7 @@ Point group: C1
 
       x     -0.00000000        -0.00000000        -0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.66661222         1.69435907         5.65177349
+      z      0.66661222         1.69435915         5.65177375
 
 
 
@@ -644,8 +669,8 @@ Point group: C1
  Length of Excitation vectors in this class is:        10
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.96402864704490732                9
-  HIGHST VALUE AND PLACE    20.933808597200873                2
+  LOWEST VALUE AND PLACE   0.96402864711573588                9
+  HIGHST VALUE AND PLACE    20.933808597323925                2
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
@@ -655,7 +680,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.96402864704490732        1.1392528848880314     
+  MIN AND MAX IN SELECTED SUPSPACE   0.96402864711573588        1.1392528848928198     
  Start vector guessed from diagonal
  ... selected element no.  9
  CCEQ_SOL: IPRLE   =               6
@@ -676,7 +701,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -709,9 +734,9 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
               Column   1
        1      0.44864954
   
- ROOT:  1 RESIDUAL TOT: 9.55705D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.55705D-16
-      1       1         0.00     0.96E-15
+ ROOT:  1 RESIDUAL TOT: 1.55620D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.55620D-15
+      1       1         0.00     0.16E-14
 
  Lowest eigenvalues in this iteration: 
 
@@ -759,13 +784,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4486495369       12.2083745766
+         1            0.4486495369       12.2083749240
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.517007454757220
+@@    1    1           -74.517007454722602
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -821,8 +846,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        10
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.96402864704490732                9
-  HIGHST VALUE AND PLACE    20.933808597200873                2
+  LOWEST VALUE AND PLACE   0.96402864711573588                9
+  HIGHST VALUE AND PLACE    20.933808597323925                2
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
@@ -832,7 +857,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.96402864704490732        1.1392528848880314     
+  MIN AND MAX IN SELECTED SUPSPACE   0.96402864711573588        1.1392528848928198     
 Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a  CCS       RE vector
@@ -854,7 +879,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -887,9 +912,9 @@ Try to use right eigenvector as start for a left eigenvector.
               Column   1
        1      0.44864954
   
- ROOT:  1 RESIDUAL TOT: 9.55705D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.55705D-16
-      1       1         0.00     0.96E-15
+ ROOT:  1 RESIDUAL TOT: 1.55620D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.55620D-15
+      1       1         0.00     0.16E-14
 
  Lowest eigenvalues in this iteration: 
 
@@ -937,13 +962,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4486495369       12.2083745766
+         1            0.4486495369       12.2083749240
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.517007454757220
+@@    1    1           -74.517007454722602
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1005,7 +1030,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Ground state energy is target 
 
- Ecorr =                    -74.96565699161509144233
+ Ecorr =                    -74.96565699161504880976
 
  *******************************************************************
      
@@ -1214,9 +1239,9 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for M1
  Frequency   0.448650 and state   1 and symmetry   1
   
- ROOT:  1 RESIDUAL TOT: 1.14684D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.14684D-15
-      1       1         0.00     0.11E-14
+ ROOT:  1 RESIDUAL TOT: 1.60236D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.60236D-15
+      1       1         0.00     0.16E-14
  Dimension of the reduced space:     1
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -1294,7 +1319,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Testing BE  list with  1 elements on it:
  List Nr.  State     Symmetry     Eigenvalue      T1-norm        T2-norm
-     1        1       1         0.4486495369   0.0670383959   0.0000000000
+     1        1       1         0.4486495369   0.0670383958   0.0000000000
 
 
 
@@ -1474,9 +1499,9 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for E0
  Frequency   0.000000 and state   1 and symmetry   1
   
- ROOT:  1 RESIDUAL TOT: 1.55745D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.55745D-16
-      4       1         0.00     0.16E-15
+ ROOT:  1 RESIDUAL TOT: 8.88254D-17
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.88254D-17
+      4       1         0.00     0.89E-16
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -1520,12 +1545,12 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Printed all single excitations greater than 0.083333
-            Norm of singles part:        0.2345716436E+00
+            Norm of singles part:        0.2345716435E+00
 
 
  Testing E0  list with  1 elements on it:
  List Nr.  State     Symmetry     Eigenvalue      T1-norm        T2-norm
-     1        1       1         0.4486495369   0.0550238560   0.0000000000
+     1        1       1         0.4486495369   0.0550238559   0.0000000000
 
 
 
@@ -1782,9 +1807,9 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for E0
  Frequency   0.000000 and state   1 and symmetry   1
   
- ROOT:  1 RESIDUAL TOT: 1.55745D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.55745D-16
-      4       1         0.00     0.16E-15
+ ROOT:  1 RESIDUAL TOT: 8.88254D-17
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.88254D-17
+      4       1         0.00     0.89E-16
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -1906,8 +1931,8 @@ Try to use right eigenvector as start for a left eigenvector.
           Printed all single excitations greater than 0.010000
  Total, actual nr.,loop index           1           1           1
  Sym, reduced nr.           1           1
- Norm of AO density-1   18.615931970172053     
- Norm of AO density2   6.9317784832983032     
+ Norm of AO density-1   18.615931971338064     
+ Norm of AO density2   6.9317784828762088     
 
 
              +--------------------------------------------------------+
@@ -1934,7 +1959,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x     -0.00000000        -0.00000000        -0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z     -0.14163649        -0.36000400        -1.20084407
+      z     -0.14163649        -0.36000401        -1.20084413
 
 
 
@@ -2035,7 +2060,7 @@ Try to use right eigenvector as start for a left eigenvector.
        3      0.00000000    0.00000000    1.00000000
 
 
- CCS   oscillator strength matrix for state nr.  1 of symmetry 1
+ CCS    oscillator strength matrix for state nr.  1 of symmetry 1
  CCS   excitation energy: 0.44864954
 
 
@@ -2130,8 +2155,8 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Printed all double excitations greater than 0.016667
- Iter.  1: Coupled cluster MP2   energy :     -75.0055650564953993
-     Conventional correlation energy:    -0.0399080648803078
+ Iter.  1: Coupled cluster MP2   energy :     -75.0055650564992931
+     Conventional correlation energy:    -0.0399080648842443
 
        Iteration no.:  1
        -----------------
@@ -2139,90 +2164,90 @@ Try to use right eigenvector as start for a left eigenvector.
        Time used in   RHS - TOTAL  :       0.00 seconds
        Norm^2 of t1am   after ccvec:        0.0000000000D+00
        Norm^2 of t2am   after ccvec:        0.1169897204D-01
-       Norm^2 of omega1 after ccvec:        0.6301776556D-04
-       Norm^2 of omega2 after ccvec:        0.3644714274D-31
- Iter.  1: Coupled cluster CC2   energy :     -75.0055546070342984
-     Conventional correlation energy:    -0.0398976154192070
+       Norm^2 of omega1 after ccvec:        0.6301776373D-04
+       Norm^2 of omega2 after ccvec:        0.4893582982D-31
+ Iter.  1: Coupled cluster CC2   energy :     -75.0055546070384480
+     Conventional correlation energy:    -0.0398976154233992
 
        Iteration no.:  2
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.5430470884D-04
+       Norm^2 of t1am   after ccvec:        0.5430470725D-04
        Norm^2 of t2am   after ccvec:        0.1169897204D-01
-       Norm^2 of omega1 after ccvec:        0.4968261900D-05
-       Norm^2 of omega2 after ccvec:        0.3497034745D-05
- Iter.  2: Coupled cluster CC2   energy :     -75.0056992695245555
-     Conventional correlation energy:    -0.0400422779094640
+       Norm^2 of omega1 after ccvec:        0.4968261759D-05
+       Norm^2 of omega2 after ccvec:        0.3497034649D-05
+ Iter.  2: Coupled cluster CC2   energy :     -75.0056992695266160
+     Conventional correlation energy:    -0.0400422779115672
 
        Iteration no.:  3
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.9851735396D-04
+       Norm^2 of t1am   after ccvec:        0.9851735109D-04
        Norm^2 of t2am   after ccvec:        0.1181359788D-01
-       Norm^2 of omega1 after ccvec:        0.4809674253D-06
-       Norm^2 of omega2 after ccvec:        0.9852511758D-07
- Iter.  3: Coupled cluster CC2   energy :     -75.0057127366668652
-     Conventional correlation energy:    -0.0400557450517738
+       Norm^2 of omega1 after ccvec:        0.4809674114D-06
+       Norm^2 of omega2 after ccvec:        0.9852511460D-07
+ Iter.  3: Coupled cluster CC2   energy :     -75.0057127366688405
+     Conventional correlation energy:    -0.0400557450537917
 
        Iteration no.:  4
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1152974390D-03
+       Norm^2 of t1am   after ccvec:        0.1152974357D-03
        Norm^2 of t2am   after ccvec:        0.1182750607D-01
-       Norm^2 of omega1 after ccvec:        0.1000704377D-07
-       Norm^2 of omega2 after ccvec:        0.4504242184D-08
- Iter.  4: Coupled cluster CC2   energy :     -75.0057135507909152
-     Conventional correlation energy:    -0.0400565591758237
+       Norm^2 of omega1 after ccvec:        0.1000704352D-07
+       Norm^2 of omega2 after ccvec:        0.4504242059D-08
+ Iter.  4: Coupled cluster CC2   energy :     -75.0057135507928621
+     Conventional correlation energy:    -0.0400565591778133
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1168478146D-03
+       Norm^2 of t1am   after ccvec:        0.1168478112D-03
        Norm^2 of t2am   after ccvec:        0.1182877594D-01
-       Norm^2 of omega1 after ccvec:        0.1130571859D-09
-       Norm^2 of omega2 after ccvec:        0.5469305680D-10
- Iter.  5: Coupled cluster CC2   energy :     -75.0057135386735183
-     Conventional correlation energy:    -0.0400565470584269
+       Norm^2 of omega1 after ccvec:        0.1130571842D-09
+       Norm^2 of omega2 after ccvec:        0.5469305577D-10
+ Iter.  5: Coupled cluster CC2   energy :     -75.0057135386754510
+     Conventional correlation energy:    -0.0400565470604022
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1168631034D-03
+       Norm^2 of t1am   after ccvec:        0.1168631000D-03
        Norm^2 of t2am   after ccvec:        0.1182870767D-01
-       Norm^2 of omega1 after ccvec:        0.1104231748D-11
-       Norm^2 of omega2 after ccvec:        0.1213338198D-12
- Iter.  6: Coupled cluster CC2   energy :     -75.0057135297949458
-     Conventional correlation energy:    -0.0400565381798543
+       Norm^2 of omega1 after ccvec:        0.1104231705D-11
+       Norm^2 of omega2 after ccvec:        0.1213338141D-12
+ Iter.  6: Coupled cluster CC2   energy :     -75.0057135297968784
+     Conventional correlation energy:    -0.0400565381818296
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1168567589D-03
+       Norm^2 of t1am   after ccvec:        0.1168567555D-03
        Norm^2 of t2am   after ccvec:        0.1182869973D-01
-       Norm^2 of omega1 after ccvec:        0.5248006410D-16
-       Norm^2 of omega2 after ccvec:        0.2609520842D-16
- Iter.  7: Coupled cluster CC2   energy :     -75.0057135296822821
-     Conventional correlation energy:    -0.0400565380671907
+       Norm^2 of omega1 after ccvec:        0.5248013570D-16
+       Norm^2 of omega2 after ccvec:        0.2609520632D-16
+ Iter.  7: Coupled cluster CC2   energy :     -75.0057135296843001
+     Conventional correlation energy:    -0.0400565380692512
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1168567117D-03
+       Norm^2 of t1am   after ccvec:        0.1168567083D-03
        Norm^2 of t2am   after ccvec:        0.1182869970D-01
-       Norm^2 of omega1 after ccvec:        0.3020744853D-19
-       Norm^2 of omega2 after ccvec:        0.1457009169D-19
- Iter.  8: Coupled cluster CC2   energy :     -75.0057135296858633
-     Conventional correlation energy:    -0.0400565380707718
+       Norm^2 of omega1 after ccvec:        0.3020664387D-19
+       Norm^2 of omega2 after ccvec:        0.1457021206D-19
+ Iter.  8: Coupled cluster CC2   energy :     -75.0057135296877533
+     Conventional correlation energy:    -0.0400565380727045
 
  CC2   energy converged to within   0.10D-10 is    -75.005713530
- Final 2-norm of the CC vector function:  2.11607042D-10
+ Final 2-norm of the CC vector function:  2.11605425D-10
 
 
                     +------------------------------------------+
@@ -2357,7 +2382,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  9.98999923467636108E-004
+ Time used in CC_LHTR :  9.99998301267623901E-004
   
   CCRED  
   ISIDE            -1
@@ -2386,7 +2411,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :   0.0000000000000000     
+ Time used in CC_LHTR :  9.99998301267623901E-004
   
   CCRED  
   ISIDE            -1
@@ -2444,7 +2469,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  9.99998301267623901E-004
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -2473,7 +2498,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  9.99998301267623901E-004
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -2606,7 +2631,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Printed all double excitations greater than 0.083089
-            Norm of singles part:        0.1797789170E-01
+            Norm of singles part:        0.1797789142E-01
             Norm of doubles part:        0.2343970507E+00
 
 
@@ -2649,7 +2674,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      1.06996338         2.71957534         9.07152688
+      z      1.06996338         2.71957547         9.07152731
 
 
 
@@ -2661,10 +2686,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z     -0.43877998        -1.11526735        -3.72013144
+      z     -0.43877998        -1.11526740        -3.72013162
 
 
- Electronic dipole moment (au):  0.1776224550E-17  0.2220446049E-15 -0.4387799828    
+ Electronic dipole moment (au):  0.1776224573E-17  0.5329070518E-14 -0.4387799828    
 
 
 
@@ -2676,7 +2701,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.63118340         1.60430799         5.35139544
+      z      0.63118340         1.60430807         5.35139570
 
 
 
@@ -2689,8 +2714,8 @@ Try to use right eigenvector as start for a left eigenvector.
 
               Column   1    Column   2    Column   3
        1      4.56801883   -0.00000000   -0.00000000
-       2     -0.00000000    7.59443398    0.00000000
-       3     -0.00000000    0.00000000    6.33721431
+       2     -0.00000000    7.59443398   -0.00000000
+       3     -0.00000000   -0.00000000    6.33721431
 
  Alfa**2 Invariant:                         38.026409
  Beta**2 Invariant:                          6.934921
@@ -2722,8 +2747,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.96402864704490732                9
-  HIGHST VALUE AND PLACE    41.867617194401745               13
+  LOWEST VALUE AND PLACE   0.96402864711573588                9
+  HIGHST VALUE AND PLACE    41.867617194647849               13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
@@ -2733,7 +2758,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.96402864704490732        1.1392528848880314     
+  MIN AND MAX IN SELECTED SUPSPACE   0.96402864711573588        1.1392528848928198     
  Start vector guessed from diagonal
  ... selected element no.  9
  CCEQ_SOL: IPRLE   =               6
@@ -2754,7 +2779,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -2797,7 +2822,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     2
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -2840,7 +2865,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     3
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -2883,7 +2908,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -2926,7 +2951,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     5
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -3009,13 +3034,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4382522557       11.9254501726
+         1            0.4382522557       11.9254505113
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.567461273974814
+@@    1    1           -74.567461273967751
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3092,8 +3117,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.96402864704490732                9
-  HIGHST VALUE AND PLACE    41.867617194401745               13
+  LOWEST VALUE AND PLACE   0.96402864711573588                9
+  HIGHST VALUE AND PLACE    41.867617194647849               13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
@@ -3103,7 +3128,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.96402864704490732        1.1392528848880314     
+  MIN AND MAX IN SELECTED SUPSPACE   0.96402864711573588        1.1392528848928198     
 Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a  CC2       RE vector
@@ -3125,7 +3150,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -3138,7 +3163,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99994575977325439E-004
   
   CCRED  
   ISIDE            -1
@@ -3164,7 +3189,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Dimension of the reduced space:     2
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -3177,7 +3202,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :   0.0000000000000000     
   
   CCRED  
   ISIDE            -1
@@ -3203,7 +3228,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Dimension of the reduced space:     3
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -3216,7 +3241,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99994575977325439E-004
   
   CCRED  
   ISIDE            -1
@@ -3242,7 +3267,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301263141572382     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324834605365006     
 
 
                                +--------------------+
@@ -3255,7 +3280,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99003648757934570E-004
   
   CCRED  
   ISIDE            -1
@@ -3321,13 +3346,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4382522556       11.9254501688
+         1            0.4382522556       11.9254505075
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.567461274115416
+@@    1    1           -74.567461274108354
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3409,7 +3434,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Ground state energy is target 
 
- Ecorr =                    -75.00571352968586325005
+ Ecorr =                    -75.00571352968775329373
 
  *******************************************************************
      
@@ -3597,7 +3622,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99994575977325439E-004
   
   CCRED  
   ISIDE            -1
@@ -3702,7 +3727,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :   0.0000000000000000     
   
   CCRED  
   ISIDE            -1
@@ -3737,7 +3762,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :   0.0000000000000000     
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -3819,7 +3844,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
           Printed all double excitations greater than 0.002000
             Norm of singles part:        0.5944604224E-01
-            Norm of doubles part:        0.5845477441E-02
+            Norm of doubles part:        0.5845477443E-02
 
 
  Testing M1  list with  1 elements on it:
@@ -3845,7 +3870,7 @@ Try to use right eigenvector as start for a left eigenvector.
  +--------------------------------------------------+
  |     1    |     1    |      1       |       0.00  |
  +--------------------------------------------------+
- | total time for   1 F transforms.:      0.00 secs.|
+ | total time for   1 F transforms.:      0.01 secs.|
  +==================================================+
 
 
@@ -3853,7 +3878,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Testing BE  list with  1 elements on it:
  List Nr.  State     Symmetry     Eigenvalue      T1-norm        T2-norm
-     1        1       1         0.4382522557   0.0589617828   0.1692076942
+     1        1       1         0.4382522557   0.0589617829   0.1692076942
 
 
 
@@ -3895,7 +3920,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  9.98996198177337646E-004
+ Time used in CC_LHTR :  9.99994575977325439E-004
   
   CCRED  
   ISIDE            -1
@@ -3965,7 +3990,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :   0.0000000000000000     
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -4000,7 +4025,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99994575977325439E-004
   
   CCRED  
   ISIDE            -1
@@ -4070,7 +4095,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :   0.0000000000000000     
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -4105,7 +4130,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  9.99003648757934570E-004
+ Time used in CC_LHTR :   0.0000000000000000     
   
   CCRED  
   ISIDE            -1
@@ -4143,7 +4168,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4195,7 +4220,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Testing E0  list with  1 elements on it:
  List Nr.  State     Symmetry     Eigenvalue      T1-norm        T2-norm
-     1        1       1         0.4382522557   0.0451255056   0.0236140132
+     1        1       1         0.4382522557   0.0451255057   0.0236140132
 
 
 
@@ -4349,7 +4374,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :   0.0000000000000000     
   
   CCRED  
   ISIDE            -1
@@ -4384,7 +4409,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  9.99994575977325439E-004
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -4419,7 +4444,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :   0.0000000000000000     
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -4454,7 +4479,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  9.99994575977325439E-004
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -4524,7 +4549,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99003648757934570E-004
   
   CCRED  
   ISIDE            -1
@@ -4768,7 +4793,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Excited state properties for 
  Excited state nr.:               1
  Excited state sym:               1
- Excitation energy (au.,eV):    0.438252   11.925450
+ Excitation energy (au.,eV):    0.438252   11.925451
 
 
                             +-------------------------+
@@ -4784,7 +4809,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x     -0.00000000        -0.00000000        -0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z     -0.07521183        -0.19116938        -0.63767241
+      z     -0.07521183        -0.19116939        -0.63767244
 
 
 
@@ -4888,7 +4913,7 @@ Try to use right eigenvector as start for a left eigenvector.
        3      0.00000000    0.00000000    1.00000000
 
 
- CC2   oscillator strength matrix for state nr.  1 of symmetry 1
+ CC2    oscillator strength matrix for state nr.  1 of symmetry 1
  CC2   excitation energy: 0.43825226
 
 
@@ -4936,165 +4961,165 @@ Try to use right eigenvector as start for a left eigenvector.
           Number of t2 amplitudes                 :        55
           Total number of amplitudes in ccsd      :        65
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.0057135296858633
-     Conventional correlation energy:    -0.0400565380707718
+ Iter.  1: Coupled cluster RSTAR energy :     -75.0057135296877533
+     Conventional correlation energy:    -0.0400565380727045
 
        Iteration no.:  1
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1168567131D-03
+       Norm^2 of t1am   after ccvec:        0.1168567097D-03
        Norm^2 of t2am   after ccvec:        0.1182869970D-01
-       Norm^2 of omega1 after ccvec:        0.3521617584D-22
+       Norm^2 of omega1 after ccvec:        0.3520346789D-22
        Norm^2 of omega2 after ccvec:        0.6076953799D-02
- Iter.  1: Coupled cluster CCSD  energy :     -75.0163437265156148
-     Conventional correlation energy:    -0.0506867349005233
+ Iter.  1: Coupled cluster CCSD  energy :     -75.0163437265181585
+     Conventional correlation energy:    -0.0506867349031097
 
        Iteration no.:  2
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1168567131D-03
+       Norm^2 of t1am   after ccvec:        0.1168567097D-03
        Norm^2 of t2am   after ccvec:        0.1933314679D-01
-       Norm^2 of omega1 after ccvec:        0.3817445793D-05
+       Norm^2 of omega1 after ccvec:        0.3817445799D-05
        Norm^2 of omega2 after ccvec:        0.7208354336D-03
- Iter.  2: Coupled cluster CCSD  energy :     -75.0211866141594328
-     Conventional correlation energy:    -0.0555296225443414
+ Iter.  2: Coupled cluster CCSD  energy :     -75.0211866141624739
+     Conventional correlation energy:    -0.0555296225474251
 
        Iteration no.:  3
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1828459105D-03
+       Norm^2 of t1am   after ccvec:        0.1828459062D-03
        Norm^2 of t2am   after ccvec:        0.2375554083D-01
-       Norm^2 of omega1 after ccvec:        0.8508580800D-06
-       Norm^2 of omega2 after ccvec:        0.9282016148D-05
- Iter.  3: Coupled cluster CCSD  energy :     -75.0214881293147329
-     Conventional correlation energy:    -0.0558311376996414
+       Norm^2 of omega1 after ccvec:        0.8508580804D-06
+       Norm^2 of omega2 after ccvec:        0.9282016150D-05
+ Iter.  3: Coupled cluster CCSD  energy :     -75.0214881293179729
+     Conventional correlation energy:    -0.0558311377029241
 
        Iteration no.:  4
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2137044248D-03
+       Norm^2 of t1am   after ccvec:        0.2137044203D-03
        Norm^2 of t2am   after ccvec:        0.2419314297D-01
-       Norm^2 of omega1 after ccvec:        0.1262007916D-06
-       Norm^2 of omega2 after ccvec:        0.6494107228D-06
- Iter.  4: Coupled cluster CCSD  energy :     -75.0215071757627641
-     Conventional correlation energy:    -0.0558501841476726
+       Norm^2 of omega1 after ccvec:        0.1262007918D-06
+       Norm^2 of omega2 after ccvec:        0.6494107231D-06
+ Iter.  4: Coupled cluster CCSD  energy :     -75.0215071757659615
+     Conventional correlation energy:    -0.0558501841509127
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2273630694D-03
-       Norm^2 of t2am   after ccvec:        0.2424667877D-01
-       Norm^2 of omega1 after ccvec:        0.1404052274D-08
-       Norm^2 of omega2 after ccvec:        0.1956114045D-07
- Iter.  5: Coupled cluster CCSD  energy :     -75.0215072128349902
-     Conventional correlation energy:    -0.0558502212198988
+       Norm^2 of t1am   after ccvec:        0.2273630647D-03
+       Norm^2 of t2am   after ccvec:        0.2424667876D-01
+       Norm^2 of omega1 after ccvec:        0.1404052277D-08
+       Norm^2 of omega2 after ccvec:        0.1956114048D-07
+ Iter.  5: Coupled cluster CCSD  energy :     -75.0215072128381877
+     Conventional correlation energy:    -0.0558502212231389
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2289951901D-03
+       Norm^2 of t1am   after ccvec:        0.2289951854D-03
        Norm^2 of t2am   after ccvec:        0.2424222535D-01
-       Norm^2 of omega1 after ccvec:        0.3560577146D-10
-       Norm^2 of omega2 after ccvec:        0.2676040240D-09
- Iter.  6: Coupled cluster CCSD  energy :     -75.0215076113160109
-     Conventional correlation energy:    -0.0558506197009194
+       Norm^2 of omega1 after ccvec:        0.3560577152D-10
+       Norm^2 of omega2 after ccvec:        0.2676040243D-09
+ Iter.  6: Coupled cluster CCSD  energy :     -75.0215076113192225
+     Conventional correlation energy:    -0.0558506197041737
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291070290D-03
+       Norm^2 of t1am   after ccvec:        0.2291070243D-03
        Norm^2 of t2am   after ccvec:        0.2424269906D-01
-       Norm^2 of omega1 after ccvec:        0.9366700712D-12
-       Norm^2 of omega2 after ccvec:        0.2155488984D-10
- Iter.  7: Coupled cluster CCSD  energy :     -75.0215075016016470
-     Conventional correlation energy:    -0.0558505099865556
+       Norm^2 of omega1 after ccvec:        0.9366700692D-12
+       Norm^2 of omega2 after ccvec:        0.2155488987D-10
+ Iter.  7: Coupled cluster CCSD  energy :     -75.0215075016048161
+     Conventional correlation energy:    -0.0558505099897673
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291306280D-03
+       Norm^2 of t1am   after ccvec:        0.2291306233D-03
        Norm^2 of t2am   after ccvec:        0.2424258758D-01
-       Norm^2 of omega1 after ccvec:        0.2742761802D-13
-       Norm^2 of omega2 after ccvec:        0.8574028353D-12
- Iter.  8: Coupled cluster CCSD  energy :     -75.0215075573197225
-     Conventional correlation energy:    -0.0558505657046311
+       Norm^2 of omega1 after ccvec:        0.2742761843D-13
+       Norm^2 of omega2 after ccvec:        0.8574028350D-12
+ Iter.  8: Coupled cluster CCSD  energy :     -75.0215075573230479
+     Conventional correlation energy:    -0.0558505657079991
 
        Iteration no.:  9
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291341981D-03
+       Norm^2 of t1am   after ccvec:        0.2291341934D-03
        Norm^2 of t2am   after ccvec:        0.2424263202D-01
-       Norm^2 of omega1 after ccvec:        0.1652853265D-14
-       Norm^2 of omega2 after ccvec:        0.6573081617D-13
- Iter.  9: Coupled cluster CCSD  energy :     -75.0215075494532755
-     Conventional correlation energy:    -0.0558505578381840
+       Norm^2 of omega1 after ccvec:        0.1652852849D-14
+       Norm^2 of omega2 after ccvec:        0.6573081649D-13
+ Iter.  9: Coupled cluster CCSD  energy :     -75.0215075494564587
+     Conventional correlation energy:    -0.0558505578414099
 
        Iteration no.: 10
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291349127D-03
+       Norm^2 of t1am   after ccvec:        0.2291349080D-03
        Norm^2 of t2am   after ccvec:        0.2424262268D-01
-       Norm^2 of omega1 after ccvec:        0.2907983571D-15
-       Norm^2 of omega2 after ccvec:        0.5168655302D-14
- Iter. 10: Coupled cluster CCSD  energy :     -75.0215075437511274
-     Conventional correlation energy:    -0.0558505521360360
+       Norm^2 of omega1 after ccvec:        0.2907984190D-15
+       Norm^2 of omega2 after ccvec:        0.5168655233D-14
+ Iter. 10: Coupled cluster CCSD  energy :     -75.0215075437543391
+     Conventional correlation energy:    -0.0558505521392902
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291354619D-03
+       Norm^2 of t1am   after ccvec:        0.2291354572D-03
        Norm^2 of t2am   after ccvec:        0.2424261565D-01
-       Norm^2 of omega1 after ccvec:        0.3556123140D-17
-       Norm^2 of omega2 after ccvec:        0.2304669060D-15
- Iter. 11: Coupled cluster CCSD  energy :     -75.0215075437267558
-     Conventional correlation energy:    -0.0558505521116643
+       Norm^2 of omega1 after ccvec:        0.3556137821D-17
+       Norm^2 of omega2 after ccvec:        0.2304669064D-15
+ Iter. 11: Coupled cluster CCSD  energy :     -75.0215075437299816
+     Conventional correlation energy:    -0.0558505521149328
 
        Iteration no.: 12
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291355116D-03
+       Norm^2 of t1am   after ccvec:        0.2291355069D-03
        Norm^2 of t2am   after ccvec:        0.2424261551D-01
-       Norm^2 of omega1 after ccvec:        0.3079582892D-18
-       Norm^2 of omega2 after ccvec:        0.2276349128D-16
- Iter. 12: Coupled cluster CCSD  energy :     -75.0215075439039794
-     Conventional correlation energy:    -0.0558505522888879
+       Norm^2 of omega1 after ccvec:        0.3079618480D-18
+       Norm^2 of omega2 after ccvec:        0.2276350594D-16
+ Iter. 12: Coupled cluster CCSD  energy :     -75.0215075439071342
+     Conventional correlation energy:    -0.0558505522920854
 
        Iteration no.: 13
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291355178D-03
+       Norm^2 of t1am   after ccvec:        0.2291355131D-03
        Norm^2 of t2am   after ccvec:        0.2424261567D-01
-       Norm^2 of omega1 after ccvec:        0.5121974982D-20
-       Norm^2 of omega2 after ccvec:        0.3990754108D-18
- Iter. 13: Coupled cluster CCSD  energy :     -75.0215075439374175
-     Conventional correlation energy:    -0.0558505523223261
+       Norm^2 of omega1 after ccvec:        0.5122421877D-20
+       Norm^2 of omega2 after ccvec:        0.3990767464D-18
+ Iter. 13: Coupled cluster CCSD  energy :     -75.0215075439406434
+     Conventional correlation energy:    -0.0558505523255945
 
        Iteration no.: 14
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.2291355197D-03
+       Norm^2 of t1am   after ccvec:        0.2291355150D-03
        Norm^2 of t2am   after ccvec:        0.2424261570D-01
-       Norm^2 of omega1 after ccvec:        0.2877170685D-21
-       Norm^2 of omega2 after ccvec:        0.5870714062D-20
- Iter. 14: Coupled cluster CCSD  energy :     -75.0215075439397339
-     Conventional correlation energy:    -0.0558505523246424
+       Norm^2 of omega1 after ccvec:        0.2877034709D-21
+       Norm^2 of omega2 after ccvec:        0.5870672695D-20
+ Iter. 14: Coupled cluster CCSD  energy :     -75.0215075439428887
+     Conventional correlation energy:    -0.0558505523278399
 
  CCSD  energy converged to within   0.10D-10 is    -75.021507544
- Final 2-norm of the CC vector function:  7.84756722D-11
+ Final 2-norm of the CC vector function:  7.84753220D-11
 
 
                     +------------------------------------------+
@@ -5225,7 +5250,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  2.99899280071258545E-003
   
   CCRED  
   ISIDE            -1
@@ -5254,7 +5279,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  9.99987125396728516E-004
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -5283,7 +5308,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99987125396728516E-004
   
   CCRED  
   ISIDE            -1
@@ -5312,7 +5337,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  1.99900567531585693E-003
   
   CCRED  
   ISIDE            -1
@@ -5341,7 +5366,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  1.99998915195465088E-003
   
   CCRED  
   ISIDE            -1
@@ -5399,7 +5424,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99987125396728516E-004
   
   CCRED  
   ISIDE            -1
@@ -5428,7 +5453,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   8
   
- Time used in CC_LHTR :  2.00000405311584473E-003
+ Time used in CC_LHTR :  9.99003648757934570E-004
   
   CCRED  
   ISIDE            -1
@@ -5457,7 +5482,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   9
   
- Time used in CC_LHTR :  1.99900567531585693E-003
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -5486,7 +5511,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  10
   
- Time used in CC_LHTR :  1.99900567531585693E-003
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -5515,7 +5540,7 @@ Try to use right eigenvector as start for a left eigenvector.
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  11
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -5546,7 +5571,7 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -5593,7 +5618,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
           Printed all double excitations greater than 0.083053
-            Norm of singles part:        0.2585295154E-01
+            Norm of singles part:        0.2585295127E-01
             Norm of doubles part:        0.3142978603E+00
 
 
@@ -5636,7 +5661,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      1.06996338         2.71957534         9.07152688
+      z      1.06996338         2.71957547         9.07152731
 
 
 
@@ -5648,10 +5673,10 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z     -0.45709409        -1.16181715        -3.87540486
+      z     -0.45709409        -1.16181720        -3.87540504
 
 
- Electronic dipole moment (au):  0.3508044213E-18  0.2442490654E-14 -0.4570940855    
+ Electronic dipole moment (au):  0.3508044212E-18  0.5329070518E-14 -0.4570940855    
 
 
 
@@ -5663,7 +5688,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
       x      0.00000000         0.00000000         0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z      0.61286929         1.55775819         5.19612202
+      z      0.61286929         1.55775827         5.19612227
 
 
 
@@ -5709,8 +5734,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.96402864704490732                9
-  HIGHST VALUE AND PLACE    41.867617194401745               13
+  LOWEST VALUE AND PLACE   0.96402864711573588                9
+  HIGHST VALUE AND PLACE    41.867617194647849               13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
@@ -5720,7 +5745,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.96402864704490732        1.1392528848880314     
+  MIN AND MAX IN SELECTED SUPSPACE   0.96402864711573588        1.1392528848928198     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  CCEQ_SOL: IPRLE   =               6
@@ -5741,7 +5766,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -5784,7 +5809,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     2
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -5827,7 +5852,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     3
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -5870,7 +5895,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -5913,7 +5938,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     5
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -5956,7 +5981,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     6
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -5999,7 +6024,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     7
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6058,7 +6083,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6082,13 +6107,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4199846875       11.4283643691
+         1            0.4199846875       11.4283646934
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.601522856457180
+@@    1    1           -74.601522856458402
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6165,8 +6190,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.96402864704490732                9
-  HIGHST VALUE AND PLACE    41.867617194401745               13
+  LOWEST VALUE AND PLACE   0.96402864711573588                9
+  HIGHST VALUE AND PLACE    41.867617194647849               13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
@@ -6176,7 +6201,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.96402864704490732        1.1392528848880314     
+  MIN AND MAX IN SELECTED SUPSPACE   0.96402864711573588        1.1392528848928198     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       LE  vector
  CCEQ_SOL: IPRLE   =               6
@@ -6197,7 +6222,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
     Iter  #Vectors  time (min)   residual
     --------------------------------------
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6210,7 +6235,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -6236,7 +6261,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     2
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6249,7 +6274,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  1.99998915195465088E-003
   
   CCRED  
   ISIDE            -1
@@ -6275,7 +6300,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     3
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6288,7 +6313,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.99899077415466309E-003
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -6314,7 +6339,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6327,7 +6352,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  2.00000405311584473E-003
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -6353,7 +6378,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     5
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6366,7 +6391,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  1.99900567531585693E-003
   
   CCRED  
   ISIDE            -1
@@ -6392,7 +6417,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     6
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6431,7 +6456,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Dimension of the reduced space:     7
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
-  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.1301283220400229     
+  >>> Call CC_TRDRV with TRIPLET and ECURR set to: F   0.3324854684192853     
 
 
                                +--------------------+
@@ -6444,7 +6469,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  9.99987125396728516E-004
+ Time used in CC_LHTR :  1.00000202655792236E-003
   
   CCRED  
   ISIDE            -1
@@ -6510,13 +6535,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.4199847651       11.4283664814
+         1            0.4199847651       11.4283668057
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.601522778831551
+@@    1    1           -74.601522778832773
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6599,7 +6624,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Ground state energy is target 
 
- Ecorr =                    -75.02150754393973386414
+ Ecorr =                    -75.02150754394288867388
 
  *******************************************************************
      
@@ -6799,7 +6824,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99987125396728516E-004
   
   CCRED  
   ISIDE            -1
@@ -6834,7 +6859,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  1.00001692771911621E-003
   
   CCRED  
   ISIDE            -1
@@ -6904,7 +6929,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  2.99899280071258545E-003
+ Time used in CC_LHTR :  1.00001692771911621E-003
   
   CCRED  
   ISIDE            -1
@@ -6939,7 +6964,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  1.00000202655792236E-003
+ Time used in CC_LHTR :  9.99987125396728516E-004
   
   CCRED  
   ISIDE            -1
@@ -7009,7 +7034,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  1.99899077415466309E-003
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -7047,7 +7072,7 @@ LORXFIL:    F
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7091,7 +7116,7 @@ LORXFIL:    F
 
           Printed all double excitations greater than 0.004130
             Norm of singles part:        0.5271209205E-01
-            Norm of doubles part:        0.1348286969E-01
+            Norm of doubles part:        0.1348286970E-01
 
 
  Testing M1  list with  1 elements on it:
@@ -7165,7 +7190,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  9.99987125396728516E-004
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -7235,7 +7260,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  2.00000405311584473E-003
+ Time used in CC_LHTR :  1.00001692771911621E-003
   
   CCRED  
   ISIDE            -1
@@ -7270,7 +7295,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  9.99003648757934570E-004
+ Time used in CC_LHTR :  1.00001692771911621E-003
   
   CCRED  
   ISIDE            -1
@@ -7305,7 +7330,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  2.00000405311584473E-003
+ Time used in CC_LHTR :  1.00001692771911621E-003
   
   CCRED  
   ISIDE            -1
@@ -7340,7 +7365,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  2.00000405311584473E-003
+ Time used in CC_LHTR :  9.99003648757934570E-004
   
   CCRED  
   ISIDE            -1
@@ -7375,7 +7400,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  1.00001692771911621E-003
+ Time used in CC_LHTR :  1.99997425079345703E-003
   
   CCRED  
   ISIDE            -1
@@ -7410,7 +7435,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   8
   
- Time used in CC_LHTR :  1.99899077415466309E-003
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -7445,7 +7470,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   9
   
- Time used in CC_LHTR :  2.00000405311584473E-003
+ Time used in CC_LHTR :  1.99899077415466309E-003
   
   CCRED  
   ISIDE            -1
@@ -7480,7 +7505,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  10
   
- Time used in CC_LHTR :  9.99987125396728516E-004
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -7515,7 +7540,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  11
   
- Time used in CC_LHTR :  1.99902057647705078E-003
+ Time used in CC_LHTR :  2.00000405311584473E-003
   
   CCRED  
   ISIDE            -1
@@ -7552,8 +7577,8 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7598,7 +7623,7 @@ LORXFIL:    F
 
 
           Printed all double excitations greater than 0.059718
-            Norm of singles part:        0.1969287079E+00
+            Norm of singles part:        0.1969287080E+00
             Norm of doubles part:        0.2023382110E+00
 
 
@@ -7721,7 +7746,7 @@ LORXFIL:    F
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.00001692771911621E-003
+ Time used in CC_LHTR :  9.99987125396728516E-004
   
   CCRED  
   ISIDE            -1
@@ -7956,7 +7981,7 @@ LORXFIL:    F
  Excited state properties for 
  Excited state nr.:               1
  Excited state sym:               1
- Excitation energy (au.,eV):    0.419985   11.428364
+ Excitation energy (au.,eV):    0.419985   11.428365
 
 
                             +-------------------------+
@@ -7972,7 +7997,7 @@ LORXFIL:    F
 
       x     -0.00000000        -0.00000000        -0.00000000
       y      0.00000000         0.00000000         0.00000000
-      z     -0.03598914        -0.09147526        -0.30512862
+      z     -0.03598914        -0.09147526        -0.30512863
 
 
 
@@ -8076,7 +8101,7 @@ LORXFIL:    F
        3      0.00000000    0.00000000    1.00000000
 
 
- CCSD  oscillator strength matrix for state nr.  1 of symmetry 1
+ CCSD   oscillator strength matrix for state nr.  1 of symmetry 1
  CCSD  excitation energy: 0.41998469
 
 
@@ -8120,12 +8145,12 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4486495  |      12.20837  |     98467.192  | 100.00  |
+ | ^1A   |    1   |     0.4486495  |      12.20837  |     98467.191  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
      Total energies in Hartree:                                                 
-             1 ^1A        -74.5170074548                                        
+             1 ^1A        -74.5170074547                                        
                                                                                 
                                                                                 
  +=============================================================================+
@@ -8147,7 +8172,7 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4382523  |      11.92545  |     96185.252  |  98.47  |
+ | ^1A   |    1   |     0.4382523  |      11.92545  |     96185.251  |  98.47  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -8191,7 +8216,7 @@ LORXFIL:    F
  +=============================================================================+
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -8210,9 +8235,9 @@ LORXFIL:    F
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.29 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.34 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:24:09 2010 
+     Date and time (Linux)  : Wed Mar 16 18:00:26 2011 
      Host name              : fe6                                     

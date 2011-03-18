@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:18:07 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:41 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -237,7 +238,7 @@ Point group: C1
 
                A                   B                   C
 
-         797267.3440         424480.0013         277000.0234 MHz
+         797267.3370         424479.9976         277000.0210 MHz
            26.593976           14.159129            9.239726 cm-1
 
 
@@ -261,7 +262,7 @@ Point group: C1
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - Fermi contact integrals
             (Dirac delta function integrals)
@@ -283,7 +284,7 @@ Point group: C1
  Number of two-electron integrals written:       21669 ( 48.0% )
  Megabytes written:                              0.254
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -317,7 +318,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:07 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:41 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -332,8 +333,7 @@ Point group: C1
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -341,6 +341,7 @@ Point group: C1
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MP2      <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -376,31 +377,49 @@ Point group: C1
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -75.8558054129        1.60794D+00   -7.59D+01    1
-      MULPOP O   368.20; H   ******; 
+      Virial theorem: -V/T =      2.000312
+      MULPOP  O      -0.55; H       0.28; H       0.28; 
+ -----------------------------------------------------------------------------
    2    -76.0198639633        3.12287D-01   -1.64D-01    2
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.002416
+      MULPOP  O      -0.28; H       0.14; H       0.14; 
+ -----------------------------------------------------------------------------
    3    -76.0251506648        7.25194D-02   -5.29D-03    3
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000758
+      MULPOP  O      -0.31; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    4    -76.0256406432        2.50537D-02   -4.90D-04    4
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001614
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    5    -76.0256763237        6.18368D-03   -3.57D-05    5
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001128
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    6    -76.0256811281        1.40431D-03   -4.80D-06    6
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001201
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    7    -76.0256814782        1.85175D-04   -3.50D-07    7
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
    8    -76.0256814838        2.87151D-05   -5.64D-09    8
-      MULPOP O   ******; H   ******; 
-   9    -76.0256814839        5.54466D-06   -1.03D-10    9
-      MULPOP O   ******; H   ******; 
-  10    -76.0256814839        3.02762D-07   -3.51D-12   10
- DIIS converged in  10 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+   9    -76.0256814839        5.54466D-06   -1.02D-10    9
+      Virial theorem: -V/T =      2.001217
+      MULPOP  O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+  10    -76.0256814839        3.02762D-07   -3.61D-12   10
+
+ *** DIIS converged in  10 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
 
@@ -415,7 +434,7 @@ Point group: C1
     Number of electrons :   10
     Orbital occupations :    5
 
- Hartree-Fock electronic energy:         -85.080686009581
+ Hartree-Fock electronic energy:         -85.080686009582
  Hartree-Fock total      energy:         -76.025681483944
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-08
@@ -452,7 +471,10 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Time used for MP2 natural orbitals :       0.025 CPU seconds.
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -465,7 +487,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
      Final gradient norm:           0.000000302762
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:07 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:41 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -473,20 +495,20 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 O   :1s    -1.0004   0.0076   0.0000  -0.0022   0.0000  -0.0519   0.0000
-   2 O   :1s    -0.0021  -0.8737   0.0000   0.2932  -0.0000   0.1433   0.0000
-   3 O   :1s     0.0014   0.1145  -0.0000   0.1768   0.0000   0.9058   0.0000
-   4 O   :2px   -0.0000  -0.0000  -0.7111  -0.0000  -0.0000   0.0000  -0.4190
-   5 O   :2py   -0.0025  -0.1108   0.0000  -0.7927   0.0000   0.2855   0.0000
+   2 O   :1s    -0.0021  -0.8737   0.0000   0.2932  -0.0000   0.1433  -0.0000
+   3 O   :1s     0.0014   0.1145  -0.0000   0.1768   0.0000   0.9058  -0.0000
+   4 O   :2px   -0.0000   0.0000  -0.7111  -0.0000  -0.0000  -0.0000  -0.4190
+   5 O   :2py   -0.0025  -0.1108   0.0000  -0.7927   0.0000   0.2855  -0.0000
    6 O   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.9204   0.0000  -0.0000
-   7 O   :2px   -0.0000  -0.0000   0.1012  -0.0000   0.0000   0.0000  -0.4775
-   8 O   :2py    0.0017   0.0619  -0.0000  -0.0018   0.0000   0.2117   0.0000
+   7 O   :2px   -0.0000  -0.0000   0.1012   0.0000   0.0000  -0.0000  -0.4775
+   8 O   :2py    0.0017   0.0619  -0.0000  -0.0018   0.0000   0.2117  -0.0000
    9 O   :2pz   -0.0000   0.0000   0.0000  -0.0000  -0.0724   0.0000  -0.0000
-  10 O   :3d2-  -0.0000  -0.0000  -0.0262  -0.0000   0.0000   0.0000  -0.0201
+  10 O   :3d2-  -0.0000  -0.0000  -0.0262  -0.0000   0.0000  -0.0000  -0.0201
   11 O   :3d1-  -0.0000   0.0000   0.0000  -0.0000  -0.0180   0.0000  -0.0000
   12 O   :3d0    0.0001   0.0031   0.0000   0.0128  -0.0000  -0.0117   0.0000
-  14 O   :3d2+  -0.0000  -0.0004  -0.0000   0.0130   0.0000  -0.0019  -0.0000
+  14 O   :3d2+  -0.0000  -0.0004  -0.0000   0.0130   0.0000  -0.0019   0.0000
   15 H   :1s     0.0003  -0.3191  -0.5530  -0.3516  -0.0000  -0.1058   0.0501
   16 H   :1s    -0.0006   0.1494   0.1845   0.1327  -0.0000  -0.7699   1.3912
   17 H   :2px   -0.0005   0.0364   0.0234   0.0317   0.0000   0.0162  -0.0198
@@ -504,7 +526,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:07 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:41 2011 
      Host name              : fe6                                     
 
 
@@ -557,8 +579,8 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
       4 Excitation energies are calculated for symmetry no.    1
 
 
-   SCF energy         :      -76.025681483943615
- -- inactive part     :      -85.080686009581513
+   SCF energy         :      -76.025681483944012
+ -- inactive part     :      -85.080686009581910
  -- nuclear repulsion :        9.055004525637894
 
 
@@ -649,7 +671,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  ---------------------------------------
 
 @ Excitation energy :  0.25890288    au
-@                      7.0451054     eV
+@                      7.0451056     eV
 @                      56822.613     cm-1
                        679.74940     kJ / mol
 
@@ -663,9 +685,9 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  ---------------------------------------
 
 @ Excitation energy :  0.34340400    au
-@                      9.3444979     eV
-@                      75368.466     cm-1
-                       901.60707     kJ / mol
+@                      9.3444981     eV
+@                      75368.465     cm-1
+                       901.60706     kJ / mol
 
 @ Total energy :      -75.682277     au
 
@@ -677,9 +699,9 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  ---------------------------------------
 
 @ Excitation energy :  0.34736450    au
-@                      9.4522686     eV
-@                      76237.695     cm-1
-                       912.00536     kJ / mol
+@                      9.4522688     eV
+@                      76237.694     cm-1
+                       912.00535     kJ / mol
 
 @ Total energy :      -75.678317     au
 
@@ -692,7 +714,7 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
 @ Excitation energy :  0.42191582    au
 @                      11.480913     eV
-@                      92599.819     cm-1
+@                      92599.818     cm-1
                        1107.7398     kJ / mol
 
 @ Total energy :      -75.603766     au
@@ -703,8 +725,8 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
 
  Time used in polarization propagator calculation is      0.23 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   0.24 seconds
- >>>> Total wall time used in RESPONSE:   0.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.23 seconds
+ >>>> Total wall time used in RESPONSE:   1.00 seconds
 
 
                    .-------------------------------------------.
@@ -715,5 +737,5 @@ Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  5.34D-0
  >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:18:08 2010 
+     Date and time (Linux)  : Wed Mar 16 17:45:42 2011 
      Host name              : fe6                                     

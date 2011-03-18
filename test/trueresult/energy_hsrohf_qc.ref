@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:13:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:18 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -202,8 +203,8 @@ Represented as:      D2h
                                  Isotopic Masses
                                  ---------------
 
-                           O    1     15.994915
-                           O    2     15.994915
+                           O   _1     15.994915
+                           O   _2     15.994915
 
                        Total mass:    31.989830 amu
                        Natural abundance:  99.521 %
@@ -271,14 +272,14 @@ Represented as:      D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O    1      O    2
+            O   _1      O   _2
             ------      ------
- O    1:    0.000000
- O    2:    1.207053    0.000000
+ O   _1:    0.000000
+ O   _2:    1.207053    0.000000
 
 
   Max interatomic separation is    1.2071 Angstrom (    2.2810 Bohr)
-  between atoms    2 and    1, "O    2" and "O    1".
+  between atoms    2 and    1, "O   _2" and "O   _1".
 
 
   Bond distances (Angstrom):
@@ -286,7 +287,7 @@ Represented as:      D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  O    2     O    1       1.207053
+  bond distance:  O   _2     O   _1       1.207053
 
 
 
@@ -440,7 +441,7 @@ Represented as:      D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:18 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -451,7 +452,6 @@ Represented as:      D2h
  Print level on unit LUW4  =   2 is   5
 
      Restricted, high spin open shell Hartree-Fock calculation.
-
                Fock matrices are calculated directly
                without use of integrals on disk.
 
@@ -460,6 +460,7 @@ Represented as:      D2h
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      2
      Total charge of the molecule              0
@@ -506,15 +507,15 @@ Represented as:      D2h
 
  Fock matrix screening setting for this macro iteration: 10^( -9)
 
- Total MCSCF energy       :    -149.390433642279           (MACRO    1)
+ Total MCSCF energy       :    -149.390433642280           (MACRO    1)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -177.116574518767    
+ - Inactive energy        :    -177.116574518768    
  - Active energy          :   -0.331728479057397    
 
- Norm of total gradient   :        2.482605656093
+ Norm of total gradient   :        2.482605656091
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        2.482605656093
+ -    of orbital gradient :        2.482605656091
 
 
  *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
@@ -543,12 +544,13 @@ Represented as:      D2h
 
  - Nuclear repulsion      :     28.0578693555458    
  - Inactive energy        :    -177.330720961207    
- - Active energy          :   -0.329348636410449    
+ - Active energy          :   -0.329348636410404    
 
- Norm of total gradient   :        0.302147688559
+ Norm of total gradient   :        0.302147688557
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.302147688559
-      MULPOP O   229.28; 
+ -    of orbital gradient :        0.302147688557
+      Virial theorem: -V/T =      1.997947
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  Residual norm when dim(red L) =   3
  NEO root     CSF        orbital          total
@@ -565,16 +567,17 @@ Represented as:      D2h
 
  Fock matrix screening setting for this macro iteration: 10^( -9)
 
- Total MCSCF energy       :    -149.608167098681           (MACRO    3)
+ Total MCSCF energy       :    -149.608167098682           (MACRO    3)
 
  - Nuclear repulsion      :     28.0578693555458    
  - Inactive energy        :    -177.344670113961    
- - Active energy          :   -0.321366340266437    
+ - Active energy          :   -0.321366340266392    
 
- Norm of total gradient   :        0.012263506740
+ Norm of total gradient   :        0.012263506739
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.012263506740
-      MULPOP O   225.02; 
+ -    of orbital gradient :        0.012263506739
+      Virial theorem: -V/T =      2.000851
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -594,13 +597,14 @@ Represented as:      D2h
  Total MCSCF energy       :    -149.608171287331           (MACRO    4)
 
  - Nuclear repulsion      :     28.0578693555458    
- - Inactive energy        :    -177.344704539120    
- - Active energy          :   -0.321336103756471    
+ - Inactive energy        :    -177.344704539121    
+ - Active energy          :   -0.321336103756430    
 
  Norm of total gradient   :        0.000060001439
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.000060001439
-      MULPOP O   225.13; 
+      Virial theorem: -V/T =      2.000826
+      MULPOP  O   _1  0.00; O   _2  0.00; 
 
  Residual norm when dim(red L) =   3
  NEO root     CSF        orbital          total
@@ -621,38 +625,42 @@ Represented as:      D2h
 
  - Nuclear repulsion      :     28.0578693555458    
  - Inactive energy        :    -177.344705029349    
- - Active energy          :   -0.321335613634280    
+ - Active energy          :   -0.321335613634232    
 
  Norm of total gradient   :        0.000003188449
  -    of CI gradient      :        0.000000000000
  -    of orbital gradient :        0.000003188449
-      MULPOP O   225.13; 
+      Virial theorem: -V/T =      2.000827
+      MULPOP  O   _1 -0.00; O   _2 -0.00; 
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:   -1.06127D-10   -1.06062D-10
+ Energy difference; actual and predicted:   -1.05956D-10   -1.06062D-10
 
  (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    1.00061D+00
+ Energy difference; actual and predicted:    9.99004D-01
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used            9
-     Total number of CPU seconds used         0.43
+     Total number of CPU seconds used         0.39
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:19 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    2   -149.390433642279   2.4826056561  0.000000   0.2107164014
+    1    2   -149.390433642280   2.4826056561  0.000000   0.2107164014
     2    2   -149.602200242072   0.3021476886  0.984205   0.0500499091
-    3    3   -149.608167098681   0.0122635067  0.996621   0.0010468898
+    3    3   -149.608167098682   0.0122635067  0.996621   0.0010468898
     4    2   -149.608171287331   0.0000600014  0.999980   0.0000053463
     5    0   -149.608171287437   0.0000031884  1.000000   0.0000000000
 
@@ -669,34 +677,34 @@ Represented as:      D2h
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     2     0     2      0.09      0.00      0.07      0.04      0.03
-    2     2     0     2      0.09      0.00      0.07      0.04      0.03
-    3     3     0     3      0.11      0.00      0.09      0.07      0.03
-    4     2     0     2      0.09      0.00      0.07      0.04      0.03
+    1     2     0     2      0.08      0.00      0.06      0.04      0.03
+    2     2     0     2      0.08      0.00      0.06      0.04      0.03
+    3     3     0     3      0.10      0.00      0.08      0.06      0.03
+    4     2     0     2      0.08      0.00      0.06      0.04      0.03
     5     0     0     0      0.02      0.00      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -177.116574518767     -0.331728479057   -149.390433642279
+    1   -177.116574518768     -0.331728479057   -149.390433642280
     2   -177.330720961207     -0.329348636410   -149.602200242072
-    3   -177.344670113961     -0.321366340266   -149.608167098681
-    4   -177.344704539120     -0.321336103756   -149.608171287331
+    3   -177.344670113961     -0.321366340266   -149.608167098682
+    4   -177.344704539121     -0.321336103756   -149.608171287331
     5   -177.344705029349     -0.321335613634   -149.608171287437
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.215165214555     -0.211766599793      0.984204627273
-    3     -0.005987088570     -0.005966856610      0.996620734743
-    4     -0.000004188734     -0.000004188649      0.999979879694
+    2     -0.215165214554     -0.211766599792      0.984204627273
+    3     -0.005987088570     -0.005966856610      0.996620734762
+    4     -0.000004188734     -0.000004188650      0.999979893291
     5     -0.000000000106     -0.000000000106      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.210716401374      0.700000000000
+    1      0.20000000  1.00000000      0.210716401373      0.700000000000
     2      0.20000000  1.00000000      0.050049909124      0.700000000000
     3      0.20000000  1.00000000      0.001046889846      0.700000000000
     4      0.20000000  1.00000000      0.000005346278      0.700000000000
@@ -709,11 +717,14 @@ Represented as:      D2h
     1   -0.017182699726    0.999113153107   -0.034575489789   -0.024030039439
     2   -0.000478919098    0.999949903897   -0.009733109927   -0.002335865644
     3   -0.000000335099    0.999999978080   -0.000207624835   -0.000026524965
-    4   -0.000000000008    0.999999999999   -0.000001040716   -0.000000245548
+    4   -0.000000000008    0.999999999999   -0.000001040716   -0.000000245547
     5    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           3
      Spatial symmetry:            4
@@ -726,7 +737,7 @@ Represented as:      D2h
      Final gradient norm:           0.000003188449
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:19 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -734,7 +745,7 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :1s     0.7072   0.0013  -0.0088   0.0018  -0.4485
    2 O   :1s     0.0000   0.6545   0.2126  -0.0959  -2.1351
    3 O   :1s    -0.0002  -0.1134   0.1505   0.3278   2.1482
@@ -745,7 +756,7 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.6490  -0.9871   0.1545
    2 O   :2px   -0.0152   1.0783  -0.0507
    3 O   :3d1+  -0.0331   0.0514   0.6377
@@ -753,7 +764,7 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.6490  -0.9871   0.1545
    2 O   :2py   -0.0152   1.0783  -0.0507
    3 O   :3d1-  -0.0331   0.0514   0.6377
@@ -761,13 +772,13 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :3d2-   0.6914
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 O   :1s     0.7074   0.0057   0.0182  -0.0083
    2 O   :1s     0.0004   0.7116  -0.3523   0.0479
    3 O   :1s    -0.0027   0.0467  -1.0762   0.9521
@@ -778,7 +789,7 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2px    0.7774  -0.9232   0.0086
    2 O   :2px    0.0383   1.4856  -0.2769
    3 O   :3d1+   0.0050   0.0068   0.8367
@@ -786,7 +797,7 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :2py    0.7774  -0.9232   0.0086
    2 O   :2py    0.0383   1.4856  -0.2769
    3 O   :3d1-   0.0050   0.0068   0.8367
@@ -794,16 +805,16 @@ Represented as:      D2h
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 O   :3d2-   0.7239
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.43 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.40 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:19 2011 
      Host name              : fe6                                     
 
  NOTE:    1 warnings have been issued.
@@ -814,9 +825,9 @@ Represented as:      D2h
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.44 seconds
- >>>> Total wall time used in DALTON:   0.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.42 seconds
+ >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:13:22 2010 
+     Date and time (Linux)  : Wed Mar 16 17:41:19 2011 
      Host name              : fe6                                     

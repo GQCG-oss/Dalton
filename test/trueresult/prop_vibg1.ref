@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:17:13 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:53 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -190,8 +191,8 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:     2.015650 amu
                        Natural abundance:  99.970 %
@@ -258,14 +259,14 @@ Point group: D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            H    1      H    2
+            H   _1      H   _2
             ------      ------
- H    1:    0.000000
- H    2:    1.587532    0.000000
+ H   _1:    0.000000
+ H   _2:    1.587532    0.000000
 
 
   Max interatomic separation is    1.5875 Angstrom (    3.0000 Bohr)
-  between atoms    2 and    1, "H    2" and "H    1".
+  between atoms    2 and    1, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -399,7 +400,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:13 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:53 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -418,6 +419,7 @@ Point group: D2h
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> MC-SCF   <<<
      Number of closed shell electrons          0
      Number of electrons in active shells      2
      Total charge of the molecule              0
@@ -496,16 +498,15 @@ Point group: D2h
 
 
  CI energies and residuals:
-    1       -1.046970848626246       9.72D-13
+    1       -1.046970848626318       9.74D-13
 
 
- Final CI energy:       -1.046970848626246
+ Final CI energy:       -1.046970848626318
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
 
  Occupations of CAS natural orbitals:
 
@@ -537,20 +538,21 @@ Point group: D2h
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -1.04697084862625           (MACRO    1)
+ Total MCSCF energy       :    -1.04697084862632           (MACRO    1)
 
  - Nuclear repulsion      :    0.333333333333333    
  - Inactive energy        :     0.00000000000000    
- - Active energy          :    -1.38030418195958    
+ - Active energy          :    -1.38030418195965    
 
  Norm of total gradient   :        0.000000000002
  -    of CI gradient      :        0.000000000002
  -    of orbital gradient :        0.000000000000
-      MULPOP H   ******; 
+      Virial theorem: -V/T =      2.162340
+      MULPOP  H   _1 -0.00; H   _2 -0.00; 
 
  (SIROPT) CI energy lowering:          0.000000000000000
-          CI electronic energy:       -1.380304181959581
-          CI total energy:            -1.046970848626248
+          CI electronic energy:       -1.380304181959652
+          CI total energy:            -1.046970848626319
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            1
@@ -558,10 +560,13 @@ Point group: D2h
      Total number of CPU seconds used         0.01
 
 
-               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:13 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:54 2011 
      Host name              : fe6                                     
 
 
@@ -596,7 +601,10 @@ Point group: D2h
     1      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -610,7 +618,7 @@ Point group: D2h
      Final gradient norm:           0.000000000002
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:13 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:54 2011 
      Host name              : fe6                                     
 
 
@@ -650,7 +658,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 H   :s      0.2660   0.7535   0.5357
    2 H   :s      0.4030  -0.6028  -0.3571
    3 H   :pz    -0.0069  -0.4165   0.5495
@@ -658,19 +666,19 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 H   :px     0.7046
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 H   :py     0.7046
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 H   :s      0.4015  -0.7793   0.3691
    2 H   :s      0.5368   1.0215  -0.6347
    3 H   :pz    -0.0010   0.2522   0.7012
@@ -678,13 +686,13 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 H   :px     0.7096
 
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 H   :py     0.7096
 
  Printout of CI-coefficients abs greater than 0.05000 for root  1
@@ -723,10 +731,10 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:13 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:54 2011 
      Host name              : fe6                                     
 
 
@@ -789,7 +797,7 @@ Point group: D2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:13 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:54 2011 
      Host name              : fe6                                     
 
 
@@ -814,15 +822,15 @@ Point group: D2h
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:58 2011 
      Host name              : fe6                                     
 
 
                              Molecular geometry (au)
                              -----------------------
 
- H    1     0.0000000000            0.0000000000            1.5000000000
- H    2     0.0000000000            0.0000000000           -1.5000000000
+ H   _1     0.0000000000            0.0000000000            1.5000000000
+ H   _2     0.0000000000            0.0000000000           -1.5000000000
 
 
 
@@ -834,8 +842,8 @@ Point group: D2h
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy         -1.0469708486 au (Hartrees)
-                           -28.48952521 eV
-                             -2748.8216 kJ/mol
+                           -28.48952602 eV
+                             -2748.8215 kJ/mol
 
 
                              Relativistic corrections
@@ -857,8 +865,8 @@ Point group: D2h
 
 
 
- H    1     0.0000000000            0.0000000000            0.0587342213
- H    2     0.0000000000            0.0000000000           -0.0587342213
+ H   _1     0.0000000000            0.0000000000            0.0587342213
+ H   _2     0.0000000000            0.0000000000           -0.0587342213
 
 
 
@@ -912,15 +920,15 @@ Point group: D2h
 
 
 
-            H    1 x    H    1 y    H    1 z    H    2 x    H    2 y    H    2 z
+            H   _1 x    H   _1 y    H   _1 z    H   _2 x    H   _2 y    H   _2 z
 
- H    1 x   -0.859707
- H    1 y    0.000000   -0.859707
- H    1 z    0.000000    0.000000   -0.401928
+ H   _1 x   -0.859707
+ H   _1 y    0.000000   -0.859707
+ H   _1 z    0.000000    0.000000   -0.401928
 
- H    2 x   -0.131549    0.000000    0.000000   -0.859707
- H    2 y    0.000000   -0.131549    0.000000    0.000000   -0.859707
- H    2 z    0.000000    0.000000   -0.302648    0.000000    0.000000   -0.401928
+ H   _2 x   -0.131549    0.000000    0.000000   -0.859707
+ H   _2 y    0.000000   -0.131549    0.000000    0.000000   -0.859707
+ H   _2 z    0.000000    0.000000   -0.302648    0.000000    0.000000   -0.401928
 
 
 
@@ -974,14 +982,14 @@ Point group: D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            H    1      H    2
+            H   _1      H   _2
             ------      ------
- H    1:    0.000000
- H    2:    1.587532    0.000000
+ H   _1:    0.000000
+ H   _2:    1.587532    0.000000
 
 
   Max interatomic separation is    1.5875 Angstrom (    3.0000 Bohr)
-  between atoms    2 and    1, "H    2" and "H    1".
+  between atoms    2 and    1, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1008,10 +1016,10 @@ Point group: D2h
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63128
+    Hartree to (cm)-1      : 219474.62934
     a.m.u.  to a.u.        :   1822.88848
-    Bohr    to Angstrom    :  0.529177208
-    a.u.    to A**4amu-1   :   142.943570
+    Bohr    to Angstrom    :  0.529177211
+    a.u.    to A**4amu-1   :   142.943572
 
 
  Vibrational analysis for parent molecule only.
@@ -1030,8 +1038,8 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:     2.015650 amu
                        Natural abundance:  99.970 %
@@ -1076,13 +1084,13 @@ Point group: D2h
                 1  1613i
   ----------------------
 
-    H    1 x    0.000000
-    H    1 y    0.000000
-    H    1 z   -0.704356
+    H   _1 x    0.000000
+    H   _1 y    0.000000
+    H   _1 z   -0.704356
 
-    H    2 x    0.000000
-    H    2 y    0.000000
-    H    2 z    0.704356
+    H   _2 x    0.000000
+    H   _2 y    0.000000
+    H   _2 z    0.704356
 
 
 
@@ -1131,7 +1139,7 @@ Point group: D2h
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.15 seconds
+ >>>> Total CPU  time used in ABACUS:   0.14 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 
@@ -1139,9 +1147,9 @@ Point group: D2h
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.17 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.16 seconds
+ >>>> Total wall time used in DALTON:   5.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:17:17 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:58 2011 
      Host name              : fe6                                     

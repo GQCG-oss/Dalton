@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:53:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:19:41 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -197,10 +198,10 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           C1   1     12.000000
-                           C1   2     12.000000
-                           H1   1      1.007825
-                           H1   2      1.007825
+                           C1  _1     12.000000
+                           C1  _2     12.000000
+                           H1  _1      1.007825
+                           H1  _2      1.007825
 
                        Total mass:    26.015650 amu
                        Natural abundance:  97.783 %
@@ -277,16 +278,16 @@ Point group: D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            C1   1      C1   2      H1   1      H1   2
+            C1  _1      C1  _2      H1  _1      H1  _2
             ------      ------      ------      ------
- C1   1:    0.000000
- C1   2:    1.202570    0.000000
- H1   1:    1.062150    2.264720    0.000000
- H1   2:    2.264720    1.062150    3.326870    0.000000
+ C1  _1:    0.000000
+ C1  _2:    1.202570    0.000000
+ H1  _1:    1.062150    2.264720    0.000000
+ H1  _2:    2.264720    1.062150    3.326870    0.000000
 
 
   Max interatomic separation is    3.3269 Angstrom (    6.2869 Bohr)
-  between atoms    4 and    3, "H1   2" and "H1   1".
+  between atoms    4 and    3, "H1  _2" and "H1  _1".
 
 
   Bond distances (Angstrom):
@@ -294,9 +295,9 @@ Point group: D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  C1   2     C1   1       1.202570
-  bond distance:  H1   1     C1   1       1.062150
-  bond distance:  H1   2     C1   2       1.062150
+  bond distance:  C1  _2     C1  _1       1.202570
+  bond distance:  H1  _1     C1  _1       1.062150
+  bond distance:  H1  _2     C1  _2       1.062150
 
 
   Bond angles (degrees):
@@ -304,8 +305,8 @@ Point group: D2h
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     C1   2     C1   1     H1   1       180.000
-  bond angle:     C1   1     C1   2     H1   2       180.000
+  bond angle:     C1  _2     C1  _1     H1  _1       180.000
+  bond angle:     C1  _1     C1  _2     H1  _2       180.000
 
 
 
@@ -430,7 +431,7 @@ Point group: D2h
  Number of two-electron integrals written:       35573 ( 12.9% )
  Megabytes written:                              0.412
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -476,7 +477,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:53:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:19:41 2011 
      Host name              : fe6                                     
 
  Title     :   Triplet excitation energies                               
@@ -493,8 +494,7 @@ Point group: D2h
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -502,6 +502,10 @@ Point group: D2h
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -551,36 +555,60 @@ Point group: D2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -76.5308963626       2.26D+00  -7.65D+01    3  1  1  0  2  0  0  0
-      MULPOP C1    1.56; H1    0.68; 
+      Virial theorem: -V/T =      2.018978
+      MULPOP  C1  _1  0.21; C1  _2  0.21; H1  _1 -0.21; H1  _2 -0.21; 
+ -----------------------------------------------------------------------------
    2  -76.8015049176       5.68D-01  -2.71D-01    3  1  1  0  2  0  0  0
-      MULPOP C1   -2.18; H1   -0.70; 
+      Virial theorem: -V/T =      1.992780
+      MULPOP  C1  _1 -0.05; C1  _2 -0.05; H1  _1  0.05; H1  _2  0.05; 
+ -----------------------------------------------------------------------------
    3  -76.8246065048       1.07D-01  -2.31D-02    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.20; H1    0.22; 
+      Virial theorem: -V/T =      2.003114
+      MULPOP  C1  _1 -0.02; C1  _2 -0.02; H1  _1  0.02; H1  _2  0.02; 
+ -----------------------------------------------------------------------------
    4  -76.8257048895       2.06D-02  -1.10D-03    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.44; H1    0.12; 
+      Virial theorem: -V/T =      2.001883
+      MULPOP  C1  _1 -0.05; C1  _2 -0.05; H1  _1  0.05; H1  _2  0.05; 
+ -----------------------------------------------------------------------------
    5  -76.8257747839       2.44D-03  -6.99D-05    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
+      Virial theorem: -V/T =      2.001846
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
    6  -76.8257756087       2.91D-04  -8.25D-07    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
+      Virial theorem: -V/T =      2.001851
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
    7  -76.8257756193       2.94D-05  -1.05D-08    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
-   8  -76.8257756194       3.13D-06  -9.94D-11    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
-   9  -76.8257756194       1.48D-07  -1.15D-12    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
-  10  -76.8257756194       1.51D-08   9.95D-14    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
-  11  -76.8257756194       1.74D-09  -4.26D-14    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
+      Virial theorem: -V/T =      2.001850
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
+   8  -76.8257756194       3.13D-06  -9.96D-11    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.001850
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
+   9  -76.8257756194       1.48D-07  -9.09D-13    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.001850
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
+  10  -76.8257756194       1.51D-08  -5.68D-14    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.001850
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
+  11  -76.8257756194       1.74D-09   1.42D-14    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.001850
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
   12  -76.8257756194       1.04D-10  -1.42D-14    3  1  1  0  2  0  0  0
-      MULPOP C1   -1.43; H1    0.11; 
-  13  -76.8257756194       8.13D-12   4.26D-14    3  1  1  0  2  0  0  0
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.001850
+      MULPOP  C1  _1 -0.06; C1  _2 -0.06; H1  _1  0.06; H1  _2  0.06; 
+ -----------------------------------------------------------------------------
+  13  -76.8257756194       8.03D-12  -1.42D-14    3  1  1  0  2  0  0  0
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -618,20 +646,23 @@ Point group: D2h
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.825775619372                 
+     Final HF energy:             -76.825775619373                 
      Nuclear repulsion:            24.782942637378
-     Electronic energy:          -101.608718256750
+     Electronic energy:          -101.608718256751
 
      Final gradient norm:           0.000000000008
 
  
-     Date and time (Linux)  : Wed Dec 29 21:53:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:19:41 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -639,7 +670,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 C1  :1s     0.7068  -0.0294  -0.0002   0.0406  -0.2270
    2 C1  :1s     0.0029   0.6371   0.0180  -0.0446  -0.9877
    3 C1  :1s    -0.0010  -0.1627   0.0318  -1.3953   0.8025
@@ -653,7 +684,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C1  :2px    0.6057  -0.9486   0.2958
    2 C1  :2px   -0.0233   1.0567  -0.2841
    3 C1  :3d1+  -0.0321   0.1100   0.3908
@@ -662,7 +693,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 C1  :2py    0.6057  -0.9486   0.2958
    2 C1  :2py   -0.0233   1.0567  -0.2841
    3 C1  :3d1-  -0.0321   0.1100   0.3908
@@ -671,13 +702,13 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 C1  :3d2-   0.6346
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 C1  :1s     0.7092  -0.0159   0.0014  -0.1035
    2 C1  :1s     0.0088   0.4207   0.3037   0.0901
    3 C1  :1s    -0.0088   0.0670  -1.7860   6.2849
@@ -691,7 +722,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C1  :2px    0.4934  -1.1379
    2 C1  :2px    0.6154   1.7171
    3 C1  :3d1+   0.0298  -0.1646
@@ -700,7 +731,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 C1  :2py    0.4934  -1.1379
    2 C1  :2py    0.6154   1.7171
    3 C1  :3d1-   0.0298  -0.1646
@@ -709,7 +740,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 C1  :3d2-   0.8120
 
 
@@ -718,7 +749,7 @@ Point group: D2h
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:53:18 2010 
+     Date and time (Linux)  : Wed Mar 16 18:19:41 2011 
      Host name              : fe6                                     
 
 
@@ -798,7 +829,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354527564        1.0669445766067931     
+  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354536290        1.0669445766063959     
  Start vector guessed from diagonal
  ... selected element no. 15
 
@@ -967,13 +998,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.6281571781       17.0930258332
+         1            0.6281571781       17.0930263182
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -76.197618441245680
+@@    1    1           -76.197618441248153
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1006,7 +1037,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354527564        1.2100521919954956     
+  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354536290        1.2100521919999565     
  Start vector guessed from diagonal
  ... selected element no. 15
  Start vector guessed from diagonal
@@ -1145,7 +1176,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1170,15 +1201,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5223695641       14.2143985050
-         2            0.6438909893       17.5211646013
+         1            0.5223695641       14.2143989084
+         2            0.6438909893       17.5211650985
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -76.303406055269903
-@@    1    2           -76.181884630095666
+@@    1    1           -76.303406055271310
+@@    1    2           -76.181884630097485
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1238,7 +1269,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412805758        1.3662696265183336     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820690        1.3662696265249186     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
@@ -1349,7 +1380,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1374,15 +1405,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3996535662       10.8751264316
-         2            0.6014398551       16.3660105115
+         1            0.3996535662       10.8751267402
+         2            0.6014398551       16.3660109760
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -76.426122053192771
-@@    2    2           -76.224335764288000
+@@    2    1           -76.426122053194376
+@@    2    2           -76.224335764284916
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1440,7 +1471,7 @@ Point group: D2h
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412805758        1.5819829411067410     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820690        1.5819829411067381     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
@@ -1509,7 +1540,7 @@ Point group: D2h
        2      0.55773843
        3      0.57737281
        4      0.95590989
-      6       4         0.00     0.17E-13
+      6       4         0.00     0.16E-13
     --------------------------------------
     converged in  6 iterations
     threshold:    0.10E-09
@@ -1525,7 +1556,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1552,19 +1583,19 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3896339626       10.6024791561
-         2            0.5577384304       15.1768342864
-         3            0.5773728142       15.7111130325
-         4            0.9559098893       26.0116305297
+         1            0.3896339626       10.6024794570
+         2            0.5577384304       15.1768347172
+         3            0.5773728142       15.7111134783
+         4            0.9559098893       26.0116312678
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -76.436141656792557
-@@    2    2           -76.268037189015160
-@@    2    3           -76.248402805219513
-@@    2    4           -75.869865730071552
+@@    2    1           -76.436141656794291
+@@    2    2           -76.268037189011721
+@@    2    3           -76.248402805220422
+@@    2    4           -75.869865730073442
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1666,7 +1697,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412806280        1.3358600360240045     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820968        1.3358600360235486     
  Start vector guessed from diagonal
  ... selected element no. 11
 
@@ -1781,7 +1812,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1805,13 +1836,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3996535662       10.8751264316
+         1            0.3996535662       10.8751267402
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -76.426122053192756
+@@    3    1           -76.426122053194376
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1847,7 +1878,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412806280        1.3662696265183389     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820968        1.3662696265249212     
  Start vector guessed from diagonal
  ... selected element no. 11
  Start vector guessed from diagonal
@@ -1942,7 +1973,7 @@ Point group: D2h
               Column   1
        1      0.38963396
        2      0.55773843
-     12       2         0.00     0.38E-13
+     12       2         0.00     0.23E-13
     --------------------------------------
     converged in 12 iterations
     threshold:    0.10E-09
@@ -1983,15 +2014,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3896339626       10.6024791561
-         2            0.5577384304       15.1768342864
+         1            0.3896339626       10.6024794570
+         2            0.5577384304       15.1768347172
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -76.436141656792557
-@@    3    2           -76.268037189015160
+@@    3    1           -76.436141656794291
+@@    3    2           -76.268037189011721
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2049,7 +2080,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766067862        1.9282819578321115     
+  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766063927        1.9282819578312869     
  Start vector guessed from diagonal
  ... selected element no.  4
  Start vector guessed from diagonal
@@ -2116,7 +2147,7 @@ Point group: D2h
               Column   1
        1      0.70698915
        2      0.70835276
-      8       1         0.00     0.81E-14
+      8       1         0.00     0.61E-14
     --------------------------------------
     converged in  8 iterations
     threshold:    0.10E-09
@@ -2157,15 +2188,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.7069891500       19.2381528466
-         2            0.7083527571       19.2752584828
+         1            0.7069891500       19.2381533925
+         2            0.7083527571       19.2752590298
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -76.118786469388127
-@@    4    2           -76.117422862266622
+@@    4    1           -76.118786469390017
+@@    4    2           -76.117422862268512
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2180,8 +2211,8 @@ Point group: D2h
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |   -0.707016  |
- | 3   2   |   1       1     |        4          |              |    0.707016  |
+ | 2   3   |   1       1     |        7          |              |    0.707016  |
+ | 3   2   |   1       1     |        4          |              |   -0.707016  |
  +=============================================================================+
 
 
@@ -2225,7 +2256,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766067862        1.9282819578321115     
+  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766063927        1.9282819578312869     
  Start vector guessed from diagonal
  ... selected element no.  4
  Start vector guessed from diagonal
@@ -2292,7 +2323,7 @@ Point group: D2h
               Column   1
        1      0.67939626
        2      0.70698915
-      8       1         0.00     0.33E-14
+      8       1         0.00     0.22E-14
     --------------------------------------
     converged in  8 iterations
     threshold:    0.10E-09
@@ -2333,15 +2364,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.6793962628       18.4873122125
-         2            0.7069891500       19.2381528466
+         1            0.6793962628       18.4873127370
+         2            0.7069891500       19.2381533925
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -76.146379356601187
-@@    4    2           -76.118786469388127
+@@    4    1           -76.146379356603077
+@@    4    2           -76.118786469390017
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2379,8 +2410,8 @@ Point group: D2h
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |    0.707016  |
- | 3   2   |   1       1     |        4          |              |   -0.707016  |
+ | 2   3   |   1       1     |        7          |              |   -0.707016  |
+ | 3   2   |   1       1     |        4          |              |    0.707016  |
  +=============================================================================+
 
 
@@ -2401,7 +2432,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866491       0.98627631131473492     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955375       0.98627631131411631     
  Start vector guessed from diagonal
  ... selected element no. 25
 
@@ -2546,13 +2577,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2530960970        6.8870949417
+         1            0.2530960970        6.8870951371
 
 
  Total excited state energies for states of symmetry/spin    5    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    5    1           -76.572679522387489
+@@    5    1           -76.572679522388370
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2589,7 +2620,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866491        1.1723105990763836     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955375        1.1723105991067257     
  Start vector guessed from diagonal
  ... selected element no. 25
  Start vector guessed from diagonal
@@ -2713,7 +2744,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2739,15 +2770,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.1691706253        4.6033667516
-         2            0.2057069309        5.5975701736
+         1            0.1691706253        4.6033668823
+         2            0.2057069309        5.5975703325
 
 
  Total excited state energies for states of symmetry/spin    5    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    5    1           -76.656604994065887
-@@    5    2           -76.620068688431147
+@@    5    1           -76.656604994066839
+@@    5    2           -76.620068688432085
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2785,8 +2816,8 @@ Point group: D2h
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 6   2   |   1       1     |       25          |              |   -0.696419  |
- | 7   3   |   1       1     |       29          |              |    0.696419  |
+ | 6   2   |   1       1     |       25          |              |    0.696419  |
+ | 7   3   |   1       1     |       29          |              |   -0.696419  |
  +=============================================================================+
 
 
@@ -2807,7 +2838,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.59834400565229973        1.2612749974763637     
+  MIN AND MAX IN SELECTED SUPSPACE   0.59834400564945067        1.2612749974972624     
  Start vector guessed from diagonal
  ... selected element no. 13
  Start vector guessed from diagonal
@@ -2925,7 +2956,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2950,15 +2981,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3720807444       10.1248318057
-         2            0.5181809597       14.1004207853
+         1            0.3720807444       10.1248320930
+         2            0.5181809597       14.1004211854
 
 
  Total excited state energies for states of symmetry/spin    6    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    6    1           -76.453694874969798
-@@    6    2           -76.307594659646568
+@@    6    1           -76.453694874972697
+@@    6    2           -76.307594659647208
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3016,7 +3047,7 @@ Point group: D2h
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            7
-  MIN AND MAX IN SELECTED SUPSPACE   0.59834400565229973        1.4938590433372818     
+  MIN AND MAX IN SELECTED SUPSPACE   0.59834400564945067        1.4938590433379848     
  Start vector guessed from diagonal
  ... selected element no. 13
  Start vector guessed from diagonal
@@ -3094,7 +3125,7 @@ Point group: D2h
        2      0.48074126
        3      0.56090847
        4      0.79403568
-      7       3         0.00     0.18E-13
+      7       3         0.00     0.19E-13
     --------------------------------------
     converged in  7 iterations
     threshold:    0.10E-09
@@ -3110,7 +3141,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3137,19 +3168,19 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3460740083        9.4171525366
-         2            0.4807412634       13.0816348518
-         3            0.5609084673       15.2630953770
-         4            0.7940356763       21.6068092506
+         1            0.3460740083        9.4171528038
+         2            0.4807412634       13.0816352230
+         3            0.5609084673       15.2630958106
+         4            0.7940356763       21.6068098638
 
 
  Total excited state energies for states of symmetry/spin    6    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    6    1           -76.479701611111466
-@@    6    2           -76.345034356007361
-@@    6    3           -76.264867152080726
-@@    6    4           -76.031739943090841
+@@    6    1           -76.479701611113100
+@@    6    2           -76.345034356008256
+@@    6    3           -76.264867152061271
+@@    6    4           -76.031739943089747
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3273,7 +3304,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866269        1.2249435839200689     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955453        1.2249435839208314     
  Start vector guessed from diagonal
  ... selected element no.  4
 
@@ -3364,7 +3395,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3388,13 +3419,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2387939712        6.4979143127
+         1            0.2387939712        6.4979144971
 
 
  Total excited state energies for states of symmetry/spin    8    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    8    1           -76.586981648182515
+@@    8    1           -76.586981648183425
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3431,7 +3462,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866269        2.0164058556015707     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955453        2.0164058556000404     
  Start vector guessed from diagonal
  ... selected element no.  4
  Start vector guessed from diagonal
@@ -3505,7 +3536,7 @@ Point group: D2h
               Column   1
        1      0.20570693
        2      0.23879397
-      9       1         0.00     0.39E-14
+      9       1         0.00     0.68E-14
     --------------------------------------
     converged in  9 iterations
     threshold:    0.10E-09
@@ -3521,7 +3552,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3546,15 +3577,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2057069309        5.5975701736
-         2            0.2387939712        6.4979143127
+         1            0.2057069309        5.5975703325
+         2            0.2387939712        6.4979144971
 
 
  Total excited state energies for states of symmetry/spin    8    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    8    1           -76.620068688431147
-@@    8    2           -76.586981648182515
+@@    8    1           -76.620068688432085
+@@    8    2           -76.586981648183425
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3626,22 +3657,22 @@ Point group: D2h
           Number of t2 amplitudes                 :      3590
           Total number of amplitudes in ccsd      :      3633
 
- Iter.  1: Coupled cluster MP2   energy :     -77.0858348070984221
- Iter.  1: Coupled cluster CC2   energy :     -77.0857261047184465
- Iter.  2: Coupled cluster CC2   energy :     -77.0889526341007212
- Iter.  3: Coupled cluster CC2   energy :     -77.0893748602548783
- Iter.  4: Coupled cluster CC2   energy :     -77.0893588510008954
- Iter.  5: Coupled cluster CC2   energy :     -77.0893596828502723
- Iter.  6: Coupled cluster CC2   energy :     -77.0893601784678566
- Iter.  7: Coupled cluster CC2   energy :     -77.0893601340598877
- Iter.  8: Coupled cluster CC2   energy :     -77.0893601083681119
- Iter.  9: Coupled cluster CC2   energy :     -77.0893601087937981
- Iter. 10: Coupled cluster CC2   energy :     -77.0893601114347575
- Iter. 11: Coupled cluster CC2   energy :     -77.0893601122684231
- Iter. 12: Coupled cluster CC2   energy :     -77.0893601123154326
+ Iter.  1: Coupled cluster MP2   energy :     -77.0858348070996868
+ Iter.  1: Coupled cluster CC2   energy :     -77.0857261047197966
+ Iter.  2: Coupled cluster CC2   energy :     -77.0889526341022275
+ Iter.  3: Coupled cluster CC2   energy :     -77.0893748602558730
+ Iter.  4: Coupled cluster CC2   energy :     -77.0893588510024870
+ Iter.  5: Coupled cluster CC2   energy :     -77.0893596828513807
+ Iter.  6: Coupled cluster CC2   energy :     -77.0893601784688229
+ Iter.  7: Coupled cluster CC2   energy :     -77.0893601340617352
+ Iter.  8: Coupled cluster CC2   energy :     -77.0893601083695046
+ Iter.  9: Coupled cluster CC2   energy :     -77.0893601087956313
+ Iter. 10: Coupled cluster CC2   energy :     -77.0893601114357239
+ Iter. 11: Coupled cluster CC2   energy :     -77.0893601122698442
+ Iter. 12: Coupled cluster CC2   energy :     -77.0893601123167969
 
  CC2   energy converged to within   0.10D-09 is    -77.089360112
- Final 2-norm of the CC vector function:  4.56785792D-09
+ Final 2-norm of the CC vector function:  4.56783454D-09
 
 
 
@@ -3698,7 +3729,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354527564        1.0669445766067931     
+  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354536290        1.0669445766063959     
  Start vector guessed from diagonal
  ... selected element no. 15
 
@@ -3879,7 +3910,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3903,13 +3934,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5991325359       16.3032251634
+         1            0.5991325359       16.3032256260
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -76.490227576453393
+@@    1    1           -76.490227576454927
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3975,7 +4006,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354527564        1.2100521919954956     
+  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354536290        1.2100521919999565     
  Start vector guessed from diagonal
  ... selected element no. 15
  Start vector guessed from diagonal
@@ -4155,8 +4186,8 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.55 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.54 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4181,15 +4212,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5250661371       14.2877759870
-         2            0.6301654066       17.1476725083
+         1            0.5250661371       14.2877763924
+         2            0.6301654066       17.1476729949
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -76.564293975211058
-@@    1    2           -76.459194705711553
+@@    1    1           -76.564293975212777
+@@    1    2           -76.459194705713657
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4316,7 +4347,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412805758       0.96332993766534236     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820690       0.96332993766546315     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
@@ -4483,7 +4514,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.22 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4508,15 +4539,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3959485632       10.7743081742
-         2            0.5992513826       16.3064591488
+         1            0.3959485632       10.7743084799
+         2            0.5992513826       16.3064596116
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -76.693411549141516
-@@    2    2           -76.490108729670396
+@@    2    1           -76.693411549142823
+@@    2    2           -76.490108729670027
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4639,7 +4670,7 @@ Point group: D2h
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412805758       0.96332993766534236     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820690       0.96332993766546315     
  Start vector guessed from diagonal
  ... selected element no. 10
  Start vector guessed from diagonal
@@ -4894,8 +4925,8 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.86 seconds
- >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.88 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4922,19 +4953,19 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3898787300       10.6091396170
-         2            0.5524461503       15.0328240254
-         3            0.5943505473       16.1731006393
-         4            0.9323860225       25.3715135709
+         1            0.3898787300       10.6091399180
+         2            0.5524461503       15.0328244520
+         3            0.5943505473       16.1731010984
+         4            0.9323860225       25.3715142909
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -76.699481382288809
-@@    2    2           -76.536913961983601
-@@    2    3           -76.495009565005276
-@@    2    4           -76.156974089792115
+@@    2    1           -76.699481382290173
+@@    2    2           -76.536913961984610
+@@    2    3           -76.495009565002007
+@@    2    4           -76.156974089793920
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5174,7 +5205,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412806280       0.96332993766534003     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820968       0.96332993766546393     
  Start vector guessed from diagonal
  ... selected element no. 11
 
@@ -5313,7 +5344,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5337,13 +5368,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3959485632       10.7743081742
+         1            0.3959485632       10.7743084799
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -76.693411549141530
+@@    3    1           -76.693411549142851
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5413,7 +5444,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412806280       0.96332993766534003     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820968       0.96332993766546393     
  Start vector guessed from diagonal
  ... selected element no. 11
  Start vector guessed from diagonal
@@ -5579,7 +5610,7 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.41 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.40 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -5605,15 +5636,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3898787300       10.6091396170
-         2            0.5524461503       15.0328240254
+         1            0.3898787300       10.6091399180
+         2            0.5524461503       15.0328244520
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -76.699481382288880
-@@    3    2           -76.536913961983444
+@@    3    1           -76.699481382290259
+@@    3    2           -76.536913961984467
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5739,7 +5770,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766067862        1.1966880113046048     
+  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766063927        1.1966880112989042     
  Start vector guessed from diagonal
  ... selected element no.  4
  Start vector guessed from diagonal
@@ -5910,15 +5941,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.7295928257       19.8532301326
-         2            0.7325114171       19.9326490429
+         1            0.7295928257       19.8532306960
+         2            0.7325114171       19.9326496085
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -76.359767286651945
-@@    4    2           -76.356848695229260
+@@    4    1           -76.359767286653664
+@@    4    2           -76.356848695230994
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6001,25 +6032,25 @@ Point group: D2h
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 2   3   |   1       1     |        7          |              |    0.697725  |
- | 3   2   |   1       1     |        4          |              |   -0.697725  |
+ | 2   3   |   1       1     |        7          |              |   -0.697725  |
+ | 3   2   |   1       1     |        4          |              |    0.697725  |
  +-----------------------------------------------------------------------------+
- | 1 2 3 1 |   4   1   1   2 |       14        4 |           89 |   -0.019122  |
- | 1 2 3 1 |   7   1   1   2 |       17        4 |           92 |   -0.019122  |
- | 3 1 1 2 |   1   1   2   1 |        4       10 |          229 |    0.019122  |
- | 3 1 1 2 |   1   6   2   1 |        4       15 |          354 |   -0.019122  |
- | 8 5 1 1 |   1   1   1   3 |        1       17 |         2036 |    0.047308  |
- | 8 5 1 1 |   1   1   2   3 |        2       17 |         2037 |   -0.022950  |
- | 7 5 2 1 |   2   1   1   3 |        5       17 |         2040 |    0.050851  |
- | 7 5 2 1 |   3   1   1   3 |        6       17 |         2041 |   -0.022950  |
- | 6 5 3 1 |   1   5   1   2 |        8       13 |         1991 |    0.020329  |
- | 4 5 5 1 |   1   5   1   2 |       12       13 |         1995 |    0.016787  |
- | 8 6 1 2 |   1   4   1   1 |        1       28 |         2179 |   -0.020329  |
- | 6 6 3 2 |   3   3   1   1 |       10       27 |         2175 |   -0.016787  |
- | 8 7 1 3 |   1   3   3   1 |        3       31 |         2220 |   -0.050851  |
- | 7 7 2 3 |   1   3   1   1 |        4       31 |         2221 |    0.022950  |
- | 7 7 2 3 |   4   3   1   1 |        7       31 |         2224 |   -0.047308  |
- | 6 7 3 3 |   1   3   1   1 |        8       31 |         2225 |    0.022950  |
+ | 1 2 3 1 |   4   1   1   2 |       14        4 |           89 |    0.019122  |
+ | 1 2 3 1 |   7   1   1   2 |       17        4 |           92 |    0.019122  |
+ | 3 1 1 2 |   1   1   2   1 |        4       10 |          229 |   -0.019122  |
+ | 3 1 1 2 |   1   6   2   1 |        4       15 |          354 |    0.019122  |
+ | 8 5 1 1 |   1   1   1   3 |        1       17 |         2036 |   -0.047308  |
+ | 8 5 1 1 |   1   1   2   3 |        2       17 |         2037 |    0.022950  |
+ | 7 5 2 1 |   2   1   1   3 |        5       17 |         2040 |   -0.050851  |
+ | 7 5 2 1 |   3   1   1   3 |        6       17 |         2041 |    0.022950  |
+ | 6 5 3 1 |   1   5   1   2 |        8       13 |         1991 |   -0.020329  |
+ | 4 5 5 1 |   1   5   1   2 |       12       13 |         1995 |   -0.016787  |
+ | 8 6 1 2 |   1   4   1   1 |        1       28 |         2179 |    0.020329  |
+ | 6 6 3 2 |   3   3   1   1 |       10       27 |         2175 |    0.016787  |
+ | 8 7 1 3 |   1   3   3   1 |        3       31 |         2220 |    0.050851  |
+ | 7 7 2 3 |   1   3   1   1 |        4       31 |         2221 |   -0.022950  |
+ | 7 7 2 3 |   4   3   1   1 |        7       31 |         2224 |    0.047308  |
+ | 6 7 3 3 |   1   3   1   1 |        8       31 |         2225 |   -0.022950  |
  +=============================================================================+
 
 
@@ -6043,7 +6074,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766067862        1.1966880113046048     
+  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766063927        1.1966880112989042     
  Start vector guessed from diagonal
  ... selected element no.  4
  Start vector guessed from diagonal
@@ -6181,7 +6212,7 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.33 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.31 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -6207,15 +6238,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.7104100635       19.3312406360
-         2            0.7321473912       19.9227433944
+         1            0.7104100635       19.3312411846
+         2            0.7321473912       19.9227439597
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -76.378950048813564
-@@    4    2           -76.357212721135923
+@@    4    1           -76.378950048815298
+@@    4    2           -76.357212721137643
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6333,7 +6364,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866491       0.98627631131473492     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955375       0.98627631131411631     
  Start vector guessed from diagonal
  ... selected element no. 25
 
@@ -6483,7 +6514,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.14 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -6508,13 +6539,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2974898733        8.0951110109
+         1            0.2974898733        8.0951112407
 
 
  Total excited state energies for states of symmetry/spin    5    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    5    1           -76.791870239026323
+@@    5    1           -76.791870239027148
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6585,7 +6616,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866491        1.1723105990763836     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955375        1.1723105991067257     
  Start vector guessed from diagonal
  ... selected element no. 25
  Start vector guessed from diagonal
@@ -6730,15 +6761,15 @@ Point group: D2h
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.01
+         CC_TRDRV            0.00
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.37 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.36 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6763,15 +6794,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2149400307        5.8488155927
-         2            0.2522318044        6.8635763447
+         1            0.2149400307        5.8488157586
+         2            0.2522318044        6.8635765395
 
 
  Total excited state energies for states of symmetry/spin    5    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    5    1           -76.874420081573533
-@@    5    2           -76.837128307915108
+@@    5    1           -76.874420081574428
+@@    5    2           -76.837128307915989
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -6897,7 +6928,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.59834400565229973        1.2275675773158878     
+  MIN AND MAX IN SELECTED SUPSPACE   0.59834400564945067        1.2275675773169685     
  Start vector guessed from diagonal
  ... selected element no. 13
  Start vector guessed from diagonal
@@ -7042,7 +7073,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.20 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.19 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -7068,15 +7099,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3680126467       10.0141332400
-         2            0.5005220974       13.6198987117
+         1            0.3680126467       10.0141335241
+         2            0.5005220974       13.6198990982
 
 
  Total excited state energies for states of symmetry/spin    6    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    6    1           -76.721347465590526
-@@    6    2           -76.588838014907708
+@@    6    1           -76.721347465593411
+@@    6    2           -76.588838014908447
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -7200,7 +7231,7 @@ Point group: D2h
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.59834400565229973        1.2275675773158878     
+  MIN AND MAX IN SELECTED SUPSPACE   0.59834400564945067        1.2275675773169685     
  Start vector guessed from diagonal
  ... selected element no. 13
  Start vector guessed from diagonal
@@ -7383,8 +7414,8 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.69 seconds
- >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.68 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7411,19 +7442,19 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3505919199        9.5400911622
-         2            0.4767351725       12.9726235767
-         3            0.5734590643       15.6046144853
-         4            0.7645158497       20.8035339315
+         1            0.3505919199        9.5400914329
+         2            0.4767351725       12.9726239448
+         3            0.5734590643       15.6046149286
+         4            0.7645158497       20.8035345219
 
 
  Total excited state energies for states of symmetry/spin    6    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    6    1           -76.738768192428878
-@@    6    2           -76.612624939834419
-@@    6    3           -76.515901047988962
-@@    6    4           -76.324844262578409
+@@    6    1           -76.738768192431010
+@@    6    2           -76.612624939835385
+@@    6    3           -76.515901047969635
+@@    6    4           -76.324844262577457
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -7695,7 +7726,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866269        1.2249435839200689     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955453        1.2249435839208314     
  Start vector guessed from diagonal
  ... selected element no.  4
 
@@ -7815,8 +7846,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -7840,13 +7871,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2825552862        7.6887202353
+         1            0.2825552862        7.6887204535
 
 
  Total excited state energies for states of symmetry/spin    8    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    8    1           -76.806804826111915
+@@    8    1           -76.806804826112781
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -7921,7 +7952,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866269        1.2249435839200689     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955453        1.2249435839208314     
  Start vector guessed from diagonal
  ... selected element no.  4
  Start vector guessed from diagonal
@@ -8031,7 +8062,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.23 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.22 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -8057,15 +8088,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2522318044        6.8635763447
-         2            0.2820149689        7.6740174530
+         1            0.2522318044        6.8635765395
+         2            0.2820149689        7.6740176707
 
 
  Total excited state energies for states of symmetry/spin    8    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    8    1           -76.837128307915108
-@@    8    2           -76.807345143451684
+@@    8    1           -76.837128307915989
+@@    8    2           -76.807345143452523
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -8205,25 +8236,25 @@ Point group: D2h
           Number of t2 amplitudes                 :      3590
           Total number of amplitudes in ccsd      :      3633
 
- Iter.  1: Coupled cluster RSTAR energy :     -77.0893601123154326
- Iter.  1: Coupled cluster CCSD  energy :     -77.0939282128201597
- Iter.  2: Coupled cluster CCSD  energy :     -77.1007883325603700
- Iter.  3: Coupled cluster CCSD  energy :     -77.1019655550868492
- Iter.  4: Coupled cluster CCSD  energy :     -77.1024882775853797
- Iter.  5: Coupled cluster CCSD  energy :     -77.1025309625318442
- Iter.  6: Coupled cluster CCSD  energy :     -77.1025294509646670
- Iter.  7: Coupled cluster CCSD  energy :     -77.1025303388265399
- Iter.  8: Coupled cluster CCSD  energy :     -77.1025306873528109
- Iter.  9: Coupled cluster CCSD  energy :     -77.1025306522020628
- Iter. 10: Coupled cluster CCSD  energy :     -77.1025306321617308
- Iter. 11: Coupled cluster CCSD  energy :     -77.1025306374722987
- Iter. 12: Coupled cluster CCSD  energy :     -77.1025306424778876
- Iter. 13: Coupled cluster CCSD  energy :     -77.1025306430897359
- Iter. 14: Coupled cluster CCSD  energy :     -77.1025306434621029
- Iter. 15: Coupled cluster CCSD  energy :     -77.1025306435388273
+ Iter.  1: Coupled cluster RSTAR energy :     -77.0893601123167969
+ Iter.  1: Coupled cluster CCSD  energy :     -77.0939282128211829
+ Iter.  2: Coupled cluster CCSD  energy :     -77.1007883325615353
+ Iter.  3: Coupled cluster CCSD  energy :     -77.1019655550884835
+ Iter.  4: Coupled cluster CCSD  energy :     -77.1024882775868150
+ Iter.  5: Coupled cluster CCSD  energy :     -77.1025309625329385
+ Iter.  6: Coupled cluster CCSD  energy :     -77.1025294509664860
+ Iter.  7: Coupled cluster CCSD  energy :     -77.1025303388277905
+ Iter.  8: Coupled cluster CCSD  energy :     -77.1025306873545446
+ Iter.  9: Coupled cluster CCSD  energy :     -77.1025306522035692
+ Iter. 10: Coupled cluster CCSD  energy :     -77.1025306321629245
+ Iter. 11: Coupled cluster CCSD  energy :     -77.1025306374731230
+ Iter. 12: Coupled cluster CCSD  energy :     -77.1025306424791665
+ Iter. 13: Coupled cluster CCSD  energy :     -77.1025306430911570
+ Iter. 14: Coupled cluster CCSD  energy :     -77.1025306434632682
+ Iter. 15: Coupled cluster CCSD  energy :     -77.1025306435404474
 
  CCSD  energy converged to within   0.10D-09 is    -77.102530644
- Final 2-norm of the CC vector function:  1.79418915D-09
+ Final 2-norm of the CC vector function:  1.79419404D-09
 
 
 
@@ -8295,7 +8326,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354527564        1.0669445766067931     
+  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354536290        1.0669445766063959     
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -8529,7 +8560,7 @@ Point group: D2h
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.91 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.92 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -8554,13 +8585,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5573916314       15.1673974065
+         1            0.5573916314       15.1673978369
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -76.545139012158799
+@@    1    1           -76.545139012159495
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -8618,7 +8649,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354527564        1.2100521919954956     
+  MIN AND MAX IN SELECTED SUPSPACE   0.89815241354536290        1.2100521919999565     
  Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr.  3 of symmetry  1 found on file - RESTART SUCCESS
@@ -8847,7 +8878,7 @@ Point group: D2h
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.52 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.53 seconds
  >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
 
 
@@ -8873,15 +8904,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5235805447       14.2473509624
-         2            0.6446716319       17.5424069666
+         1            0.5235805447       14.2473513667
+         2            0.6446716319       17.5424074644
 
 
  Total excited state energies for states of symmetry/spin    1    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -76.578950098839613
-@@    1    2           -76.457859011657547
+@@    1    1           -76.578950098841560
+@@    1    2           -76.457859011659863
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -9013,7 +9044,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412805758       0.96332993766534236     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820690       0.96332993766546315     
  Vector nr.  4 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr.  5 of symmetry  2 found on file - RESTART SUCCESS
@@ -9228,7 +9259,7 @@ Point group: D2h
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.05 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.06 seconds
  >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
@@ -9254,15 +9285,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3929468162       10.6926264863
-         2            0.5840040238       15.8915574203
+         1            0.3929468162       10.6926267897
+         2            0.5840040238       15.8915578713
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -76.709583827339230
-@@    2    2           -76.518526619757694
+@@    2    1           -76.709583827340765
+@@    2    2           -76.518526619757807
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -9374,7 +9405,7 @@ Point group: D2h
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412805758       0.96332993766534236     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820690       0.96332993766546315     
  Vector nr.  6 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr.  7 of symmetry  2 found on file - RESTART SUCCESS
@@ -9703,7 +9734,7 @@ Point group: D2h
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.06
+         CC_TRDRV            0.07
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
@@ -9711,7 +9742,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   4.40 seconds
- >>>> Total wall time used in CCEQ_SOLV:   9.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   8.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -9738,19 +9769,19 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3874977357       10.5443494680
-         2            0.5436939087       14.7946634219
-         3            0.5887120562       16.0196694968
-         4            0.7148327564       19.4515882270
+         1            0.3874977357       10.5443497672
+         2            0.5436939087       14.7946638417
+         3            0.5887120562       16.0196699515
+         4            0.7148327564       19.4515887789
 
 
  Total excited state energies for states of symmetry/spin    2    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -76.715032907817346
-@@    2    2           -76.558836734858190
-@@    2    3           -76.513818587299113
-@@    2    4           -76.387697887188281
+@@    2    1           -76.715032907818909
+@@    2    2           -76.558836734859383
+@@    2    3           -76.513818587296100
+@@    2    4           -76.387697887189901
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -9969,7 +10000,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412806280       0.96332993766534003     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820968       0.96332993766546393     
  Vector nr. 10 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -10131,8 +10162,8 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.53 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.52 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10156,13 +10187,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3929468162       10.6926264863
+         1            0.3929468162       10.6926267897
 
 
  Total excited state energies for states of symmetry/spin    3    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -76.709583827339060
+@@    3    1           -76.709583827340595
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -10234,7 +10265,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412806280       0.96332993766534003     
+  MIN AND MAX IN SELECTED SUPSPACE   0.62923695412820968       0.96332993766546393     
  Vector nr. 11 of symmetry  3 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 12 of symmetry  3 found on file - RESTART SUCCESS
@@ -10442,8 +10473,8 @@ Point group: D2h
          Total time          0.03
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.94 seconds
- >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.95 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10468,15 +10499,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3874977357       10.5443494680
-         2            0.5436939087       14.7946634219
+         1            0.3874977357       10.5443497672
+         2            0.5436939087       14.7946638417
 
 
  Total excited state energies for states of symmetry/spin    3    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    3    1           -76.715032907817474
-@@    3    2           -76.558836734857948
+@@    3    1           -76.715032907819051
+@@    3    2           -76.558836734859142
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -10600,7 +10631,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766067862        1.1966880113046048     
+  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766063927        1.1966880112989042     
  Vector nr. 13 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 14 of symmetry  4 found on file - RESTART SUCCESS
@@ -10856,7 +10887,7 @@ Point group: D2h
               Column   1
        1      0.68073341
        2      0.69639369
-     35       1         0.00     0.50E-10
+     35       1         0.00     0.49E-10
     --------------------------------------
     converged in 35 iterations
     threshold:    0.10E-09
@@ -10871,7 +10902,7 @@ Point group: D2h
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.45 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.48 seconds
  >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
 
 
@@ -10897,15 +10928,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.6807334106       18.5236978558
-         2            0.6963936947       18.9498358503
+         1            0.6807334106       18.5236983814
+         2            0.6963936947       18.9498363880
 
 
  Total excited state energies for states of symmetry/spin    4    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -76.421797232900843
-@@    4    2           -76.406136948835282
+@@    4    1           -76.421797232901810
+@@    4    2           -76.406136948835865
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -11001,7 +11032,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            3
-  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766067862        1.1966880113046048     
+  MIN AND MAX IN SELECTED SUPSPACE    1.0669445766063927        1.1966880112989042     
  Vector nr. 15 of symmetry  4 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 16 of symmetry  4 found on file - RESTART SUCCESS
@@ -11251,7 +11282,7 @@ Point group: D2h
          Total time          0.04
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   2.36 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   2.40 seconds
  >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
 
 
@@ -11277,15 +11308,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.5669979514       15.4287986650
-         2            0.6128697766       16.6770344877
+         1            0.5669979514       15.4287991028
+         2            0.6128697766       16.6770349610
 
 
  Total excited state energies for states of symmetry/spin    4    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    4    1           -76.535532692102223
-@@    4    2           -76.489660866967697
+@@    4    1           -76.535532692102890
+@@    4    2           -76.489660866968308
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -11385,7 +11416,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866491       0.98627631131473492     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955375       0.98627631131411631     
  Vector nr. 17 of symmetry  5 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -11505,7 +11536,7 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.39 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.40 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -11530,13 +11561,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2947255787        8.0198907309
+         1            0.2947255787        8.0198909585
 
 
  Total excited state energies for states of symmetry/spin    5    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    5    1           -76.807805064840380
+@@    5    1           -76.807805064841460
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -11609,7 +11640,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866491        1.1723105990763836     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955375        1.1723105991067257     
  Vector nr. 18 of symmetry  5 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 19 of symmetry  5 found on file - RESTART SUCCESS
@@ -11761,8 +11792,8 @@ Point group: D2h
          Total time          0.03
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.50 seconds
- >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.51 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -11787,15 +11818,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2044196055        5.5625402672
-         2            0.2473475974        6.7306703144
+         1            0.2044196055        5.5625404251
+         2            0.2473475974        6.7306705055
 
 
  Total excited state energies for states of symmetry/spin    5    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    5    1           -76.898111038048086
-@@    5    2           -76.855183046169088
+@@    5    1           -76.898111038049208
+@@    5    2           -76.855183046170211
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -11925,7 +11956,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.59834400565229973        1.2275675773158878     
+  MIN AND MAX IN SELECTED SUPSPACE   0.59834400564945067        1.2275675773169685     
  Vector nr. 20 of symmetry  6 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 21 of symmetry  6 found on file - RESTART SUCCESS
@@ -12112,8 +12143,8 @@ Point group: D2h
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.98 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.99 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -12138,15 +12169,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3638934915        9.9020453279
-         2            0.4971141792       13.5271645423
+         1            0.3638934915        9.9020456089
+         2            0.4971141792       13.5271649261
 
 
  Total excited state energies for states of symmetry/spin    6    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    6    1           -76.738637152032027
-@@    6    2           -76.605416464350895
+@@    6    1           -76.738637152035082
+@@    6    2           -76.605416464351890
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -12271,7 +12302,7 @@ Point group: D2h
  Converging for  4 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.59834400565229973        1.2275675773158878     
+  MIN AND MAX IN SELECTED SUPSPACE   0.59834400564945067        1.2275675773169685     
  Vector nr. 22 of symmetry  6 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 23 of symmetry  6 found on file - RESTART SUCCESS
@@ -12580,8 +12611,8 @@ Point group: D2h
          Total time          0.07
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   3.92 seconds
- >>>> Total wall time used in CCEQ_SOLV:   9.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   3.94 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   8.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -12608,19 +12639,19 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3476942085        9.4612404264
-         2            0.4730838532       12.8732661277
-         3            0.5673053464       15.4371633076
-         4            0.7362315953       20.0338802381
+         1            0.3476942085        9.4612406949
+         2            0.4730838532       12.8732664930
+         3            0.5673053464       15.4371637462
+         4            0.7362315953       20.0338808067
 
 
  Total excited state energies for states of symmetry/spin    6    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    6    1           -76.754836435045576
-@@    6    2           -76.629446790337113
-@@    6    3           -76.535225297123318
-@@    6    4           -76.366299048261510
+@@    6    1           -76.754836435047892
+@@    6    2           -76.629446790338349
+@@    6    3           -76.535225297105129
+@@    6    4           -76.366299048261240
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -12884,7 +12915,7 @@ Point group: D2h
  Converging for  1 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866269        1.2249435839200689     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955453        1.2249435839208314     
  Vector nr. 26 of symmetry  8 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
 
@@ -13004,7 +13035,7 @@ Point group: D2h
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.35 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.32 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -13029,13 +13060,13 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2808471799        7.6422402985
+         1            0.2808471799        7.6422405154
 
 
  Total excited state energies for states of symmetry/spin    8    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    8    1           -76.821683463682717
+@@    8    1           -76.821683463683826
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -13112,7 +13143,7 @@ Point group: D2h
  Converging for  2 roots.
   >> output from FNDMN3 <<
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
-  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047866269        1.2249435839200689     
+  MIN AND MAX IN SELECTED SUPSPACE   0.60629058047955453        1.2249435839208314     
  Vector nr. 27 of symmetry  8 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
  Vector nr. 28 of symmetry  8 found on file - RESTART SUCCESS
@@ -13250,7 +13281,7 @@ Point group: D2h
          Total time          0.02
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   1.18 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   1.20 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -13276,15 +13307,15 @@ Point group: D2h
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.2473475974        6.7306703144
-         2            0.2769327531        7.5357233298
+         1            0.2473475974        6.7306705055
+         2            0.2769327531        7.5357235436
 
 
  Total excited state energies for states of symmetry/spin    8    3
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    8    1           -76.855183046169074
-@@    8    2           -76.825597890486293
+@@    8    1           -76.855183046170197
+@@    8    2           -76.825597890487387
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -13412,47 +13443,47 @@ Point group: D2h
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1Ag  |    1   |     0.6281572  |      17.09303  |    137864.565  | 100.00  |
+ | ^1Ag  |    1   |     0.6281572  |      17.09303  |    137864.564  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3Ag  |    1   |     0.5223696  |      14.21440  |    114646.867  | 100.00  |
- | ^3Ag  |    2   |     0.6438910  |      17.52116  |    141317.737  | 100.00  |
+ | ^3Ag  |    1   |     0.5223696  |      14.21440  |    114646.866  | 100.00  |
+ | ^3Ag  |    2   |     0.6438910  |      17.52117  |    141317.736  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B3u |    1   |     0.3996536  |      10.87513  |     87713.819  | 100.00  |
- | ^1B3u |    2   |     0.6014399  |      16.36601  |    132000.790  | 100.00  |
+ | ^1B3u |    1   |     0.3996536  |      10.87513  |     87713.818  | 100.00  |
+ | ^1B3u |    2   |     0.6014399  |      16.36601  |    132000.789  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^3B3u |    1   |     0.3896340  |      10.60248  |     85514.770  | 100.00  |
- | ^3B3u |    2   |     0.5577384  |      15.17683  |    122409.436  | 100.00  |
- | ^3B3u |    3   |     0.5773728  |      15.71111  |    126718.685  | 100.00  |
- | ^3B3u |    4   |     0.9559099  |      26.01163  |    209797.970  | 100.00  |
+ | ^3B3u |    2   |     0.5577384  |      15.17683  |    122409.435  | 100.00  |
+ | ^3B3u |    3   |     0.5773728  |      15.71111  |    126718.684  | 100.00  |
+ | ^3B3u |    4   |     0.9559099  |      26.01163  |    209797.969  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B2u |    1   |     0.3996536  |      10.87513  |     87713.819  | 100.00  |
+ | ^1B2u |    1   |     0.3996536  |      10.87513  |     87713.818  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^3B2u |    1   |     0.3896340  |      10.60248  |     85514.770  | 100.00  |
- | ^3B2u |    2   |     0.5577384  |      15.17683  |    122409.436  | 100.00  |
+ | ^3B2u |    2   |     0.5577384  |      15.17683  |    122409.435  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B1g |    1   |     0.7069891  |      19.23815  |    155166.183  | 100.00  |
- | ^1B1g |    2   |     0.7083528  |      19.27526  |    155465.460  | 100.00  |
+ | ^1B1g |    1   |     0.7069891  |      19.23815  |    155166.182  | 100.00  |
+ | ^1B1g |    2   |     0.7083528  |      19.27526  |    155465.459  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B1g |    1   |     0.6793963  |      18.48731  |    149110.244  | 100.00  |
- | ^3B1g |    2   |     0.7069891  |      19.23815  |    155166.183  | 100.00  |
+ | ^3B1g |    1   |     0.6793963  |      18.48731  |    149110.243  | 100.00  |
+ | ^3B1g |    2   |     0.7069891  |      19.23815  |    155166.182  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B1u |    1   |     0.2530961  |       6.88709  |     55548.173  | 100.00  |
+ | ^1B1u |    1   |     0.2530961  |       6.88710  |     55548.172  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3B1u |    1   |     0.1691706  |       4.60337  |     37128.661  | 100.00  |
- | ^3B1u |    2   |     0.2057069  |       5.59757  |     45147.453  | 100.00  |
+ | ^3B1u |    1   |     0.1691706  |       4.60337  |     37128.660  | 100.00  |
+ | ^3B1u |    2   |     0.2057069  |       5.59757  |     45147.452  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1B2g |    1   |     0.3720807  |      10.12483  |     81662.284  | 100.00  |
- | ^1B2g |    2   |     0.5181810  |      14.10042  |    113727.575  | 100.00  |
+ | ^1B2g |    1   |     0.3720807  |      10.12483  |     81662.283  | 100.00  |
+ | ^1B2g |    2   |     0.5181810  |      14.10042  |    113727.574  | 100.00  |
  +-----------------------------------------------------------------------------+
  | ^3B2g |    1   |     0.3460740  |       9.41715  |     75954.465  | 100.00  |
- | ^3B2g |    2   |     0.4807413  |      13.08163  |    105510.512  | 100.00  |
- | ^3B2g |    3   |     0.5609085  |      15.26310  |    123105.179  | 100.00  |
- | ^3B2g |    4   |     0.7940357  |      21.60681  |    174270.687  | 100.00  |
+ | ^3B2g |    2   |     0.4807413  |      13.08164  |    105510.511  | 100.00  |
+ | ^3B2g |    3   |     0.5609085  |      15.26310  |    123105.178  | 100.00  |
+ | ^3B2g |    4   |     0.7940357  |      21.60681  |    174270.686  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^1Au  |    1   |     0.2387940  |       6.49791  |     52409.219  | 100.00  |
+ | ^1Au  |    1   |     0.2387940  |       6.49791  |     52409.218  | 100.00  |
  +-----------------------------------------------------------------------------+
- | ^3Au  |    1   |     0.2057069  |       5.59757  |     45147.453  | 100.00  |
- | ^3Au  |    2   |     0.2387940  |       6.49791  |     52409.219  | 100.00  |
+ | ^3Au  |    1   |     0.2057069  |       5.59757  |     45147.452  | 100.00  |
+ | ^3Au  |    2   |     0.2387940  |       6.49791  |     52409.218  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -13497,42 +13528,42 @@ Point group: D2h
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1Ag  |    1   |     0.5991325  |      16.30323  |    131494.392  |  95.79  |
+ | ^1Ag  |    1   |     0.5991325  |      16.30323  |    131494.391  |  95.79  |
  +-----------------------------------------------------------------------------+
- | ^3Ag  |    1   |     0.5250661  |      14.28778  |    115238.697  |  99.30  |
- | ^3Ag  |    2   |     0.6301654  |      17.14767  |    138305.320  |  96.60  |
+ | ^3Ag  |    1   |     0.5250661  |      14.28778  |    115238.696  |  99.30  |
+ | ^3Ag  |    2   |     0.6301654  |      17.14767  |    138305.319  |  96.60  |
  +-----------------------------------------------------------------------------+
- | ^1B3u |    1   |     0.3959486  |      10.77431  |     86900.665  |  96.31  |
- | ^1B3u |    2   |     0.5992514  |      16.30646  |    131520.476  |  94.65  |
+ | ^1B3u |    1   |     0.3959486  |      10.77431  |     86900.664  |  96.31  |
+ | ^1B3u |    2   |     0.5992514  |      16.30646  |    131520.475  |  94.65  |
  +-----------------------------------------------------------------------------+
- | ^3B3u |    1   |     0.3898787  |      10.60914  |     85568.491  |  98.74  |
- | ^3B3u |    2   |     0.5524462  |      15.03282  |    121247.915  |  98.52  |
- | ^3B3u |    3   |     0.5943505  |      16.17310  |    130444.867  |  99.34  |
- | ^3B3u |    4   |     0.9323860  |      25.37151  |    204635.079  |  98.51  |
+ | ^3B3u |    1   |     0.3898787  |      10.60914  |     85568.490  |  98.74  |
+ | ^3B3u |    2   |     0.5524462  |      15.03282  |    121247.914  |  98.52  |
+ | ^3B3u |    3   |     0.5943505  |      16.17310  |    130444.866  |  99.34  |
+ | ^3B3u |    4   |     0.9323860  |      25.37151  |    204635.077  |  98.51  |
  +-----------------------------------------------------------------------------+
- | ^1B2u |    1   |     0.3959486  |      10.77431  |     86900.665  |  96.31  |
+ | ^1B2u |    1   |     0.3959486  |      10.77431  |     86900.664  |  96.31  |
  +-----------------------------------------------------------------------------+
- | ^3B2u |    1   |     0.3898787  |      10.60914  |     85568.491  |  98.74  |
- | ^3B2u |    2   |     0.5524462  |      15.03282  |    121247.915  |  98.52  |
+ | ^3B2u |    1   |     0.3898787  |      10.60914  |     85568.490  |  98.74  |
+ | ^3B2u |    2   |     0.5524462  |      15.03282  |    121247.914  |  98.52  |
  +-----------------------------------------------------------------------------+
- | ^1B1g |    1   |     0.7295928  |      19.85323  |    160127.116  |  97.01  |
- | ^1B1g |    2   |     0.7325114  |      19.93265  |    160767.673  |  97.38  |
+ | ^1B1g |    1   |     0.7295928  |      19.85323  |    160127.115  |  97.01  |
+ | ^1B1g |    2   |     0.7325114  |      19.93265  |    160767.672  |  97.38  |
  +-----------------------------------------------------------------------------+
- | ^3B1g |    1   |     0.7104101  |      19.33124  |    155916.987  |  99.29  |
- | ^3B1g |    2   |     0.7321474  |      19.92274  |    160687.779  |  99.14  |
+ | ^3B1g |    1   |     0.7104101  |      19.33124  |    155916.985  |  99.29  |
+ | ^3B1g |    2   |     0.7321474  |      19.92274  |    160687.777  |  99.14  |
  +-----------------------------------------------------------------------------+
  | ^1B1u |    1   |     0.2974899  |       8.09511  |     65291.480  |  98.08  |
  +-----------------------------------------------------------------------------+
  | ^3B1u |    1   |     0.2149400  |       5.84882  |     47173.884  |  99.54  |
  | ^3B1u |    2   |     0.2522318  |       6.86358  |     55358.482  |  99.47  |
  +-----------------------------------------------------------------------------+
- | ^1B2g |    1   |     0.3680126  |      10.01413  |     80769.440  |  96.29  |
- | ^1B2g |    2   |     0.5005221  |      13.61990  |    109851.903  |  96.00  |
+ | ^1B2g |    1   |     0.3680126  |      10.01413  |     80769.439  |  96.29  |
+ | ^1B2g |    2   |     0.5005221  |      13.61990  |    109851.902  |  96.00  |
  +-----------------------------------------------------------------------------+
  | ^3B2g |    1   |     0.3505919  |       9.54009  |     76946.032  |  98.86  |
- | ^3B2g |    2   |     0.4767352  |      12.97262  |    104631.276  |  98.82  |
- | ^3B2g |    3   |     0.5734591  |      15.60461  |    125859.717  |  99.04  |
- | ^3B2g |    4   |     0.7645158  |      20.80353  |    167791.834  |  98.55  |
+ | ^3B2g |    2   |     0.4767352  |      12.97262  |    104631.275  |  98.82  |
+ | ^3B2g |    3   |     0.5734591  |      15.60461  |    125859.716  |  99.04  |
+ | ^3B2g |    4   |     0.7645158  |      20.80353  |    167791.833  |  98.55  |
  +-----------------------------------------------------------------------------+
  | ^1Au  |    1   |     0.2825553  |       7.68872  |     62013.717  |  98.26  |
  +-----------------------------------------------------------------------------+
@@ -13582,47 +13613,47 @@ Point group: D2h
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1Ag  |    1   |     0.5573916  |      15.16740  |    122333.323  |   2.01  |
+ | ^1Ag  |    1   |     0.5573916  |      15.16740  |    122333.322  |   2.01  |
  +-----------------------------------------------------------------------------+
- | ^3Ag  |    1   |     0.5235805  |      14.24735  |    114912.647  |  98.93  |
- | ^3Ag  |    2   |     0.6446716  |      17.54241  |    141489.069  |  96.78  |
+ | ^3Ag  |    1   |     0.5235805  |      14.24735  |    114912.646  |  98.93  |
+ | ^3Ag  |    2   |     0.6446716  |      17.54241  |    141489.067  |  96.78  |
  +-----------------------------------------------------------------------------+
- | ^1B3u |    1   |     0.3929468  |      10.69263  |     86241.858  |  94.92  |
- | ^1B3u |    2   |     0.5840040  |      15.89156  |    128174.068  |  88.61  |
+ | ^1B3u |    1   |     0.3929468  |      10.69263  |     86241.857  |  94.92  |
+ | ^1B3u |    2   |     0.5840040  |      15.89156  |    128174.067  |  88.61  |
  +-----------------------------------------------------------------------------+
- | ^3B3u |    1   |     0.3874977  |      10.54435  |     85045.923  |  98.53  |
- | ^3B3u |    2   |     0.5436939  |      14.79466  |    119327.020  |  97.54  |
- | ^3B3u |    3   |     0.5887121  |      16.01967  |    129207.361  |  98.99  |
- | ^3B3u |    4   |     0.7148328  |      19.45159  |    156887.656  |   0.94  |
+ | ^3B3u |    1   |     0.3874977  |      10.54435  |     85045.922  |  98.53  |
+ | ^3B3u |    2   |     0.5436939  |      14.79466  |    119327.019  |  97.54  |
+ | ^3B3u |    3   |     0.5887121  |      16.01967  |    129207.360  |  98.99  |
+ | ^3B3u |    4   |     0.7148328  |      19.45159  |    156887.654  |   0.94  |
  +-----------------------------------------------------------------------------+
- | ^1B2u |    1   |     0.3929468  |      10.69263  |     86241.858  |  94.92  |
+ | ^1B2u |    1   |     0.3929468  |      10.69263  |     86241.857  |  94.92  |
  +-----------------------------------------------------------------------------+
- | ^3B2u |    1   |     0.3874977  |      10.54435  |     85045.923  |  98.53  |
- | ^3B2u |    2   |     0.5436939  |      14.79466  |    119327.020  |  97.54  |
+ | ^3B2u |    1   |     0.3874977  |      10.54435  |     85045.922  |  98.53  |
+ | ^3B2u |    2   |     0.5436939  |      14.79466  |    119327.019  |  97.54  |
  +-----------------------------------------------------------------------------+
- | ^1B1g |    1   |     0.6807334  |      18.52370  |    149403.714  |  34.71  |
- | ^1B1g |    2   |     0.6963937  |      18.94984  |    152840.749  |   2.03  |
+ | ^1B1g |    1   |     0.6807334  |      18.52370  |    149403.713  |  34.71  |
+ | ^1B1g |    2   |     0.6963937  |      18.94984  |    152840.748  |   2.03  |
  +-----------------------------------------------------------------------------+
- | ^3B1g |    1   |     0.5669980  |      15.42880  |    124441.666  |   0.85  |
- | ^3B1g |    2   |     0.6128698  |      16.67703  |    134509.368  |   3.11  |
+ | ^3B1g |    1   |     0.5669980  |      15.42880  |    124441.665  |   0.85  |
+ | ^3B1g |    2   |     0.6128698  |      16.67703  |    134509.367  |   3.11  |
  +-----------------------------------------------------------------------------+
- | ^1B1u |    1   |     0.2947256  |       8.01989  |     64684.788  |  97.23  |
+ | ^1B1u |    1   |     0.2947256  |       8.01989  |     64684.787  |  97.23  |
  +-----------------------------------------------------------------------------+
- | ^3B1u |    1   |     0.2044196  |       5.56254  |     44864.918  |  99.41  |
- | ^3B1u |    2   |     0.2473476  |       6.73067  |     54286.523  |  99.30  |
+ | ^3B1u |    1   |     0.2044196  |       5.56254  |     44864.917  |  99.41  |
+ | ^3B1u |    2   |     0.2473476  |       6.73067  |     54286.522  |  99.30  |
  +-----------------------------------------------------------------------------+
- | ^1B2g |    1   |     0.3638935  |       9.90205  |     79865.390  |  94.74  |
- | ^1B2g |    2   |     0.4971142  |      13.52716  |    109103.951  |  94.37  |
+ | ^1B2g |    1   |     0.3638935  |       9.90205  |     79865.389  |  94.74  |
+ | ^1B2g |    2   |     0.4971142  |      13.52716  |    109103.950  |  94.37  |
  +-----------------------------------------------------------------------------+
  | ^3B2g |    1   |     0.3476942  |       9.46124  |     76310.058  |  98.63  |
- | ^3B2g |    2   |     0.4730839  |      12.87327  |    103829.904  |  98.48  |
- | ^3B2g |    3   |     0.5673053  |      15.43716  |    124509.132  |  98.69  |
- | ^3B2g |    4   |     0.7362316  |      20.03388  |    161584.158  |  95.05  |
+ | ^3B2g |    2   |     0.4730839  |      12.87327  |    103829.903  |  98.48  |
+ | ^3B2g |    3   |     0.5673053  |      15.43716  |    124509.131  |  98.69  |
+ | ^3B2g |    4   |     0.7362316  |      20.03388  |    161584.156  |  95.05  |
  +-----------------------------------------------------------------------------+
  | ^1Au  |    1   |     0.2808472  |       7.64224  |     61638.831  |  97.58  |
  +-----------------------------------------------------------------------------+
- | ^3Au  |    1   |     0.2473476  |       6.73067  |     54286.523  |  99.30  |
- | ^3Au  |    2   |     0.2769328  |       7.53572  |     60779.714  |  99.14  |
+ | ^3Au  |    1   |     0.2473476  |       6.73067  |     54286.522  |  99.30  |
+ | ^3Au  |    2   |     0.2769328  |       7.53572  |     60779.713  |  99.14  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -13657,7 +13688,7 @@ Point group: D2h
              2 ^3Au       -76.8255978905                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -13676,9 +13707,9 @@ Point group: D2h
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  29.26 seconds
- >>>> Total wall time used in DALTON:  1 minute  28 seconds
+ >>>> Total CPU  time used in DALTON:  29.34 seconds
+ >>>> Total wall time used in DALTON:  1 minute  19 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:54:46 2010 
+     Date and time (Linux)  : Wed Mar 16 18:21:00 2011 
      Host name              : fe6                                     

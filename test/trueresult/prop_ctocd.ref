@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:16:12 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:01 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -182,8 +183,8 @@ Point group: C2v
                                  ---------------
 
                            O          15.994915
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
@@ -249,15 +250,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -265,8 +266,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -274,7 +275,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -283,7 +284,7 @@ Point group: C2v
  --------------------------------------------------------
 
    IA       0.616959          0.000000    1.000000    0.000000
-   IB       1.156693          0.000000    0.000000    1.000000
+   IB       1.156694          0.000000    0.000000    1.000000
    IC       1.773652          1.000000    0.000000    0.000000
 
 
@@ -294,8 +295,8 @@ Point group: C2v
 
                A                   B                   C
 
-         819145.5197         436916.9613         284936.9173 MHz
-           27.323753           14.573981            9.504473 cm-1
+         819145.5126         436916.9575         284936.9149 MHz
+           27.323753           14.573981            9.504472 cm-1
 
 
 @  Nuclear repulsion energy :    9.183706230245
@@ -387,8 +388,8 @@ Point group: C2v
  Number of two-electron integrals written:       75206 ( 24.7% )
  Megabytes written:                              0.866
 
- >>> Time used in TWOINT is   0.17 seconds
- >>>> Total CPU  time used in HERMIT:   0.17 seconds
+ >>> Time used in TWOINT is   0.18 seconds
+ >>>> Total CPU  time used in HERMIT:   0.19 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -423,7 +424,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:12 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:01 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -435,12 +436,12 @@ Point group: C2v
 
      Restricted, closed shell Hartree-Fock calculation.
 
-
  Initial molecular orbitals are obtained according to
  ".MOSTART EHT   " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> HF       <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -476,28 +477,44 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -75.8289971698       2.45D+00  -7.58D+01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      1.995901
+      MULPOP  O      -0.57; H   _1  0.28; H   _2  0.28; 
+ -----------------------------------------------------------------------------
    2  -76.0524427034       3.70D-01  -2.23D-01    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001342
+      MULPOP  O      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    3  -76.0600525846       8.30D-02  -7.61D-03    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.001274
+      MULPOP  O      -0.81; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    4  -76.0607501246       1.70D-02  -6.98D-04    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000717
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    5  -76.0607819964       5.18D-03  -3.19D-05    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000873
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    6  -76.0607838687       1.92D-03  -1.87D-06    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000774
+      MULPOP  O      -0.83; H   _1  0.41; H   _2  0.41; 
+ -----------------------------------------------------------------------------
    7  -76.0607842024       3.22D-04  -3.34D-07    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    8  -76.0607842185       4.12D-05  -1.61D-08    3  1  1  0
-      MULPOP O   ******; H   ******; 
+      Virial theorem: -V/T =      2.000809
+      MULPOP  O      -0.83; H   _1  0.42; H   _2  0.42; 
+ -----------------------------------------------------------------------------
    9  -76.0607842187       7.64D-06  -1.83D-10    3  1  1  0
- DIIS converged in   9 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+
+ *** DIIS converged in   9 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -528,20 +545,23 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -76.060784218673                 
+     Final HF energy:             -76.060784218676                 
      Nuclear repulsion:             9.183706230245
-     Electronic energy:           -85.244490448918
+     Electronic energy:           -85.244490448921
 
      Final gradient norm:           0.000007644696
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:12 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:01 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -549,7 +569,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 O   :s      0.3905  -0.0859  -0.0284   0.0258   0.0135
    2 O   :s      0.4237  -0.1378  -0.0459   0.0378   0.0306
    3 O   :s      0.2819  -0.1215  -0.0431   0.0497  -0.0041
@@ -573,7 +593,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :px     0.0819  -0.0403   0.0108
    2 O   :px     0.1941  -0.1683   0.0187
    3 O   :px     0.3396  -0.0020   0.0667
@@ -585,7 +605,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 O   :py     0.0653   0.0306   0.0081
    2 O   :py     0.1529   0.0600  -0.0127
    3 O   :py     0.2746   0.1667   0.0964
@@ -601,7 +621,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 O   :dxy    0.9129   0.7003
    2 H   :px     0.1116  -0.8095
 
@@ -611,7 +631,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:12 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:01 2011 
      Host name              : fe6                                     
 
 
@@ -656,7 +676,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:12 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:01 2011 
      Host name              : fe6                                     
 
 
@@ -666,7 +686,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:14 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:02 2011 
      Host name              : fe6                                     
 
 
@@ -674,8 +694,8 @@ Point group: C2v
                              -----------------------
 
  O          0.0000000000            0.0000000000            0.1241444240
- H    1     0.0000000000            1.4315300000           -0.9852655760
- H    2     0.0000000000           -1.4315300000           -0.9852655760
+ H   _1     0.0000000000            1.4315300000           -0.9852655760
+ H   _2     0.0000000000           -1.4315300000           -0.9852655760
 
 
 
@@ -687,18 +707,18 @@ Point group: C2v
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy        -76.0607842187 au (Hartrees)
-                         -2069.71916395 eV
-                           -199697.5603 kJ/mol
+                         -2069.71922269 eV
+                           -199697.5582 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          0.2025150016 au
-     Mass-velocity correction:                  -0.2546064083 au
+     Darwin correction:                          0.2025149999 au
+     Mass-velocity correction:                  -0.2546064062 au
 
-     Total relativistic correction:             -0.0520914067 au (0.0685%)
-     Non-relativistic + relativistic energy:   -76.1128756254 au
+     Total relativistic correction:             -0.0520914063 au (0.0685%)
+     Non-relativistic + relativistic energy:   -76.1128756250 au
 
 
 
@@ -715,7 +735,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.82453953        -2.09577021        -6.99073695
+      z     -0.82453953        -2.09577031        -6.99073728
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -761,8 +781,8 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx        -2.474592936451     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -2.303182173443     -0.000000000000
+  Bx        -2.474592936456     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.303182173444     -0.000000000000
   Bz        -0.000000000000     -0.000000000000     -2.421095180416
 
 
@@ -772,9 +792,9 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx        -2.912805648151      0.000000000000      0.000000000000
-  By         0.000000000000     -2.422961962112      0.000000000000
-  Bz         0.000000000000      0.000000000000     -2.654113176253
+  Bx        -2.912805648153      0.000000000000      0.000000000000
+  By         0.000000000000     -2.422961962111      0.000000000000
+  Bz         0.000000000000      0.000000000000     -2.654113176252
 
 
 
@@ -783,8 +803,8 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx         0.438212711700     -0.000000000000     -0.000000000000
-  By        -0.000000000000      0.119779788669     -0.000000000000
+  Bx         0.438212711697     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.119779788668     -0.000000000000
   Bz        -0.000000000000     -0.000000000000      0.233017995837
 
 
@@ -851,9 +871,9 @@ Point group: C2v
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   212.98436143     0.00000000     0.00000000
-  O      y     0.00000000   273.17572822     0.00000000
-  O      z     0.00000000     0.00000000   216.42088025
+  O      x   212.98435969     0.00000000     0.00000000
+  O      y     0.00000000   273.17572598     0.00000000
+  O      z     0.00000000     0.00000000   216.42087847
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -865,7 +885,7 @@ Point group: C2v
   O      y     0.0000   336.3984     0.0000        0.0000   -63.2227     0.0000
   O      z     0.0000     0.0000   336.9247        0.0000     0.0000  -120.5038
 
-  Diamagnetic contribution:    337.742120         Paramagnetic:    -103.548463
+  Diamagnetic contribution:    337.742117         Paramagnetic:    -103.548462
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -881,12 +901,12 @@ Point group: C2v
   Principal values and axes:
   --------------------------
 
-  O         212.984361  =  234.19  -  21.21:     1.000000  0.000000  0.000000
-  O         216.420880  =  234.19  -  17.77:     0.000000  0.000000  1.000000
-  O         273.175728  =  234.19  +  38.98:     0.000000  1.000000  0.000000
+  O         212.984360  =  234.19  -  21.21:     1.000000  0.000000  0.000000
+  O         216.420878  =  234.19  -  17.77:     0.000000  0.000000  1.000000
+  O         273.175726  =  234.19  +  38.98:     0.000000  1.000000  0.000000
 
 
-  CTOCD-DZ: Chemical shielding for H    1:
+  CTOCD-DZ: Chemical shielding for H   _1:
   ========================================
 
 
@@ -906,13 +926,13 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    22.26961047     0.00000000     0.00000000
-  H    1 y     0.00000000    34.99204238    -8.50778449
-  H    1 z     0.00000000    -5.93393890    27.24246118
+  H   _1 x    22.26961028     0.00000000     0.00000000
+  H   _1 y     0.00000000    34.99204210    -8.50778442
+  H   _1 z     0.00000000    -5.93393885    27.24246096
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -920,11 +940,11 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x   122.1146     0.0000     0.0000      -99.8450     0.0000     0.0000
-  H    1 y     0.0000    69.0268    36.1596        0.0000   -34.0347   -44.6673
-  H    1 z     0.0000    37.9132    93.3885        0.0000   -43.8472   -66.1461
+  H   _1 x   122.1146     0.0000     0.0000      -99.8450     0.0000     0.0000
+  H   _1 y     0.0000    69.0268    36.1596        0.0000   -34.0347   -44.6673
+  H   _1 z     0.0000    37.9132    93.3885        0.0000   -43.8472   -66.1461
 
-  Diamagnetic contribution:     94.843308         Paramagnetic:     -66.675270
+  Diamagnetic contribution:     94.843307         Paramagnetic:     -66.675270
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -932,20 +952,20 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
-  H    1 y     0.0000     0.0000    -1.2869        0.0000     6.8240    -7.2209
-  H    1 z     0.0000     1.2869     0.0000        0.0000    -7.2209    -0.9256
+  H   _1 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -1.2869        0.0000     6.8240    -7.2209
+  H   _1 z     0.0000     1.2869     0.0000        0.0000    -7.2209    -0.9256
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
-  H    1     22.922446  =   28.17  -   5.25:     0.000000  0.513403  0.858148
-  H    1     39.312058  =   28.17  +  11.14:     0.000000  0.858148 -0.513403
+  H   _1     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
+  H   _1     22.922446  =   28.17  -   5.25:     0.000000  0.513403  0.858148
+  H   _1     39.312057  =   28.17  +  11.14:     0.000000  0.858148 -0.513403
 
 
-  CTOCD-DZ: Chemical shielding for H    2:
+  CTOCD-DZ: Chemical shielding for H   _2:
   ========================================
 
 
@@ -965,13 +985,13 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    22.26961047     0.00000000     0.00000000
-  H    2 y     0.00000000    34.99204238     8.50778449
-  H    2 z     0.00000000     5.93393890    27.24246118
+  H   _2 x    22.26961028     0.00000000     0.00000000
+  H   _2 y     0.00000000    34.99204210     8.50778442
+  H   _2 z     0.00000000     5.93393885    27.24246096
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -979,11 +999,11 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x   122.1146     0.0000     0.0000      -99.8450     0.0000     0.0000
-  H    2 y     0.0000    69.0268   -36.1596        0.0000   -34.0347    44.6673
-  H    2 z     0.0000   -37.9132    93.3885        0.0000    43.8472   -66.1461
+  H   _2 x   122.1146     0.0000     0.0000      -99.8450     0.0000     0.0000
+  H   _2 y     0.0000    69.0268   -36.1596        0.0000   -34.0347    44.6673
+  H   _2 z     0.0000   -37.9132    93.3885        0.0000    43.8472   -66.1461
 
-  Diamagnetic contribution:     94.843308         Paramagnetic:     -66.675270
+  Diamagnetic contribution:     94.843307         Paramagnetic:     -66.675270
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -991,17 +1011,17 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
-  H    2 y     0.0000     0.0000     1.2869        0.0000     6.8240     7.2209
-  H    2 z     0.0000    -1.2869     0.0000        0.0000     7.2209    -0.9256
+  H   _2 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     1.2869        0.0000     6.8240     7.2209
+  H   _2 z     0.0000    -1.2869     0.0000        0.0000     7.2209    -0.9256
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
-  H    2     22.922446  =   28.17  -   5.25:     0.000000 -0.513403  0.858148
-  H    2     39.312058  =   28.17  +  11.14:     0.000000  0.858148  0.513403
+  H   _2     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
+  H   _2     22.922446  =   28.17  -   5.25:     0.000000 -0.513403  0.858148
+  H   _2     39.312057  =   28.17  +  11.14:     0.000000  0.858148  0.513403
 
 
                          +--------------------------------+
@@ -1013,8 +1033,8 @@ Point group: C2v
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       234.1937  337.7421 -103.5485    0.8858   60.1914   58.4731    0.0882
- @1H    1   28.1680   94.8433  -66.6753    0.9234   17.0424   16.7160    0.0586
- @1H    2   28.1680   94.8433  -66.6753    0.9234   17.0424   16.7160    0.0586
+ @1H   _1   28.1680   94.8433  -66.6753    0.9234   17.0424   16.7160    0.0586
+ @1H   _2   28.1680   94.8433  -66.6753    0.9234   17.0424   16.7160    0.0586
 
 
 
@@ -1027,8 +1047,8 @@ Point group: C2v
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       234.1937  337.7421 -103.5485   58.4731    0.0882   58.5488    0.0000
- @2H    1   28.1680   94.8433  -66.6753   16.7160    0.0586   16.7256    1.2869
- @2H    2   28.1680   94.8433  -66.6753   16.7160    0.0586   16.7256    1.2869
+ @2H   _1   28.1680   94.8433  -66.6753   16.7160    0.0586   16.7256    1.2869
+ @2H   _2   28.1680   94.8433  -66.6753   16.7160    0.0586   16.7256    1.2869
 
 
 
@@ -1089,9 +1109,9 @@ Point group: C2v
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   212.98436143     0.00000000     0.00000000
-  O      y     0.00000000   273.17572822     0.00000000
-  O      z     0.00000000     0.00000000   216.42088025
+  O      x   212.98435969     0.00000000     0.00000000
+  O      y     0.00000000   273.17572598     0.00000000
+  O      z     0.00000000     0.00000000   216.42087847
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1103,7 +1123,7 @@ Point group: C2v
   O      y     0.0000   332.3738     0.0000        0.0000   -59.1981     0.0000
   O      z     0.0000     0.0000   336.9247        0.0000     0.0000  -120.5038
 
-  Diamagnetic contribution:    335.955718         Paramagnetic:    -101.762061
+  Diamagnetic contribution:    335.955715         Paramagnetic:    -101.762061
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1119,12 +1139,12 @@ Point group: C2v
   Principal values and axes:
   --------------------------
 
-  O         212.984361  =  234.19  -  21.21:     1.000000  0.000000  0.000000
-  O         216.420880  =  234.19  -  17.77:     0.000000  0.000000  1.000000
-  O         273.175728  =  234.19  +  38.98:     0.000000  1.000000  0.000000
+  O         212.984360  =  234.19  -  21.21:     1.000000  0.000000  0.000000
+  O         216.420878  =  234.19  -  17.77:     0.000000  0.000000  1.000000
+  O         273.175726  =  234.19  +  38.98:     0.000000  1.000000  0.000000
 
 
-  CTOCD-DZ: Chemical shielding for H    1:
+  CTOCD-DZ: Chemical shielding for H   _1:
   ========================================
 
 
@@ -1139,13 +1159,13 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    22.26961047     0.00000000     0.00000000
-  H    1 y     0.00000000    34.99204238    -8.50778449
-  H    1 z     0.00000000    -5.93393890    27.24246118
+  H   _1 x    22.26961028     0.00000000     0.00000000
+  H   _1 y     0.00000000    34.99204210    -8.50778442
+  H   _1 z     0.00000000    -5.93393885    27.24246096
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1153,11 +1173,11 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x    12.3417     0.0000     0.0000        9.9279     0.0000     0.0000
-  H    1 y     0.0000    32.8198   -16.4477        0.0000     2.1723     7.9399
-  H    1 z     0.0000   -12.1200    20.6923        0.0000     6.1860     6.5502
+  H   _1 x    12.3417     0.0000     0.0000        9.9279     0.0000     0.0000
+  H   _1 y     0.0000    32.8198   -16.4477        0.0000     2.1723     7.9399
+  H   _1 z     0.0000   -12.1200    20.6923        0.0000     6.1860     6.5502
 
-  Diamagnetic contribution:     21.951250         Paramagnetic:       6.216788
+  Diamagnetic contribution:     21.951249         Paramagnetic:       6.216788
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1165,20 +1185,20 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
-  H    1 y     0.0000     0.0000    -1.2869        0.0000     6.8240    -7.2209
-  H    1 z     0.0000     1.2869     0.0000        0.0000    -7.2209    -0.9256
+  H   _1 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -1.2869        0.0000     6.8240    -7.2209
+  H   _1 z     0.0000     1.2869     0.0000        0.0000    -7.2209    -0.9256
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
-  H    1     22.922446  =   28.17  -   5.25:     0.000000  0.513403  0.858148
-  H    1     39.312058  =   28.17  +  11.14:     0.000000  0.858148 -0.513403
+  H   _1     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
+  H   _1     22.922446  =   28.17  -   5.25:     0.000000  0.513403  0.858148
+  H   _1     39.312057  =   28.17  +  11.14:     0.000000  0.858148 -0.513403
 
 
-  CTOCD-DZ: Chemical shielding for H    2:
+  CTOCD-DZ: Chemical shielding for H   _2:
   ========================================
 
 
@@ -1193,13 +1213,13 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    22.26961047     0.00000000     0.00000000
-  H    2 y     0.00000000    34.99204238     8.50778449
-  H    2 z     0.00000000     5.93393890    27.24246118
+  H   _2 x    22.26961028     0.00000000     0.00000000
+  H   _2 y     0.00000000    34.99204210     8.50778442
+  H   _2 z     0.00000000     5.93393885    27.24246096
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1207,11 +1227,11 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x    12.3417     0.0000     0.0000        9.9279     0.0000     0.0000
-  H    2 y     0.0000    32.8198    16.4477        0.0000     2.1723    -7.9399
-  H    2 z     0.0000    12.1200    20.6923        0.0000    -6.1860     6.5502
+  H   _2 x    12.3417     0.0000     0.0000        9.9279     0.0000     0.0000
+  H   _2 y     0.0000    32.8198    16.4477        0.0000     2.1723    -7.9399
+  H   _2 z     0.0000    12.1200    20.6923        0.0000    -6.1860     6.5502
 
-  Diamagnetic contribution:     21.951250         Paramagnetic:       6.216788
+  Diamagnetic contribution:     21.951249         Paramagnetic:       6.216788
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1219,17 +1239,17 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
-  H    2 y     0.0000     0.0000     1.2869        0.0000     6.8240     7.2209
-  H    2 z     0.0000    -1.2869     0.0000        0.0000     7.2209    -0.9256
+  H   _2 x     0.0000     0.0000     0.0000       -5.8984     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     1.2869        0.0000     6.8240     7.2209
+  H   _2 z     0.0000    -1.2869     0.0000        0.0000     7.2209    -0.9256
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
-  H    2     22.922446  =   28.17  -   5.25:     0.000000 -0.513403  0.858148
-  H    2     39.312058  =   28.17  +  11.14:     0.000000  0.858148  0.513403
+  H   _2     22.269610  =   28.17  -   5.90:     1.000000  0.000000  0.000000
+  H   _2     22.922446  =   28.17  -   5.25:     0.000000 -0.513403  0.858148
+  H   _2     39.312057  =   28.17  +  11.14:     0.000000  0.858148  0.513403
 
 
                          +--------------------------------+
@@ -1241,8 +1261,8 @@ Point group: C2v
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       234.1937  335.9557 -101.7621    0.8858   60.1914   58.4731    0.0882
- @1H    1   28.1680   21.9512    6.2168    0.9234   17.0424   16.7160    0.0586
- @1H    2   28.1680   21.9512    6.2168    0.9234   17.0424   16.7160    0.0586
+ @1H   _1   28.1680   21.9512    6.2168    0.9234   17.0424   16.7160    0.0586
+ @1H   _2   28.1680   21.9512    6.2168    0.9234   17.0424   16.7160    0.0586
 
 
 
@@ -1255,8 +1275,8 @@ Point group: C2v
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       234.1937  335.9557 -101.7621   58.4731    0.0882   58.5488    0.0000
- @2H    1   28.1680   21.9512    6.2168   16.7160    0.0586   16.7256    1.2869
- @2H    2   28.1680   21.9512    6.2168   16.7160    0.0586   16.7256    1.2869
+ @2H   _1   28.1680   21.9512    6.2168   16.7160    0.0586   16.7256    1.2869
+ @2H   _2   28.1680   21.9512    6.2168   16.7160    0.0586   16.7256    1.2869
 
 
 
@@ -1295,8 +1315,8 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx        -2.977376159376     -0.000000000000     -0.000000000000
-  By        -0.000000000000     -2.909625466392     -0.000000000000
+  Bx        -2.977376159379     -0.000000000000     -0.000000000000
+  By        -0.000000000000     -2.909625466395     -0.000000000000
   Bz        -0.000000000000     -0.000000000000     -2.975236808895
 
 
@@ -1306,9 +1326,9 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx        -3.415588871076      0.000000000000      0.000000000000
-  By         0.000000000000     -3.029405255061      0.000000000000
-  Bz         0.000000000000      0.000000000000     -3.208254804732
+  Bx        -3.415588871075      0.000000000000      0.000000000000
+  By         0.000000000000     -3.029405255062      0.000000000000
+  Bz         0.000000000000      0.000000000000     -3.208254804731
 
 
 
@@ -1317,8 +1337,8 @@ Point group: C2v
 
                        Bx                  By                  Bz
 
-  Bx         0.438212711700     -0.000000000000     -0.000000000000
-  By        -0.000000000000      0.119779788669     -0.000000000000
+  Bx         0.438212711697     -0.000000000000     -0.000000000000
+  By        -0.000000000000      0.119779788668     -0.000000000000
   Bz        -0.000000000000     -0.000000000000      0.233017995837
 
 
@@ -1355,7 +1375,7 @@ Point group: C2v
   --------------------------------------------------------------
 
    A            0.72493677      0.00000000      0.00000000
-   B            0.00000000      0.77216480      0.00000000
+   B            0.00000000      0.77216479      0.00000000
    C            0.00000000      0.00000000      0.70140212
 
 
@@ -1364,7 +1384,7 @@ Point group: C2v
 
    A            0.94398430      0.00000000      0.00000000
    B            0.00000000      0.99945573      0.00000000
-   C            0.00000000      0.00000000      0.98016019
+   C            0.00000000      0.00000000      0.98016018
 
 
   Electronic contribution in principal axis system (a.u.):
@@ -1396,22 +1416,22 @@ Point group: C2v
     Symmetry 2
                        By
 
-        O    y   354.99281106
-        H    y    77.23658439
-        H    z   -16.74124605
+        O    y   354.99280815
+        H    y    77.23658375
+        H    z   -16.74124591
 
     Symmetry 3
                        Bx
 
-        O    x   290.18102835
-        H    x    45.52599022
+        O    x   290.18102597
+        H    x    45.52598985
 
     Symmetry 4
                        Bz
 
-        O    z   295.33675619
-        H    y   -19.90779781
-        H    z    58.90045364
+        O    z   295.33675376
+        H    y   -19.90779765
+        H    z    58.90045316
 
 
 
@@ -1435,9 +1455,9 @@ Point group: C2v
  String on input: "O       "
                     Bx             By             Bz
 
-  O      x   290.18102835     0.00000000     0.00000000
-  O      y     0.00000000   354.99281106     0.00000000
-  O      z     0.00000000     0.00000000   295.33675619
+  O      x   290.18102597     0.00000000     0.00000000
+  O      y     0.00000000   354.99280815     0.00000000
+  O      z     0.00000000     0.00000000   295.33675376
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1449,7 +1469,7 @@ Point group: C2v
   O      y     0.0000   414.1909     0.0000        0.0000   -59.1981     0.0000
   O      z     0.0000     0.0000   415.8406        0.0000     0.0000  -120.5038
 
-  Diamagnetic contribution:    415.265593         Paramagnetic:    -101.762061
+  Diamagnetic contribution:    415.265590         Paramagnetic:    -101.762061
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1465,12 +1485,12 @@ Point group: C2v
   Principal values and axes:
   --------------------------
 
-  O         290.181028  =  313.50  -  23.32:     1.000000  0.000000  0.000000
-  O         295.336756  =  313.50  -  18.17:     0.000000  0.000000  1.000000
-  O         354.992811  =  313.50  +  41.49:     0.000000  1.000000  0.000000
+  O         290.181026  =  313.50  -  23.32:     1.000000  0.000000  0.000000
+  O         295.336754  =  313.50  -  18.17:     0.000000  0.000000  1.000000
+  O         354.992808  =  313.50  +  41.49:     0.000000  1.000000  0.000000
 
 
-  Chemical shielding for H    1:
+  Chemical shielding for H   _1:
   ==============================
 
 
@@ -1485,13 +1505,13 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    1  "
- String on input: "H_1     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
                     Bx             By             Bz
 
-  H    1 x    22.76299511     0.00000000     0.00000000
-  H    1 y     0.00000000    38.61829219    -9.95389891
-  H    1 z     0.00000000    -8.37062303    29.45022682
+  H   _1 x    22.76299492     0.00000000     0.00000000
+  H   _1 y     0.00000000    38.61829188    -9.95389882
+  H   _1 z     0.00000000    -8.37062296    29.45022658
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1499,9 +1519,9 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x    12.8351     0.0000     0.0000        9.9279     0.0000     0.0000
-  H    1 y     0.0000    36.4460   -17.8938        0.0000     2.1723     7.9399
-  H    1 z     0.0000   -14.5567    22.9001        0.0000     6.1860     6.5502
+  H   _1 x    12.8351     0.0000     0.0000        9.9279     0.0000     0.0000
+  H   _1 y     0.0000    36.4460   -17.8938        0.0000     2.1723     7.9399
+  H   _1 z     0.0000   -14.5566    22.9001        0.0000     6.1860     6.5502
 
   Diamagnetic contribution:     24.060383         Paramagnetic:       6.216788
 
@@ -1511,20 +1531,20 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    1 x     0.0000     0.0000     0.0000       -7.5142     0.0000     0.0000
-  H    1 y     0.0000     0.0000    -0.7916        0.0000     8.3411    -9.1623
-  H    1 z     0.0000     0.7916     0.0000        0.0000    -9.1623    -0.8269
+  H   _1 x     0.0000     0.0000     0.0000       -7.5142     0.0000     0.0000
+  H   _1 y     0.0000     0.0000    -0.7916        0.0000     8.3411    -9.1623
+  H   _1 z     0.0000     0.7916     0.0000        0.0000    -9.1623    -0.8269
 
 
   Principal values and axes:
   --------------------------
 
-  H    1     22.762995  =   30.28  -   7.51:     1.000000  0.000000  0.000000
-  H    1     23.789242  =   30.28  -   6.49:     0.000000  0.525623  0.850717
-  H    1     44.279277  =   30.28  +  14.00:     0.000000  0.850717 -0.525623
+  H   _1     22.762995  =   30.28  -   7.51:     1.000000  0.000000  0.000000
+  H   _1     23.789242  =   30.28  -   6.49:     0.000000  0.525623  0.850717
+  H   _1     44.279277  =   30.28  +  14.00:     0.000000  0.850717 -0.525623
 
 
-  Chemical shielding for H    2:
+  Chemical shielding for H   _2:
   ==============================
 
 
@@ -1539,13 +1559,13 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _2  "
+ String on input: "H__2    "
                     Bx             By             Bz
 
-  H    2 x    22.76299511     0.00000000     0.00000000
-  H    2 y     0.00000000    38.61829219     9.95389891
-  H    2 z     0.00000000     8.37062303    29.45022682
+  H   _2 x    22.76299492     0.00000000     0.00000000
+  H   _2 y     0.00000000    38.61829188     9.95389882
+  H   _2 z     0.00000000     8.37062296    29.45022658
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1553,9 +1573,9 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x    12.8351     0.0000     0.0000        9.9279     0.0000     0.0000
-  H    2 y     0.0000    36.4460    17.8938        0.0000     2.1723    -7.9399
-  H    2 z     0.0000    14.5567    22.9001        0.0000    -6.1860     6.5502
+  H   _2 x    12.8351     0.0000     0.0000        9.9279     0.0000     0.0000
+  H   _2 y     0.0000    36.4460    17.8938        0.0000     2.1723    -7.9399
+  H   _2 z     0.0000    14.5566    22.9001        0.0000    -6.1860     6.5502
 
   Diamagnetic contribution:     24.060383         Paramagnetic:       6.216788
 
@@ -1565,17 +1585,17 @@ Point group: C2v
 
                  Bx         By         Bz            Bx         By         Bz
 
-  H    2 x     0.0000     0.0000     0.0000       -7.5142     0.0000     0.0000
-  H    2 y     0.0000     0.0000     0.7916        0.0000     8.3411     9.1623
-  H    2 z     0.0000    -0.7916     0.0000        0.0000     9.1623    -0.8269
+  H   _2 x     0.0000     0.0000     0.0000       -7.5142     0.0000     0.0000
+  H   _2 y     0.0000     0.0000     0.7916        0.0000     8.3411     9.1623
+  H   _2 z     0.0000    -0.7916     0.0000        0.0000     9.1623    -0.8269
 
 
   Principal values and axes:
   --------------------------
 
-  H    2     22.762995  =   30.28  -   7.51:     1.000000  0.000000  0.000000
-  H    2     23.789242  =   30.28  -   6.49:     0.000000 -0.525623  0.850717
-  H    2     44.279277  =   30.28  +  14.00:     0.000000  0.850717  0.525623
+  H   _2     22.762995  =   30.28  -   7.51:     1.000000  0.000000  0.000000
+  H   _2     23.789242  =   30.28  -   6.49:     0.000000 -0.525623  0.850717
+  H   _2     44.279277  =   30.28  +  14.00:     0.000000  0.850717  0.525623
 
 
                          +--------------------------------+
@@ -1587,8 +1607,8 @@ Point group: C2v
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1O       313.5035  415.2656 -101.7621    0.8409   64.8118   62.2339    0.1243
- @1H    1   30.2772   24.0604    6.2168    0.9046   21.5163   21.0032    0.0733
- @1H    2   30.2772   24.0604    6.2168    0.9046   21.5163   21.0032    0.0733
+ @1H   _1   30.2772   24.0604    6.2168    0.9046   21.5163   21.0032    0.0733
+ @1H   _2   30.2772   24.0604    6.2168    0.9046   21.5163   21.0032    0.0733
 
 
 
@@ -1601,23 +1621,23 @@ Point group: C2v
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2O       313.5035  415.2656 -101.7621   62.2339    0.1243   62.3939    0.0000
- @2H    1   30.2772   24.0604    6.2168   21.0032    0.0733   21.0220    0.7916
- @2H    2   30.2772   24.0604    6.2168   21.0032    0.0733   21.0220    0.7916
+ @2H   _1   30.2772   24.0604    6.2168   21.0032    0.0733   21.0220    0.7916
+ @2H   _2   30.2772   24.0604    6.2168   21.0032    0.0733   21.0220    0.7916
 
 
 
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            O           H    1      H    2
+            O           H   _1      H   _2
             ------      ------      ------
  O     :    0.000000
- H    1:    0.958391    0.000000
- H    2:    0.958391    1.515066    0.000000
+ H   _1:    0.958391    0.000000
+ H   _2:    0.958391    1.515066    0.000000
 
 
   Max interatomic separation is    1.5151 Angstrom (    2.8631 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1625,8 +1645,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     O            0.958391
-  bond distance:  H    2     O            0.958391
+  bond distance:  H   _1     O            0.958391
+  bond distance:  H   _2     O            0.958391
 
 
   Bond angles (degrees):
@@ -1634,7 +1654,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     O          H    2       104.450
+  bond angle:     H   _1     O          H   _2       104.450
 
 
 
@@ -1645,17 +1665,17 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.13 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.14 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.34 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.37 seconds
+ >>>> Total wall time used in DALTON:   1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:16:14 2010 
+     Date and time (Linux)  : Wed Mar 16 17:44:02 2011 
      Host name              : fe6                                     

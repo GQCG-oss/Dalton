@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Thu Dec 30 00:14:24 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:53 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -183,8 +184,8 @@ Point group: C2v
                                  ---------------
 
                            S          31.972072
-                           H    1      1.007825
-                           H    2      1.007825
+                           H   _1      1.007825
+                           H   _2      1.007825
 
                        Total mass:    33.987722 amu
                        Natural abundance:  94.991 %
@@ -251,15 +252,15 @@ Point group: C2v
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            S           H    1      H    2
+            S           H   _1      H   _2
             ------      ------      ------
  S     :    0.000000
- H    1:    1.337300    0.000000
- H    2:    1.337300    1.928723    0.000000
+ H   _1:    1.337300    0.000000
+ H   _2:    1.337300    1.928723    0.000000
 
 
   Max interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -267,8 +268,8 @@ Point group: C2v
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     S            1.337300
-  bond distance:  H    2     S            1.337300
+  bond distance:  H   _1     S            1.337300
+  bond distance:  H   _2     S            1.337300
 
 
   Bond angles (degrees):
@@ -276,7 +277,7 @@ Point group: C2v
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     S          H    2        92.295
+  bond angle:     H   _1     S          H   _2        92.295
 
 
 
@@ -296,7 +297,7 @@ Point group: C2v
 
                A                   B                   C
 
-         310509.3373         269601.6123         144306.5642 MHz
+         310509.3346         269601.6100         144306.5629 MHz
            10.357477            8.992942            4.813549 cm-1
 
 
@@ -374,7 +375,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -401,8 +402,8 @@ Point group: C2v
  Number of two-electron integrals written:       20351 ( 24.6% )
  Megabytes written:                              0.234
 
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.13 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -440,7 +441,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:25 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:53 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -455,8 +456,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
 @  The molecule is placed in a static field.
@@ -470,6 +470,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         18
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -547,40 +551,68 @@ Charge correction to interaction with electric field:   -0.35016135
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -578.280584273       1.52D+00  -5.78D+02    5  2  2  0
-      MULPOP S     0.12; H    -0.29; 
+      Virial theorem: -V/T =      2.452486
+      MULPOP  S       0.17; H   _1 -0.09; H   _2 -0.09; 
+ -----------------------------------------------------------------------------
    2  -578.458315944       3.49D-01  -1.78D-01    5  2  2  0
-      MULPOP S    -0.13; H    -0.91; 
+      Virial theorem: -V/T =      2.448971
+      MULPOP  S      -0.61; H   _1  0.31; H   _2  0.31; 
+ -----------------------------------------------------------------------------
    3  -578.472409252       1.03D-01  -1.41D-02    5  2  2  0
-      MULPOP S    -0.34; H    -0.75; 
+      Virial theorem: -V/T =      2.451861
+      MULPOP  S      -0.71; H   _1  0.35; H   _2  0.35; 
+ -----------------------------------------------------------------------------
    4  -578.473741329       2.30D-02  -1.33D-03    5  2  2  0
-      MULPOP S    -0.41; H    -0.82; 
+      Virial theorem: -V/T =      2.451317
+      MULPOP  S      -0.77; H   _1  0.38; H   _2  0.38; 
+ -----------------------------------------------------------------------------
    5  -578.473838847       2.48D-03  -9.75D-05    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
+      Virial theorem: -V/T =      2.451369
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    6  -578.473839730       4.78D-04  -8.82D-07    5  2  2  0
-      MULPOP S    -0.38; H    -0.79; 
+      Virial theorem: -V/T =      2.451374
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    7  -578.473839760       1.04D-04  -3.03D-08    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    8  -578.473839762       1.63D-05  -1.76D-09    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
    9  -578.473839762       1.44D-06  -4.38D-11    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
-  10  -578.473839762       2.33D-07  -3.41D-13    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
-  11  -578.473839762       3.70D-08  -3.41D-13    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
-  12  -578.473839762       6.49D-09   6.82D-13    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
-  13  -578.473839762       5.38D-10  -2.27D-13    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
-  14  -578.473839762       1.06D-10  -3.41D-13    5  2  2  0
-      MULPOP S    -0.37; H    -0.79; 
-  15  -578.473839762       1.52D-11   1.14D-13    5  2  2  0
- DIIS converged in  15 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  10  -578.473839762       2.33D-07  -2.27D-13    5  2  2  0
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  11  -578.473839762       3.70D-08  -1.14D-13    5  2  2  0
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  12  -578.473839762       6.49D-09   2.27D-13    5  2  2  0
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  13  -578.473839762       5.38D-10   0.00D+00    5  2  2  0
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  14  -578.473839762       1.06D-10   1.14D-13    5  2  2  0
+      Virial theorem: -V/T =      2.451373
+      MULPOP  S      -0.78; H   _1  0.39; H   _2  0.39; 
+ -----------------------------------------------------------------------------
+  15  -578.473839762       1.53D-11   1.14D-13    5  2  2  0
+
+ *** DIIS converged in  15 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -611,7 +643,10 @@ Charge correction to interaction with electric field:   -0.35016135
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -623,14 +658,14 @@ Charge correction to interaction with electric field:   -0.35016135
     0.10000000                      ZDIPLEN 
 
 
-     Final HF energy:            -578.473839761818                 
+     Final HF energy:            -578.473839761821                 
      Nuclear repulsion:            12.936949454995
-     Electronic energy:          -591.410789216814
+     Electronic energy:          -591.410789216816
 
      Final gradient norm:           0.000000000015
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:25 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:54 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -638,7 +673,7 @@ Charge correction to interaction with electric field:   -0.35016135
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
+    Orbital         1        2        3        4        5        6        7
    1 S   :1s     1.0000   0.0002   0.0000  -0.0016   0.0065  -0.0042  -0.0239
    2 S   :1s     0.0001   1.0020  -0.0010  -0.0186   0.0431  -0.0520  -0.1809
    3 S   :1s     0.0002   0.0062   0.0011   0.8605  -0.0786  -0.6881  -0.5853
@@ -656,7 +691,7 @@ Charge correction to interaction with electric field:   -0.35016135
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 S   :2px    1.0000  -0.0174   0.0369  -0.1128
    2 S   :2px    0.0004   0.7414  -0.1926  -1.1240
    3 S   :2px   -0.0012  -0.0100  -1.0442   0.9640
@@ -669,7 +704,7 @@ Charge correction to interaction with electric field:   -0.35016135
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 S   :2py    0.9999  -0.0079  -0.2147  -0.0317
    2 S   :2py   -0.0026   0.9104  -2.0297  -0.3007
    3 S   :2py    0.0012   0.0934   2.2489   0.2974
@@ -679,17 +714,17 @@ Charge correction to interaction with electric field:   -0.35016135
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 S   :3d2-   0.9218  -0.5169
    2 H   :2py    0.1355   0.7380
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:25 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:54 2011 
      Host name              : fe6                                     
 
 
@@ -779,7 +814,7 @@ Charge correction to interaction with electric field:   -0.35016135
 
                  au               Debye          C m (/(10**-30)
 
-      z      2.04564167         5.19950191        17.34367150
+      z      2.04564167         5.19950216        17.34367232
 
 
 
@@ -837,14 +872,14 @@ Total non-diagonalized EFG Tensor   S
        2      0.00000000   -1.68902513    0.00000000
        3      0.00000000    0.00000000    0.48576316
 
-Total non-diagonalized EFG Tensor   H    1
+Total non-diagonalized EFG Tensor   H   _1
 
               Column   1    Column   2    Column   3
        1      0.10828639    0.00000000    0.16332050
        2      0.00000000   -0.13263254    0.00000000
        3      0.16332050    0.00000000    0.02434615
 
-Total non-diagonalized EFG Tensor   H    2
+Total non-diagonalized EFG Tensor   H   _2
 
               Column   1    Column   2    Column   3
        1      0.10828639    0.00000000   -0.16332050
@@ -852,10 +887,10 @@ Total non-diagonalized EFG Tensor   H    2
        3     -0.16332050    0.00000000    0.02434615
  String on input: "S       "
  String on input: "S       "
- String on input: "H    1  "
- String on input: "H_1     "
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
+ String on input: "H   _2  "
+ String on input: "H__2    "
 
 EFG Principal axis                  S     
 
@@ -864,14 +899,14 @@ EFG Principal axis                  S
        2      0.00000000    1.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000
 
-EFG Principal axis                  H    1
+EFG Principal axis                  H   _1
 
               Column   1    Column   2    Column   3
        1      0.79021933    0.00000000   -0.61282413
        2      0.00000000    1.00000000    0.00000000
        3      0.61282413    0.00000000    0.79021933
 
-EFG Principal axis                  H    2
+EFG Principal axis                  H   _2
 
               Column   1    Column   2    Column   3
        1      0.79021933    0.00000000    0.61282413
@@ -885,32 +920,32 @@ EFG Principal axis                  H    2
           Spin     :  1.5          Quadrupole moment:-.06780000
                             au           MHz        Gauss
  S      33    Vx =       0.485763    -7.738504    -2.764493
- S      33    Vy =       1.203262   -19.168700    -6.847800
+ S      33    Vy =       1.203262   -19.168699    -6.847800
  S      33    Vz =      -1.689025    26.907204     9.612293
                  Asymmetry constant eta:      0.424801
                  Auxiliary value au  1/T  0.139027D-02
 
 
-                       Nuclear quadrupole moment for H    1
+                       Nuclear quadrupole moment for H   _1
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    1  2    Vx =      -0.102311    -0.068753    -0.024561
- H    1  2    Vy =      -0.132633    -0.089129    -0.031840
- H    1  2    Vz =       0.234943     0.157882     0.056401
+ H   _1  2    Vx =      -0.102311    -0.068753    -0.024561
+ H   _1  2    Vy =      -0.132633    -0.089129    -0.031840
+ H   _1  2    Vz =       0.234943     0.157882     0.056401
                  Asymmetry constant eta:      0.129060
                  Auxiliary value au  1/T  0.170253D-06
 
 
-                       Nuclear quadrupole moment for H    2
+                       Nuclear quadrupole moment for H   _2
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    2  2    Vx =      -0.102311    -0.068753    -0.024561
- H    2  2    Vy =      -0.132633    -0.089129    -0.031840
- H    2  2    Vz =       0.234943     0.157882     0.056401
+ H   _2  2    Vx =      -0.102311    -0.068753    -0.024561
+ H   _2  2    Vy =      -0.132633    -0.089129    -0.031840
+ H   _2  2    Vz =       0.234943     0.157882     0.056401
                  Asymmetry constant eta:      0.129060
                  Auxiliary value au  1/T  0.170253D-06
 
@@ -920,18 +955,18 @@ EFG Principal axis                  H    2
             +---------------------------------------------------------+
 
   
-         DPTFLD:     -0.106118498792    (ZDIPLEN )
+         DPTFLD:     -0.106118497920    (ZDIPLEN )
          ------ 
   
   
-         DPTFLD:     -0.106118498792    (TOTAL   )
+         DPTFLD:     -0.106118497920    (TOTAL   )
          ------ 
   
   
-         DPTONE:     -2.098268694327
+         DPTONE:     -2.098268677077
          ------ 
   
-         DPTREO:      0.727005662770
+         DPTREO:      0.727005656793
          ------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -945,10 +980,10 @@ EFG Principal axis                  H    2
 
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
-         DPTTWO:      0.368308231054
+         DPTTWO:      0.368308228026
          ------ 
   
-         Total first-order DPT correction:     -1.109073299295
+         Total first-order DPT correction:     -1.109073290178
          --------------------------------
 
 
@@ -957,13 +992,13 @@ EFG Principal axis                  H    2
            +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      3.472152687
+         1-elec. Darwin term:      3.472152659
          ------------------- 
   
-         Mass-Velocity term:      -4.547062908
+         Mass-Velocity term:      -4.547062871
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -1.074910221
+         Mass-Velocity + 1-elec. Darwin terms:      -1.074910212
          ------------------------------------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -976,10 +1011,10 @@ EFG Principal axis                  H    2
 
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
-         2-elec. Darwin term:      -0.034106430
+         2-elec. Darwin term:      -0.034106429
          ------------------- 
   
-         Total relativistic correction:      -1.109016651
+         Total relativistic correction:      -1.109016641
          ----------------------------- 
 
 
@@ -1006,21 +1041,23 @@ EFG Principal axis                  H    2
           Number of t2 amplitudes                 :      4022
           Total number of amplitudes in ccsd      :      4080
 
- Iter.  1: Coupled cluster MP2   energy :    -578.6247428975402727
- Iter.  1: Coupled cluster CCSD  energy :    -578.6391426803013474
- Iter.  2: Coupled cluster CCSD  energy :    -578.6437164355158984
- Iter.  3: Coupled cluster CCSD  energy :    -578.6438232598256945
- Iter.  4: Coupled cluster CCSD  energy :    -578.6438439062768566
- Iter.  5: Coupled cluster CCSD  energy :    -578.6438367053724505
- Iter.  6: Coupled cluster CCSD  energy :    -578.6438366407282956
- Iter.  7: Coupled cluster CCSD  energy :    -578.6438368489566528
- Iter.  8: Coupled cluster CCSD  energy :    -578.6438367518524046
- Iter.  9: Coupled cluster CCSD  energy :    -578.6438367495132979
- Iter. 10: Coupled cluster CCSD  energy :    -578.6438367474704592
- Iter. 11: Coupled cluster CCSD  energy :    -578.6438367475695941
+ Iter.  1: Coupled cluster MP2   energy :    -578.6247428975426601
+ Iter.  1: Coupled cluster CCSD  energy :    -578.6391426803033937
+ Iter.  2: Coupled cluster CCSD  energy :    -578.6437164355179448
+ Iter.  3: Coupled cluster CCSD  energy :    -578.6438232598269451
+ Iter.  4: Coupled cluster CCSD  energy :    -578.6438439062787893
+ Iter.  5: Coupled cluster CCSD  energy :    -578.6438367053748379
+ Iter.  6: Coupled cluster CCSD  energy :    -578.6438366407300009
+ Iter.  7: Coupled cluster CCSD  energy :    -578.6438368489584718
+ Iter.  8: Coupled cluster CCSD  energy :    -578.6438367518534278
+ Iter.  9: Coupled cluster CCSD  energy :    -578.6438367495147759
+ Iter. 10: Coupled cluster CCSD  energy :    -578.6438367474721645
+ Iter. 11: Coupled cluster CCSD  energy :    -578.6438367475725499
+ Iter. 12: Coupled cluster CCSD  energy :    -578.6438367477086331
+ Iter. 13: Coupled cluster CCSD  energy :    -578.6438367477045404
 
  CCSD  energy converged to within   0.10D-09 is   -578.643836748
- Final 2-norm of the CC vector function:  3.19892684D-08
+ Final 2-norm of the CC vector function:  1.79871769D-09
 
 
 
@@ -1036,7 +1073,7 @@ EFG Principal axis                  H    2
 
             Total MP2   energy:                  -578.6247428975
 
-            Total CCSD  energy:                  -578.6438367476
+            Total CCSD  energy:                  -578.6438367477
 
 
 
@@ -1076,7 +1113,7 @@ EFG Principal axis                  H    2
                   Constructing right-hand-side for CCSD-kappa-0
                   ---------------------------------------------
 
- CC_FOP> Norm of RHS vector:  3.98011638422754069E-005
+ CC_FOP> Norm of RHS vector:  3.98011857397244641E-005
 
 
                       Solving for orbital relaxation vector
@@ -1146,7 +1183,7 @@ EFG Principal axis                  H    2
 
                  au               Debye          C m (/(10**-30)
 
-      z      2.00550399         5.09748212        17.00337012
+      z      2.00550399         5.09748236        17.00337091
 
 
 
@@ -1201,17 +1238,17 @@ Total non-diagonalized EFG Tensor   S
 
               Column   1    Column   2    Column   3
        1      1.21415499    0.00000000    0.00000000
-       2      0.00000000   -1.75737864    0.00000000
-       3      0.00000000    0.00000000    0.54322365
+       2      0.00000000   -1.75737865    0.00000000
+       3      0.00000000    0.00000000    0.54322366
 
-Total non-diagonalized EFG Tensor   H    1
+Total non-diagonalized EFG Tensor   H   _1
 
               Column   1    Column   2    Column   3
        1      0.10801704    0.00000000    0.16984653
        2      0.00000000   -0.13635068    0.00000000
        3      0.16984653    0.00000000    0.02833364
 
-Total non-diagonalized EFG Tensor   H    2
+Total non-diagonalized EFG Tensor   H   _2
 
               Column   1    Column   2    Column   3
        1      0.10801704    0.00000000   -0.16984653
@@ -1219,10 +1256,10 @@ Total non-diagonalized EFG Tensor   H    2
        3     -0.16984653    0.00000000    0.02833364
  String on input: "S       "
  String on input: "S       "
- String on input: "H    1  "
- String on input: "H_1     "
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
+ String on input: "H   _2  "
+ String on input: "H__2    "
 
 EFG Principal axis                  S     
 
@@ -1231,14 +1268,14 @@ EFG Principal axis                  S
        2      0.00000000    1.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000
 
-EFG Principal axis                  H    1
+EFG Principal axis                  H   _1
 
               Column   1    Column   2    Column   3
        1      0.78370136    0.00000000   -0.62113781
        2      0.00000000    1.00000000    0.00000000
        3      0.62113781    0.00000000    0.78370136
 
-EFG Principal axis                  H    2
+EFG Principal axis                  H   _2
 
               Column   1    Column   2    Column   3
        1      0.78370136    0.00000000    0.62113781
@@ -1253,31 +1290,31 @@ EFG Principal axis                  H    2
                             au           MHz        Gauss
  S      33    Vx =       0.543224    -8.653885    -3.091502
  S      33    Vy =       1.214155   -19.342232    -6.909793
- S      33    Vz =      -1.757379    27.996118    10.001295
+ S      33    Vz =      -1.757379    27.996117    10.001295
                  Asymmetry constant eta:      0.381780
                  Auxiliary value au  1/T  0.148865D-02
 
 
-                       Nuclear quadrupole moment for H    1
+                       Nuclear quadrupole moment for H   _1
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    1  2    Vx =      -0.106282    -0.071421    -0.025514
- H    1  2    Vy =      -0.136351    -0.091628    -0.032733
- H    1  2    Vz =       0.242632     0.163049     0.058247
+ H   _1  2    Vx =      -0.106282    -0.071421    -0.025514
+ H   _1  2    Vy =      -0.136351    -0.091628    -0.032733
+ H   _1  2    Vz =       0.242632     0.163049     0.058247
                  Asymmetry constant eta:      0.123929
                  Auxiliary value au  1/T  0.181501D-06
 
 
-                       Nuclear quadrupole moment for H    2
+                       Nuclear quadrupole moment for H   _2
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    2  2    Vx =      -0.106282    -0.071421    -0.025514
- H    2  2    Vy =      -0.136351    -0.091628    -0.032733
- H    2  2    Vz =       0.242632     0.163049     0.058247
+ H   _2  2    Vx =      -0.106282    -0.071421    -0.025514
+ H   _2  2    Vy =      -0.136351    -0.091628    -0.032733
+ H   _2  2    Vz =       0.242632     0.163049     0.058247
                  Asymmetry constant eta:      0.123929
                  Auxiliary value au  1/T  0.181501D-06
 
@@ -1287,18 +1324,18 @@ EFG Principal axis                  H    2
             +---------------------------------------------------------+
 
   
-         DPTFLD:     -0.106140229575    (ZDIPLEN )
+         DPTFLD:     -0.106140228702    (ZDIPLEN )
          ------ 
   
   
-         DPTFLD:     -0.106140229575    (TOTAL   )
+         DPTFLD:     -0.106140228702    (TOTAL   )
          ------ 
   
   
-         DPTONE:     -2.098168077298
+         DPTONE:     -2.098168060053
          ------ 
   
-         DPTREO:      0.727075808309
+         DPTREO:      0.727075802331
          ------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -1312,10 +1349,10 @@ EFG Principal axis                  H    2
 
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
-         DPTTWO:      0.368216480360
+         DPTTWO:      0.368216477334
          ------ 
   
-         Total first-order DPT correction:     -1.109016018203
+         Total first-order DPT correction:     -1.109016009090
          --------------------------------
 
 
@@ -1324,13 +1361,13 @@ EFG Principal axis                  H    2
            +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      3.472220010
+         1-elec. Darwin term:      3.472219982
          ------------------- 
   
-         Mass-Velocity term:      -4.547100094
+         Mass-Velocity term:      -4.547100057
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -1.074880084
+         Mass-Velocity + 1-elec. Darwin terms:      -1.074880075
          ------------------------------------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -1346,7 +1383,7 @@ EFG Principal axis                  H    2
          2-elec. Darwin term:      -0.034092399
          ------------------- 
   
-         Total relativistic correction:      -1.108972483
+         Total relativistic correction:      -1.108972474
          ----------------------------- 
 
 
@@ -1373,12 +1410,11 @@ EFG Principal axis                  H    2
           Number of t2 amplitudes                 :      4022
           Total number of amplitudes in ccsd      :      4080
 
- Iter.  1: Coupled cluster RSTAR energy :    -578.6438367475695941
- Iter.  1: Coupled cluster CCSD  energy :    -578.6438367476760050
- Iter.  2: Coupled cluster CCSD  energy :    -578.6438367476990834
+ Iter.  1: Coupled cluster RSTAR energy :    -578.6438367477045404
+ Iter.  1: Coupled cluster CCSD  energy :    -578.6438367476996518
 
  CCSD  energy converged to within   0.10D-09 is   -578.643836748
- Final 2-norm of the CC vector function:  3.46680649D-09
+ Final 2-norm of the CC vector function:  4.29556059D-10
 
 
 
@@ -1392,7 +1428,7 @@ EFG Principal axis                  H    2
 
             Total SCF   energy:                  -578.4738397618
 
-            Total RSTAR energy:                  -578.6438367476
+            Total RSTAR energy:                  -578.6438367477
 
             Total CCSD  energy:                  -578.6438367477
 
@@ -1450,15 +1486,15 @@ EFG Principal axis                  H    2
                                 Inside ccpt_den()
                                 -----------------
 
- CC_DEN_PTFC: ZKDIA before TWO electron part  0.20481526871364433     
+ CC_DEN_PTFC: ZKDIA before TWO electron part  0.20481527035429853     
 
 
                     Construct part of rhs for CCSD(T)-kappa-0
                     -----------------------------------------
 
  CC_DEN_PTFC using CCETACOR
- CC_DEN_PTFC: ZKDIA before CCETACOR  1.86427460094742442E-006
- CC_FOP> Norm of RHS vector:  1.39171575850253400E-006
+ CC_DEN_PTFC: ZKDIA before CCETACOR  1.86427460665100674E-006
+ CC_FOP> Norm of RHS vector:  1.39171561817181667E-006
 
 
                       Solving for orbital relaxation vector
@@ -1528,7 +1564,7 @@ EFG Principal axis                  H    2
 
                  au               Debye          C m (/(10**-30)
 
-      z      2.00226660         5.08925351        16.97592242
+      z      2.00226660         5.08925375        16.97592322
 
 
 
@@ -1586,14 +1622,14 @@ Total non-diagonalized EFG Tensor   S
        2      0.00000000   -1.75901769    0.00000000
        3      0.00000000    0.00000000    0.54738617
 
-Total non-diagonalized EFG Tensor   H    1
+Total non-diagonalized EFG Tensor   H   _1
 
               Column   1    Column   2    Column   3
        1      0.10801353    0.00000000    0.17029117
        2      0.00000000   -0.13664893    0.00000000
        3      0.17029117    0.00000000    0.02863541
 
-Total non-diagonalized EFG Tensor   H    2
+Total non-diagonalized EFG Tensor   H   _2
 
               Column   1    Column   2    Column   3
        1      0.10801353    0.00000000   -0.17029117
@@ -1601,10 +1637,10 @@ Total non-diagonalized EFG Tensor   H    2
        3     -0.17029117    0.00000000    0.02863541
  String on input: "S       "
  String on input: "S       "
- String on input: "H    1  "
- String on input: "H_1     "
- String on input: "H    2  "
- String on input: "H_2     "
+ String on input: "H   _1  "
+ String on input: "H__1    "
+ String on input: "H   _2  "
+ String on input: "H__2    "
 
 EFG Principal axis                  S     
 
@@ -1613,14 +1649,14 @@ EFG Principal axis                  S
        2      0.00000000    1.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000
 
-EFG Principal axis                  H    1
+EFG Principal axis                  H   _1
 
               Column   1    Column   2    Column   3
        1      0.78325684    0.00000000   -0.62169825
        2      0.00000000    1.00000000    0.00000000
        3      0.62169825    0.00000000    0.78325684
 
-EFG Principal axis                  H    2
+EFG Principal axis                  H   _2
 
               Column   1    Column   2    Column   3
        1      0.78325684    0.00000000    0.62169825
@@ -1634,32 +1670,32 @@ EFG Principal axis                  H    2
           Spin     :  1.5          Quadrupole moment:-.06780000
                             au           MHz        Gauss
  S      33    Vx =       0.547386    -8.720197    -3.115191
- S      33    Vy =       1.211632   -19.302032    -6.895432
+ S      33    Vy =       1.211632   -19.302031    -6.895432
  S      33    Vz =      -1.759018    28.022228    10.010623
                  Asymmetry constant eta:      0.377623
                  Auxiliary value au  1/T  0.148994D-02
 
 
-                       Nuclear quadrupole moment for H    1
+                       Nuclear quadrupole moment for H   _1
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    1  2    Vx =      -0.106531    -0.071589    -0.025574
- H    1  2    Vy =      -0.136649    -0.091828    -0.032805
- H    1  2    Vz =       0.243180     0.163416     0.058379
+ H   _1  2    Vx =      -0.106531    -0.071589    -0.025574
+ H   _1  2    Vy =      -0.136649    -0.091828    -0.032805
+ H   _1  2    Vz =       0.243180     0.163416     0.058379
                  Asymmetry constant eta:      0.123852
                  Auxiliary value au  1/T  0.182319D-06
 
 
-                       Nuclear quadrupole moment for H    2
+                       Nuclear quadrupole moment for H   _2
                        ------------------------------------
 
           Spin     :  1.0          Quadrupole moment:0.00286000
                             au           MHz        Gauss
- H    2  2    Vx =      -0.106531    -0.071589    -0.025574
- H    2  2    Vy =      -0.136649    -0.091828    -0.032805
- H    2  2    Vz =       0.243180     0.163416     0.058379
+ H   _2  2    Vx =      -0.106531    -0.071589    -0.025574
+ H   _2  2    Vy =      -0.136649    -0.091828    -0.032805
+ H   _2  2    Vz =       0.243180     0.163416     0.058379
                  Asymmetry constant eta:      0.123852
                  Auxiliary value au  1/T  0.182319D-06
 
@@ -1669,19 +1705,19 @@ EFG Principal axis                  H    2
             +---------------------------------------------------------+
 
   
-         DPTFLD:     -0.106141062663    (ZDIPLEN )
+         DPTFLD:     -0.106141061791    (ZDIPLEN )
          ------ 
- Effective 1-e density in AO basis All:    31.786567012786268     
+ Effective 1-e density in AO basis All:    31.786567012961871     
   
   
-         DPTFLD:     -0.106141062663    (TOTAL   )
-         ------ 
-  
-  
-         DPTONE:     -2.098164979984
+         DPTFLD:     -0.106141061791    (TOTAL   )
          ------ 
   
-         DPTREO:      0.727082299407
+  
+         DPTONE:     -2.098164962736
+         ------ 
+  
+         DPTREO:      0.727082293429
          ------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -1695,10 +1731,10 @@ EFG Principal axis                  H    2
 
  Number of two-electron spin-orbit integrals written:     17420 (25.5%)
   
-         DPTTWO:      0.368208090099
+         DPTTWO:      0.368208087072
          ------ 
   
-         Total first-order DPT correction:     -1.109015653142
+         Total first-order DPT correction:     -1.109015644025
          --------------------------------
 
 
@@ -1707,13 +1743,13 @@ EFG Principal axis                  H    2
            +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      3.472233394
+         1-elec. Darwin term:      3.472233366
          ------------------- 
   
-         Mass-Velocity term:      -4.547113986
+         Mass-Velocity term:      -4.547113948
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -1.074880591
+         Mass-Velocity + 1-elec. Darwin terms:      -1.074880582
          ------------------------------------ 
 
  Number of two-electron spin-orbit integrals written:     11308 (24.9%)
@@ -1729,7 +1765,7 @@ EFG Principal axis                  H    2
          2-elec. Darwin term:      -0.034091956
          ------------------- 
   
-         Total relativistic correction:      -1.108972547
+         Total relativistic correction:      -1.108972538
          ----------------------------- 
   
 
@@ -1749,11 +1785,11 @@ EFG Principal axis                  H    2
                                                                                 
             Total SCF   energy:                  -578.4738397618                
             Total MP2   energy:                  -578.6247428975                
-            Total CCSD  energy:                  -578.6438367476                
+            Total CCSD  energy:                  -578.6438367477                
                                                                                 
                                                                                 
             Total SCF   energy:                  -578.4738397618                
-            Total RSTAR energy:                  -578.6438367476                
+            Total RSTAR energy:                  -578.6438367477                
             Total CCSD  energy:                  -578.6438367477                
                                                                                 
                                                                                 
@@ -1792,7 +1828,7 @@ EFG Principal axis                  H    2
 
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:32 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:59 2011 
      Host name              : fe6                                     
 
 
@@ -1802,7 +1838,7 @@ EFG Principal axis                  H    2
 
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:32 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:59 2011 
      Host name              : fe6                                     
 
 
@@ -1810,8 +1846,8 @@ EFG Principal axis                  H    2
                              -----------------------
 
  S          0.0000000000            0.0000000000            0.0000000000
- H    1     1.8223788375            0.0000000000            1.7508067463
- H    2    -1.8223788375            0.0000000000            1.7508067463
+ H   _1     1.8223788375            0.0000000000            1.7508067463
+ H   _2    -1.8223788375            0.0000000000            1.7508067463
 
 
 
@@ -1823,18 +1859,18 @@ EFG Principal axis                  H    2
      Spin multiplicity  1     State number       1     Total charge       0
 
      Total energy       -578.4738397618 au (Hartrees)
-                        -15741.07346250 eV
-                          -1518782.8482 kJ/mol
+                        -15741.07390917 eV
+                          -1518782.8321 kJ/mol
 
 
                              Relativistic corrections
                              ------------------------
 
-     Darwin correction:                          3.4721526872 au
-     Mass-velocity correction:                  -4.5470629080 au
+     Darwin correction:                          3.4721526587 au
+     Mass-velocity correction:                  -4.5470628707 au
 
-     Total relativistic correction:             -1.0749102208 au (0.1858%)
-     Non-relativistic + relativistic energy:  -579.5487499826 au
+     Total relativistic correction:             -1.0749102120 au (0.1858%)
+     Non-relativistic + relativistic energy:  -579.5487499738 au
 
 
 
@@ -1851,7 +1887,7 @@ EFG Principal axis                  H    2
 
                  au               Debye          C m (/(10**-30)
 
-      z      2.04564167         5.19950191        17.34367150
+      z      2.04564167         5.19950216        17.34367232
 
 
    Units:   1 a.u. =   2.54175 Debye 
@@ -1863,15 +1899,15 @@ EFG Principal axis                  H    2
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            S           H    1      H    2
+            S           H   _1      H   _2
             ------      ------      ------
  S     :    0.000000
- H    1:    1.337300    0.000000
- H    2:    1.337300    1.928723    0.000000
+ H   _1:    1.337300    0.000000
+ H   _2:    1.337300    1.928723    0.000000
 
 
   Max interatomic separation is    1.9287 Angstrom (    3.6448 Bohr)
-  between atoms    3 and    2, "H    2" and "H    1".
+  between atoms    3 and    2, "H   _2" and "H   _1".
 
 
   Bond distances (Angstrom):
@@ -1879,8 +1915,8 @@ EFG Principal axis                  H    2
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  H    1     S            1.337300
-  bond distance:  H    2     S            1.337300
+  bond distance:  H   _1     S            1.337300
+  bond distance:  H   _2     S            1.337300
 
 
   Bond angles (degrees):
@@ -1888,7 +1924,7 @@ EFG Principal axis                  H    2
 
                   atom 1     atom 2     atom 3         angle
                   ------     ------     ------         -----
-  bond angle:     H    1     S          H    2        92.295
+  bond angle:     H   _1     S          H   _2        92.295
 
 
 
@@ -1907,9 +1943,9 @@ EFG Principal axis                  H    2
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   4.06 seconds
- >>>> Total wall time used in DALTON:   8.00 seconds
+ >>>> Total CPU  time used in DALTON:   4.09 seconds
+ >>>> Total wall time used in DALTON:   6.00 seconds
 
  
-     Date and time (Linux)  : Thu Dec 30 00:14:32 2010 
+     Date and time (Linux)  : Wed Mar 16 20:44:59 2011 
      Host name              : fe6                                     

@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:23:55 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:18 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -330,7 +331,7 @@ Point group: D2h
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -355,7 +356,7 @@ Point group: D2h
  Megabytes written:                              0.137
 
  >>>> Total CPU  time used in HERMIT:   0.03 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -396,7 +397,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:23:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:18 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -411,8 +412,7 @@ Point group: D2h
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -420,6 +420,10 @@ Point group: D2h
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -469,27 +473,41 @@ Point group: D2h
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
- ---------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1    -128.526848920        4.93672D-01   -1.29D+02    1
-      MULPOP Ne    0.04; 
+      Virial theorem: -V/T =      1.997783
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    2    -128.531828998        4.81448D-02   -4.98D-03    2
-      MULPOP Ne  -13.91; 
+      Virial theorem: -V/T =      1.999666
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    3    -128.531857796        1.34351D-02   -2.88D-05    3
-      MULPOP Ne  -13.95; 
+      Virial theorem: -V/T =      2.000201
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
    4    -128.531861478        2.79021D-03   -3.68D-06    4
-      MULPOP Ne  -13.94; 
+      Virial theorem: -V/T =      1.999963
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    5    -128.531861636        1.46713D-05   -1.58D-07    5
-      MULPOP Ne  -13.94; 
-   6    -128.531861636        1.38960D-06   -5.46D-12    6
-      MULPOP Ne  -13.94; 
+      Virial theorem: -V/T =      2.000001
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
+   6    -128.531861636        1.38960D-06   -5.51D-12    6
+      Virial theorem: -V/T =      2.000001
+      MULPOP  Ne      0.00; 
+ -----------------------------------------------------------------------------
    7    -128.531861636        3.23450D-08   -5.68D-14    7
-      MULPOP Ne  -13.94; 
-   8    -128.531861636        2.37030D-10    2.84D-14    8
- DIIS converged in   8 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000001
+      MULPOP  Ne     -0.00; 
+ -----------------------------------------------------------------------------
+   8    -128.531861636        2.36907D-10    0.00D+00    8
+
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -521,15 +539,18 @@ Point group: D2h
 
   8      9.64736958
 
-    E(LUMO) :     1.09886804 au (symmetry 5)
-  - E(HOMO) :    -0.84541551 au (symmetry 2)
+    E(LUMO) :     1.09886804 au (symmetry 2)
+  - E(HOMO) :    -0.84541551 au (symmetry 3)
   ------------------------------------------
     gap     :     1.94428355 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -542,7 +563,7 @@ Point group: D2h
      Final gradient norm:           0.000000000237
 
  
-     Date and time (Linux)  : Wed Dec 29 21:23:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:18 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -550,17 +571,17 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
-   1 Ne  :1s     1.0000  -0.0000   0.5225  -0.0000
-   2 Ne  :1s    -0.0000   1.0000   2.3759   0.0000
-   3 Ne  :1s     0.0000   0.0000  -0.1987   0.0000
-   4 Ne  :1s     0.0000   0.0000  -2.5219  -0.0000
-   8 Ne  :3d2+  -0.0000  -0.0000  -0.0000   1.0036
+    Orbital         1        2        3        4
+   1 Ne  :1s     1.0000  -0.0000   0.5225   0.0000
+   2 Ne  :1s    -0.0000   1.0000   2.3759  -0.0000
+   3 Ne  :1s     0.0000   0.0000  -0.1987  -0.0000
+   4 Ne  :1s     0.0000   0.0000  -2.5219   0.0000
+   7 Ne  :3d0   -0.0000   0.0000   0.0000   1.0036
 
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Ne  :2px    1.0000  -0.6296  -2.9849
    2 Ne  :2px    0.0000  -0.3977   2.8605
    3 Ne  :2px    0.0000   1.3936   0.4256
@@ -568,7 +589,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Ne  :2py    1.0000  -0.6296  -2.9849
    2 Ne  :2py    0.0000  -0.3977   2.8605
    3 Ne  :2py    0.0000   1.3936   0.4256
@@ -576,14 +597,14 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ne  :3d2-  -0.0071  -1.1556
    2 Ne  :3d2-   1.0036   0.5731
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 Ne  :2pz    1.0000  -0.6296  -2.9849
    2 Ne  :2pz    0.0000  -0.3977   2.8605
    3 Ne  :2pz    0.0000   1.3936   0.4256
@@ -591,30 +612,30 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ne  :3d1+  -0.0071  -1.1556
    2 Ne  :3d1+   1.0036   0.5731
 
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 Ne  :3d1-  -0.0071  -1.1556
    2 Ne  :3d1-   1.0036   0.5731
 
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 Ne  :4f2-   1.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.01 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:23:56 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:18 2011 
      Host name              : fe6                                     
 
 
@@ -665,92 +686,92 @@ Point group: D2h
           Number of t2 amplitudes                 :      1122
           Total number of amplitudes in ccsd      :      1146
 
- Iter.  1: Coupled cluster MP2   energy :    -128.8091532370165169
-     Conventional correlation energy:    -0.2772916006951789
+ Iter.  1: Coupled cluster MP2   energy :    -128.8091532370165737
+     Conventional correlation energy:    -0.2772916006952073
 
        Iteration no.:  1
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
        Norm^2 of omega1 after ccvec:        0.2913950986D-02
-       Norm^2 of omega2 after ccvec:        0.1224016871D-28
- Iter.  1: Coupled cluster CC2   energy :    -128.8091220952024969
-     Conventional correlation energy:    -0.2772604588811589
+       Norm^2 of omega2 after ccvec:        0.1870902728D-28
+ Iter.  1: Coupled cluster CC2   energy :    -128.8091220952026674
+     Conventional correlation energy:    -0.2772604588813010
 
        Iteration no.:  2
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
        Norm^2 of omega1 after ccvec:        0.3401249084D-04
-       Norm^2 of omega2 after ccvec:        0.8025151516D-04
- Iter.  2: Coupled cluster CC2   energy :    -128.8102101935273254
-     Conventional correlation energy:    -0.2783485572059874
+       Norm^2 of omega2 after ccvec:        0.8024340682D-04
+ Iter.  2: Coupled cluster CC2   energy :    -128.8102101936930239
+     Conventional correlation energy:    -0.2783485573716575
 
        Iteration no.:  3
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.2046880160D-05
-       Norm^2 of omega2 after ccvec:        0.7755045248D-07
- Iter.  3: Coupled cluster CC2   energy :    -128.8102951127607128
-     Conventional correlation energy:    -0.2784334764393748
+       Norm^2 of omega1 after ccvec:        0.2046878813D-05
+       Norm^2 of omega2 after ccvec:        0.7754323638D-07
+ Iter.  3: Coupled cluster CC2   energy :    -128.8102951127468145
+     Conventional correlation energy:    -0.2784334764254481
 
        Iteration no.:  4
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.1222660477D-07
-       Norm^2 of omega2 after ccvec:        0.4485888179D-07
- Iter.  4: Coupled cluster CC2   energy :    -128.8102819844213798
-     Conventional correlation energy:    -0.2784203481000418
+       Norm^2 of omega1 after ccvec:        0.1222658727D-07
+       Norm^2 of omega2 after ccvec:        0.4485869702D-07
+ Iter.  4: Coupled cluster CC2   energy :    -128.8102819844227156
+     Conventional correlation energy:    -0.2784203481013492
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.6756020164D-09
-       Norm^2 of omega2 after ccvec:        0.2761229744D-09
- Iter.  5: Coupled cluster CC2   energy :    -128.8102818586965270
-     Conventional correlation energy:    -0.2784202223751890
+       Norm^2 of omega1 after ccvec:        0.6756020171D-09
+       Norm^2 of omega2 after ccvec:        0.2761215900D-09
+ Iter.  5: Coupled cluster CC2   energy :    -128.8102818586960723
+     Conventional correlation energy:    -0.2784202223747059
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.7113271361D-11
-       Norm^2 of omega2 after ccvec:        0.8426517196D-11
- Iter.  6: Coupled cluster CC2   energy :    -128.8102819455833412
-     Conventional correlation energy:    -0.2784203092620032
+       Norm^2 of omega1 after ccvec:        0.7113284090D-11
+       Norm^2 of omega2 after ccvec:        0.8426476522D-11
+ Iter.  6: Coupled cluster CC2   energy :    -128.8102819455835686
+     Conventional correlation energy:    -0.2784203092622022
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.1071825501D-13
-       Norm^2 of omega2 after ccvec:        0.3481781272D-14
- Iter.  7: Coupled cluster CC2   energy :    -128.8102819451362677
-     Conventional correlation energy:    -0.2784203088149297
+       Norm^2 of omega1 after ccvec:        0.1071827213D-13
+       Norm^2 of omega2 after ccvec:        0.3481773047D-14
+ Iter.  7: Coupled cluster CC2   energy :    -128.8102819451360972
+     Conventional correlation energy:    -0.2784203088147308
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.2513902332D-16
-       Norm^2 of omega2 after ccvec:        0.1986542061D-16
- Iter.  8: Coupled cluster CC2   energy :    -128.8102819451649736
-     Conventional correlation energy:    -0.2784203088436357
+       Norm^2 of omega1 after ccvec:        0.2513928710D-16
+       Norm^2 of omega2 after ccvec:        0.1986540542D-16
+ Iter.  8: Coupled cluster CC2   energy :    -128.8102819451648600
+     Conventional correlation energy:    -0.2784203088434936
 
        Iteration no.:  9
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of omega1 after ccvec:        0.3324497091D-18
-       Norm^2 of omega2 after ccvec:        0.1228505818D-18
- Iter.  9: Coupled cluster CC2   energy :    -128.8102819451653716
-     Conventional correlation energy:    -0.2784203088440336
+       Norm^2 of omega1 after ccvec:        0.3324246308D-18
+       Norm^2 of omega2 after ccvec:        0.1228508885D-18
+ Iter.  9: Coupled cluster CC2   energy :    -128.8102819451653431
+     Conventional correlation energy:    -0.2784203088439767
 
  CC2   energy converged to within   0.10D-10 is   -128.810281945
- Final 2-norm of the CC vector function:  6.74759432D-10
+ Final 2-norm of the CC vector function:  6.74741076D-10
 
 
                     +------------------------------------------+
@@ -878,25 +899,25 @@ Point group: D2h
  Time used in CC_LHTR :  2.99999862909317017E-003
   
   
- ROOT:  1 RESIDUAL TOT: 2.90674D-01
+ ROOT:  1 RESIDUAL TOT: 2.90675D-01
       1       1         0.00     0.29E+00
  Dimension of the reduced space:     2
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- Time used in CC_LHTR :  3.00000607967376709E-003
+ Time used in CC_LHTR :  3.99799644947052002E-003
   
   
- ROOT:  1 RESIDUAL TOT: 9.01929D-02
+ ROOT:  1 RESIDUAL TOT: 9.01911D-02
       2       1         0.00     0.90E-01
  Dimension of the reduced space:     3
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- Time used in CC_LHTR :  3.00000607967376709E-003
+ Time used in CC_LHTR :  2.99999862909317017E-003
   
   
- ROOT:  1 RESIDUAL TOT: 5.93771D-03
+ ROOT:  1 RESIDUAL TOT: 5.93773D-03
       3       1         0.00     0.59E-02
  Dimension of the reduced space:     4
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -905,19 +926,19 @@ Point group: D2h
  Time used in CC_LHTR :  2.99900025129318237E-003
   
   
- ROOT:  1 RESIDUAL TOT: 1.50335D-03
+ ROOT:  1 RESIDUAL TOT: 1.50334D-03
       4       1         0.00     0.15E-02
  Dimension of the reduced space:     5
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- Time used in CC_LHTR :  2.99999862909317017E-003
+ Time used in CC_LHTR :  4.00000065565109253E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.75299D-04
       5       1         0.00     0.18E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  Time used in CC_LHTR :  2.99900025129318237E-003
@@ -932,20 +953,20 @@ Point group: D2h
  Time used in CC_LHTR :  2.99999862909317017E-003
   
   
- ROOT:  1 RESIDUAL TOT: 5.38722D-07
+ ROOT:  1 RESIDUAL TOT: 5.38724D-07
       7       1         0.00     0.54E-06
  Dimension of the reduced space:     8
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- Time used in CC_LHTR :  2.99999862909317017E-003
+ Time used in CC_LHTR :  4.00000810623168945E-003
   
   
- ROOT:  1 RESIDUAL TOT: 3.19588D-08
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.19588D-08
+ ROOT:  1 RESIDUAL TOT: 3.19590D-08
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.19590D-08
       8       1         0.00     0.32E-07
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
     --------------------------------------
     converged in  8 iterations
@@ -1020,27 +1041,27 @@ Point group: D2h
  | 5 3 5 3 |   2   2   1   1 |       22       18 |          249 |   -0.035366  |
  | 5 5 5 5 |   1   1   1   1 |       21       21 |          231 |   -0.070697  |
  | 5 5 5 5 |   2   2   1   1 |       22       22 |          253 |   -0.026632  |
- | 1 1 2 2 |   2   2   1   1 |       10       10 |          355 |   -0.028762  |
- | 4 1 3 2 |   1   2   1   1 |       15       10 |          415 |   -0.049432  |
- | 6 1 5 2 |   1   2   1   1 |       17       10 |          446 |   -0.037050  |
- | 6 1 5 2 |   1   3   1   1 |       17       11 |          447 |    0.035689  |
+ | 1 1 2 2 |   3   3   1   1 |       11       11 |          366 |   -0.028762  |
+ | 4 1 3 2 |   1   3   1   1 |       15       11 |          416 |   -0.049432  |
+ | 6 1 5 2 |   1   2   1   1 |       17       10 |          446 |    0.035689  |
+ | 6 1 5 2 |   1   3   1   1 |       17       11 |          447 |   -0.037050  |
  | 4 4 3 3 |   1   1   1   1 |       15       15 |          420 |   -0.028762  |
  | 6 4 5 3 |   1   1   1   1 |       17       15 |          451 |   -0.037050  |
  | 6 6 5 5 |   1   1   1   1 |       17       17 |          453 |   -0.028762  |
  | 4 4 2 2 |   1   1   1   1 |        9        9 |          516 |   -0.028762  |
- | 1 4 3 2 |   2   1   1   1 |       12        9 |          546 |    0.049432  |
+ | 1 4 3 2 |   3   1   1   1 |       13        9 |          558 |    0.049432  |
  | 7 4 5 2 |   1   1   1   1 |       17        9 |          616 |   -0.037050  |
- | 1 1 3 3 |   2   2   1   1 |       12       12 |          549 |   -0.028762  |
- | 7 1 5 3 |   1   2   1   1 |       17       12 |          619 |    0.037050  |
- | 7 1 5 3 |   1   3   1   1 |       17       13 |          620 |    0.035689  |
+ | 1 1 3 3 |   3   3   1   1 |       13       13 |          562 |   -0.028762  |
+ | 7 1 5 3 |   1   2   1   1 |       17       12 |          619 |    0.035689  |
+ | 7 1 5 3 |   1   3   1   1 |       17       13 |          620 |    0.037050  |
  | 7 7 5 5 |   1   1   1   1 |       17       17 |          624 |   -0.028762  |
  | 2 3 3 2 |   1   1   1   1 |        9        5 |          683 |    0.040426  |
  | 6 6 2 2 |   1   1   1   1 |        9        9 |          778 |   -0.028762  |
  | 7 6 3 2 |   1   1   1   1 |       11        9 |          797 |   -0.037050  |
- | 1 6 5 2 |   3   1   1   1 |       15        9 |          847 |   -0.049930  |
+ | 1 6 5 2 |   2   1   1   1 |       14        9 |          833 |   -0.049930  |
  | 7 7 3 3 |   1   1   1   1 |       11       11 |          799 |   -0.028762  |
- | 1 7 5 3 |   3   1   1   1 |       15       11 |          849 |   -0.049930  |
- | 1 1 5 5 |   3   3   1   1 |       15       15 |          853 |   -0.036985  |
+ | 1 7 5 3 |   2   1   1   1 |       14       11 |          835 |   -0.049930  |
+ | 1 1 5 5 |   2   2   1   1 |       14       14 |          838 |   -0.036985  |
  | 2 5 5 2 |   1   1   1   1 |       10        5 |          954 |    0.040426  |
  | 3 5 5 3 |   1   1   1   1 |       10        6 |         1046 |    0.040426  |
  +=============================================================================+
@@ -1054,7 +1075,7 @@ Point group: D2h
 
           Printed all double excitations greater than 0.024947
             Norm of singles part:        0.2451512338E-01
-            Norm of doubles part:        0.3757090894E+00
+            Norm of doubles part:        0.3757072862E+00
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -1062,7 +1083,7 @@ Point group: D2h
 
   
  Requested density dependent quantities calculated
- Total time used in CC2_DEN:  2.49960049986839294E-002
+ Total time used in CC2_DEN:  2.49960124492645264E-002
 
 
                             +--------------------------+
@@ -1070,8 +1091,8 @@ Point group: D2h
                             +--------------------------+
 
   
- Norm of occupied-occupied block:  7.95604853325133747E-003
- Norm of virtual-virtual block  :  0.13911038617798399     
+ Norm of occupied-occupied block:  7.95604853325221524E-003
+ Norm of virtual-virtual block  :  0.13911038617798488     
 
 
                           +------------------------------+
@@ -1079,11 +1100,11 @@ Point group: D2h
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.54088460114086595E-002
- Norm of virtual-virtual block  :  2.47748370240737890E-002
+ Norm of occupied-occupied block:  3.54088460114092424E-002
+ Norm of virtual-virtual block  :  2.47748370240741499E-002
   
  Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in CC2_DEN:  0.11998099833726883     
+ Total time used in CC2_DEN:  0.12797999382019043     
 
 
                    Calculating right-hand-side for kappa-bar_ai
@@ -1091,11 +1112,11 @@ Point group: D2h
 
   
  Requested density dependent quantities calculated
- Total time used in CC2_DEN:  1.89969986677169800E-002
+ Total time used in CC2_DEN:  1.99970006942749023E-002
   
  Diagonal blocks of Zeta-kappa-0 calculated
- Total time used in CC2_DEN:  0.14497700333595276     
- CC_FOP> Norm of RHS vector:  2.37826019714340521E-004
+ Total time used in CC2_DEN:  0.15297600626945496     
+ CC_FOP> Norm of RHS vector:  2.37826019715303645E-004
 
 
                       Solving for orbital relaxation vector
@@ -1142,7 +1163,7 @@ Point group: D2h
  Convergence of RSP solution vectors, threshold = 5.00D-08
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   1.37D-14
+ RSP solution vector no.    1; norm of residual   1.00D-14
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1166,13 +1187,13 @@ Point group: D2h
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.00 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.01 CPU seconds for symmetry 1
 
  >>> Total time used in response solver is         0.01 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  1.87738809443558047E-003
+ Norm of zeta-kappa-0:  1.87738809443566937E-003
   
 
  Number of two-electron spin-orbit integrals written:      5400 ( 9.7%)
@@ -1193,13 +1214,13 @@ Point group: D2h
          ------------------- 
   
  Two-electron first-order property calculation completed
- Total time used in CC_2EEXP:  8.29880088567733765E-002
+ Total time used in CC_2EEXP:  8.59880000352859497E-002
 
  *******************************************************************
 
  Ground state energy is target 
 
- Ecorr =                   -128.81028194516537155323
+ Ecorr =                   -128.81028194516534313152
 
  *******************************************************************
 
@@ -1227,110 +1248,110 @@ Point group: D2h
           Number of t2 amplitudes                 :      1122
           Total number of amplitudes in ccsd      :      1146
 
- Iter.  1: Coupled cluster RSTAR energy :    -128.8102819451653716
-     Conventional correlation energy:    -0.2784203088440336
+ Iter.  1: Coupled cluster RSTAR energy :    -128.8102819451653431
+     Conventional correlation energy:    -0.2784203088439767
 
        Iteration no.:  1
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.3802847404D-20
-       Norm^2 of omega2 after ccvec:        0.7807458597D-02
- Iter.  1: Coupled cluster CCSD  energy :    -128.8087383309122913
-     Conventional correlation energy:    -0.2768766945909533
+       Norm^2 of omega1 after ccvec:        0.3802518810D-20
+       Norm^2 of omega2 after ccvec:        0.7807399115D-02
+ Iter.  1: Coupled cluster CCSD  energy :    -128.8087383309124618
+     Conventional correlation energy:    -0.2768766945910954
 
        Iteration no.:  2
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of omega1 after ccvec:        0.2197409680D-04
-       Norm^2 of omega2 after ccvec:        0.2373797562D-03
- Iter.  2: Coupled cluster CCSD  energy :    -128.8106555325952627
-     Conventional correlation energy:    -0.2787938962739247
+       Norm^2 of omega2 after ccvec:        0.2373797081D-03
+ Iter.  2: Coupled cluster CCSD  energy :    -128.8106555325208546
+     Conventional correlation energy:    -0.2787938961994882
 
        Iteration no.:  3
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.2115676691D-06
-       Norm^2 of omega2 after ccvec:        0.1102420846D-04
- Iter.  3: Coupled cluster CCSD  energy :    -128.8107877618159307
-     Conventional correlation energy:    -0.2789261254945927
+       Norm^2 of omega1 after ccvec:        0.2115676794D-06
+       Norm^2 of omega2 after ccvec:        0.1102419445D-04
+ Iter.  3: Coupled cluster CCSD  energy :    -128.8107877618473367
+     Conventional correlation energy:    -0.2789261255259703
 
        Iteration no.:  4
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.2908023168D-07
-       Norm^2 of omega2 after ccvec:        0.4769581560D-06
- Iter.  4: Coupled cluster CCSD  energy :    -128.8108065808625611
-     Conventional correlation energy:    -0.2789449445412231
+       Norm^2 of omega1 after ccvec:        0.2908023941D-07
+       Norm^2 of omega2 after ccvec:        0.4769535793D-06
+ Iter.  4: Coupled cluster CCSD  energy :    -128.8108065808830247
+     Conventional correlation energy:    -0.2789449445616583
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.8337208731D-09
-       Norm^2 of omega2 after ccvec:        0.7216905285D-08
- Iter.  5: Coupled cluster CCSD  energy :    -128.8108136478078336
-     Conventional correlation energy:    -0.2789520114864956
+       Norm^2 of omega1 after ccvec:        0.8337208841D-09
+       Norm^2 of omega2 after ccvec:        0.7216897725D-08
+ Iter.  5: Coupled cluster CCSD  energy :    -128.8108136478079757
+     Conventional correlation energy:    -0.2789520114866093
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.4852162277D-11
-       Norm^2 of omega2 after ccvec:        0.1396583514D-09
- Iter.  6: Coupled cluster CCSD  energy :    -128.8108141105298614
-     Conventional correlation energy:    -0.2789524742085234
+       Norm^2 of omega1 after ccvec:        0.4852141613D-11
+       Norm^2 of omega2 after ccvec:        0.1396566666D-09
+ Iter.  6: Coupled cluster CCSD  energy :    -128.8108141105295203
+     Conventional correlation energy:    -0.2789524742081539
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.3014056682D-13
-       Norm^2 of omega2 after ccvec:        0.1118944326D-11
- Iter.  7: Coupled cluster CCSD  energy :    -128.8108141281969665
-     Conventional correlation energy:    -0.2789524918756285
+       Norm^2 of omega1 after ccvec:        0.3014064905D-13
+       Norm^2 of omega2 after ccvec:        0.1118944177D-11
+ Iter.  7: Coupled cluster CCSD  energy :    -128.8108141281971086
+     Conventional correlation energy:    -0.2789524918757422
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.1421817423D-14
-       Norm^2 of omega2 after ccvec:        0.1885963601D-13
- Iter.  8: Coupled cluster CCSD  energy :    -128.8108141300055252
+       Norm^2 of omega1 after ccvec:        0.1421802010D-14
+       Norm^2 of omega2 after ccvec:        0.1885937991D-13
+ Iter.  8: Coupled cluster CCSD  energy :    -128.8108141300055536
      Conventional correlation energy:    -0.2789524936841872
 
        Iteration no.:  9
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.5024530150D-16
-       Norm^2 of omega2 after ccvec:        0.2103821211D-15
+       Norm^2 of omega1 after ccvec:        0.5024510590D-16
+       Norm^2 of omega2 after ccvec:        0.2103784753D-15
  Iter.  9: Coupled cluster CCSD  energy :    -128.8108141300681666
-     Conventional correlation energy:    -0.2789524937468286
+     Conventional correlation energy:    -0.2789524937468002
 
        Iteration no.: 10
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.4394431931D-17
-       Norm^2 of omega2 after ccvec:        0.1433208029D-16
- Iter. 10: Coupled cluster CCSD  energy :    -128.8108141300260456
-     Conventional correlation energy:    -0.2789524937047076
+       Norm^2 of omega1 after ccvec:        0.4394456862D-17
+       Norm^2 of omega2 after ccvec:        0.1433194451D-16
+ Iter. 10: Coupled cluster CCSD  energy :    -128.8108141300256477
+     Conventional correlation energy:    -0.2789524937042813
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm^2 of omega1 after ccvec:        0.1789479220D-19
-       Norm^2 of omega2 after ccvec:        0.1038399320D-18
- Iter. 11: Coupled cluster CCSD  energy :    -128.8108141300348564
-     Conventional correlation energy:    -0.2789524937135184
+       Norm^2 of omega1 after ccvec:        0.1789247147D-19
+       Norm^2 of omega2 after ccvec:        0.1038355963D-18
+ Iter. 11: Coupled cluster CCSD  energy :    -128.8108141300346290
+     Conventional correlation energy:    -0.2789524937132626
 
  CCSD  energy converged to within   0.10D-10 is   -128.810814130
- Final 2-norm of the CC vector function:  3.48905036D-10
+ Final 2-norm of the CC vector function:  3.48895497D-10
 
 
                     +------------------------------------------+
@@ -1460,25 +1481,25 @@ Point group: D2h
     Iter  #Vectors  time (min)   residual
     --------------------------------------
   
- Time used in CC_LHTR :  8.99797677993774414E-003
+ Time used in CC_LHTR :  9.00000333786010742E-003
   
   
- ROOT:  1 RESIDUAL TOT: 7.24827D-01
+ ROOT:  1 RESIDUAL TOT: 7.24828D-01
       1       1         0.00     0.72E+00
  Dimension of the reduced space:     2
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  8.99901986122131348E-003
+ Time used in CC_LHTR :  8.99800658226013184E-003
   
   
- ROOT:  1 RESIDUAL TOT: 8.77497D-02
+ ROOT:  1 RESIDUAL TOT: 8.77501D-02
       2       1         0.00     0.88E-01
  Dimension of the reduced space:     3
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  8.99899005889892578E-003
+ Time used in CC_LHTR :  8.99797677993774414E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.47721D-02
@@ -1487,37 +1508,37 @@ Point group: D2h
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99798965454101563E-003
+ Time used in CC_LHTR :  7.99897313117980957E-003
   
   
- ROOT:  1 RESIDUAL TOT: 1.98437D-03
+ ROOT:  1 RESIDUAL TOT: 1.98434D-03
       4       1         0.00     0.20E-02
  Dimension of the reduced space:     5
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
+
+  
+ Time used in CC_LHTR :  7.99900293350219727E-003
+  
+  
+ ROOT:  1 RESIDUAL TOT: 1.81053D-04
+      5       1         0.00     0.18E-03
+ Dimension of the reduced space:     6
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
+
+  
+ Time used in CC_LHTR :  8.99800658226013184E-003
+  
+  
+ ROOT:  1 RESIDUAL TOT: 3.44561D-05
+      6       1         0.00     0.34E-04
+ Dimension of the reduced space:     7
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  Time used in CC_LHTR :  8.99899005889892578E-003
   
   
- ROOT:  1 RESIDUAL TOT: 1.81056D-04
-      5       1         0.00     0.18E-03
- Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.01
-
-  
- Time used in CC_LHTR :  8.99901986122131348E-003
-  
-  
- ROOT:  1 RESIDUAL TOT: 3.44572D-05
-      6       1         0.00     0.34E-04
- Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.01
-
-  
- Time used in CC_LHTR :  8.99797677993774414E-003
-  
-  
- ROOT:  1 RESIDUAL TOT: 5.81539D-06
+ ROOT:  1 RESIDUAL TOT: 5.81537D-06
       7       1         0.00     0.58E-05
  Dimension of the reduced space:     8
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -1526,22 +1547,22 @@ Point group: D2h
  Time used in CC_LHTR :  8.99901986122131348E-003
   
   
- ROOT:  1 RESIDUAL TOT: 6.58322D-07
+ ROOT:  1 RESIDUAL TOT: 6.58320D-07
       8       1         0.00     0.66E-06
  Dimension of the reduced space:     9
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  8.99899005889892578E-003
+ Time used in CC_LHTR :  8.99800658226013184E-003
   
   
- ROOT:  1 RESIDUAL TOT: 8.97948D-08
+ ROOT:  1 RESIDUAL TOT: 8.97953D-08
       9       1         0.00     0.90E-07
  Dimension of the reduced space:    10
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  8.99800658226013184E-003
+ Time used in CC_LHTR :  7.99900293350219727E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.03646D-08
@@ -1565,7 +1586,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1629,29 +1650,29 @@ Point group: D2h
  | 5 5 5 5 |   1   1   1   1 |       21       21 |          231 |   -0.071115  |
  | 5 5 5 5 |   2   2   1   1 |       22       22 |          253 |   -0.026276  |
  | 1 1 2 2 |   1   1   1   1 |        9        9 |          345 |   -0.025431  |
- | 1 1 2 2 |   2   2   1   1 |       10       10 |          355 |   -0.030135  |
- | 4 1 3 2 |   1   2   1   1 |       15       10 |          415 |   -0.049197  |
- | 6 1 5 2 |   1   2   1   1 |       17       10 |          446 |   -0.037755  |
- | 6 1 5 2 |   1   3   1   1 |       17       11 |          447 |    0.035009  |
+ | 1 1 2 2 |   3   3   1   1 |       11       11 |          366 |   -0.030135  |
+ | 4 1 3 2 |   1   3   1   1 |       15       11 |          416 |   -0.049197  |
+ | 6 1 5 2 |   1   2   1   1 |       17       10 |          446 |    0.035009  |
+ | 6 1 5 2 |   1   3   1   1 |       17       11 |          447 |   -0.037755  |
  | 4 4 3 3 |   1   1   1   1 |       15       15 |          420 |   -0.030135  |
  | 6 4 5 3 |   1   1   1   1 |       17       15 |          451 |   -0.037755  |
  | 6 6 5 5 |   1   1   1   1 |       17       17 |          453 |   -0.030135  |
  | 4 4 2 2 |   1   1   1   1 |        9        9 |          516 |   -0.030135  |
- | 1 4 3 2 |   2   1   1   1 |       12        9 |          546 |    0.049197  |
+ | 1 4 3 2 |   3   1   1   1 |       13        9 |          558 |    0.049197  |
  | 7 4 5 2 |   1   1   1   1 |       17        9 |          616 |   -0.037755  |
  | 1 1 3 3 |   1   1   1   1 |       11       11 |          537 |   -0.025431  |
- | 1 1 3 3 |   2   2   1   1 |       12       12 |          549 |   -0.030135  |
- | 7 1 5 3 |   1   2   1   1 |       17       12 |          619 |    0.037755  |
- | 7 1 5 3 |   1   3   1   1 |       17       13 |          620 |    0.035009  |
+ | 1 1 3 3 |   3   3   1   1 |       13       13 |          562 |   -0.030135  |
+ | 7 1 5 3 |   1   2   1   1 |       17       12 |          619 |    0.035009  |
+ | 7 1 5 3 |   1   3   1   1 |       17       13 |          620 |    0.037755  |
  | 7 7 5 5 |   1   1   1   1 |       17       17 |          624 |   -0.030135  |
  | 2 3 3 2 |   1   1   1   1 |        9        5 |          683 |    0.027292  |
  | 6 6 2 2 |   1   1   1   1 |        9        9 |          778 |   -0.030135  |
  | 7 6 3 2 |   1   1   1   1 |       11        9 |          797 |   -0.037755  |
- | 1 6 5 2 |   3   1   1   1 |       15        9 |          847 |   -0.050201  |
+ | 1 6 5 2 |   2   1   1   1 |       14        9 |          833 |   -0.050201  |
  | 7 7 3 3 |   1   1   1   1 |       11       11 |          799 |   -0.030135  |
- | 1 7 5 3 |   3   1   1   1 |       15       11 |          849 |   -0.050201  |
+ | 1 7 5 3 |   2   1   1   1 |       14       11 |          835 |   -0.050201  |
  | 1 1 5 5 |   1   1   1   1 |       13       13 |          824 |   -0.025431  |
- | 1 1 5 5 |   3   3   1   1 |       15       15 |          853 |   -0.038906  |
+ | 1 1 5 5 |   2   2   1   1 |       14       14 |          838 |   -0.038906  |
  | 2 5 5 2 |   1   1   1   1 |       10        5 |          954 |    0.027292  |
  | 3 5 5 3 |   1   1   1   1 |       10        6 |         1046 |    0.027292  |
  +=============================================================================+
@@ -1665,7 +1686,7 @@ Point group: D2h
 
           Printed all double excitations greater than 0.024975
             Norm of singles part:        0.1585810698E-01
-            Norm of doubles part:        0.3577272392E+00
+            Norm of doubles part:        0.3577253245E+00
 
 
                   Constructing right-hand-side for CCSD-kappa-0
@@ -1673,8 +1694,8 @@ Point group: D2h
 
   
  Requested density dependent quantities calculated
- Total time used in CC_DEN:  3.29940319061279297E-002
- CC_FOP> Norm of RHS vector:  3.20630946764454729E-004
+ Total time used in CC_DEN:  3.19950282573699951E-002
+ CC_FOP> Norm of RHS vector:  3.20630946765451815E-004
 
 
                       Solving for orbital relaxation vector
@@ -1721,7 +1742,7 @@ Point group: D2h
  Convergence of RSP solution vectors, threshold = 5.00D-08
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   9.76D-15
+ RSP solution vector no.    1; norm of residual   9.00D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1749,13 +1770,13 @@ Point group: D2h
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.00 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.01 CPU seconds for symmetry 1
 
  >>> Total time used in response solver is         0.01 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  1.87155572157307263E-005
+ Norm of zeta-kappa-0:  1.87155572157928139E-005
   
 
  Number of two-electron spin-orbit integrals written:      5400 ( 9.7%)
@@ -1776,13 +1797,13 @@ Point group: D2h
          ------------------- 
   
  Two-electron first-order property calculation completed
- Total time used in CC_2EEXP:  8.59869718551635742E-002
+ Total time used in CC_2EEXP:  8.89859795570373535E-002
 
  *******************************************************************
 
  Ground state energy is target 
 
- Ecorr =                   -128.81081413003485636182
+ Ecorr =                   -128.81081413003462898814
 
  *******************************************************************
   
@@ -1825,9 +1846,9 @@ Point group: D2h
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.60 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.62 seconds
+ >>>> Total wall time used in DALTON:   3.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:23:59 2010 
+     Date and time (Linux)  : Wed Mar 16 17:51:21 2011 
      Host name              : fe6                                     

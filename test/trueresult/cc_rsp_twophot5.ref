@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:27:47 2010 
+     Date and time (Linux)  : Wed Mar 16 17:54:50 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -271,7 +272,7 @@ Point group: Cs
 
  The molecule is linear.
 
-               B =       606561.40 MHz     (   20.232711 cm-1)
+               B =       606561.40 MHz     (   20.232710 cm-1)
 
 
 @  Nuclear repulsion energy :    5.104355716878
@@ -331,7 +332,7 @@ Point group: Cs
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
 
@@ -387,7 +388,7 @@ Point group: Cs
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:27:47 2010 
+     Date and time (Linux)  : Wed Mar 16 17:54:50 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -402,8 +403,7 @@ Point group: Cs
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -411,6 +411,10 @@ Point group: Cs
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -464,38 +468,64 @@ Point group: Cs
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -99.9159496472       1.29D+00  -9.99D+01    4  1
-      MULPOP F     0.17; H    -0.00; 
+      Virial theorem: -V/T =      1.997399
+      MULPOP  F      -0.44; H       0.44; 
+ -----------------------------------------------------------------------------
    2  -100.006061881       2.26D-01  -9.01D-02    4  1
-      MULPOP F     0.25; H    -0.00; 
+      Virial theorem: -V/T =      2.002657
+      MULPOP  F      -0.38; H       0.38; 
+ -----------------------------------------------------------------------------
    3  -100.008563846       8.51D-02  -2.50D-03    4  1
-      MULPOP F     0.22; H    -0.00; 
+      Virial theorem: -V/T =      1.999075
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
    4  -100.008886254       2.15D-02  -3.22D-04    4  1
-      MULPOP F     0.23; H    -0.00; 
+      Virial theorem: -V/T =      2.000623
+      MULPOP  F      -0.41; H       0.41; 
+ -----------------------------------------------------------------------------
    5  -100.008918307       3.56D-03  -3.21D-05    4  1
-      MULPOP F     0.23; H    -0.00; 
+      Virial theorem: -V/T =      2.000296
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
    6  -100.008919840       7.37D-04  -1.53D-06    4  1
-      MULPOP F     0.23; H    -0.00; 
+      Virial theorem: -V/T =      2.000320
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
    7  -100.008919896       5.25D-05  -5.51D-08    4  1
-      MULPOP F     0.23; H    -0.00; 
-   8  -100.008919896       4.66D-06  -2.58D-10    4  1
-      MULPOP F     0.23; H    -0.00; 
-   9  -100.008919896       4.39D-07  -1.02D-12    4  1
-      MULPOP F     0.23; H    -0.00; 
-  10  -100.008919896       2.49D-08  -2.84D-14    4  1
-      MULPOP F     0.23; H    -0.00; 
-  11  -100.008919896       2.56D-09  -1.42D-14    4  1
-      MULPOP F     0.23; H    -0.00; 
-  12  -100.008919896       6.66D-11  -1.42D-14    4  1
-      MULPOP F     0.23; H    -0.00; 
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   8  -100.008919896       4.66D-06  -2.57D-10    4  1
+      Virial theorem: -V/T =      2.000326
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   9  -100.008919896       4.39D-07  -1.08D-12    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  10  -100.008919896       2.49D-08  -8.53D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  11  -100.008919896       2.56D-09   5.68D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  12  -100.008919896       6.66D-11   1.42D-14    4  1
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
   13  -100.008919896       8.93D-12  -4.26D-14    4  1
-      MULPOP F     0.23; H    -0.00; 
-  14  -100.008919896       3.44D-13   4.26D-14    4  1
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      2.000327
+      MULPOP  F      -0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+  14  -100.008919896       3.59D-13   0.00D+00    4  1
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -514,27 +544,30 @@ Point group: Cs
 
 
     E(LUMO) :     0.21639320 au (symmetry 1)
-  - E(HOMO) :    -0.62549523 au (symmetry 2)
+  - E(HOMO) :    -0.62549523 au (symmetry 1)
   ------------------------------------------
     gap     :     0.84188843 au
 
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -100.008919895850                 
+     Final HF energy:            -100.008919895851                 
      Nuclear repulsion:             5.104355716878
-     Electronic energy:          -105.113275612729
+     Electronic energy:          -105.113275612730
 
      Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Wed Dec 29 21:27:47 2010 
+     Date and time (Linux)  : Wed Mar 16 17:54:50 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -542,7 +575,7 @@ Point group: Cs
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6
+    Orbital         1        2        3        4        5        6
    1 F   :1s    -0.9955  -0.2308  -0.0555  -0.0000   0.0644   0.0183
    2 F   :1s    -0.0212   0.5025   0.1234   0.0000  -0.0741  -0.1606
    3 F   :1s     0.0052   0.5082   0.2358   0.0000  -0.7503   0.3606
@@ -560,7 +593,7 @@ Point group: Cs
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 F   :2py    0.6587  -0.9416   0.1036
    2 F   :2py    0.4859   1.0109  -0.2903
    4 F   :3d1-  -0.0223  -0.0635  -0.6960
@@ -572,7 +605,7 @@ Point group: Cs
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:27:47 2010 
+     Date and time (Linux)  : Wed Mar 16 17:54:50 2011 
      Host name              : fe6                                     
 
 
@@ -672,7 +705,7 @@ Point group: Cs
 
 
           Printed all double excitations greater than 0.020000
- Iter.  1: Coupled cluster MP2   energy :    -100.1936625719336433
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936625719348655
      Conventional correlation energy:    -0.1847426760833741
 
        Iteration no.:  1
@@ -683,8 +716,8 @@ Point group: Cs
        Norm^2 of t2am   after ccvec:        0.2000976780D-01
        Norm^2 of omega1 after ccvec:        0.1184301204D-02
        Norm^2 of omega2 after ccvec:        0.3729416034D-02
- Iter.  1: Coupled cluster CCSD  energy :    -100.1943060627137925
-     Conventional correlation energy:    -0.1853861668635233
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1943060627150714
+     Conventional correlation energy:    -0.1853861668635801
 
        Iteration no.:  2
        -----------------
@@ -694,8 +727,8 @@ Point group: Cs
        Norm^2 of t2am   after ccvec:        0.2169381138D-01
        Norm^2 of omega1 after ccvec:        0.2849570707D-04
        Norm^2 of omega2 after ccvec:        0.4915276235D-03
- Iter.  2: Coupled cluster CCSD  energy :    -100.1971585883489553
-     Conventional correlation energy:    -0.1882386924986861
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1971585883504474
+     Conventional correlation energy:    -0.1882386924989561
 
        Iteration no.:  3
        -----------------
@@ -705,8 +738,8 @@ Point group: Cs
        Norm^2 of t2am   after ccvec:        0.2312838265D-01
        Norm^2 of omega1 after ccvec:        0.4341572657D-05
        Norm^2 of omega2 after ccvec:        0.4178364260D-04
- Iter.  3: Coupled cluster CCSD  energy :    -100.1977954495178977
-     Conventional correlation energy:    -0.1888755536676285
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977954495189351
+     Conventional correlation energy:    -0.1888755536674438
 
        Iteration no.:  4
        -----------------
@@ -714,10 +747,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3605378806D-03
        Norm^2 of t2am   after ccvec:        0.2365633436D-01
-       Norm^2 of omega1 after ccvec:        0.9567255730D-07
+       Norm^2 of omega1 after ccvec:        0.9567255731D-07
        Norm^2 of omega2 after ccvec:        0.1160095803D-05
- Iter.  4: Coupled cluster CCSD  energy :    -100.1977970718307347
-     Conventional correlation energy:    -0.1888771759804655
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977970718319995
+     Conventional correlation energy:    -0.1888771759805081
 
        Iteration no.:  5
        -----------------
@@ -726,8 +759,8 @@ Point group: Cs
        Norm^2 of t1am   after ccvec:        0.3666784363D-03
        Norm^2 of t2am   after ccvec:        0.2371226752D-01
        Norm^2 of omega1 after ccvec:        0.1418689339D-07
-       Norm^2 of omega2 after ccvec:        0.4285185337D-07
- Iter.  5: Coupled cluster CCSD  energy :    -100.1977935669967792
+       Norm^2 of omega2 after ccvec:        0.4285185336D-07
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977935669980013
      Conventional correlation energy:    -0.1888736711465100
 
        Iteration no.:  6
@@ -736,10 +769,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3688521323D-03
        Norm^2 of t2am   after ccvec:        0.2371314684D-01
-       Norm^2 of omega1 after ccvec:        0.7291147705D-09
+       Norm^2 of omega1 after ccvec:        0.7291147704D-09
        Norm^2 of omega2 after ccvec:        0.4049514991D-08
- Iter.  6: Coupled cluster CCSD  energy :    -100.1977918794591318
-     Conventional correlation energy:    -0.1888719836088626
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977918794598992
+     Conventional correlation energy:    -0.1888719836084078
 
        Iteration no.:  7
        -----------------
@@ -749,8 +782,8 @@ Point group: Cs
        Norm^2 of t2am   after ccvec:        0.2371204709D-01
        Norm^2 of omega1 after ccvec:        0.2745880714D-10
        Norm^2 of omega2 after ccvec:        0.2065620931D-09
- Iter.  7: Coupled cluster CCSD  energy :    -100.1977908485723816
-     Conventional correlation energy:    -0.1888709527221124
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977908485735327
+     Conventional correlation energy:    -0.1888709527220414
 
        Iteration no.:  8
        -----------------
@@ -758,10 +791,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3698160339D-03
        Norm^2 of t2am   after ccvec:        0.2371132689D-01
-       Norm^2 of omega1 after ccvec:        0.6556946897D-12
-       Norm^2 of omega2 after ccvec:        0.5494779378D-11
- Iter.  8: Coupled cluster CCSD  energy :    -100.1977909127282800
-     Conventional correlation energy:    -0.1888710168780108
+       Norm^2 of omega1 after ccvec:        0.6556946903D-12
+       Norm^2 of omega2 after ccvec:        0.5494779375D-11
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909127296869
+     Conventional correlation energy:    -0.1888710168781955
 
        Iteration no.:  9
        -----------------
@@ -769,10 +802,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3698374470D-03
        Norm^2 of t2am   after ccvec:        0.2371136691D-01
-       Norm^2 of omega1 after ccvec:        0.1011709993D-13
-       Norm^2 of omega2 after ccvec:        0.1823293907D-12
- Iter.  9: Coupled cluster CCSD  energy :    -100.1977909096269457
-     Conventional correlation energy:    -0.1888710137766765
+       Norm^2 of omega1 after ccvec:        0.1011709837D-13
+       Norm^2 of omega2 after ccvec:        0.1823293905D-12
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909096280825
+     Conventional correlation energy:    -0.1888710137765912
 
        Iteration no.: 10
        -----------------
@@ -780,10 +813,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3698382131D-03
        Norm^2 of t2am   after ccvec:        0.2371136319D-01
-       Norm^2 of omega1 after ccvec:        0.8459555815D-15
-       Norm^2 of omega2 after ccvec:        0.1525700371D-13
- Iter. 10: Coupled cluster CCSD  energy :    -100.1977909077532587
-     Conventional correlation energy:    -0.1888710119029895
+       Norm^2 of omega1 after ccvec:        0.8459554639D-15
+       Norm^2 of omega2 after ccvec:        0.1525700349D-13
+ Iter. 10: Coupled cluster CCSD  energy :    -100.1977909077544666
+     Conventional correlation energy:    -0.1888710119029753
 
        Iteration no.: 11
        -----------------
@@ -791,10 +824,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3698383849D-03
        Norm^2 of t2am   after ccvec:        0.2371136192D-01
-       Norm^2 of omega1 after ccvec:        0.6529534949D-16
-       Norm^2 of omega2 after ccvec:        0.7091627463D-15
- Iter. 11: Coupled cluster CCSD  energy :    -100.1977909069587866
-     Conventional correlation energy:    -0.1888710111085175
+       Norm^2 of omega1 after ccvec:        0.6529536469D-16
+       Norm^2 of omega2 after ccvec:        0.7091626383D-15
+ Iter. 11: Coupled cluster CCSD  energy :    -100.1977909069599377
+     Conventional correlation energy:    -0.1888710111084464
 
        Iteration no.: 12
        -----------------
@@ -802,10 +835,10 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3698384864D-03
        Norm^2 of t2am   after ccvec:        0.2371136146D-01
-       Norm^2 of omega1 after ccvec:        0.2767658609D-17
-       Norm^2 of omega2 after ccvec:        0.2478508103D-16
- Iter. 12: Coupled cluster CCSD  energy :    -100.1977909068214103
-     Conventional correlation energy:    -0.1888710109711411
+       Norm^2 of omega1 after ccvec:        0.2767652931D-17
+       Norm^2 of omega2 after ccvec:        0.2478508685D-16
+ Iter. 12: Coupled cluster CCSD  energy :    -100.1977909068226467
+     Conventional correlation energy:    -0.1888710109711553
 
        Iteration no.: 13
        -----------------
@@ -813,13 +846,13 @@ Point group: Cs
        Time used in   RHS - TOTAL  :       0.01 seconds
        Norm^2 of t1am   after ccvec:        0.3698385223D-03
        Norm^2 of t2am   after ccvec:        0.2371136137D-01
-       Norm^2 of omega1 after ccvec:        0.1572779287D-18
-       Norm^2 of omega2 after ccvec:        0.6247137624D-18
- Iter. 13: Coupled cluster CCSD  energy :    -100.1977909068225472
-     Conventional correlation energy:    -0.1888710109722780
+       Norm^2 of omega1 after ccvec:        0.1572743628D-18
+       Norm^2 of omega2 after ccvec:        0.6247138544D-18
+ Iter. 13: Coupled cluster CCSD  energy :    -100.1977909068239825
+     Conventional correlation energy:    -0.1888710109724911
 
  CCSD  energy converged to within   0.10D-09 is   -100.197790907
- Final 2-norm of the CC vector function:  8.84302941D-10
+ Final 2-norm of the CC vector function:  8.84300977D-10
 
 
                     +------------------------------------------+
@@ -954,7 +987,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99800455570220947E-003
+ Time used in CC_LHTR :  7.99798965454101563E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.14398D-01
@@ -963,7 +996,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99900090694427490E-003
+ Time used in CC_LHTR :  6.99999928474426270E-003
   
   
  ROOT:  1 RESIDUAL TOT: 2.24432D-02
@@ -972,7 +1005,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99900090694427490E-003
+ Time used in CC_LHTR :  7.99898803234100342E-003
   
   
  ROOT:  1 RESIDUAL TOT: 5.00602D-03
@@ -981,7 +1014,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99798965454101563E-003
+ Time used in CC_LHTR :  7.99900293350219727E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.04528D-03
@@ -999,7 +1032,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99900090694427490E-003
+ Time used in CC_LHTR :  7.99800455570220947E-003
   
   
  ROOT:  1 RESIDUAL TOT: 6.13074D-05
@@ -1008,7 +1041,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  8.00000131130218506E-003
+ Time used in CC_LHTR :  6.99900090694427490E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.27537D-05
@@ -1017,7 +1050,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99800455570220947E-003
+ Time used in CC_LHTR :  7.99900293350219727E-003
   
   
  ROOT:  1 RESIDUAL TOT: 2.02673D-06
@@ -1026,7 +1059,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99800252914428711E-003
+ Time used in CC_LHTR :  7.99800455570220947E-003
   
   
  ROOT:  1 RESIDUAL TOT: 3.20927D-07
@@ -1035,7 +1068,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99900293350219727E-003
+ Time used in CC_LHTR :  6.99798762798309326E-003
   
   
  ROOT:  1 RESIDUAL TOT: 4.60570D-08
@@ -1044,7 +1077,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99898803234100342E-003
+ Time used in CC_LHTR :  7.99998641014099121E-003
   
   
  ROOT:  1 RESIDUAL TOT: 7.42594D-09
@@ -1053,7 +1086,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99800252914428711E-003
+ Time used in CC_LHTR :  7.99798965454101563E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.03791D-09
@@ -1062,7 +1095,7 @@ Point group: Cs
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99900293350219727E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
   
  ROOT:  1 RESIDUAL TOT: 1.78720D-10
@@ -1086,7 +1119,7 @@ Point group: Cs
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1175,22 +1208,22 @@ Point group: Cs
  Length of Excitation vectors in this class is:      1170
  Converging for  5 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.84188843220943110               17
-  HIGHST VALUE AND PLACE    59.588757068665259              168
+  LOWEST VALUE AND PLACE   0.84188843221000487               17
+  HIGHST VALUE AND PLACE    59.588757068692473              168
 IELMNT XMIN IMIN NDEG        1    8.41888D-01      17   1
 IELMNT XMIN IMIN NDEG        2    1.64519D+00      18   1
 IELMNT XMIN IMIN NDEG        3    1.68378D+00     761   1
 IELMNT XMIN IMIN NDEG        4    1.79539D+00     751   1
-IELMNT XMIN IMIN NDEG        5    2.11398D+00      19   1
-IELMNT XMIN IMIN NDEG        6    2.11398D+00      13   2
+IELMNT XMIN IMIN NDEG        5    2.11398D+00      13   1
+IELMNT XMIN IMIN NDEG        6    2.11398D+00      19   2
 IELMNT XMIN IMIN NDEG        7    2.16449D+00      20   1
 IELMNT XMIN IMIN NDEG        8    2.22559D+00       9   1
-IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
+IELMNT XMIN IMIN NDEG        9    2.48708D+00     805   1
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            8
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     17     18    761    751     19     13     20      9
-  MIN AND MAX IN SELECTED SUPSPACE   0.84188843220943110        2.2255921461201988     
+     1 :     17     18    761    751     13     19     20      9
+  MIN AND MAX IN SELECTED SUPSPACE   0.84188843221000487        2.2255921461206007     
  Start vector guessed from diagonal
  ... selected element no. 17
  Start vector guessed from diagonal
@@ -1200,7 +1233,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
  Start vector guessed from diagonal
  ... selected element no.751
  Start vector guessed from diagonal
- ... selected element no. 19
+ ... selected element no. 13
  CCEQ_SOL: IPRLE   =               5
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
@@ -1229,13 +1262,13 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
- Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in     CC_RHTR in total   :       0.00 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -1250,7 +1283,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1292,21 +1325,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1314,6 +1333,20 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
  Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1343,8 +1376,15 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.39639293
        5      1.50294350
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.05
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
@@ -1355,14 +1395,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1418,14 +1451,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1440,6 +1466,13 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
  Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1481,28 +1514,28 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1544,21 +1577,21 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1621,7 +1654,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1726,7 +1759,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1747,7 +1780,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1803,7 +1836,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1859,6 +1892,13 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -1866,14 +1906,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -1910,33 +1943,33 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008070
        5      1.49304642
  Dimension of the reduced space:    60
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.05
 
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2014,8 +2047,8 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008106
        5      1.49305167
   
- ROOT:  1 RESIDUAL TOT: 2.15379D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.15379D-09
+ ROOT:  1 RESIDUAL TOT: 2.15380D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.15380D-09
  ROOT:  2 RESIDUAL TOT: 6.93911D-07
  ROOT:  3 RESIDUAL TOT: 9.15599D-06
  ROOT:  4 RESIDUAL TOT: 1.39233D-05
@@ -2031,19 +2064,19 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008106
        5      1.49305167
  Dimension of the reduced space:    68
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2057,7 +2090,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2071,8 +2104,8 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008113
        5      1.49305096
   
- ROOT:  1 RESIDUAL TOT: 2.08143D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.08143D-09
+ ROOT:  1 RESIDUAL TOT: 2.08144D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.08144D-09
  ROOT:  2 RESIDUAL TOT: 2.12098D-07
  ROOT:  3 RESIDUAL TOT: 3.57781D-06
  ROOT:  4 RESIDUAL TOT: 5.53636D-06
@@ -2088,7 +2121,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008113
        5      1.49305096
  Dimension of the reduced space:    72
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
 
@@ -2100,14 +2133,14 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2150,14 +2183,14 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2187,7 +2220,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
   
  ROOT:  1 RESIDUAL TOT: 2.01848D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.01848D-09
- ROOT:  2 RESIDUAL TOT: 1.47632D-08
+ ROOT:  2 RESIDUAL TOT: 1.47631D-08
  ROOT:  3 RESIDUAL TOT: 3.21659D-07
  ROOT:  4 RESIDUAL TOT: 5.93632D-07
  ROOT:  5 RESIDUAL TOT: 5.54427D-05
@@ -2214,7 +2247,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2242,10 +2275,10 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008116
        5      1.49305419
   
- ROOT:  1 RESIDUAL TOT: 1.98051D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.98051D-09
- ROOT:  2 RESIDUAL TOT: 4.78583D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.78583D-09
+ ROOT:  1 RESIDUAL TOT: 1.98050D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.98050D-09
+ ROOT:  2 RESIDUAL TOT: 4.78586D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 4.78586D-09
  ROOT:  3 RESIDUAL TOT: 1.04238D-07
  ROOT:  4 RESIDUAL TOT: 2.82623D-07
  ROOT:  5 RESIDUAL TOT: 1.92617D-05
@@ -2272,7 +2305,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2293,10 +2326,10 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008116
        5      1.49305409
   
- ROOT:  1 RESIDUAL TOT: 1.90146D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.90146D-09
- ROOT:  2 RESIDUAL TOT: 2.61642D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.61642D-09
+ ROOT:  1 RESIDUAL TOT: 1.90147D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.90147D-09
+ ROOT:  2 RESIDUAL TOT: 2.61639D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.61639D-09
  ROOT:  3 RESIDUAL TOT: 4.27227D-08
  ROOT:  4 RESIDUAL TOT: 6.78431D-08
  ROOT:  5 RESIDUAL TOT: 9.63586D-06
@@ -2316,6 +2349,57 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.39986218
+       2      1.08969316
+       3      1.32821600
+       4      1.37008116
+       5      1.49305406
+  
+ ROOT:  1 RESIDUAL TOT: 1.90350D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.90350D-09
+ ROOT:  2 RESIDUAL TOT: 2.62197D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62197D-09
+ ROOT:  3 RESIDUAL TOT: 1.22409D-08
+ ROOT:  4 RESIDUAL TOT: 2.23283D-08
+ ROOT:  5 RESIDUAL TOT: 3.16180D-06
+     19       3         0.00     0.32E-05
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.39986218
+       2      1.08969316
+       3      1.32821600
+       4      1.37008116
+       5      1.49305406
+ Dimension of the reduced space:    89
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -2344,14 +2428,16 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 1.90349D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.90349D-09
- ROOT:  2 RESIDUAL TOT: 2.62200D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62200D-09
- ROOT:  3 RESIDUAL TOT: 1.22410D-08
- ROOT:  4 RESIDUAL TOT: 2.23283D-08
- ROOT:  5 RESIDUAL TOT: 3.16180D-06
-     19       3         0.00     0.32E-05
+ ROOT:  1 RESIDUAL TOT: 1.92368D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92368D-09
+ ROOT:  2 RESIDUAL TOT: 2.62461D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62461D-09
+ ROOT:  3 RESIDUAL TOT: 3.92859D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 3.92859D-09
+ ROOT:  4 RESIDUAL TOT: 6.92323D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92323D-09
+ ROOT:  5 RESIDUAL TOT: 9.84565D-07
+     20       3         0.00     0.98E-06
 
  Lowest eigenvalues in this iteration: 
 
@@ -2361,23 +2447,9 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        3      1.32821600
        4      1.37008116
        5      1.49305406
- Dimension of the reduced space:    89
+ Dimension of the reduced space:    90
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
@@ -2399,49 +2471,10 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92369D-09
  ROOT:  2 RESIDUAL TOT: 2.62468D-09
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62468D-09
- ROOT:  3 RESIDUAL TOT: 3.92859D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 3.92859D-09
- ROOT:  4 RESIDUAL TOT: 6.92322D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92322D-09
- ROOT:  5 RESIDUAL TOT: 9.84565D-07
-     20       3         0.00     0.98E-06
-
- Lowest eigenvalues in this iteration: 
-
-              Column   1
-       1      0.39986218
-       2      1.08969316
-       3      1.32821600
-       4      1.37008116
-       5      1.49305406
- Dimension of the reduced space:    90
- >>> TIME USED IN THIS MICRO ITERATION        0.03
-
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
- REDUCED EIGENVALUES real part:
-
-              Column   1
-       1      0.39986218
-       2      1.08969316
-       3      1.32821600
-       4      1.37008116
-       5      1.49305406
-  
- ROOT:  1 RESIDUAL TOT: 1.92369D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92369D-09
- ROOT:  2 RESIDUAL TOT: 2.62463D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62463D-09
  ROOT:  3 RESIDUAL TOT: 1.82864D-09
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.82864D-09
- ROOT:  4 RESIDUAL TOT: 6.92327D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92327D-09
+ ROOT:  4 RESIDUAL TOT: 6.92324D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92324D-09
  ROOT:  5 RESIDUAL TOT: 3.94210D-07
      21       1         0.00     0.39E-06
 
@@ -2454,7 +2487,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    91
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
 
 
@@ -2475,12 +2508,12 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
   
  ROOT:  1 RESIDUAL TOT: 1.92370D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92370D-09
- ROOT:  2 RESIDUAL TOT: 2.62462D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62462D-09
+ ROOT:  2 RESIDUAL TOT: 2.62469D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62469D-09
  ROOT:  3 RESIDUAL TOT: 1.64688D-09
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.64688D-09
- ROOT:  4 RESIDUAL TOT: 6.92328D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92328D-09
+ ROOT:  4 RESIDUAL TOT: 6.92321D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92321D-09
  ROOT:  5 RESIDUAL TOT: 1.30776D-07
      22       1         0.00     0.13E-06
 
@@ -2498,7 +2531,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2512,14 +2545,14 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 1.92368D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92368D-09
- ROOT:  2 RESIDUAL TOT: 2.62465D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62465D-09
- ROOT:  3 RESIDUAL TOT: 1.64485D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.64485D-09
- ROOT:  4 RESIDUAL TOT: 6.92328D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92328D-09
+ ROOT:  1 RESIDUAL TOT: 1.92369D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92369D-09
+ ROOT:  2 RESIDUAL TOT: 2.62463D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62463D-09
+ ROOT:  3 RESIDUAL TOT: 1.64486D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.64486D-09
+ ROOT:  4 RESIDUAL TOT: 6.92320D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92320D-09
  ROOT:  5 RESIDUAL TOT: 4.69010D-08
      23       1         0.00     0.47E-07
 
@@ -2537,46 +2570,7 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
- REDUCED EIGENVALUES real part:
-
-              Column   1
-       1      0.39986218
-       2      1.08969316
-       3      1.32821600
-       4      1.37008116
-       5      1.49305406
-  
- ROOT:  1 RESIDUAL TOT: 1.92367D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92367D-09
- ROOT:  2 RESIDUAL TOT: 2.62464D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62464D-09
- ROOT:  3 RESIDUAL TOT: 1.59821D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.59821D-09
- ROOT:  4 RESIDUAL TOT: 6.92324D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92324D-09
- ROOT:  5 RESIDUAL TOT: 2.13838D-08
-     24       1         0.00     0.21E-07
-
- Lowest eigenvalues in this iteration: 
-
-              Column   1
-       1      0.39986218
-       2      1.08969316
-       3      1.32821600
-       4      1.37008116
-       5      1.49305406
- Dimension of the reduced space:    94
- >>> TIME USED IN THIS MICRO ITERATION        0.02
-
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -2592,12 +2586,51 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
   
  ROOT:  1 RESIDUAL TOT: 1.92368D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92368D-09
- ROOT:  2 RESIDUAL TOT: 2.62466D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62466D-09
- ROOT:  3 RESIDUAL TOT: 1.58064D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.58064D-09
- ROOT:  4 RESIDUAL TOT: 6.92321D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92321D-09
+ ROOT:  2 RESIDUAL TOT: 2.62464D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62464D-09
+ ROOT:  3 RESIDUAL TOT: 1.59822D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.59822D-09
+ ROOT:  4 RESIDUAL TOT: 6.92325D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92325D-09
+ ROOT:  5 RESIDUAL TOT: 2.13838D-08
+     24       1         0.00     0.21E-07
+
+ Lowest eigenvalues in this iteration: 
+
+              Column   1
+       1      0.39986218
+       2      1.08969316
+       3      1.32821600
+       4      1.37008116
+       5      1.49305406
+ Dimension of the reduced space:    94
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ REDUCED EIGENVALUES real part:
+
+              Column   1
+       1      0.39986218
+       2      1.08969316
+       3      1.32821600
+       4      1.37008116
+       5      1.49305406
+  
+ ROOT:  1 RESIDUAL TOT: 1.92368D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.92368D-09
+ ROOT:  2 RESIDUAL TOT: 2.62458D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.62458D-09
+ ROOT:  3 RESIDUAL TOT: 1.58063D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.58063D-09
+ ROOT:  4 RESIDUAL TOT: 6.92323D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 6.92323D-09
  ROOT:  5 RESIDUAL TOT: 8.45683D-09
  ROOT:  5 HAS CONVERGED. RESIDUAL TOT: 8.45683D-09
      25       1         0.00     0.85E-08
@@ -2627,8 +2660,8 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.86 seconds
- >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.87 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2656,21 +2689,21 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3998621848       10.8808032336
-         2            1.0896931647       29.6520585332
-         3            1.3282159986       36.1425948271
-         4            1.3700811569       37.2818037016
-         5            1.4930540573       40.6280664472
+         1            0.3998621848       10.8808035424
+         2            1.0896931647       29.6520593746
+         3            1.3282159986       36.1425958527
+         4            1.3700811569       37.2818047595
+         5            1.4930540573       40.6280676001
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -99.797928721994310
-@@    2    2           -99.108097742158975
-@@    2    3           -98.869574908186522
-@@    2    4           -98.827709749913680
-@@    2    5           -98.704736849499525
+@@    2    1           -99.797928721995262
+@@    2    2           -99.108097742160140
+@@    2    3           -98.869574908187161
+@@    2    4           -98.827709749914177
+@@    2    5           -98.704736849500705
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2995,22 +3028,22 @@ IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
  Length of Excitation vectors in this class is:      1170
  Converging for  5 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.84188843220943110               17
-  HIGHST VALUE AND PLACE    59.588757068665259              168
+  LOWEST VALUE AND PLACE   0.84188843221000487               17
+  HIGHST VALUE AND PLACE    59.588757068692473              168
 IELMNT XMIN IMIN NDEG        1    8.41888D-01      17   1
 IELMNT XMIN IMIN NDEG        2    1.64519D+00      18   1
 IELMNT XMIN IMIN NDEG        3    1.68378D+00     761   1
 IELMNT XMIN IMIN NDEG        4    1.79539D+00     751   1
-IELMNT XMIN IMIN NDEG        5    2.11398D+00      19   1
-IELMNT XMIN IMIN NDEG        6    2.11398D+00      13   2
+IELMNT XMIN IMIN NDEG        5    2.11398D+00      13   1
+IELMNT XMIN IMIN NDEG        6    2.11398D+00      19   2
 IELMNT XMIN IMIN NDEG        7    2.16449D+00      20   1
 IELMNT XMIN IMIN NDEG        8    2.22559D+00       9   1
-IELMNT XMIN IMIN NDEG        9    2.48708D+00     762   1
+IELMNT XMIN IMIN NDEG        9    2.48708D+00     805   1
   NUMBER OF ELEMENTS OBTAINED IN FNDMN3            8
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
-     1 :     17     18    761    751     19     13     20      9
-  MIN AND MAX IN SELECTED SUPSPACE   0.84188843220943110        2.2255921461201988     
+     1 :     17     18    761    751     13     19     20      9
+  MIN AND MAX IN SELECTED SUPSPACE   0.84188843221000487        2.2255921461206007     
 Try to use right eigenvector as start for a left eigenvector.
  Vector nr.  1 of symmetry  2 found on file - RESTART SUCCESS
  Start vector is a  CCSD      RE vector
@@ -3045,16 +3078,16 @@ Try to use right eigenvector as start for a left eigenvector.
     Iter  #Vectors  time (min)   residual
     --------------------------------------
   
- Time used in CC_LHTR :  5.99801540374755859E-003
+ Time used in CC_LHTR :  5.99992275238037109E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
@@ -3085,22 +3118,22 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99801540374755859E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
+  
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99801540374755859E-003
   
   
- Time used in CC_LHTR :  5.99992275238037109E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3128,22 +3161,22 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
  Time used in CC_LHTR :  5.99896907806396484E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
-  
-  
- Time used in CC_LHTR :  7.99798965454101563E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  6.99901580810546875E-003
+  
+  
+ Time used in CC_LHTR :  5.99896907806396484E-003
+  
+  
+ Time used in CC_LHTR :  5.99896907806396484E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3171,22 +3204,22 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  6.00004196166992188E-003
-  
-  
- Time used in CC_LHTR :  5.99992275238037109E-003
+ Time used in CC_LHTR :  5.99801540374755859E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
   
   
+ Time used in CC_LHTR :  6.00004196166992188E-003
+  
+  
  Time used in CC_LHTR :  5.99801540374755859E-003
   
   
- Time used in CC_LHTR :  7.00008869171142578E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3217,13 +3250,13 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
@@ -3260,19 +3293,19 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  4.99999523162841797E-003
-  
-  
- Time used in CC_LHTR :  5.99801540374755859E-003
-  
-  
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
+  
+  
+ Time used in CC_LHTR :  5.99896907806396484E-003
+  
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3284,7 +3317,7 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 7.99496D-05
+ ROOT:  1 RESIDUAL TOT: 7.99495D-05
  ROOT:  2 RESIDUAL TOT: 7.45931D-04
  ROOT:  3 RESIDUAL TOT: 2.22059D-03
  ROOT:  4 RESIDUAL TOT: 3.78176D-03
@@ -3300,10 +3333,13 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    35
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99896907806396484E-003
+  
+  
+ Time used in CC_LHTR :  5.99896907806396484E-003
   
   
  Time used in CC_LHTR :  6.99901580810546875E-003
@@ -3312,10 +3348,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in CC_LHTR :  6.99901580810546875E-003
   
   
- Time used in CC_LHTR :  6.99901580810546875E-003
-  
-  
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  5.99789619445800781E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3327,7 +3360,7 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 1.33596D-05
+ ROOT:  1 RESIDUAL TOT: 1.33594D-05
  ROOT:  2 RESIDUAL TOT: 2.63176D-04
  ROOT:  3 RESIDUAL TOT: 8.99832D-04
  ROOT:  4 RESIDUAL TOT: 2.22277D-03
@@ -3343,22 +3376,22 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.05
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  4.99892234802246094E-003
-  
-  
  Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
- Time used in CC_LHTR :  5.99992275238037109E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
   
   
- Time used in CC_LHTR :  5.99801540374755859E-003
+ Time used in CC_LHTR :  5.99896907806396484E-003
+  
+  
+ Time used in CC_LHTR :  6.99901580810546875E-003
+  
+  
+ Time used in CC_LHTR :  5.99896907806396484E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3370,10 +3403,10 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 2.05016D-06
+ ROOT:  1 RESIDUAL TOT: 2.04948D-06
  ROOT:  2 RESIDUAL TOT: 1.18708D-04
  ROOT:  3 RESIDUAL TOT: 3.00407D-04
- ROOT:  4 RESIDUAL TOT: 9.74295D-04
+ ROOT:  4 RESIDUAL TOT: 9.74294D-04
  ROOT:  5 RESIDUAL TOT: 5.00302D-04
       8       5         0.00     0.97E-03
 
@@ -3389,16 +3422,16 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99992275238037109E-003
+  
+  
+ Time used in CC_LHTR :  6.99806213378906250E-003
+  
+  
+ Time used in CC_LHTR :  5.99992275238037109E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
-  
-  
- Time used in CC_LHTR :  5.99801540374755859E-003
-  
-  
- Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
@@ -3413,10 +3446,10 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 2.97989D-07
- ROOT:  2 RESIDUAL TOT: 6.25226D-05
+ ROOT:  1 RESIDUAL TOT: 2.98230D-07
+ ROOT:  2 RESIDUAL TOT: 6.25225D-05
  ROOT:  3 RESIDUAL TOT: 8.96999D-05
- ROOT:  4 RESIDUAL TOT: 6.14730D-04
+ ROOT:  4 RESIDUAL TOT: 6.14729D-04
  ROOT:  5 RESIDUAL TOT: 1.57328D-04
       9       5         0.00     0.61E-03
 
@@ -3429,8 +3462,14 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    50
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
+  
+ Time used in CC_LHTR :  5.99992275238037109E-003
+  
+  
+ Time used in CC_LHTR :  7.99798965454101563E-003
+  
   
  Time used in CC_LHTR :  6.00004196166992188E-003
   
@@ -3439,12 +3478,6 @@ Try to use right eigenvector as start for a left eigenvector.
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
-  
-  
- Time used in CC_LHTR :  5.99896907806396484E-003
-  
-  
- Time used in CC_LHTR :  5.99992275238037109E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3456,7 +3489,7 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 5.08764D-08
+ ROOT:  1 RESIDUAL TOT: 5.13651D-08
  ROOT:  2 RESIDUAL TOT: 1.68414D-05
  ROOT:  3 RESIDUAL TOT: 3.32557D-05
  ROOT:  4 RESIDUAL TOT: 2.28700D-04
@@ -3475,16 +3508,16 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
  Time used in CC_LHTR :  6.00004196166992188E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.99806213378906250E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
@@ -3499,11 +3532,11 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 9.13031D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13031D-09
- ROOT:  2 RESIDUAL TOT: 4.46286D-06
+ ROOT:  1 RESIDUAL TOT: 9.01395D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.01395D-09
+ ROOT:  2 RESIDUAL TOT: 4.46274D-06
  ROOT:  3 RESIDUAL TOT: 1.73122D-05
- ROOT:  4 RESIDUAL TOT: 7.71891D-05
+ ROOT:  4 RESIDUAL TOT: 7.71869D-05
  ROOT:  5 RESIDUAL TOT: 2.82472D-05
      11       5         0.00     0.77E-04
 
@@ -3519,16 +3552,16 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  4.99999523162841797E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.99794292449951172E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3540,12 +3573,12 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 9.19111D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.19111D-09
- ROOT:  2 RESIDUAL TOT: 1.20067D-06
- ROOT:  3 RESIDUAL TOT: 5.09661D-06
- ROOT:  4 RESIDUAL TOT: 2.75712D-05
- ROOT:  5 RESIDUAL TOT: 8.11345D-06
+ ROOT:  1 RESIDUAL TOT: 8.88506D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.88506D-09
+ ROOT:  2 RESIDUAL TOT: 1.20058D-06
+ ROOT:  3 RESIDUAL TOT: 5.09660D-06
+ ROOT:  4 RESIDUAL TOT: 2.75703D-05
+ ROOT:  5 RESIDUAL TOT: 8.11346D-06
      12       4         0.00     0.28E-04
 
  Lowest eigenvalues in this iteration: 
@@ -3560,16 +3593,16 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  4.99904155731201172E-003
+ Time used in CC_LHTR :  4.99916076660156250E-003
+  
+  
+ Time used in CC_LHTR :  5.99884986877441406E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
-  
-  
- Time used in CC_LHTR :  5.99896907806396484E-003
-  
-  
- Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3581,12 +3614,12 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 8.66876D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.66876D-09
- ROOT:  2 RESIDUAL TOT: 2.54471D-07
- ROOT:  3 RESIDUAL TOT: 1.60248D-06
- ROOT:  4 RESIDUAL TOT: 8.25883D-06
- ROOT:  5 RESIDUAL TOT: 2.19401D-06
+ ROOT:  1 RESIDUAL TOT: 8.58089D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.58089D-09
+ ROOT:  2 RESIDUAL TOT: 2.54477D-07
+ ROOT:  3 RESIDUAL TOT: 1.60253D-06
+ ROOT:  4 RESIDUAL TOT: 8.25884D-06
+ ROOT:  5 RESIDUAL TOT: 2.19402D-06
      13       4         0.00     0.83E-05
 
  Lowest eigenvalues in this iteration: 
@@ -3601,16 +3634,16 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3622,12 +3655,12 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 8.26098D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.26098D-09
- ROOT:  2 RESIDUAL TOT: 7.95407D-08
- ROOT:  3 RESIDUAL TOT: 6.81907D-07
- ROOT:  4 RESIDUAL TOT: 2.73539D-06
- ROOT:  5 RESIDUAL TOT: 1.19886D-06
+ ROOT:  1 RESIDUAL TOT: 8.37437D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.37437D-09
+ ROOT:  2 RESIDUAL TOT: 7.95168D-08
+ ROOT:  3 RESIDUAL TOT: 6.81927D-07
+ ROOT:  4 RESIDUAL TOT: 2.73541D-06
+ ROOT:  5 RESIDUAL TOT: 1.19887D-06
      14       4         0.00     0.27E-05
 
  Lowest eigenvalues in this iteration: 
@@ -3642,13 +3675,13 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99789619445800781E-003
-  
-  
  Time used in CC_LHTR :  6.00004196166992188E-003
   
   
- Time used in CC_LHTR :  5.99801540374755859E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
+  
+  
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
   
  Time used in CC_LHTR :  5.99896907806396484E-003
@@ -3663,12 +3696,12 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 8.49699D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.49699D-09
- ROOT:  2 RESIDUAL TOT: 2.64137D-08
- ROOT:  3 RESIDUAL TOT: 2.87959D-07
- ROOT:  4 RESIDUAL TOT: 1.07319D-06
- ROOT:  5 RESIDUAL TOT: 6.23337D-07
+ ROOT:  1 RESIDUAL TOT: 7.94212D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.94212D-09
+ ROOT:  2 RESIDUAL TOT: 2.64272D-08
+ ROOT:  3 RESIDUAL TOT: 2.87947D-07
+ ROOT:  4 RESIDUAL TOT: 1.07316D-06
+ ROOT:  5 RESIDUAL TOT: 6.23351D-07
      15       4         0.00     0.11E-05
 
  Lowest eigenvalues in this iteration: 
@@ -3683,16 +3716,16 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99789619445800781E-003
+ Time used in CC_LHTR :  5.99992275238037109E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.99794292449951172E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99992275238037109E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3704,13 +3737,13 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 7.49574D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.49574D-09
- ROOT:  2 RESIDUAL TOT: 5.56501D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.56501D-09
- ROOT:  3 RESIDUAL TOT: 1.05280D-07
- ROOT:  4 RESIDUAL TOT: 2.79610D-07
- ROOT:  5 RESIDUAL TOT: 2.88074D-07
+ ROOT:  1 RESIDUAL TOT: 7.78291D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.78291D-09
+ ROOT:  2 RESIDUAL TOT: 5.55668D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.55668D-09
+ ROOT:  3 RESIDUAL TOT: 1.05234D-07
+ ROOT:  4 RESIDUAL TOT: 2.79612D-07
+ ROOT:  5 RESIDUAL TOT: 2.88071D-07
      16       4         0.00     0.29E-06
 
  Lowest eigenvalues in this iteration: 
@@ -3725,13 +3758,13 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
   
- Time used in CC_LHTR :  6.99996948242187500E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3743,13 +3776,13 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 7.86718D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.86718D-09
- ROOT:  2 RESIDUAL TOT: 2.16993D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.16993D-09
- ROOT:  3 RESIDUAL TOT: 2.90696D-08
- ROOT:  4 RESIDUAL TOT: 9.75190D-08
- ROOT:  5 RESIDUAL TOT: 1.26871D-07
+ ROOT:  1 RESIDUAL TOT: 7.76751D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.76751D-09
+ ROOT:  2 RESIDUAL TOT: 2.11003D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 2.11003D-09
+ ROOT:  3 RESIDUAL TOT: 2.91259D-08
+ ROOT:  4 RESIDUAL TOT: 9.75061D-08
+ ROOT:  5 RESIDUAL TOT: 1.26861D-07
      17       3         0.00     0.13E-06
 
  Lowest eigenvalues in this iteration: 
@@ -3764,13 +3797,13 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  5.99789619445800781E-003
   
   
- Time used in CC_LHTR :  5.99896907806396484E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3782,14 +3815,14 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 8.41106D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.41106D-09
- ROOT:  2 RESIDUAL TOT: 1.56842D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.56842D-09
- ROOT:  3 RESIDUAL TOT: 7.53079D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.53079D-09
- ROOT:  4 RESIDUAL TOT: 3.85419D-08
- ROOT:  5 RESIDUAL TOT: 5.55169D-08
+ ROOT:  1 RESIDUAL TOT: 8.67635D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.67635D-09
+ ROOT:  2 RESIDUAL TOT: 1.57922D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.57922D-09
+ ROOT:  3 RESIDUAL TOT: 7.53138D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.53138D-09
+ ROOT:  4 RESIDUAL TOT: 3.85371D-08
+ ROOT:  5 RESIDUAL TOT: 5.55095D-08
      18       3         0.00     0.56E-07
 
  Lowest eigenvalues in this iteration: 
@@ -3801,13 +3834,13 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
  Dimension of the reduced space:    83
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
   
- Time used in CC_LHTR :  4.99904155731201172E-003
+ Time used in CC_LHTR :  5.99896907806396484E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3819,14 +3852,14 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 7.98397D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.98397D-09
- ROOT:  2 RESIDUAL TOT: 1.48084D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.48084D-09
- ROOT:  3 RESIDUAL TOT: 7.52495D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.52495D-09
- ROOT:  4 RESIDUAL TOT: 1.11385D-08
- ROOT:  5 RESIDUAL TOT: 1.87475D-08
+ ROOT:  1 RESIDUAL TOT: 7.64102D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.64102D-09
+ ROOT:  2 RESIDUAL TOT: 1.46297D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.46297D-09
+ ROOT:  3 RESIDUAL TOT: 7.52093D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.52093D-09
+ ROOT:  4 RESIDUAL TOT: 1.11407D-08
+ ROOT:  5 RESIDUAL TOT: 1.86997D-08
      19       2         0.00     0.19E-07
 
  Lowest eigenvalues in this iteration: 
@@ -3841,10 +3874,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99896907806396484E-003
   
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  REDUCED EIGENVALUES real part:
@@ -3856,17 +3889,17 @@ Try to use right eigenvector as start for a left eigenvector.
        4      1.37008116
        5      1.49305406
   
- ROOT:  1 RESIDUAL TOT: 8.44764D-09
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.44764D-09
- ROOT:  2 RESIDUAL TOT: 1.44929D-09
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.44929D-09
- ROOT:  3 RESIDUAL TOT: 7.51665D-09
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.51665D-09
- ROOT:  4 RESIDUAL TOT: 3.76199D-09
- ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 3.76199D-09
- ROOT:  5 RESIDUAL TOT: 3.92984D-09
- ROOT:  5 HAS CONVERGED. RESIDUAL TOT: 3.92984D-09
-     20       2         0.00     0.84E-08
+ ROOT:  1 RESIDUAL TOT: 7.84670D-09
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.84670D-09
+ ROOT:  2 RESIDUAL TOT: 1.48520D-09
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.48520D-09
+ ROOT:  3 RESIDUAL TOT: 7.53376D-09
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.53376D-09
+ ROOT:  4 RESIDUAL TOT: 3.75945D-09
+ ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 3.75945D-09
+ ROOT:  5 RESIDUAL TOT: 3.93936D-09
+ ROOT:  5 HAS CONVERGED. RESIDUAL TOT: 3.93936D-09
+     20       2         0.00     0.78E-08
 
  Lowest eigenvalues in this iteration: 
 
@@ -3894,7 +3927,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.66 seconds
- >>>> Total wall time used in CCEQ_SOLV:   4.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   5.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3922,21 +3955,21 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Excitation no.       Hartree               eV 
  --------------       -------               --
-         1            0.3998621848       10.8808032337
-         2            1.0896931647       29.6520585332
-         3            1.3282159986       36.1425948271
-         4            1.3700811569       37.2818037023
-         5            1.4930540573       40.6280664463
+         1            0.3998621848       10.8808035425
+         2            1.0896931647       29.6520593746
+         3            1.3282159986       36.1425958527
+         4            1.3700811569       37.2818047603
+         5            1.4930540573       40.6280675992
 
 
  Total excited state energies for states of symmetry/spin    2    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    2    1           -99.797928721990402
-@@    2    2           -99.108097742159075
-@@    2    3           -98.869574908188099
-@@    2    4           -98.827709749885955
-@@    2    5           -98.704736849531031
+@@    2    1           -99.797928721991354
+@@    2    2           -99.108097742160197
+@@    2    3           -98.869574908188739
+@@    2    4           -98.827709749886466
+@@    2    5           -98.704736849532196
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -4223,7 +4256,7 @@ Try to use right eigenvector as start for a left eigenvector.
 +======================================================================+
 |    2|   1   |   1   |   10.88080 |  96.0302  |   3.9698  |   0.0000  |
 |    2|   1   |   2   |   29.65206 |  94.9122  |   5.0878  |   0.0000  |
-|    2|   1   |   3   |   36.14259 |   0.3455  |  99.6545  |   0.0000  |
+|    2|   1   |   3   |   36.14260 |   0.3455  |  99.6545  |   0.0000  |
 |    2|   1   |   4   |   37.28180 |   2.3998  |  97.6002  |   0.0000  |
 |    2|   1   |   5   |   40.62807 |  98.5800  |   1.4200  |   0.0000  |
 +======================================================================+
@@ -4240,7 +4273,7 @@ Try to use right eigenvector as start for a left eigenvector.
 +======================================================================+
 |    2|   1   |   1   |   10.88080 |  94.8519  |   5.1481  |   0.0000  |
 |    2|   1   |   2   |   29.65206 |  93.5052  |   6.4948  |   0.0000  |
-|    2|   1   |   3   |   36.14259 |   0.2213  |  99.7787  |   0.0000  |
+|    2|   1   |   3   |   36.14260 |   0.2213  |  99.7787  |   0.0000  |
 |    2|   1   |   4   |   37.28180 |   2.1971  |  97.8029  |   0.0000  |
 |    2|   1   |   5   |   40.62807 |  98.2769  |   1.7231  |   0.0000  |
 +======================================================================+
@@ -4262,7 +4295,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Ground state energy is target 
 
- Ecorr =                   -100.19779090682254718558
+ Ecorr =                   -100.19779090682398248191
 
  *******************************************************************
      
@@ -4511,7 +4544,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4612,7 +4645,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4626,7 +4659,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4741,7 +4774,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4755,7 +4788,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4802,7 +4835,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4856,21 +4889,21 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -4938,7 +4971,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -5089,7 +5122,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 1.13284D-09
+ ROOT:  1 RESIDUAL TOT: 1.13283D-09
  ROOT:  2 RESIDUAL TOT: 4.86869D-09
  ROOT:  3 RESIDUAL TOT: 5.35323D-09
  ROOT:  4 RESIDUAL TOT: 6.62122D-04
@@ -5100,7 +5133,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -5150,10 +5183,10 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.32136D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.32136D-11
- ROOT:  2 RESIDUAL TOT: 5.81130D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.81130D-10
+ ROOT:  1 RESIDUAL TOT: 9.32138D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.32138D-11
+ ROOT:  2 RESIDUAL TOT: 5.81129D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.81129D-10
  ROOT:  3 RESIDUAL TOT: 6.48657D-10
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.48657D-10
  ROOT:  4 RESIDUAL TOT: 3.27043D-04
@@ -5193,8 +5226,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.31427D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.31427D-11
+ ROOT:  1 RESIDUAL TOT: 9.31429D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.31429D-11
  ROOT:  2 RESIDUAL TOT: 5.87035D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.87035D-10
  ROOT:  3 RESIDUAL TOT: 6.52858D-10
@@ -5207,7 +5240,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -5236,8 +5269,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.40858D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.40858D-11
+ ROOT:  1 RESIDUAL TOT: 9.40859D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.40859D-11
  ROOT:  2 RESIDUAL TOT: 5.47888D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.47888D-10
  ROOT:  3 RESIDUAL TOT: 6.06376D-10
@@ -5250,7 +5283,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -5279,8 +5312,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.27925D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.27925D-11
+ ROOT:  1 RESIDUAL TOT: 9.27927D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.27927D-11
  ROOT:  2 RESIDUAL TOT: 5.45271D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.45271D-10
  ROOT:  3 RESIDUAL TOT: 6.03349D-10
@@ -5322,13 +5355,13 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.25445D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.25445D-11
+ ROOT:  1 RESIDUAL TOT: 9.25447D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.25447D-11
  ROOT:  2 RESIDUAL TOT: 5.47561D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.47561D-10
  ROOT:  3 RESIDUAL TOT: 6.07158D-10
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.07158D-10
- ROOT:  4 RESIDUAL TOT: 8.62703D-06
+ ROOT:  4 RESIDUAL TOT: 8.62702D-06
      15       1         0.00     0.86E-05
  Dimension of the reduced space:    49
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -5365,8 +5398,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.28279D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28279D-11
+ ROOT:  1 RESIDUAL TOT: 9.28281D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28281D-11
  ROOT:  2 RESIDUAL TOT: 5.41596D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.41596D-10
  ROOT:  3 RESIDUAL TOT: 5.99591D-10
@@ -5379,7 +5412,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -5408,8 +5441,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.28913D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28913D-11
+ ROOT:  1 RESIDUAL TOT: 9.28915D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28915D-11
  ROOT:  2 RESIDUAL TOT: 5.36854D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.36854D-10
  ROOT:  3 RESIDUAL TOT: 5.93007D-10
@@ -5451,8 +5484,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.11632D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11632D-11
+ ROOT:  1 RESIDUAL TOT: 9.11634D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11634D-11
  ROOT:  2 RESIDUAL TOT: 5.44248D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.44248D-10
  ROOT:  3 RESIDUAL TOT: 6.01415D-10
@@ -5494,8 +5527,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.11517D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11517D-11
+ ROOT:  1 RESIDUAL TOT: 9.11520D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11520D-11
  ROOT:  2 RESIDUAL TOT: 5.29542D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.29542D-10
  ROOT:  3 RESIDUAL TOT: 5.84887D-10
@@ -5537,8 +5570,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.10623D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10623D-11
+ ROOT:  1 RESIDUAL TOT: 9.10626D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10626D-11
  ROOT:  2 RESIDUAL TOT: 5.28924D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.28924D-10
  ROOT:  3 RESIDUAL TOT: 5.84605D-10
@@ -5580,8 +5613,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.10505D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10505D-11
+ ROOT:  1 RESIDUAL TOT: 9.10508D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10508D-11
  ROOT:  2 RESIDUAL TOT: 5.28560D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.28560D-10
  ROOT:  3 RESIDUAL TOT: 5.84311D-10
@@ -5589,7 +5622,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  4 RESIDUAL TOT: 5.99847D-08
      21       1         0.00     0.60E-07
  Dimension of the reduced space:    55
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
 
 
@@ -5623,8 +5656,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.10268D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10268D-11
+ ROOT:  1 RESIDUAL TOT: 9.10271D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10271D-11
  ROOT:  2 RESIDUAL TOT: 5.27999D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.27999D-10
  ROOT:  3 RESIDUAL TOT: 5.83697D-10
@@ -5666,8 +5699,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.13948D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13948D-11
+ ROOT:  1 RESIDUAL TOT: 9.13950D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13950D-11
  ROOT:  2 RESIDUAL TOT: 5.29030D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.29030D-10
  ROOT:  3 RESIDUAL TOT: 5.84555D-10
@@ -5675,49 +5708,6 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  4 RESIDUAL TOT: 5.93451D-09
      23       1         0.00     0.59E-08
  Dimension of the reduced space:    57
- >>> TIME USED IN THIS MICRO ITERATION        0.01
-
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
- Finding gradient for 
- Frequency -1.318216 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency  0.010000 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency -1.318216 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency  0.010000 and label: XDIPLEN  and symmetry:   1
-
- Finding gradient for 
- Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
-  
- ROOT:  1 RESIDUAL TOT: 9.04474D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.04474D-11
- ROOT:  2 RESIDUAL TOT: 5.29227D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.29227D-10
- ROOT:  3 RESIDUAL TOT: 5.85354D-10
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.85354D-10
- ROOT:  4 RESIDUAL TOT: 1.49981D-09
-     24       1         0.00     0.15E-08
- Dimension of the reduced space:    58
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
@@ -5752,8 +5742,51 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 9.03606D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.03606D-11
+ ROOT:  1 RESIDUAL TOT: 9.04477D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.04477D-11
+ ROOT:  2 RESIDUAL TOT: 5.29227D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.29227D-10
+ ROOT:  3 RESIDUAL TOT: 5.85354D-10
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.85354D-10
+ ROOT:  4 RESIDUAL TOT: 1.49981D-09
+     24       1         0.00     0.15E-08
+ Dimension of the reduced space:    58
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ Finding gradient for 
+ Frequency -1.318216 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.010000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency -1.318216 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  0.010000 and label: XDIPLEN  and symmetry:   1
+
+ Finding gradient for 
+ Frequency  1.318216 and label: XDIPLEN  and symmetry:   1
+  
+ ROOT:  1 RESIDUAL TOT: 9.03609D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.03609D-11
  ROOT:  2 RESIDUAL TOT: 5.23393D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.23393D-10
  ROOT:  3 RESIDUAL TOT: 5.78084D-10
@@ -5779,7 +5812,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.61 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6089,7 +6122,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6131,7 +6164,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  4 RESIDUAL TOT: 5.84392D-01
       1       4         0.00     0.58E+00
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
 
@@ -6143,7 +6176,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6192,7 +6225,7 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  4 RESIDUAL TOT: 1.48855D-01
       2       4         0.00     0.15E+00
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
 
 
@@ -6258,28 +6291,28 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6319,7 +6352,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6333,7 +6366,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6387,6 +6420,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -6394,14 +6434,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6441,28 +6474,28 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6502,13 +6535,6 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -6517,6 +6543,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
  Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6624,7 +6657,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6638,14 +6671,14 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -6674,7 +6707,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 1.13284D-09
+ ROOT:  1 RESIDUAL TOT: 1.13283D-09
  ROOT:  2 RESIDUAL TOT: 4.86869D-09
  ROOT:  3 RESIDUAL TOT: 5.35323D-09
  ROOT:  4 RESIDUAL TOT: 6.62122D-04
@@ -6685,6 +6718,13 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
@@ -6704,13 +6744,6 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
 
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
  Finding gradient for 
  Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
 
@@ -6735,8 +6768,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.32133D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.32133D-11
+ ROOT:  1 RESIDUAL TOT: 9.32130D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.32130D-11
  ROOT:  2 RESIDUAL TOT: 5.81129D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.81129D-10
  ROOT:  3 RESIDUAL TOT: 6.48657D-10
@@ -6778,8 +6811,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.31423D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.31423D-11
+ ROOT:  1 RESIDUAL TOT: 9.31420D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.31420D-11
  ROOT:  2 RESIDUAL TOT: 5.87035D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.87035D-10
  ROOT:  3 RESIDUAL TOT: 6.52858D-10
@@ -6821,8 +6854,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.40854D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.40854D-11
+ ROOT:  1 RESIDUAL TOT: 9.40850D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.40850D-11
  ROOT:  2 RESIDUAL TOT: 5.47888D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.47888D-10
  ROOT:  3 RESIDUAL TOT: 6.06376D-10
@@ -6864,8 +6897,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.27919D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.27919D-11
+ ROOT:  1 RESIDUAL TOT: 9.27916D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.27916D-11
  ROOT:  2 RESIDUAL TOT: 5.45271D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.45271D-10
  ROOT:  3 RESIDUAL TOT: 6.03349D-10
@@ -6907,58 +6940,15 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.25439D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.25439D-11
+ ROOT:  1 RESIDUAL TOT: 9.25436D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.25436D-11
  ROOT:  2 RESIDUAL TOT: 5.47561D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.47561D-10
  ROOT:  3 RESIDUAL TOT: 6.07158D-10
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.07158D-10
- ROOT:  4 RESIDUAL TOT: 8.62703D-06
+ ROOT:  4 RESIDUAL TOT: 8.62702D-06
      15       1         0.00     0.86E-05
  Dimension of the reduced space:    49
- >>> TIME USED IN THIS MICRO ITERATION        0.01
-
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
- Finding gradient for 
- Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
-  
- ROOT:  1 RESIDUAL TOT: 9.28274D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28274D-11
- ROOT:  2 RESIDUAL TOT: 5.41596D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.41596D-10
- ROOT:  3 RESIDUAL TOT: 5.99591D-10
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.99591D-10
- ROOT:  4 RESIDUAL TOT: 3.42784D-06
-     16       1         0.00     0.34E-05
- Dimension of the reduced space:    50
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
@@ -6993,8 +6983,51 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.28908D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28908D-11
+ ROOT:  1 RESIDUAL TOT: 9.28271D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28271D-11
+ ROOT:  2 RESIDUAL TOT: 5.41596D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.41596D-10
+ ROOT:  3 RESIDUAL TOT: 5.99591D-10
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.99591D-10
+ ROOT:  4 RESIDUAL TOT: 3.42784D-06
+     16       1         0.00     0.34E-05
+ Dimension of the reduced space:    50
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ Finding gradient for 
+ Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 9.28904D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.28904D-11
  ROOT:  2 RESIDUAL TOT: 5.36854D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.36854D-10
  ROOT:  3 RESIDUAL TOT: 5.93007D-10
@@ -7036,13 +7069,13 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.11627D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11627D-11
+ ROOT:  1 RESIDUAL TOT: 9.11624D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11624D-11
  ROOT:  2 RESIDUAL TOT: 5.44248D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.44248D-10
  ROOT:  3 RESIDUAL TOT: 6.01415D-10
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 6.01415D-10
- ROOT:  4 RESIDUAL TOT: 3.38767D-07
+ ROOT:  4 RESIDUAL TOT: 3.38766D-07
      18       1         0.00     0.34E-06
  Dimension of the reduced space:    52
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -7050,7 +7083,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
@@ -7079,8 +7112,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.11512D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11512D-11
+ ROOT:  1 RESIDUAL TOT: 9.11509D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.11509D-11
  ROOT:  2 RESIDUAL TOT: 5.29507D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.29507D-10
  ROOT:  3 RESIDUAL TOT: 5.84850D-10
@@ -7122,8 +7155,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.10291D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10291D-11
+ ROOT:  1 RESIDUAL TOT: 9.10288D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10288D-11
  ROOT:  2 RESIDUAL TOT: 5.28999D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.28999D-10
  ROOT:  3 RESIDUAL TOT: 5.84752D-10
@@ -7165,58 +7198,15 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.10062D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10062D-11
+ ROOT:  1 RESIDUAL TOT: 9.10058D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.10058D-11
  ROOT:  2 RESIDUAL TOT: 5.27809D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.27809D-10
  ROOT:  3 RESIDUAL TOT: 5.83480D-10
  ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.83480D-10
- ROOT:  4 RESIDUAL TOT: 9.38124D-09
+ ROOT:  4 RESIDUAL TOT: 9.38123D-09
      21       1         0.00     0.94E-08
  Dimension of the reduced space:    55
- >>> TIME USED IN THIS MICRO ITERATION        0.01
-
-
-
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-
- Finding gradient for 
- Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
-
- Finding gradient for 
- Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
-  
- ROOT:  1 RESIDUAL TOT: 9.13360D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13360D-11
- ROOT:  2 RESIDUAL TOT: 5.27727D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.27727D-10
- ROOT:  3 RESIDUAL TOT: 5.83157D-10
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.83157D-10
- ROOT:  4 RESIDUAL TOT: 3.28836D-09
-     22       1         0.00     0.33E-08
- Dimension of the reduced space:    56
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
@@ -7251,8 +7241,51 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 9.05873D-11
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.05873D-11
+ ROOT:  1 RESIDUAL TOT: 9.13357D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.13357D-11
+ ROOT:  2 RESIDUAL TOT: 5.27727D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.27727D-10
+ ROOT:  3 RESIDUAL TOT: 5.83157D-10
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 5.83157D-10
+ ROOT:  4 RESIDUAL TOT: 3.28836D-09
+     22       1         0.00     0.33E-08
+ Dimension of the reduced space:    56
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
+
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.00 seconds
+  
+
+ Finding gradient for 
+ Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency -1.318216 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  0.010000 and label: YDIPLEN  and symmetry:   2
+
+ Finding gradient for 
+ Frequency  1.318216 and label: YDIPLEN  and symmetry:   2
+  
+ ROOT:  1 RESIDUAL TOT: 9.05870D-11
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.05870D-11
  ROOT:  2 RESIDUAL TOT: 5.30661D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.30661D-10
  ROOT:  3 RESIDUAL TOT: 5.86949D-10
@@ -7277,7 +7310,7 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.50 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.52 seconds
  >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
@@ -7554,8 +7587,8 @@ Try to use right eigenvector as start for a left eigenvector.
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
  | time for  1 sets of left interm.:      0.00 secs.|
- | time for  8 sets of right inter.:      0.02 secs.|
- | time for  8 sets of 2. ord. int.:      0.02 secs.|
+ | time for  8 sets of right inter.:      0.01 secs.|
+ | time for  8 sets of 2. ord. int.:      0.03 secs.|
  | intermediates calculated in   1 batches          |
  +--------------------------------------------------+
  | L vector | R vector |    result    |             |
@@ -7570,7 +7603,7 @@ Try to use right eigenvector as start for a left eigenvector.
  |     0    |     7    |      7       |       0.00  |
  |     0    |     8    |      8       |       0.00  |
  +--------------------------------------------------+
- | total time for   8 F transforms.:      0.06 secs.|
+ | total time for   8 F transforms.:      0.07 secs.|
  +==================================================+
 
 
@@ -7620,10 +7653,10 @@ Try to use right eigenvector as start for a left eigenvector.
     Iter  #Vectors  time (min)   residual
     --------------------------------------
   
- Time used in CC_LHTR :  8.00013542175292969E-003
+ Time used in CC_LHTR :  7.99894332885742188E-003
   
   
- Time used in CC_LHTR :  6.99806213378906250E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -7648,7 +7681,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in CC_LHTR :  6.99901580810546875E-003
   
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99806213378906250E-003
   
 
  Finding gradient for 
@@ -7670,10 +7703,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  6.99782371520996094E-003
   
 
  Finding gradient for 
@@ -7695,10 +7728,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99782371520996094E-003
   
   
- Time used in CC_LHTR :  6.99806213378906250E-003
+ Time used in CC_LHTR :  7.00020790100097656E-003
   
 
  Finding gradient for 
@@ -7720,10 +7753,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
+ Time used in CC_LHTR :  6.99806213378906250E-003
+  
+  
  Time used in CC_LHTR :  6.99901580810546875E-003
-  
-  
- Time used in CC_LHTR :  7.99918174743652344E-003
   
 
  Finding gradient for 
@@ -7745,10 +7778,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
+ Time used in CC_LHTR :  7.99894332885742188E-003
+  
+  
  Time used in CC_LHTR :  7.99798965454101563E-003
-  
-  
- Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -7773,7 +7806,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in CC_LHTR :  6.99901580810546875E-003
   
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99806213378906250E-003
   
 
  Finding gradient for 
@@ -7795,10 +7828,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  8.99887084960937500E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
   
- Time used in CC_LHTR :  8.99910926818847656E-003
+ Time used in CC_LHTR :  7.99798965454101563E-003
   
 
  Finding gradient for 
@@ -7820,10 +7853,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
+ Time used in CC_LHTR :  8.00013542175292969E-003
+  
+  
  Time used in CC_LHTR :  7.99798965454101563E-003
-  
-  
- Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -7845,10 +7878,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  6.99782371520996094E-003
+ Time used in CC_LHTR :  7.99989700317382813E-003
   
   
- Time used in CC_LHTR :  9.00006294250488281E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -7870,10 +7903,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
   
- Time used in CC_LHTR :  7.99798965454101563E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -7895,10 +7928,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
+ Time used in CC_LHTR :  7.99894332885742188E-003
+  
+  
  Time used in CC_LHTR :  6.99901580810546875E-003
-  
-  
- Time used in CC_LHTR :  6.99806213378906250E-003
   
 
  Finding gradient for 
@@ -7921,7 +7954,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99782371520996094E-003
   
 
  Finding gradient for 
@@ -7944,7 +7977,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99996948242187500E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -7990,7 +8023,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99918174743652344E-003
+ Time used in CC_LHTR :  7.99798965454101563E-003
   
 
  Finding gradient for 
@@ -8006,14 +8039,14 @@ Try to use right eigenvector as start for a left eigenvector.
  Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
   
  ROOT:  1 RESIDUAL TOT: 3.53388D-04
- ROOT:  2 RESIDUAL TOT: 9.47723D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.47723D-10
+ ROOT:  2 RESIDUAL TOT: 9.47722D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.47722D-10
      16       1         0.00     0.35E-03
  Dimension of the reduced space:    29
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99918174743652344E-003
+ Time used in CC_LHTR :  7.99894332885742188E-003
   
 
  Finding gradient for 
@@ -8036,7 +8069,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  7.99798965454101563E-003
   
 
  Finding gradient for 
@@ -8082,7 +8115,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  7.99894332885742188E-003
   
 
  Finding gradient for 
@@ -8097,7 +8130,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 6.19442D-06
+ ROOT:  1 RESIDUAL TOT: 6.19443D-06
  ROOT:  2 RESIDUAL TOT: 9.16595D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.16595D-10
      20       1         0.00     0.62E-05
@@ -8120,7 +8153,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 1.91515D-06
+ ROOT:  1 RESIDUAL TOT: 1.91517D-06
  ROOT:  2 RESIDUAL TOT: 9.22312D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.22312D-10
      21       1         0.00     0.19E-05
@@ -8128,7 +8161,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -8143,15 +8176,15 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 5.55207D-07
- ROOT:  2 RESIDUAL TOT: 9.12601D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.12601D-10
+ ROOT:  1 RESIDUAL TOT: 5.55465D-07
+ ROOT:  2 RESIDUAL TOT: 9.12600D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.12600D-10
      22       1         0.00     0.56E-06
  Dimension of the reduced space:    35
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  7.99918174743652344E-003
   
 
  Finding gradient for 
@@ -8166,15 +8199,15 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 5.64527D-06
- ROOT:  2 RESIDUAL TOT: 9.08437D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.08437D-10
-     23       1         0.00     0.56E-05
+ ROOT:  1 RESIDUAL TOT: 5.81459D-06
+ ROOT:  2 RESIDUAL TOT: 9.08419D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.08419D-10
+     23       1         0.00     0.58E-05
  Dimension of the reduced space:    36
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  8.99791717529296875E-003
   
 
  Finding gradient for 
@@ -8189,15 +8222,15 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency -0.010000 and label: XDIPLEN  and symmetry:   1
   
- ROOT:  1 RESIDUAL TOT: 3.71823D-07
- ROOT:  2 RESIDUAL TOT: 9.20470D-10
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.20470D-10
+ ROOT:  1 RESIDUAL TOT: 3.71761D-07
+ ROOT:  2 RESIDUAL TOT: 9.20485D-10
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.20485D-10
      24       1         0.00     0.37E-06
  Dimension of the reduced space:    37
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -8220,7 +8253,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  7.99918174743652344E-003
   
 
  Finding gradient for 
@@ -8243,7 +8276,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99894332885742188E-003
+ Time used in CC_LHTR :  7.99989700317382813E-003
   
 
  Finding gradient for 
@@ -8266,7 +8299,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99806213378906250E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -8289,7 +8322,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  7.99798965454101563E-003
+ Time used in CC_LHTR :  6.99806213378906250E-003
   
 
  Finding gradient for 
@@ -8326,7 +8359,7 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.40 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.39 seconds
  >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
@@ -8531,10 +8564,10 @@ Try to use right eigenvector as start for a left eigenvector.
     Iter  #Vectors  time (min)   residual
     --------------------------------------
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
 
  Finding gradient for 
@@ -8556,10 +8589,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
 
  Finding gradient for 
@@ -8581,10 +8614,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
+ Time used in CC_LHTR :  5.00011444091796875E-003
+  
+  
  Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
- Time used in CC_LHTR :  5.99884986877441406E-003
   
 
  Finding gradient for 
@@ -8606,7 +8639,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  6.99901580810546875E-003
@@ -8628,13 +8661,13 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  2 RESIDUAL TOT: 5.76972D-03
       4       2         0.00     0.31E+00
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  5.99789619445800781E-003
+ Time used in CC_LHTR :  6.99877738952636719E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
 
  Finding gradient for 
@@ -8653,13 +8686,13 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  2 RESIDUAL TOT: 8.77326D-04
       5       2         0.00     0.13E+00
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
  Time used in CC_LHTR :  6.00004196166992188E-003
   
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for 
@@ -8681,7 +8714,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99813461303710938E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
@@ -8706,10 +8739,10 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
  Time used in CC_LHTR :  5.99884986877441406E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -8734,7 +8767,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  Finding gradient for 
@@ -8753,10 +8786,10 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  2 RESIDUAL TOT: 4.22366D-07
       9       2         0.00     0.28E-01
  Dimension of the reduced space:    20
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99813461303710938E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
@@ -8784,7 +8817,7 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -8803,13 +8836,13 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  2 RESIDUAL TOT: 7.28468D-09
      11       2         0.00     0.15E-01
  Dimension of the reduced space:    24
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   
- Time used in CC_LHTR :  4.99916076660156250E-003
-  
-  
  Time used in CC_LHTR :  5.99908828735351563E-003
+  
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  Finding gradient for 
@@ -8832,7 +8865,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
 
  Finding gradient for 
@@ -8855,7 +8888,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99980354309082031E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -8878,7 +8911,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -8901,7 +8934,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99789619445800781E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
 
  Finding gradient for 
@@ -8924,7 +8957,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
 
  Finding gradient for 
@@ -8947,7 +8980,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -8993,7 +9026,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  4.99892234802246094E-003
   
 
  Finding gradient for 
@@ -9016,7 +9049,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.00011444091796875E-003
   
 
  Finding gradient for 
@@ -9039,7 +9072,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.99996948242187500E-003
   
 
  Finding gradient for 
@@ -9062,7 +9095,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -9085,7 +9118,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
 
  Finding gradient for 
@@ -9108,7 +9141,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99813461303710938E-003
+ Time used in CC_LHTR :  5.00011444091796875E-003
   
 
  Finding gradient for 
@@ -9131,7 +9164,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  Finding gradient for 
@@ -9154,7 +9187,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99789619445800781E-003
   
 
  Finding gradient for 
@@ -9177,7 +9210,7 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- Time used in CC_LHTR :  6.99806213378906250E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for 
@@ -9192,8 +9225,8 @@ Try to use right eigenvector as start for a left eigenvector.
  Finding gradient for 
  Frequency -0.010000 and label: YDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 5.23752D-10
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.23752D-10
+ ROOT:  1 RESIDUAL TOT: 5.23753D-10
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.23753D-10
  ROOT:  2 RESIDUAL TOT: 8.64675D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 8.64675D-10
      28       1         0.00     0.86E-09
@@ -9214,8 +9247,8 @@ Try to use right eigenvector as start for a left eigenvector.
          Total time          0.01
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.32 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.33 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -9485,19 +9518,19 @@ Try to use right eigenvector as start for a left eigenvector.
     Iter  #Vectors  time (min)   residual
     --------------------------------------
   
- Time used in CC_LHTR :  5.99884986877441406E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
  Time used in CC_LHTR :  6.00004196166992188E-003
   
   
+ Time used in CC_LHTR :  5.99884986877441406E-003
+  
+  
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  4.99892234802246094E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for M1
@@ -9540,19 +9573,19 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
+ Time used in CC_LHTR :  5.99908828735351563E-003
+  
+  
  Time used in CC_LHTR :  6.00004196166992188E-003
   
   
- Time used in CC_LHTR :  6.99806213378906250E-003
-  
-  
- Time used in CC_LHTR :  5.99980354309082031E-003
+ Time used in CC_LHTR :  5.99789619445800781E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for M1
@@ -9592,22 +9625,22 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  5 RESIDUAL TOT: 2.72718D-02
       2       5         0.00     0.70E-01
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  5.99789619445800781E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  6.00004196166992188E-003
-  
-  
- Time used in CC_LHTR :  4.99892234802246094E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
+  
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
 
  Finding gradient for M1
@@ -9650,19 +9683,19 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  6.00004196166992188E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  5.99813461303710938E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  5.99980354309082031E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for M1
@@ -9702,22 +9735,22 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  5 RESIDUAL TOT: 3.62117D-04
       4       5         0.00     0.31E-02
  Dimension of the reduced space:    25
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99884986877441406E-003
+ Time used in CC_LHTR :  6.99806213378906250E-003
+  
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
+  
+  
+ Time used in CC_LHTR :  5.99789619445800781E-003
+  
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
- Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for M1
@@ -9757,22 +9790,22 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  5 RESIDUAL TOT: 2.63512D-05
       5       5         0.00     0.35E-03
  Dimension of the reduced space:    30
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
-  
-  
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  5.99884986877441406E-003
   
   
  Time used in CC_LHTR :  5.99884986877441406E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.00051879882812500E-003
   
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  4.99868392944335938E-003
+  
+  
+ Time used in CC_LHTR :  4.99963760375976563E-003
   
 
  Finding gradient for M1
@@ -9815,19 +9848,19 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  6.99901580810546875E-003
-  
-  
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  5.99956512451171875E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
- Time used in CC_LHTR :  4.99868392944335938E-003
+ Time used in CC_LHTR :  5.99861145019531250E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for M1
@@ -9867,22 +9900,22 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  5 RESIDUAL TOT: 3.62285D-07
       7       5         0.00     0.62E-05
  Dimension of the reduced space:    40
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
+  
+ Time used in CC_LHTR :  6.00004196166992188E-003
+  
+  
+ Time used in CC_LHTR :  6.99901580810546875E-003
+  
   
  Time used in CC_LHTR :  5.99813461303710938E-003
   
   
- Time used in CC_LHTR :  4.99916076660156250E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
-  
-  
  Time used in CC_LHTR :  6.00004196166992188E-003
+  
+  
+ Time used in CC_LHTR :  6.99901580810546875E-003
   
 
  Finding gradient for M1
@@ -9925,19 +9958,19 @@ Try to use right eigenvector as start for a left eigenvector.
  >>> TIME USED IN THIS MICRO ITERATION        0.04
 
   
- Time used in CC_LHTR :  4.99916076660156250E-003
-  
-  
- Time used in CC_LHTR :  6.99806213378906250E-003
-  
-  
- Time used in CC_LHTR :  6.00004196166992188E-003
-  
-  
- Time used in CC_LHTR :  5.99861145019531250E-003
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  5.99956512451171875E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
+  
+  
+ Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for M1
@@ -9977,19 +10010,19 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  5 RESIDUAL TOT: 2.97889D-09
       9       5         0.00     0.84E-07
  Dimension of the reduced space:    50
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  5.99861145019531250E-003
   
   
- Time used in CC_LHTR :  5.99908828735351563E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
- Time used in CC_LHTR :  6.99901580810546875E-003
+ Time used in CC_LHTR :  5.99813461303710938E-003
   
   
- Time used in CC_LHTR :  6.99996948242187500E-003
+ Time used in CC_LHTR :  6.00004196166992188E-003
   
   
  Time used in CC_LHTR :  6.99806213378906250E-003
@@ -10039,13 +10072,13 @@ Try to use right eigenvector as start for a left eigenvector.
  Time used in CC_LHTR :  6.00004196166992188E-003
   
   
+ Time used in CC_LHTR :  4.99868392944335938E-003
+  
+  
  Time used in CC_LHTR :  5.99908828735351563E-003
   
   
  Time used in CC_LHTR :  6.00004196166992188E-003
-  
-  
- Time used in CC_LHTR :  5.99908828735351563E-003
   
 
  Finding gradient for M1
@@ -10081,8 +10114,8 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  1 RESIDUAL TOT: 1.12280D-09
  ROOT:  2 RESIDUAL TOT: 1.32936D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.32936D-10
- ROOT:  3 RESIDUAL TOT: 1.06825D-10
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.06825D-10
+ ROOT:  3 RESIDUAL TOT: 1.06824D-10
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.06824D-10
  ROOT:  4 RESIDUAL TOT: 2.98349D-10
  ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 2.98349D-10
  ROOT:  5 RESIDUAL TOT: 2.18700D-10
@@ -10129,8 +10162,8 @@ Try to use right eigenvector as start for a left eigenvector.
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.03584D-10
  ROOT:  2 RESIDUAL TOT: 1.32209D-10
  ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.32209D-10
- ROOT:  3 RESIDUAL TOT: 1.06825D-10
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.06825D-10
+ ROOT:  3 RESIDUAL TOT: 1.06824D-10
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.06824D-10
  ROOT:  4 RESIDUAL TOT: 2.92521D-10
  ROOT:  4 HAS CONVERGED. RESIDUAL TOT: 2.92521D-10
  ROOT:  5 RESIDUAL TOT: 2.18700D-10
@@ -10154,7 +10187,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.41 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -10534,9 +10567,9 @@ Try to use right eigenvector as start for a left eigenvector.
 
 
 
->>> Time used for    1 O1/X1 vector calculation:        0.00 seconds.
+>>> Time used for    1 O1/X1 vector calculation:        0.01 seconds.
 
->>> Time used for    1 O1/X1 vector calculation:        0.00 seconds.
+>>> Time used for    1 O1/X1 vector calculation:        0.01 seconds.
 
 >>> Total time for  30 quadratic response func.:        0.01 seconds.
 
@@ -10545,7 +10578,7 @@ Try to use right eigenvector as start for a left eigenvector.
           !      FINAL CCSD RESULTS FOR ONE-PHOTON ABSORPTION STRENGTHS !
           +-------------------------------------------------------------+
 
- CCOPAPRT: RAU2CGS =    471.44353982206258     
+ CCOPAPRT: RAU2CGS =    471.44358235695097     
 
 
      Transition from ground state to:
@@ -10578,16 +10611,16 @@ Try to use right eigenvector as start for a left eigenvector.
 
      Transition from ground state to:
      number, multiplicity, symmetry :    3  ^1A" 
-     frequency :   1.3282159986 a.u.    36.14259 e.V.    291509.7 cm^-1
+     frequency :   1.3282159986 a.u.    36.14260 e.V.    291509.7 cm^-1
 
      +-----------+-----------------+-----------------+---------------------+
      | operator  |   left moment   |  right moment   | transition strength |
      +-----------+-----------------+-----------------+---------------------+
      | XDIPLEN   |      0.00000000 |      0.00000000 |       0.00000000    |
-     | YDIPLEN   |      0.00000000 |     -0.00000000 |      -0.00000000    |
+     | YDIPLEN   |      0.00000000 |      0.00000000 |       0.00000000    |
      | ZDIPLEN   |      0.00000000 |      0.00000000 |       0.00000000    |
      +-----------+-----------------+-----------------+---------------------+
-       oscillator strength (length gauge)   :     -0.00000000
+       oscillator strength (length gauge)   :      0.00000000
 
 
      Transition from ground state to:
@@ -10612,10 +10645,10 @@ Try to use right eigenvector as start for a left eigenvector.
      | operator  |   left moment   |  right moment   | transition strength |
      +-----------+-----------------+-----------------+---------------------+
      | XDIPLEN   |      0.00000000 |      0.00000000 |       0.00000000    |
-     | YDIPLEN   |     -0.00000000 |     -0.00000000 |       0.00000000    |
+     | YDIPLEN   |     -0.00000000 |      0.00000000 |      -0.00000000    |
      | ZDIPLEN   |      0.00000000 |      0.00000000 |       0.00000000    |
      +-----------+-----------------+-----------------+---------------------+
-       oscillator strength (length gauge)   :      0.00000000
+       oscillator strength (length gauge)   :     -0.00000000
 
  ******************************************************************
  *                                                                *
@@ -10670,8 +10703,8 @@ Try to use right eigenvector as start for a left eigenvector.
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
  | time for  1 sets of left interm.:      0.00 secs.|
- | time for  2 sets of right inter.:      0.01 secs.|
- | time for  2 sets of 2. ord. int.:      0.00 secs.|
+ | time for  2 sets of right inter.:      0.00 secs.|
+ | time for  2 sets of 2. ord. int.:      0.01 secs.|
  | intermediates calculated in   1 batches          |
  +--------------------------------------------------+
  | L vector | R vector |  # products  |             |
@@ -10692,8 +10725,8 @@ Try to use right eigenvector as start for a left eigenvector.
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
  | time for  1 sets of left interm.:      0.00 secs.|
- | time for  2 sets of right inter.:      0.01 secs.|
- | time for  2 sets of 2. ord. int.:      0.00 secs.|
+ | time for  2 sets of right inter.:      0.00 secs.|
+ | time for  2 sets of 2. ord. int.:      0.01 secs.|
  | intermediates calculated in   1 batches          |
  +--------------------------------------------------+
  | L vector | R vector |  # products  |             |
@@ -10713,7 +10746,7 @@ Try to use right eigenvector as start for a left eigenvector.
  |    (result used to calculate dot products)       |
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
- | time for  4 sets of left interm.:      0.00 secs.|
+ | time for  4 sets of left interm.:      0.01 secs.|
  | time for  1 sets of right inter.:      0.00 secs.|
  | time for  4 sets of 2. ord. int.:      0.01 secs.|
  | intermediates calculated in   1 batches          |
@@ -10735,7 +10768,7 @@ Try to use right eigenvector as start for a left eigenvector.
 
 >>> Time used for    8 Eta{O} vector calculation:        0.02 seconds.
 
->>> Total time for   4 quadratic response func.:        0.11 seconds.
+>>> Total time for   4 quadratic response func.:        0.12 seconds.
 
 
           +-------------------------------------------------------------+
@@ -10792,11 +10825,11 @@ Try to use right eigenvector as start for a left eigenvector.
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A"  |    1   |     0.3998622  |      10.88080  |     87759.606  |  96.03  |
- | ^1A"  |    2   |     1.0896932  |      29.65206  |    239160.006  |  94.91  |
- | ^1A"  |    3   |     1.3282160  |      36.14259  |    291509.717  |   0.35  |
- | ^1A"  |    4   |     1.3700812  |      37.28180  |    300698.057  |   2.40  |
- | ^1A"  |    5   |     1.4930541  |      40.62807  |    327687.489  |  98.58  |
+ | ^1A"  |    1   |     0.3998622  |      10.88080  |     87759.605  |  96.03  |
+ | ^1A"  |    2   |     1.0896932  |      29.65206  |    239160.003  |  94.91  |
+ | ^1A"  |    3   |     1.3282160  |      36.14260  |    291509.714  |   0.35  |
+ | ^1A"  |    4   |     1.3700812  |      37.28180  |    300698.054  |   2.40  |
+ | ^1A"  |    5   |     1.4930541  |      40.62807  |    327687.486  |  98.58  |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -10808,7 +10841,7 @@ Try to use right eigenvector as start for a left eigenvector.
              5 ^1A"       -98.7047368495                                        
 
   1 a.u. =        27.21138 eV.  
-  1 a.u. =    219474.63128 cm-1.
+  1 a.u. =    219474.62934 cm-1.
   
 
  *******************************************************************************
@@ -10827,9 +10860,9 @@ Try to use right eigenvector as start for a left eigenvector.
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   4.31 seconds
- >>>> Total wall time used in DALTON:  20.00 seconds
+ >>>> Total CPU  time used in DALTON:   4.36 seconds
+ >>>> Total wall time used in DALTON:  26.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:07 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:16 2011 
      Host name              : fe6                                     

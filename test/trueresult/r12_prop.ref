@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:42:08 2010 
+     Date and time (Linux)  : Wed Mar 16 19:10:35 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -204,9 +205,11 @@ Point group: C2v
 
                            B          11.009305
                            H           1.007825
+                           B           0.000000
+                           H           0.000000
 
                        Total mass:    12.017130 amu
-                       Natural abundance:  80.088 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
 
@@ -375,6 +378,8 @@ Point group: C2v
 
   No orbitals in symmetry  A2 ( 4)
 
+  Number of floating/multiple basis set orbitals :    2
+
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
   Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
@@ -397,7 +402,7 @@ Point group: C2v
 
  Calculation of one-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - Cartesian multipole moment integrals of orders 2 and lower
@@ -438,7 +443,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:42:08 2010 
+     Date and time (Linux)  : Wed Mar 16 19:10:35 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -453,8 +458,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -464,6 +468,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons          6
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -523,46 +531,71 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
    1  -23.7919245882       2.35D+00  -2.38D+01    2  1  0  0
-      MULPOP B     0.07; H     0.22; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
+      Virial theorem: -V/T =      1.842685
+      MULPOP  B      -0.85; H       0.85; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
    2  -24.8475362225       3.25D-01  -1.06D+00    2  1  0  0
-      MULPOP B     0.25; H    -0.01; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      2.020807
+      MULPOP  B      -0.07; H       0.07; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
    3  -24.8632919463       1.02D-01  -1.58D-02    2  1  0  0
-      MULPOP B     0.25; H    -0.02; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.008046
+      MULPOP  B      -0.20; H       0.20; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
    4  -24.8661449961       1.99D-02  -2.85D-03    2  1  0  0
-      MULPOP B     0.26; H    -0.02; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.005996
+      MULPOP  B      -0.25; H       0.25; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5  -24.8662245259       1.60D-03  -7.95D-05    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   6  Screening settings (-IFTHRS, DIFDEN)  -10    F
+      Virial theorem: -V/T =      2.005979
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6  -24.8662249187       2.88D-04  -3.93D-07    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      2.005930
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
    7  -24.8662249374       4.42D-05  -1.87D-08    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
    8  -24.8662249379       6.36D-06  -4.55D-10    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
+      Virial theorem: -V/T =      2.005926
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
    9  -24.8662249379       7.38D-07  -1.02D-11    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    F
-  10  -24.8662249379       8.14D-08  -1.49D-13    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  11  -24.8662249379       5.72D-09  -3.55D-15    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  12  -24.8662249379       3.12D-10  -3.55D-15    2  1  0  0
-      MULPOP B     0.26; H    -0.01; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  13  -24.8662249379       1.32D-11   7.11D-15    2  1  0  0
- DIIS converged in  13 iterations !
- - total time used in SIRFCK        :       0.02 seconds
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -24.8662249379       8.14D-08  -1.63D-13    2  1  0  0
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -24.8662249379       5.72D-09   7.11D-15    2  1  0  0
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -24.8662249379       3.12D-10   3.55D-15    2  1  0  0
+      Virial theorem: -V/T =      2.005927
+      MULPOP  B      -0.24; H       0.24; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -24.8662249379       1.32D-11  -3.55D-15    2  1  0  0
+
+ *** DIIS converged in  13 iterations !
+   - total time used in SIRFCK :              0.01 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -611,20 +644,23 @@ Point group: C2v
    3      0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:             -24.866224937875                 
+     Final HF energy:             -24.866224937876                 
      Nuclear repulsion:             2.146936321869
-     Electronic energy:           -27.013161259744
+     Electronic energy:           -27.013161259745
 
      Final gradient norm:           0.000000000013
 
  
-     Date and time (Linux)  : Wed Dec 29 22:42:08 2010 
+     Date and time (Linux)  : Wed Mar 16 19:10:35 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -632,7 +668,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 B   :1s     0.9929   0.2173  -0.1399  -0.0981
    2 B   :1s    -0.0268   0.4807  -0.2638  -0.3588
    3 B   :1s     0.0100   0.1989  -0.5920  -1.9470
@@ -644,14 +680,14 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 B   :2px   -0.6053   1.0272
    2 B   :2px    0.5319   1.0671
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 B   :2py   -0.3999  -1.1233
    2 B   :2py    0.7243  -0.9471
 
@@ -661,7 +697,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:42:08 2010 
+     Date and time (Linux)  : Wed Mar 16 19:10:35 2011 
      Host name              : fe6                                     
 
 
@@ -1041,7 +1077,7 @@ Point group: C2v
  Core memory required by CCSD_R12 :           2535  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [5] is   0.16 seconds
+ >>> Time used in R  [5] is   0.17 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of V^aj_kl intermediate done
 
@@ -1074,7 +1110,7 @@ Point group: C2v
  >>> Time used for V^aj_kl is    0.00 seconds
 
  Computation of (i* p'|r12|jq') integrals done
- >>> Time used in R  [5] is   0.81 seconds
+ >>> Time used in R  [5] is   0.82 seconds
  Computation of (i'p|r12|jq') integrals done
  >>> Time used in R  [5] is   0.17 seconds
  Computation of V^aj_kl intermediate done
@@ -1233,7 +1269,7 @@ Point group: C2v
  Computation of exchange matrix done [4]
 
               MP2-R12/B   correlation energy =   -0.029230709
- Time for MP2-R12 part cpu:   1.7257370054721832     
+ Time for MP2-R12 part cpu:   1.7377350181341171     
  Time for MP2-R12 part wall:   2.0000000000000000     
 
 
@@ -1640,10 +1676,10 @@ Point group: C2v
 
 
           Printed all double excitations greater than 0.025000
- Iter.  1: Coupled cluster MP2-R12/ energy :     -24.8786827857057951
-     Conventional correlation energy:    -0.0124578478304080
+ Iter.  1: Coupled cluster MP2-R12/ energy :     -24.8786827857062143
+     Conventional correlation energy:    -0.0124578478303725
      R12 correlation energy         :     0.0000000000000000
-     Total correlation energy       :    -0.0124578478304080
+     Total correlation energy       :    -0.0124578478303725
 
 
 
@@ -1711,7 +1747,7 @@ Point group: C2v
        1      -0.03156897
        2      -0.00727025    -0.00831560
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  7.58688293055271440E-002
+ Norm of doubles Lambda vector :  7.58688293049416679E-002
 
 
  Analysis of the undifferentiated Lagrangian multipliers:
@@ -1754,7 +1790,7 @@ Point group: C2v
 
           Printed all double excitations greater than 0.025000
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  7.58688293055271440E-002
+ Norm of doubles Lambda vector :  7.58688293049416679E-002
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -1767,8 +1803,8 @@ Point group: C2v
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.90545405737795087E-002
- Norm of virtual-virtual block:  2.89381068883766725E-002
+ Norm of occupied-occupied block:  3.90545405734996631E-002
+ Norm of virtual-virtual block:  2.89381068881288672E-002
  Norm of frozen-core-occupied block:   0.0000000000000000     
   
  Diagonal blocks of Zeta-kappa-0 calculated
@@ -1779,11 +1815,11 @@ Point group: C2v
                  ------------------------------------------------
 
   
- Norm of Eta-kappa-0:  3.24609780290175309E-004
+ Norm of Eta-kappa-0:  3.24609780287200530E-004
   
  MP2 Eta-0(kappa) calculation completed
  Total time used in MP2_KANEW:  3.29949855804443359E-002
- CC_FOP> Norm of RHS vector:  3.39230192423769074E-004
+ CC_FOP> Norm of RHS vector:  3.39230192421634768E-004
 
 
                       Solving for orbital relaxation vector
@@ -1801,8 +1837,8 @@ Point group: C2v
  Convergence threshold:     1.00D-07
 
 
-   SCF energy         :      -24.866224937875387
- -- inactive part     :      -27.013161259744081
+   SCF energy         :      -24.866224937875842
+ -- inactive part     :      -27.013161259744535
  -- nuclear repulsion :        2.146936321868693
 
  NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY     3     0    11    29     1     1
@@ -1836,10 +1872,11 @@ Point group: C2v
 
  MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:      30
   LINEQ,RESTPP,ORBSPC T F F
+  FREQ =   0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 4.75850638D-04
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 5.42101086D-20
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -1887,7 +1924,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 6.57519719D-06
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 8.47032947D-22
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -1932,8 +1969,8 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
   AFREQ,KZYRED,IGD   0.0000000000000000                4           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -1954,7 +1991,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 8.05207661D-08
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared =-1.32348898D-23
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -1999,18 +2036,18 @@ Point group: C2v
        6       0.05319359    -0.02538429     0.09876415    -0.64310235
 
                Column   5     Column   6
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6
        5       2.00000000
@@ -2038,7 +2075,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.28479802D-09
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 4.13590306D-25
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -2087,8 +2124,8 @@ Point group: C2v
        8       0.02893234    -0.05607975     0.01148365    -0.45035326
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
 
@@ -2097,12 +2134,12 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -2135,7 +2172,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 6.27655621D-12
- Z + Y norm squared = 8.07793567D-28
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -2188,8 +2225,8 @@ Point group: C2v
       10      -0.00683557     0.11966723     0.06255738     0.67499652
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -2204,22 +2241,22 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10
        9       2.00000000
@@ -2253,7 +2290,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.95387007D-13
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 5.04870979D-29
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -2310,8 +2347,8 @@ Point group: C2v
       12       0.00267440    -0.32870516     0.00435169    -1.39949218
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -2330,14 +2367,14 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       11       0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
@@ -2346,16 +2383,16 @@ Point group: C2v
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
   AFREQ,KZYRED,IGD   0.0000000000000000               12           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -2449,8 +2486,8 @@ Point group: C2v
       14      -0.00327564     0.03965633     0.00298127    -0.23193852
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -2469,44 +2506,44 @@ Point group: C2v
       14       0.01197120    -0.21559255    -0.00360523    -0.09074120
 
                Column  13     Column  14
-      13      11.36185482
-      14      -0.01234618    11.36185482
+      13      11.36185481
+      14      -0.01234618    11.36185481
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       11       0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      13      -0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       13       0.00000000     0.00000000     0.00000000     0.00000000
       14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
@@ -2547,8 +2584,8 @@ Point group: C2v
           BNORM: 3.30671D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 2.04445257D-18
- Z + Y norm squared = 3.85185989D-34
+ (Z Y) norm squared = 2.04445258D-18
+ Z + Y norm squared =-3.85185989D-34
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -2613,8 +2650,8 @@ Point group: C2v
       16      -0.02489252    -0.00374354    -0.00864588    -0.13881521
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -2637,50 +2674,50 @@ Point group: C2v
       16      -0.01984546     0.07914598     0.00070466     0.47489465
 
                Column  13     Column  14     Column  15     Column  16
-      13      11.36185482
-      14      -0.01234618    11.36185482
-      15      -6.19118646    -0.00168275     5.65548841
-      16      -0.00168275    -6.19118646    -0.01469982     5.65548841
+      13      11.36185481
+      14      -0.01234618    11.36185481
+      15      -6.19118647    -0.00168275     5.65548841
+      16      -0.00168275    -6.19118647    -0.01469982     5.65548841
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       11       0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13      -0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
       15      -0.00000000     0.00000000    -0.00000000     0.00000000
       16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       13       0.00000000     0.00000000     0.00000000     0.00000000
       14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       15       0.00000000     0.00000000     0.00000000     0.00000000
@@ -2759,13 +2796,13 @@ Point group: C2v
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.01 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
 
  >>> Total time used in response solver is         0.02 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  3.45610306090154322E-003
+ Norm of zeta-kappa-0:  3.45610306085488306E-003
 
 
                      +----------------------------------------+
@@ -2792,7 +2829,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      1.15701105         2.94082843         9.80954773
+      z      1.15701105         2.94082856         9.80954819
 
 
 
@@ -2802,7 +2839,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -1.53433970        -3.89990209       -13.00867310
+      z     -1.53433970        -3.89990227       -13.00867372
 
 
  Electronic dipole moment (au):   0.000000000       0.000000000      -1.534339701    
@@ -2815,7 +2852,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.37732865        -0.95907366        -3.19912537
+      z     -0.37732865        -0.95907370        -3.19912552
 
 
    
@@ -2869,7 +2906,7 @@ Point group: C2v
        1      -0.03156897
        2      -0.00727025    -0.00831560
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  7.58688293055271440E-002
+ Norm of doubles Lambda vector :  7.58688293049416679E-002
 
 
  Analysis of the undifferentiated Lagrangian multipliers:
@@ -2912,7 +2949,7 @@ Point group: C2v
 
           Printed all double excitations greater than 0.025000
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  7.58688293055271440E-002
+ Norm of doubles Lambda vector :  7.58688293049416679E-002
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -2925,8 +2962,8 @@ Point group: C2v
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.90545405737795087E-002
- Norm of virtual-virtual block:  2.89381068883766725E-002
+ Norm of occupied-occupied block:  3.90545405734996631E-002
+ Norm of virtual-virtual block:  2.89381068881288672E-002
  Norm of frozen-core-occupied block:   0.0000000000000000     
   
  Diagonal blocks of Zeta-kappa-0 calculated
@@ -2937,11 +2974,11 @@ Point group: C2v
                  ------------------------------------------------
 
   
- Norm of Eta-kappa-0:  3.24609780290175309E-004
+ Norm of Eta-kappa-0:  3.24609780287200530E-004
   
  MP2 Eta-0(kappa) calculation completed
- Total time used in MP2_KANEW:  3.29949855804443359E-002
- CC_FOP> Norm of RHS vector:  3.39230192423769074E-004
+ Total time used in MP2_KANEW:  3.29940319061279297E-002
+ CC_FOP> Norm of RHS vector:  3.39230192421634768E-004
 
 
                       Solving for orbital relaxation vector
@@ -2959,8 +2996,8 @@ Point group: C2v
  Convergence threshold:     1.00D-07
 
 
-   SCF energy         :      -24.866224937875387
- -- inactive part     :      -27.013161259744081
+   SCF energy         :      -24.866224937875842
+ -- inactive part     :      -27.013161259744535
  -- nuclear repulsion :        2.146936321868693
 
  NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY     3     0    11    29     1     1
@@ -2994,10 +3031,11 @@ Point group: C2v
 
  MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:      30
   LINEQ,RESTPP,ORBSPC T F F
+  FREQ =   0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 4.75850638D-04
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 5.42101086D-20
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3045,7 +3083,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 6.57519719D-06
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 8.47032947D-22
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3090,8 +3128,8 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
   AFREQ,KZYRED,IGD   0.0000000000000000                4           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3112,7 +3150,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 8.05207661D-08
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared =-1.32348898D-23
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3157,18 +3195,18 @@ Point group: C2v
        6       0.05319359    -0.02538429     0.09876415    -0.64310235
 
                Column   5     Column   6
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6
        5       2.00000000
@@ -3196,7 +3234,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.28479802D-09
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 4.13590306D-25
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3245,8 +3283,8 @@ Point group: C2v
        8       0.02893234    -0.05607975     0.01148365    -0.45035326
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
 
@@ -3255,12 +3293,12 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -3293,7 +3331,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 6.27655621D-12
- Z + Y norm squared = 8.07793567D-28
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3346,8 +3384,8 @@ Point group: C2v
       10      -0.00683557     0.11966723     0.06255738     0.67499652
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -3362,22 +3400,22 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10
        9       2.00000000
@@ -3411,7 +3449,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.95387007D-13
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 5.04870979D-29
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3468,8 +3506,8 @@ Point group: C2v
       12       0.00267440    -0.32870516     0.00435169    -1.39949218
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -3488,14 +3526,14 @@ Point group: C2v
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       11       0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
@@ -3504,16 +3542,16 @@ Point group: C2v
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
   AFREQ,KZYRED,IGD   0.0000000000000000               12           1
 
  GP * SOLUTION vector at frequency     0.00000 a.u.
@@ -3607,8 +3645,8 @@ Point group: C2v
       14      -0.00327564     0.03965633     0.00298127    -0.23193852
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -3627,44 +3665,44 @@ Point group: C2v
       14       0.01197120    -0.21559255    -0.00360523    -0.09074120
 
                Column  13     Column  14
-      13      11.36185482
-      14      -0.01234618    11.36185482
+      13      11.36185481
+      14      -0.01234618    11.36185481
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       11       0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      13      -0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       13       0.00000000     0.00000000     0.00000000     0.00000000
       14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
@@ -3705,8 +3743,8 @@ Point group: C2v
           BNORM: 3.30671D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 2.04445257D-18
- Z + Y norm squared = 3.85185989D-34
+ (Z Y) norm squared = 2.04445258D-18
+ Z + Y norm squared =-3.85185989D-34
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -3771,8 +3809,8 @@ Point group: C2v
       16      -0.02489252    -0.00374354    -0.00864588    -0.13881521
 
                Column   5     Column   6     Column   7     Column   8
-       5       2.10030287
-       6      -0.20610881     2.10030287
+       5       2.10030288
+       6      -0.20610881     2.10030288
        7       0.43969474     0.14870219     1.49339876
        8       0.14870219     0.43969474    -0.18444916     1.49339876
        9      -0.78442011    -0.05781779    -0.66665708     0.07473140
@@ -3795,50 +3833,50 @@ Point group: C2v
       16      -0.01984546     0.07914598     0.00070466     0.47489465
 
                Column  13     Column  14     Column  15     Column  16
-      13      11.36185482
-      14      -0.01234618    11.36185482
-      15      -6.19118646    -0.00168275     5.65548841
-      16      -0.00168275    -6.19118646    -0.01469982     5.65548841
+      13      11.36185481
+      14      -0.01234618    11.36185481
+      15      -6.19118647    -0.00168275     5.65548841
+      16      -0.00168275    -6.19118647    -0.01469982     5.65548841
 
  RSPRED: REDUCED METRIC MATRIX:
 
                Column   1     Column   2     Column   3     Column   4
        1       2.00000000
        2      -0.00000000    -2.00000000
-       3      -0.00000000     0.00000000     2.00000000
-       4      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9       0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3       0.00000000     0.00000000     2.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       11       0.00000000     0.00000000    -0.00000000     0.00000000
       12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13       0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      15      -0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13      -0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7      -0.00000000     0.00000000     2.00000000
        8      -0.00000000     0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
       15      -0.00000000     0.00000000    -0.00000000     0.00000000
       16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
-      11      -0.00000000     0.00000000     2.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -2.00000000
+      11       0.00000000     0.00000000     2.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
       13       0.00000000     0.00000000     0.00000000     0.00000000
       14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
       15       0.00000000     0.00000000     0.00000000     0.00000000
@@ -3917,13 +3955,13 @@ Point group: C2v
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.01 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.01 CPU seconds.
+ >>> Total time used in response solver is         0.02 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  3.45610306090154322E-003
+ Norm of zeta-kappa-0:  3.45610306085488306E-003
 
 
                      +----------------------------------------+
@@ -3950,7 +3988,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      1.15701105         2.94082843         9.80954773
+      z      1.15701105         2.94082856         9.80954819
 
 
 
@@ -3960,7 +3998,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -1.53433970        -3.89990209       -13.00867310
+      z     -1.53433970        -3.89990227       -13.00867372
 
 
  Electronic dipole moment (au):   0.000000000       0.000000000      -1.534339701    
@@ -3973,7 +4011,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.37732865        -0.95907366        -3.19912537
+      z     -0.37732865        -0.95907370        -3.19912552
 
 
    
@@ -4027,7 +4065,7 @@ Point group: C2v
        1      -0.03156897
        2      -0.00727025    -0.00831560
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  7.58688293055271440E-002
+ Norm of doubles Lambda vector :  7.58688293049416679E-002
 
 
  Analysis of the undifferentiated Lagrangian multipliers:
@@ -4070,7 +4108,7 @@ Point group: C2v
 
           Printed all double excitations greater than 0.025000
  Norm of singles Lambda vector :   0.0000000000000000     
- Norm of doubles Lambda vector :  7.58688293055271440E-002
+ Norm of doubles Lambda vector :  7.58688293049416679E-002
 
 
                    Calculating diagonal blocks of zeta-kappa-0
@@ -4083,8 +4121,8 @@ Point group: C2v
                           +------------------------------+
 
   
- Norm of occupied-occupied block:  3.90545405737795087E-002
- Norm of virtual-virtual block:  2.89381068883766725E-002
+ Norm of occupied-occupied block:  3.90545405734996631E-002
+ Norm of virtual-virtual block:  2.89381068881288672E-002
  Norm of frozen-core-occupied block:   0.0000000000000000     
   
  Diagonal blocks of Zeta-kappa-0 calculated
@@ -4095,11 +4133,11 @@ Point group: C2v
                  ------------------------------------------------
 
   
- Norm of Eta-kappa-0:  3.24609780290175309E-004
+ Norm of Eta-kappa-0:  3.24609780287200530E-004
   
  MP2 Eta-0(kappa) calculation completed
- Total time used in MP2_KANEW:  3.29951047897338867E-002
- CC_FOP> Norm of RHS vector:  4.69956969869973068E-004
+ Total time used in MP2_KANEW:  3.29949855804443359E-002
+ CC_FOP> Norm of RHS vector:  4.69956969868455890E-004
 
 
                       Solving for orbital relaxation vector
@@ -4117,8 +4155,8 @@ Point group: C2v
  Convergence threshold:     1.00D-07
 
 
-   SCF energy         :      -24.866224937875387
- -- inactive part     :      -27.013161259744081
+   SCF energy         :      -24.866224937875842
+ -- inactive part     :      -27.013161259744535
  -- nuclear repulsion :        2.146936321868693
 
  NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY     3     0    11    29     1     1
@@ -4152,10 +4190,11 @@ Point group: C2v
 
  MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:      30
   LINEQ,RESTPP,ORBSPC T F F
+  FREQ =   0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 6.25347090D-04
- Z + Y norm squared = 1.08420217D-19
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4203,7 +4242,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 1.07947062D-05
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared =-1.69406589D-21
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4325,8 +4364,8 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       5      -0.00000000     0.00000000    -0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6
        5       2.00000000
@@ -4354,7 +4393,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 2.59952754D-09
- Z + Y norm squared = 0.00000000D+00
+ Z + Y norm squared = 8.27180613D-25
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4415,10 +4454,10 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000    -0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000     0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
@@ -4451,7 +4490,7 @@ Point group: C2v
 
  ** TEST OF Z = Y OR Z = -Y:
  (Z Y) norm squared = 5.24457130D-12
- Z + Y norm squared =-8.07793567D-28
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4522,20 +4561,20 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000    -0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000     0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7       0.00000000     0.00000000     2.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10
        9       2.00000000
@@ -4568,8 +4607,8 @@ Point group: C2v
           BNORM: 3.79109D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 1.94325360D-14
- Z + Y norm squared =-6.31088724D-30
+ (Z Y) norm squared = 1.94325361D-14
+ Z + Y norm squared =-3.15544362D-30
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4648,24 +4687,24 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       5      -0.00000000     0.00000000    -0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000     0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7       0.00000000     0.00000000     2.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000     0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
@@ -4703,8 +4742,8 @@ Point group: C2v
           BNORM: 3.79109D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 2.23630010D-16
- Z + Y norm squared = 0.00000000D+00
+ (Z Y) norm squared = 2.23630011D-16
+ Z + Y norm squared =-4.93038066D-32
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4785,8 +4824,8 @@ Point group: C2v
       14       0.01791482    -0.82546275    -0.00294923    -1.19978183
 
                Column  13     Column  14
-      13       9.61971332
-      14      -0.00561229     9.61971332
+      13       9.61971331
+      14      -0.00561229     9.61971331
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4795,26 +4834,26 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
+       5      -0.00000000     0.00000000    -0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000     0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7       0.00000000     0.00000000     2.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000     0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
       13       0.00000000     0.00000000    -0.00000000     0.00000000
       14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
@@ -4823,8 +4862,8 @@ Point group: C2v
       10      -0.00000000    -2.00000000
       11       0.00000000     0.00000000     2.00000000
       12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
 
                Column  13     Column  14
       13       2.00000000
@@ -4863,8 +4902,8 @@ Point group: C2v
           BNORM: 3.79109D-02 EIVAL: 0.00000D+00
 
  ** TEST OF Z = Y OR Z = -Y:
- (Z Y) norm squared = 3.57133667D-18
- Z + Y norm squared = 7.70371978D-34
+ (Z Y) norm squared = 3.57133669D-18
+ Z + Y norm squared = 0.00000000D+00
 
  Z = -Y in trial vector no.   1
  Y component removed.
@@ -4953,10 +4992,10 @@ Point group: C2v
       16      -0.02359661    -0.02058744    -0.00846841     1.34160533
 
                Column  13     Column  14     Column  15     Column  16
-      13       9.61971332
-      14      -0.00561229     9.61971332
-      15      -6.63700501    -0.00537710     7.11101175
-      16      -0.00537710    -6.63700501    -0.02287379     7.11101175
+      13       9.61971331
+      14      -0.00561229     9.61971331
+      15      -6.63700501    -0.00537710     7.11101176
+      16      -0.00537710    -6.63700501    -0.02287379     7.11101176
 
  RSPRED: REDUCED METRIC MATRIX:
 
@@ -4965,42 +5004,42 @@ Point group: C2v
        2      -0.00000000    -2.00000000
        3       0.00000000     0.00000000     2.00000000
        4      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       5       0.00000000     0.00000000    -0.00000000     0.00000000
-       6      -0.00000000    -0.00000000    -0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000
-       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
-       9      -0.00000000     0.00000000     0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      11       0.00000000     0.00000000    -0.00000000     0.00000000
-      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      13      -0.00000000     0.00000000    -0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000     0.00000000
-      15       0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       5      -0.00000000     0.00000000    -0.00000000     0.00000000
+       6      -0.00000000     0.00000000    -0.00000000     0.00000000
+       7      -0.00000000     0.00000000    -0.00000000     0.00000000
+       8      -0.00000000     0.00000000    -0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000    -0.00000000
 
                Column   5     Column   6     Column   7     Column   8
        5       2.00000000
        6      -0.00000000    -2.00000000
        7       0.00000000     0.00000000     2.00000000
        8      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-       9      -0.00000000     0.00000000    -0.00000000     0.00000000
-      10      -0.00000000     0.00000000    -0.00000000     0.00000000
-      11      -0.00000000     0.00000000     0.00000000     0.00000000
-      12      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000    -0.00000000     0.00000000
+      10      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      11       0.00000000     0.00000000    -0.00000000     0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
       13       0.00000000     0.00000000    -0.00000000     0.00000000
       14      -0.00000000    -0.00000000    -0.00000000     0.00000000
-      15       0.00000000     0.00000000     0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.00000000    -0.00000000     0.00000000
+      16      -0.00000000     0.00000000    -0.00000000     0.00000000
 
                Column   9     Column  10     Column  11     Column  12
        9       2.00000000
       10      -0.00000000    -2.00000000
       11       0.00000000     0.00000000     2.00000000
       12      -0.00000000    -0.00000000    -0.00000000    -2.00000000
-      13      -0.00000000     0.00000000     0.00000000     0.00000000
-      14      -0.00000000     0.00000000    -0.00000000    -0.00000000
-      15       0.00000000     0.00000000    -0.00000000     0.00000000
-      16      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000    -0.00000000     0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      15       0.00000000     0.00000000     0.00000000     0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000
 
                Column  13     Column  14     Column  15     Column  16
       13       2.00000000
@@ -5075,13 +5114,13 @@ Point group: C2v
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.01 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.02 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.01 CPU seconds.
+ >>> Total time used in response solver is         0.02 CPU seconds.
 
    Equations converged to residual less than:  0.000000
   
- Norm of zeta-kappa-0:  3.79990513938747738E-003
+ Norm of zeta-kappa-0:  3.79990513933990172E-003
 
 
                      +----------------------------------------+
@@ -5108,7 +5147,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z      1.15701105         2.94082843         9.80954773
+      z      1.15701105         2.94082856         9.80954819
 
 
 
@@ -5118,7 +5157,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -1.53964426        -3.91338492       -13.05364699
+      z     -1.53964426        -3.91338510       -13.05364761
 
 
  Electronic dipole moment (au):   0.000000000       0.000000000      -1.539644256    
@@ -5131,7 +5170,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.38263321        -0.97255649        -3.24409926
+      z     -0.38263321        -0.97255654        -3.24409942
 
 
 
@@ -5139,7 +5178,7 @@ Point group: C2v
 
  Ground state energy is target 
 
- Ecorr =                    -24.87868278570579505526
+ Ecorr =                    -24.87868278570621427548
 
  *******************************************************************
 
@@ -5178,9 +5217,9 @@ Point group: C2v
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   2.01 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.04 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:42:11 2010 
+     Date and time (Linux)  : Wed Mar 16 19:10:39 2011 
      Host name              : fe6                                     

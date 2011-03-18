@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 23:14:16 2010 
+     Date and time (Linux)  : Wed Mar 16 19:44:58 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -207,11 +208,13 @@ Point group: D2h
                                  Isotopic Masses
                                  ---------------
 
-                           N    1     14.003074
-                           N    2     14.003074
+                           N   _1     14.003074
+                           N   _2     14.003074
+                           N   _1      0.000000
+                           N   _2      0.000000
 
                        Total mass:    28.006148 amu
-                       Natural abundance:  99.261 %
+                       Natural abundance:   0.000 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
 
@@ -287,16 +290,16 @@ Point group: D2h
    Interatomic separations (in Angstrom):
    --------------------------------------
 
-            N    1      N    2      N    1      N    2
+            N   _1      N   _2      N   _1      N   _2
             ------      ------      ------      ------
- N    1:    0.000000
- N    2:    1.097680    0.000000
- N    1:    0.000000    1.097680    0.000000
- N    2:    1.097680    0.000000    1.097680    0.000000
+ N   _1:    0.000000
+ N   _2:    1.097680    0.000000
+ N   _1:    0.000000    1.097680    0.000000
+ N   _2:    1.097680    0.000000    1.097680    0.000000
 
 
   Max interatomic separation is    1.0977 Angstrom (    2.0743 Bohr)
-  between atoms    2 and    1, "N    2" and "N    1".
+  between atoms    2 and    1, "N   _2" and "N   _1".
 
 
   Bond distances (Angstrom):
@@ -304,7 +307,7 @@ Point group: D2h
 
                   atom 1     atom 2       distance
                   ------     ------       --------
-  bond distance:  N    2     N    1       1.097680
+  bond distance:  N   _2     N   _1       1.097680
 
 
   Bond angles (degrees):
@@ -432,6 +435,8 @@ Point group: D2h
    55     N    M   3d2-      19 -   20
    56     N    A   3d2-      47 -   48
 
+  Number of floating/multiple basis set orbitals :    2
+
   Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
 
   Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
@@ -454,7 +459,7 @@ Point group: D2h
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -475,8 +480,8 @@ Point group: D2h
  Number of two-electron integrals written:       10579 (  0.8% )
  Megabytes written:                              0.124
 
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
                         .----------------------------------.
@@ -501,7 +506,7 @@ Point group: D2h
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 23:14:17 2010 
+     Date and time (Linux)  : Wed Mar 16 19:44:58 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -516,8 +521,7 @@ Point group: D2h
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
                Fock matrices are calculated directly
                without use of integrals on disk.
@@ -527,6 +531,10 @@ Point group: D2h
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         14
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -588,51 +596,78 @@ Point group: D2h
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    T
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
 
 *** WARNING  GETGAB: GABAOXXX not found on AOPROPER. Regenerating.
    1  -99.9001864071       8.40D+00  -9.99D+01    2  1  1  0  2  1  0  0
-      MULPOP N     1.14; 
-   2  Screening settings (-IFTHRS, DIFDEN)   -6    T
-   2  -106.570438337       6.17D+00  -6.67D+00    3  1  1  0  2  0  0  0
-      MULPOP N   -42.55; 
-   3  Screening settings (-IFTHRS, DIFDEN)   -6    T
-   3  -108.865160281       1.19D+00  -2.29D+00    3  1  1  0  2  0  0  0
-      MULPOP N    39.60; 
-   4  Screening settings (-IFTHRS, DIFDEN)   -6    T
-   4  -108.950942395       1.77D-01  -8.58D-02    3  1  1  0  2  0  0  0
-      MULPOP N    42.56; 
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+      Virial theorem: -V/T =      1.764633
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2  -106.570438678       6.17D+00  -6.67D+00    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.068769
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3  -108.865160625       1.19D+00  -2.29D+00    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.012765
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4  -108.950942734       1.77D-01  -8.58D-02    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.003496
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
    5  -108.954044008       3.11D-02  -3.10D-03    3  1  1  0  2  0  0  0
-      MULPOP N    42.45; 
-   6  Screening settings (-IFTHRS, DIFDEN)   -8    T
+      Virial theorem: -V/T =      2.001923
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
    6  -108.954130007       2.84D-03  -8.60D-05    3  1  1  0  2  0  0  0
-      MULPOP N    42.23; 
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
-   7  -108.954130754       4.14D-04  -7.48D-07    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    T
-   8  -108.954130767       5.09D-05  -1.22D-08    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-   9  Screening settings (-IFTHRS, DIFDEN)  -12    F
-   9  -108.954130767       3.32D-06  -1.61D-10    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-  10  Screening settings (-IFTHRS, DIFDEN)  -15    F
-  10  -108.954130767       2.79D-07  -9.09D-13    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-  11  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  11  -108.954130767       2.51D-08   0.00D+00    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-  12  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  12  -108.954130767       2.15D-09   8.53D-14    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-  13  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  13  -108.954130767       2.64D-10  -8.53D-14    3  1  1  0  2  0  0  0
-      MULPOP N    42.22; 
-  14  Screening settings (-IFTHRS, DIFDEN)  -15    T
-  14  -108.954130767       3.01D-11   2.84D-14    3  1  1  0  2  0  0  0
- DIIS converged in  14 iterations !
- - total time used in SIRFCK        :       0.32 seconds
+      Virial theorem: -V/T =      2.002181
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7  -108.954130754       4.14D-04  -7.47D-07    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002201
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8  -108.954130767       5.09D-05  -1.21D-08    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002196
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9  -108.954130767       3.32D-06  -1.85D-10    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002197
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10  -108.954130767       2.79D-07  -9.38D-13    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002197
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11  -108.954130767       2.50D-08  -8.53D-14    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002197
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12  -108.954130767       2.15D-09   2.84D-14    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002197
+      MULPOP  N   _1 -0.00; N   _2 -0.00; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13  -108.954130767       2.64D-10   5.68D-14    3  1  1  0  2  0  0  0
+      Virial theorem: -V/T =      2.002197
+      MULPOP  N   _1  0.00; N   _2  0.00; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14  -108.954130767       3.00D-11   5.68D-14    3  1  1  0  2  0  0  0
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.33 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -694,20 +729,23 @@ Point group: D2h
    8      0.000000000000
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
      Total charge of molecule:    0
 
-     Final HF energy:            -108.954130766746                 
+     Final HF energy:            -108.954130766750                 
      Nuclear repulsion:            23.622262854657
-     Electronic energy:          -132.576393621403
+     Electronic energy:          -132.576393621407
 
      Final gradient norm:           0.000000000030
 
  
-     Date and time (Linux)  : Wed Dec 29 23:14:17 2010 
+     Date and time (Linux)  : Wed Mar 16 19:44:59 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -715,7 +753,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 N   :1s     0.7069  -0.0087  -0.0114  -0.1577   0.4269
    2 N   :1s     0.0008   0.6660   0.1916  -0.6015   2.0701
    3 N   :1s    -0.0000  -0.1914   0.2197   0.3502  -2.1305
@@ -726,7 +764,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 N   :2px    0.6293  -0.9478   0.4272
    2 N   :2px   -0.0339   1.0580  -0.2665
    3 N   :3d1+  -0.0475   0.1034   0.5954
@@ -734,7 +772,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2        3
+    Orbital         1        2        3
    1 N   :2py    0.6293   0.9478   0.4272
    2 N   :2py   -0.0339  -1.0580  -0.2665
    3 N   :3d1-  -0.0475  -0.1034   0.5954
@@ -742,13 +780,13 @@ Point group: D2h
  Molecular orbitals for symmetry species  4
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 N   :3d2-   0.6530
 
  Molecular orbitals for symmetry species  5
  ------------------------------------------
 
- Orbital           1        2        3        4
+    Orbital         1        2        3        4
    1 N   :1s     0.7080   0.0035  -0.0307  -0.1454
    2 N   :1s     0.0033   0.6527   0.3363  -0.4514
    3 N   :1s    -0.0045   0.0441   3.7484   0.9095
@@ -759,7 +797,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  6
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 N   :2px   -0.6312   1.0812
    2 N   :2px   -0.3857  -1.6571
    3 N   :3d1+  -0.0130   0.0688
@@ -767,7 +805,7 @@ Point group: D2h
  Molecular orbitals for symmetry species  7
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 N   :2py   -0.6312   1.0812
    2 N   :2py   -0.3857  -1.6571
    3 N   :3d1-  -0.0130   0.0688
@@ -775,16 +813,16 @@ Point group: D2h
  Molecular orbitals for symmetry species  8
  ------------------------------------------
 
- Orbital           1
+    Orbital         1
    1 N   :3d2-   0.7773
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.42 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.44 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:14:17 2010 
+     Date and time (Linux)  : Wed Mar 16 19:44:59 2011 
      Host name              : fe6                                     
 
 
@@ -817,7 +855,7 @@ Point group: D2h
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1     15
-  MIN AND MAX IN SELECTED SUPSPACE   -15.686433024024968       -15.683030137287014     
+  MIN AND MAX IN SELECTED SUPSPACE   -15.686433024026709       -15.683030137288743     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -15.6864
  Freezing HF-orbital  15 of symmetry   5 and with orbital energy  -15.6830
  In total frozen-core per symmetry-class:  1  0  0  0  1  0  0  0
@@ -867,7 +905,7 @@ Point group: D2h
  Core memory required by CCSD_R12 :          39735  (double words)
 
  Computation of (ip'|r12|jq') integrals done
- >>> Time used in R  [6] is   0.60 seconds
+ >>> Time used in R  [6] is   0.58 seconds
  Backtransformation of (ip'|r12|jq') integrals done
  Computation of CC-R12 VXINT response intermediates done
 
@@ -878,13 +916,13 @@ Point group: D2h
  >>> Time used for V^aj_kl is    0.01 seconds
 
  Computation of (ip'|1/r12|jq') integrals done
- >>> Time used in 1/R[5] is   0.30 seconds
+ >>> Time used in 1/R[5] is   0.31 seconds
  Computation of (i* p'|r12|jq') integrals done
  >>> Time used in R  [5] is   0.31 seconds
  Computation of (i'p|r12|jq') integrals done
  >>> Time used in R  [5] is   0.30 seconds
  Computation of (ip'|[T,r12]|jq') integrals done
- >>> Time used in T,R[5] is   0.34 seconds
+ >>> Time used in T,R[5] is   0.33 seconds
 
 
                  +-----------------------------------------------+
@@ -961,7 +999,7 @@ Point group: D2h
        -0.183617778   -0.233869558   -0.122673226   -0.137681139
 
               MP2-R12/B   correlation energy =   -0.371550697
- Time for MP2-R12 part cpu:   1.8637170493602753     
+ Time for MP2-R12 part cpu:   1.8457189202308655     
  Time for MP2-R12 part wall:   2.0000000000000000     
 
   I am freezing!
@@ -970,7 +1008,7 @@ Point group: D2h
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
      1 :      1     15
-  MIN AND MAX IN SELECTED SUPSPACE   -15.686433024024968       -15.683030137287014     
+  MIN AND MAX IN SELECTED SUPSPACE   -15.686433024026709       -15.683030137288743     
  Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -15.6864
  Freezing HF-orbital  15 of symmetry   5 and with orbital energy  -15.6830
  In total frozen-core per symmetry-class:  1  0  0  0  1  0  0  0
@@ -995,10 +1033,10 @@ Point group: D2h
           Number of t2' amplitudes for R12 part   :        67
           Total number of amplitudes in ccsd      :       886
 
- Iter.  1: Coupled cluster MP2-R12/A energy :    -109.3671238977609192
-     Conventional correlation energy:    -0.3062910038414657
-     R12 correlation energy         :    -0.1067021271729855
-     Total correlation energy       :    -0.4129931310144512
+ Iter.  1: Coupled cluster MP2-R12/A energy :    -109.3671238977640456
+     Conventional correlation energy:    -0.3062910038413804
+     R12 correlation energy         :    -0.1067021271729280
+     Total correlation energy       :    -0.4129931310143083
 
 
        Iteration no.:  1
@@ -1006,12 +1044,12 @@ Point group: D2h
 
        Time used in   RHS - TOTAL  :       0.09 seconds
        Norm^2 of omega1 after ccvec:        0.1676949383D-02
-       Norm^2 of omega2 after ccvec:        0.6800388495D-28
-       Norm^2 of Omegar12  in NXTAM:        0.9215796254D-28
- Iter.  1: Coupled cluster CC2-R12/A energy :    -109.3670947771420430
-     Conventional correlation energy:    -0.3062618832225752
-     R12 correlation energy         :    -0.1067021271729912
-     Total correlation energy       :    -0.4129640103955664
+       Norm^2 of omega2 after ccvec:        0.4247040142D-28
+       Norm^2 of Omegar12  in NXTAM:        0.1554162376D-27
+ Iter.  1: Coupled cluster CC2-R12/A energy :    -109.3670947771451978
+     Conventional correlation energy:    -0.3062618832225326
+     R12 correlation energy         :    -0.1067021271729239
+     Total correlation energy       :    -0.4129640103954565
 
 
        Iteration no.:  2
@@ -1021,10 +1059,10 @@ Point group: D2h
        Norm^2 of omega1 after ccvec:        0.5017963366D-04
        Norm^2 of omega2 after ccvec:        0.1252992940D-03
        Norm^2 of Omegar12  in NXTAM:        0.1440481160D-05
- Iter.  2: Coupled cluster CC2-R12/A energy :    -109.3685676148973869
-     Conventional correlation energy:    -0.3083710858187203
-     R12 correlation energy         :    -0.1060657623321871
-     Total correlation energy       :    -0.4144368481509074
+ Iter.  2: Coupled cluster CC2-R12/A energy :    -109.3685676149003712
+     Conventional correlation energy:    -0.3083710858185071
+     R12 correlation energy         :    -0.1060657623321198
+     Total correlation energy       :    -0.4144368481506270
 
 
        Iteration no.:  3
@@ -1034,10 +1072,10 @@ Point group: D2h
        Norm^2 of omega1 after ccvec:        0.1795309806D-04
        Norm^2 of omega2 after ccvec:        0.9366349564D-05
        Norm^2 of Omegar12  in NXTAM:        0.9180108954D-07
- Iter.  3: Coupled cluster CC2-R12/A energy :    -109.3693032176420417
-     Conventional correlation energy:    -0.3093706571273884
-     R12 correlation energy         :    -0.1058017937681771
-     Total correlation energy       :    -0.4151724508955655
+ Iter.  3: Coupled cluster CC2-R12/A energy :    -109.3693032176448270
+     Conventional correlation energy:    -0.3093706571269763
+     R12 correlation energy         :    -0.1058017937681060
+     Total correlation energy       :    -0.4151724508950823
 
 
        Iteration no.:  4
@@ -1047,183 +1085,196 @@ Point group: D2h
        Norm^2 of omega1 after ccvec:        0.3936639766D-07
        Norm^2 of omega2 after ccvec:        0.3211411530D-07
        Norm^2 of Omegar12  in NXTAM:        0.2626682108D-09
- Iter.  4: Coupled cluster CC2-R12/A energy :    -109.3693032678575037
-     Conventional correlation energy:    -0.3093689314718091
-     R12 correlation energy         :    -0.1058035696392156
-     Total correlation energy       :    -0.4151725011110247
+ Iter.  4: Coupled cluster CC2-R12/A energy :    -109.3693032678598342
+     Conventional correlation energy:    -0.3093689314709422
+     R12 correlation energy         :    -0.1058035696391433
+     Total correlation energy       :    -0.4151725011100856
 
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.3647342412D-08
+       Norm^2 of omega1 after ccvec:        0.3647342413D-08
        Norm^2 of omega2 after ccvec:        0.2406121316D-08
-       Norm^2 of Omegar12  in NXTAM:        0.1742771681D-10
- Iter.  5: Coupled cluster CC2-R12/A energy :    -109.3693042986151198
-     Conventional correlation energy:    -0.3093682471150032
-     R12 correlation energy         :    -0.1058052847536455
-     Total correlation energy       :    -0.4151735318686487
+       Norm^2 of Omegar12  in NXTAM:        0.1742771682D-10
+ Iter.  5: Coupled cluster CC2-R12/A energy :    -109.3693042986179762
+     Conventional correlation energy:    -0.3093682471146622
+     R12 correlation energy         :    -0.1058052847535739
+     Total correlation energy       :    -0.4151735318682360
 
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.5810443675D-10
-       Norm^2 of omega2 after ccvec:        0.5530548534D-10
-       Norm^2 of Omegar12  in NXTAM:        0.1780525626D-12
- Iter.  6: Coupled cluster CC2-R12/A energy :    -109.3693042518384715
-     Conventional correlation energy:    -0.3093681290140751
-     R12 correlation energy         :    -0.1058053560779205
-     Total correlation energy       :    -0.4151734850919955
+       Norm^2 of omega1 after ccvec:        0.5810443688D-10
+       Norm^2 of omega2 after ccvec:        0.5530548540D-10
+       Norm^2 of Omegar12  in NXTAM:        0.1780525609D-12
+ Iter.  6: Coupled cluster CC2-R12/A energy :    -109.3693042518414273
+     Conventional correlation energy:    -0.3093681290138335
+     R12 correlation energy         :    -0.1058053560778478
+     Total correlation energy       :    -0.4151734850916812
 
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.4318855457D-11
-       Norm^2 of omega2 after ccvec:        0.2580225437D-11
-       Norm^2 of Omegar12  in NXTAM:        0.1435858505D-13
- Iter.  7: Coupled cluster CC2-R12/A energy :    -109.3693042599323775
-     Conventional correlation energy:    -0.3093680831489962
-     R12 correlation energy         :    -0.1058054100369126
-     Total correlation energy       :    -0.4151734931859088
+       Norm^2 of omega1 after ccvec:        0.4318855516D-11
+       Norm^2 of omega2 after ccvec:        0.2580225433D-11
+       Norm^2 of Omegar12  in NXTAM:        0.1435858546D-13
+ Iter.  7: Coupled cluster CC2-R12/A energy :    -109.3693042599352339
+     Conventional correlation energy:    -0.3093680831486552
+     R12 correlation energy         :    -0.1058054100368412
+     Total correlation energy       :    -0.4151734931854963
 
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.5602628368D-13
-       Norm^2 of omega2 after ccvec:        0.6182208872D-13
-       Norm^2 of Omegar12  in NXTAM:        0.4014086566D-15
- Iter.  8: Coupled cluster CC2-R12/A energy :    -109.3693042685990235
-     Conventional correlation energy:    -0.3093680855920127
-     R12 correlation energy         :    -0.1058054162605414
-     Total correlation energy       :    -0.4151735018525540
+       Norm^2 of omega1 after ccvec:        0.5602628611D-13
+       Norm^2 of omega2 after ccvec:        0.6182208809D-13
+       Norm^2 of Omegar12  in NXTAM:        0.4014086162D-15
+ Iter.  8: Coupled cluster CC2-R12/A energy :    -109.3693042686018799
+     Conventional correlation energy:    -0.3093680855916716
+     R12 correlation energy         :    -0.1058054162604691
+     Total correlation energy       :    -0.4151735018521407
 
 
        Iteration no.:  9
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.2992848834D-14
-       Norm^2 of omega2 after ccvec:        0.1338262539D-14
-       Norm^2 of Omegar12  in NXTAM:        0.1464093141D-16
- Iter.  9: Coupled cluster CC2-R12/A energy :    -109.3693042681971264
-     Conventional correlation energy:    -0.3093680832957943
-     R12 correlation energy         :    -0.1058054181548560
-     Total correlation energy       :    -0.4151735014506503
+       Norm^2 of omega1 after ccvec:        0.2992852681D-14
+       Norm^2 of omega2 after ccvec:        0.1338262650D-14
+       Norm^2 of Omegar12  in NXTAM:        0.1464094414D-16
+ Iter.  9: Coupled cluster CC2-R12/A energy :    -109.3693042682002954
+     Conventional correlation energy:    -0.3093680832957659
+     R12 correlation energy         :    -0.1058054181547841
+     Total correlation energy       :    -0.4151735014505501
 
 
        Iteration no.: 10
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.1235810319D-15
-       Norm^2 of omega2 after ccvec:        0.2990455263D-15
-       Norm^2 of Omegar12  in NXTAM:        0.9982578406D-18
- Iter. 10: Coupled cluster CC2-R12/A energy :    -109.3693042689721437
-     Conventional correlation energy:    -0.3093680837564392
-     R12 correlation energy         :    -0.1058054184692255
-     Total correlation energy       :    -0.4151735022256647
+       Norm^2 of omega1 after ccvec:        0.1235806122D-15
+       Norm^2 of omega2 after ccvec:        0.2990459070D-15
+       Norm^2 of Omegar12  in NXTAM:        0.9982577993D-18
+ Iter. 10: Coupled cluster CC2-R12/A energy :    -109.3693042689751564
+     Conventional correlation energy:    -0.3093680837562687
+     R12 correlation energy         :    -0.1058054184691508
+     Total correlation energy       :    -0.4151735022254195
 
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.2931289912D-16
-       Norm^2 of omega2 after ccvec:        0.6492719991D-17
-       Norm^2 of Omegar12  in NXTAM:        0.4521885758D-19
- Iter. 11: Coupled cluster CC2-R12/A energy :    -109.3693042691147497
-     Conventional correlation energy:    -0.3093680837716306
-     R12 correlation energy         :    -0.1058054185966384
-     Total correlation energy       :    -0.4151735023682690
+       Norm^2 of omega1 after ccvec:        0.2931316779D-16
+       Norm^2 of omega2 after ccvec:        0.6492722419D-17
+       Norm^2 of Omegar12  in NXTAM:        0.4521919311D-19
+ Iter. 11: Coupled cluster CC2-R12/A energy :    -109.3693042691174639
+     Conventional correlation energy:    -0.3093680837711617
+     R12 correlation energy         :    -0.1058054185965640
+     Total correlation energy       :    -0.4151735023677257
 
 
        Iteration no.: 12
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.4416883659D-18
-       Norm^2 of omega2 after ccvec:        0.3707768320D-18
-       Norm^2 of Omegar12  in NXTAM:        0.1527021737D-20
- Iter. 12: Coupled cluster CC2-R12/A energy :    -109.3693042691421198
-     Conventional correlation energy:    -0.3093680837994555
-     R12 correlation energy         :    -0.1058054185961972
-     Total correlation energy       :    -0.4151735023956526
+       Norm^2 of omega1 after ccvec:        0.4416912744D-18
+       Norm^2 of omega2 after ccvec:        0.3707774814D-18
+       Norm^2 of Omegar12  in NXTAM:        0.1527049947D-20
+ Iter. 12: Coupled cluster CC2-R12/A energy :    -109.3693042691446067
+     Conventional correlation energy:    -0.3093680837987449
+     R12 correlation energy         :    -0.1058054185961266
+     Total correlation energy       :    -0.4151735023948715
 
 
        Iteration no.: 13
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.9758863570D-20
-       Norm^2 of omega2 after ccvec:        0.1228995517D-19
-       Norm^2 of Omegar12  in NXTAM:        0.1026493507D-21
- Iter. 13: Coupled cluster CC2-R12/A energy :    -109.3693042691481168
-     Conventional correlation energy:    -0.3093680838092752
-     R12 correlation energy         :    -0.1058054185923633
-     Total correlation energy       :    -0.4151735024016384
+       Norm^2 of omega1 after ccvec:        0.9765084153D-20
+       Norm^2 of omega2 after ccvec:        0.1229066785D-19
+       Norm^2 of Omegar12  in NXTAM:        0.1026609278D-21
+ Iter. 13: Coupled cluster CC2-R12/A energy :    -109.3693042691512431
+     Conventional correlation energy:    -0.3093680838092041
+     R12 correlation energy         :    -0.1058054185922924
+     Total correlation energy       :    -0.4151735024014965
 
 
        Iteration no.: 14
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.2525685381D-21
-       Norm^2 of omega2 after ccvec:        0.1038281218D-21
-       Norm^2 of Omegar12  in NXTAM:        0.1164041917D-23
- Iter. 14: Coupled cluster CC2-R12/A energy :    -109.3693042691472925
-     Conventional correlation energy:    -0.3093680838077688
-     R12 correlation energy         :    -0.1058054185930508
-     Total correlation energy       :    -0.4151735024008196
+       Norm^2 of omega1 after ccvec:        0.2535711628D-21
+       Norm^2 of omega2 after ccvec:        0.1038518587D-21
+       Norm^2 of Omegar12  in NXTAM:        0.1160951992D-23
+ Iter. 14: Coupled cluster CC2-R12/A energy :    -109.3693042691503052
+     Conventional correlation energy:    -0.3093680838075841
+     R12 correlation energy         :    -0.1058054185929779
+     Total correlation energy       :    -0.4151735024005619
 
 
        Iteration no.: 15
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.3229604403D-23
-       Norm^2 of omega2 after ccvec:        0.3115863230D-23
-       Norm^2 of Omegar12  in NXTAM:        0.1523309779D-25
- Iter. 15: Coupled cluster CC2-R12/A energy :    -109.3693042691471931
-     Conventional correlation energy:    -0.3093680838076125
-     R12 correlation energy         :    -0.1058054185931003
-     Total correlation energy       :    -0.4151735024007128
+       Norm^2 of omega1 after ccvec:        0.3125449944D-23
+       Norm^2 of omega2 after ccvec:        0.3120473341D-23
+       Norm^2 of Omegar12  in NXTAM:        0.1540069783D-25
+ Iter. 15: Coupled cluster CC2-R12/A energy :    -109.3693042691502342
+     Conventional correlation energy:    -0.3093680838074562
+     R12 correlation energy         :    -0.1058054185930311
+     Total correlation energy       :    -0.4151735024004872
 
 
        Iteration no.: 16
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.5065819729D-25
-       Norm^2 of omega2 after ccvec:        0.1474960383D-25
-       Norm^2 of Omegar12  in NXTAM:        0.4081815087D-27
- Iter. 16: Coupled cluster CC2-R12/A energy :    -109.3693042691472073
-     Conventional correlation energy:    -0.3093680838076267
-     R12 correlation energy         :    -0.1058054185931108
-     Total correlation energy       :    -0.4151735024007375
+       Norm^2 of omega1 after ccvec:        0.4192860450D-25
+       Norm^2 of omega2 after ccvec:        0.1500943206D-25
+       Norm^2 of Omegar12  in NXTAM:        0.3334469172D-27
+ Iter. 16: Coupled cluster CC2-R12/A energy :    -109.3693042691501773
+     Conventional correlation energy:    -0.3093680838073993
+     R12 correlation energy         :    -0.1058054185930411
+     Total correlation energy       :    -0.4151735024004404
 
 
        Iteration no.: 17
        -----------------
 
        Time used in   RHS - TOTAL  :       0.09 seconds
-       Norm^2 of omega1 after ccvec:        0.4481440713D-26
-       Norm^2 of omega2 after ccvec:        0.2048735185D-26
-       Norm^2 of Omegar12  in NXTAM:        0.2560871799D-28
- Iter. 17: Coupled cluster CC2-R12/A energy :    -109.3693042691472073
-     Conventional correlation energy:    -0.3093680838076267
-     R12 correlation energy         :    -0.1058054185931109
-     Total correlation energy       :    -0.4151735024007376
+       Norm^2 of omega1 after ccvec:        0.4198416800D-26
+       Norm^2 of omega2 after ccvec:        0.1795544666D-26
+       Norm^2 of Omegar12  in NXTAM:        0.2257725828D-28
+ Iter. 17: Coupled cluster CC2-R12/A energy :    -109.3693042691502058
+     Conventional correlation energy:    -0.3093680838074278
+     R12 correlation energy         :    -0.1058054185930401
+     Total correlation energy       :    -0.4151735024004679
+
+
+       Iteration no.: 18
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.09 seconds
+       Norm^2 of omega1 after ccvec:        0.8769823563D-27
+       Norm^2 of omega2 after ccvec:        0.3353720455D-27
+       Norm^2 of Omegar12  in NXTAM:        0.1195459930D-28
+ Iter. 18: Coupled cluster CC2-R12/A energy :    -109.3693042691502058
+     Conventional correlation energy:    -0.3093680838074278
+     R12 correlation energy         :    -0.1058054185930410
+     Total correlation energy       :    -0.4151735024004688
 
 
  CC2-R12/A energy converged to within   0.10D-13 is   -109.369304269
- Final 2-norm of the CC vector function:  8.08095038D-14
+ Final 2-norm of the CC vector function:  3.48188800D-14
  R12       energy converged to within   0.10D-13 is     -0.105805419
 
 
@@ -1293,7 +1344,7 @@ Point group: D2h
 
             Total MP2-R12/A energy:              -109.3671238978
 
-            Total CC2-R12/A energy:              -109.3693042691
+            Total CC2-R12/A energy:              -109.3693042692
 
 
 
@@ -1342,13 +1393,13 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 3.07157D-01
       1       1         0.00     0.31E+00
  Dimension of the reduced space:     2
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  ROOT:  1 RESIDUAL TOT: 3.88530D-02
       2       1         0.00     0.39E-01
  Dimension of the reduced space:     3
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 9.23802D-03
@@ -1366,7 +1417,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 3.14084D-04
       5       1         0.00     0.31E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.12596D-05
@@ -1378,49 +1429,49 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.28088D-05
       7       1         0.00     0.13E-04
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  ROOT:  1 RESIDUAL TOT: 2.03978D-06
       8       1         0.00     0.20E-05
  Dimension of the reduced space:     9
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 5.97278D-07
       9       1         0.00     0.60E-06
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.22724D-07
      10       1         0.00     0.12E-06
  Dimension of the reduced space:    11
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
  ROOT:  1 RESIDUAL TOT: 2.32265D-08
      11       1         0.00     0.23E-07
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.80482D-09
      12       1         0.00     0.18E-08
  Dimension of the reduced space:    13
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 4.39673D-10
      13       1         0.00     0.44E-09
  Dimension of the reduced space:    14
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   
- ROOT:  1 RESIDUAL TOT: 5.74168D-11
+ ROOT:  1 RESIDUAL TOT: 5.74169D-11
      14       1         0.00     0.57E-10
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
  ROOT:  1 RESIDUAL TOT: 1.04678D-11
@@ -1429,17 +1480,17 @@ Point group: D2h
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 1.74822D-12
+ ROOT:  1 RESIDUAL TOT: 1.74821D-12
      16       1         0.00     0.17E-11
  Dimension of the reduced space:    17
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   
- ROOT:  1 RESIDUAL TOT: 3.69770D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.69770D-13
+ ROOT:  1 RESIDUAL TOT: 3.69742D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.69742D-13
      17       1         0.00     0.37E-12
  Dimension of the reduced space:    17
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 17 iterations
@@ -1456,7 +1507,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -1552,7 +1603,7 @@ Point group: D2h
 
  Ground state energy is target 
 
- Ecorr =                   -109.36930426914720726472
+ Ecorr =                   -109.36930426915020575507
 
  *******************************************************************
      
@@ -1877,7 +1928,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 7.26081D-04
       5       1         0.00     0.73E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -1994,7 +2045,7 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 1.60205D-12
+ ROOT:  1 RESIDUAL TOT: 1.60202D-12
      15       1         0.00     0.16E-11
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2006,8 +2057,8 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 1.59904D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.59904D-13
+ ROOT:  1 RESIDUAL TOT: 1.59929D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.59929D-13
      16       1         0.00     0.16E-12
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2026,8 +2077,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2169,7 +2220,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.19888D-04
       6       1         0.00     0.12E-03
  Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -2205,7 +2256,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 7.36213D-07
       9       1         0.00     0.74E-06
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -2274,10 +2325,10 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
   
- ROOT:  1 RESIDUAL TOT: 1.60199D-12
+ ROOT:  1 RESIDUAL TOT: 1.60202D-12
      15       1         0.00     0.16E-11
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -2286,8 +2337,8 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
   
- ROOT:  1 RESIDUAL TOT: 1.59923D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.59923D-13
+ ROOT:  1 RESIDUAL TOT: 1.59963D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.59963D-13
      16       1         0.00     0.16E-12
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2306,7 +2357,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -2389,7 +2440,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 4.71281D-01
       1       1         0.00     0.47E+00
  Dimension of the reduced space:     2
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -2413,7 +2464,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.30575D-02
       3       1         0.00     0.13E-01
  Dimension of the reduced space:     4
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -2497,7 +2548,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 5.52566D-08
      10       1         0.00     0.55E-07
  Dimension of the reduced space:    11
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -2542,7 +2593,7 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 7.30962D-11
+ ROOT:  1 RESIDUAL TOT: 7.30961D-11
      14       1         0.00     0.73E-10
  Dimension of the reduced space:    15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2554,7 +2605,7 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 1.10700D-11
+ ROOT:  1 RESIDUAL TOT: 1.10699D-11
      15       1         0.00     0.11E-10
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2566,10 +2617,10 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 2.19161D-12
+ ROOT:  1 RESIDUAL TOT: 2.19154D-12
      16       1         0.00     0.22E-11
  Dimension of the reduced space:    17
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -2578,8 +2629,8 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 2.03985D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.03985D-13
+ ROOT:  1 RESIDUAL TOT: 2.04060D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.04060D-13
      17       1         0.00     0.20E-12
  Dimension of the reduced space:    17
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2599,7 +2650,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -2687,7 +2738,7 @@ Point group: D2h
  | L vector | R vector |    result    |             |
  | L0   No. |  R1  No. |   F1   No.   |  time/secs  |
  +--------------------------------------------------+
- |     0    |     1    |      1       |       0.10  |
+ |     0    |     1    |      1       |       0.09  |
  |     0    |     2    |      2       |       0.10  |
  |     0    |     3    |      3       |       0.09  |
  +--------------------------------------------------+
@@ -2767,7 +2818,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 9.43801D-04
       5       1         0.00     0.94E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -2863,7 +2914,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.60798D-10
      13       1         0.00     0.16E-09
  Dimension of the reduced space:    14
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -2875,7 +2926,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 2.83223D-11
      14       1         0.00     0.28E-10
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -2884,7 +2935,7 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 1.57701D-12
+ ROOT:  1 RESIDUAL TOT: 1.57704D-12
      15       1         0.00     0.16E-11
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -2896,8 +2947,8 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   2
   
- ROOT:  1 RESIDUAL TOT: 1.54215D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.54215D-13
+ ROOT:  1 RESIDUAL TOT: 1.54229D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.54229D-13
      16       1         0.00     0.15E-12
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -2917,7 +2968,7 @@ Point group: D2h
 
 
  >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3036,7 +3087,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.06562D-01
       2       1         0.00     0.11E+00
  Dimension of the reduced space:     3
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3060,7 +3111,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 6.98377D-03
       4       1         0.00     0.70E-02
  Dimension of the reduced space:     5
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -3072,7 +3123,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 9.43801D-04
       5       1         0.00     0.94E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3084,7 +3135,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.60826D-04
       6       1         0.00     0.16E-03
  Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -3120,7 +3171,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 8.62461D-07
       9       1         0.00     0.86E-06
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -3144,7 +3195,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.52680D-08
      11       1         0.00     0.15E-07
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3156,7 +3207,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.67272D-09
      12       1         0.00     0.17E-08
  Dimension of the reduced space:    13
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3180,7 +3231,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 2.83223D-11
      14       1         0.00     0.28E-10
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3189,10 +3240,10 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
   
- ROOT:  1 RESIDUAL TOT: 1.57678D-12
+ ROOT:  1 RESIDUAL TOT: 1.57698D-12
      15       1         0.00     0.16E-11
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3201,8 +3252,8 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: YDIPLEN  and symmetry:   3
   
- ROOT:  1 RESIDUAL TOT: 1.54113D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.54113D-13
+ ROOT:  1 RESIDUAL TOT: 1.54211D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.54211D-13
      16       1         0.00     0.15E-12
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -3221,8 +3272,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -3341,7 +3392,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 5.97058D-02
       2       1         0.00     0.60E-01
  Dimension of the reduced space:     3
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3365,7 +3416,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 2.36385D-03
       4       1         0.00     0.24E-02
  Dimension of the reduced space:     5
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -3377,7 +3428,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 3.63604D-04
       5       1         0.00     0.36E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3413,7 +3464,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 3.18117D-06
       8       1         0.00     0.32E-05
  Dimension of the reduced space:     9
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3449,7 +3500,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 2.40036D-08
      11       1         0.00     0.24E-07
  Dimension of the reduced space:    12
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3473,7 +3524,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 5.33516D-10
      13       1         0.00     0.53E-09
  Dimension of the reduced space:    14
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3482,10 +3533,10 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 5.94610D-11
+ ROOT:  1 RESIDUAL TOT: 5.94609D-11
      14       1         0.00     0.59E-10
  Dimension of the reduced space:    15
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3497,7 +3548,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.33223D-11
      15       1         0.00     0.13E-10
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3506,10 +3557,10 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 1.64115D-12
+ ROOT:  1 RESIDUAL TOT: 1.64119D-12
      16       1         0.00     0.16E-11
  Dimension of the reduced space:    17
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -3518,11 +3569,11 @@ Point group: D2h
  Finding gradient for 
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   5
   
- ROOT:  1 RESIDUAL TOT: 2.31284D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.31284D-13
+ ROOT:  1 RESIDUAL TOT: 2.31272D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.31272D-13
      17       1         0.00     0.23E-12
  Dimension of the reduced space:    17
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
     --------------------------------------
     converged in 17 iterations
@@ -3538,7 +3589,7 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -3704,7 +3755,7 @@ Point group: D2h
  |     1    |     2    |      4       |       0.10  |
  |     3    |     1    |      5       |       0.10  |
  +--------------------------------------------------+
- | total time for   5 B transforms.:      0.49 secs.|
+ | total time for   5 B transforms.:      0.51 secs.|
  +==================================================+
 
 
@@ -3860,7 +3911,7 @@ Point group: D2h
  ROOT:  3 RESIDUAL TOT: 3.00966D-04
       5       3         0.00     0.30E-03
  Dimension of the reduced space:    18
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
 
  Finding gradient for 
@@ -4016,7 +4067,7 @@ Point group: D2h
  ROOT:  3 RESIDUAL TOT: 1.53459D-09
      11       3         0.00     0.17E-08
  Dimension of the reduced space:    36
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -4063,9 +4114,9 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
   
- ROOT:  1 RESIDUAL TOT: 6.98101D-12
- ROOT:  2 RESIDUAL TOT: 6.98102D-12
- ROOT:  3 RESIDUAL TOT: 6.70107D-12
+ ROOT:  1 RESIDUAL TOT: 6.98244D-12
+ ROOT:  2 RESIDUAL TOT: 6.98250D-12
+ ROOT:  3 RESIDUAL TOT: 6.70208D-12
      13       3         0.00     0.70E-11
  Dimension of the reduced space:    42
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -4089,13 +4140,13 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: ZDIPLEN ,ZDIPLEN  and symmetries:   5  5  1
   
- ROOT:  1 RESIDUAL TOT: 9.06983D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.06983D-16
- ROOT:  2 RESIDUAL TOT: 1.64951D-15
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.64951D-15
- ROOT:  3 RESIDUAL TOT: 9.80000D-16
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 9.80000D-16
-     14       3         0.00     0.16E-14
+ ROOT:  1 RESIDUAL TOT: 3.19480D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.19480D-15
+ ROOT:  2 RESIDUAL TOT: 1.00334D-15
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 1.00334D-15
+ ROOT:  3 RESIDUAL TOT: 2.98516D-15
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 2.98516D-15
+     14       3         0.00     0.32E-14
  Dimension of the reduced space:    42
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
@@ -4113,8 +4164,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.18 seconds
- >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   3.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4298,7 +4349,7 @@ Point group: D2h
 
 
           Printed all double excitations greater than 0.078010
-            Norm of singles part:        0.2497941474E+01
+            Norm of singles part:        0.2497941473E+01
             Norm of doubles part:        0.1323054653E+01
         Norm of r12 doubles part:        0.2372641672E+01
 
@@ -4349,7 +4400,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 8.13801D-03
       3       1         0.00     0.81E-02
  Dimension of the reduced space:     4
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -4430,10 +4481,10 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
   
- ROOT:  1 RESIDUAL TOT: 5.17061D-11
+ ROOT:  1 RESIDUAL TOT: 5.17060D-11
      10       1         0.00     0.52E-10
  Dimension of the reduced space:    11
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -4442,7 +4493,7 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
   
- ROOT:  1 RESIDUAL TOT: 6.12017D-12
+ ROOT:  1 RESIDUAL TOT: 6.12022D-12
      11       1         0.00     0.61E-11
  Dimension of the reduced space:    12
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -4454,9 +4505,9 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: XDIPLEN ,YDIPLEN  and symmetries:   2  3  4
   
- ROOT:  1 RESIDUAL TOT: 7.24629D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.24629D-16
-     12       1         0.00     0.72E-15
+ ROOT:  1 RESIDUAL TOT: 8.87154D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.87154D-16
+     12       1         0.00     0.89E-15
  Dimension of the reduced space:    12
  >>> TIME USED IN THIS MICRO ITERATION        0.00
 
@@ -4606,7 +4657,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 2.43508D-04
       6       1         0.00     0.24E-03
  Dimension of the reduced space:     7
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -4618,7 +4669,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 5.82314D-05
       7       1         0.00     0.58E-04
  Dimension of the reduced space:     8
- >>> TIME USED IN THIS MICRO ITERATION        0.00
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
 
  Finding gradient for 
@@ -4642,7 +4693,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 1.37018D-06
       9       1         0.00     0.14E-05
  Dimension of the reduced space:    10
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -4678,7 +4729,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 4.24958D-09
      12       1         0.00     0.42E-08
  Dimension of the reduced space:    13
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -4711,10 +4762,10 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: ZDIPLEN ,XDIPLEN  and symmetries:   5  2  6
   
- ROOT:  1 RESIDUAL TOT: 1.08727D-11
+ ROOT:  1 RESIDUAL TOT: 1.08729D-11
      15       1         0.00     0.11E-10
  Dimension of the reduced space:    16
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for 
@@ -4723,8 +4774,8 @@ Point group: D2h
  Finding gradient for 
  Frequencies -0.000000,  0.000000 and labels: ZDIPLEN ,XDIPLEN  and symmetries:   5  2  6
   
- ROOT:  1 RESIDUAL TOT: 9.35655D-13
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.35655D-13
+ ROOT:  1 RESIDUAL TOT: 9.35826D-13
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.35826D-13
      16       1         0.00     0.94E-12
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -4743,8 +4794,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4871,37 +4922,37 @@ Point group: D2h
  |     1    |     1    |      1       |       0.10  |
  |     1    |     1    |      1       |       0.09  |
  |     1    |     1    |      1       |       0.09  |
- |     4    |     2    |      2       |       0.10  |
+ |     4    |     2    |      2       |       0.09  |
  |     4    |     2    |      2       |       0.09  |
  |     2    |     1    |      2       |       0.09  |
- |     5    |     3    |      3       |       0.10  |
+ |     5    |     3    |      3       |       0.09  |
  |     5    |     3    |      3       |       0.09  |
  |     3    |     1    |      3       |       0.10  |
- |     1    |     2    |      4       |       0.10  |
- |     4    |     1    |      4       |       0.09  |
+ |     1    |     2    |      4       |       0.09  |
+ |     4    |     1    |      4       |       0.10  |
  |     4    |     1    |      4       |       0.09  |
  |     1    |     3    |      5       |       0.09  |
- |     5    |     1    |      5       |       0.09  |
  |     5    |     1    |      5       |       0.10  |
+ |     5    |     1    |      5       |       0.09  |
  |     3    |     3    |      6       |       0.10  |
- |     3    |     3    |      6       |       0.10  |
- |     3    |     3    |      6       |       0.10  |
+ |     3    |     3    |      6       |       0.09  |
+ |     3    |     3    |      6       |       0.09  |
  +--------------------------------------------------+
- | total time for  18 B transforms.:      1.75 secs.|
+ | total time for  18 B transforms.:      1.74 secs.|
  +--------------------------------------------------+
- |  % of time used in start up org.:      0.34      |
- |  % of time used in Fock interm. :      0.06      |
+ |  % of time used in start up org.:      0.23      |
+ |  % of time used in Fock interm. :      0.23      |
  |  % of time used in ERI          :      0.00      |
- |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCRDAO       :      0.06      |
  |  % of time used in (**|k del)   :      0.00      |
- |  % of time used in singles part :      0.06      |
+ |  % of time used in singles part :      0.00      |
  |  % of time used in A term       :      0.00      |
  |  % of time used in BF term      :      0.00      |
- |  % of time used in F term       :      0.69      |
+ |  % of time used in F term       :      0.63      |
  |  % of time used in E term       :      0.00      |
  |  % of time used in C term       :      0.00      |
  |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :      0.86      |
+ |  % of time used in I/O          :      1.09      |
  +==================================================+
 
 
@@ -5032,7 +5083,7 @@ Point group: D2h
 
  (CCORT) new  b-vector no.  2
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  4.12431D-22
+ norm of vector after Gram-Schmidt's orthogonalization  4.09158D-22
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -5066,7 +5117,7 @@ Point group: D2h
 
  (CCORT) new  b-vector no.  2
  is removed because of linear dependence;
- norm of vector after Gram-Schmidt's orthogonalization  7.44912D-21
+ norm of vector after Gram-Schmidt's orthogonalization  7.40652D-21
   After Gram Schmidt orthonormalization
           -1  vectors with norm le:  1.00000000000000001E-035  REMOVED
 
@@ -5120,9 +5171,9 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 3.75465D-06
- ROOT:  2 RESIDUAL TOT: 2.61758D-06
- ROOT:  3 RESIDUAL TOT: 2.37067D-06
+ ROOT:  1 RESIDUAL TOT: 3.75434D-06
+ ROOT:  2 RESIDUAL TOT: 2.61737D-06
+ ROOT:  3 RESIDUAL TOT: 2.37046D-06
       7       3         0.00     0.38E-05
  Dimension of the reduced space:    22
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -5146,9 +5197,9 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 4.98266D-07
- ROOT:  2 RESIDUAL TOT: 3.47370D-07
- ROOT:  3 RESIDUAL TOT: 3.88954D-07
+ ROOT:  1 RESIDUAL TOT: 4.95837D-07
+ ROOT:  2 RESIDUAL TOT: 3.45676D-07
+ ROOT:  3 RESIDUAL TOT: 3.86889D-07
       8       3         0.00     0.50E-06
  Dimension of the reduced space:    25
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -5172,12 +5223,12 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 4.85468D-08
- ROOT:  2 RESIDUAL TOT: 3.38448D-08
- ROOT:  3 RESIDUAL TOT: 3.57685D-08
-      9       3         0.00     0.49E-07
+ ROOT:  1 RESIDUAL TOT: 4.61088D-08
+ ROOT:  2 RESIDUAL TOT: 3.21451D-08
+ ROOT:  3 RESIDUAL TOT: 3.43051D-08
+      9       3         0.00     0.46E-07
  Dimension of the reduced space:    28
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
 
  Finding gradient for R3 response:
@@ -5198,10 +5249,10 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 4.12112D-09
- ROOT:  2 RESIDUAL TOT: 2.87307D-09
- ROOT:  3 RESIDUAL TOT: 4.22673D-09
-     10       3         0.00     0.42E-08
+ ROOT:  1 RESIDUAL TOT: 3.89666D-09
+ ROOT:  2 RESIDUAL TOT: 2.71658D-09
+ ROOT:  3 RESIDUAL TOT: 4.12846D-09
+     10       3         0.00     0.41E-08
  Dimension of the reduced space:    31
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
@@ -5224,9 +5275,9 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 4.48678D-11
- ROOT:  2 RESIDUAL TOT: 3.12799D-11
- ROOT:  3 RESIDUAL TOT: 6.08570D-11
+ ROOT:  1 RESIDUAL TOT: 4.69534D-11
+ ROOT:  2 RESIDUAL TOT: 3.27338D-11
+ ROOT:  3 RESIDUAL TOT: 6.08454D-11
      11       3         0.00     0.61E-10
  Dimension of the reduced space:    34
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -5250,10 +5301,10 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 1.32184D-12
- ROOT:  2 RESIDUAL TOT: 9.21490D-13
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.21490D-13
- ROOT:  3 RESIDUAL TOT: 1.08154D-12
+ ROOT:  1 RESIDUAL TOT: 1.33011D-12
+ ROOT:  2 RESIDUAL TOT: 9.27353D-13
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.27353D-13
+ ROOT:  3 RESIDUAL TOT: 1.11305D-12
      12       3         0.00     0.13E-11
  Dimension of the reduced space:    36
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -5277,13 +5328,13 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies    0.000000   -0.000000    0.000000 and labels: XDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   2  5  5  2
   
- ROOT:  1 RESIDUAL TOT: 7.12397D-16
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.12397D-16
- ROOT:  2 RESIDUAL TOT: 6.71919D-16
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 6.71919D-16
- ROOT:  3 RESIDUAL TOT: 1.38254D-15
- ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 1.38254D-15
-     13       2         0.00     0.14E-14
+ ROOT:  1 RESIDUAL TOT: 1.30099D-15
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.30099D-15
+ ROOT:  2 RESIDUAL TOT: 5.93891D-16
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 5.93891D-16
+ ROOT:  3 RESIDUAL TOT: 7.29655D-16
+ ROOT:  3 HAS CONVERGED. RESIDUAL TOT: 7.29655D-16
+     13       2         0.00     0.13E-14
  Dimension of the reduced space:    36
  >>> TIME USED IN THIS MICRO ITERATION        0.01
 
@@ -5301,8 +5352,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.14 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5736,7 +5787,7 @@ Point group: D2h
  ROOT:  1 RESIDUAL TOT: 5.42463D-04
       5       1         0.00     0.54E-03
  Dimension of the reduced space:     6
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
 
  Finding gradient for R3 response:
@@ -5841,7 +5892,7 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies   -0.000000    0.000000    0.000000 and labels: XDIPLEN XDIPLEN YDIPLEN  and symmetries:   2  2  3  3
   
- ROOT:  1 RESIDUAL TOT: 6.26185D-12
+ ROOT:  1 RESIDUAL TOT: 6.26180D-12
      14       1         0.00     0.63E-11
  Dimension of the reduced space:    15
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -5865,8 +5916,8 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies   -0.000000    0.000000    0.000000 and labels: XDIPLEN XDIPLEN YDIPLEN  and symmetries:   2  2  3  3
   
- ROOT:  1 RESIDUAL TOT: 4.92403D-14
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.92403D-14
+ ROOT:  1 RESIDUAL TOT: 4.92743D-14
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.92743D-14
      16       1         0.00     0.49E-13
  Dimension of the reduced space:    16
  >>> TIME USED IN THIS MICRO ITERATION        0.00
@@ -5885,8 +5936,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.07 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6230,8 +6281,8 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies   -0.000000    0.000000    0.000000 and labels: ZDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   5  5  5  5
   
- ROOT:  1 RESIDUAL TOT: 1.51975D-11
- ROOT:  2 RESIDUAL TOT: 1.11434D-11
+ ROOT:  1 RESIDUAL TOT: 1.51974D-11
+ ROOT:  2 RESIDUAL TOT: 1.11433D-11
      14       2         0.00     0.15E-10
  Dimension of the reduced space:    30
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -6250,7 +6301,7 @@ Point group: D2h
  Frequencies   -0.000000    0.000000    0.000000 and labels: ZDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   5  5  5  5
   
  ROOT:  1 RESIDUAL TOT: 2.02659D-12
- ROOT:  2 RESIDUAL TOT: 1.52408D-12
+ ROOT:  2 RESIDUAL TOT: 1.52406D-12
      15       2         0.00     0.20E-11
  Dimension of the reduced space:    32
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -6268,10 +6319,10 @@ Point group: D2h
  Finding gradient for R3 response:
  Frequencies   -0.000000    0.000000    0.000000 and labels: ZDIPLEN ZDIPLEN ZDIPLEN  and symmetries:   5  5  5  5
   
- ROOT:  1 RESIDUAL TOT: 9.93441D-14
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.93441D-14
- ROOT:  2 RESIDUAL TOT: 9.97783D-14
- ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.97783D-14
+ ROOT:  1 RESIDUAL TOT: 9.95093D-14
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 9.95093D-14
+ ROOT:  2 RESIDUAL TOT: 9.96744D-14
+ ROOT:  2 HAS CONVERGED. RESIDUAL TOT: 9.96744D-14
      16       2         0.00     0.10E-12
  Dimension of the reduced space:    32
  >>> TIME USED IN THIS MICRO ITERATION        0.01
@@ -6290,8 +6341,8 @@ Point group: D2h
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.14 seconds
- >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   2.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6594,8 +6645,8 @@ Point group: D2h
 
 
           Printed all double excitations greater than 0.085096
-            Norm of singles part:        0.8632393563E+01
-            Norm of doubles part:        0.5126016208E+01
+            Norm of singles part:        0.8632393562E+01
+            Norm of doubles part:        0.5126016207E+01
         Norm of r12 doubles part:        0.2106571263E+01
 
  Solution of CC response equations completed.
@@ -6781,14 +6832,14 @@ Point group: D2h
  |     0    |     3    |      2       |       0.10  |
  |     0    |     5    |      1       |       0.09  |
  |     0    |     1    |      2       |       0.09  |
- |     0    |     4    |      1       |       0.09  |
+ |     0    |     4    |      1       |       0.10  |
  +--------------------------------------------------+
- | total time for   4 F transforms.:      0.40 secs.|
+ | total time for   4 F transforms.:      0.41 secs.|
  +==================================================+
 
 
 
->>> Time used for   11 F matrix transformations:           0.40 seconds.
+>>> Time used for   11 F matrix transformations:           0.41 seconds.
 
 >>> Time used for   17 F{O} matrix transformations:        0.01 seconds.
 
@@ -6796,7 +6847,7 @@ Point group: D2h
 
 >>> Time used for    6 R3 x X1 dot products:        0.00 seconds.
 
->>> Total time for  10 cubic response functions:           0.42 seconds.
+>>> Total time for  10 cubic response functions:           0.43 seconds.
 
 
         +------------------------------------------------------------------+
@@ -6856,7 +6907,7 @@ Point group: D2h
                                                                                 
             Total SCF   energy:                  -108.9541307667                
             Total MP2-R12/A energy:              -109.3671238978                
-            Total CC2-R12/A energy:              -109.3693042691                
+            Total CC2-R12/A energy:              -109.3693042692                
   
 
  *******************************************************************************
@@ -6875,9 +6926,9 @@ Point group: D2h
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   8.52 seconds
- >>>> Total wall time used in DALTON:  24.00 seconds
+ >>>> Total CPU  time used in DALTON:   8.57 seconds
+ >>>> Total wall time used in DALTON:  38.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 23:14:40 2010 
+     Date and time (Linux)  : Wed Mar 16 19:45:36 2011 
      Host name              : fe6                                     

@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:34 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -280,7 +281,7 @@ Point group: C2v
 
  The molecule is linear.
 
-               B =       627973.53 MHz     (   20.946942 cm-1)
+               B =       627973.52 MHz     (   20.946942 cm-1)
 
 
 @  Nuclear repulsion energy :    5.193668373495
@@ -339,7 +340,7 @@ Point group: C2v
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -402,7 +403,7 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:35 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -417,8 +418,7 @@ Point group: C2v
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -426,6 +426,10 @@ Point group: C2v
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -491,32 +495,52 @@ Point group: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-15
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-15 )
    1  -99.9111921341       9.77D-01  -9.99D+01    3  1  1  0
-      MULPOP F    -0.36; H     0.01; 
+      Virial theorem: -V/T =      1.997278
+      MULPOP  F      -0.44; H       0.44; 
+ -----------------------------------------------------------------------------
    2  -99.9809546430       1.84D-01  -6.98D-02    3  1  1  0
-      MULPOP F    -0.36; H     0.03; 
+      Virial theorem: -V/T =      2.001244
+      MULPOP  F      -0.45; H       0.45; 
+ -----------------------------------------------------------------------------
    3  -99.9831919851       7.25D-02  -2.24D-03    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
+      Virial theorem: -V/T =      1.998039
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
    4  -99.9833991772       9.82D-03  -2.07D-04    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
+      Virial theorem: -V/T =      1.999301
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
    5  -99.9834084362       2.21D-03  -9.26D-06    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
+      Virial theorem: -V/T =      1.999180
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
    6  -99.9834089249       3.14D-04  -4.89D-07    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
+      Virial theorem: -V/T =      1.999207
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
    7  -99.9834089353       1.81D-05  -1.04D-08    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
-   8  -99.9834089353       2.86D-06  -2.01D-11    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
-   9  -99.9834089353       1.06D-07  -3.27D-13    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
-  10  -99.9834089353       3.76D-09   1.42D-14    3  1  1  0
-      MULPOP F    -0.38; H     0.02; 
-  11  -99.9834089353       5.52D-10  -2.84D-14    3  1  1  0
- DIIS converged in  11 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+      Virial theorem: -V/T =      1.999207
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
+   8  -99.9834089353       2.86D-06  -2.02D-11    3  1  1  0
+      Virial theorem: -V/T =      1.999208
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
+   9  -99.9834089353       1.06D-07  -3.55D-13    3  1  1  0
+      Virial theorem: -V/T =      1.999208
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
+  10  -99.9834089353       3.78D-09   5.68D-14    3  1  1  0
+      Virial theorem: -V/T =      1.999208
+      MULPOP  F      -0.48; H       0.48; 
+ -----------------------------------------------------------------------------
+  11  -99.9834089353       5.73D-10   0.00D+00    3  1  1  0
+
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -543,7 +567,10 @@ Point group: C2v
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -553,10 +580,10 @@ Point group: C2v
      Nuclear repulsion:             5.193668373495
      Electronic energy:          -105.177077308822
 
-     Final gradient norm:           0.000000000552
+     Final gradient norm:           0.000000000573
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:35 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -564,7 +591,7 @@ Point group: C2v
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5
+    Orbital         1        2        3        4        5
    1 F   :1s    -0.9955  -0.2305   0.0617   0.0630   0.0355
    2 F   :1s    -0.0214   0.4972  -0.1370  -0.0799  -0.1266
    3 F   :1s     0.0058   0.5295  -0.2441  -0.7310  -0.0010
@@ -576,14 +603,14 @@ Point group: C2v
  Molecular orbitals for symmetry species  2
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 F   :2px    0.6605  -0.9467
    2 F   :2px    0.4902   1.0451
 
  Molecular orbitals for symmetry species  3
  ------------------------------------------
 
- Orbital           1        2
+    Orbital         1        2
    1 F   :2py    0.6605  -0.9467
    2 F   :2py    0.4902   1.0451
 
@@ -593,7 +620,7 @@ Point group: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:27 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:35 2011 
      Host name              : fe6                                     
 
 
@@ -697,8 +724,8 @@ Point group: C2v
 
 
           Printed all double excitations greater than 0.016667
- Iter.  1: Coupled cluster MP2   energy :    -100.1110833250065184
-     Conventional correlation energy:    -0.1276743896792993
+ Iter.  1: Coupled cluster MP2   energy :    -100.1110833250061773
+     Conventional correlation energy:    -0.1276743896788730
 
        Iteration no.:  1
        -----------------
@@ -716,134 +743,134 @@ Point group: C2v
        Time used in   RHS - TOTAL  :       0.00 seconds
        Norm^2 of t1am   after ccvec:        0.0000000000D+00
        Norm^2 of t2am   after ccvec:        0.1532332901D-01
-       Norm^2 of omega1 after ccvec:        0.4653766396D-03
+       Norm^2 of omega1 after ccvec:        0.4653766397D-03
        Norm^2 of omega2 after ccvec:        0.2999738719D-02
- Iter.  1: Coupled cluster CC3   energy :    -100.1114708769246278
-     Conventional correlation energy:    -0.1280619415974087
+ Iter.  1: Coupled cluster CC3   energy :    -100.1114708769241730
+     Conventional correlation energy:    -0.1280619415968687
 
        Iteration no.:  2
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1129776920D-03
+       Norm^2 of t1am   after ccvec:        0.1129776921D-03
        Norm^2 of t2am   after ccvec:        0.1733390412D-01
-       Norm^2 of omega1 after ccvec:        0.1800181938D-04
-       Norm^2 of omega2 after ccvec:        0.4532832480D-03
- Iter.  2: Coupled cluster CC3   energy :    -100.1141655762102971
-     Conventional correlation energy:    -0.1307566408830780
+       Norm^2 of omega1 after ccvec:        0.1800181939D-04
+       Norm^2 of omega2 after ccvec:        0.4532832481D-03
+ Iter.  2: Coupled cluster CC3   energy :    -100.1141655762100982
+     Conventional correlation energy:    -0.1307566408827938
 
        Iteration no.:  3
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1633212993D-03
+       Norm^2 of t1am   after ccvec:        0.1633212995D-03
        Norm^2 of t2am   after ccvec:        0.1902146535D-01
-       Norm^2 of omega1 after ccvec:        0.9437291895D-06
+       Norm^2 of omega1 after ccvec:        0.9437291905D-06
        Norm^2 of omega2 after ccvec:        0.1337365661D-04
- Iter.  3: Coupled cluster CC3   energy :    -100.1144426463538935
-     Conventional correlation energy:    -0.1310337110266744
+ Iter.  3: Coupled cluster CC3   energy :    -100.1144426463539361
+     Conventional correlation energy:    -0.1310337110266317
 
        Iteration no.:  4
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1860834206D-03
+       Norm^2 of t1am   after ccvec:        0.1860834209D-03
        Norm^2 of t2am   after ccvec:        0.1932600562D-01
-       Norm^2 of omega1 after ccvec:        0.4218512327D-07
-       Norm^2 of omega2 after ccvec:        0.5509953734D-06
- Iter.  4: Coupled cluster CC3   energy :    -100.1144534513166349
-     Conventional correlation energy:    -0.1310445159894158
+       Norm^2 of omega1 after ccvec:        0.4218512333D-07
+       Norm^2 of omega2 after ccvec:        0.5509953736D-06
+ Iter.  4: Coupled cluster CC3   energy :    -100.1144534513164785
+     Conventional correlation energy:    -0.1310445159891742
 
        Iteration no.:  5
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1885335796D-03
+       Norm^2 of t1am   after ccvec:        0.1885335798D-03
        Norm^2 of t2am   after ccvec:        0.1936162740D-01
-       Norm^2 of omega1 after ccvec:        0.2503314671D-08
-       Norm^2 of omega2 after ccvec:        0.1384633419D-07
+       Norm^2 of omega1 after ccvec:        0.2503314673D-08
+       Norm^2 of omega2 after ccvec:        0.1384633420D-07
  Iter.  5: Coupled cluster CC3   energy :    -100.1144522738580349
-     Conventional correlation energy:    -0.1310433385308158
+     Conventional correlation energy:    -0.1310433385307306
 
        Iteration no.:  6
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1894190036D-03
+       Norm^2 of t1am   after ccvec:        0.1894190038D-03
        Norm^2 of t2am   after ccvec:        0.1936256538D-01
        Norm^2 of omega1 after ccvec:        0.1262240863D-09
        Norm^2 of omega2 after ccvec:        0.1212133165D-08
- Iter.  6: Coupled cluster CC3   energy :    -100.1144500066127705
-     Conventional correlation energy:    -0.1310410712855514
+ Iter.  6: Coupled cluster CC3   energy :    -100.1144500066126710
+     Conventional correlation energy:    -0.1310410712853667
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1896310984D-03
+       Norm^2 of t1am   after ccvec:        0.1896310986D-03
        Norm^2 of t2am   after ccvec:        0.1936114282D-01
-       Norm^2 of omega1 after ccvec:        0.3076834189D-11
-       Norm^2 of omega2 after ccvec:        0.3124248643D-10
- Iter.  7: Coupled cluster CC3   energy :    -100.1144497577722774
-     Conventional correlation energy:    -0.1310408224450583
+       Norm^2 of omega1 after ccvec:        0.3076834195D-11
+       Norm^2 of omega2 after ccvec:        0.3124248645D-10
+ Iter.  7: Coupled cluster CC3   energy :    -100.1144497577720927
+     Conventional correlation energy:    -0.1310408224447883
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1896622685D-03
+       Norm^2 of t1am   after ccvec:        0.1896622687D-03
        Norm^2 of t2am   after ccvec:        0.1936090989D-01
-       Norm^2 of omega1 after ccvec:        0.7691860711D-13
-       Norm^2 of omega2 after ccvec:        0.7198784162D-12
- Iter.  8: Coupled cluster CC3   energy :    -100.1144497770221733
-     Conventional correlation energy:    -0.1310408416949542
+       Norm^2 of omega1 after ccvec:        0.7691860745D-13
+       Norm^2 of omega2 after ccvec:        0.7198784166D-12
+ Iter.  8: Coupled cluster CC3   energy :    -100.1144497770218891
+     Conventional correlation energy:    -0.1310408416945847
 
        Iteration no.:  9
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1896660286D-03
+       Norm^2 of t1am   after ccvec:        0.1896660288D-03
        Norm^2 of t2am   after ccvec:        0.1936092888D-01
-       Norm^2 of omega1 after ccvec:        0.2450336602D-14
-       Norm^2 of omega2 after ccvec:        0.3271431775D-13
- Iter.  9: Coupled cluster CC3   energy :    -100.1144497704951846
-     Conventional correlation energy:    -0.1310408351679655
+       Norm^2 of omega1 after ccvec:        0.2450336008D-14
+       Norm^2 of omega2 after ccvec:        0.3271431787D-13
+ Iter.  9: Coupled cluster CC3   energy :    -100.1144497704951704
+     Conventional correlation energy:    -0.1310408351678660
 
        Iteration no.: 10
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1896658111D-03
+       Norm^2 of t1am   after ccvec:        0.1896658113D-03
        Norm^2 of t2am   after ccvec:        0.1936092615D-01
-       Norm^2 of omega1 after ccvec:        0.2723323883D-15
-       Norm^2 of omega2 after ccvec:        0.3702548308D-14
- Iter. 10: Coupled cluster CC3   energy :    -100.1144497671191829
-     Conventional correlation energy:    -0.1310408317919638
+       Norm^2 of omega1 after ccvec:        0.2723325068D-15
+       Norm^2 of omega2 after ccvec:        0.3702548228D-14
+ Iter. 10: Coupled cluster CC3   energy :    -100.1144497671190408
+     Conventional correlation energy:    -0.1310408317917364
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1896657117D-03
+       Norm^2 of t1am   after ccvec:        0.1896657120D-03
        Norm^2 of t2am   after ccvec:        0.1936092406D-01
-       Norm^2 of omega1 after ccvec:        0.5624323098D-18
-       Norm^2 of omega2 after ccvec:        0.5223913601D-16
- Iter. 11: Coupled cluster CC3   energy :    -100.1144497666625455
-     Conventional correlation energy:    -0.1310408313353264
+       Norm^2 of omega1 after ccvec:        0.5624355760D-18
+       Norm^2 of omega2 after ccvec:        0.5223911551D-16
+ Iter. 11: Coupled cluster CC3   energy :    -100.1144497666625313
+     Conventional correlation energy:    -0.1310408313352269
 
        Iteration no.: 12
        -----------------
 
        Time used in   RHS - TOTAL  :       0.00 seconds
-       Norm^2 of t1am   after ccvec:        0.1896657013D-03
+       Norm^2 of t1am   after ccvec:        0.1896657015D-03
        Norm^2 of t2am   after ccvec:        0.1936092365D-01
-       Norm^2 of omega1 after ccvec:        0.5278064513D-19
-       Norm^2 of omega2 after ccvec:        0.1203044074D-17
- Iter. 12: Coupled cluster CC3   energy :    -100.1144497666196145
-     Conventional correlation energy:    -0.1310408312923954
+       Norm^2 of omega1 after ccvec:        0.5278065191D-19
+       Norm^2 of omega2 after ccvec:        0.1203043295D-17
+ Iter. 12: Coupled cluster CC3   energy :    -100.1144497666194866
+     Conventional correlation energy:    -0.1310408312921822
 
  CC3   energy converged to within   0.10D-09 is   -100.114449767
- Final 2-norm of the CC vector function:  1.12063585D-09
+ Final 2-norm of the CC vector function:  1.12063551D-09
 
 
                     +------------------------------------------+
@@ -993,7 +1020,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   1
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  6.99900090694427490E-003
+ Time used in CC_LHTR :  5.99799305200576782E-003
   
   CCRED  
   ISIDE            -1
@@ -1023,7 +1050,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   2
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  7.99899548292160034E-003
+ Time used in CC_LHTR :  1.19980052113533020E-002
   
   CCRED  
   ISIDE            -1
@@ -1053,7 +1080,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   3
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99800050258636475E-003
+ Time used in CC_LHTR :  7.99899548292160034E-003
   
   CCRED  
   ISIDE            -1
@@ -1083,7 +1110,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   4
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99899888038635254E-003
+ Time used in CC_LHTR :  9.99800115823745728E-003
   
   CCRED  
   ISIDE            -1
@@ -1143,7 +1170,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   6
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99900633096694946E-003
+ Time used in CC_LHTR :  7.99900293350219727E-003
   
   CCRED  
   ISIDE            -1
@@ -1173,7 +1200,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   7
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  7.99898803234100342E-003
+ Time used in CC_LHTR :  6.99800252914428711E-003
   
   CCRED  
   ISIDE            -1
@@ -1203,7 +1230,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   8
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99800050258636475E-003
+ Time used in CC_LHTR :  5.99999725818634033E-003
   
   CCRED  
   ISIDE            -1
@@ -1233,7 +1260,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:   9
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99999725818634033E-003
+ Time used in CC_LHTR :  1.29970014095306396E-002
   
   CCRED  
   ISIDE            -1
@@ -1263,7 +1290,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:  10
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99899888038635254E-003
+ Time used in CC_LHTR :  6.99999928474426270E-003
   
   CCRED  
   ISIDE            -1
@@ -1293,7 +1320,7 @@ Point group: C2v
  CC_TRDRV: Transforming vector nr.:  11
  CC_TRDRV: Frequency in R3 denominators:  0.0000
   
- Time used in CC_LHTR :  5.99899888038635254E-003
+ Time used in CC_LHTR :  6.99900090694427490E-003
   
   CCRED  
   ISIDE            -1
@@ -1324,7 +1351,7 @@ Point group: C2v
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -1373,7 +1400,7 @@ Point group: C2v
 
 
           Printed all double excitations greater than 0.083128
-            Norm of singles part:        0.2427204665E-01
+            Norm of singles part:        0.2427204666E-01
             Norm of doubles part:        0.3447158475E+00
   
 
@@ -1395,7 +1422,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.85993142        -2.18572741        -7.29080185
+      z     -0.85993142        -2.18572751        -7.29080220
 
 
 
@@ -1408,7 +1435,7 @@ Point group: C2v
       z     -0.00076800        -0.00195205        -0.00651134
 
 
- Electronic dipole moment (au):   0.000000000       0.000000000     -0.7679964091E-03
+ Electronic dipole moment (au):   0.000000000       0.000000000     -0.7679964095E-03
 
 
 
@@ -1418,7 +1445,7 @@ Point group: C2v
 
                  au               Debye          C m (/(10**-30)
 
-      z     -0.86069942        -2.18767946        -7.29731320
+      z     -0.86069942        -2.18767956        -7.29731354
 
 
 
@@ -1558,20 +1585,20 @@ EFG Principal axis                  H
            +------------------------------------------------------------+
 
   
-         1-elec. Darwin term:      0.316396213
+         1-elec. Darwin term:      0.316396211
          ------------------- 
   
-         Mass-Velocity term:      -0.402288334
+         Mass-Velocity term:      -0.402288331
          ------------------  
   
-         Mass-Velocity + 1-elec. Darwin terms:      -0.085892121
+         Mass-Velocity + 1-elec. Darwin terms:      -0.085892120
          ------------------------------------ 
 
  *******************************************************************
 
  Ground state energy is target 
 
- Ecorr =                   -100.11444976661961447917
+ Ecorr =                   -100.11444976661948658148
 
  *******************************************************************
 
@@ -1611,9 +1638,9 @@ EFG Principal axis                  H
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.18 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   0.19 seconds
+ >>>> Total wall time used in DALTON:   2.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 21:28:28 2010 
+     Date and time (Linux)  : Wed Mar 16 17:55:36 2011 
      Host name              : fe6                                     

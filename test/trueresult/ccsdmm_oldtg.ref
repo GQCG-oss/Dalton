@@ -4,7 +4,7 @@
  ******************** DALTON2011 - An electronic structure program ********************
  **************************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Dec. 2010)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
  --------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2010), see http://daltonprogram.org"
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
  --------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
-  Elias Rudberg,            KTH Stockholm,                Sweden      (???)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
   Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
@@ -82,19 +82,20 @@
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
-  David J. Wilson,          University of Oslo,           Norway      (DFT Hessian)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
  --------------------------------------------------------------------------------
 
 
-     Date and time (Linux)  : Wed Dec 29 22:05:00 2010 
+     Date and time (Linux)  : Wed Mar 16 18:30:37 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2010-12-29T21_13-testjob-pid-22784
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
    2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
@@ -259,11 +260,11 @@ Point group: C1
 
                A                   B                   C
 
-         822132.5945         437764.9381         285658.8056 MHz
+         822132.5951         437764.9384         285658.8058 MHz
            27.423392           14.602267            9.528552 cm-1
 
 
-@  Nuclear repulsion energy :    9.195434939919
+@  Nuclear repulsion energy :    9.195434983361
 
 All MM models are SPC
 
@@ -317,7 +318,7 @@ All MM models are SPC
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- The following one-electron property integrals are calculated:
+ The following one-electron property integrals are calculated as requested:
           - overlap integrals
           - dipole length integrals
           - traceless quadrupole moment integrals
@@ -325,7 +326,7 @@ All MM models are SPC
           - Electric field at the nuclei
           - Potential energy at the nuclei
 
- Center of mass  (bohr):      0.000000000000      0.000000000000      0.123933712326
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.123933711741
  Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
  Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
  Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
@@ -340,7 +341,7 @@ All MM models are SPC
  Number of two-electron integrals written:       21643 ( 47.9% )
  Megabytes written:                              0.254
 
- >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total CPU  time used in HERMIT:   0.05 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 
@@ -362,7 +363,7 @@ All MM models are SPC
      Number of Huckel orbitals each symmetry:    7
 
  Huckel EHT eigenvalues for symmetry :  1
-          -20.705641      -1.506568      -0.731292      -0.670540      -0.616200
+          -20.705641      -1.506569      -0.731292      -0.670540      -0.616200
            -0.292149      -0.257509
 
  **********************************************************************
@@ -370,7 +371,7 @@ All MM models are SPC
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Dec 29 22:05:00 2010 
+     Date and time (Linux)  : Wed Mar 16 18:30:37 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -385,8 +386,7 @@ All MM models are SPC
 
      This is a combination run starting with
 
-               an restricted, closed shell Hartree-Fock calculation
-
+               a restricted, closed shell Hartree-Fock calculation
 
 
  Initial molecular orbitals are obtained according to
@@ -394,6 +394,10 @@ All MM models are SPC
 
      Wave function specification
      ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
      Total charge of the molecule              0
@@ -447,41 +451,69 @@ All MM models are SPC
  C1-DIIS algorithm; max error vectors =   10
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
- -----------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+   1  -75.8010731200       0.00000000000        2.30134D+00   -7.58D+01
+      Virial theorem: -V/T =      1.999431
+      MULPOP  O      -0.43; H       0.22; H       0.22; 
+ -----------------------------------------------------------------------------
+   2  -76.0187223592       0.00000000000        3.59597D-01   -2.18D-01
+      Virial theorem: -V/T =      1.999461
+      MULPOP  O      -0.27; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+   3  -76.0261543892       0.00000000000        8.94992D-02   -7.43D-03
+      Virial theorem: -V/T =      2.001631
+      MULPOP  O      -0.28; H       0.14; H       0.14; 
+ -----------------------------------------------------------------------------
+   4  -76.0267370307       0.00000000000        3.34896D-02   -5.83D-04
+      Virial theorem: -V/T =      1.999950
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+   5  -76.0267981926       0.00000000000        7.19500D-03   -6.12D-05
+      Virial theorem: -V/T =      2.000604
+      MULPOP  O      -0.30; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+   6  -76.0268009919       0.00000000000        7.52588D-04   -2.80D-06
+      Virial theorem: -V/T =      2.000488
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+   7  -76.0268010521       0.00000000000        1.34040D-04   -6.02D-08
+      Virial theorem: -V/T =      2.000495
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+   8  -76.0268010543       0.00000000000        1.10543D-05   -2.23D-09
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+   9  -76.0268010543       0.00000000000        1.11773D-06   -1.28D-11
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+  10  -76.0268010543       0.00000000000        2.75673D-07   -3.13D-13
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+  11  -76.0268010543       0.00000000000        4.70577D-08    5.68D-14
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+  12  -76.0268010543       0.00000000000        3.65043D-09    2.84D-14
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+  13  -76.0268010543       0.00000000000        3.08958D-10   -1.42D-13
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+  14  -76.0268010543       0.00000000000        4.29962D-11    5.68D-14
+      Virial theorem: -V/T =      2.000496
+      MULPOP  O      -0.31; H       0.15; H       0.15; 
+ -----------------------------------------------------------------------------
+  15  -76.0268010543       0.00000000000        8.08939D-12    2.84D-14
 
- Precalculated two-electron integrals are transformed to P-supermatrix elements.
- Threshold for discarding integrals :  1.00D-12
-   1  -75.8010731223       0.00000000000        2.30134D+00   -7.58D+01
-      MULPOP O     0.23; H     0.39; 
-   2  -76.0187223591       0.00000000000        3.59597D-01   -2.18D-01
-      MULPOP O     0.39; H     0.86; 
-   3  -76.0261543890       0.00000000000        8.94992D-02   -7.43D-03
-      MULPOP O     0.40; H     0.92; 
-   4  -76.0267370304       0.00000000000        3.34896D-02   -5.83D-04
-      MULPOP O     0.41; H     0.94; 
-   5  -76.0267981924       0.00000000000        7.19500D-03   -6.12D-05
-      MULPOP O     0.41; H     0.95; 
-   6  -76.0268009917       0.00000000000        7.52588D-04   -2.80D-06
-      MULPOP O     0.41; H     0.95; 
-   7  -76.0268010519       0.00000000000        1.34040D-04   -6.02D-08
-      MULPOP O     0.41; H     0.95; 
-   8  -76.0268010541       0.00000000000        1.10543D-05   -2.23D-09
-      MULPOP O     0.41; H     0.95; 
-   9  -76.0268010541       0.00000000000        1.11773D-06   -1.29D-11
-      MULPOP O     0.41; H     0.95; 
-  10  -76.0268010541       0.00000000000        2.75673D-07   -1.28D-13
-      MULPOP O     0.41; H     0.95; 
-  11  -76.0268010541       0.00000000000        4.70577D-08    0.00D+00
-      MULPOP O     0.41; H     0.95; 
-  12  -76.0268010541       0.00000000000        3.65043D-09    1.42D-14
-      MULPOP O     0.41; H     0.95; 
-  13  -76.0268010541       0.00000000000        3.08941D-10    1.42D-14
-      MULPOP O     0.41; H     0.95; 
-  14  -76.0268010541       0.00000000000        4.30029D-11    2.84D-14
-      MULPOP O     0.41; H     0.95; 
-  15  -76.0268010541       0.00000000000        8.05189D-12   -1.14D-13
- DIIS converged in  15 iterations !
- - total time used in SIRFCK        :       0.00 seconds
+ *** DIIS converged in  15 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -495,7 +527,7 @@ All MM models are SPC
  Sym       Hartree-Fock orbital energies
 
   1    -20.55041934    -1.33674880    -0.69931601    -0.56662274    -0.49315893
-         0.18558182     0.25626805     0.78932883     0.85449225     1.16351330
+         0.18558182     0.25626805     0.78932884     0.85449225     1.16351330
 
     E(LUMO) :     0.18558182 au (symmetry 1)
   - E(HOMO) :    -0.49315893 au (symmetry 1)
@@ -505,7 +537,10 @@ All MM models are SPC
  >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
@@ -515,17 +550,17 @@ All MM models are SPC
 
         Electrostatic energy:       0.000000000000
         Polarization energy:        0.000000000000
-        van der Waals energy:       0.005110972115
+        van der Waals energy:       0.005110972486
         Total QM/MM energy:         0.000000000000
 
-     Final HF energy:             -76.026801054101                 
-     Nuclear repulsion:             9.195434939919
-     Electronic energy:           -85.222235994020
+     Final HF energy:             -76.026801054312                 
+     Nuclear repulsion:             9.195434983361
+     Electronic energy:           -85.222236037672
 
      Final gradient norm:           0.000000000008
 
  
-     Date and time (Linux)  : Wed Dec 29 22:05:00 2010 
+     Date and time (Linux)  : Wed Mar 16 18:30:37 2011 
      Host name              : fe6                                     
 
  (Only coefficients >0.0100 are printed.)
@@ -533,19 +568,19 @@ All MM models are SPC
  Molecular orbitals for symmetry species  1
  ------------------------------------------
 
- Orbital           1        2        3        4        5        6        7
-   1 O   :1s     1.0004  -0.0082  -0.0000   0.0022   0.0000   0.0520   0.0000
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s     1.0004  -0.0082   0.0000   0.0022   0.0000   0.0520   0.0000
    2 O   :1s     0.0023   0.8703   0.0000  -0.2956   0.0000  -0.1427   0.0000
-   3 O   :1s    -0.0014  -0.1229   0.0000  -0.1806   0.0000  -0.9210  -0.0000
-   4 O   :2px    0.0000   0.0000   0.7140   0.0000   0.0000  -0.0000   0.4125
+   3 O   :1s    -0.0014  -0.1229  -0.0000  -0.1806   0.0000  -0.9210  -0.0000
+   4 O   :2px   -0.0000   0.0000   0.7140  -0.0000   0.0000  -0.0000   0.4125
    5 O   :2py    0.0000   0.0000   0.0000   0.0000   0.9196   0.0000   0.0000
    6 O   :2pz    0.0026   0.1149  -0.0000   0.7948   0.0000  -0.2775   0.0000
-   7 O   :2px   -0.0000   0.0000  -0.1069   0.0000   0.0000  -0.0000   0.4810
+   7 O   :2px   -0.0000  -0.0000  -0.1069   0.0000   0.0000  -0.0000   0.4810
    8 O   :2py    0.0000   0.0000   0.0000   0.0000   0.0721   0.0000   0.0000
-   9 O   :2pz   -0.0017  -0.0660   0.0000  -0.0007   0.0000  -0.2091  -0.0000
+   9 O   :2pz   -0.0017  -0.0660  -0.0000  -0.0007   0.0000  -0.2091  -0.0000
   11 O   :3d1-   0.0000   0.0000   0.0000   0.0000   0.0182   0.0000   0.0000
-  12 O   :3d0    0.0000   0.0012   0.0000   0.0179   0.0000  -0.0075  -0.0000
-  13 O   :3d1+   0.0000   0.0000   0.0268   0.0000   0.0000  -0.0000   0.0213
+  12 O   :3d0    0.0000   0.0012  -0.0000   0.0179   0.0000  -0.0075  -0.0000
+  13 O   :3d1+  -0.0000  -0.0000   0.0268   0.0000   0.0000  -0.0000   0.0213
   15 H   :1s    -0.0004   0.3296  -0.5582   0.3512   0.0000   0.1002   0.0441
   16 H   :1s     0.0006  -0.1551   0.1900  -0.1358   0.0000   0.7791   1.4227
   17 H   :2px   -0.0006   0.0373  -0.0233   0.0318   0.0000   0.0176   0.0208
@@ -563,7 +598,7 @@ All MM models are SPC
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:05:00 2010 
+     Date and time (Linux)  : Wed Mar 16 18:30:37 2011 
      Host name              : fe6                                     
 
  NOTE:    1 warnings have been issued.
@@ -617,11 +652,11 @@ All MM models are SPC
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster MP2   energy :     -76.2307602937386974
- Iter.  1: Coupled cluster CCSD  energy :     -76.2355842827821846
- Iter.  2: Coupled cluster CCSD  energy :     -76.2393787048588223
- Iter.  3: Coupled cluster CCSD  energy :     -76.2397154092666369
- Iter.  4: Coupled cluster CCSD  energy :     -76.2397266229751125
+ Iter.  1: Coupled cluster MP2   energy :     -76.2307602936379567
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2355842827289081
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2393787047658407
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2397154091655835
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2397266228736328
 
  CCSD energy will not be converged further
 
@@ -629,8 +664,8 @@ All MM models are SPC
  Accumulated inner iterations at this point are     4
 
  CCSD  energy converged to within   0.10D-11 is    -76.239726623
- Final 2-norm of the CC vector function:  1.22171040D-03
-  Change in norm^2 of T-amplitudes in this solvent it.:  2.99104352128661821E-002
+ Final 2-norm of the CC vector function:  1.22171038D-03
+  Change in norm^2 of T-amplitudes in this solvent it.:  2.99104350260219511E-002
 
 
 
@@ -667,9 +702,9 @@ All MM models are SPC
 
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:           9
-  Change in norm^2 of L-amplitudes in this ccmm it.:  0.19127822485057241     
+  Change in norm^2 of L-amplitudes in this ccmm it.:  0.19127822407505246     
  >>> Time used in LR=R is   0.39 seconds
- Total <Lambda|H|CC> energy:   -76.239440405398724     
+ Total <Lambda|H|CC> energy:   -76.239440405289002     
             The singles contribution is:             0.0004292495
             The doubles contribution is:            -0.0001430319
 
@@ -707,8 +742,8 @@ All MM models are SPC
 
 
 
- E(QM/MM) contribution in iteration  0:           -0.0051849999
- CC energy in the  current CCMM iteration:       -76.2446254053
+ E(QM/MM) contribution in iteration  0:           -0.0051849996
+ CC energy in the  current CCMM iteration:       -76.2446254049
  CC energy in the previous CCMM iteration:         0.0000000000
  Change in Total energy in this CCMM it.:         -0.762446E+02
 
@@ -736,9 +771,9 @@ All MM models are SPC
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07714733         0.19608893         0.65408226
-      y      0.01135487         0.02886120         0.09627059
-      z      0.79938828         2.03184210         6.77749573
+      x      0.07714733         0.19608894         0.65408228
+      y      0.01135487         0.02886120         0.09627060
+      z      0.79938827         2.03184220         6.77749604
 
 
 
@@ -755,8 +790,8 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      1.54260142    0.00249114    0.12050758
-       2      0.00249114   -1.66228752    0.00664790
+       1      1.54260141    0.00249114    0.12050758
+       2      0.00249114   -1.66228751    0.00664790
        3      0.12050758    0.00664790    0.11968610
 
 
@@ -767,9 +802,9 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      7.21209881   -0.00166076   -0.08033839
-       2     -0.00166076    5.25807430   -0.00443194
-       3     -0.08033839   -0.00443194    6.52272926
+       1      7.21209878   -0.00166076   -0.08033838
+       2     -0.00166076    5.25807429   -0.00443194
+       3     -0.08033838   -0.00443194    6.52272923
 
  Alfa**2 Invariant:                         40.081149
  Beta**2 Invariant:                          2.965827
@@ -795,11 +830,11 @@ All MM models are SPC
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2397266229751125
- Iter.  1: Coupled cluster CCSD  energy :     -76.2397204727387390
- Iter.  2: Coupled cluster CCSD  energy :     -76.2397161976165449
- Iter.  3: Coupled cluster CCSD  energy :     -76.2397156483329326
- Iter.  4: Coupled cluster CCSD  energy :     -76.2397170428939575
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2397266228736328
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2397204726371314
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2397161975145679
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2397156482315950
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2397170427921225
 
  CCSD energy will not be converged further
 
@@ -807,8 +842,8 @@ All MM models are SPC
  Accumulated inner iterations at this point are    13
 
  CCSD  energy converged to within   0.10D-11 is    -76.239717043
- Final 2-norm of the CC vector function:  1.54227593D-05
-  Change in norm^2 of T-amplitudes in this solvent it.: -2.28779722516447848E-006
+ Final 2-norm of the CC vector function:  1.54227590D-05
+  Change in norm^2 of T-amplitudes in this solvent it.: -2.28779745849172489E-006
 
 
 
@@ -847,9 +882,9 @@ All MM models are SPC
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          18
-  Change in norm^2 of L-amplitudes in this ccmm it.:  8.04612583160668748E-006
+  Change in norm^2 of L-amplitudes in this ccmm it.:  8.04612548821470597E-006
  >>> Time used in LR=R is   0.31 seconds
- Total <Lambda|H|CC> energy:   -76.239412886344027     
+ Total <Lambda|H|CC> energy:   -76.239412886235172     
             The singles contribution is:             0.0004380378
             The doubles contribution is:            -0.0001338812
 
@@ -862,7 +897,7 @@ All MM models are SPC
    Symmetry block number:  1
    ---------------------
   
-   1.99991651   1.98465500   1.97309705   1.96755136   1.96475618
+   1.99991651   1.98465500   1.97309705   1.96755136   1.96475619
    0.02631609   0.02383753   0.01697474   0.01157259   0.00589645
    0.00561978   0.00509300   0.00451178   0.00440072   0.00115031
    0.00111522   0.00072406   0.00065839   0.00055792   0.00053395
@@ -887,9 +922,9 @@ All MM models are SPC
 
 
 
- E(QM/MM) contribution in iteration  1:           -0.0051878087
- CC energy in the  current CCMM iteration:       -76.2446006951
- CC energy in the previous CCMM iteration:       -76.2446254053
+ E(QM/MM) contribution in iteration  1:           -0.0051878084
+ CC energy in the  current CCMM iteration:       -76.2446006946
+ CC energy in the previous CCMM iteration:       -76.2446254049
  Change in Total energy in this CCMM it.:          0.247103E-04
 
 
@@ -916,9 +951,9 @@ All MM models are SPC
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07738266         0.19668708         0.65607748
-      y      0.01153283         0.02931352         0.09777939
-      z      0.79926502         2.03152882         6.77645072
+      x      0.07738266         0.19668709         0.65607751
+      y      0.01153283         0.02931353         0.09777940
+      z      0.79926502         2.03152891         6.77645103
 
 
 
@@ -935,8 +970,8 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      1.54254495    0.00245779    0.12097427
-       2      0.00245779   -1.66220279    0.00675060
+       1      1.54254494    0.00245779    0.12097427
+       2      0.00245779   -1.66220278    0.00675060
        3      0.12097427    0.00675060    0.11965784
 
 
@@ -947,9 +982,9 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      7.21227839   -0.00163853   -0.08064951
-       2     -0.00163853    5.25815975   -0.00450040
-       3     -0.08064951   -0.00450040    6.52289003
+       1      7.21227836   -0.00163853   -0.08064951
+       2     -0.00163853    5.25815974   -0.00450040
+       3     -0.08064951   -0.00450040    6.52289001
 
  Alfa**2 Invariant:                         40.082946
  Beta**2 Invariant:                          2.966271
@@ -975,11 +1010,11 @@ All MM models are SPC
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2397170428939575
- Iter.  1: Coupled cluster CCSD  energy :     -76.2397168403361718
- Iter.  2: Coupled cluster CCSD  energy :     -76.2397167685575852
- Iter.  3: Coupled cluster CCSD  energy :     -76.2397167639352347
- Iter.  4: Coupled cluster CCSD  energy :     -76.2397167784176304
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2397170427921225
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2397168402344647
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2397167684558497
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2397167638342808
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2397167783157812
 
  CCSD energy will not be converged further
 
@@ -987,8 +1022,8 @@ All MM models are SPC
  Accumulated inner iterations at this point are    22
 
  CCSD  energy converged to within   0.10D-11 is    -76.239716778
- Final 2-norm of the CC vector function:  1.76430998D-07
-  Change in norm^2 of T-amplitudes in this solvent it.: -2.33933121544099842E-007
+ Final 2-norm of the CC vector function:  1.76430995D-07
+  Change in norm^2 of T-amplitudes in this solvent it.: -2.33933112419454359E-007
 
 
 
@@ -1027,9 +1062,9 @@ All MM models are SPC
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          27
-  Change in norm^2 of L-amplitudes in this ccmm it.: -1.10387688379010029E-007
- >>> Time used in LR=R is   0.31 seconds
- Total <Lambda|H|CC> energy:   -76.239411154764952     
+  Change in norm^2 of L-amplitudes in this ccmm it.: -1.10387691543145650E-007
+ >>> Time used in LR=R is   0.32 seconds
+ Total <Lambda|H|CC> energy:   -76.239411154656125     
             The singles contribution is:             0.0004380728
             The doubles contribution is:            -0.0001324491
 
@@ -1067,9 +1102,9 @@ All MM models are SPC
 
 
 
- E(QM/MM) contribution in iteration  2:           -0.0051877646
- CC energy in the  current CCMM iteration:       -76.2445989193
- CC energy in the previous CCMM iteration:       -76.2446006951
+ E(QM/MM) contribution in iteration  2:           -0.0051877643
+ CC energy in the  current CCMM iteration:       -76.2445989189
+ CC energy in the previous CCMM iteration:       -76.2446006946
  Change in Total energy in this CCMM it.:          0.177573E-05
 
 
@@ -1096,9 +1131,9 @@ All MM models are SPC
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07737785         0.19667485         0.65603667
-      y      0.01153508         0.02931923         0.09779844
-      z      0.79926615         2.03153170         6.77646034
+      x      0.07737785         0.19667486         0.65603670
+      y      0.01153508         0.02931924         0.09779845
+      z      0.79926615         2.03153180         6.77646065
 
 
 
@@ -1115,8 +1150,8 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      1.54254572    0.00245647    0.12096557
-       2      0.00245647   -1.66220381    0.00675194
+       1      1.54254571    0.00245647    0.12096557
+       2      0.00245647   -1.66220380    0.00675194
        3      0.12096557    0.00675194    0.11965809
 
 
@@ -1127,9 +1162,9 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      7.21227683   -0.00163765   -0.08064371
+       1      7.21227680   -0.00163765   -0.08064371
        2     -0.00163765    5.25815938   -0.00450129
-       3     -0.08064371   -0.00450129    6.52288882
+       3     -0.08064371   -0.00450129    6.52288880
 
  Alfa**2 Invariant:                         40.082933
  Beta**2 Invariant:                          2.966265
@@ -1155,11 +1190,11 @@ All MM models are SPC
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2397167784176304
- Iter.  1: Coupled cluster CCSD  energy :     -76.2397167774045954
- Iter.  2: Coupled cluster CCSD  energy :     -76.2397167763748627
- Iter.  3: Coupled cluster CCSD  energy :     -76.2397167767824158
- Iter.  4: Coupled cluster CCSD  energy :     -76.2397167768593675
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2397167783157812
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2397167773030731
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2397167762730561
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2397167766814192
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2397167767573762
 
  CCSD energy will not be converged further
 
@@ -1167,8 +1202,8 @@ All MM models are SPC
  Accumulated inner iterations at this point are    31
 
  CCSD  energy converged to within   0.10D-11 is    -76.239716777
- Final 2-norm of the CC vector function:  1.91885322D-09
-  Change in norm^2 of T-amplitudes in this solvent it.:  6.65307864355924039E-010
+ Final 2-norm of the CC vector function:  1.91885079D-09
+  Change in norm^2 of T-amplitudes in this solvent it.:  6.65307441083395901E-010
 
 
 
@@ -1207,9 +1242,9 @@ All MM models are SPC
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          36
-  Change in norm^2 of L-amplitudes in this ccmm it.:  2.53181658971257662E-009
+  Change in norm^2 of L-amplitudes in this ccmm it.:  2.53181703380178647E-009
  >>> Time used in LR=R is   0.31 seconds
- Total <Lambda|H|CC> energy:   -76.239411133540301     
+ Total <Lambda|H|CC> energy:   -76.239411133431332     
             The singles contribution is:             0.0004380753
             The doubles contribution is:            -0.0001324320
 
@@ -1247,10 +1282,10 @@ All MM models are SPC
 
 
 
- E(QM/MM) contribution in iteration  3:           -0.0051877653
- CC energy in the  current CCMM iteration:       -76.2445988989
- CC energy in the previous CCMM iteration:       -76.2445989193
- Change in Total energy in this CCMM it.:          0.204354E-07
+ E(QM/MM) contribution in iteration  3:           -0.0051877650
+ CC energy in the  current CCMM iteration:       -76.2445988985
+ CC energy in the previous CCMM iteration:       -76.2445989189
+ Change in Total energy in this CCMM it.:          0.204355E-07
 
 
  *****************************************************************
@@ -1276,9 +1311,9 @@ All MM models are SPC
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07737791         0.19667500         0.65603719
-      y      0.01153511         0.02931932         0.09779874
-      z      0.79926614         2.03153167         6.77646024
+      x      0.07737791         0.19667501         0.65603722
+      y      0.01153511         0.02931933         0.09779875
+      z      0.79926614         2.03153177         6.77646055
 
 
 
@@ -1295,8 +1330,8 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      1.54254571    0.00245646    0.12096569
-       2      0.00245646   -1.66220380    0.00675196
+       1      1.54254570    0.00245646    0.12096569
+       2      0.00245646   -1.66220379    0.00675196
        3      0.12096569    0.00675196    0.11965809
 
 
@@ -1307,9 +1342,9 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      7.21227686   -0.00163764   -0.08064379
-       2     -0.00163764    5.25815939   -0.00450131
-       3     -0.08064379   -0.00450131    6.52288884
+       1      7.21227682   -0.00163764   -0.08064379
+       2     -0.00163764    5.25815938   -0.00450131
+       3     -0.08064379   -0.00450131    6.52288882
 
  Alfa**2 Invariant:                         40.082933
  Beta**2 Invariant:                          2.966265
@@ -1335,11 +1370,11 @@ All MM models are SPC
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2397167768593675
- Iter.  1: Coupled cluster CCSD  energy :     -76.2397167768179145
- Iter.  2: Coupled cluster CCSD  energy :     -76.2397167767971240
- Iter.  3: Coupled cluster CCSD  energy :     -76.2397167768018420
- Iter.  4: Coupled cluster CCSD  energy :     -76.2397167768043573
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2397167767573762
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2397167767163921
+ Iter.  2: Coupled cluster CCSD  energy :     -76.2397167766954027
+ Iter.  3: Coupled cluster CCSD  energy :     -76.2397167766999786
+ Iter.  4: Coupled cluster CCSD  energy :     -76.2397167767025792
 
  CCSD energy will not be converged further
 
@@ -1347,8 +1382,8 @@ All MM models are SPC
  Accumulated inner iterations at this point are    40
 
  CCSD  energy converged to within   0.10D-11 is    -76.239716777
- Final 2-norm of the CC vector function:  3.59538645D-11
-  Change in norm^2 of T-amplitudes in this solvent it.: -4.49789580581061443E-011
+ Final 2-norm of the CC vector function:  3.59493646D-11
+  Change in norm^2 of T-amplitudes in this solvent it.: -4.49794888834897932E-011
 
 
 
@@ -1387,9 +1422,9 @@ All MM models are SPC
  Start vector is a CCSD      L0  vector
   CCSLV: We stop for now though not fully converged yet
   Accumulated inner iterations are:          45
-  Change in norm^2 of L-amplitudes in this ccmm it.: -1.30483956972682336E-011
+  Change in norm^2 of L-amplitudes in this ccmm it.: -1.30473132298192240E-011
  >>> Time used in LR=R is   0.31 seconds
- Total <Lambda|H|CC> energy:   -76.239411133471052     
+ Total <Lambda|H|CC> energy:   -76.239411133362282     
             The singles contribution is:             0.0004380753
             The doubles contribution is:            -0.0001324319
 
@@ -1427,10 +1462,10 @@ All MM models are SPC
 
 
 
- E(QM/MM) contribution in iteration  4:           -0.0051877653
- CC energy in the  current CCMM iteration:       -76.2445988988
- CC energy in the previous CCMM iteration:       -76.2445988989
- Change in Total energy in this CCMM it.:          0.795382E-10
+ E(QM/MM) contribution in iteration  4:           -0.0051877650
+ CC energy in the  current CCMM iteration:       -76.2445988984
+ CC energy in the previous CCMM iteration:       -76.2445988985
+ Change in Total energy in this CCMM it.:          0.793392E-10
 
 
  *****************************************************************
@@ -1456,9 +1491,9 @@ All MM models are SPC
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07737791         0.19667500         0.65603718
-      y      0.01153511         0.02931933         0.09779874
-      z      0.79926614         2.03153167         6.77646024
+      x      0.07737791         0.19667501         0.65603721
+      y      0.01153511         0.02931933         0.09779875
+      z      0.79926614         2.03153177         6.77646055
 
 
 
@@ -1475,8 +1510,8 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      1.54254571    0.00245646    0.12096569
-       2      0.00245646   -1.66220380    0.00675196
+       1      1.54254570    0.00245646    0.12096569
+       2      0.00245646   -1.66220379    0.00675196
        3      0.12096569    0.00675196    0.11965809
 
 
@@ -1487,9 +1522,9 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      7.21227686   -0.00163764   -0.08064379
-       2     -0.00163764    5.25815939   -0.00450131
-       3     -0.08064379   -0.00450131    6.52288884
+       1      7.21227682   -0.00163764   -0.08064379
+       2     -0.00163764    5.25815938   -0.00450131
+       3     -0.08064379   -0.00450131    6.52288882
 
  Alfa**2 Invariant:                         40.082933
  Beta**2 Invariant:                          2.966265
@@ -1515,12 +1550,12 @@ All MM models are SPC
           Number of t2 amplitudes                 :      4560
           Total number of amplitudes in ccsd      :      4655
 
- Iter.  1: Coupled cluster RSTAR energy :     -76.2397167768043573
- Iter.  1: Coupled cluster CCSD  energy :     -76.2397167768040305
+ Iter.  1: Coupled cluster RSTAR energy :     -76.2397167767025792
+ Iter.  1: Coupled cluster CCSD  energy :     -76.2397167767018118
 
  CCSD  energy converged to within   0.10D-11 is    -76.239716777
- Final 2-norm of the CC vector function:  1.16765918D-11
-  Change in norm^2 of T-amplitudes in this solvent it.:  3.54508089550620298E-014
+ Final 2-norm of the CC vector function:  1.16705199D-11
+  Change in norm^2 of T-amplitudes in this solvent it.:  3.59157148466238141E-014
 
 
 
@@ -1557,9 +1592,9 @@ All MM models are SPC
 
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCSD      L0  vector
-  Change in norm^2 of L-amplitudes in this ccmm it.:  5.21804821573823574E-013
+  Change in norm^2 of L-amplitudes in this ccmm it.:  5.20250509339348355E-013
  >>> Time used in LR=R is   0.23 seconds
- Total <Lambda|H|CC> energy:   -76.239411133467186     
+ Total <Lambda|H|CC> energy:   -76.239411133357990     
             The singles contribution is:             0.0004380753
             The doubles contribution is:            -0.0001324319
 
@@ -1597,10 +1632,10 @@ All MM models are SPC
 
 
 
- E(QM/MM) contribution in iteration  5:           -0.0051877653
- CC energy in the  current CCMM iteration:       -76.2445988988
- CC energy in the previous CCMM iteration:       -76.2445988988
- Change in Total energy in this CCMM it.:          0.373745E-11
+ E(QM/MM) contribution in iteration  5:           -0.0051877650
+ CC energy in the  current CCMM iteration:       -76.2445988984
+ CC energy in the previous CCMM iteration:       -76.2445988984
+ Change in Total energy in this CCMM it.:          0.416378E-11
 
 
 
@@ -1625,13 +1660,13 @@ All MM models are SPC
  +======================================================================+
  |      Eelec      |      Epol       |      Evdw       |    E(QM/MM)    |
  +----------------------------------------------------------------------+
- |   -0.0102987374 |    0.0000000000 |    0.0051109721 |  -0.0051877653 |
+ |   -0.0102987375 |    0.0000000000 |    0.0051109725 |  -0.0051877650 |
  +----------------------------------------------------------------------+
  +======================================================================+
  +----------------------------------------------------------------------+
  |  <L|H(vac)|CC>  | <H(qm)+H(qmmm)> | Delta E(mm/mm)  | E_rep          |
  +----------------------------------------------------------------------+
- |  -76.2394111335 |  -76.2445988988 |    0.0000000000 |   0.0000000000 |
+ |  -76.2394111334 |  -76.2445988984 |    0.0000000000 |   0.0000000000 |
  +======================================================================+
 
 
@@ -1664,9 +1699,9 @@ All MM models are SPC
 
                  au               Debye          C m (/(10**-30)
 
-      x      0.07737791         0.19667500         0.65603718
-      y      0.01153511         0.02931933         0.09779874
-      z      0.79926614         2.03153167         6.77646024
+      x      0.07737791         0.19667501         0.65603721
+      y      0.01153511         0.02931933         0.09779875
+      z      0.79926614         2.03153177         6.77646055
 
 
 
@@ -1683,8 +1718,8 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      1.54254571    0.00245646    0.12096569
-       2      0.00245646   -1.66220380    0.00675196
+       1      1.54254570    0.00245646    0.12096569
+       2      0.00245646   -1.66220379    0.00675196
        3      0.12096569    0.00675196    0.11965809
 
 
@@ -1695,9 +1730,9 @@ All MM models are SPC
                     X              Y              Z
 
               Column   1    Column   2    Column   3
-       1      7.21227686   -0.00163764   -0.08064379
-       2     -0.00163764    5.25815939   -0.00450131
-       3     -0.08064379   -0.00450131    6.52288884
+       1      7.21227682   -0.00163764   -0.08064379
+       2     -0.00163764    5.25815938   -0.00450131
+       3     -0.08064379   -0.00450131    6.52288882
 
  Alfa**2 Invariant:                         40.082933
  Beta**2 Invariant:                          2.966265
@@ -1716,8 +1751,8 @@ All MM models are SPC
  *******************************************************************************
  *******************************************************************************
 
-            CCSD Total  energy:                   -76.2445988988                
-            CCSD E(QM/MM)     :                    -0.0051877653                
+            CCSD Total  energy:                   -76.2445988984                
+            CCSD E(QM/MM)     :                    -0.0051877650                
                                                                                 
   
 
@@ -1737,9 +1772,9 @@ All MM models are SPC
                       | End of Coupled Cluster Section (CC) |
                       `-------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.86 seconds
- >>>> Total wall time used in DALTON:   5.00 seconds
+ >>>> Total CPU  time used in DALTON:   1.87 seconds
+ >>>> Total wall time used in DALTON:   6.00 seconds
 
  
-     Date and time (Linux)  : Wed Dec 29 22:05:05 2010 
+     Date and time (Linux)  : Wed Mar 16 18:30:43 2011 
      Host name              : fe6                                     
