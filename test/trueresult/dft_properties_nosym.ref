@@ -1,149 +1,156 @@
 
 
-    ******************************************************************
-    ***********  DALTON - An electronic structure program  ***********
-    ******************************************************************
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
 
-            This is output from DALTON (Release 2.0, ? 2001)
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
 
-                          Principal authors:
+ --------------------------------------------------------------------------------
 
-            Trygve Helgaker,       University of Oslo,         Norway 
-            Hans Joergen Jensen,   SDU - Odense University,    Denmark
-            Poul Joergensen,       Aarhus University,          Denmark
-            Jeppe Olsen,           Aarhus University,          Denmark
-            Kenneth Ruud,          San Diego Superc. Center,   USA    
-            Hans Aagren,           KTH Stockholm,              Sweden 
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
 
-                          Contributors:
+ --------------------------------------------------------------------------------
 
-            Alexander A. Auer,     University of Mainz,        Germany
-            Keld L. Bak,           UNI-C,                      Denmark
-            Vebjoern Bakken,       University of Oslo,         Norway 
-            Ove Christiansen,      University of Lund,         Sweden 
-            Sonia Coriani,         University of Trieste,      Italy  
-            Paal Dahle,            University of Oslo,         Norway 
-            Erik K. Dalskov,       UNI-C,                      Denmark
-            Thomas Enevoldsen,     SDU - Odense University,    Denmark
-            Berta Fernandez,       U.of Santiago de Compostela,Spain  
-            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
-            Kasper Hald,           Aarhus University,          Denmark
-            Asger Halkier,         Aarhus University,          Denmark
-            Hanne Heiberg,         University of Oslo,         Norway 
-            Hinne Hettema,         University of Auckland,     NZ     
-            Dan Jonsson,           San Diego Superc. Center,   USA    
-            Sheela Kirpekar,       SDU - Odense University,    Denmark
-            Rika Kobayashi,        Cambridge University,       England
-            Henrik Koch,           SDU - Odense University,    Denmark
-            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
-            Patrick Norman,        University of Linkoeping,   Sweden 
-            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
-            Martin J. Packer,      University of Sheffield,    UK     
-            Torgeir A. Ruden,      University of Oslo,         Norway 
-            Alfredo Sanchez,       University of Valencia,     Spain  
-            Trond Saue,            University of Toulouse,     France 
-            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
-            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
-            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
-            Peter R.Taylor,        San Diego Superc. Center,   USA    
-            Olav Vahtras,          PDC, Stockholm,             Sweden 
+    Authors in alphabetical order (major contribution(s) in parenthesis):
 
-------------------------------------------------------------------------
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
 
-
-     NOTE:
-      
-     This is an experimental code for the evaluation of molecular
-     properties using (MC)SCF wave functions. The authors accept no
-     responsibility for the performance of the code or for the
-     correctness of the results.
-      
-     The code (in whole or part) is provided under a license and
-     is not to be reproduced for further distribution without
-     the written permission of the authors or their representatives.
-     See licence agreement for further information.
-      
-     If results obtained with this code are published, an
-     appropriate citation would be:
-      
-     "Dalton, a molecular electronic structure program, Release 1.2
-     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-     and O. Vahtras"
-
- 
-     Date and time (Linux)  : Wed Sep  4 14:32:27 2002
-     Host name              : pi.biotech.kth.se                       
-
- <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
-
-
- Default print level:        0
-
-    Integral sections will be executed
-    Wave function sections will be executed
-    Dynamic molecular property section will be executed
-    Static molecular property section will be executed
-    Starting in Integral Section -
+ --------------------------------------------------------------------------------
 
 
+     Date and time (Linux)  : Sun Mar 20 16:29:13 2011 
+     Host name              : fe6                                     
 
- *************************************************************************
- ****************** Output from HERMIT input processing ******************
- *************************************************************************
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
 
-
- Default print level:        1
-
- * Nuclear model: Point charge
-
- Calculation of one- and two-electron Hamiltonian integrals.
-
- The following one-electron property integrals are calculated:
-          - overlap integrals
-          - spatial spin-orbit integrals
-          - parity violation electroweak interaction
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-20T16_29-testjob-pid-32097
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
 
 
- *************************************************************************
- ****************** Output from READIN input processing ******************
- *************************************************************************
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+    Static molecular property section will be executed (ABACUS module)
+ --------------------------------------------------------------------------------
 
 
-
-  Title Cards
-  -----------
-
-  H2O                                                                     
-                                                                          
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
 
 
-                      SYMGRP:Point group information
-                      ------------------------------
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: H2O                                                                     
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   8 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    2
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   1 :
+     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
 
 Point group: C1 
 
-   * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
-
-   * Direct product table
-
-        | A  
-   -----+-----
-    A   | A  
-
-
-                             Isotopic Masses
-                             ---------------
+                                 Isotopic Masses
+                                 ---------------
 
                            O          15.994915
                            H1          1.007825
@@ -152,79 +159,67 @@ Point group: C1
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
-
-
- Center-of-mass coordinates (A):    0.000000    0.000000    0.123106
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.123106
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    3
 
   Basis set used is "cc-pVDZ" from the basis set library.
 
-  label    atoms   charge   prim    cont     basis   
+  label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  O           1       8      26      14      [9s4p1d|3s2p1d]                              
-  H1          1       1       7       5      [4s1p|2s1p]                                  
-  H2          1       1       7       5      [4s1p|2s1p]                                  
+  O           1    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  H2          2    1.0000     7     5      [4s1p|2s1p]                                        
   ----------------------------------------------------------------------
-  total:      3      10      40      24
+  total:      3   10.0000    40    24
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00E-15
+  Threshold for integrals:  1.00D-15
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (a.u.)
+  ----------------------------
 
-  Total number of coordinates:  9
-
-
-   1   O        x      0.0000000000
-   2            y      0.0000000000
-   3            z      0.0000000000
-
-   4   H1       x      1.4300000000
-   5            y      0.0000000000
-   6            z      1.1000000000
-
-   7   H2       x     -1.4300000000
-   8            y      0.0000000000
-   9            z      1.1000000000
+  Total number of coordinates:    9
+  O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H1      :     4  x   1.4300000000    5  y   0.0000000000    6  z   1.1000000000
+  H2      :     7  x  -1.4300000000    8  y   0.0000000000    9  z   1.1000000000
 
 
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
-
-            O           H1          H2  
-
-   O       0.000000
-   H1      0.954707    0.000000
-   H2      0.954707    1.513447    0.000000
-
+            O           H1          H2    
+            ------      ------      ------
+ O     :    0.000000
+ H1    :    0.954707    0.000000
+ H2    :    0.954707    1.513447    0.000000
 
 
+  Max interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  between atoms    3 and    2, "H2    " and "H1    ".
 
-  Bond distances (angstroms):
-  ---------------------------
 
-                  atom 1     atom 2                           distance
-                  ------     ------                           --------
-  bond distance:    H1         O                              0.954707
-  bond distance:    H2         O                              0.954707
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H1         O            0.954707
+  bond distance:  H2         O            0.954707
 
 
   Bond angles (degrees):
   ----------------------
 
-                  atom 1     atom 2     atom 3                   angle
-                  ------     ------     ------                   -----
-  bond angle:       H1         O          H2                   104.863
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H1         O          H2           104.863
 
 
 
@@ -232,39 +227,61 @@ Point group: C1
  Principal moments of inertia (u*A**2) and principal axes
  --------------------------------------------------------
 
-   IA   -0.004147          0.827592    0.000000    0.561330
-   IB    0.840371          0.000000    1.000000    0.000000
-   IC    0.844518         -0.561330    0.000000    0.827592
+   IA       0.606537          1.000000    0.000000    0.000000
+   IB       1.154222          0.000000    0.000000    1.000000
+   IC       1.760759          0.000000    1.000000    0.000000
 
 
  Rotational constants
  --------------------
 
- The molecule is linear.
+ The molecule is planar.
 
-               B =       601376.30 MHz     (   20.059754 cm-1)
+               A                   B                   C
 
-
-  Nuclear repulsion energy :    9.218170507464
-
-
- ************************************************************************
- ************************** Output from HERINT **************************
- ************************************************************************
+         833220.2929         437852.3988         287023.3200 MHz
+           27.793237           14.605184            9.574067 cm-1
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+@  Nuclear repulsion energy :    9.218170507464
 
 
- >>> Time used in OVERLA is   0.00 seconds
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
 
 
- >>> Time used in SPNORB is   0.01 seconds
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - spatial spin-orbit integrals
+          - parity violation electroweak interaction
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.123106354520
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
 
 
  Calculation of parity violating electroweak interaction integrals
 
- Weinberg angle: 1-sin^2[theta_W] = 0.000000
+ Weinberg angle: 1-4*sin^2[theta_W] = 0.000000
 
  Enhancement factors Q(z) for symmetry-independent nuclei:
 
@@ -273,328 +290,280 @@ Point group: C1
    1      1     8.00000    15.99491500        8      8.000000
    2      1     1.00000     1.00782500        0      0.000000
    3      1     1.00000     1.00782500        0      0.000000
-
- >>> Time used in PVIOLA is   0.01 seconds
-
+ Threshold for neglecting two-electron integrals:  1.00D-15
 
  Number of two-electron integrals written:       21643 ( 47.9% )
  Megabytes written:                              0.254
 
 
-
- >>> Time used in TWOINT is   0.08 seconds
-
-
- >>> Time used in TWOINT is   0.34 seconds
-
-
    Two-electron spin-orbit integrals
    =================================
-   Spin-orbit 2-electron CPU  time    0. seconds
-   Spin-orbit 2-electron wall time    1. seconds
- >>>> Total CPU  time used in HERMIT:   0.46 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+   Spin-orbit 2-electron CPU  time      0. seconds
+   Spin-orbit 2-electron wall time      0. seconds
+ >>>> Total CPU  time used in HERMIT:   0.12 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
-- End of Integral Section
-     Starting Wave Function Section -
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    7
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -20.685009      -1.613106      -0.779035      -0.687725      -0.616200
+           -0.231553      -0.167271
 
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Sep  4 14:32:28 2002
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Sun Mar 20 16:29:13 2011 
+     Host name              : fe6                                     
 
- Title lines from integral program:
+ Title lines from ".mol" input file:
      H2O                                                                     
                                                                              
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
 
-     Restricted, closed shell Hartree-Fock calculation.
+     Restricted, closed shell Kohn-Sham DFT calculation.
 
-
-     Time-dependent Hartree-Fock calculation (random phase approximation).
+     Time-dependent Kohn-Sham DFT calculation (TD-DFT).
 
 
  Initial molecular orbitals are obtained according to
- ".MOSTART HUCKEL" input option.
+ ".MOSTART EWMO  " input option.
 
      Wave function specification
      ============================
+     For the wave function of type :      >>> KS-DFT   <<<
      Number of closed shell electrons         10
      Number of electrons in active shells      0
-     Number of active orbitals                 0
-     Total number of orbitals                 24
+     Total charge of the molecule              0
 
      Spin multiplicity                         1
      Total number of symmetries                1
      Reference state symmetry                  1
-
-     This is a DFT calculation of type: B3LYP 
-
-     Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
-     WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10E-08    0.10E-09    0.10E-12
-     Default threshold for number of electrons:                        0.10E-02
-     DFT quadrature accuracy:  0.10E-12  35
- 35
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Total number of orbitals          24
-     Number of basis functions         24
+     Abelian symmetry species          All |    1
+                                       --- |  ---
+     Occupied SCF orbitals               5 |    5
+     Secondary orbitals                 19 |   19
+     Total number of orbitals           24 |   24
+     Number of basis functions          24 |   24
 
-      ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.                    
-      -- Initial occupation of symmetries is : --
+     Optimization information
+     ========================
+     Number of configurations                 1
+     Number of orbital rotations             95
+     ------------------------------------------
+     Total number of variables               96
 
-     Occupied HF orbitals               5
-
-     Maximum number of Fock  iterations       0
-     Maximum number of DIIS  iterations      30
-     Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00E-10
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-10
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
 
  C1-DIIS algorithm; max error vectors =   10
 
- Automatic occupation of symmetries with  10 electrons.
-
- Iter     Total energy    Error norm  Delta(E)    HF occupation
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-** Atom O   
-* Grid spacing
- Value chosen:  0.123
- AH =   23440.
- RADERR =   1.E-13
-* Inner grid point: 5.71138E-07
-* Outer point:
- Value chosen:  8.038
-Constant c: 0.43568E-05
-Number of points:  117
-O     1   21690     117     434
-** Atom H1  
-* Grid spacing
- Value chosen:  0.131
- AH =   26.02
- RADERR =   1.E-13
-* Inner grid point: 1.71422E-05
-* Outer point:
- Value chosen: 11.369
-Constant c: 0.12227E-03
-Number of points:   87
-H1    1   20742      87     434
-** Atom H2  
-* Grid spacing
- Value chosen:  0.131
- AH =   26.02
- RADERR =   1.E-13
-* Inner grid point: 1.71422E-05
-* Outer point:
- Value chosen: 11.369
-Constant c: 0.12227E-03
-Number of points:   87
-H2    1   20742      87     434
+         DFT grid generation - Radial Quadrature  : LMG scheme
+         DFT grid generation -  partitioning : Original Becke partitioning
+         DFT grid generation - Radial integration threshold: 1e-13
+         DFT grid generation - Angular polynomials in range [15 35]
+         DFT grid generation - Atom:    1*1 points= 21522 compressed from 21522 (117 radial)
+         DFT grid generation - Atom:    2*1 points= 20634 compressed from 20634 ( 87 radial)
+         DFT grid generation - Atom:    3*1 points= 20634 compressed from 20634 ( 87 radial)
+         DFT grid generation - Number of grid points:    62790; grid generation time:      0.0 s
+      K-S energy, electrons, error :     -7.473190092289   9.9999994663   -5.34D-07
+   1    -76.2131060636        1.63871D+00   -7.62D+01    1
+      Virial theorem: -V/T =      2.004803
+      MULPOP  O      -0.55; H1      0.28; H2      0.28; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.558040043665   9.9999994678   -5.32D-07
+   2    -76.3692535578        5.88047D-01   -1.56D-01    2
+      Virial theorem: -V/T =      2.002496
+      MULPOP  O      -0.17; H1      0.09; H2      0.09; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.544043519610   9.9999994653   -5.35D-07
+   3    -76.3830021761        2.77990D-02   -1.37D-02    3
+      Virial theorem: -V/T =      2.004012
+      MULPOP  O      -0.26; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.539687984308   9.9999994655   -5.34D-07
+   4    -76.3830368427        1.83113D-02   -3.47D-05    4
+      Virial theorem: -V/T =      2.004457
+      MULPOP  O      -0.25; H1      0.12; H2      0.12; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.543298207208   9.9999994652   -5.35D-07
+   5    -76.3830505344        4.42111D-03   -1.37D-05    5
+      Virial theorem: -V/T =      2.004044
+      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542583533275   9.9999994653   -5.35D-07
+   6    -76.3830514037        1.09703D-04   -8.69D-07    6
+      Virial theorem: -V/T =      2.004125
+      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542600561344   9.9999994653   -5.35D-07
+   7    -76.3830514043        7.36834D-06   -5.79D-10    7
+      Virial theorem: -V/T =      2.004123
+      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542599661800   9.9999994653   -5.35D-07
+   8    -76.3830514043        4.57533D-07   -2.80D-12    8
+      Virial theorem: -V/T =      2.004123
+      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542599594986   9.9999994653   -5.35D-07
+   9    -76.3830514043        1.31434D-08   -5.68D-14    9
+      Virial theorem: -V/T =      2.004123
+      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542599594748   9.9999994653   -5.35D-07
+  10    -76.3830514043        9.30566D-10    2.84D-14   10
+      Virial theorem: -V/T =      2.004123
+      MULPOP  O      -0.25; H1      0.13; H2      0.13; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.542599594691   9.9999994653   -5.35D-07
+  11    -76.3830514043        1.59235D-11    0.00D+00   10
 
-   Number of grid points in quadrature:     63174 (100.0%)
-
-
- >>> Time used in DFTGRD is   0.07 seconds
-
-
-   Number of electrons/abscissas:      10.0000002      0.21E-06         63174
-   Dirac and Becke exchange energy:     -6.391334     -0.619249     -7.010583
-   VWN and LYP correlation energy :     -0.124601     -0.272634     -0.397235
-   DFT exchange-correlation energy:                                 -7.407818
-
- >>> Time used in DFTDRV is   1.50 seconds
-
-   1    -76.038213392853   3.81E+00  -7.60E+01    5
-
-   Number of electrons/abscissas:      10.0000002      0.17E-06         63174
-   Dirac and Becke exchange energy:     -6.637795     -0.628917     -7.266712
-   VWN and LYP correlation energy :     -0.127923     -0.279710     -0.407633
-   DFT exchange-correlation energy:                                 -7.674345
-
- >>> Time used in DFTDRV is   1.39 seconds
-
-   2    -76.345592558974   9.29E-01  -3.07E-01    5
-
-   Number of electrons/abscissas:      10.0000003      0.26E-06         63174
-   Dirac and Becke exchange energy:     -6.390126     -0.622702     -7.012827
-   VWN and LYP correlation energy :     -0.125256     -0.272551     -0.397807
-   DFT exchange-correlation energy:                                 -7.410634
-
- >>> Time used in DFTDRV is   1.39 seconds
-
-   3    -76.353543226585   8.22E-01  -7.95E-03    5
-
-   Number of electrons/abscissas:      10.0000000      -.59E-09         63174
-   Dirac and Becke exchange energy:     -6.530814     -0.625962     -7.156776
-   VWN and LYP correlation energy :     -0.126744     -0.276726     -0.403470
-   DFT exchange-correlation energy:                                 -7.560247
-
- >>> Time used in DFTDRV is   1.36 seconds
-
-   4    -76.382247278269   1.34E-01  -2.87E-02    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.513282     -0.625691     -7.138973
-   VWN and LYP correlation energy :     -0.126564     -0.276191     -0.402755
-   DFT exchange-correlation energy:                                 -7.541728
-
- >>> Time used in DFTDRV is   1.37 seconds
-
-   5    -76.383049963072   6.90E-03  -8.03E-04    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514039     -0.625711     -7.139750
-   VWN and LYP correlation energy :     -0.126571     -0.276212     -0.402783
-   DFT exchange-correlation energy:                                 -7.542533
-
- >>> Time used in DFTDRV is   1.37 seconds
-
-   6    -76.383052142953   4.27E-04  -2.18E-06    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514103     -0.625713     -7.139817
-   VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
-   DFT exchange-correlation energy:                                 -7.542602
-
- >>> Time used in DFTDRV is   1.39 seconds
-
-   7    -76.383052152870   1.45E-05  -9.92E-09    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
-   VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
-   DFT exchange-correlation energy:                                 -7.542600
-
- >>> Time used in DFTDRV is   1.39 seconds
-
-   8    -76.383052152896   1.42E-06  -2.59E-11    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
-   VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
-   DFT exchange-correlation energy:                                 -7.542600
-
- >>> Time used in DFTDRV is   1.35 seconds
-
-   9    -76.383052152896   8.37E-08  -2.22E-13    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
-   VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
-   DFT exchange-correlation energy:                                 -7.542600
-
- >>> Time used in DFTDRV is   1.38 seconds
-
-  10    -76.383052152897   2.67E-09  -3.73E-14    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
-   VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
-   DFT exchange-correlation energy:                                 -7.542600
-
- >>> Time used in DFTDRV is   1.40 seconds
-
-  11    -76.383052152897   1.87E-10  -8.88E-15    5
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-   Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
-   VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
-   DFT exchange-correlation energy:                                 -7.542600
-
- >>> Time used in DFTDRV is   1.37 seconds
-
-  12    -76.383052152897   4.77E-12  -8.88E-15    5
- DIIS converged in  12 iterations !
+ *** DIIS converged in  11 iterations !
+   - total time used in SIRFCK :              0.00 seconds
 
 
- *** RHF orbital energy analysis ***
+ *** SCF orbital energy analysis ***
 
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
 
- Hartree-Fock orbital energies, symmetry 1
+ Sym       Kohn-Sham orbital energies
 
-       -19.11780141    -0.99258389    -0.51216733    -0.36062821    -0.28460770
-         0.05581180     0.13164337     0.56760802     0.61891670     0.90435979
+  1    -19.11780155    -0.99258382    -0.51216729    -0.36062827    -0.28460779
+         0.05581126     0.13164230     0.56760755     0.61891637     0.90435971
 
-    E(LUMO) :     0.05581180 au (symmetry 1)
-  - E(HOMO) :    -0.28460770 au (symmetry 1)
+    E(LUMO) :     0.05581126 au (symmetry 1)
+  - E(HOMO) :    -0.28460779 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.34041949 au
+    gap     :     0.34041905 au
+
+ >>> Writing SIRIFC interface file <<<
 
 
-                    >>> FINAL RESULTS FROM SIRIUS <<<
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
 
      Spin multiplicity:           1
      Spatial symmetry:            1
+     Total charge of molecule:    0
 
-     Final    HF energy:          -76.383052152897
+     Final DFT energy:            -76.383051404266                 
      Nuclear repulsion:             9.218170507464
-     Electronic energy:           -85.601222660361
+     Electronic energy:           -85.601221911730
 
-     Final gradient norm:           0.000000000005
-
- 
-     Date and time (Linux)  : Wed Sep  4 14:32:46 2002
-     Host name              : pi.biotech.kth.se                       
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3        4        5
-   1  O   1s     1.0027  -0.0067   0.0000   0.0073   0.0000
-   2  O   1s     0.0151   0.8672   0.0000  -0.3247   0.0000
-   3  O   1s    -0.0128  -0.1515   0.0000  -0.1921   0.0000
-   4  O   2px    0.0000   0.0000   0.7344   0.0000   0.0000
-   5  O   2py    0.0000   0.0000   0.0000   0.0000   0.9267
-   6  O   2pz    0.0029   0.1676   0.0000   0.7983   0.0000
-   7  O   2px    0.0000   0.0000  -0.1437   0.0000   0.0000
-   8  O   2py    0.0000   0.0000   0.0000   0.0000   0.0620
-   9  O   2pz   -0.0021  -0.0859   0.0000  -0.0136   0.0000
-  10  O   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
-  11  O   3d1-   0.0000   0.0000   0.0000   0.0000   0.0193
-  12  O   3d0    0.0000   0.0022   0.0000   0.0185   0.0000
-  13  O   3d1+   0.0000   0.0000   0.0238   0.0000   0.0000
-  14  O   3d2+   0.0005   0.0046   0.0000   0.0021   0.0000
-  15  H1  1s    -0.0009   0.3526   0.5641   0.3391   0.0000
-  16  H1  1s     0.0014  -0.1613  -0.1732  -0.1231   0.0000
-  17  H1  2px    0.0010  -0.0377  -0.0156  -0.0244   0.0000
-  18  H1  2py    0.0000   0.0000   0.0000   0.0000   0.0329
-  19  H1  2pz    0.0009  -0.0188  -0.0281   0.0157   0.0000
-  20  H2  1s    -0.0009   0.3526  -0.5641   0.3391   0.0000
-  21  H2  1s     0.0014  -0.1613   0.1732  -0.1231   0.0000
-  22  H2  2px   -0.0010   0.0377  -0.0156   0.0244   0.0000
-  23  H2  2py    0.0000   0.0000   0.0000   0.0000   0.0329
-  24  H2  2pz    0.0009  -0.0188   0.0281   0.0157   0.0000
-
-
-
- >>>> Total CPU  time used in SIRIUS :     16.71 seconds
- >>>> Total wall time used in SIRIUS :     18.00 seconds
+     Final gradient norm:           0.000000000016
 
  
-     Date and time (Linux)  : Wed Sep  4 14:32:46 2002
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Sun Mar 20 16:29:17 2011 
+     Host name              : fe6                                     
 
-- End of Wave Function Section
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 O   :1s    -1.0027   0.0067   0.0000  -0.0073  -0.0000   0.0312  -0.0000
+   2 O   :1s    -0.0151  -0.8672   0.0000   0.3247  -0.0000  -0.2509  -0.0000
+   3 O   :1s     0.0128   0.1515   0.0000   0.1921  -0.0000  -0.7691   0.0000
+   4 O   :2px   -0.0000  -0.0000  -0.7344   0.0000   0.0000   0.0000   0.5309
+   5 O   :2py   -0.0000   0.0000   0.0000   0.0000   0.9267  -0.0000   0.0000
+   6 O   :2pz   -0.0029  -0.1676  -0.0000  -0.7983   0.0000  -0.3507   0.0000
+   7 O   :2px   -0.0000  -0.0000   0.1437  -0.0000  -0.0000   0.0000   0.3706
+   8 O   :2py    0.0000   0.0000   0.0000   0.0000   0.0620  -0.0000   0.0000
+   9 O   :2pz    0.0021   0.0859   0.0000   0.0136   0.0000  -0.1470  -0.0000
+  11 O   :3d1-   0.0000   0.0000   0.0000   0.0000   0.0193  -0.0000   0.0000
+  12 O   :3d0   -0.0000  -0.0022   0.0000  -0.0185   0.0000  -0.0082  -0.0000
+  13 O   :3d1+  -0.0000  -0.0000  -0.0238   0.0000  -0.0000   0.0000   0.0117
+  15 H1  :1s     0.0009  -0.3526  -0.5641  -0.3391   0.0000   0.1785  -0.1605
+  16 H1  :1s    -0.0014   0.1613   0.1732   0.1231  -0.0000   0.6843  -1.2469
+  17 H1  :2px   -0.0010   0.0377   0.0156   0.0244  -0.0000   0.0018   0.0030
+  18 H1  :2py    0.0000  -0.0000  -0.0000  -0.0000   0.0329   0.0000  -0.0000
+  19 H1  :2pz   -0.0009   0.0188   0.0281  -0.0157  -0.0000  -0.0049  -0.0013
+  20 H2  :1s     0.0009  -0.3526   0.5641  -0.3391   0.0000   0.1785   0.1605
+  21 H2  :1s    -0.0014   0.1613  -0.1732   0.1231  -0.0000   0.6843   1.2469
+  22 H2  :2px    0.0010  -0.0377   0.0156  -0.0244   0.0000  -0.0018   0.0030
+  23 H2  :2py    0.0000  -0.0000  -0.0000  -0.0000   0.0329   0.0000  -0.0000
+  24 H2  :2pz   -0.0009   0.0188  -0.0281  -0.0157  -0.0000  -0.0049   0.0013
 
 
-  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
+
+ >>>> Total CPU  time used in SIRIUS :      4.30 seconds
+ >>>> Total wall time used in SIRIUS :      4.00 seconds
+
+ 
+     Date and time (Linux)  : Sun Mar 20 16:29:17 2011 
+     Host name              : fe6                                     
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
  ------------------------------------------------------------------------------
-
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
 
 
  <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
@@ -611,7 +580,6 @@ H2    1   20742      87     434
  USE FOCK TYPE DECOUPLING OF THE TWO-ELECTRON DENSITY MATRIX :
  ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE ORBITAL DIAGONAL
   AVDIA = T
- 9
 
 
  Linear Response calculation
@@ -619,10 +587,10 @@ H2    1   20742      87     434
 
  Print level                                    : IPRLR  =   2
  Maximum number of iterations                   : MAXITL =  99
- Threshold for relative convergence             : THCLR  = 5.000E-06
+ Threshold for relative convergence             : THCLR  = 5.000D-06
  Maximum iterations in optimal orbital algorithm: MAXITO =  99
 
-  1 B-frequencies  0.000000E+00
+  1 B-frequencies  0.000000D+00
 
     6 second order properties calculated with symmetry no.    1 and labels:
 
@@ -634,9 +602,15 @@ H2    1   20742      87     434
           Z1SPNORB
 
 
-   SCF energy         :      -76.383052152896568
- -- inactive part     :      -85.601222660360619
+   SCF energy         :      -76.383051404266183
+ -- inactive part     :      -85.601221911730235
  -- nuclear repulsion :        9.218170507464057
+
+
+                    *****************************************
+                    *** DFT response calculation (TD-DFT) ***
+                    *****************************************
+
 
 
  >>>>>>>>>> Linear response calculation
@@ -657,6 +631,7 @@ H2    1   20742      87     434
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : PVIOLA X
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -664,38 +639,18 @@ H2    1   20742      87     434
 
  Operator symmetry =  1; triplet =   T
 
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.35 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.36 seconds
-
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 5.00E-06
+ Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   1.26E-06
+ RSP solution vector no.    1; norm of residual   1.26D-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -703,6 +658,7 @@ H2    1   20742      87     434
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : PVIOLA Y
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -710,38 +666,18 @@ H2    1   20742      87     434
 
  Operator symmetry =  1; triplet =   T
 
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.34 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.37 seconds
-
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 5.00E-06
+ Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   2.54E-07
+ RSP solution vector no.    1; norm of residual   2.54D-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -749,6 +685,7 @@ H2    1   20742      87     434
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : PVIOLA Z
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -756,38 +693,18 @@ H2    1   20742      87     434
 
  Operator symmetry =  1; triplet =   T
 
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.34 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 5.00E-06
+ Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   5.71E-07
+ RSP solution vector no.    1; norm of residual   5.71D-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -795,6 +712,7 @@ H2    1   20742      87     434
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : X1SPNORB
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -802,33 +720,17 @@ H2    1   20742      87     434
 
  Operator symmetry =  1; triplet =   T
 
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.34 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 5.00E-06
+ Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   2.12E-06
+ RSP solution vector no.    1; norm of residual   2.12D-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -836,6 +738,7 @@ H2    1   20742      87     434
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : Y1SPNORB
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -843,33 +746,17 @@ H2    1   20742      87     434
 
  Operator symmetry =  1; triplet =   T
 
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.38 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.42 seconds
-
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 5.00E-06
+ Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   3.17E-06
+ RSP solution vector no.    1; norm of residual   3.17D-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -877,6 +764,7 @@ H2    1   20742      87     434
  RSPLR -- linear response calculation for symmetry  1
  RSPLR -- operator label : Z1SPNORB
  RSPLR -- frequencies :   0.000000
+ FREQ 2    0.0000000000000000     
 
 
 
@@ -884,757 +772,251 @@ H2    1   20742      87     434
 
  Operator symmetry =  1; triplet =   T
 
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
 
  *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 5.00E-06
+ Convergence of RSP solution vectors, threshold = 5.00D-06
  ---------------------------------------------------------------
  (dimension of paired reduced space:    8)
- RSP solution vector no.    1; norm of residual   8.97E-07
+ RSP solution vector no.    1; norm of residual   8.97D-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
-@FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
 
-@PVIOLA X   PVIOLA X  1.971698183333E+05
-@PVIOLA X   PVIOLA Y -1.251265531690E-31
-@PVIOLA X   PVIOLA Z -2.226266447492E-09
-@PVIOLA X   X1SPNORB -1.500744185779E-37
-@PVIOLA X   Y1SPNORB  4.864024035529E-02
-@PVIOLA X   Z1SPNORB -2.003752070209E-37
-@PVIOLA Y   PVIOLA Y  1.495426894932E+05
-@PVIOLA Y   PVIOLA Z -2.857893138370E-32
-@PVIOLA Y   X1SPNORB  5.058565839551E-02
-@PVIOLA Y   Y1SPNORB -5.550036468461E-38
-@PVIOLA Y   Z1SPNORB  9.577908079809E-15
-@PVIOLA Z   PVIOLA Z  1.870331165091E+05
-@PVIOLA Z   X1SPNORB  2.644171308937E-36
-@PVIOLA Z   Y1SPNORB -9.956367663919E-15
-@PVIOLA Z   Z1SPNORB  1.709406813950E-37
-@X1SPNORB   X1SPNORB  2.298384531464E-06
-@X1SPNORB   Y1SPNORB  1.042152453690E-42
-@X1SPNORB   Z1SPNORB  4.020372087795E-20
-@Y1SPNORB   Y1SPNORB  2.005847815389E-06
-@Y1SPNORB   Z1SPNORB -5.884468067408E-42
-@Z1SPNORB   Z1SPNORB  2.392248410085E-06
+           Final output of second order properties from linear response
+           ------------------------------------------------------------
 
 
- Time used in linear response calculation is     62.61 CPU seconds for symmetry 1
+@ Spin symmetry of operators: triplet
 
- >>>> Total CPU  time used in RESPONSE:  1 minute   3 seconds
- >>>> Total wall time used in RESPONSE:  1 minute  12 seconds
+ Note that minus the linear response function: - << A; B >>(omega) is printed.
+ The results are of quadratic accuracy using Sellers formula.
+
+@ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES
+
+@ -<< PVIOLA X ; PVIOLA X >> =  1.971698325817D+05
+@ -<< PVIOLA X ; PVIOLA Y >> =  1.708897134606D-11
+@ -<< PVIOLA X ; PVIOLA Z >> = -8.148240056743D-11
+@ -<< PVIOLA X ; X1SPNORB >> = -3.704053870594D-17
+@ -<< PVIOLA X ; Y1SPNORB >> =  4.864025804203D-02
+@ -<< PVIOLA X ; Z1SPNORB >> = -1.260208122028D-16
+@ -<< PVIOLA Y ; PVIOLA Y >> =  1.495427098881D+05
+@ -<< PVIOLA Y ; PVIOLA Z >> =  7.172717625966D-11
+@ -<< PVIOLA Y ; X1SPNORB >> =  5.058573335746D-02
+@ -<< PVIOLA Y ; Y1SPNORB >> =  3.267199031840D-17
+@ -<< PVIOLA Y ; Z1SPNORB >> =  1.635818034928D-15
+@ -<< PVIOLA Z ; PVIOLA Z >> =  1.870331331992D+05
+@ -<< PVIOLA Z ; X1SPNORB >> =  5.156054840841D-17
+@ -<< PVIOLA Z ; Y1SPNORB >> = -4.407762084934D-16
+@ -<< PVIOLA Z ; Z1SPNORB >> = -8.280876830969D-20
+@ -<< X1SPNORB ; X1SPNORB >> =  2.298384789690D-06
+@ -<< X1SPNORB ; Y1SPNORB >> =  1.185918809174D-23
+@ -<< X1SPNORB ; Z1SPNORB >> =  1.004139140824D-20
+@ -<< Y1SPNORB ; Y1SPNORB >> =  2.005848224214D-06
+@ -<< Y1SPNORB ; Z1SPNORB >> = -5.952239331224D-22
+@ -<< Z1SPNORB ; Z1SPNORB >> =  2.392249224694D-06
 
 
- *************************************************************************
- ****************** Output from ABACUS input processing ******************
- *************************************************************************
+ Time used in linear response calculation is     13.77 CPU seconds for symmetry 1
+
+ >>>> Total CPU  time used in RESPONSE:  13.78 seconds
+ >>>> Total wall time used in RESPONSE:  14.00 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+
+
+        *****************************************************************
+        ******** Output from **PROPE input processing for ABACUS ********
+        *****************************************************************
 
 
 
  The following molecular properties will be calculated in this run:
  ------------------------------------------------------------------
 
+ Default print level:        0
+
       Electronic excitation energies 
       Nuclear magnetic shieldings
       Nuclear spin-spin coupling constants
+      Natural orbital connection is used
+      for perturbation dependent basis sets.
 
 
- Default print level:        0
-
-
-
- Changes of defaults for EXCITA:
- -------------------------------
+ Changes of defaults for .EXCITA:
+ --------------------------------
 
  Number of excitation energies:    2    0    0    0    0    0    0    0
- Print level in EXCITA        :    0
- Integral print level in EXCITA        :    0
- Threshold in EXCITA          : 1.00E-04
- Maximum iterations in EXCITA :   60
+ Print level          :    0
+ Integral print level :    0
+ Threshold            : 1.00E-04
+ Maximum iterations   :   60
 
- Center of mass gauge origin:    0.000000    0.000000    0.123106
-      Starting Static Property Section -
+ Center of mass dipole origin  :    0.000000    0.000000    0.123106
+
+ Center of mass gauge origin   :    0.000000    0.000000    0.123106
+
+
+                 .------------------------------------------------.
+                 | Starting in Static Property Section (ABACUS) - |
+                 `------------------------------------------------'
 
 
  
-     Date and time (Linux)  : Wed Sep  4 14:33:58 2002
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Sun Mar 20 16:29:31 2011 
+     Host name              : fe6                                     
+ No symmetry -> DSO by numerical integration.
+ Electrons:   9.9999995(-5.35e-07): DFTDSO time:       0.2 s
 
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.87 seconds
-
-
- TRACTL: Integral transformation abandoned,
+ TRACTL_1: Integral transformation abandoned,
  the required MO integrals are already available.
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.37 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.34 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.34 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.38 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.28 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.18 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.51 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.42 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.26 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.45 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.36 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.35 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.37 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.40 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.34 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.32 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.37 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.29 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.35 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.37 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.21 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.26 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.20 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.25 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.21 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.26 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.26 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.19 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.25 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.18 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.27 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.33 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.31 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.30 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.21 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.20 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.21 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.25 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.21 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.25 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.23 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.21 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.25 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.22 seconds
-
-
-   Number of electrons/abscissas:      10.0000000      -.24E-07         63174
-
- >>> Time used in DFTDRV is   2.24 seconds
-
-
- >>> Time used in EXCITA is  17.83 seconds
-
-
-
- ***************************************************************************
- ************************ FINAL RESULTS FROM ABACUS ************************
- ***************************************************************************
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.4 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.4 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.4 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*1 evaluation time:       0.5 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
+       Electrons: 9.999999(-5.35e-07): LR-DFT*2 evaluation time:       0.7 s
+ >>> Time used in EXCITA is   3.17 seconds
+
+
+   ***************************************************************************
+   ************************ FINAL RESULTS from ABACUS ************************
+   ***************************************************************************
 
 
  
-     Date and time (Linux)  : Wed Sep  4 14:39:08 2002
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Sun Mar 20 16:30:40 2011 
+     Host name              : fe6                                     
 
 
-
-                         Molecular geometry (au)
-                         -----------------------
+                             Molecular geometry (au)
+                             -----------------------
 
  O          0.0000000000            0.0000000000            0.0000000000
  H1         1.4300000000            0.0000000000            1.1000000000
@@ -1644,51 +1026,47 @@ H2    1   20742      87     434
 
 
 
-                    Molecular wave function and energy
-                    ----------------------------------
+                        Molecular wave function and energy
+                        ----------------------------------
 
      Spin multiplicity  1     State number       1     Total charge       0
 
-
-     Total energy        -76.3830521529 au (Hartrees)
-                         -2078.48852028 eV
-                           -200543.6746 kJ/mol
-
+     Total energy        -76.3830514043 au (Hartrees)
+                         -2078.48855889 eV
+                           -200543.6705 kJ/mol
 
 
+                             Relativistic corrections
+                             ------------------------
 
-                         Relativistic corrections
-                         ------------------------
-
-     Darwin correction:                          0.1987572448 au
-     Mass-velocity correction:                  -0.2502969178 au
+     Darwin correction:                          0.1987572454 au
+     Mass-velocity correction:                  -0.2502969186 au
 
      Total relativistic correction:             -0.0515396731 au (0.0675%)
-     Non-relativistic + relativistic energy:   -76.4345918260 au
+     Non-relativistic + relativistic energy:   -76.4345910774 au
 
 
 
 
-                              Dipole moment
-                              -------------
+                                  Dipole moment
+                                  -------------
 
-                    0.748785 au           1.903222 Debye
-
-
-
-
-                         Dipole moment components
-                         ------------------------
-
-                               au             Debye
-
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.74878523      1.90322201
-
-                        1 a.u. =   2.54175 Debye 
+                 au               Debye          C m (/(10**-30)
+              0.748785           1.903221           6.348463
 
 
+                             Dipole moment components
+                             ------------------------
+
+                 au               Debye          C m (/(10**-30)
+
+      x     -0.00000000        -0.00000000        -0.00000000
+      y     -0.00000000        -0.00000000        -0.00000000
+      z      0.74878490         1.90322127         6.34846280
+
+
+   Units:   1 a.u. =   2.54175 Debye 
+            1 a.u. =   8.47835 (10**-30) C m (SI)
 
 
 
@@ -1696,35 +1074,36 @@ H2    1   20742      87     434
                 Singlet electronic excitation energies
                 --------------------------------------
 
-               Sym.   Mode   Frequency    Frequency
-              ex. st.  No.      (au)          (eV)
-              ---------------------------------------
-                 1        1    0.280133    7.622796
-                 1        2    0.348607    9.486075
+                 Sym.   Mode   Frequency    Frequency
+                ex. st.  No.      (au)          (eV)
+                =======================================
+                   1        1    0.280133    7.622797
+                   1        2    0.348606    9.486057
+                ---------------------------------------
 
 
- ******************************************************************************
- ************************ ABACUS - CHEMICAL SHIELDINGS ************************
- ******************************************************************************
+  ******************************************************************************
+  ************************ ABACUS - CHEMICAL SHIELDINGS ************************
+  ******************************************************************************
 
 
 
-             Shielding tensors in symmetry coordinates (ppm)
-             -----------------------------------------------
+                 Shielding tensors in symmetry coordinates (ppm)
+                 -----------------------------------------------
 
                        Bx             By             Bz
 
-        O    x   363.32110427     0.00000000     0.00000000
-        O    y     0.00000000   328.43839943     0.00000000
-        O    z     0.00000000     0.00000000   349.41732834
+        O    x   363.32103063    -0.00000000     0.00000000
+        O    y     0.00000000   328.43845370    -0.00000000
+        O    z    -0.00000000     0.00000000   349.41734684
 
-        H1   x    39.53124048     0.00000000     9.07753339
-        H1   y     0.00000000    25.01550364     0.00000000
-        H1   z     6.58360895     0.00000000    31.41992784
+        H1   x    39.53124177     0.00000000     9.07753226
+        H1   y    -0.00000000    25.01550564    -0.00000000
+        H1   z     6.58360307     0.00000000    31.41992872
 
-        H2   x    39.53124048     0.00000000    -9.07753339
-        H2   y     0.00000000    25.01550364     0.00000000
-        H2   z    -6.58360895     0.00000000    31.41992784
+        H2   x    39.53124177    -0.00000000    -9.07753226
+        H2   y     0.00000000    25.01550564    -0.00000000
+        H2   z    -6.58360307    -0.00000000    31.41992872
 
 
 
@@ -1735,51 +1114,53 @@ H2    1   20742      87     434
 
 
   Shielding constant:    347.0589 ppm
-  Anisotropy:            -27.9308 ppm
+  Anisotropy:            -27.9307 ppm
   Asymmetry:               0.7467    
 
-  S parameter:            30.4157 ppm
+  S parameter:            30.4156 ppm
   A parameter:             0.0000 ppm
 
 
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+ String on input: "O       "
+ String on input: "O       "
+                    Bx             By             Bz
 
-  O    x   363.32110427     0.00000000     0.00000000
-  O    y     0.00000000   328.43839943     0.00000000
-  O    z     0.00000000     0.00000000   349.41732834
+  O      x   363.32103063    -0.00000000     0.00000000
+  O      y     0.00000000   328.43845370    -0.00000000
+  O      z    -0.00000000     0.00000000   349.41734684
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+                 Bx         By         Bz            Bx         By         Bz
 
-  O    x   410.0417     0.0000     0.0000       -46.7206     0.0000     0.0000
-  O    y     0.0000   392.2322     0.0000         0.0000   -63.7938     0.0000
-  O    z     0.0000     0.0000   387.1158         0.0000     0.0000   -37.6985
+  O      x   410.0417     0.0000    -0.0000      -46.7207    -0.0000     0.0000
+  O      y     0.0000   392.2321    -0.0000        0.0000   -63.7936    -0.0000
+  O      z    -0.0000     0.0000   387.1157       -0.0000     0.0000   -37.6984
 
-  Diamagnetic contribution:    396.463228         Paramagnetic:     -49.404284
+  Diamagnetic contribution:    396.463171         Paramagnetic:     -49.404227
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+                 Bx         By         Bz            Bx         By         Bz
 
-  O    x     0.0000     0.0000     0.0000        16.2622     0.0000     0.0000
-  O    y     0.0000     0.0000     0.0000         0.0000   -18.6205     0.0000
-  O    z     0.0000     0.0000     0.0000         0.0000     0.0000     2.3584
+  O      x     0.0000    -0.0000     0.0000       16.2621     0.0000     0.0000
+  O      y     0.0000     0.0000    -0.0000        0.0000   -18.6205     0.0000
+  O      z    -0.0000     0.0000     0.0000        0.0000     0.0000     2.3584
 
 
   Principal values and axes:
   --------------------------
 
-  O     1    363.321104  =  347.06  +  16.26:     1.000000  0.000000  0.000000
-  O     2    349.417328  =  347.06  +   2.36:     0.000000  0.000000  1.000000
-  O     3    328.438399  =  347.06  -  18.62:     0.000000  1.000000  0.000000
+  O         363.321031  =  347.06  +  16.26:     1.000000  0.000000  0.000000
+  O         349.417347  =  347.06  +   2.36:    -0.000000  0.000000  1.000000
+  O         328.438454  =  347.06  -  18.62:    -0.000000  1.000000 -0.000000
 
 
   Chemical shielding for H1    :
@@ -1797,41 +1178,43 @@ H2    1   20742      87     434
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+ String on input: "H1      "
+ String on input: "H1      "
+                    Bx             By             Bz
 
-  H1   x    39.53124048     0.00000000     9.07753339
-  H1   y     0.00000000    25.01550364     0.00000000
-  H1   z     6.58360895     0.00000000    31.41992784
+  H1     x    39.53124177     0.00000000     9.07753226
+  H1     y    -0.00000000    25.01550564    -0.00000000
+  H1     z     6.58360307     0.00000000    31.41992872
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+                 Bx         By         Bz            Bx         By         Bz
 
-  H1   x    35.6756     0.0000    17.3399         3.8556     0.0000    -8.2624
-  H1   y     0.0000    13.0493     0.0000         0.0000    11.9662     0.0000
-  H1   z    15.3685     0.0000    23.2236        -8.7848     0.0000     8.1963
+  H1     x    35.6756    -0.0000    17.3399        3.8556     0.0000    -8.2624
+  H1     y    -0.0000    13.0493     0.0000       -0.0000    11.9662    -0.0000
+  H1     z    15.3685    -0.0000    23.2237       -8.7849     0.0000     8.1963
 
-  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006026
+  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006027
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+                 Bx         By         Bz            Bx         By         Bz
 
-  H1   x     0.0000     0.0000     1.2470         7.5423     0.0000     7.8306
-  H1   y     0.0000     0.0000     0.0000         0.0000    -6.9734     0.0000
-  H1   z    -1.2470     0.0000     0.0000         7.8306     0.0000    -0.5690
+  H1     x     0.0000     0.0000     1.2470        7.5423    -0.0000     7.8306
+  H1     y    -0.0000     0.0000    -0.0000       -0.0000    -6.9734    -0.0000
+  H1     z    -1.2470     0.0000     0.0000        7.8306    -0.0000    -0.5690
 
 
   Principal values and axes:
   --------------------------
 
-  H1    1     25.015504  =   31.99  -   6.97:     0.000000  1.000000  0.000000
-  H1    2     26.657070  =   31.99  -   5.33:    -0.519662  0.000000  0.854372
-  H1    3     44.294098  =   31.99  +  12.31:     0.854372  0.000000  0.519662
+  H1         25.015506  =   31.99  -   6.97:     0.000000  1.000000 -0.000000
+  H1         26.657074  =   31.99  -   5.33:    -0.519662  0.000000  0.854372
+  H1         44.294096  =   31.99  +  12.31:     0.854372 -0.000000  0.519662
 
 
   Chemical shielding for H2    :
@@ -1849,66 +1232,68 @@ H2    1   20742      87     434
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+ String on input: "H2      "
+ String on input: "H2      "
+                    Bx             By             Bz
 
-  H2   x    39.53124048     0.00000000    -9.07753339
-  H2   y     0.00000000    25.01550364     0.00000000
-  H2   z    -6.58360895     0.00000000    31.41992784
+  H2     x    39.53124177    -0.00000000    -9.07753226
+  H2     y     0.00000000    25.01550564    -0.00000000
+  H2     z    -6.58360307    -0.00000000    31.41992872
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+                 Bx         By         Bz            Bx         By         Bz
 
-  H2   x    35.6756     0.0000   -17.3399         3.8556     0.0000     8.2624
-  H2   y     0.0000    13.0493     0.0000         0.0000    11.9662     0.0000
-  H2   z   -15.3685     0.0000    23.2236         8.7848     0.0000     8.1963
+  H2     x    35.6756     0.0000   -17.3399        3.8556    -0.0000     8.2624
+  H2     y    -0.0000    13.0493     0.0000        0.0000    11.9662    -0.0000
+  H2     z   -15.3685    -0.0000    23.2237        8.7849    -0.0000     8.1963
 
-  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006026
+  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006027
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+                 Bx         By         Bz            Bx         By         Bz
 
-  H2   x     0.0000     0.0000    -1.2470         7.5423     0.0000    -7.8306
-  H2   y     0.0000     0.0000     0.0000         0.0000    -6.9734     0.0000
-  H2   z     1.2470     0.0000     0.0000        -7.8306     0.0000    -0.5690
+  H2     x     0.0000    -0.0000    -1.2470        7.5423     0.0000    -7.8306
+  H2     y     0.0000     0.0000    -0.0000        0.0000    -6.9734    -0.0000
+  H2     z     1.2470     0.0000     0.0000       -7.8306    -0.0000    -0.5690
 
 
   Principal values and axes:
   --------------------------
 
-  H2    1     25.015504  =   31.99  -   6.97:     0.000000  1.000000  0.000000
-  H2    2     26.657070  =   31.99  -   5.33:     0.519662  0.000000  0.854372
-  H2    3     44.294098  =   31.99  +  12.31:     0.854372  0.000000 -0.519662
+  H2         25.015506  =   31.99  -   6.97:     0.000000  1.000000  0.000000
+  H2         26.657074  =   31.99  -   5.33:     0.519662 -0.000000  0.854372
+  H2         44.294096  =   31.99  +  12.31:     0.854372  0.000000 -0.519662
 
 
-                     +--------------------------------+
-                     ! Summary of chemical shieldings !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
 
  Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
 
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
- @1O       347.0589  396.4632  -49.4043   -0.2028   34.8827   24.3932    1.2900
+ @1O       347.0589  396.4632  -49.4042   -0.2028   34.8826   24.3931    1.2900
  @1H1       31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
  @1H2       31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
 
 
 
-                     +--------------------------------+
-                     ! Summary of chemical shieldings !
-                     +--------------------------------+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
 
  Definitions from Smith, Palke and Grieg, Concepts in Mag.Res. 4 (1992), 107
 
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
- @2O       347.0589  396.4632  -49.4043  -27.9308    0.7467   30.4157    0.0000
+ @2O       347.0589  396.4632  -49.4042  -27.9307    0.7467   30.4156    0.0000
  @2H1       31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
  @2H2       31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
 
@@ -1922,59 +1307,61 @@ H2    1   20742      87     434
 
 
 
-                   +------------------------------------+
-                   ! ABACUS - Final spin-spin couplings !
-                   +------------------------------------+
+                       +------------------------------------+
+                       ! ABACUS - Final spin-spin couplings !
+                       +------------------------------------+
 
 
 
-          Indirect spin-spin coupling between H2     and H1    :
-          ======================================================
+              Indirect spin-spin coupling between H2     and H1    :
+              ======================================================
 
 
-  Mass number atom 1:   1   abundance:   99.985   g factor:   5.585694
-  Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
+  Mass number atom 1:    1;   Abundance:  99.985 %;   g factor:   5.585694
+  Mass number atom 2:    1;   Abundance:  99.985 %;   g factor:   5.585694
 
-  Isotropic coupling        :     -2.5081 Hz
-  Anisotropic coupling      :    -36.6354 Hz
+  Isotropic coupling        :     -2.6215 Hz
+  Anisotropic coupling      :    -36.7740 Hz
   Asymmetry                 :     -0.0891   
-  S parameter               :     36.6838 Hz
-  A parameter               :      6.1938 Hz
+  S parameter               :     36.8226 Hz
+  A parameter               :      6.2015 Hz
   Isotropic DSO contribution:     -7.1975 Hz
   Isotropic PSO contribution:      7.6125 Hz
-  Isotropic SD contribution :      0.7577 Hz
-  Isotropic FC contribution :     -3.6808 Hz
+  Isotropic SD contribution :      0.7621 Hz
+  Isotropic FC contribution :     -3.7986 Hz
 
 
 
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
+   Interatomic separations (in Angstrom):
+   --------------------------------------
 
-            O           H1          H2  
-
-   O       0.000000
-   H1      0.954707    0.000000
-   H2      0.954707    1.513447    0.000000
-
-
+            O           H1          H2    
+            ------      ------      ------
+ O     :    0.000000
+ H1    :    0.954707    0.000000
+ H2    :    0.954707    1.513447    0.000000
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Max interatomic separation is    1.5134 Angstrom (    2.8600 Bohr)
+  between atoms    3 and    2, "H2    " and "H1    ".
 
-                  atom 1     atom 2                           distance
-                  ------     ------                           --------
-  bond distance:    H1         O                              0.954707
-  bond distance:    H2         O                              0.954707
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H1         O            0.954707
+  bond distance:  H2         O            0.954707
 
 
   Bond angles (degrees):
   ----------------------
 
-                  atom 1     atom 2     atom 3                   angle
-                  ------     ------     ------                   -----
-  bond angle:       H1         O          H2                   104.863
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H1         O          H2           104.863
 
 
 
@@ -1982,22 +1369,25 @@ H2    1   20742      87     434
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:03       1 %
- EXCITA     00:00:18       6 %
- LINRES     00:01:43      35 %
- TRP LR     00:02:47      57 %
+ EXCITA     00:00:03       5 %
+ LINRES     00:00:23      36 %
+ TRP LR     00:00:37      58 %
+ REST       00:00:01       2 %
 
- TOTAL      00:04:52     100 %
+ TOTAL      00:01:05     100 %
 
 
+ >>>> Total CPU  time used in ABACUS:  1 minute   5 seconds
+ >>>> Total wall time used in ABACUS:  1 minute   9 seconds
 
- >>>> Total CPU  time used in ABACUS:  4 minutes 52 seconds
- >>>> Total wall time used in ABACUS:  5 minutes 10 seconds
 
-- End of Static Property Section
- >>>> Total CPU  time used in DALTON:  6 minutes 11 seconds
- >>>> Total wall time used in DALTON:  6 minutes 41 seconds
+                   .-------------------------------------------.
+                   | End of Static Property Section (ABACUS) - |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  1 minute  23 seconds
+ >>>> Total wall time used in DALTON:  1 minute  27 seconds
 
  
-     Date and time (Linux)  : Wed Sep  4 14:39:08 2002
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Sun Mar 20 16:30:40 2011 
+     Host name              : fe6                                     
