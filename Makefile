@@ -1,6 +1,13 @@
 #  -- File: Makefile
 #     Purpose: Dalton
 #
+# For srdft work, overwrite the default dalton/Makefile with this file:
+#    cp Makefile.srdft ../Makefile
+#
+# Remember also to add "-DMOD_SRDFT" to CPPFLAGS in ../Makefile.config
+#
+#  Oct 21, 2009  -- Hans Joergen Aa. Jensen.
+#
 include ./Makefile.config
 
 # OBS! DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
@@ -9,6 +16,7 @@ DALTON_LIBS =      \
 -Labacus -labacus  \
 -Lrsp -lrsp        \
 -Lsirius -lsirius  \
+-Lsrdft -lsrdft    \
 -labacus           \
 -Leri -leri        \
 -Ldensfit -ldensfit\
@@ -24,9 +32,9 @@ DALTON_LIBS =      \
 #NB! GP_OBJ must be before SIR_OBJ because it creates .mod files used in sirius/
 
 MODULES = MAIN_OBJ ABA_OBJ LUCITA_OBJ GP_OBJ SIR_OBJ RSP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ
+	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ SRDFT_OBJ
 
-SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles lucita
+SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles lucita srdft
 
 # ---------------
 
@@ -43,6 +51,14 @@ OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 #     p.t. the dalton script "dalton" and Makefile.config
 #
 dalton: $(INSTALLDIR)/dalton Makefile.config
+
+forchk:
+	bkp -v forchk.log
+	/people/disk2/hjj/forcheck/forchk -ninf -i8 -I :/people/disk2/hjj/prog/svnDalton_trunk/include:/people/disk2/stefan/lib64/int4/openmpi-1.3.2/include:/people/disk2/hjj/prog/svnDalton_trunk/modules -define $(forchk_CPPFLAGS) */*.F >& forchk.log
+
+forchk_pre: pre
+	bkp -v dalton.pre_forchk
+	/people/disk2/hjj/forcheck/forchk -ninf -i8 -I :/people/disk2/hjj/prog/svnDalton_trunk/include:/people/disk2/stefan/lib64/int4/openmpi-1.3.2/include:/people/disk2/hjj/prog/svnDalton_trunk/modules -define $(forchk_CPPFLAGS) */*.i >& dalton.pre_forchk
 
 $(INSTALLDIR)/dalton: ./dalton.gnr $(INSTALLDIR)/dalton.setup
 	@echo "---------------> Updating dalton script because dalton.setup or dalton.gnr changed ..."
@@ -198,6 +214,9 @@ PD_OBJ	:
 
 AMFI_OBJ :
 	cd amfi && $(MAKE) all
+
+SRDFT_OBJ :
+	cd srdft && $(MAKE) all
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) */*.i > dalton.ftnchek
