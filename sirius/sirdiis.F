@@ -915,9 +915,6 @@ C-tbp: Dirty hack: turn off DIFDEN for Cholesky deco.
              DIFDEN = .FALSE.
              IF (IPR_DIIS .GE. 25) THEN
                 WRITE (LUPRI,'(A,I5,L5)')
-     &          ' Screening settings in next iteration (IFTHRS/DIFDEN)',
-     &          IFTHRS, DIFDNO
-                WRITE (LUPRI,'(A,I5,L5)')
      &          ' Cholesky decomposition: new settings (IFTHRS/DIFDEN)',
      &          IFTHRS, DIFDEN
                 CALL FLSHFO(LUPRI)
