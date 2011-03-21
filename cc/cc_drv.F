@@ -377,7 +377,7 @@ C-----------------------------------------------------------------
      &           .NOT. R12PRP
       IF (CCR12RSP.AND.(IANCC2.NE.1)) THEN
         WRITE(LUPRI,*) 'CCR12RSP = ',CCR12RSP
-        WRITE(LUPRI,*) 'IANR12 = ',IANCC2
+        WRITE(LUPRI,*) 'IANR12   = ',IANCC2
         CALL QUIT('Sorry, only Ansatz 1 implemented '//
      &            'for CC response')
       END IF
@@ -567,10 +567,6 @@ C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
          NSLV = MAX(1,NCCSLV)
 C
-C     Dummy assignment to avoid weird bug on SUN.
-C     This should only be a temporary solution - VB
-C
-C         NN = NSLV + NCCSLV
          DO 9999 ISLV = 1, NSLV
 C
           LMAXCU = LMAXCC(ISLV)

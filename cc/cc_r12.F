@@ -3608,7 +3608,7 @@ C
      *     'Level-shift in local-MP2-R12 solver        =',R12LEV
          WRITE(LUPRI,'(1X,78A1)') ('*',I=1,78)
          IF (R12HYB) THEN
-         WRITE(LUPRI,'(1X,A,4(/1X,A))')
+            WRITE(LUPRI,'(1X,A,4(/1X,A))')
      *       'The MP2-R12/A and MP2-R12/B energies'//
      *       ' are computed as described in:',
      *       'W. Klopper,'//

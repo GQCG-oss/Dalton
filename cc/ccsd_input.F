@@ -22,8 +22,8 @@
 !
 #include <single.h>
 C
-C  /* Deck cc_inp */
-      SUBROUTINE CC_INP(WORD,IREST,MSYM)
+C  /* Deck cc_input */
+      SUBROUTINE CC_INPUT(WORD,IREST,MSYM)
 C 
 C-------------------------------------------------
 C
@@ -916,10 +916,10 @@ Cho
 Cho
       RETURN
       END
-C  /* Deck CC_PRTI */
-      SUBROUTINE CC_PRTI
+C  /* Deck CC_PRTINP */
+      SUBROUTINE CC_PRTINP(IWUNIT)
 C
-C     K.Ruud, Jan.-96. Split from CC_INP in order to place CC output more 
+C     K.Ruud, Jan.-96. Split from CC_INPUT in order to place CC output more 
 C     adequatly in SIRIUS Print of input processing
 C
 #include <implicit.h>
@@ -935,48 +935,54 @@ C
 #include <ccsdsym.h>
 C
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for CC:',0)
+         IF (IWUNIT .eq. LUPRI) THEN
+            CALL HEADER('Changes of defaults for CC:',0)
+         ELSE
+            WRITE(IWUNIT,'(//10X,A/10X,A/)')
+     &         'Changes of defaults for CC:',
+     &         '---------------------------'
+         END IF
          IF (SKIP) THEN
-            WRITE (LUPRI,'(A)') ' -CCSD skipped in this run.'
+            WRITE (IWUNIT,'(A)') ' -CCSD skipped in this run.'
          ELSE
 C
-            IF (DIRECT) WRITE (LUPRI,'(/A/A)')
+            IF (DIRECT) WRITE (IWUNIT,'(/A/A)')
      *         ' -This is a direct atomic orbital integral based',
      *         '  calculation for coupled cluster wave function'
 C
-            IF (CCSDT) WRITE (LUPRI,'(/A)')
+            IF (CCSDT) WRITE (IWUNIT,'(/A)')
      *         ' -Iterative triple excitations included '
 C
-            IF (FROIMP) WRITE(LUPRI,'(/A)')
+            IF (FROIMP) WRITE(IWUNIT,'(/A)')
      *         ' -Implicit frozen core calculation'
 C
-            IF (FROEXP) WRITE(LUPRI,'(/A)')
+            IF (FROEXP) WRITE(IWUNIT,'(/A)')
      *         ' -Explicit frozen core calculation'
 C
-            IF (.NOT. T2TCOR) WRITE(LUPRI,'(/A)')
+            IF (.NOT. T2TCOR) WRITE(IWUNIT,'(/A)')
      *         ' -Transposed t2-amplitudes not hold in core'
 C
             IF (NFIELD.GT.0) THEN
-               WRITE(LUPRI,'(A)') ' -Calculation with finite fields:'
+               WRITE(IWUNIT,'(A)') ' -Calculation with finite fields:'
                DO IF = 1, NFIELD
-                  WRITE(LUPRI,'(A,F10.6,A,A8)')
+                  WRITE(IWUNIT,'(A,F10.6,A,A8)')
      *               '    Field strength: ',EFIELD(IF),
      *               'Field Label:  ',LFIELD(IF)
                END DO
-               CALL FLDINP
+               CALL CC_FIELD_PRTINP(IWUNIT)
                IF (CCSDT.AND.NONHF) THEN
                   IF (.NOT. CC3) THEN
-                    WRITE(LUPRI,*) 'No triples unrelaxed FF possibility'
+                    WRITE(IWUNIT,*)'No triples unrelaxed FF possibility'
                     CALL QUIT('No triples unrelaxed FF possibility')
                   ENDIF
                ENDIF
                IF (CCS.AND.NONHF) THEN
-                  WRITE(LUPRI,*) 'No CCS unrelaxed FF possibility '
-                  WRITE(LUPRI,*) 'Use instead CC2 with CCSTST option.'
+                  WRITE(IWUNIT,*) 'No CCS unrelaxed FF possibility '
+                  WRITE(IWUNIT,*) 'Use instead CC2 with CCSTST option.'
                   CALL QUIT('No CCS unrelaxed FF possibility')
                ENDIF                                             
                IF (NONHF .AND. RELORB) THEN
-                  WRITE(LUPRI,*) 'Inconsistency: Non HF reference and '
+                  WRITE(IWUNIT,*) 'Inconsistency: Non HF reference and '
      *                        //'relaxed derivative requested'
                   CALL QUIT('Inconsistency: in FF '//
      &                 'and relaxed derivative')
@@ -993,75 +999,75 @@ C
             IF (LHTR.AND.((CCLRSD).OR.
      *         (CCR3.OR.CCRT.OR.CCR1A.OR.CC1B.OR.CC1A.OR.CC1B)))
      *      THEN
-               WRITE(LUPRI,*) 'Input inconsistent due to LHTR '
+               WRITE(IWUNIT,*) 'Input inconsistent due to LHTR '
                CALL QUIT('Do not use LHTR for this '//
      &              'type of calculation ')
             ENDIF
 C
 C
-            IF ( DEBUG ) WRITE(LUPRI,'(A)')
+            IF ( DEBUG ) WRITE(IWUNIT,'(A)')
      *         ' -Debug printout activated '
-            IF ( CCEXCI ) WRITE(LUPRI,'(A)')
+            IF ( CCEXCI ) WRITE(IWUNIT,'(A)')
      *         ' -Excitation energies calculated'
-            IF ( CCLRSD .OR. CCOPA) WRITE(LUPRI,'(A)')
+            IF ( CCLRSD .OR. CCOPA) WRITE(IWUNIT,'(A)')
      *         ' -One-photon absorption strengths will be calculated'
-            IF ( CCTPA ) WRITE(LUPRI,'(A)')
+            IF ( CCTPA ) WRITE(IWUNIT,'(A)')
      *         ' -Two-photon absorption strengths will be calculated'
-            IF ( JACTST ) WRITE(LUPRI,'(A)')
+            IF ( JACTST ) WRITE(IWUNIT,'(A)')
      *         ' -Jacobian tested agains finite difference Jacobian'
-            IF ( JACEXP ) WRITE(LUPRI,'(A)')
+            IF ( JACEXP ) WRITE(IWUNIT,'(A)')
      *         ' -Jacobian constructed explicit'
-            IF ( FDEXCI ) WRITE(LUPRI,'(A)')
+            IF ( FDEXCI ) WRITE(IWUNIT,'(A)')
      *         ' -Excitation energies of finite diff. Jacobian calc.'
-            IF ( CCLR  ) WRITE(LUPRI,'(A)')
+            IF ( CCLR  ) WRITE(IWUNIT,'(A)')
      *         ' -Linear response properties calculated'
-            IF ( CAUCHY) WRITE(LUPRI,'(A)')
+            IF ( CAUCHY) WRITE(IWUNIT,'(A)')
      *         ' -Dispersion coefficients for linear response calc.'
-            IF ( CCQR  ) WRITE(LUPRI,'(A)')
+            IF ( CCQR  ) WRITE(IWUNIT,'(A)')
      *         ' -Quadratic response properties calculated'
-            IF ( CCCR  ) WRITE(LUPRI,'(A)')
+            IF ( CCCR  ) WRITE(IWUNIT,'(A)')
      *         ' -Cubic response properties calculated'
-            IF ( OSCSTR) WRITE(LUPRI,'(A)')
+            IF ( OSCSTR) WRITE(IWUNIT,'(A)')
      *         ' -Oscillator strengths calculated'
-            IF ( CCQR2R .OR. CCXOPA) WRITE(LUPRI,'(A)')
+            IF ( CCQR2R .OR. CCXOPA) WRITE(IWUNIT,'(A)')
      *         ' -Transition strengths between two excited states '//
      *         'calculated.'
-            IF (CCEXGR) WRITE(LUPRI,'(A)')
+            IF (CCEXGR) WRITE(IWUNIT,'(A)')
      *         ' -Excited state properties calculated'
-            IF ( CCMCD  ) WRITE(LUPRI,'(A)')
+            IF ( CCMCD  ) WRITE(IWUNIT,'(A)')
      *         ' -Magnetic circular dichroism B calculated'
-            IF (DIPMOM) WRITE(LUPRI,'(A)')
+            IF (DIPMOM) WRITE(IWUNIT,'(A)')
      *         ' -Dipole moment calculated'
-            IF (QUADRU) WRITE(LUPRI,'(A)')
+            IF (QUADRU) WRITE(IWUNIT,'(A)')
      *         ' -Traceless quadrupole moment calculated'
-            IF (NQCC) WRITE(LUPRI,'(A)')
+            IF (NQCC) WRITE(IWUNIT,'(A)')
      *         ' -Electric field gradient calculated'
-            IF (RELCOR) WRITE(LUPRI,'(A)')
+            IF (RELCOR) WRITE(IWUNIT,'(A)')
      *         ' -Relativistic corrections to energy calculated'
-            IF (SECMOM) WRITE(LUPRI,'(A)')
+            IF (SECMOM) WRITE(IWUNIT,'(A)')
      *         ' -Electronic second moment of charge calculated'
-            IF (DAR2EL) WRITE(LUPRI,'(A)')
+            IF (DAR2EL) WRITE(IWUNIT,'(A)')
      *         ' -Relativistic two-electron Darwin term calculated'
-            IF (DPTECO) WRITE(LUPRI,'(A)')
+            IF (DPTECO) WRITE(IWUNIT,'(A)')
      *         ' -First-order DPT energy corrections calculated'
-            IF (SIRSOP .AND. CCSD) WRITE (LUPRI,'(A)')
+            IF (SIRSOP .AND. CCSD) WRITE (IWUNIT,'(A)')
      *         ' -CCSD Amplitudes appended to Sirius interface'//
      *         ' for SOPPA(CCSD)'
-            IF (SIRSOP .AND. CC2) WRITE (LUPRI,'(A)')
+            IF (SIRSOP .AND. CC2) WRITE (IWUNIT,'(A)')
      *         ' -CC2 Amplitudes appended to Sirius interface'//
      *         ' for SOPPA(CC2)'
-            IF (AOSOPPA) WRITE (LUPRI,'(/A,A)')
+            IF (AOSOPPA) WRITE (IWUNIT,'(/A,A)')
      *         ' MP2 Amplitudes written for atom integral direct',
      *         ' SOPPA calculations'
 C
          END IF
-         WRITE (LUPRI,'(A)') '  '
+         WRITE (IWUNIT,'(A)') '  '
       END IF
 C
       RETURN
       END
-c /* deck fldinp */
-      SUBROUTINE FLDINP
+c /* deck CC_FIELD_PRTINP */
+      SUBROUTINE CC_FIELD_PRTINP(IWUNIT)
 C
 C     Calculate nuclear contribution to energy in electric field
 C
@@ -1120,7 +1126,7 @@ C
 C
       IF (ELFLNR .NE. 0.0D0) THEN
 C
-         WRITE(LUPRI,'(/A,3F14.8/A,F14.8)')
+         WRITE(IWUNIT,'(/A,3F14.8/A,F14.8)')
      &      ' Electric field:  ',(ELEFLD(I),I=1,3),
      &      ' Total norm:      ',ELFLNR
 C
@@ -1199,10 +1205,10 @@ C
 C     QTOT = DFLOAT(NRHFTS*2)
 C     CORR = -QTOT*(XCQ*ELEFLD(1) + YCQ*ELEFLD(2) + ZCQ*ELEFLD(3))
 C
-      WRITE(LUPRI,'(A,3F14.8)') 'Center of charge:',XCQ,YCQ,ZCQ
-      WRITE(LUPRI,'(2A,F14.8)') 'Charge correction to interaction ',
+      WRITE(IWUNIT,'(A,3F14.8)') 'Center of charge:',XCQ,YCQ,ZCQ
+      WRITE(IWUNIT,'(2A,F14.8)') 'Charge correction to interaction ',
      *                      'with electric field:', CORR
-      WRITE(LUPRI,*)
+      WRITE(IWUNIT,*)
 C
       RETURN
       END
@@ -7668,7 +7674,7 @@ C           .OPERAT : hexuples of operator lables A,B,C,D,E,F
 C           -------------------------------------------------
 1           CONTINUE
               READ (LUCMD,'(6A)') LABELA, LABELB, LABELC,
-     &                            LABELD, LABELE, LABELF 		
+     &                            LABELD, LABELE, LABELF
               DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')
                 IF (LABELA(1:1).NE.'!') THEN
                   IF (NTMOPER.LT.MXTMOP) THEN
@@ -7687,7 +7693,7 @@ C           -------------------------------------------------
                   END IF
                 END IF
                 READ (LUCMD,'(6A)') LABELA, LABELB, LABELC,
-     &                              LABELD, LABELE, LABELF 		
+     &                              LABELD, LABELE, LABELF
               END DO
               BACKSPACE(LUCMD)
             GO TO 100
@@ -8616,7 +8622,7 @@ celena
             GO TO 100
    20       CONTINUE
             DO I = 1, 120
-	      CC2LAB(I:I) = ' '
+              CC2LAB(I:I) = ' '
             ENDDO
             READ (LUCMD,'(A)') CC2LAB
             DO I = 1, 120
@@ -8625,21 +8631,20 @@ celena
                 GOTO 201 
               END IF
             ENDDO
-	    GOTO 300
+            GOTO 300
   201       CONTINUE
             DO I = 120, 1, -1
               IF (CC2LAB(I:I) .NE. ' ') THEN
-	        IF (CC2LAB(I:I) .EQ. 'A') THEN
+                IF (CC2LAB(I:I) .EQ. 'A') THEN
                   IAPCC2 = 1
-		  GOTO 100
-	        ELSE IF (CC2LAB(I:I) .EQ. 'B') THEN
+                  GOTO 100
+                ELSE IF (CC2LAB(I:I) .EQ. 'B') THEN
                   IAPCC2 = 2
-		  GOTO 100
+                  GOTO 100
                 ELSE
-		  GOTO 300
-	        END IF
-c               GOTO 100 
-	      END IF
+                  GOTO 300
+                END IF
+              END IF
             END DO
             GO TO 300
    21       CONTINUE ! .NATVIR
@@ -8690,7 +8695,7 @@ c               GOTO 100
                   R12NOA = .TRUE. 
                   R12NOB = .FALSE.
                END IF
-	       IF (NORXR) THEN
+               IF (NORXR) THEN
                   IAP = 5
                ELSE
                   IAP = 7
@@ -8703,7 +8708,7 @@ c               GOTO 100
      *         CALL QUIT('Sorry, NATVIR for Ansatz 2 not implemented')
             NOTONE = .TRUE.
             NOTTRE = .TRUE.
-	    IF (IAPCC2 .NE. 2) GOTO 300 
+            IF (IAPCC2 .NE. 2) GOTO 300 
             IF (NORXR) THEN
                IAP = 8
             ELSE
@@ -8714,14 +8719,14 @@ c               GOTO 100
      *         CALL QUIT('Sorry, NATVIR for Ansatz 3 not implemented')
             NOTONE = .TRUE.
             NOTTWO = .TRUE.
-	    IF (IAPCC2 .NE. 2) GOTO 300 
+            IF (IAPCC2 .NE. 2) GOTO 300 
             IF (NORXR) THEN
                IAP = 8
             ELSE
                IAP = 10
             END IF
          ELSE
-	    GOTO 300
+            GOTO 300
          END IF
          IAPCC2 = IAP
       END IF
