@@ -53,7 +53,7 @@ cat > geoopt_symbrk.dal <<'%EOF%'
 .HF
 **PROPERTIES
 .VIBANA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

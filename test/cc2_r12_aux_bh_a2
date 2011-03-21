@@ -82,7 +82,7 @@ cat > cc2_r12_aux_bh_a2.dal <<'%EOF%'
 .NO HYB
 .CC2
  2B
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

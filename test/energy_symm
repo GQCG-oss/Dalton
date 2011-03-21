@@ -72,7 +72,7 @@ cat > energy_symm.dal <<'%EOF%'
  1 0
  51
 # p6flag(51) is code for checking that reduced matrix redH is symmetric
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

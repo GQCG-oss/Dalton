@@ -91,7 +91,7 @@ XXSECMOMXXSECMOM
 *R12 INPUT
 .CC2
  1A
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

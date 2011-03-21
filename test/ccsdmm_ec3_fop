@@ -95,7 +95,7 @@ cat > ccsdmm_ec3_fop.pot <<%EOF%
  2        # polarization is not included in the optimization of the
  45.21    # wave function! Note, that SPC optimization of the wave function
  45.21    # is much faster than including polarization!!!
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

@@ -105,7 +105,6 @@ cat > dftmm_2.dal <<'%EOF%'
 .DIPLEN
 .NUCPOT
 .NELFLD
-.NOSUP
 .PRINT
  2
 **WAVE FUNCTIONS
@@ -121,7 +120,7 @@ B3LYP
  2
 .THRESH
 1.0D-9
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

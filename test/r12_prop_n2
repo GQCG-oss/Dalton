@@ -44,12 +44,11 @@ N     0.0000000000000000  0.0000000000000000 1.03715750000000000       *
 #  DALTON INPUT
 #######################################################################
 cat > r12_prop_n2.dal <<'%EOF%'
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTION
 **INTEGRAL
 .THETA
 .SECMOM
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -77,7 +76,7 @@ cat > r12_prop_n2.dal <<'%EOF%'
 *ORBITALS
 .MOSTART
  H1DIAG
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

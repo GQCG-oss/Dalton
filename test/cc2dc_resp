@@ -52,7 +52,6 @@ cat > cc2dc_resp.dal <<%EOF%
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -86,7 +85,7 @@ cat > cc2dc_resp.dal <<%EOF%
 *CCLR
 .DIPOLE
 .OLD_LR
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT

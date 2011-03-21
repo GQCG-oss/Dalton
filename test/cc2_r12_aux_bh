@@ -238,7 +238,7 @@ cat > cc2_r12_aux_bh.dal <<'%EOF%'
 .NO B
 .NO A'
 .NO 2
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

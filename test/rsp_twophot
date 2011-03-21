@@ -60,7 +60,7 @@ cat > rsp_twophot.dal <<'%EOF%'
 .TWO-PHOTON
 .ROOTS
 5 0 0 0 0 0 0 0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

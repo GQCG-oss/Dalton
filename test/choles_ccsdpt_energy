@@ -46,16 +46,15 @@ H4     -1.5849340778   -0.9150621165   -0.4509907005
 #  DALTON INPUT
 #######################################################################
 cat > choles_ccsdpt_energy.dal << '%EOF%'
-**GENERAL
+**DALTON
 .RUN WAVE
-**HERMIT
-.NOSUP
+**INTEGRALS
 .DIPLEN
-**SIRIUS
+**WAVE FUNCTION
 .CC
 *ORBITAL
 .NOSUPSYM
-*SCF INP
+*SCF INPUT
 .THRESH
  1.0D-10
 *PRINT
@@ -64,7 +63,7 @@ cat > choles_ccsdpt_energy.dal << '%EOF%'
 .PRINTFLAGS
    0  5
   -6  -7  -8  -9  -10
-*CC INP
+*CC INPUT
 .THRENR
   1.0D-10
 .PRINT
@@ -73,7 +72,7 @@ cat > choles_ccsdpt_energy.dal << '%EOF%'
   1  0
 .CCSD
 .CHO(T)
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

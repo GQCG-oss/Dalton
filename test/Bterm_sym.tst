@@ -41,7 +41,7 @@ B3LYP
 .MCDBTERM
 .ROOTS
  4 4 4 4
-*END OF INPUT
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

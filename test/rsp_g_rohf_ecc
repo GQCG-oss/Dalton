@@ -28,7 +28,7 @@ cat << EODAL > rsp_g_rohf_ecc.dal
 *ESR
 .G-TENSOR
 .ECC
-*END OF INPUT
+**END OF DALTON INPUT
 
 EODAL
 cat << EOMOL > rsp_g_rohf_ecc.mol

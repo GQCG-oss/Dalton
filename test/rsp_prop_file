@@ -48,7 +48,6 @@ cat > rsp_prop_file.dal <<'%EOF%'
 .RUN RESPONSE
 **INTEGRALS
 .DIPLEN
-*END OF HERMIT
 **WAVE FUNCTIONS
 .HF
 *SCF INPUT
@@ -61,7 +60,7 @@ cat > rsp_prop_file.dal <<'%EOF%'
 .DIPLEN
 .THCLR
 1.0D-9
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

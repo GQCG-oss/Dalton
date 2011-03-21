@@ -145,7 +145,7 @@ cat > cc2_r12_aux_ch4_cbs1.dal <<'%EOF%'
  1B
 .NATVIR
 .CABS
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

@@ -51,7 +51,7 @@ cat > geoopt_numgrd.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 .MP2
-*END OF DALTON
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

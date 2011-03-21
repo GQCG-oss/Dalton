@@ -84,7 +84,7 @@ cat > prop_vibg2.dal <<%EOF%
    13    6    6    2   10    6    6    1
 .THRESH
  1.0D-9
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

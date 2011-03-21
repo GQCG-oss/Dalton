@@ -19,7 +19,7 @@ fi
 #######################################################################
 cat > cc_prop_file.info <<'%EOF%'
    cc_prop_file
-   -----------
+   -------------
    Molecule:         CH2O
    Wave Function:    CCSD / STO-3G  
    Test Purpose:     Test if correct write to DALTON.PROP from CC module
@@ -48,7 +48,6 @@ cat > cc_prop_file.dal <<'%EOF%'
 .RUN WAVEFUNCTION
 **INTEGRALS
 .DIPLEN
-.NOSUP
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -80,7 +79,7 @@ cat > cc_prop_file.dal <<'%EOF%'
 *CCEXCI
 .NCCEXCI
  2
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

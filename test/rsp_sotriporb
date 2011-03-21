@@ -73,7 +73,7 @@ cat > $testcase.dal <<%EOF%
 Z2SPNORB
 .ROOTS
  0 0 1 0 0 0 0 0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

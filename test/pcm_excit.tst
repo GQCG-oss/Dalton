@@ -37,7 +37,7 @@ WATER
 .SINGLE RESIDUE
 .ROOTS
 3 3 3 3
-*END OF
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

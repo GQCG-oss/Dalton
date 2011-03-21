@@ -56,7 +56,6 @@ cat > cc2dc_energy.dal <<%EOF%
 *ONEINT
 .SOLVENT
  10
-*END OF HERMIT
 **WAVE FUNCTIONS
 .CC
 *SCF INPUT
@@ -89,7 +88,7 @@ cat > cc2dc_energy.dal <<%EOF%
 .QUADRU
 .SECMOM
 .NONREL
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 #  CHECK SCRIPT

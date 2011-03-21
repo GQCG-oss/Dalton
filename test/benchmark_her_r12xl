@@ -221,7 +221,7 @@ cat > benchmark_her_r12xxl.dal <<'%EOF%'
 *ORBITALS
 .MOSTART
  H1DIAG
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

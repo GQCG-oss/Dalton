@@ -84,7 +84,7 @@ cat > cc2_r12_aux_h2o_sym_a3.dal <<'%EOF%'
 .NO HYB
 .CC2
  3B
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

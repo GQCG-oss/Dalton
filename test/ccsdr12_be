@@ -79,7 +79,7 @@ cat > ccsdr12_be.dal <<'%EOF%'
  1B
 .NATVIR
 .CCVABKL
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -63,7 +63,7 @@ cat > choles_b3lyp_polar.dal << '%EOF%'
  1.0D-8
 **PROPERTIES
 .POLARI
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

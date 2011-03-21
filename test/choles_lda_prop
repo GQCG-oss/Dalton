@@ -65,7 +65,7 @@ cat > choles_lda_prop.dal << '%EOF%'
 .POLARI
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

@@ -67,7 +67,7 @@ cat > prop_nucquad.dal <<'%EOF%'
  2
 **PROPERTIES
 .NQCC
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

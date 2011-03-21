@@ -75,7 +75,7 @@ cat > r12_orb.dal <<'%EOF%'
 *R12
 .R12XXL
 .CABS
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

@@ -62,9 +62,9 @@ N     0.00000000          0.00000000          1.03400000               *
 #  DALTON INPUT
 #######################################################################
 cat > ccr3_exci.dal <<'%EOF%'
-**GENERAL
+**DALTON
 .RUN WAVEFUNCTION 
-**SIRIUS
+**WAVE FUNCTION
 .CC 
 *SCF INPUT 
 .SCF OCCUPATION

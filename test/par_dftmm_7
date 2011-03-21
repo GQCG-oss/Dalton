@@ -111,7 +111,6 @@ EXPON
 .DIPLEN
 .NUCPOT
 .NELFLD
-.NOSUP
 .PRINT
  2
 **WAVE FUNCTIONS
@@ -128,7 +127,7 @@ B3LYP
  0.040
 .THCLR
 1.0D-9
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #
 #######################################################################

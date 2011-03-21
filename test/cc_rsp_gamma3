@@ -70,7 +70,7 @@ cat > cc_rsp_gamma3.dal <<'%EOF%'
 .AVERAG
 GAMMA_ISO
 LINEAR
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

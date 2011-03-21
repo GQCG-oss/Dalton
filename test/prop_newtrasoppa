@@ -58,7 +58,7 @@ cat > prop_newtrasoppa.dal <<%EOF%
 **PROPERTIES
 .SPIN-S
 .SOPPA
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

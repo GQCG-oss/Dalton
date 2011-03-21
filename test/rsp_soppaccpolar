@@ -76,7 +76,7 @@ cat > rsp_soppaccpolar.dal <<'%EOF%'
  1
  0.000
 .DIPLEN
-*END OF DALTON
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

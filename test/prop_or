@@ -67,7 +67,7 @@ cat > prop_or.dal <<'%EOF%'
 .FREQUENCIES
  1
  0.07318
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

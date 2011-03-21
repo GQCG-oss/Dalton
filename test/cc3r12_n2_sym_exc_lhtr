@@ -83,7 +83,7 @@ cat > cc3r12_n2_sym_exc_lhtr.dal <<'%EOF%'
 .NO HYB
 .CC2
  1B
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

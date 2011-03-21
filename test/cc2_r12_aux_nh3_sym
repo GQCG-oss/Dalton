@@ -89,7 +89,7 @@ cat > cc2_r12_aux_nh3_sym.dal <<'%EOF%'
 #.NO 2
 .CC2
  1A
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

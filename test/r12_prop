@@ -48,13 +48,12 @@ H        0.0000000000000     0.0000000000000     2.1335851750376
 #  DALTON INPUT
 #######################################################################
 cat > r12_prop.dal <<'%EOF%'
-**GENERAL
+**DALTON
 .DIRECT
 .RUN WAVE FUNCTION
 **INTEGRAL
 .DIPLEN
 .R12
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INPUT
@@ -82,7 +81,7 @@ cat > r12_prop.dal <<'%EOF%'
 .CABS
 *CCFOP
 .DIPMOM
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

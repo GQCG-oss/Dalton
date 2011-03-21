@@ -69,7 +69,7 @@ cat > rsp_lrso2.dal <<'%EOF%'
 **RESPONS
 *LINEAR
 .SPIN-ORBIT
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

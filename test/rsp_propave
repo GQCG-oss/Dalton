@@ -57,7 +57,7 @@ cat > rsp_propave.dal <<'%EOF%'
 ZDIPLEN
 *CUBIC
 .DIPLNZ
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

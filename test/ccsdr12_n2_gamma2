@@ -89,7 +89,7 @@ cat > ccsdr12_n2_gamma2.dal <<'%EOF%'
  1B
 .BASSCL
  3.0 5.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

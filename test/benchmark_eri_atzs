@@ -65,7 +65,7 @@ cat > benchmark_eri_atzs.dal <<'%EOF%'
 .FROIMP
  2  1  2  1
  0  0  0  0
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################
@@ -89,7 +89,7 @@ fi
 #
 #             Total energy CCSD(T):                -232.9727751248
 #
-CRIT1=`$GREP "Total energy CCSD(T):                \-232.972775" $log | wc -l`
+CRIT1=`$GREP "Total energy CCSD\(T\): * \-232.972775" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=2
 ERROR[1]="CCSD(T) ENERGY NOT CORRECT"

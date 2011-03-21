@@ -78,7 +78,7 @@ cat > cc2_r12_aux_n2_gamma.dal <<'%EOF%'
 *R12 INP
 .CC2
  1A
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

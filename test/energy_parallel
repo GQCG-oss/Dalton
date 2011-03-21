@@ -51,7 +51,7 @@ cat > energy_parallel.dal <<'%EOF%'
 .PARALLEL
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

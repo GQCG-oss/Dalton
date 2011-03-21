@@ -95,7 +95,7 @@ cat > prop_nolondon.dal <<'%EOF%'
 .SOPPA
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

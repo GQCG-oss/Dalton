@@ -72,7 +72,7 @@ XDIPLEN
 0
 .CSPIN
 1
-*END OF INPUT
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

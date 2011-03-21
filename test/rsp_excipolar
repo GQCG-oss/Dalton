@@ -94,7 +94,7 @@ cat > rsp_excipolar.dal <<'%EOF%'
  100
 .MAXITP
  100
-*END OF RESPONS
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

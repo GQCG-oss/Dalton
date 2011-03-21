@@ -70,7 +70,7 @@ EOF
 *OPTIMIZATION
 .THRESHOLD
  1.D-9
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -97,7 +97,7 @@ cat > prop_nolondon_soppacc.dal <<%EOF%
 .SOPPA(CCSD)
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

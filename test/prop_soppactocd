@@ -96,7 +96,7 @@ cat > prop_soppactocd.dal <<%EOF%
 .CTOCD
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

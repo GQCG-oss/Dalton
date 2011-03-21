@@ -75,7 +75,7 @@ cat > rsp_hyperpolar.dal <<'%EOF%'
 .DIPLEN
 .THCLR
 1.0D-6
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

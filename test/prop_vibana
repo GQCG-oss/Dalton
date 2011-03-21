@@ -63,7 +63,7 @@ cat > prop_vibana.dal <<'%EOF%'
 1.0D-10
 **PROPERTIES
 .VIBANA
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

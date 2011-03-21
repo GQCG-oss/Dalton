@@ -54,21 +54,20 @@ H6    0.000000     1.239454    -2.146796
 #  DALTON INPUT
 #######################################################################
 cat > choles_cc2_polar.dal <<'%EOF%'
-**GENERAL
+**DALTON
 .RUN WAVE
 .CHOLES
-**HERMIT
-.NOSUP
+**INTEGRALS
 .DIPLEN
-**CHOLES
+**CHOLESKY
 .REDUCE
 .SPANDI
   1.0d-3
 .THRCOM
  1.0D-8
-**SIRIUS
+**WAVE FUNCTION
 .CC
-*SCF INP
+*SCF INPUT
 .THRESH
  1.0D-8
 .MAX DIIS
@@ -89,7 +88,7 @@ cat > choles_cc2_polar.dal <<'%EOF%'
 .AVERAGE
 ALPHA_ANI
 XYDEGN
-*END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -61,7 +61,7 @@ cat > effgeom_fromE2.dal <<'%EOF%'
 *SCF INP
 .THRESH
  1.0D-12
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

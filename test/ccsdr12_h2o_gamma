@@ -88,7 +88,7 @@ cat > ccsdr12_h2o_gamma.dal <<'%EOF%'
 .NO HYB
 .CC2
  1B
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

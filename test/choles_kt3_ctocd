@@ -63,7 +63,7 @@ cat > choles_kt3_ctocd.dal << '%EOF%'
 **PROPERTIES
 .CTOCD
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

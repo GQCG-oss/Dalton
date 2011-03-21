@@ -117,7 +117,7 @@ cat > prop_spinspin3.dal <<'%EOF%'
 .NOSD
 .ABUNDA
      .01
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

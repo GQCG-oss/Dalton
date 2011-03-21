@@ -87,8 +87,6 @@ F  1    1
 cat > prop_exci_aosoppcc.dal <<'%EOF%'
 **DALTON INPUT
 .RUN PROPERTIES
-**INTEGRALS
-.NOSUP
 **WAVE FUNCTIONS
 .HF
 .CC
@@ -109,7 +107,7 @@ cat > prop_exci_aosoppcc.dal <<'%EOF%'
 .ROTVEL
 .NEXCITA
     5    8    6    6    0    0    0    0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

@@ -53,7 +53,7 @@ B3LYP
 **PROPERTIES
 .SHIELD
 .SPIN-SPIN
-*END OF INPUT
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

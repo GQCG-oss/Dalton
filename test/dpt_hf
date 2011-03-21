@@ -43,7 +43,7 @@ H       0.0000000000000     0.0000000000000     1.7328000000000
 #  DALTON INPUT
 #######################################################################
 cat > dpt_hf.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN PROPERTIES
 **INTEGRAL
 .DIPLEN
@@ -54,7 +54,6 @@ cat > dpt_hf.dal <<%EOF%
 .MASSVELO
 .DPTPOT
 .KINENER
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INP
@@ -76,7 +75,7 @@ cat > dpt_hf.dal <<%EOF%
 .2ELDAR
 .BPH2OO
 .BPH2SS
-**END OF
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

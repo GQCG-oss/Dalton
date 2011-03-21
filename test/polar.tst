@@ -35,7 +35,7 @@ WATER
 .THCLR
 1.0D-4
 .DIPLEN
-*END OF
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

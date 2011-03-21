@@ -92,7 +92,7 @@ YYSECMOM
 #.NO 2
 .BASSCL
  0.5 2.0
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

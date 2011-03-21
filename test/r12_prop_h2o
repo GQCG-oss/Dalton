@@ -48,13 +48,12 @@ H      1.427450200000000    .000000000000000   1.110746000000000       *
 #  DALTON INPUT
 #######################################################################
 cat > r12_prop_h2o.dal <<'%EOF%'
-**GENERAL
+**DALTON
 .DIRECT
 .RUN WAVE FUNCTION
 **INTEGRAL
 .DIPLEN
 .R12
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
 *SCF INPUT
@@ -78,7 +77,7 @@ cat > r12_prop_h2o.dal <<'%EOF%'
 .NO RXR
 *CCFOP
 .DIPMOM
-*END OF
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

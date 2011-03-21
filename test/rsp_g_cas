@@ -46,8 +46,7 @@ cat << EODAL > rsp_g_cas.dal
 .G-TENSOR
 .OZSO1
 .OZSO2
-*SPIN-ORBIT
-*END OF INPUT
+**END OF DALTON INPUT
 EODAL
 cat << EOMOL > rsp_g_cas.mol
 ATOMBASIS

@@ -72,7 +72,7 @@ cat > vibave_spinspin.dal <<'%EOF%'
 *LINRES
 .THRESH
 1.0D-12
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

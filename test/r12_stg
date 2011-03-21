@@ -83,7 +83,7 @@ cat > r12_stg.dal <<'%EOF%'
 *R12 INPUT
 .CABS
 .R12XXL
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

@@ -123,7 +123,7 @@ for(i=0;i<5;i++)getline;
 if (s=e($3,'$1,$4')) exit 1;getline;
 if (s=e($3,'$2,$4')) exit 1;getline;
 if (s=e($3,'$3,$4')) exit 1;exit 0}
-END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
+END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment components"
 }
 
 # check_polarizability:

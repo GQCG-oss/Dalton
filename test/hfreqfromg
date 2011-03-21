@@ -62,8 +62,7 @@ cat > hfreqfromg.dal <<'%EOF%'
  1.0D-8
 **PROPERTIES
 .SPIN-SPIN
-*TRPRSP
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

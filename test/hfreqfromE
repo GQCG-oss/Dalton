@@ -59,8 +59,7 @@ cat > hfreqfromE.dal <<'%EOF%'
 *SCF INP
 .THRESH
  1.0D-12
-**PROPERTIES
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

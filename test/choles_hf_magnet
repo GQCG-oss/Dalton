@@ -61,7 +61,7 @@ cat > choles_hf_magnet.dal << '%EOF%'
 .HF
 **PROPERTIES
 .MAGNET
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 
 #######################################################################

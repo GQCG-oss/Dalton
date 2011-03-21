@@ -104,7 +104,6 @@ cat > hfmm_1.dal <<'%EOF%'
 .DIPLEN
 .NUCPOT
 .NELFLD
-.NOSUP
 .PRINT
  2
 **WAVE FUNCTIONS

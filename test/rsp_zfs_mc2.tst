@@ -39,7 +39,7 @@ START DALINP
 **RESPONSE
 *ESR
 .ZFS
-*END OF
+**END OF DALTON INPUT
 END DALINP
 
 ########## MOLECULE.INP ############################

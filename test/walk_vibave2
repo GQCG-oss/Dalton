@@ -77,7 +77,7 @@ cat > walk_vibave2.dal <<'%EOF%'
 *RESPONSE
 .THRESH
 1.0D-6
-*END OF INPUT
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 
