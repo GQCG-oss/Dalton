@@ -1685,6 +1685,7 @@ dft_kohn_shamab_b_slave(real* work, integer* lwork, const integer* iprint)
 void
 dft_kohn_shamab_b_sync_slaves(real* dmat)
 {
+  FSYM(dftintbcast)();
   MPI_Bcast(dmat, 2*inforb_.n2basx,MPI_DOUBLE,
             MASTER_NO, MPI_COMM_WORLD);
 }
