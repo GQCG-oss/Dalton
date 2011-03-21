@@ -774,7 +774,7 @@ FSYM2(dft_qr_respons)(real *fi, real *cmo,
     qrbl_data_free(&qr_data);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.3g): QR-DFT/b evaluation time: %9.1f s", 
+    fort_print("      Electrons: %f(%9.3g): QR-DFT/b evaluation time: %9.1f s", 
                electrons, (double)(electrons-(int)(electrons+0.5)),
                utm/(double)sysconf(_SC_CLK_TCK));
 }

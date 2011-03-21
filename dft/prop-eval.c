@@ -208,7 +208,7 @@ FSYM2(dft_kohn_sham)(real* dmat, real* ksm, real *edfty,
     free(ksm_exch);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %11.7f %8.2g: Energy %12.6f KS/B time: %9.1f s", 
+    fort_print("      Electrons: %11.7f %8.2g: Energy %12.6f KS/B time: %9.1f s", 
                electrons, (electrons-2.0*inforb_.nrhft)/(2.0*inforb_.nrhft), 
                energy, utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -472,7 +472,7 @@ FSYM2(dft_lin_resp)(real* fmat, real *cmo, real *zymat, integer *trplet,
     free(lr_data.dtgao);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.1g): LR-DFT eval. time: %9.1f s", 
+    fort_print("      Electrons: %f(%9.1g): LR-DFT eval. time: %9.1f s", 
                electrons, (electrons-2.0*inforb_.nrhft)/(2.0*inforb_.nrhft), 
                utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -545,7 +545,7 @@ FSYM2(dft_london)(real* fx, real* fy, real* fz, real* work,
     times(&endtm);
     /* dft_mol_grad_collect_info(work);                  NO-OP in serial */
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f (%9.1g): LONDON evaluation time: %10.2f s", 
+    fort_print("      Electrons: %f (%9.1g): LONDON evaluation time: %10.2f s", 
                electrons, (double)(electrons-(int)(electrons+0.5)),
 	       (double)(utm/(double)sysconf(_SC_CLK_TCK)));
 
@@ -774,7 +774,7 @@ FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
     free(res.ksma);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %11.7f %9.1g: Energy %f KS time: %9.1f s", 
+    fort_print("      Electrons: %11.7f %9.1g: Energy %f KS time: %9.1f s", 
                electrons, (electrons-exp_el)/exp_el,
                res.energy, utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -1178,7 +1178,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
     free(lr_data.dtgaob);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;  
-    fort_print("Electrons: %f(%9.1g): LR-DFT evaluation time: %9.1f s", 
+    fort_print("      Electrons: %f(%9.1g): LR-DFT evaluation time: %9.1f s", 
                electrons, (double)(electrons-(int)(electrons+0.5)),
                utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -1377,7 +1377,7 @@ FSYM2(dft_kohn_shamf)(real* dmat, real* ksm, real* edfty,
     free(ds.dZ);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %11.7f %7.1g: Energy %f KS/B time: %9.1f s", 
+    fort_print("      Electrons: %11.7f %7.1g: Energy %f KS/B time: %9.1f s", 
                electrons, (electrons-2.0*inforb_.nrhft)/(2.0*inforb_.nrhft), 
                ds.energy, utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -1636,7 +1636,7 @@ FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,
     free(lr_data.dtgao);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.3g): LR-DFT*%d evaluation time: %9.1f s", 
+    fort_print("      Electrons: %f(%9.3g): LR-DFT*%d evaluation time: %9.1f s", 
                electrons, (double)(electrons-(int)(electrons+0.5)), *nosim,
                utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -1952,7 +1952,7 @@ FSYM2(dft_kohn_shamab_b)(real* dmat, real* ksm, real *edfty,
   /* timings & print out*/
   times(&endtm);
   utm = endtm.tms_utime-starttm.tms_utime;
-  fort_print("Electrons: %11.7f %9.1g: Energy %f KS-AB/B time: %9.1f s",
+  fort_print("      Electrons: %11.7f %9.1g: Energy %f KS-AB/B time: %9.1f s",
              electrons, (electrons-exp_el)/exp_el,
              result.energy, utm/(double)sysconf(_SC_CLK_TCK));
 }
@@ -2405,7 +2405,7 @@ FSYM2(dft_lin_respab_b)(integer *nosim, real* fmatc, real* fmato, real *cmo,
 
   times(&endtm);
   utm = endtm.tms_utime-starttm.tms_utime;
-  fort_print("Electrons: %f(%9.3g): LR-AB-DFT*%d evaluation time: %9.1f s",
+  fort_print("      Electrons: %f(%9.3g): LR-AB-DFT*%d evaluation time: %9.1f s",
 	     electrons, (double)(electrons-(int)(electrons+0.5)), *nosim,
 	     utm/(double)sysconf(_SC_CLK_TCK));
 }

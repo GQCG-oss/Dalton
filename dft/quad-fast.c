@@ -746,7 +746,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
     quadfast_data_free(data);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
+    fort_print("      Electrons: %15.7f. Quadratic response time: %10.2f s\n", 
                electrons, utm/(double)sysconf(_SC_CLK_TCK));
 }
 
