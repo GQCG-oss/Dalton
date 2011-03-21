@@ -1496,7 +1496,7 @@ C
       ELSE IF (DOCI) THEN
          THRGRD = THRCI
          IF (NASHT .GT. 0) THEN
-            IF (DOCCSD) THEN
+            IF (DOCISD) THEN
                INPERR = INPERR + 1
                WRITE(LUPRI,'(/A)')
      &         'INPUT ERROR: both .CISD   and active spaces specifed.'
@@ -2046,10 +2046,10 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  2700  CALL HAMINP(WORD,INPERR,ALLOPT)
        GO TO 910
  2800  MSYM = NSYM
-       CALL CC_INP(WORD,IREST,MSYM)
+       CALL CC_INPUT(WORD,IREST,MSYM)
        IF (NSYM .NE. MSYM) THEN
           CALL QUIT(
-     &       'CC_INP error: NSYM from SIRIFC .ne. NSYM in this run')
+     &       'CC_INPUT error: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
        GOTO 910
  2900  CALL DFTINP(WORD,INPERR,ALLOPT)
@@ -2102,7 +2102,7 @@ C
 C     We anyway need to process CC default settings
 C
       JREST = 0
-      CALL CC_INP('**WAVE F',JREST,NSYM)
+      CALL CC_INPUT('**WAVE F',JREST,NSYM)
 C
       CALL QEXIT('NEWINP')
       RETURN
@@ -2110,7 +2110,7 @@ C
 C     END OF NEWINP.
 C
       END
-C  /* Deck geninp */
+C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
 C
 C 1-Oct 1987 Hans Agren
@@ -5132,7 +5132,6 @@ C     formulation of NEVPT.
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *         'Multi-configurational response calculation.'
          ELSE
-            IF (WFTYPE .EQ. ' ') WFTYPE='CI'
             IF (DOCINO) THEN
                WRITE (IWUNIT,1050) 'CI-NO calculation.'
             ELSE
@@ -5142,10 +5141,13 @@ C     formulation of NEVPT.
      *            'CI response calculation.'
             END IF
             IF (DOFCI) THEN
+               IF (WFTYPE .EQ. ' ') WFTYPE='Full CI'
                WRITE (IWUNIT,1050) 'CI type: Full CI.'
             ELSE IF (DOCISD) THEN
+               IF (WFTYPE .EQ. ' ') WFTYPE='CISD'
                WRITE (IWUNIT,1050) 'CI type: CISD.'
             ELSE
+               IF (WFTYPE .EQ. ' ') WFTYPE='CI'
                WRITE (IWUNIT,1050)
      &           'CI type: user specified active spaces.'
             END IF
@@ -5180,6 +5182,7 @@ C          to get here unless someone modifies SIRIUS incorrectly
      &      ' MP2, Moeller-Plesset second-order calculation.'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOCCSD) THEN
+         IF (WFTYPE .EQ. ' ') WFTYPE='CC'
          WRITE (IWUNIT,1050) ' (Integral direct) CC calculation.'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOSCF ) THEN
@@ -5551,7 +5554,7 @@ C
       ELSE IF (DOSCF) THEN
          WRITE(IWUNIT,1900) MAXFCK,MXDIIS,MXHFMA, THRRHF
       END IF
-      IF (DOCCSD) CALL CC_PRTI
+      IF (DOCCSD) CALL CC_PRTINP(IWUNIT)
  1600 FORMAT(/5X,'Maximum number of macro iterations',I8,
      *       /5X,'Maximum number of micro iterations',I8,
      *       /5X,'Threshold for gradient',10X,1P,D10.2,
