@@ -146,7 +146,7 @@ C
         CALL GETTIM(T0,W0)
         CALL CCSD_R12(WORK,LWORK,WORK,LWORK,CCR12RSP)
         CALL GETTIM(T1,W1)
-        WRITE(LUPRI,*)'Time for MP2-R12 part cpu:', T1-T0
+        WRITE(LUPRI,*)'Time for MP2-R12 part cpu :', T1-T0
         WRITE(LUPRI,*)'Time for MP2-R12 part wall:', W1-W0
         CALL FLSHFO(LUPRI)
         ! restore print level
