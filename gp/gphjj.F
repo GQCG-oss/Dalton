@@ -1635,20 +1635,11 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_GFORTRAN)
-      FUNCTION SECOND ()
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
- || defined (SYS_T3D) || defined (SYS_HAL)  || defined (SYS_SX)   \
- || (defined (SYS_LINUX) && (defined(VAR_PGF90)||defined(VAR_IFORT)))
-#include "implicit.h"
-      real*4 etime,tarray(2)
-#if !defined (SYS_T3D)
-      SECOND = etime(tarray)
-#else
-      SECOND = 1.0D0
-#endif
-#endif
+#if !defined (SYS_CRAY) && !defined (SYS_T90) && !defined (VAR_GFORTRAN)
+      REAL*8 FUNCTION SECOND ()
+      REAL*4 TIME_CPU
+      CALL CPU_TIME(TIME_CPU)
+      SECOND = TIME_CPU
       RETURN
       END
 #endif
@@ -1939,3 +1930,9 @@ C
 
       !print *,'COMPOFF: KADDR, KBASE', KADDR, KBASE, KBASE*8
       END
+#ifdef VAR_G95
+      subroutine hostnm(s)
+      character*(*) s
+      s = ' g95 does not know hostnm routine :-( '
+      end
+#endif

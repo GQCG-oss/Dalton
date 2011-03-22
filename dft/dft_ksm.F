@@ -166,12 +166,12 @@ c     given set of rho-dependent coefficients.
 c
       SUBROUTINE DISTLDAI(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
+#include <implicit.h>
 #include <inforb.h>
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
@@ -205,12 +205,12 @@ c     given set of rho and grad-dependent coefficients.
 c
       SUBROUTINE DISTGGAI(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,GRAD,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
+#include <implicit.h>
 #include <inforb.h>
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
@@ -249,12 +249,12 @@ c     for the call overhead.
 c     
       SUBROUTINE DISTLDAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
+#include <implicit.h>
 #include <inforb.h>
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
@@ -302,12 +302,12 @@ c     given set of rho and grad-dependent coefficients.
 c
       SUBROUTINE DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,IBLSTART,IBLEND,
      &                    COEF,GAOS,GRAD,EXCMAT)
-#include <implicit.h>
 c
 c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
+#include <implicit.h>
 #include <inforb.h>
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
@@ -349,13 +349,14 @@ c     Parallelization-related part of the exchange-correlation
 c     evaluation module.
 c
       SUBROUTINE KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRINT)
-#include <implicit.h>
 c     do nothing when running serial code.
+#include <implicit.h>
+      DIMENSION DMAT(NBAST,NBAST)
+C
 #ifdef VAR_MPI
 #include <maxorb.h>
 #include <infpar.h>
 #include <mpif.h>
-      DIMENSION DMAT(NBAST,NBAST)
       IF(MYNUM.EQ.MASTER) THEN
 c        IPRTYP=4 is registered for KSM Slave driver.
          IPRTYP = 4
@@ -401,15 +402,15 @@ c
       END
 #endif
       SUBROUTINE KSMCOLLECT(FMAT,ENERGY,WRK,LFREE)
-#ifdef VAR_MPI
 c
 #include <implicit.h>
+      DIMENSION FMAT(*), WRK(LFREE)
+#ifdef VAR_MPI
+c
 #include <mpif.h>
 #include <maxorb.h>
 #include <infpar.h>
 #include <inforb.h>
-      DIMENSION FMAT(N2BASX)
-      DIMENSION WRK(LFREE)
       IF(LFREE.LE.N2BASX) CALL STOPIT('KSMCOLLECT',' ',LFREE,N2BASX)
       ETMP = ENERGY
       CALL MPI_Reduce(ETMP,ENERGY,1,MPI_DOUBLE_PRECISION,MPI_SUM,

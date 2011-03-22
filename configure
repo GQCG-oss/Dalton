@@ -212,7 +212,7 @@ case $WHICH in
               complist='if90 f90'
               ccmplist='cc';;
     linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort pgf95 pgf90 gfortran'
+              complist='ifort pgf95 pgf90 gfortran g95'
               ccmplist='icc ecc pgcc gcc';;
     hp)       liblist='libblas.a libveclib.a'
               complist='f90'
@@ -1052,6 +1052,20 @@ case "$WHICH" in
               opt="-fast -Munroll -m32"; safe_opt="-m32 -Mframe"
              F90mod='-module ../modules'
              ;;
+          g95)
+             case $prc in
+             i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                     march="-march=$prc";;
+             x86_64) march="-march=x86-64";;
+                  *) march=" ";;
+             esac
+
+                cpp="-DVAR_G95 $cpp"
+             F90mod='-I../modules -fmod=../modules'
+                opt="$march -O3 -ffast-math -funroll-loops"
+           safe_opt="$march -O1 -ffast-math -funroll-loops"
+               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
+             ;;
           *)
 #            assume gfortran also if not gfortran (but write a WARNING)
              if [ $F90_be = "gfortran" ]; then
@@ -1066,9 +1080,6 @@ case "$WHICH" in
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                      march="-march=$prc";;
-# remove VAR_INT64 for gfortran - it breaks linking against
-# precompiled BLAS libraries./pawsa-Mar-08
-# hjaaj Jan 2011: instead we now ask the user explicitly
              x86_64) march="-march=x86-64";;
                   *) march=" ";;
              esac

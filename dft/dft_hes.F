@@ -1277,14 +1277,14 @@ C
       END
 C
       SUBROUTINE KICK_SLAVES_HESSTAT(NBAST,DMAT,V1MAT,NUCDEP,IPRINT)
-#if defined (VAR_MPI)
 #include "implicit.h"
+      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST*NUCDEP)
+C
+#if defined (VAR_MPI)
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-C
-      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST*NUCDEP)
 C
       IF (MYNUM .EQ. MASTER) THEN
          IPRTYP = 8
@@ -1349,21 +1349,25 @@ C
 #endif
 C
       SUBROUTINE DFT_HESSTAT_COLLECT(DFTHES,WORK,LWORK)
-#if defined (VAR_MPI)
 #include "implicit.h"
 #include "mxcent.h"
-#include "mpif.h"
       DIMENSION DFTHES(MXCOOR,MXCOOR), WORK(LWORK)
+C
+#if defined (VAR_MPI)
+#include "mpif.h"
+C
       CALL DCOPY(MXCOOR*MXCOOR,DFTHES,1,WORK,1)
       CALL MPI_REDUCE(WORK,DFTHES,MXCOOR*MXCOOR,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      RETURN
 #endif
+      RETURN
       END
 C
       SUBROUTINE KICK_SLAVES_HED(IATOM,NBAST,DMAT,V1MAT,IPRINT)
-#if defined (VAR_MPI)
 #include "implicit.h"
+      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST)
+C
+#if defined (VAR_MPI)
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
@@ -1371,7 +1375,6 @@ C
 C
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
-      DIMENSION DMAT(NBAST,NBAST), V1MAT(3*NBAST*NBAST)
 C
       IF (MYNUM .EQ. MASTER) THEN
          IPRTYP = 9
@@ -1442,12 +1445,14 @@ C
 #endif
 C
       SUBROUTINE DFT_HED_COLLECT(FCD,DFTFD,N2BASX,WORK,LWORK)
-#if defined (VAR_MPI)
 #include "implicit.h"
+      DIMENSION FCD(3*N2BASX), DFTFD(3*N2BASX), WORK(LWORK)
+C
+#if defined (VAR_MPI)
 #include "mxcent.h"
 #include "maxorb.h"
 #include "mpif.h"
-      DIMENSION FCD(3*N2BASX), DFTFD(3*N2BASX), WORK(LWORK)
+C
       CALL DCOPY(3*N2BASX,FCD,1,WORK,1)
       CALL MPI_REDUCE(WORK,FCD,3*N2BASX,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
