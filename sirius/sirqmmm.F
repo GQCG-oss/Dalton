@@ -98,6 +98,7 @@ C  /* Deck qmmm_fck_ao */
 #include <maxorb.h>
 
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -152,6 +153,7 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
 
 C     All the corrections to the Fock/KS operator due to the static
 C     multipoles when the calculation is done in parallel
+      DTIME = SECOND()
       IF (NODTOT.GE.1) THEN
         CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,LOCDEB,
      &                  WRK(KWRK1),LWRK1,IPRINT)
@@ -175,6 +177,8 @@ C     integrals numerically here.
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       
       ENDIF ! nodtot .ge. 1
+      DTIME = SECOND() - DTIME
+      TMMMULPOL = TMMMULPOL + DTIME
 
       IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         write(lupri,*)
@@ -185,9 +189,12 @@ C     integrals numerically here.
       ENDIF 
 
 C     5) The polarization correction to the Fock/KS operator
-
+      
+      DTIME = SECOND()
       IF (IPOLTP .GT. 0) CALL QMMM_POLARI(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
+      DTIME = SECOND() - DTIME
+      TMMPOL = TMMPOL + DTIME
 
 C     Finally, put back the dipole origin
 
@@ -648,6 +655,7 @@ C
 #include <maxorb.h>
 
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -776,8 +784,11 @@ C       Mainly due to debugging. Assumes identical molecules and order
 C       of atoms in previous and current run.
 
         IF (.NOT. FIXDIP) THEN
+          DTIME = SECOND()
           CALL GET_IND_DIPOLES_2(DCAO,NNZAL,WRK(KINDMOM),WRK(KWRK2),
      &                             LWRK2,IPRINT)
+          DTIME = SECOND() - DTIME
+          TMMGID2 = TMMGID2 + DTIME
         ELSE
           WRITE(LUPRI,*) 'Ind. dips. from a prev. calc. read from file'
           CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WRK(KINDMOM))
@@ -2140,6 +2151,7 @@ C
 #include <maxorb.h>
 
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -2195,6 +2207,7 @@ C     Allocate memory for electric field integrals and electric fields
 
 C     1. Form F vector due to permanent MM moments
 
+      DTIME = SECOND()
       IF (NODTOT .GE. 1) THEN
         CALL QMMM_POLARI_M2(DCAO,WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
@@ -2213,6 +2226,8 @@ C     1. Form F vector due to permanent MM moments
  200    CONTINUE
 
       ENDIF
+      DTIME = SECOND() - DTIME
+      TMMPOL2 = TMMPOL2 + DTIME
 
       NDIM = 3*POLDIM
 
@@ -2226,9 +2241,12 @@ C     1. Form F vector due to permanent MM moments
 C     Convert the F-vector into induced dipole moments 
 
       IOPT = 1 ! read file with ind. momens from previous SCF iteration.
+      DTIME = SECOND()
       CALL F2QMMM(WRK(KELF),POLDIM,INDMOM,WRK(KEND),LWRK1,
      *            IOPT,IPRINT)
 
+      DTIME = SECOND() - DTIME
+      TMMF2 = TMMF2 + DTIME
       IF (IPRINT .GT. 1) THEN
 C       Write induced moments at each MM site to the DAL.OUT file
         WRITE(LUPRI,*)
@@ -2294,6 +2312,7 @@ C JK
 #include <dummy.h>
 #include <mxcent.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
@@ -2329,6 +2348,8 @@ C JK
       DATA    FIRST /.TRUE./
 
       CALL QENTER('F2QMMM')
+
+      BTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -2435,6 +2456,8 @@ C       Calculate the induced dipole moment
       IF (LOCDEB) WRITE(LUPRI,*) 'Done generating the F-Vector'
 
 C     Now iterate...  !
+
+      DTIME = SECOND()
 
       DIPCON = .FALSE.
       LM = 0
@@ -2590,9 +2613,13 @@ C       i.e. not only the diagonal part
 
  9000 CONTINUE !Done
 
+      DTIME = SECOND() - DTIME
+      TMMITER = TMMITER + DTIME
+
       LM = LM - 1
       IF (DIPCON) THEN
-        IF (IPRINT .GT. 1) THEN
+C        IF (IPRINT .GT. 1) THEN
+        IF (.TRUE.) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Done with induced dipoles in ',LM,' iterations'
          WRITE(LUPRI,*)
@@ -2604,13 +2631,16 @@ C       i.e. not only the diagonal part
       ENDIF
 
       NMMAC = NMMAC + LM
-      IF (IPRINT .GT. 1) THEN
+C      IF (IPRINT .GT. 1) THEN
+      IF (.TRUE.) THEN
         WRITE(LUPRI,*) 'Acc. iterations:', NMMAC
       ENDIF
 
       IF (FIRST) THEN
          FIRST = .FALSE.
       END IF
+      BTIME = SECOND() - BTIME
+      TF2QMMM = TF2QMMM + BTIME
 
       CALL QEXIT('F2QMMM')
       RETURN
@@ -4761,6 +4791,56 @@ C     Octupole contribution
       ENDIF
 
       CALL QEXIT('MMPOLARI_ITER3')
+
+      RETURN
+      END
+C***********************************************************
+C  /* Deck qmmmtimes */
+      SUBROUTINE QMMMTIMES(WORD)
+
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <mmtimes.h>
+      CHARACTER*(*) WORD
+      PARAMETER(ZERO = 0.0D0)
+      CALL QENTER('QMMMTIMES')
+
+      WRITE(LUPRI,*) '  - QM/MM times:'
+      IF (WORD .EQ. 'SIRIUS') THEN
+        WRITE(LUPRI,1) 'QMMMFCK      ',TMMFCK
+        WRITE(LUPRI,1) 'QMMM MULPOLES',TMMMULPOL
+        WRITE(LUPRI,1) 'QMMM_POLARI  ',TMMPOL
+        IF (MMITER) THEN
+          WRITE(LUPRI,*) '    - MMITER times:'
+          WRITE(LUPRI,2) 'GET_IND_DIPOLES_2',TMMGID2
+          WRITE(LUPRI,2) 'MMPOLARI_ITER2   ',TMMPOL2
+          WRITE(LUPRI,2) 'F2QMMM           ',TMMF2  
+          WRITE(LUPRI,2) 'the iteration    ',TMMITER
+          TMMGID2 = ZERO
+          TMMPOL2 = ZERO
+          TMMF2   = ZERO
+          TMMITER = ZERO
+        ENDIF
+      ELSEIF (WORD .EQ. 'RESPONSE') THEN
+        WRITE(LUPRI,1) 'QMMMRSP',TMMRSP
+        WRITE(LUPRI,2) 'QMMMLNO      ',TMMLNO
+        WRITE(LUPRI,2) 'QMMMQRO      ',TMMQRO
+        WRITE(LUPRI,2) 'QMMMCRO      ',TMMCRO
+        IF (MMITER) THEN
+          WRITE(LUPRI,2) 'F2QMMM       ',TMMF2  
+          WRITE(LUPRI,2) 'the iteration',TMMITER
+        ENDIF
+      ELSEIF (WORD .EQ. 'ABACUS') THEN
+        WRITE(LUPRI,1) 'QMMMFIRST',TMMFIRST
+        WRITE(LUPRI,1) 'QMMMB2   ',TMMB2
+      ENDIF
+
+ 1    FORMAT( '     - total time used in ',A,': ',F10.2,' seconds')
+ 2    FORMAT( '       - total time used in ',A,': ',F10.2,' seconds')
+
+      CALL QEXIT('QMMMTIMES')
 
       RETURN
       END

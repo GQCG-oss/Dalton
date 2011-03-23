@@ -578,6 +578,7 @@ C
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
       WRITE (LUPRI,'()')
+      IF (QMMM) CALL QMMMTIMES('RESPONSE')
       CALL TIMTXT('>>>> Total CPU  time used in RESPONSE:',CTOT,LUPRI)
       CALL TIMTXT('>>>> Total wall time used in RESPONSE:',WTOT,LUPRI)
 C

@@ -261,6 +261,7 @@ C
 #include <absorp.h>
 #include <gnrinf.h>
 #include <infpar.h>
+#include <mmtimes.h>
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -406,7 +407,7 @@ C
 
       IF (QMMM) THEN
          IF (TDHF) THEN
-C            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+            DTIME = SECOND()
             CALL QMMMQRO(VECB,VECC,
      *                   ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                   UDV,WRK(KFREE),LFREE,
@@ -417,7 +418,9 @@ C            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
      *                   UDV,WRK(KFREE),LFREE,
      *                   KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
      *                   ISPINA,ISPINC,ISPINB)
-C            IF (IPQMMM .GT. 1) CALL TIMER('QMMMQRO',TIMSTR,TIMEND)
+            DTIME = SECOND() - DTTIME
+            TMMQRO = TMMQRO + DTIME
+            TMMRSP = TMMRSP + DTIME
          END IF
       END IF
 C

@@ -44,6 +44,7 @@ c NCOMP (INPUT)  : number of independent perturbation (3)
 #include <nuclei.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <inforb.h>
 #include <infpar.h>
 C
@@ -52,6 +53,9 @@ C
       LOGICAL LCOMB
       DIMENSION WORK(*),VEC2(*)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      CALL QENTER('QMMMFIRST')
+      DTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -502,6 +506,10 @@ C
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 C
+      DTIME = SECOND() - DTIME
+      TMMFIRST = TMMFIRST + DTIME
+C
+      CALL QEXIT('QMMMFIRST')
       RETURN
       END
 C*****************************************************************************
@@ -524,6 +532,7 @@ c
 #include <nuclei.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <inforb.h>
 #include <infpar.h>
 C
@@ -533,6 +542,10 @@ C
       DIMENSION WORK(*), EXPVAL(6), DENMAT(*)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 C
+
+      CALL QENTER('QMMMB2')
+      DTIME = SECOND()
+
       LOCDEB = .FALSE.
 
 C     If we have BOTH permanent dipoles AND induced dipoles then these
@@ -863,6 +876,10 @@ C     Put back the dipole origin
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 C
+      DTIME = SECOND() - DTIME
+      TMMB2 = TMMB2 + DTIME
+C
+      CALL QEXIT('QMMMB2')
       RETURN
       END
 C****************************************************************************

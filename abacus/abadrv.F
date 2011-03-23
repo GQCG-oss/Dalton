@@ -58,7 +58,8 @@ C
 #include <ccinftap.h>
 CSPAS : 6/11-2009 AO-SOPPA included
 #include <soppinf.h>
-CKeinSPASmehr
+Carnfinn: 23/3-2011 due to qmmm timer
+#include <gnrinf.h>
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
@@ -658,6 +659,7 @@ cLig <> added the TIMCTO
       CALL GETTIM(TEND,WEND)
       TIMABA = TEND - TIMABA
       WALABA = WEND - WALABA
+      IF (QMMM) CALL QMMMTIMES('ABACUS')
       CALL TIMTXT('>>>> Total CPU  time used in ABACUS:',TIMABA,LUPRI)
       CALL TIMTXT('>>>> Total wall time used in ABACUS:',WALABA,LUPRI)
       CALL QEXIT('ABACTL')
