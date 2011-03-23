@@ -312,6 +312,8 @@ static struct radial_scheme_t *radial_quad = &quad_lmg;
 /* ------------------------------------------------------------------- */
 
 /* routines for generation of Lebedev grid */
+
+void ld0014_(real* x, real* y, real* z, real* w, int *pnt);
 void ld0026_(real* x, real* y, real* z, real* w, int *pnt);
 void ld0038_(real* x, real* y, real* z, real* w, int *pnt);
 void ld0050_(real* x, real* y, real* z, real* w, int *pnt);
@@ -342,6 +344,7 @@ static struct leb_gen_{
   int point_cnt, poly_order;
   void (*func)(real* x, real* y, real* z, real* w, int *pnt);
 } leb_gen[] = {
+ {  14,  5, ld0014_},
  {  38,  9, ld0038_},
  {  50, 11, ld0050_},
  {  86, 15, ld0086_},
@@ -349,8 +352,8 @@ static struct leb_gen_{
  { 146, 19, ld0146_},
  { 170, 21, ld0170_},
  { 194, 23, ld0194_},
- { 302, 25, ld0230_},
- { 302, 27, ld0266_},
+ { 230, 25, ld0230_},
+ { 266, 27, ld0266_},
  { 302, 29, ld0302_},
  { 350, 31, ld0350_},
  { 434, 35, ld0434_}, 
@@ -831,11 +834,13 @@ block_postprocess(GridGenMolGrid *mg, real *center,
     for(dest=0, ptno=0; ptno<point_cnt; ptno++) {
         int atom = map2r[atom_nums[ptno]];
 	real factor = ggw.p_kg[ggw.LDA*atom+ptno]/ggw.vec[ptno];
-        coorw[dest][3] = coorw[ptno][3]*factor;
-        coorw[dest][0] = coorw[ptno][0];
-        coorw[dest][1] = coorw[ptno][1];
-        coorw[dest][2] = coorw[ptno][2];
-        if(factor >= WEIGHT_THRESHOLD) dest++;
+        if(factor >= WEIGHT_THRESHOLD) {
+           coorw[dest][0] = coorw[ptno][0];
+           coorw[dest][1] = coorw[ptno][1];
+           coorw[dest][2] = coorw[ptno][2];
+           coorw[dest][3] = coorw[ptno][3]*factor;
+           dest++;
+        }
     }
     free(relevant_atoms);
     free(map2r);
