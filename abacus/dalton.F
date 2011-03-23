@@ -95,13 +95,14 @@ C
       XMBYTES = (LMWORK+2) * 8.D0
       XMBYTES = XMBYTES / (1.024D3**2)
       GBYTES  = XMBYTES / 1.024D3
-      IF (GBYTES .GE. 1.D0) THEN
-        WRITE(LUERR,'(/A,I12,A,F7.3,A)')' Work memory size (LMWORK+2):',
-     &        LMWORK+2,' =',GBYTES,' gigabytes.'
-      ELSE
-        WRITE(LUERR,'(/A,I12,A,F8.2,A)')' Work memory size (LMWORK+2):',
-     &        LMWORK+2,' =',XMBYTES,' megabytes.'
-      END IF
+      
+Cahs      IF (GBYTES .GE. 1.D0) THEN
+Cahs        WRITE(LUERR,'(/A,I12,A,F7.3,A)')' Work memory size (LMWORK+2):',
+Cahs     &        LMWORK+2,' =',GBYTES,' gigabytes.'
+Cahs      ELSE
+Cahs        WRITE(LUERR,'(/A,I12,A,F8.2,A)')' Work memory size (LMWORK+2):',
+Cahs     &        LMWORK+2,' =',XMBYTES,' megabytes.'
+Cahs      END IF
  
 !     allocate memory using f90 utilities
       allocate(work(lmwork+2),stat=i)
@@ -146,9 +147,9 @@ C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 Cef end
 
       LEN_BASDIR = MAX(1,LNBLNK(BASDIR))
-      WRITE(LUERR,'(/I4,A/5X,A)')
-     &   MYNUM,': Directories for basis set searches:',
-     &   BASDIR(1:LEN_BASDIR)
+Cahs      WRITE(LUERR,'(/I4,A/5X,A)')
+Cahs     &   MYNUM,': Directories for basis set searches:',
+Cahs     &   BASDIR(1:LEN_BASDIR)
 C
 C     Set memory traps and initialize unit numbers
 C
@@ -191,12 +192,12 @@ C
      &            IDUMMY,.FALSE.)
 C
          CALL TITLER('DALTON2011 - An electronic structure program',
-     &               '*',120)
+     &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
      &'This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)'
 
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
@@ -218,7 +219,7 @@ C
      &'"Dalton, a molecular electronic structure program,',
      &'Release DALTON2011 (2011), see http://daltonprogram.org"'
 C
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(1X,A)') SEPARATOR
          WRITE (LUPRI,'(T5,A//,(T3,A,T29,A,T59,A,T71,A))')
      *'Authors in alphabetical order '//
      &  '(major contribution(s) in parenthesis):',
@@ -320,7 +321,7 @@ C
      *'Hans Agren,','KTH Stockholm,','Sweden',
      &  '(SIRIUS module, MC-SCRF solvation model)'
 C
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     Stamp date and time and hostname to output
 C
