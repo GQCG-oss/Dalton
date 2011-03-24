@@ -558,6 +558,7 @@ C     cleans
 #endif
       end subroutine gen1int_prop
 
+#ifdef BUILD_GEN1INT
 C>    \brief computes the expectation values
 C>    \author Bin Gao
 C>    \date 2010-12-06
@@ -583,6 +584,7 @@ C     collects density elements
       end do
       return
       end subroutine gen1int_expect
+#endif /* ifdef BUILD_GEN1INT */
 
 C>    \brief sets up AO-blocks used for Gen1Int
 C>    \author Bin Gao
