@@ -2171,10 +2171,9 @@ C
       DOUBLE PRECISION INDMOM
       DIMENSION INDMOM(3*POLDIM),WRK(LWRK), DCAO(*)
 
-      DOUBLE PRECISION AMAT,EVEC,MY0,TTENS,ATMAT,DIP
-      DOUBLE PRECISION MY
-      DIMENSION AMAT(3,3),EVEC(3),MY0(3),TTENS(3,3)
-      DIMENSION ATMAT(3,3),DIP(3),MY(3)
+      DOUBLE PRECISION EVEC,TTENS,ATMAT,DIP
+      DIMENSION EVEC(3),TTENS(3,3)
+      DIMENSION ATMAT(3,3),DIP(3)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2320,6 +2319,7 @@ C JK
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <infpar.h>
 #include <scbrhf.h>
 #include <maxaqn.h>
 #include <symmet.h>
@@ -2371,11 +2371,11 @@ c      IF (IOPT .EQ. 2) THRESL = SQRT(THMMIT)/10.0D0
       CALL DZERO(WRK(KINDP),3*POLDIM)
       CALL DZERO(WRK(KINDDIA),3*POLDIM)
 
+      KVEC  = KEND
       IF (MMDIIS) THEN
-        KVEC  = KEND
-        KEND2 = KVEC + (MXMMIT+1)*NDIM
-        LWRK2 = LWRK - KEND2 + 1
-        IF (LWRK2 .LT. 0) CALL ERRWRK('F2QMMM 2',-KEND2,LWRK)
+        KEND = KVEC + (MXMMIT+1)*NDIM
+        LWRK1 = LWRK - KEND + 1
+        IF (LWRK1 .LT. 0) CALL ERRWRK('F2QMMM 2',-KEND,LWRK)
 
         CALL DZERO(WRK(KVEC),(MXMMIT+1)*NDIM)
       ENDIF
@@ -2458,6 +2458,11 @@ C       Calculate the induced dipole moment
 C     Now iterate...  !
 
       DTIME = SECOND()
+
+      IF (NODTOT .GE. 1) THEN
+        CALL MMITER_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
+     *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB)
+      ELSE
 
       DIPCON = .FALSE.
       LM = 0
@@ -2600,7 +2605,7 @@ C             calculate alpha*T
         IF (MMDIIS) THEN
           CALL DCOPY(NDIM,INDMOM,1,WRK(KVEC+ITER*NDIM),1)
           CALL MM_DIIS_EXTRAPOLATION(WRK(KVEC),ITER,NDIM,WRK(KINDP),
-     *                               WRK(KEND2),LWRK2,IPRINT)
+     *                               WRK(KEND),LWRK1,IPRINT)
         ELSE 
           CALL DCOPY(NDIM,INDMOM,1,WRK(KINDP),1)
         ENDIF
@@ -2612,6 +2617,8 @@ C       i.e. not only the diagonal part
   999 CONTINUE
 
  9000 CONTINUE !Done
+
+      ENDIF !parallel mmiter
 
       DTIME = SECOND() - DTIME
       TMMITER = TMMITER + DTIME
@@ -2645,7 +2652,7 @@ C      IF (IPRINT .GT. 1) THEN
       CALL QEXIT('F2QMMM')
       RETURN
       END
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck MM_DIIS_EXTRAPOLATION */
       SUBROUTINE MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,RESVEC,WRK,LWRK,
      *                                 IPRINT)
@@ -5975,6 +5982,345 @@ C     total solvation energy
       DIPORG(3) = OBKPZ
 
       CALL QEXIT('QMMM_POLARI_S3')
+
+      RETURN
+      END
+*******************************************************************
+C  /* Deck mmiter_m */
+      SUBROUTINE MMITER_M(POLDIM,INDMOM,VEC,INDDIA,WRK,LWRK,LOCDEB)
+
+#include <implicit.h>
+C      IMPLICIT NONE
+
+#include <mxcent.h>
+#include <qmmm.h>
+#include <maxorb.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+
+
+      INTEGER POLDIM, POLARRAY
+      DIMENSION POLARRAY(POLDIM)
+
+      LOGICAL LOCDEB,DIPCON
+
+      DOUBLE PRECISION INDMOM,INDDIA
+      DIMENSION INDMOM(3*POLDIM),VEC(MXMMIT+3*POLDIM), INDDIA(3*POLDIM)
+      DIMENSION WRK(LWRK)
+
+      DOUBLE PRECISION TERROR,TDIFF,TMAX
+      DOUBLE PRECISION DIP,MY
+      DIMENSION DIP(3),MY(3)
+
+      CALL QENTER('MMITER_M')
+
+      NDIM = 3*POLDIM
+
+C     Make a vector of pol sites
+      L = 0
+      DO 1 I=1,MMCENT
+        IF (ZEROAL(I) .EQ. -1) GOTO 1
+        L = L + 1
+        POLARRAY(L) = I
+ 1    CONTINUE
+
+      DIPCON = .FALSE.
+      LM = 0
+      NSLICE = POLDIM/NODTOT
+      IF ((NODTOT*NSLICE) .LT. POLDIM) THEN
+        MLOOP = NSLICE - (NODTOT * NLOOP)
+        ISTART = NODTOT*NSLICE + 1
+        IEND = (NODTOT+1)*NSLICE
+      ELSE
+        MLOOP = 0
+      END IF
+
+C     Beginning of parallel section
+
+      IPRTYP = 25
+
+C     Wake up slaves
+
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(POLARRAY,NSLICE,'INTEGER',MASTER)
+      CALL MPI_SCATTER(INDDIA,3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                  INDDIA,3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+
+      DO 100 ITER = 1, MXMMIT
+        NRUN = 1
+        DO ISLAVE = 1, NODTOT
+          IWHO = -1
+          CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
+          CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
+        ENDDO
+        CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
+        IF (MLOOP.NE.0)THEN
+          LRI = 3*NODTOT*NSLICE + 1
+          DO L = ISTART, IEND
+            I = POLARRAY(L)
+            LCI = 1
+            DO K = 1, POLDIM
+              J = POLARRAY(K)
+              DIP(1) = WRK(KINDP1+LCI-1+0)
+              DIP(2) = WRK(KINDP1+LCI-1+1)
+              DIP(3) = WRK(KINDP1+LCI-1+2)
+              CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY,
+     &              WRK(KLAST),LWRK2)
+              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
+              LCI = LCI + 3
+            ENDDO
+            LRI = LRI + 3
+          ENDDO
+        ENDIF
+        CALL DZERO(WRK(KINDP2),NDIM)
+        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                 WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+
+        TERROR=0.0D0
+        DO I=1,NDIM
+          TERROR = TERROR + (WRK(KINDP1+I-1)-WRK(KINDP2+I-1))*
+     &                      (WRK(KINDP1+I-1)-WRK(KINDP2+I-1))
+        ENDDO
+
+        IF ( (LOCDEB) .OR. (IPRINT .GE. 15) ) THEN
+          LMAX = 0
+          TMAX = 0.0D0
+          DO I=1,NDIM
+            TDIFF = ABS(WRK(KINDP1+I-1)-WRK(KINDP2+I-1))
+            IF (TDIFF .GT. TMAX) THEN
+              TMAX = TDIFF
+              LMAX = I 
+            ENDIF
+          ENDDO
+          IF (LMAX .NE. 0) THEN
+            WRITE(LUPRI,*) 'Maximum deviation (element) is ',TMAX, LMAX
+          ENDIF 
+        ENDIF
+
+        IF (ABS(TERROR) .LT. THRESL) THEN
+          DIPCON = .TRUE.
+          GOTO 200
+        ELSE
+          DIPCON = .FALSE. 
+          IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
+          IF (MMDIIS) THEN
+            CALL DCOPY(NDIM,INDMOM,1,VEC(ITER*NDIM+1),1)
+            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP),
+     *                                 WRK,LWRK,IPRINT)
+          ELSE 
+            CALL DCOPY(NDIM,WRK(KINDP2),1,WRK(KINDP1),1)
+          ENDIF
+C     If no convergence in last iteration keep the values for the induced dipoles, 
+C     i.e. not only the diagonal part 
+          IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,INDDIA,1,
+     *                                     WRK(KINDP2),1)
+        ENDIF
+
+ 100  CONTINUE
+
+ 200  CONTINUE                  !Done
+
+C     End message to slaves
+      NRUN = 2
+      DO ISLAVE = 1, NODTOT
+        IWHO = -1
+        CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
+        CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
+      ENDDO
+
+      CALL QEXIT('MMITER_M')
+
+      RETURN
+      END
+*******************************************************************
+C  /* Deck mmiter_s */
+      SUBROUTINE MMITER_S(WRK,LWRK,IPRINT)
+
+#include <implicit.h>
+#include <maxorb.h>
+#include <infpar.h>
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+
+      INTEGER POLDIM
+      DIMENSION WRK(LWRK)
+      DOUBLE PRECISION DIP,MY
+      DIMENSION DIP(3),MY(3)
+
+      CALL QENTER('MMITER_S')
+
+
+      CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      NDIM = 3*POLDIM
+
+      KINDP1 = 1
+      KINDP2 = KINDP1 + NDIM
+      NARRAY = KINDP2 + NDIM
+      KLAST = NARRAY + NSLICE
+
+      LWRK2 = LWRK - KLAST + 1
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_S',-KLAST,LWRK)
+
+
+      CALL MPIXBCAST(WRK(NARRAY),NSLICE,'INTEGER',MASTER)
+      CALL MPI_SCATTER(WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
+     &                MPI_COMM_WORLD,IERR)
+
+      ISTART = (MYNUM-1)*NSLICE + 1
+      IEND = MYNUM*NSLICE
+
+ 20   CONTINUE
+
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(IRUN,1,'INTEGER',MASTER,MPTAG2)
+
+      IF (IRUN.EQ.1) THEN
+        CALL DCOPY(3*NSLICE,WRK(KINDDIA),1,WRK(KINDP2),1)
+        CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
+        LRI = 1
+        DO L = ISTART, IEND
+          I = WRK(NARRAY + L - 1)
+          LCI = 1
+          DO K = 1, POLDIM
+            J = WRK(NARRAY + K - 1)
+            DIP(1) = WRK(KINDP1+LCI-1+0)
+            DIP(2) = WRK(KINDP1+LCI-1+1)
+            DIP(3) = WRK(KINDP1+LCI-1+2)
+            CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY,
+     &              WRK(KLAST),LWRK2)
+            WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+            WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+            WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
+            LCI = LCI + 3
+          ENDDO
+          LRI = LRI + 3
+        ENDDO
+
+        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                 WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+         GOTO 20
+      ENDIF
+
+      CALL QEXIT('MMITER_S')
+
+      RETURN
+      END
+
+*******************************************************************
+C  /* Deck mmiterative_s */
+      SUBROUTINE MMITERATIVE(I,J,LRI,LCI,DIP,MY,WRK,LWRK)
+
+#include <implicit.h>
+#include <mxcent.h>
+#include <qmmm.h>
+
+      LOGICAL EXCENT
+      DIMENSION WRK(LWRK)
+      DOUBLE PRECISION AMAT,TTENS,ATMAT,DIP,MY
+      DIMENSION AMAT(3,3),TTENS(3,3),ATMAT(3,3),DIP(3),MY(3)
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('MMITERATIVE')
+
+      IF (J .NE. I) THEN
+        EXCENT = .FALSE.
+        DO 921 L=1,NEXLST
+          IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+ 921    CONTINUE
+
+        IF (.NOT. EXCENT) THEN
+C     Get the polarizability tensor for this site
+          DO 406 K=1,3
+            DO 407 L=1,3
+              AMAT(K,L)  = 0.0D0
+ 407        CONTINUE
+ 406      CONTINUE
+
+          IF (IPOLTP .EQ. 1)  THEN
+            DO 408 L=1,3
+              AMAT(L,L) = POLIMM(I)
+ 408        CONTINUE
+          ELSE IF (IPOLTP .EQ. 2)  THEN
+            AMAT(1,1) = POLMM(1,I)
+            AMAT(1,2) = POLMM(2,I)
+            AMAT(1,3) = POLMM(3,I)
+            AMAT(2,1) = POLMM(2,I)
+            AMAT(2,2) = POLMM(4,I)
+            AMAT(2,3) = POLMM(5,I)
+            AMAT(3,1) = POLMM(3,I)
+            AMAT(3,2) = POLMM(5,I)
+            AMAT(3,3) = POLMM(6,I)
+          ENDIF
+
+C     Now calculate the T tensor for these sites
+          DIST2 = 0.0D0
+          DO 410 K=1,3
+            DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
+ 410      CONTINUE
+          DIST  = SQRT(DIST2)
+          DIST3 = DIST**3
+          DIST5 = DIST**5
+
+          DO 411 K=1,3
+            DO 412 L=1,3
+
+C     Include damping in the exponential form
+C     JPC A 102 (1998) 2399
+              IF (MMDAMP) THEN
+                IF (IPOLTP .EQ. 1) THEN
+                  TEMPI = POLIMM(I)
+                  TEMPJ = POLIMM(J)
+                ELSE IF (IPOLTP .EQ. 2) THEN
+                  TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
+                  TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+                ENDIF
+                TEMP = (TEMPI*TEMPJ)**(D6I)
+                SCREEN = 2.1304*DIST/TEMP
+                FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
+     &                     *EXP(-SCREEN)
+                FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
+     &                     *EXP(-SCREEN)
+              ELSE
+                FEIJ = D1
+                FTIJ = D1
+              ENDIF
+
+              ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
+     &                          (MMCORD(L,I) - MMCORD(L,J))
+              ELEM = ELEM/DIST5
+              IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
+              TTENS(K,L) = ELEM
+ 412        CONTINUE
+ 411      CONTINUE
+
+C     calculate alpha*T
+          CALL DGEMM('N','N',3,3,3,1.D0,AMAT,3,
+     &                   TTENS,3,0.D0,ATMAT,3)
+
+          NLDIM = 3
+          NTOTI = MAX(NLDIM,1)
+          CALL DGEMV('N',NLDIM,NLDIM,D1,ATMAT,NTOTI,DIP,1,D0,MY,1)
+        ENDIF
+      ENDIF
+
+      CALL QEXIT('MMITERATIVE')
 
       RETURN
       END
