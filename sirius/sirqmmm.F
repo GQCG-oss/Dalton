@@ -2478,12 +2478,9 @@ C     Now iterate...  !
 
           IF (ZEROAL(J) .EQ. -1) GOTO 409 
 
-          IF (.FALSE.)THEN
-C          IF (.TRUE.)THEN
-            DIP(1) = WRK(KINDP+LCI-1+0)
-            DIP(2) = WRK(KINDP+LCI-1+1)
-            DIP(3) = WRK(KINDP+LCI-1+2)
-            CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP+LCI),MY)
+C          IF (.FALSE.)THEN
+          IF (.TRUE.)THEN
+            CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP+LCI-1),MY)
             INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
             INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
             INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
@@ -6096,8 +6093,7 @@ C     Wake up slaves
               DIP(1) = WRK(KINDP1+LCI-1+0)
               DIP(2) = WRK(KINDP1+LCI-1+1)
               DIP(3) = WRK(KINDP1+LCI-1+2)
-              CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY,
-     &              WRK(KLAST),LWRK2)
+              CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY)
               WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
               WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
               WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
@@ -6138,13 +6134,13 @@ C     Wake up slaves
         ELSE
           DIPCON = .FALSE. 
           IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-C          IF (MMDIIS) THEN
-C            CALL DCOPY(NDIM,WRK(KINDP2),1,VEC(ITER*NDIM+1),1)
-C            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP1),
-C     *                                 WRK(KLAST),LWRK2,IPRINT)
-C          ELSE 
+          IF (MMDIIS) THEN
+            CALL DCOPY(NDIM,WRK(KINDP2),1,VEC(ITER*NDIM+1),1)
+            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP1),
+     *                                 WRK(KLAST),LWRK2,IPRINT)
+          ELSE 
             CALL DCOPY(NDIM,WRK(KINDP2),1,WRK(KINDP1),1)
-C          ENDIF
+          ENDIF
         ENDIF
 
  100  CONTINUE
@@ -6233,7 +6229,7 @@ C  /* Deck mmiter_s */
         CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
      &                 WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-         GOTO 20
+        GOTO 20
       ENDIF
 
       CALL QEXIT('MMITER_S')
@@ -6259,27 +6255,27 @@ C Get the polarizability tensor (MY) at site I due to site J (DIP)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-
       CALL QENTER('MMITERATIVE')
 
+      CALL DZERO(MY,3)
       IF (J .NE. I) THEN
         EXCENT = .FALSE.
-        DO 921 L=1,NEXLST
+        DO L=1,NEXLST
           IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
- 921    CONTINUE
+        ENDDO
 
         IF (.NOT. EXCENT) THEN
 C     Get the polarizability tensor for this site
-          DO 406 K=1,3
-            DO 407 L=1,3
+          DO K=1,3
+            DO L=1,3
               AMAT(K,L)  = 0.0D0
- 407        CONTINUE
- 406      CONTINUE
+            ENDDO
+          ENDDO
 
           IF (IPOLTP .EQ. 1)  THEN
-            DO 408 L=1,3
+            DO L=1,3
               AMAT(L,L) = POLIMM(I)
- 408        CONTINUE
+            ENDDO
           ELSE IF (IPOLTP .EQ. 2)  THEN
             AMAT(1,1) = POLMM(1,I)
             AMAT(1,2) = POLMM(2,I)
@@ -6294,15 +6290,15 @@ C     Get the polarizability tensor for this site
 
 C     Now calculate the T tensor for these sites
           DIST2 = 0.0D0
-          DO 410 K=1,3
+          DO K=1,3
             DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
- 410      CONTINUE
+          ENDDO
           DIST  = SQRT(DIST2)
           DIST3 = DIST**3
           DIST5 = DIST**5
 
-          DO 411 K=1,3
-            DO 412 L=1,3
+          DO K=1,3
+            DO L=1,3
 
 C     Include damping in the exponential form
 C     JPC A 102 (1998) 2399
@@ -6330,8 +6326,8 @@ C     JPC A 102 (1998) 2399
               ELEM = ELEM/DIST5
               IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
               TTENS(K,L) = ELEM
- 412        CONTINUE
- 411      CONTINUE
+            ENDDO
+          ENDDO
 
 C     calculate alpha*T
           CALL DGEMM('N','N',3,3,3,1.D0,AMAT,3,
