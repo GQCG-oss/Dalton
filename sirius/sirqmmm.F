@@ -2478,6 +2478,16 @@ C     Now iterate...  !
 
           IF (ZEROAL(J) .EQ. -1) GOTO 409 
 
+          IF (.FALSE.)THEN
+C          IF (.TRUE.)THEN
+            DIP(1) = WRK(KINDP+LCI-1+0)
+            DIP(2) = WRK(KINDP+LCI-1+1)
+            DIP(3) = WRK(KINDP+LCI-1+2)
+            CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP+LCI),MY)
+            INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
+            INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
+            INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
+          ELSE
             IF (J .NE. I) THEN
 
             EXCENT = .FALSE.
@@ -2568,12 +2578,18 @@ C             calculate alpha*T
 
             ENDIF
           ENDIF
+          ENDIF
 
           LCI = LCI + 3
  409    CONTINUE
 
         LRI = LRI + 3
  405  CONTINUE
+
+C      DO I = 1, NDIM
+C        PRINT *,'indmom kindp',indmom(I),WRK(KINDP+I-1)
+C      ENDDO
+C      CALL QUIT()
 
       TERROR=0.0D0
       DO 414 I=1,NDIM
@@ -6030,10 +6046,11 @@ C     Make a vector of pol sites
       DIPCON = .FALSE.
       LM = 0
       NSLICE = POLDIM/NODTOT
+      PRINT*, NODTOT
       IF ((NODTOT*NSLICE) .LT. POLDIM) THEN
         MLOOP = NSLICE - (NODTOT * NLOOP)
         ISTART = NODTOT*NSLICE + 1
-        IEND = (NODTOT+1)*NSLICE
+        IEND = ISTART + MLOOP - 1
       ELSE
         MLOOP = 0
       END IF
@@ -6054,6 +6071,12 @@ C     Wake up slaves
      &                  INDDIA,3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
 
+
+      KINDP1 = 1
+      KINDP2 = KINDP1 + NDIM
+      KLAST = KINDP2 + NDIM
+      LWRK2 = LWRK - KLAST + 1
+
       DO 100 ITER = 1, MXMMIT
         NRUN = 1
         DO ISLAVE = 1, NODTOT
@@ -6064,6 +6087,7 @@ C     Wake up slaves
         CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
         IF (MLOOP.NE.0)THEN
           LRI = 3*NODTOT*NSLICE + 1
+          CALL DCOPY(MLOOP,INDDIA(LRI),1,WRK(KINDP2+LRI-1),1)
           DO L = ISTART, IEND
             I = POLARRAY(L)
             LCI = 1
@@ -6114,17 +6138,13 @@ C     Wake up slaves
         ELSE
           DIPCON = .FALSE. 
           IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-          IF (MMDIIS) THEN
-            CALL DCOPY(NDIM,INDMOM,1,VEC(ITER*NDIM+1),1)
-            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP),
-     *                                 WRK,LWRK,IPRINT)
-          ELSE 
+C          IF (MMDIIS) THEN
+C            CALL DCOPY(NDIM,WRK(KINDP2),1,VEC(ITER*NDIM+1),1)
+C            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP1),
+C     *                                 WRK(KLAST),LWRK2,IPRINT)
+C          ELSE 
             CALL DCOPY(NDIM,WRK(KINDP2),1,WRK(KINDP1),1)
-          ENDIF
-C     If no convergence in last iteration keep the values for the induced dipoles, 
-C     i.e. not only the diagonal part 
-          IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,INDDIA,1,
-     *                                     WRK(KINDP2),1)
+C          ENDIF
         ENDIF
 
  100  CONTINUE
@@ -6201,8 +6221,7 @@ C  /* Deck mmiter_s */
             DIP(1) = WRK(KINDP1+LCI-1+0)
             DIP(2) = WRK(KINDP1+LCI-1+1)
             DIP(3) = WRK(KINDP1+LCI-1+2)
-            CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY,
-     &              WRK(KLAST),LWRK2)
+            CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY)
             WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
             WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
             WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
@@ -6223,19 +6242,23 @@ C  /* Deck mmiter_s */
       END
 
 *******************************************************************
-C  /* Deck mmiterative_s */
-      SUBROUTINE MMITERATIVE(I,J,LRI,LCI,DIP,MY,WRK,LWRK)
+C  /* Deck mmiterative */
+      SUBROUTINE MMITERATIVE(I,J,LRI,LCI,DIP,MY)
 
-#include <implicit.h>
+C Get the polarizability tensor (MY) at site I due to site J (DIP)
+      IMPLICIT NONE
 #include <mxcent.h>
 #include <qmmm.h>
 
       LOGICAL EXCENT
-      DIMENSION WRK(LWRK)
+      INTEGER I, J, K, L, NLDIM, NTOTI, LRI, LCI
       DOUBLE PRECISION AMAT,TTENS,ATMAT,DIP,MY
+      DOUBLE PRECISION TEMPJ, TEMP, SCREEN, TEMPI,DIST,DIST2,DIST3,DIST5
+      DOUBLE PRECISION ELEM,FEIJ,FTIJ, D0, D1, D3I, D6I
       DIMENSION AMAT(3,3),TTENS(3,3),ATMAT(3,3),DIP(3),MY(3)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-      PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
 
       CALL QENTER('MMITERATIVE')
 
