@@ -538,7 +538,6 @@ C Used from common blocks:
 C   INFINP : DIRFCK
 C   INFORB : NNORBX, N2ORBX, N2BASX, NISHT,NASHT, ...
 C   INFVAR : JWOPSY
-C   INFPRI : LUERR
 C   DFTCOM : DFT_SPINDNS
 C
 #include <maxorb.h>

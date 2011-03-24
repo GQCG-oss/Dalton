@@ -938,19 +938,19 @@ case "$WHICH" in
           else
              if [ $F90 = 'f90' ]; then
                  case $bit in
-                     64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
-                         LIB="$LIB +U77 +DA2.0W"
+                     64)  opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
+                          LIB="$LIB +U77 +DA2.0W"
                          copt='+DA2.0W +O3 +Onolimit +Ofastaccess'
                           cpp=${cpp}" -DVAR_INT64";;
-                     *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
-                         LIB="-lV7 +U77 $LIB"
+                     *)   opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
+                          LIB="-lV7 +U77 $LIB"
                          copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
                  esac
              else
-                 opt='+O2 +U77 +E4 +E5'
-                 safe_opt='+O1 +U77 +E4 +E5'
+                  opt='+O2 +U77 +E4 +E5'
+             safe_opt='+O1 +U77 +E4 +E5'
                  copt='-D_FILE_OFFSET_BITS=64 +O3'
-                 LIB="-lV7 +U77 $LIB"
+                  LIB="-lV7 +U77 $LIB"
              fi
           fi
           copt=${copt}" -AC99"
@@ -1038,10 +1038,10 @@ case "$WHICH" in
                opt="$opt -i8"
                safe_opt="$safe_opt -i8"
                $ECHO "INFO: Compiling with 64-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 64-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
              else
                $ECHO "INFO: Compiling with 32-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 32-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 32-bit integers!!!\n"
              fi
              #LIB="$LIB"
              ;;
@@ -1049,7 +1049,8 @@ case "$WHICH" in
              cpp="-DVAR_PGF90 $cpp"
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
              copt="-fast -m32 -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
-              opt="-fast -Munroll -m32"; safe_opt="-m32 -Mframe"
+              opt="-fast -Munroll -m32"
+             safe_opt="-m32 -Mframe"
              F90mod='-module ../modules'
              ;;
           g95)
@@ -1092,7 +1093,6 @@ case "$WHICH" in
              if [ $bit = "64" ]; then
                cpp="${cpp} -DVAR_INT64"
                opt="$opt -fdefault-integer-8"
-               safe_opt="$safe_opt -fdefault-integer-8"
                $ECHO "INFO: Compiling with 64-bit integers."
                $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 64-bit integers!!!\n"
              else

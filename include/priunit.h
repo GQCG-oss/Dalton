@@ -1,15 +1,16 @@
 #if defined(__CVERSION__)
 struct common_priunit {
-  int lucmd, lupri, luerr, luw4, ninfo, nwarn, iprerr, lupot;
+  int lucmd, lupri, luerr, lustat, luw4, lupot, ninfo, nwarn, iprstatr;
 };
 extern struct common_priunit priunit_;
 #else
 !     FILE: priunit.h
-      CHARACTER*78 SEPARATOR
-      PARAMETER (SEPARATOR = '---------------------------------------'  &
-     &                     //'---------------------------------------')
-      INTEGER LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT
-      COMMON /PRIUNIT/                                                  &
-     &        LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR, LUPOT
+      CHARACTER*80 SEPARATOR
+      PARAMETER (SEPARATOR = '----------------------------------------'  &
+     &                     //'----------------------------------------')
+      INTEGER LUCMD
+      INTEGER LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT
+      COMMON /PRIUNIT/ LUCMD,                                           &
+     &        LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT
 ! ---  end of priunit.h ---
 #endif

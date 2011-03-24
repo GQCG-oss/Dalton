@@ -31,9 +31,6 @@ C
 !Revision 1.7  2000/05/01 14:11:43  hjj
 !removed obsolete KAVER, KSYM(4); removed .AVERAG from input
 !
-!revision 1.6 2000/04/14 09:11:03 hjj
-!removed .IPRERR in PRIINP (IPRERR is now set under **DALTON) /hjaaj
-!----------------------------
 !revision 1.5 2000/04/14 08:32:47 hjj
 !1) CALL QUIT if VAR_NONAMELIST and .FLAGS specified
 !   (removed special do nothing for T3D, seemed inconsistent ???)

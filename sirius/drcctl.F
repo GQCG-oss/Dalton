@@ -68,7 +68,6 @@ C Used from common blocks:
 C   INFORB : N2ORBT, N2ORBX, ...
 C   INFTAP : LUINTD, LBINTD
 C   INFTRA : IPRTRA
-C   INFPRI : LUERR
 C
 #include <inforb.h>
 #include <inftap.h>

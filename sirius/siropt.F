@@ -128,7 +128,7 @@ C *** data:
 C
       CALL QENTER('SIROPT')
 C
-      IF (IPRERR .GT. 0) CALL TIMOPT('START',LUERR,WRK,LFREE)
+      IF (IPRSTAT .GT. 0) CALL TIMOPT('START',LUSTAT,WRK,LFREE)
 C
       IF (NASHT .GT. 1) THEN
          WRITE (LUW4,960)
@@ -934,7 +934,7 @@ C     If (not noupdate or not neo_always or not nr_always) then
          LOCAL = (STPLEN .LT. STPLCL*RTRUST .AND. STPC .LT. STPO)
          I = ISTATE + 1 - IINFO(13)
          SHFLVL = DINFO(20+I)
-         IF (IPRERR .GT. 5) WRITE (LUERR,'(/A,F20.10)')
+         IF (IPRSTAT .GT. 5) WRITE (LUSTAT,'(/A,F20.10)')
      *      ' Level shift used for UPDATE/SIRNR test:',SHFLVL
          LOCAL = LOCAL .AND. (ABS(SHFLVL) .LT. SHFLCL)
          LOCAL = LOCAL .AND. ITBCK .EQ. 0
@@ -968,11 +968,11 @@ C
       DINFO(18) = TIMITR
       WRITE (LUINF) DINFO,IINFO
 C
-      IF (IPRERR .GT. 1) THEN
-         WRITE (LUERR,'(//A/A/)')
+      IF (IPRSTAT .GT. 1) THEN
+         WRITE (LUSTAT,'(//A/A/)')
      *   ' Iteration no., total time, integral transformation time,',
      *   ' micro it. time, and lin.trn. time'
-         WRITE (LUERR,'(I5,4F10.2)')
+         WRITE (LUSTAT,'(I5,4F10.2)')
      *   ITMAC,TIMMAC,TIMITR,DINFO(17),DINFO(19)
       END IF
 C     ( DINFO(17) = TIMMIC and DINFO(19) = TIMLIN )
@@ -1002,7 +1002,7 @@ C We did not converge...
 C
       NWARN = NWARN + 1
       TOPT = SECOND() - TOPT
-      WRITE (LUERR,7050) ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
+      WRITE (LUSTAT,7050) ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
       WRITE (LUW4,7050)  ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
       IF (LUPRI.NE.LUW4)
      *WRITE (LUPRI,7050)  ITMACN,MAXMAC,ITMICT,MAXMIC,ITBCK,MAXBCK,TOPT
@@ -1020,7 +1020,7 @@ C
   750 CONTINUE
       NWARN = NWARN + 1
       TOPT = SECOND() - TOPT
-      WRITE (LUERR,7051) ITMACN,ITMICT,TOPT
+      WRITE (LUSTAT,7051) ITMACN,ITMICT,TOPT
       WRITE (LUW4,7051)  ITMACN,ITMICT,TOPT
       IF (LUPRI.NE.LUW4)
      *WRITE (LUPRI,7051)  ITMACN,ITMICT,TOPT
@@ -1171,9 +1171,9 @@ C     restore control variables
       CALL FLSHFO(LUW4)
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
 C
-C write timing information for optimization to LUERR
+C write timing information for optimization to LUSTAT
 C
-      IF (IPRERR.GT.0) CALL TIMOPT('END',LUERR,WRK,LFREE)
+      IF (IPRSTAT.GT.0) CALL TIMOPT('END',LUSTAT,WRK,LFREE)
 C *** end of subroutine SIROPT
       CALL QEXIT('SIROPT')
       RETURN
@@ -1523,7 +1523,7 @@ C        ... 930521-hjaaj: JCSTRT introduced to
 C            fix AIX xlf v.2.3 error for 'xlf -O'.
          IF (JCSTRT.GT.NCONF) THEN
             WRITE (LUPRI,5010) JCSTRT,NCONF
-            WRITE (LUERR ,5010) JCSTRT,NCONF
+            WRITE (LUERR,5010) JCSTRT,NCONF
             CALL QTRACE(LUERR)
             CALL QUIT(
      &         'ERROR (OPTST) non-existent configuration specified')

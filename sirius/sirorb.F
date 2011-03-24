@@ -55,7 +55,6 @@ C  INFTAP : ?
 C  INFOPT : ITMAC, RTRUST
 C  INFDIM : NWOPMA
 C  INFORB : N2BAST,..
-C  INFPRI : LUERR,?
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -195,8 +194,8 @@ C    *               CMO,GORB,DV,PV,FC,FV,WRK,LFREE)
      *      ' Orbital rotation step length =',OSTP0
 C
  1100    CONTINUE
-            CALL ROTATE(WRK(KXKAP),CMO,WRK(KWRK0),LWRK0)
-C           CALL ROTATE(XKAP,CMO,WRK,LFREE)
+            CALL MO_ROTATE(WRK(KXKAP),CMO,WRK(KWRK0),LWRK0)
+C           CALL MO_ROTATE(XKAP,CMO,WRK,LFREE)
             CALL NEWORB('(ABSORP)',CMO,.FALSE.)
             FLAG(14) = FLAG(34)
 C           ... new orbitals, integral transformation may be needed.

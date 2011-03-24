@@ -28,9 +28,6 @@ C
 Revision 1.2  2001/01/17 10:41:33  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
-Revision 1.7  2000/05/15 12:46:54  hjj
-polished in error messages (undefined LUERR found by ftnchek, call qtrace(LUERR) was removed)
-
 Revision 1.6  2000/05/05 11:15:57  hjj
 bugfix in updgrd, ci diagonal was not calculated because LUIT2 .lt. 0
 has until today meant do not calculate CI diagonal. Now LUIT2 is temp.

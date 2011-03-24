@@ -49,7 +49,7 @@ C Used from common blocks:
 C
 C     INFINP : KDEL, TYPE(*)
 C     INFORB : NSYM, NORB(8), NBAS(8)
-C     INFPRI : IPRERR, LUERR
+C     PRIUNIT : IPRSTAT, LUSTAT
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -60,9 +60,9 @@ C
       CHARACTER*4 MOLFTUC4, CTMPMO(MXCORB)
 C
       CALL QENTER('CMODEL')
-      IF (IPRERR .GE. 99) THEN
-         WRITE (LUERR,'(//A/)') ' >>> Test output from CMODEL'
-         WRITE (LUERR,*) 'KDEL,GETCMO  ',KDEL,GETCMO
+      IF (IPRSTAT .GE. 99) THEN
+         WRITE (LUSTAT,'(//A/)') ' >>> Test output from CMODEL'
+         WRITE (LUSTAT,*) 'KDEL,GETCMO  ',KDEL,GETCMO
       END IF
 C
       IF (KDEL.EQ.0) THEN
@@ -368,12 +368,12 @@ C
             JBAS0=JBAS0+NBAS(ISYM)
 200      CONTINUE
       END IF
-      IF(IPRERR.GE.9) THEN
-         WRITE(LUERR,'(A,8I4)') ' NBAS:',(NBAS(I),I=1,NSYM)
-         WRITE(LUERR,'(A,8I4)') ' NORB:',(NORB(I),I=1,NSYM)
-         IF (GETCMO .AND. IPRERR.GE.20) THEN
-            WRITE(LUERR,*) 'Final CMO in CMODEL'
-            CALL PRORB(CMO,.FALSE.,LUERR)
+      IF(IPRSTAT.GE.9) THEN
+         WRITE(LUSTAT,'(A,8I4)') ' NBAS:',(NBAS(I),I=1,NSYM)
+         WRITE(LUSTAT,'(A,8I4)') ' NORB:',(NORB(I),I=1,NSYM)
+         IF (GETCMO .AND. IPRSTAT.GE.20) THEN
+            WRITE(LUSTAT,*) 'Final CMO in CMODEL'
+            CALL PRORB(CMO,.FALSE.,LUSTAT)
          END IF
       END IF
       CALL QEXIT('CMODEL')

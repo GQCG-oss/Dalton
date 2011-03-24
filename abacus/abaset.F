@@ -43,7 +43,7 @@ C
 !900402-tuh:   H2MO defined according to info from LUSIFC
 !900418-hjaaj: NSETUP: call sirini
 !901203-hjaaj: SETSIR: FLAG now read from SIRIUS
-!910214-hjaaj: SETSIR: IPRERR = MAX(IPRIN4,IPRIN6), var altid = 1
+!910214-hjaaj: SETSIR: IPRSTAT = MAX(IPRIN4,IPRIN6), var altid = 1
 !              SETSIR: THRP/THRQ = 1.0D-12, var = 1.0D-10
 !              SETSIR: print RAS parameters after reading LUSIFC
 !920113-hjaaj: SETSIR: IPRDNS=IPRCIX=...=IPRSIR=MAX(IPRIN4,IPRIN6)
@@ -296,7 +296,7 @@ C
 C     Set some MC parameters
 C
       NWOPT  = 0
-      IPRERR = 1
+      IPRSTAT = 1
       DO 100 I = 1,NPFLAG
          P4FLAG(I) = .FALSE.
          P6FLAG(I) = .FALSE.
@@ -310,7 +310,7 @@ C
          P6FLAG(I) = .TRUE.
   102 CONTINUE
       IPRSIR = MAX(IPRIN4,IPRIN6)
-      IPRERR = IPRSIR
+      IPRSTAT = IPRSIR
       IPRCIX = IPRSIR
       IPRSIG = IPRSIR
       IPRDNS = IPRSIR
@@ -421,7 +421,7 @@ C   INFDIM : NCONMA,NWOPMA,NVARMA,NWOPDI,MAXRL
 C   INFOPT : ?
 C   INFTRA : ITRLVL,THRP,THRQ
 C   INFTAP : LUINP,LUINDX,...
-C   INFPRI : LUERR,...
+C   priunit.h : LUERR,...
 C
 #include <abainf.h>
 #include <infinp.h>

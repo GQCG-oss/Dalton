@@ -66,7 +66,7 @@ C   INFINP : DO*, MAXMAC
 C   INFORB : NCMOT,
 C   INFVAR : NCONF,JWOPSY,?
 C   INFTRA : USEDRC
-C   INFPRI : IPRERR, NWARN
+C   PRIUNIT : IPRSTAT, NWARN
 C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF, MAXFCK, MXDIIS, THRRHF
 C   GNRINF : WRINDX
 C
@@ -109,7 +109,7 @@ C
       CALL GETTIM(TEND,WEND)
       TINP = TEND - TSTART
       WINP = WEND - WSTART
-      IF (IPRERR .GT. 0) THEN
+      IF (IPRSTAT .GT. 0) THEN
          WRITE (LUERR,'(//A,2F10.2)')
      *      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
       END IF
@@ -375,7 +375,7 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
      *      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
@@ -421,7 +421,7 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
      *      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
@@ -553,7 +553,7 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
      *      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
@@ -633,7 +633,7 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
      *      ' >>>> CPU and wall time for SIROPT :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
@@ -747,9 +747,9 @@ C
          WRITE (LUW4,7100)  TIMSIR, WALSIR
          CALL TSTAMP(' ',LUW4)
       END IF
-      IF (IPRERR .GT. 0)  THEN
-         WRITE (LUERR,7100) TIMSIR, WALSIR
-         CALL TSTAMP(' ',LUERR)
+      IF (IPRSTAT .GT. 0)  THEN
+         WRITE (LUSTAT,7100) TIMSIR, WALSIR
+         CALL TSTAMP(' ',LUSTAT)
       END IF
  7100 FORMAT(//
      *   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
@@ -758,11 +758,13 @@ C
       IF (NINFO .GT. 0) THEN
          WRITE (LUPRI,7210) NINFO
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7210) NINFO
+         WRITE (LUSTAT,7210) NINFO
          WRITE (LUERR,7210) NINFO
       END IF
       IF (NWARN .GT. 0) THEN
          WRITE (LUPRI,7200) NWARN
          IF (LUW4.NE.LUPRI) WRITE (LUW4,7200) NWARN
+         WRITE (LUSTAT,7200) NWARN
          WRITE (LUERR,7200) NWARN
       END IF
  7200 FORMAT(/' NOTE:',I5,' warnings have been issued.',

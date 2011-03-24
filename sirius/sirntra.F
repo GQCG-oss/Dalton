@@ -383,7 +383,6 @@ C
 C Used from common blocks:
 C   INFORB : NNORBX
 C   INFDIM : NORBMA
-C   INFPRI : LUERR
 C
 #include "inforb.h"
 #include "infdim.h"
@@ -760,7 +759,6 @@ C
 C Used from common blocks:
 C   INFORB : NNORBX
 C   INFDIM : NORBMA
-C   INFPRI : LUERR
 C
 #include "inforb.h"
 #include "infdim.h"

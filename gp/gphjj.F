@@ -971,7 +971,7 @@ C
          CALL DCOPY(N,W,1,VC(1,I),1)
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
-            IF (IPRERR .GT. 0) THEN
+            IF (IPRSTAT .GT. 0) THEN
                WRITE (LUERR,*) 'Info: second round in NORM, I=',I
                CALL QDUMP(LUERR)
             END IF
@@ -1328,7 +1328,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1383,7 +1383,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE (LU,ERR=7)
 C     ... aug07-hjaaj: new ERR branch to avoid problems with backspace on empty files.
       GO TO 8
@@ -1424,7 +1424,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1477,7 +1477,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 FNDLB2 = .FALSE.
@@ -1490,7 +1490,7 @@ C
 C  06-Jun-2000 ALig
 C  (as FNDLB2, but the IVALUE returns the value of the
 C   symmetry representation of the operator SRCLBL and 0 if the
-C   label doesn't exist)
+C   label does not exist)
 C
 #include "implicit.h"
       CHARACTER*8 SRCLBL, B(4), STAR8
@@ -1512,7 +1512,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 IVALUE = 0
@@ -1547,7 +1547,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 NXTLAB = .FALSE.

@@ -89,7 +89,6 @@ C  Used from common blocks:
 C    INFINP : NLMSOL, LSOLMX, INERSI
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFTAP : LUSOL, LBSYMB
-C    INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -404,7 +403,6 @@ C    INFVAR : JWOP
 C    INFRSP :
 C    WRKRSP :
 C    INFTAP : LUSOL,  LBSYMB
-C    INFPRI : LUERR
 C
 #include <pcmdef.h>
 #include <maxash.h>

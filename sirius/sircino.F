@@ -143,11 +143,11 @@ C
       CALL NEWORB('CINOSAVE',WRK(KCMO),.TRUE.)
 C
       TICINO = SECOND() - TICINO
-      IF (IPRERR .GT. 0) WRITE (LUERR,1860) TICINO
-      IF (IPRCI .GE. 4) WRITE (LUW4,1860) TICINO
+      IF (IPRSTAT .GT. 0) WRITE (LUSTAT,1860) TICINO
+      IF (IPRCI   .GE. 4) WRITE (LUW4,1860) TICINO
  1860 FORMAT (/' Time used for CI natural orbitals :',F12.3,
      *        ' CPU seconds.')
-      CALL FLSHFO(LUERR)
+      CALL FLSHFO(LUSTAT)
       CALL FLSHFO(LUW4)
       CALL QEXIT('CINO  ')
       RETURN

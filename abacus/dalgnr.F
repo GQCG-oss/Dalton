@@ -1306,7 +1306,7 @@ C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-32: '.THRRED', '.DOUGLA'
 C
-      IPRERR = -10
+      IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
       CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
@@ -1338,7 +1338,7 @@ C
             READ (LUCMD,*) ITERNR
             GO TO 100
   103    CONTINUE
-            READ (LUCMD,*) IPRERR
+            READ (LUCMD,*) IPRSTAT
             GO TO 100
   104    CONTINUE
             RNHERM = .TRUE.
@@ -1448,9 +1448,10 @@ C
   999 CONTINUE
       WRITE (LUPRI,'(1X,A)') SEPARATOR
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
-      IF (IPRERR .EQ. -10)IPRERR = IPRUSR + 1
-      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.ERR :',IPRERR
-      WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.ERR ',IPRERR
+      IF (IPRSTAT .EQ. -10)IPRSTAT = IPRUSR + 1
+      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT :',IPRSTAT
+      WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT ',IPRSTAT
+      WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT ',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
       IF (THR_REDFAC .GT. 0.0D0) THEN

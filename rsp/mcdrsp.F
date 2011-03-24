@@ -33,7 +33,7 @@
 !
 ! Used from common blocks:
 !  /WRKRSP/: ??
-!  /INFPRI/: LUERR
+!  priunit.h: LUERR
 !
 #include <priunit.h>
 #include <inforb.h>

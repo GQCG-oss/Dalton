@@ -105,10 +105,10 @@ C
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//2A/A,I4)')
      *      ' WARNING from SIRSAV with keyword ',KEYWRD,
-     *      ' ------- ISTATE SET TO 1, WAS',ISTATE
+     *      ' ------- ISTATE set to 1, was',ISTATE
          WRITE (LUERR,'(//2A/A,I4)')
      *      ' WARNING from SIRSAV with keyword ',KEYWRD,
-     *      ' ------- ISTATE SET TO 1, WAS',ISTATE
+     *      ' ------- ISTATE set to 1, one',ISTATE
          ISTATE = 1
       END IF
       DOCNO = FLAG(15)
@@ -146,7 +146,7 @@ C
          JSTA = -ISTATE
       ELSE
          WRITE (LUPRI,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
-         WRITE (LUERR ,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUERR,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR (SIRSAV) KEYWRD illegal.')
       END IF
@@ -565,7 +565,7 @@ C Section 3:     Rotate orbitals and write the new rotated orbitals
 C                on LUIT1 with label NEWORB.
 C
  3000 CONTINUE
-      CALL ROTATE(XKAP,CMO,WRK,LFREE)
+      CALL MO_ROTATE(XKAP,CMO,WRK,LFREE)
       IF (NCONF .GT. 1) THEN
          LAB123(3) = '(MCOPT) '
       ELSE
@@ -664,8 +664,8 @@ C
       RETURN
 C     end of SIRSAV
       END
-C  /* Deck rotate */
-      SUBROUTINE ROTATE(XKAP,CMO,WRK,LFRSAV)
+C  /* Deck MO_rotate */
+      SUBROUTINE MO_ROTATE(XKAP,CMO,WRK,LFRSAV)
 C
 C Written by Hans Agren 6-Apr-1984
 C Revisions:
@@ -709,11 +709,11 @@ C
 #include <infpri.h>
 C
 C
-      CALL QENTER('ROTATE')
+      CALL QENTER('MO_ROTATE')
       IF (NWOPT.EQ.0) GO TO 9999
       IF (JWOPSY .NE. 1) THEN
          CALL QTRACE(LUERR)
-         CALL QUIT('ERROR, ROTATE called with JWOPSY.ne.1')
+         CALL QUIT('ERROR, MO_ROTATE called with JWOPSY.ne.1')
       END IF
 C
 C Average rotation matrix.
@@ -724,7 +724,7 @@ C
 C Print XKAP, if so requested.
 C
       IF (P6FLAG(29) .AND. NWOPT .GT. 0) THEN
-         WRITE (LUPRI,'(/A/A)') ' ROTATE: Orbital rotation vector',
+         WRITE (LUPRI,'(/A/A)') ' MO_ROTATE: Orbital rotation vector',
      *                         ' -------------------------------'
          IF (IPRI6.GT.100) THEN
             PRFAC = 0.0D0
@@ -737,7 +737,7 @@ C
       KUXKAP = 1
       KWRK0  = KUXKAP + N2ORBX
       KNEED  = KWRK0  + 3*NORBMA*NBASMA
-      IF (KNEED .GT. LFRSAV) CALL ERRWRK('ROTATE_1',KNEED,LFRSAV)
+      IF (KNEED .GT. LFRSAV) CALL ERRWRK('MO_ROTATE_1',KNEED,LFRSAV)
 C
 C Unpack kappa vector and add unit matrix (giving 1+X)
 C
@@ -801,7 +801,7 @@ C
                CALL OUTPUT(WRK(KCPNEW),1,NORBI,1,NORBI,
      *                     NORBI,NORBI,1,LUPRI)
                CALL QUIT(
-     &            'ROTATE, divergence in symmetric orthonormalization')
+     &         'MO_ROTATE, divergence in symmetric orthonormalization')
             END IF
             IF (DMX .GT. THREQL) GO TO 100
 C        ^----------------------------------
@@ -814,13 +814,13 @@ C
             WRITE (LUPRI,3300)
             CALL OUTPUT(WRK(KCPNEW),1,NORBI,1,NORBI,NORBI,NORBI,1,LUPRI)
          END IF
- 2211 FORMAT(/' (ROTATE) Symmetric orthogonalization of symmetry',I2,
+ 2211 FORMAT(/' (MO_ROTATE) Symmetric orthogonalization of symmetry',I2,
      *        ' in',I3,' iterations.',
      *        /T11,'Max. error this and previous iteration',1P,2D15.2)
- 2212 FORMAT(/' (ROTATE) Symmetric orthogonalization of symmetry',I2,
+ 2212 FORMAT(/' (MO_ROTATE) Symmetric orthogonalization of symmetry',I2,
      *        ' diverging, iteration no.',I3,
      *        /T11,'Max. error this and previous iteration',1P,2D15.2)
- 3300 FORMAT(/' ROTATE: UXKAP, the symmetrically orthogonalized',
+ 3300 FORMAT(/' MO_ROTATE: UXKAP, the symmetrically orthogonalized',
      *        ' rotation matrix')
 C
 C        Rotate orbitals
@@ -842,7 +842,7 @@ C
       KSOVLP = 1
       KWRK2  = KSOVLP + NNBAST
       KNEED  = KWRK2  + 2*NBASMA
-      IF (KNEED .GT. LFRSAV) CALL ERRWRK('ROTATE_2',KNEED,LFRSAV)
+      IF (KNEED .GT. LFRSAV) CALL ERRWRK('MO_ROTATE_2',KNEED,LFRSAV)
       CALL RDONEL('OVERLAP ',.TRUE.,WRK(KSOVLP),NNBAST)
 C
 C Section 3 **********************
@@ -859,14 +859,14 @@ C
          IF(IRETUR.GE.1)GO TO 4000
   400 CONTINUE
 C
- 9999 CALL QEXIT('ROTATE')
+ 9999 CALL QEXIT('MO_ROTATE')
       RETURN
 C
  4000 WRITE(LUERR,4010)IRETUR
- 4010 FORMAT(/' ROTATE FATAL ERROR, linear dependency in norm',I5)
+ 4010 FORMAT(/' MO_ROTATE FATAL ERROR, linear dependency in norm',I5)
       CALL QTRACE(LUERR)
-      CALL QUIT('ERROR, linear dependency (ROTATE)')
+      CALL QUIT('ERROR, linear dependency (MO_ROTATE)')
 C
-C ** End of subroutine ROTATE
+C ** End of subroutine MO_ROTATE
 C
       END
