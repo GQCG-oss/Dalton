@@ -17,53 +17,246 @@ C
 C  This file provides the interface of calling Gen1Int from Dalton.
 C
 C  2011-02-13, Bin Gao
-C  * the subroutine does not read information from input anymore, it will only
+C  * this file does not read information from input anymore, it will only
 C    be called by other subroutines
 C
 C  2010-07-28, Bin Gao
 C  * first version
 
-C>    \brief calculates integrals/expectation values using Cartesian or
-C>           real solid-harmonic Gaussians
+C>    \brief main driver of calling Gen1Int by Dalton
 C>    \detail modified files include
 C>            (1) abacus/herrdn.F: some modifications for processing different ECPs,
 C>                                 adds the interface of calling gen1int_block.
 C>            (2) abacus/her1car.F: removes the interface of calling old ECP subroutine.
-C>            (3) abacus/her1drv.F: adds the interface of calling gen1int_wrapper().
+C>            (3) abacus/her1drv.F: adds the interface of calling gen1int_driver().
 C>            (4) include/gen1int.h: saves AO block information for Gen1Int
 C>    \author Bin Gao
 C>    \date 2010-07-28
 C>    \param prop_name is the name of property integrals to calculated
 C>    \param order_geo is the order of geometric derivatives
 C>    \param order_mag is the order of magnetic derivaives
-C>    \param getint indicates if getting integrals back
-C>    \param wrtint indicates if writing integrals to file
-C>    \param propty indicates if calculating expectation values
+C>    \param get_int indicates if getting integrals back
+C>    \param wrt_int indicates if writing integrals to file
+C>    \param do_exp indicates if calculating expectation values
 C>    \param ndens is the number of AO density matrices
 C>    \param ao_dens contains the AO density matrices
-C>    \param doint indicates if calculating the integrals for each AO block
+C>    \param get_exp indicates if getting expectation values back
+C>    \param wrt_exp indicates if writing expectation values to file
 C>    \param len_work is the length of Dalton workspace
 C>    \param dal_work is the Dalton workspace
 C>    \param level_print is the level of print
 C>    \return vals_int contains the calculated integrals
 C>    \return vals_expect contains the calculated expectation values
-      subroutine gen1int_wrapper(prop_name, order_geo, order_mag,
-     &                           getint, wrtint, vals_int, propty,
-     &                           ndens, ao_dens, vals_expect,
-     &                           doint, len_work, dal_work, level_print)
+      subroutine gen1int_driver(prop_name, order_geo, order_mag,
+     &                          get_int, wrt_int, vals_int,
+     &                          do_exp, ndens, ao_dens,
+     &                          get_exp, wrt_exp, vals_expect,
+     &                          len_work, dal_work, level_print)
 #include "implicit.h"
 #include "inforb.h"
       character*(*) prop_name
       integer order_geo
       integer order_mag
-      logical getint
-      logical wrtint
+      logical get_int
+      logical wrt_int
       dimension vals_int(*)
-      logical propty
+      logical do_exp
       integer ndens
       dimension ao_dens(NNBASX,ndens)
       dimension vals_expect(*)
-      logical doint(2,2)
+      integer len_work
+      dimension dal_work(len_work)
+      integer level_print
+#ifdef BUILD_GEN1INT
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "onecom.h"
+#include "aovec.h"
+#include "symmet.h"
+#include "symind.h"
+#include "primit.h"
+#include "lmns.h"
+#include "shells.h"
+#include "gen1int.h"
+#include "ecpinf.h"
+#include "orgcom.h"
+#include "ibtfun.h"
+#include "dummy.h"
+C     incremental recorder over different paths from subroutine \fn(geom_deriv_cent_tree)
+      integer ipath
+C     number of geometric derivatives per path
+      integer num_dgeo
+C     position of geometric derivatives
+      integer pos_dgeo
+C     maximum number of centers in the integral
+      parameter(MAX_NCENT = 4)
+C     depth of atom to visit
+      integer visit_depth
+C     selected atom nodes
+      integer node_list(MAX_NCENT)
+C     weights of the selected atom nodes
+      integer wt_node(MAX_NCENT)
+C     indices of atomic centers
+      integer idx_cent(MAX_NCENT)
+C     order of derivatives of the corresponding atomic centers
+      integer order_cent(MAX_NCENT)
+C     number of geometric differentiated centers
+      integer num_cents
+C     number of different paths from subroutine \fn(geom_deriv_cent_tree)
+      integer num_paths
+C     Dalton stuff
+      call QENTER("gen1int_driver")
+      call GETTIM(TIMHER, WALHER)
+      call HEADER("Gen1Int calculates "//trim(prop_name),-1)
+C     dumps to check
+      write(LUPRI,1000) "Order of geometric derivatives:", order_geo
+      write(LUPRI,1000) "Order of magnetic derivaives:", order_mag
+      if (get_int) then
+        write(LUPRI,1000) "Return integrals."
+      else if (wrt_int) then
+        write(LUPRI,1000) "Write integrals on file."
+      else
+        write(LUPRI,1000) "Neither return nor write integrals."
+      end if
+      if (do_exp) then
+        write(LUPRI,1000) "Calculate expectation values."
+        write(LUPRI,1000) "Number of atomic-orbital density matrices:",
+     &                    ndens
+        if (get_exp) then
+          write(LUPRI,1000) "Return expectation values."
+        else if (wrt_exp) then
+          write(LUPRI,1000) "Write expectation values on file."
+        else
+          write(LUPRI,1000)
+     &      "Neither return nor write expectation values."
+        end if
+      end if
+      write(LUPRI,1001) "Length of Dalton workspace:", len_work
+      write(LUPRI,"()")
+C     number of centers in the operator
+      select case(trim(prop_name))
+C     two-center operators
+      case('.DSO')
+        num_cents = 4
+C     operators without any center
+      case('.ANGLON','.ANGMOM','.CARMOM','.DIPLEN','.DIPVEL','.DPTOVL',
+     &     '.DSUSNL','.KINENE','.MASSVE','.OVERLAP','.S1MAG','.SECMOM',
+     &     '.SQHDOL','.SQHDOR','.THETA','.THIRDM','.2NDMM','.3RDMM')
+        num_cents = 2
+C     one-center operators
+      case default
+        num_cents = 3
+      end select
+C     calculates geometric derivatives
+      if (order_geo>0) then
+C       computes the number of different paths from subroutine \fn(geom_deriv_cent_tree)
+C       FIXME: NUCDEP is the number of atoms?
+        call geom_deriv_cent_npath(NUCDEP, order_geo,
+     &                             num_cents, num_paths)
+        write(LUPRI,1001)
+     &    "Number of compositions of differentiated centers:", num_paths
+C       the first path (composition of centers), geometric derivatives
+C       with respect to the first atom
+        visit_depth = order_geo
+        node_list = 1
+        wt_node = 1
+        idx_cent = 0
+        idx_cent(1) = 1
+        order_cent = 0
+        order_cent(1) = order_geo
+        pos_dgeo = 1
+C       calculates the geometric and magnetic derivatives
+        call gen1int_prop(prop_name, pos_dgeo, wt_node(order_geo), 
+     &                    idx_cent, order_cent, order_mag,
+     &                    get_int, wrt_int, vals_int,
+     &                    do_exp, ndens, ao_dens,
+     &                    get_exp, wrt_exp, vals_expect,
+     &                    len_work, dal_work, level_print)
+C       loops over other paths
+        do ipath = 2, num_paths
+C         computes the position of current geometric derivatives
+          call geom_deriv_cent_ndgeo(wt_node(order_geo),
+     &                               order_cent(1:wt_node(order_geo)),
+     &                               num_dgeo)
+          pos_dgeo = pos_dgeo+num_dgeo
+C         generates the differentiated centers and their orders
+          call geom_deriv_cent_tree(NUCDEP, order_geo, num_cents,
+     &                              visit_depth, node_list, wt_node,
+     &                              idx_cent, order_cent)
+C         calculates the geometric and magnetic derivatives
+          call gen1int_prop(prop_name, pos_dgeo, wt_node(order_geo), 
+     &                      idx_cent, order_cent, order_mag,
+     &                      get_int, wrt_int, vals_int,
+     &                      do_exp, ndens, ao_dens,
+     &                      get_exp, wrt_exp, vals_expect,
+     &                      len_work, dal_work, level_print)
+        end do
+C     no geometric derivatives
+      else
+        call gen1int_prop(prop_name, 1, 0, idx_cent, order_cent,
+     &                    order_mag, get_int, wrt_int, vals_int,
+     &                    do_exp, ndens, ao_dens,
+     &                    get_exp, wrt_exp, vals_expect,
+     &                    len_work, dal_work, level_print)
+      end if
+C     Dalton stuff
+      call GETTIM(TEND, WEND)
+      TIMHER = TEND-TIMHER
+      WALHER = WEND-WALHER
+      write(LUPRI,"()")
+      call TIMTXT(">>>> Total CPU  time used in Gen1Int:",
+     &            TIMHER, LUPRI)
+      call TIMTXT(">>>> Total wall time used in Gen1Int:",
+     &            WALHER, LUPRI)
+      call HEADER("End of Gen1Int",-1)
+      call QEXIT("gen1int_driver")
+      return
+1000  format("GEN1INT_INFO>> ",A,I4)
+1001  format("GEN1INT_INFO>> ",A,I12)
+#else
+      call QUIT("Gen1Int is not installed")
+#endif
+      end subroutine gen1int_driver
+
+C>    \brief calculates integrals/expectation values using Cartesian or
+C>           real solid-harmonic Gaussians
+C>    \author Bin Gao
+C>    \date 2010-07-28
+C>    \param prop_name is the name of property integrals to calculated
+C>    \param order_geo is the order of geometric derivatives
+C>    \param order_mag is the order of magnetic derivaives
+C>    \param get_int indicates if getting integrals back
+C>    \param wrt_int indicates if writing integrals to file
+C>    \param do_exp indicates if calculating expectation values
+C>    \param ndens is the number of AO density matrices
+C>    \param ao_dens contains the AO density matrices
+C>    \param get_exp indicates if getting expectation values back
+C>    \param wrt_exp indicates if writing expectation values to file
+C>    \param len_work is the length of Dalton workspace
+C>    \param dal_work is the Dalton workspace
+C>    \param level_print is the level of print
+C>    \return vals_int contains the calculated integrals
+C>    \return vals_expect contains the calculated expectation values
+      subroutine gen1int_prop(prop_name, order_geo, order_mag,
+     &                        get_int, wrt_int, vals_int,
+     &                        do_exp, ndens, ao_dens,
+     &                        get_exp, wrt_exp, vals_expect,
+     &                        len_work, dal_work, level_print)
+#include "implicit.h"
+#include "inforb.h"
+      character*(*) prop_name
+      integer order_geo
+      integer order_mag
+      logical get_int
+      logical wrt_int
+      dimension vals_int(*)
+      logical do_exp
+      integer ndens
+      dimension ao_dens(NNBASX,ndens)
+      dimension vals_expect(*)
       integer len_work
       dimension dal_work(len_work)
       integer level_print
@@ -95,64 +288,47 @@ C     incremental recorders over AO-shells
       integer ishell, jshell
 C     incremental recorders over AO-blocks
       integer iblock, jblock
+C     incremental recorder over different paths from subroutine \fn(geom_deriv_cent_tree)
+      integer ipath
 C     if in the format of full matrix
       logical full_matrix
 C     if anti-symmetric matrix
       logical anti_matrix
 C     number of AO shells in the AO block
       integer nbra_shell, nket_shell
-C     number of centers in the operator
-      integer num_op_cents
 C     maximum number of centers in the integral
       parameter(MAX_NCENT = 4)
-C     orders of geometric derivatives of centers, the first two are bra and ket
+C     depth of atom to visit
+      integer visit_depth
+C     selected atom nodes
+      integer node_list(MAX_NCENT)
+C     weights of the selected atom nodes
+      integer wt_node(MAX_NCENT)
+C     indices of atomic centers
+      integer idx_cent(MAX_NCENT)
+C     order of derivatives of the corresponding atomic centers
       integer order_cent(MAX_NCENT)
 C     number of geometric differentiated centers
       integer num_cents
+C     number of different paths from subroutine \fn(geom_deriv_cent_tree)
+      integer num_paths
 C     number of geometric derivatives
       integer num_dgeo
 C     number of magnetic derivatives
       integer num_dmag
-C     number of integrals
-      integer num_ints
 C     number of derivatives
       integer num_deriv
-C     Dalton stuff
-      call QENTER("gen1int_wrapper")
-      call GETTIM(TIMHER, WALHER)
-      call HEADER("Gen1Int calculates "//trim(prop_name),-1)
-C     dumps to check
-      write(LUPRI,1000) "Order of geometric derivatives:", order_geo
-      write(LUPRI,1000) "Order of magnetic derivaives:", order_mag
-      if (getint) then
-        write(LUPRI,1000) "Integrals are returned."
-      else
-        write(LUPRI,1000) "Integrals are not returned."
-      end if
-      if (propty) then
-        write(LUPRI,1000) "Calculate expectation values."
-        write(LUPRI,1000) "Number of AO density matrices:", ndens
-      end if
-      write(LUPRI,1001) "Length of Dalton workspace:", len_work
-      write(LUPRI,"()")
+
 C     number of the magnetic derivatives
       num_dmag = (order_mag+1)*(order_mag+2)/2
-C     number of centers in the operator
-      select case(trim(prop_name))
-C     two center operators
-      case('.DSO')
-        num_op_cents = 2
-C     without any center
-      case('.ANGLON','.ANGMOM','.CARMOM','.DIPLEN','.DIPVEL','.DPTOVL',
-     &     '.DSUSNL','.KINENE','.MASSVE','.OVERLAP','.S1MAG','.SECMOM',
-     &     '.SQHDOL','.SQHDOR','.THETA','.THIRDM','.2NDMM','.3RDMM')
-        num_op_cents = 0
-C     one-center operators
-      case default
-        num_op_cents = 1
-      end select
-C     doing the calculation now ...
-C FIXME
+
+      num_deriv = num_dgeo*num_dmag
+
+C     used for SYM1S and SYM1N(FIXME)
+C-      full_matrix = .true.
+C-      anti_matrix = .false.
+
+C     FIXME
       IDENA = 0
       call IZERO(ISOFRA, 8)
 C     loops over blocks of bra
@@ -161,12 +337,11 @@ C     loops over blocks of bra
         NHKTA = NHKT(ishell)        !angular quantum number (s=1,p=2,d=3 etc.)
         KHKTA = KHKT(ishell)        !number of spherical (Cartesian) components
         KCKTA = KCKT(ishell)        !number of Cartesian components
-        ICA   = LCLASS(ishell)      !class: large component (1), small or Huckel(2), density fitting (0)
         SPHRA = SPHR(ishell)        !if spherical Gaussians
 C       generates the Cartesian powers
         call LMNVAL(NHKTA, KCKTA, LVALUA, MVALUA, NVALUA)
         NCENTA = NCENT(ishell)      !index of symmetry independent center
-        ICENTA = NUCNUM(NCENTA,1)   !total number of nuclei
+        ICENTA = IPTNUC(NCENTA,1)   !index of this atomic center(FIXME)
         MULA   = ISTBAO(ishell)     !stabiliser: basic sym. op. that do not move center
         MULTA  = MULT(MULA)         !multiplicity of center
         NUCA   = NUCO(ishell)       !number of uncontracted functions
@@ -200,9 +375,9 @@ C       note that at present this assumes all components from a shell are includ
 C       number of the AO shells
         nbra_shell = KCKTA*NRCA
 #ifdef GEN1INT_DEBUG
-        write(LUPRI,9000) "Center of bra:", NCENTA
-        write(LUPRI,9000) "ICENTA: ", ICENTA
-        write(LUPRI,9000) "Class of bra: ", ICA
+        write(LUPRI,9000) "Index of symmetry-independent bra center:",
+     &                    NCENTA
+        write(LUPRI,9000) "Index of atomic bra center: ", ICENTA
         write(LUPRI,9100) "Coordinates of bra:", CORAX, CORAY, CORAZ
         write(LUPRI,9000) "Angular number of bra:", NHKTA
         write(LUPRI,9000) "Number of bra prim.:", NUCA
@@ -228,14 +403,13 @@ C       number of the AO shells
           end do
         end do
 #endif
-C FIXME: lower triangular?
+C       lower triangular(FIXME)
 C       loops over shells of ket
         do jblock = 1, iblock
           jshell = IDX_SHELL(jblock)
           NHKTB = NHKT(jshell)            !angular quantum number (s=1,p=2,d=3 etc.)
           KHKTB = KHKT(jshell)            !number of spherical (Cartesian) components
           KCKTB = KCKT(jshell)            !number of Cartesian components
-          ICB   = LCLASS(jshell)          !class: large component (1), small or Huckel(2), density fitting (0)
           SPHRB = SPHR(jshell)            !if spherical Gaussians
           CALL LMNVAL(NHKTB,KCKTB,LVALUB,MVALUB,NVALUB)
           NCENTB = NCENT(jshell)          !index of symmetry independent center
@@ -273,20 +447,15 @@ C         note that at present this assumes all components from a shell are incl
               end do
             end do
           end do
-C         cycles if skipping the integrals of these two blocks
-          if (.not.doint(ICA,ICB)) cycle
 C         number of the AO shells
           nket_shell = KCKTB*NRCB
-C         initializes the number of integrals
-          num_ints = nbra_shell*nket_shell*num_dmag
-C         loops over symmetry operations
-C FIXME
+C         loops over symmetry operations(FIXME)
           IDENB = IDENB0-KHKTB
           do isymop = 0, MAXOPR
             if (IBTAND(isymop,MAB).eq.0) then
-C FIXME
+C             FIXME
               IDENB  = IDENB+KHKTB
-              ICENTB = NUCNUM(NCENTB,isymop+1)   !total number of nuclei? FIXME
+              ICENTB = IPTNUC(NCENTB,isymop+1)   !index of this atomic center(FIXME)
               ONECEN = ICENTA.eq.ICENTB
 
               SIGNBX = PT(IBTAND(ISYMAX(1,1),isymop))
@@ -295,20 +464,6 @@ C FIXME
               CORBX  = SIGNBX*CORBX0
               CORBY  = SIGNBY*CORBY0
               CORBZ  = SIGNBZ*CORBZ0
-
-C             number of centers
-              if (ICENTA.eq.ICENTB) then
-                num_cents = num_op_cents+1
-              else
-                num_cents = num_op_cents+2
-              end if
-
-C             loops over geometric derivatives
-
-C             generates the differentiated centers and their orders
-C-              call geo_deriv(num_cents, order_cent, num_dgeo)
-C-              num_deriv = num_dgeo*num_dmag
-C-              num_ints = num_ints*num_dgeo
 
 C             different property integrals using Gen1Int
 C             we may also use the following origins
@@ -319,13 +474,13 @@ C             (4) dipole origin  : DIPORG
               select case(trim(prop_name))
               case('.OVERLAP')
 C               computes the contracted integrals
-                call lcgto_zero_carmom(ICENTA, (/CORAX,CORAY,CORAZ/),
+                call contr_cgto_carmom(ICENTA, (/CORAX,CORAY,CORAZ/),
      &            NHKTA-1, NUCA, PRIEXP(JSTA+1:JSTA+NUCA),
      &            NRCA, PRICCF(JSTA+1:JSTA+NUCA,NUMCFA:NUMCFA+NRCA-1),
      &            ICENTB, (/CORBX,CORBY,CORBZ/), NHKTB-1,
      &            NUCB, PRIEXP(JSTB+1:JSTB+NUCB), NRCB,
      &            PRICCF(JSTB+1:JSTB+NUCB,NUMCFB:NUMCFB+NRCB-1),
-     &            DIPORG, 0, num_ints, dal_work)
+     &            DIPORG, 0, dal_work)
               case('.ECP')
 C               loops over number of all ECP centers
                 do ITYP = 1, NTYECP
@@ -350,58 +505,37 @@ C                        call PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
               end select
 C             transforms to spherical Gaussian integrals
               if (SPHRB) then
-                call cgto_to_sgto(NHKTB-1,
-     &                            (/nbra_shell,KCKTB,NRCB*num_deriv/),
-     &                            dal_work)
+                call cgto_to_sgto(NHKTB-1, (/nbra_shell,KCKTB,
+     &                            NRCB*num_deriv/), dal_work)
               end if
               if (SPHRA) then
-                call cgto_to_sgto(NHKTA-1,
-     &                            (/1,KCKTA,NRCA*nket_shell*num_deriv/),
+                call cgto_to_sgto(NHKTA-1, (/1,KCKTA,
+     &                            NRCA*nket_shell*num_deriv/),
      &                            dal_work)
               endif
 C
-              full_matrix = .true.
-              anti_matrix = .false.
               do icontr = 1, NRCA
                 INDFA = BLOCK_INDFA(:,:,icontr)
                 do jcontr = 1, NRCB
                   LDIAG = icontr.eq.jcontr  !lower triangle (.true.) or full square block
                   INDFB = BLOCK_INDFB(:,:,jcontr)
 C                 computes expectation values
-                  if (propty) then
-C                   collects density elements
-                    do iden = 1, ndens
-                      MAXCMP = 0
-                      do IORBA = IDENA+1, IDENA+KHKTA
-                         do IORBB = IDENB+1, IDENB+KHKTB
-                            MAXCMP = MAXCMP+1
-                            MAXAB = max(IORBA,IORBB)
-                            MINAB = min(IORBA,IORBB)
-                            IORBAB = MAXAB*(MAXAB-1)/2+MINAB
-                            if (ONECEN .and. LDIAG .and.
-     &                          IORBB.ne.IORBA) then
-                              dal_work(MAXCMP)
-     &                          = 5.0D-01*ao_dens(IORBAB,iden)
-                            else
-                              dal_work(MAXCMP) = ao_dens(IORBAB,iden)
-                            end if
-                         end do
-                      end do
-                    end do
-C
+                  if (do_exp) then
+     &              call gen1int_expect(ndens, ao_dens,
+     &                                  get_exp, wrt_exp, vals_expect,
+     &                                  len_work, dal_work, level_print)
                   end if
-C FIXME:
-C-             if (getint) then
-C             transforms integrals to SO basis
-C                call SYM1S(ADER, vals_int, isymop, MULA, MULB, NHKTA, NHKTB,
-C     &                     KHKTA, KHKTB, HKAB, LDIAG, FULMAT, DUMMY, IDUMMY,
-C     &                     level_print)
-C              end if
-C              if (wrtint) then
-C                writes differentiated integrals on file for the right-hand side
-C-               call WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
-C-    &                      ISYMOP,NATOMC,IPRINT,PCM)
-C-             end if
+C                 FIXME
+                  if (get_int) then
+C                  transforms integrals to SO basis
+C-                     call SYM1S(ADER, vals_int, isymop, MULA, MULB, NHKTA, NHKTB,
+C-     &                          KHKTA, KHKTB, HKAB, LDIAG, FULMAT, DUMMY, IDUMMY,
+C-     &                          level_print)
+                  else if (wrt_int) then
+C                     writes differentiated integrals on file for the right-hand side
+C-                    call WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
+C-    &                           ISYMOP,NATOMC,IPRINT,PCM)
+                  end if
                 end do
               end do
             end if
@@ -412,20 +546,7 @@ C-             end if
       end do  !loops over shells of bra
 C     cleans
       call IZERO(ISOFRA, 8)
-C     Dalton stuff
-      call GETTIM(TEND, WEND)
-      TIMHER = TEND-TIMHER
-      WALHER = WEND-WALHER
-      write(LUPRI,"()")
-      call TIMTXT(">>>> Total CPU  time used in Gen1Int:",
-     &            TIMHER, LUPRI)
-      call TIMTXT(">>>> Total wall time used in Gen1Int:",
-     &            WALHER, LUPRI)
-      call HEADER("End of Gen1Int",-1)
-      call QEXIT("gen1int_wrapper")
       return
-1000  format("GEN1INT_INFO>> ",A,I4)
-1001  format("GEN1INT_INFO>> ",A,I12)
 #ifdef GEN1INT_DEBUG
 9000  format("GEN1INT_DEBUG>> ",A,I8)
 9100  format("GEN1INT_DEBUG>> ",A,3F16.8)
@@ -435,4 +556,78 @@ C     Dalton stuff
 #else
       call QUIT("Gen1Int is not installed")
 #endif
-      end subroutine gen1int_wrapper
+      end subroutine gen1int_prop
+
+C>    \brief computes the expectation values
+C>    \author Bin Gao
+C>    \date 2010-12-06
+      subroutine gen1int_expect(ndens, ao_dens,
+     &                          get_exp, wrt_exp, vals_expect,
+     &                          len_work, dal_work, level_print)
+C     collects density elements
+      do iden = 1, ndens
+        MAXCMP = 0
+        do IORBA = IDENA+1, IDENA+KHKTA
+           do IORBB = IDENB+1, IDENB+KHKTB
+              MAXCMP = MAXCMP+1
+              MAXAB = max(IORBA,IORBB)
+              MINAB = min(IORBA,IORBB)
+              IORBAB = MAXAB*(MAXAB-1)/2+MINAB
+              if (ONECEN .and. LDIAG .and. IORBB.ne.IORBA) then
+                dal_work(MAXCMP) = 5.0D-01*ao_dens(IORBAB,iden)
+              else
+                dal_work(MAXCMP) = ao_dens(IORBAB,iden)
+              end if
+           end do
+        end do
+      end do
+      return
+      end subroutine gen1int_expect
+
+C>    \brief sets up AO-blocks used for Gen1Int
+C>    \author Bin Gao
+C>    \date 2010-12-06
+      subroutine gen1int_block
+#ifdef BUILD_GEN1INT
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "aovec.h"
+#include "gen1int.h"
+C     incremental recorder over shells
+      integer ibra
+      call QENTER('gen1int_block')
+C     initializes the number of AO-blocks
+      NUM_BLOCK = 1
+      ibra = 1
+      IDX_SHELL(NUM_BLOCK) = ibra
+      do ibra = 1, KMAX-1
+C       finds a new AO-block
+        if (JSTRT(ibra).ne.JSTRT(ibra+1)) then
+          NUM_BLOCK = NUM_BLOCK+1
+          if (NUM_BLOCK.gt.MAX_NBLOCK) then
+            write(LUPRI,1000)
+     &        "Maximum number of AO-blocks (MAX_NBLOCK)", MAX_NBLOCK
+            call QUIT("Too many AO-blocks")
+          else
+            IDX_SHELL(NUM_BLOCK) = ibra+1
+          end if
+        end if
+      end do
+#ifdef GEN1INT_DEBUG
+      write(LUPRI,9000) "Number of AO-blocks:", NUM_BLOCK
+      write(LUPRI,9001) IDX_SHELL(1:NUM_BLOCK)
+#endif
+      call QEXIT('gen1int_block')
+      return
+1000  format("GEN1INT_ERROR>> ",A,I8)
+#ifdef GEN1INT_DEBUG
+9000  format("GEN1INT_DEBUG>> ",A,I8)
+9001  format("GEN1INT_DEBUG>> IDX_SHELL:",5I8)
+#endif
+#else
+      call QUIT("Gen1Int is not installed")
+#endif
+      end subroutine gen1int_block
