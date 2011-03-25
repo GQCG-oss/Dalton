@@ -551,40 +551,47 @@ C
       CALL IZERO(ISOFRA, 8)
 
 #ifdef BUILD_GEN1INT
+
+       call gen1int_driver('.OVERLAP', 5, 3, .true., .true., .true.,
+     &                     (/DUMMY/), .true., 1, DENMAT,
+     &                     .true., .true., WORK(KLAST:KLAST),
+     &                     LWRK-1, WORK(KLAST+1), 20)
+	stop
+
 C...  added by Bin Gao, Feb. 15, 2011
       if (ECP) then
 C...    computes expectation values
         if (PROPTY) then
 C...      expectation values from ECP integrals
-          call gen1int_driver('.ECP', 0, 0, .false., .false.,
+          call gen1int_driver('.ECP', 0, 0, .false., .false., .false.,
      &                        (/DUMMY/), .true., 1, DENMAT,
      &                        .true., .false., WORK(KLAST:KLAST),
      &                        LWRK-1, WORK(KLAST+1), IPRINT)
           ENERNA = ENERNA+WORK(KLAST)
 C...      expectation values and writing the integrals of first-order geometric derivatives
           if (SECDER .OR. DIFDIP .OR. DIFQDP) then
-            call gen1int_driver('.ECP', MAXDIF, 0, .false., .true.,
-     &                          (/DUMMY/), .true., 1, DENMAT,
+            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
+     &                          .true., (/DUMMY/), .true., 1, DENMAT,
      &                          .true., .false., GRADNA,
      &                          LWRK, WORK(KLAST), IPRINT)
 C...      expectation values of first-order geometric derivatives
           else
             call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
-     &                          (/DUMMY/), .true., 1, DENMAT,
+     &                          .false., (/DUMMY/), .true., 1, DENMAT,
      &                          .true., .false., GRADNA,
      &                          LWRK, WORK(KLAST), IPRINT)
           end if
 C...      expectation values of second-order geometric derivatives
           if (SECDER) then
             call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
-     &                          (/DUMMY/), .true., 1, DENMAT,
+     &                          .false., (/DUMMY/), .true., 1, DENMAT,
      &                          .true., .false., HESSNA,
      &                          LWRK, WORK(KLAST), IPRINT)
           end if
 C...    ECP integrals, do not write the integrals (FIXME)?
         else
-          call gen1int_driver('.ECP', MAXDIF, 0, .true., .false.,
-     &                        STHMAT(:,2), .false., 1, DENMAT,
+          call gen1int_driver('.ECP', MAXDIF, 0, .false., .true.,
+     &                        .false., STHMAT(:,2), .false., 1, DENMAT,
      &                        .false., .false., (/DUMMY/),
      &                        LWRK, WORK(KLAST), IPRINT)
         end if
