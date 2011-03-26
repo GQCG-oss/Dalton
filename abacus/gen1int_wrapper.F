@@ -96,9 +96,9 @@ C     number of different paths from subroutine \fn(geom_deriv_cent_tree)
 C     depth of atom to visit
       integer visit_depth
 C     selected atom nodes
-      integer node_list(MAX_NCENT)
+      integer node_list(MAX_ORDER_GEO)
 C     weights of the selected atom nodes
-      integer wt_node(MAX_NCENT)
+      integer wt_node(MAX_ORDER_GEO)
 C     incremental recorder over different paths from subroutine \fn(geom_deriv_cent_tree)
       integer ipath
 C     number of geometric derivatives per path
@@ -111,6 +111,21 @@ C     Dalton stuff
       call QENTER("gen1int_driver")
       call GETTIM(TIMHER, WALHER)
       call HEADER("Gen1Int calculates "//trim(prop_name),-1)
+C     checks the validity of orders
+      if (order_geo>MAX_ORDER_GEO) then
+        write(LUPRI,1000) "Order of geometric derivatives:", order_geo
+        write(LUPRI,1000)
+     &    "Maximum order of geometric derivatives (MAX_ORDER_GEO):",
+     &    MAX_ORDER_GEO
+        call QUIT("Increase MAX_ORDER_GEO in gen1int.h")
+      end if
+      if (order_mag>MAX_ORDER_MAG) then
+        write(LUPRI,1000) "Order of magnetic derivatives:", order_mag
+        write(LUPRI,1000)
+     &    "Maximum order of magnetic derivatives (MAX_ORDER_MAG):",
+     &    MAX_ORDER_MAG
+        call QUIT("Increase MAX_ORDER_MAG in gen1int.h")
+      end if
 C     dumps to check
       if (level_print>=5) then
         write(LUPRI,1000) "Order of geometric derivatives:", order_geo
@@ -226,7 +241,8 @@ C     Dalton stuff
       return
 1000  format("gen1int_driver>> ",A,I4)
 1001  format("gen1int_driver>> ",A,I12)
-1002  format("gen1int_driver>> ",I8,I10,I6,4X,20(I3,A,I2,A))
+1002  format("gen1int_driver>> ","Path",I8,", Start",I10,
+     &       ", N_{cent}",I3,", Atom(Order)",20(I3,A,I2,A))
 #else
       call QUIT("Gen1Int is not installed")
 #endif
@@ -387,17 +403,17 @@ C       number of AOs
 C       number of the contracted Gaussians
         nbra_cgto = KCKTA*NRCA
 #ifdef GEN1INT_DEBUG
-        write(LUPRI,9000) "Index of symmetry-independent bra center:",
-     &                    NCENTA
-        write(LUPRI,9000) "Index of atomic bra center: ", ICENTA
+        write(LUPRI,9000)
+     &    "Index of symmetry-independent bra center:", NCENTA
+        write(LUPRI,9000) "Index of atomic bra center:", ICENTA
         write(LUPRI,9100) "Coordinates of bra:", CORAX, CORAY, CORAZ
         write(LUPRI,9000) "Angular number of bra:", NHKTA
         write(LUPRI,9000) "Number of bra prim.:", NUCA
         write(LUPRI,9000) "Number of bra contr.:", NRCA
         if (SPHRA) then
-          write(LUPRI,9000) "Number of bra spher. components: ", KHKTA
+          write(LUPRI,9000) "Number of bra spher. components:", KHKTA
         else
-          write(LUPRI,9000) "Number of bra Cart. components: ", KHKTA
+          write(LUPRI,9000) "Number of bra Cart. components:", KHKTA
         end if
         write(LUPRI,9000) "Number of bra Cart.:", KCKTA
         write(LUPRI,9000) "Start of bra prim.:", JSTA+1
@@ -407,10 +423,10 @@ C       number of the contracted Gaussians
         write(LUPRI,9000) "End of bra contr.:", NUMCFA+NRCA-1
         write(LUPRI,9300) PRICCF(JSTA+1:JSTA+NUCA,NUMCFA:NUMCFA+NRCA-1)
         do icontr = 1, NRCA
-          write(LUPRI,9000) "IA address offsets for bra contraction: ",
-     &                      icontr
+          write(LUPRI,9000)
+     &      "IA address offsets for bra contraction:", icontr
           do icomp = 1, KHKTA
-            write(LUPRI,'(8(1X,I8))')
+            write(LUPRI,"(8(1X,I8))")
      &        (BLOCK_INDFA(irep,icomp,icontr),irep=1,MAXREP+1)
           end do
         end do
@@ -480,6 +496,39 @@ C             FIXME
               CORBX  = SIGNBX*CORBX0         !coordinates of ket center
               CORBY  = SIGNBY*CORBY0
               CORBZ  = SIGNBZ*CORBZ0
+#ifdef GEN1INT_DEBUG
+              write(LUPRI,9000)
+     &          "Index of symmetry-independent ket center:", NCENTB
+              write(LUPRI,9000) "Index of atomic ket center: ", ICENTB
+              write(LUPRI,9100)
+     &          "Coordinates of ket:", CORBX, CORBY, CORBZ
+              write(LUPRI,9000) "Angular number of ket:", NHKTB
+              write(LUPRI,9000) "Number of ket prim.:", NUCB
+              write(LUPRI,9000) "Number of ket contr.:", NRCB
+              if (SPHRB) then
+                write(LUPRI,9000)
+     &            "Number of ket spher. components:", KHKTB
+              else
+                write(LUPRI,9000)
+     &            "Number of ket Cart. components:", KHKTB
+              end if
+              write(LUPRI,9000) "Number of ket Cart.:", KCKTB
+              write(LUPRI,9000) "Start of ket prim.:", JSTB+1
+              write(LUPRI,9000) "End of ket prim.:", JSTB+NUCB
+              write(LUPRI,9200) PRIEXP(JSTB+1:JSTB+NUCB)
+              write(LUPRI,9000) "Start of ket contr.:", NUMCFB
+              write(LUPRI,9000) "End of ket contr.:", NUMCFB+NRCB-1
+              write(LUPRI,9300)
+     &          PRICCF(JSTB+1:JSTB+NUCB,NUMCFB:NUMCFB+NRCB-1)
+              do jcontr = 1, NRCB
+                write(LUPRI,9000)
+     &            "IB address offsets for ket contraction:", jcontr
+                do jcomp = 1, KHKTB
+                  write(LUPRI,"(8(1X,I8))")
+     &              (BLOCK_INDFB(jrep,jcomp,jcontr),jrep=1,MAXREP+1)
+                end do
+              end do
+#endif
 C             different property integrals using Gen1Int
 C             we may also use the following origins
 C               (1) center of mass : CMXYZ

@@ -15,5 +15,11 @@ C...  indices of atomic centers
       integer idx_cent(MAX_NCENT)
 C...  order of derivatives of the corresponding atomic centers
       integer order_cent(MAX_NCENT)
+C...  allowed maximum order of geometric derivatives
+      integer MAX_ORDER_GEO
+      parameter (MAX_ORDER_GEO=30)
+C...  allowed maximum order of magnetic derivatives
+      integer MAX_ORDER_MAG
+      parameter (MAX_ORDER_MAG=10)
 C...  common block used by gen1int_wrapper.F
       common /GENINT_INFO/ NUM_BLOCK, IDX_SHELL, idx_cent, order_cent
