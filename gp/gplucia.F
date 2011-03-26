@@ -1251,8 +1251,8 @@ C
    30 IA=I+(J*J-J)/2
       ANORM=ANORM+A(IA)*A(IA)
    35 CONTINUE
-      IF(ANORM) 165,165,40
-   40 ANORM=1.414D+00*DSQRT(ANORM)
+      IF(ANORM .LE. 0.0D0) GO TO 165
+      ANORM=1.414D+00*DSQRT(ANORM)
       ANRMX=ANORM*RANGE/DFLOAT(N)
 C
 C        INITIALIZE INDICATORS AND COMPUTE THRESHOLD, THR
@@ -4211,10 +4211,10 @@ C
 *
         WRITE(6,*)
      &  ' single excitation interactions',NEXC1,
-     &   '( ',float(NEXC1)*100.0/NSPGRP**2,' % ) '
+     &   '( ',(NEXC1*100.0D0)/NSPGRP**2,' % ) '
         WRITE(6,*)
      &  ' double excitation interactions',NEXC2,
-     &   '( ',float(NEXC2)*100.0/NSPGRP**2,' % ) '
+     &   '( ',(NEXC2*100.0D0)/NSPGRP**2,' % ) '
 *
       END IF
 *

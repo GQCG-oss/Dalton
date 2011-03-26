@@ -516,7 +516,6 @@ cstest
 
 * external functions:
       INTEGER ILSTSYM
-      INTEGER IR1TAMP
 
 *---------------------------------------------------------------------*
 * begin: check wavefunction model and flush print unit

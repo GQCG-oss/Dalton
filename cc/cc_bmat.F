@@ -5502,8 +5502,8 @@ c/* Deck CC_BTST */
 *---------------------------------------------------------------------*
       LISTA = 'R1 '
       LISTB = 'R1 '
-      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,ISYMA)
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,ISYMB)
+      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYMA)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYMB)
       IBTRAN(1,1) = IDLSTA
       IBTRAN(2,1) = IDLSTB
       NBTRAN = 1
@@ -5660,7 +5660,7 @@ C     This part is NOT adapted for CC-R12 yet!
 
       LABELA = 'ZDIPLEN '
       LISTC  = 'L1 '
-      IDLSTC = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,1)
+      IDLSTC = IL1ZETA('ZDIPLEN ',.FALSE.,0.0D0,1)
       ISYMC  = ILSTSYM(LISTC,IDLSTC)
 
       KRESLT1 = 1

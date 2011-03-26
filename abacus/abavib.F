@@ -839,8 +839,8 @@ C
 #include <maxorb.h>
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
-      PARAMETER (ESUDIP = 1D4*DEBYE**2,
-     &           ESUROT =  ECHARGE*XTANG*CCM*1D40*ECHARGE*HBAR/EMASS)
+      PARAMETER (ESUDIP = 1.D4*DEBYE**2,
+     &           ESUROT =  ECHARGE*XTANG*CCM*1.D40*ECHARGE*HBAR/EMASS)
 C
       LOGICAL DONE, SAME, NOTALL, DOVCD
       DIMENSION HESS(NCORD,NCORD), GRAD(NCORD), GRDN(NCORD),
@@ -4492,7 +4492,7 @@ C
          ARC1 = PI / 2
       ELSE
          S = ATAN(Y/X)
-         IF (X .LT. 0.0 D0) S = S + PI
+         IF (X .LT. 0.0D0) S = S + PI
          ARC1 = S
       END IF
       RETURN
@@ -4503,7 +4503,7 @@ C  /* Deck darcos */
 #include <pi.h>
 C
       IF (X .GE. 1.0 D0 ) THEN
-         DARCOS = 0.0 D0
+         DARCOS = 0.0D0
       ELSE IF (X .LE. -1.0 D0) THEN
          DARCOS = PI
       ELSE IF (ABS(X) .LT. 1.0 D-11) THEN
@@ -4511,7 +4511,7 @@ C
       ELSE
          X1 = SQRT(1.0 D0 - X*X)
          S  = ATAN(X1/X)
-         IF (X .LT. 0.0) S = S + PI
+         IF (X .LT. 0.0D0) S = S + PI
          DARCOS = S
       END IF
       RETURN

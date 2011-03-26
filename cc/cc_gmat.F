@@ -975,7 +975,7 @@ C
               CALL HERDI2(WORK(KEND2),LEND2,INDEXA,ILLL,NUMDIS,
      &                    IPRINT)          
             ELSE
-              CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+              CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0D0,
      *                    WORK(KODCL1),WORK(KODCL2),
      *                    WORK(KODBC1),WORK(KODBC2),
      *                    WORK(KRDBC1),WORK(KRDBC2),
@@ -4219,7 +4219,7 @@ c/* Deck CCG_RDIAJB */
 
       IF (LOCDBG) THEN
          CALL AROUND( 'CCG_RDIAJB:  Integrals (ia|jb) ' )
-         CALL CC_PRP(0.00,XIAJB,ISYMOP,0,1)
+         CALL CC_PRP(0.00D0,XIAJB,ISYMOP,0,1)
       ENDIF
 
       CALL QEXIT('CCG_RDIAJB')

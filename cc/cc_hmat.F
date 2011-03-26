@@ -675,9 +675,9 @@ C----------------------------------------------------------------------
       LISTD = 'R1'
 
       IDLSTL = 0
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTD = IR1TAMP('XDIPLEN ',.FALSE.,0.0,1)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTD = IR1TAMP('XDIPLEN ',.FALSE.,0.0D0,1)
 
       IHTRAN(1,1) = IDLSTL
       IHTRAN(2,1) = IDLSTB

@@ -74,8 +74,8 @@ CRDA      ERR=SUMVEC(T,S,LEN)
       A(IVEC,I)=ERR
       A(I,NLOOP+1)=-1D0
       A(NLOOP+1,I)=-1D0
-2     B(I)=0D0
-      A(NLOOP+1,NLOOP+1)=0D0
+2     B(I)=0.D0
+      A(NLOOP+1,NLOOP+1)=0.D0
       B(NLOOP+1)=-1D0
       NSIZ=NLOOP+1
 C
@@ -84,7 +84,7 @@ C
       IF(IFAIL.NE.0)WRITE(LUPRI,*)  'IFAIL ',IFAIL
 C
 C
-      SUM=0D0
+      SUM=0.D0
       DO 22 I=1,NLOOP
 22    SUM=SUM+C(I)
 C
@@ -140,14 +140,14 @@ C
 20    X(K)=XK
       DO 40 K=1,N
       XK=X(K)*A(K,K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.0D0)THEN
       DO 30 I=K+1,N
 30    X(I)=X(I)-A(I,K)*XK
       ENDIF
 40    X(K)=XK
       DO 60 K=N,1,-1
       XK=X(K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.0D0)THEN
       DO 50 I=1,K-1
 50    X(I)=X(I)+A(I,K)*XK
       ENDIF
@@ -387,14 +387,14 @@ C
 20    X(K)=XK
       DO 40 K=1,N
       XK=X(K)*A(K,K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.D00)THEN
       DO 30 I=K+1,N
 30    X(I)=X(I)-A(I,K)*XK
       ENDIF
 40    X(K)=XK
       DO 60 K=N,1,-1
       XK=X(K)
-      IF(XK.NE.0.0)THEN
+      IF(XK.NE.0.D00)THEN
       DO 50 I=1,K-1
 50    X(I)=X(I)+A(I,K)*XK
       ENDIF

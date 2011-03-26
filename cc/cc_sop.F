@@ -106,7 +106,6 @@ CTOCD
       INTEGER KEND1, LWRK1, LRESULT
 
 * external functions:
-      INTEGER IR1TAMP
       INTEGER IL1ZETA
 
 *---------------------------------------------------------------------*
