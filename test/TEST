@@ -146,8 +146,7 @@ ccsdr12_be cc2_r12_aux_ch4_cbs1 cc2_r12_aux_ch4_cbs2 cc2_r12_aux_ch4_cbs3"
 #
 LONGCCR12="cc2_r12_aux_ch4_a2 cc2_r12_aux_ch4_sym_a2 \
 cc2_r12_aux_ch4_sym_a3 cc2_r12_aux_benzene_sym_fop cc3r12_n2_sym_exc \
-cc3r12_n2_sym_exc_lhtr cc2_r12_aux_ch4_cbs2a \
-cc2_r12_aux_bh cc2_r12_aux_bh_sym"
+cc3r12_n2_sym_exc_lhtr cc2_r12_aux_ch4_cbs2a"
 #
 CHOLESKY="$SHORT_CHOLESKY $MEDIUM_CHOLESKY $LONG_CHOLESKY"
 #
