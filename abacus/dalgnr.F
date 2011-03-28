@@ -1448,10 +1448,10 @@ C
   999 CONTINUE
       WRITE (LUPRI,'(1X,A)') SEPARATOR
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
-      IF (IPRSTAT .EQ. -10)IPRSTAT = IPRUSR + 1
-      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT :',IPRSTAT
-      WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT ',IPRSTAT
-      WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT ',IPRSTAT
+      IF (IPRSTAT .EQ. -10) IPRSTAT = IPRUSR + 1
+      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT:',IPRSTAT
+!     WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT',IPRSTAT
+      WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
       IF (THR_REDFAC .GT. 0.0D0) THEN
