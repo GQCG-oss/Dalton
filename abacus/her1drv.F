@@ -1428,7 +1428,7 @@ C  /* Deck tlmwr1 */
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
-      LOGICAL ERRORE, ERRORN
+      LOGICAL ERRORE, ERRORN, OLDDX
 #include "nuclei.h"
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
