@@ -128,6 +128,7 @@ C  /* Deck eridi2 */
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
+      LOGICAL   OLDDX
 #include <ccom.h>
 #include <cbieri.h>
 #include <ericom.h>
@@ -192,7 +193,7 @@ C
          FAODER = 'AO2DIS'//CHRNOS(ISCOOR/10)
      &                    //CHRNOS(MOD(ISCOOR,10))
          CALL GPOPEN(LUAORC(ISCOOR),FAODER,'UNKNOWN','DIRECT',
-     &        'UNFORMATTED',LRECL,.FALSE.)
+     &        'UNFORMATTED',LRECL,OLDDX)
       END DO
 C
       CALL GETDST(ICALL,0,IPRINT)
