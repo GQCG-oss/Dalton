@@ -517,11 +517,10 @@ C  /* Deck getname */
 #include <implicit.h>
       CHARACTER*(20) HSTNAM
 C
-#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_AIX)
-      CALL HOSTNM(HSTNAM)
-#endif
-#if defined (SYS_HAL)
+#if defined (SYS_HAL) || defined (VAR_G95)
       IRET = HOSTNM(HSTNAM)
+#else
+      CALL HOSTNM(HSTNAM)
 #endif
 C
       RETURN
@@ -533,9 +532,6 @@ C  /* Deck getdate */
 #if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
 #endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) CFDATE
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
       CDATE = DATE()
       CTIME = CLOCK()
@@ -543,6 +539,7 @@ C  /* Deck getdate */
      *   'Date and time (CRAY) : ',CDATE,CTIME
 #endif
 #if defined (SYS_HAL)
+      CHARACTER*(24) CFDATE
       CALL FDATE(CFDATE)
       WRITE (LUPRI,'(T6,2A)') 'Date and time (HAL)    : ',CFDATE
 #endif

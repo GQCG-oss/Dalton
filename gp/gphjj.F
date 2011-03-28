@@ -409,7 +409,11 @@ c     bug in gfortran-4.0.2 causes a segfault here.
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
  || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC)   \
  || defined (SYS_SUN)
+#ifdef VAR_G95
+      IRET = HOSTNM(HSTNAM)
+#else
       CALL HOSTNM(HSTNAM)
+#endif
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_HAL)
@@ -1930,9 +1934,4 @@ C
 
       !print *,'COMPOFF: KADDR, KBASE', KADDR, KBASE, KBASE*8
       END
-#ifdef VAR_G95
-      subroutine hostnm(s)
-      character*(*) s
-      s = ' g95 does not know hostnm routine :-( '
-      end
-#endif
+C -- end of gphjj.F --
