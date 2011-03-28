@@ -227,6 +227,10 @@ myprint(){
  echo "$1" >> $listing;
 }
 
+errprint(){
+ echo "$1" >> /dev/stderr;
+}
+
 #########################################################################
 #########################################################################
 # start with real work:
@@ -506,6 +510,9 @@ do
   myprint "`date`"
   myprint "Starting now with test $item:"
   myprint "-----------------------------------------------------------"
+  errprint "###########################################################"
+  errprint "`date` -- Starting now with test $item:"
+  errprint "-----------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
 # remove any directory path now the files are unpacked
