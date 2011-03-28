@@ -110,12 +110,12 @@ C
       TINP = TEND - TSTART
       WINP = WEND - WSTART
       IF (IPRSTAT .GT. 0) THEN
-         WRITE (LUERR,'(//A,2F10.2)')
+         WRITE (LUSTAT,'(/A,2F12.3)')
      *      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
       END IF
       CALL FLSHFO(LUW4)
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-      IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+      IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
@@ -375,11 +375,11 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUPRI,'(/A,2F12.3)')
      *      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
          IPRSIR = MPRSIR
          IPRI6  = MPRI6
          IPRI4  = MPRI4
@@ -406,7 +406,7 @@ C
             WRITE (LUERR ,7020)
             GO TO 8000
          END IF
- 7020    FORMAT(//'ERROR: Sirius MP2 calculation aborted because',
+ 7020    FORMAT(/'ERROR: Sirius MP2 calculation aborted because',
      *      ' preceding Hartree-Fock not converged.')
 C
          FLAG( 9) = .TRUE.
@@ -421,11 +421,11 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
      *      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
          DFT_SPINDNS = DFT_SPINDNS_SAVE
@@ -553,11 +553,11 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
      *      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
          IF (DOCINO) THEN
             FLAG(14) = .FALSE.
             FLAGSV(14) = .FALSE.
@@ -633,11 +633,11 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRSTAT .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
      *      ' >>>> CPU and wall time for SIROPT :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
 C
       IF (ICONV .EQ. -1) THEN
@@ -660,7 +660,7 @@ C *** ORBITAL OUTPUT
          CALL SIROUT(ICONV,WORK,LWORK)
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
       IF (LUINF .GT.0) CALL GPCLOSE(LUINF,'DELETE')
 C
@@ -735,7 +735,7 @@ C
          CALL SIRPOP('FINAL',WORK(KDV),WORK(KWRK1),LWRK1)
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)
+         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
 C
  8000 CALL GETTIM(TEND,WEND)
