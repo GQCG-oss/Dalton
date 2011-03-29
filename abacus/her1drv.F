@@ -560,7 +560,7 @@ C...  &                    do_exp, ndens, ao_dens,
 C...  &                    get_exp, wrt_exp, vals_expect,
 C...  &                    len_work, dal_work, level_print)
        call gen1int_driver('.OVERLAP', 5, 3,
-     &                     .true., .false., .true., (/DUMMY/),
+     &                     .false., .false., .true., (/DUMMY/),
      &                     .true., 1, DENMAT,
      &                     .false., .true., (/DUMMY/),
      &                     LWRK, WORK(KLAST), 20)
