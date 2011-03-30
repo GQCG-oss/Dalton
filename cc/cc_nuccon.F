@@ -24,11 +24,7 @@
 #include <single.h>
 C
 *=====================================================================*
-#if defined (SYS_CRAY)
-      REAL FUNCTION CC_NUCCON(LABEL,ISYM)
-#else
-      DOUBLE PRECISION FUNCTION CC_NUCCON(LABEL,ISYM)
-#endif
+      REAL*8  FUNCTION CC_NUCCON(LABEL,ISYM)
 *---------------------------------------------------------------------*
 *
 *     Purpose: retrieve the nuclear contribution to the expectation
@@ -58,11 +54,8 @@ C
       INTEGER ISYM
       CHARACTER LABEL*8
 
-#if defined (SYS_CRAY)
-      REAL ONE, ZERO
-#else
-      DOUBLE PRECISION ONE, ZERO
-#endif
+      REAL*8 ONE, ZERO
+
       PARAMETER(ONE=1.0D0, ZERO=0.0D0)
 
       INTEGER JSCOOR, JCOOR
@@ -114,7 +107,7 @@ C
 *---------------------------------------------------------------------*Y
 * shieldings:
 *---------------------------------------------------------------------*
-      ELSE IF ( LABEL(3:7).EQ.' NST ') THEN
+      ELSE IF ( LABEL(4:7).EQ.' NST') THEN
 
         CC_NUCCON = ZERO
 

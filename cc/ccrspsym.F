@@ -101,15 +101,9 @@ Cholesky
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
   
-#if defined (SYS_CRAY)
-      REAL ZERO, ONE, TWO, EIGHT
-      REAL TINY
-      REAL CKMXPR
-#else
-      DOUBLE PRECISION ZERO, ONE, TWO, EIGHT
-      DOUBLE PRECISION TINY
-      DOUBLE PRECISION CKMXPR
-#endif
+      REAL*8  ZERO, ONE, TWO, EIGHT
+      REAL*8  TINY
+      REAL*8  CKMXPR
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, EIGHT = 8.0d0)
       PARAMETER (TINY = 1.0d-5, CKMXPR = 1.0d-12)
 
@@ -122,11 +116,7 @@ Cholesky
       INTEGER KEND1,LEND1,KPROPAO,JSCOOR,ISCOOR,ICORSY,ICOOR,IATOM
       INTEGER ISYM0
 
-#if defined (SYS_CRAY)
-      REAL WORK(LWRK),RDUM
-#else
-      DOUBLE PRECISION WORK(LWRK),RDUM
-#endif
+      REAL*8  WORK(LWRK),RDUM
 
 * external functions:
       INTEGER ILSTSYM
@@ -1403,11 +1393,7 @@ c /* deck cc_exgrind */
       CHARACTER*8 LABEL,LABELA
       INTEGER ISYMA, INUM, IOP, ISYME
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
 C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -1537,11 +1523,7 @@ C#include <ccsdsym.h>
       LOGICAL TAKE_STATE
       INTEGER ISYMO, INUM, ISTATE, ISYME, IOPER, IDX, IEX
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
 * functions:
       INTEGER IR1TAMP,ILRMAMP,IROPER
 C
@@ -1667,11 +1649,7 @@ c /* deck cc_xopaind */
       INTEGER ISYMO, INUM, ISYMI, ISYMF, ISTATEI, ISTATEF, IEXI, IEXF,
      &        IDX, ISYMFI, IOPER, I, NSYMF, NEXF
 
-#if defined (SYS_CRAY)
-      REAL EIGVI, EIGVF
-#else
-      DOUBLE PRECISION EIGVI, EIGVF
-#endif
+      REAL*8  EIGVI, EIGVF
 * functions:
       INTEGER IROPER, IR1TAMP, IN2AMP
 
@@ -1825,11 +1803,7 @@ c /* deck cc_lrsind */
       CHARACTER*8 LABEL,LABELA,LABELB
       INTEGER ISYMB, ISYMA, IFRB, IFRA, INUM, IOP, ISYME
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
 * functions:
       INTEGER IR1TAMP,ILRMAMP
 C
@@ -1981,11 +1955,8 @@ c /* deck cc_qr2ind */
       CHARACTER*8 LABEL,LABELA,LABELB
       INTEGER ISYMB, ISYMA, IFRB, IFRA, INUM, IOP, ISYMI, ISYMF
 
-#if defined (SYS_CRAY)
-      REAL EIGV
-#else
-      DOUBLE PRECISION EIGV
-#endif
+      REAL*8  EIGV
+
 * functions:
       INTEGER IR1TAMP,IN2AMP
 C
@@ -2175,12 +2146,7 @@ c /* deck cc_lrind */
       INTEGER ISYMB,ISYMA,IFRB,IFRA,INUM,IOP,ICAUCH,ISYH0,IR1A,IR1B
       INTEGER ISYM0, ISYSOP, ISGNSOP
       
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK), FREQ
-#else
-      DOUBLE PRECISION WORK(LWORK), FREQ
-#endif
-
+      REAL*8  WORK(LWORK), FREQ
 
 * functions:
       INTEGER IR1TAMP
@@ -2326,7 +2292,7 @@ c /* deck cc_lrind */
                 CONTINUE
               ELSE IF (LABSOP(2:6).EQ.'-CM1 ') THEN
                 CONTINUE
-              ELSE IF (LABSOP(3:7).EQ.' NST ') THEN
+              ELSE IF (LABSOP(4:7).EQ.' NST') THEN
                 CONTINUE
               ELSE
                 WRITE (LUPRI,*) 
@@ -2447,14 +2413,8 @@ c /* deck cc_qrind */
       INTEGER ICA,ICB,ICC,ICTOT,ISACAU,ISAMA,ISAMB,ISAMC,ISAPROP
       INTEGER IOPA, IOPB, IOPC, NLORX, ISYSOP, LWORK, ISGNSOP
       
-#if defined (SYS_CRAY)
-      REAL WORK
-      REAL FREQA, FREQB, FREQC
-#else
-      DOUBLE PRECISION WORK
-      DOUBLE PRECISION FREQA, FREQB, FREQC
-#endif
-
+      REAL*8  WORK
+      REAL*8  FREQA, FREQB, FREQC
 
 * external functions:
       INTEGER IR1TAMP
@@ -2793,12 +2753,7 @@ c /* deck cc_crind */
       INTEGER ICAUA, ICAUB, ICAUC, ICAUD, IDISP, ISYM1, ISYM2
       INTEGER ICAU1, ICAU2, ICAU3, ICAU4, ISYM3, ISYM4, P
       
-#if defined (SYS_CRAY)
-      REAL FREQA, FREQB, FREQC, FREQD
-#else
-      DOUBLE PRECISION FREQA, FREQB, FREQC, FREQD
-#endif
-
+      REAL*8  FREQA, FREQB, FREQC, FREQD
 
 * external functions:
       INTEGER IR2TAMP
@@ -3360,12 +3315,7 @@ c /* deck CC_4RIND */
       INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYME
       INTEGER IFREQ, INUM, IOPER, IDX
       
-#if defined (SYS_CRAY)
-      REAL FREQA, FREQB, FREQC, FREQD, FREQE
-#else
-      DOUBLE PRECISION FREQA, FREQB, FREQC, FREQD, FREQE
-#endif
-
+      REAL*8  FREQA, FREQB, FREQC, FREQD, FREQE
 
 * external functions:
       INTEGER IR2TAMP
@@ -3661,12 +3611,7 @@ c /* deck CC_5RIND */
       INTEGER ISYM(6)
       INTEGER IFREQ, INUM, IOPER, IDX, IDXA, IDXB, IDXC, JDX, ISYMTOT
       
-#if defined (SYS_CRAY)
-      REAL FREQ(6)
-#else
-      DOUBLE PRECISION FREQ(6)
-#endif
-
+      REAL*8  FREQ(6)
 
 * external functions:
       INTEGER IR3TAMP
@@ -3822,11 +3767,7 @@ c /* deck cc_tpaind */
       INTEGER ISYMB, ISYMA, ISYMAB, ISYME
       INTEGER INUM, IOPPAIR, IDX, ISTATE, IEXCI, IRSD
       
-#if defined (SYS_CRAY)
-      REAL FREQA, FREQB, EIGV 
-#else
-      DOUBLE PRECISION FREQA, FREQB, EIGV
-#endif
+      REAL*8  FREQA, FREQB, EIGV 
 
 * external functions:
       INTEGER IROPER
@@ -4032,11 +3973,7 @@ c /* deck cc_tmind */
       INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYME, ISYMF, ISYMABC
       INTEGER IFREQ, INUM, IOPER, IDX, IOFFST, I
       
-#if defined (SYS_CRAY)
-      REAL FREQEX, FREQB, FREQC, EIGV 
-#else
-      DOUBLE PRECISION FREQEX, FREQB, FREQC, EIGV
-#endif
+      REAL*8  FREQEX, FREQB, FREQC, EIGV 
 
 * external functions:
       INTEGER IROPER
@@ -4236,11 +4173,8 @@ c /* deck cc_mcdind */
       INTEGER ISGNSOP,ISYSOP,NLORX,LWORK
       LOGICAL LPROJ
       
-#if defined (SYS_CRAY)
-      REAL EIGVA_F, ZERO, WORK(LWORK) 
-#else
-      DOUBLE PRECISION EIGVA_F, ZERO, WORK(LWORK)
-#endif
+      REAL*8  EIGVA_F, ZERO, WORK(LWORK) 
+
       PARAMETER ( ZERO = 0.0d0 )
 
 * external functions:
@@ -4544,11 +4478,8 @@ c /* deck cc_exlrind */
       INTEGER ISYMB, ISYMA, IFREQ, INUM, IOPER, ISYMS, ISTATE
       INTEGER IDX, IEXCII, ISTATI, IEXCIF, ISTATF, IDXS, ISYMSI, ISYMSF
       
-#if defined (SYS_CRAY)
-      REAL HALF, FREQA, FREQB, EIGVI, EIGVF
-#else
-      DOUBLE PRECISION HALF, FREQA, FREQB, EIGVI, EIGVF
-#endif
+      REAL*8  HALF, FREQA, FREQB, EIGVI, EIGVF
+
       PARAMETER ( HALF = 0.5d0 )
 
 
@@ -4861,11 +4792,8 @@ C LORXA, LORXB flags introduced in July 1999
 C
       LOGICAL LORXA, LORXB
       INTEGER ISYMA, ISYMB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -4954,11 +4882,8 @@ C
  
       LOGICAL LORX, LORXI
       INTEGER ISYM
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL
-#else
-      DOUBLE PRECISION FRQNEW,TOL
-#endif
+      REAL*8  FRQNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -5035,11 +4960,8 @@ C
 #include <priunit.h>
  
       INTEGER ISYM
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL
-#else
-      DOUBLE PRECISION FRQNEW,TOL
-#endif
+      REAL*8  FRQNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -5223,11 +5145,8 @@ C
 
       LOGICAL LORX
       INTEGER ISYM, I
-#if defined (SYS_CRAY)
-      REAL FRQNEW, TOL
-#else
-      DOUBLE PRECISION FRQNEW, TOL
-#endif
+      REAL*8  FRQNEW, TOL
+
       PARAMETER(TOL=1.0D-12)
 
 
@@ -5280,11 +5199,8 @@ C
 #include <priunit.h>
 C
       INTEGER ISYM,IEXCI,I
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL
-#else
-      DOUBLE PRECISION FRQNEW,TOL
-#endif
+      REAL*8  FRQNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       DO I = 1,NLRM
@@ -5386,13 +5302,8 @@ Cholesky
       INTEGER ISYMS(MAXVEC,*), ICAU(MAXVEC,*)
       CHARACTER*(*) TYPE
 
-#if defined (SYS_CRAY)
-      REAL FREQ(MAXVEC,*)
-      REAL EIGVAL(MAXVEC,*)
-#else
-      DOUBLE PRECISION FREQ(MAXVEC,*)
-      DOUBLE PRECISION EIGVAL(MAXVEC,*)
-#endif
+      REAL*8  FREQ(MAXVEC,*)
+      REAL*8  EIGVAL(MAXVEC,*)
       
       LOGICAL CHANGES
       INTEGER IVEC
@@ -5503,7 +5414,7 @@ C  /* Deck cclstcmp */
       LOGICAL FUNCTION CCLSTCMP(TYPE,NSTAT,ORDER,IVEC,ISYMS,ISTAT,
      &                        ISYMO,LABEL,FREQ,ICAU,LORX,MAXVEC,LPROJ) 
 *---------------------------------------------------------------------*
-* PURPOSE: do comparision for CCLSTSORT according:
+* PURPOSE: do comparison for CCLSTSORT according to:
 *   
 *          1.)  over-all symmetry
 *          2.)  individual symmetries of the states  (ISYMS)
@@ -5546,11 +5457,7 @@ Cholesky
       INTEGER ISYMO(MAXVEC,ORDER), ICAU(MAXVEC,ORDER)
       CHARACTER*(*) TYPE
 
-#if defined (SYS_CRAY)
-      REAL FREQ(MAXVEC,ORDER)
-#else
-      DOUBLE PRECISION FREQ(MAXVEC,ORDER)
-#endif
+      REAL*8  FREQ(MAXVEC,ORDER)
 
 * external function:
       INTEGER ILSTSYM
@@ -5829,11 +5736,7 @@ C  /* Deck cclstswap */
       INTEGER ISTAT(MXVEC,NSTAT)
       CHARACTER*(*) TYPE
 
-#if defined (SYS_CRAY)
-      REAL FREQ(MXVEC,ORDER), EIGVAL(MXVEC,NSTAT), RSWAP
-#else
-      DOUBLE PRECISION FREQ(MXVEC,ORDER), EIGVAL(MXVEC,NSTAT), RSWAP
-#endif
+      REAL*8  FREQ(MXVEC,ORDER), EIGVAL(MXVEC,NSTAT), RSWAP
 
 *---------------------------------------------------------------------*
 * swap symmetries:
@@ -6213,11 +6116,7 @@ C        WRITE (LUPRI,*) LIST(-999999:-999999)
 *=====================================================================*
 C  /* Deck freqlst */
 *=====================================================================*
-#if defined (SYS_CRAY)
-      REAL FUNCTION FREQLST(LIST, INDEX)
-#else
-      DOUBLE PRECISION FUNCTION FREQLST(LIST, INDEX)
-#endif
+      REAL*8  FUNCTION FREQLST(LIST, INDEX)
 *---------------------------------------------------------------------*
 * PURPOSE: return frequency for vector on list
 *
@@ -6604,11 +6503,8 @@ C LORXA, LORXB flags introduced in July 1999
 #include <priunit.h>
 C
       INTEGER ISYMA, ISYMB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -6693,11 +6589,8 @@ C Christof Haettig, April 97
 C
       INTEGER ISYMA, ISYMB
       LOGICAL LORXA, LORXB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -6780,11 +6673,8 @@ C Christof Haettig, April 97
 #include <priunit.h>
 C
       INTEGER ISYMA, ISYMB
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -6865,11 +6755,7 @@ C
       CHARACTER*(*) TYPE
       INTEGER ORDER, MAXLIST, NLIST, IERR, ILIST, ISY, IOP
       INTEGER ISYMN(ORDER), ISYML(MAXLIST,ORDER)
-#if defined (SYS_CRAY)
-      REAL FREQN(ORDER), FREQL(MAXLIST,ORDER), FRQ
-#else
-      DOUBLE PRECISION FREQN(ORDER), FREQL(MAXLIST,ORDER), FRQ
-#endif
+      REAL*8  FREQN(ORDER), FREQL(MAXLIST,ORDER), FRQ
 
       CHARACTER*8 LABELN(ORDER), LABELL(MAXLIST,ORDER), LBL
       INTEGER I
@@ -6992,13 +6878,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
      
@@ -7042,13 +6923,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
 
@@ -7092,13 +6968,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
 
@@ -7142,13 +7013,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC, ISYD
       INTEGER ISYM(4)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC,FRQD
-      REAL FREQ(4)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC, FRQD
-      DOUBLE PRECISION FREQ(4)
-#endif
+      REAL*8  FRQA,FRQB,FRQC,FRQD
+      REAL*8  FREQ(4)
       CHARACTER*8 LBLA, LBLB, LBLC, LBLD
       CHARACTER*8 LABEL(4)
 
@@ -7192,13 +7058,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7239,13 +7100,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7286,13 +7142,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7333,13 +7184,8 @@ C Christof Haettig, maj 97
  
       INTEGER ISYA, ISYB, ISYC
       INTEGER ISYM(ORDER)
-#if defined (SYS_CRAY)
-      REAL FRQA,FRQB,FRQC
-      REAL FREQ(ORDER)
-#else
-      DOUBLE PRECISION FRQA,FRQB,FRQC
-      DOUBLE PRECISION FREQ(ORDER)
-#endif
+      REAL*8  FRQA,FRQB,FRQC
+      REAL*8  FREQ(ORDER)
       CHARACTER*8 LBLA, LBLB, LBLC
       CHARACTER*8 LABEL(ORDER)
 
@@ -7385,11 +7231,8 @@ C Christof Haettig, july 97
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA
@@ -7465,11 +7308,8 @@ C Christof Haettig, july 97
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMB, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -7566,11 +7406,8 @@ C LORXA flag introduced, Sonia Coriani april 2000
 C
       LOGICAL LPROJ, LPROJ1, LORXA
       INTEGER ISYMA, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA
@@ -7648,11 +7485,8 @@ C Christof Haettig, july 97
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMB, ISYMS, IEXCI
-#if defined (SYS_CRAY)
-      REAL FRQANEW,FRQBNEW,EIGVNEW,TOL
-#else
-      DOUBLE PRECISION FRQANEW,FRQBNEW,EIGVNEW,TOL
-#endif
+      REAL*8  FRQANEW,FRQBNEW,EIGVNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA, NEWLBLB
@@ -7747,11 +7581,8 @@ C Ove Christiansen, April 97
 #include <priunit.h>
 C
       INTEGER ISYMI, ISYMF
-#if defined (SYS_CRAY)
-      REAL FRQINEW,FRQFNEW,TOL
-#else
-      DOUBLE PRECISION FRQINEW,FRQFNEW,TOL
-#endif
+      REAL*8  FRQINEW,FRQFNEW,TOL
+
       PARAMETER(TOL=1.0D-12)
 
       INTEGER I,IIEX,IFEX
@@ -7826,10 +7657,6 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -7927,10 +7754,6 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -8028,10 +7851,6 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -8130,10 +7949,6 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 C
-#if defined (SYS_CRAY)
-#else
-#endif
-
       CHARACTER*8 NEWLBLA, NEWLBLB
       INTEGER ICAUA, ICAUB, I
       INTEGER ISYMA, ISYMB
@@ -8237,11 +8052,8 @@ C Christof Haettig, Juni 1998
       LOGICAL LORX
       INTEGER ISYM
 
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL, FRQINP
-#else
-      DOUBLE PRECISION FRQNEW,TOL, FRQINP
-#endif
+      REAL*8  FRQNEW,TOL, FRQINP
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -8317,11 +8129,8 @@ C Christof Haettig, Juni 1998
       LOGICAL LORX, LORX1
       INTEGER ISYM
 
-#if defined (SYS_CRAY)
-      REAL FRQNEW,TOL, FRQINP
-#else
-      DOUBLE PRECISION FRQNEW,TOL, FRQINP
-#endif
+      REAL*8  FRQNEW,TOL, FRQINP
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBL
@@ -8409,11 +8218,8 @@ C based of IL1ZETA and IEL1AMP
 
       LOGICAL LORXA, LPROJ, LPROJ1
       INTEGER ISYMA, ISYMS, IEXCI, I
-#if defined (SYS_CRAY)
-      REAL FRQANEW, EIGVNEW, TOL
-#else
-      DOUBLE PRECISION FRQANEW, EIGVNEW, TOL
-#endif
+      REAL*8  FRQANEW, EIGVNEW, TOL
+
       PARAMETER(TOL=1.0D-12)
 
       CHARACTER*8 NEWLBLA
