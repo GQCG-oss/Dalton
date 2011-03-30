@@ -123,11 +123,11 @@ c        CALL CC_GABOLD(DIAG,WORK,LWORK)
       END IF
       CALL DCOPY(NDIAG,DIAG,1,DIAOLD,1)
 C
-C     Analyse diagonal by Cauchy-Schwarts.
+C     Analyse diagonal by Cauchy-Schwarz.
 C     ------------------------------------
 C
       IF (IPRINT .GE. 10) THEN
-      CALL AROUND('Cauchy-Schwarts screening based on initial diagonal')
+      CALL AROUND('Cauchy-Schwarz screening based on initial diagonal')
       XTHR = THRDEF**2
 C
       DO ISYM = 1,NSYM
@@ -303,7 +303,7 @@ C
 C
       IF (NCHORD .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. NCHORD :',NCHORD
-         CALL QUIT('Not enough space in CC_CHOLESKY')
+         CALL QUIT('Not enough  memory space in CC_CHOLESKY')
       END IF
 C
       LCHO2 = LENAB*NCHORD + MXNNBS
@@ -319,7 +319,7 @@ C
 C
       IF (MAXSEL .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. MAXSEL :',MAXSEL
-         CALL QUIT('Not enough space in CC_CHOLESKY')
+         CALL QUIT('Not enough  memory space in CC_CHOLESKY')
       END IF
 C
       IF (IPRINT .GT. 2) THEN
@@ -407,7 +407,10 @@ C
       NTOINT = NTOINT + 1
 C
       IF (DIASC1(ISHLA,ISHLB) .EQ. ZERO) THEN
-          WRITE(LUPRI,*) 'Something is wrong with this couple'
+          NWARN = NWARN + 1
+          WRITE(LUPRI,*) 'WARNING: Something is wrong with this couple'
+          WRITE(LUPRI,*) 'ISHLA, ISHLB, DIASC1(ISHLA,ISHLB)',
+     &                    ISHLA, ISHLB, DIASC1(ISHLA,ISHLB)
       ENDIF
 C
 c     DO ISHLC = 1,MAXSHL
@@ -671,9 +674,8 @@ C
 C
          END DO
 C
-         IF (IPRINT .GT. 5)
-     &   WRITE(LUPRI,'(2A,3F12.2)') 'Time in reading, preparing,',
-     &                          ' multiplying :',TIMRD,TIMPR,TIMDG
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(A,3F12.2)') 
+     &     'Time in reading, preparing, multiplying :',TIMRD,TIMPR,TIMDG
   444    CONTINUE
 C
 C        Decompose the vectors in core.
@@ -1338,8 +1340,9 @@ C     Suggest to use 64 bit integer version
 C------------------------------------------
 C
 #if !defined (VAR_INT64)
+      NINFO = NINFO + 1
       WRITE(LUPRI,'(///,80A1,/)') ('=',I=1,80)
-      WRITE(LUPRI,'(38X,A,/)') 'WARNING'
+      WRITE(LUPRI,'(38X,A,/)') 'INFO'
       WRITE(LUPRI,'(2X,A,A,/,2X,A,/)')
      &            'Full advantage of Cholesky decomposition based-',
      &            'methods is accomplished only ',
