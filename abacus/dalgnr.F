@@ -369,7 +369,7 @@ C  /* Deck bndchk */
       SUBROUTINE BNDCHK(WORK, LMWORK2, WRKDLM, PROG)
 #include <implicit.h>
       DIMENSION WORK(LMWORK2)
-      CHARACTER*6 PROG
+      CHARACTER*(*) PROG
 #include <priunit.h>
 C
 C     Check memory traps. Gives error message if any of the programs
@@ -377,8 +377,8 @@ C     have been outside the declared memory area.
 C
       IF (WORK(1) .NE. WRKDLM .OR.
      &    WORK(LMWORK2) .NE. WRKDLM) THEN
-         WRITE (LUPRI,'(//A,A6,A)')
-     *      ' >>> WARNING, ',PROG,' has been out of bounds.'
+         WRITE (LUPRI,'(//3A)')
+     *      ' >>> WARNING, ',PROG,' module has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(0) has been destroyed'
          IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
@@ -543,7 +543,7 @@ C
 
       ITRNMR = ISAVITR 
 
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC    ')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC')
 
       CALL TITLER('End of Coupled Cluster Section (CC)',' ',200)
       CALL FLSHFO(LUPRI)
@@ -1897,16 +1897,15 @@ C
      &  ' ',200)
 C
       CALL CC_CHODRV(WORK(1),LMWORK)
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLES')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLESKY')
 C
 ctst  CLOSE(24)
-      CALL TITLER('End of Cholesky Integrl Section',' ',200)
+      CALL TITLER('End of Cholesky Integral Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CHOLESKY')
       RETURN
       END
-C
 C
 C /* Deck exeact */
 C
@@ -1933,10 +1932,10 @@ C
 C
 C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
       write(lupri,*) 'Not yet implemented'
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELACT')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
 C
 ctst  CLOSE(24)
-      CALL TITLER('End of selact section',' ',200)
+      CALL TITLER('End of Selact Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('SELACT')
