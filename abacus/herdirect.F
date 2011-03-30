@@ -665,7 +665,7 @@ C
       CALL MEMGET('REAL',KDRAO,N2DRAO,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDSKP,8     ,WORK,KFREE,LFREE)
 C     
-C     Get GAB-matrix (Cauchy-Schwartz)
+C     Get GAB-matrix (Cauchy-Schwarz)
 C
       IF (SRINTS) THEN
          CALL GETGAB(WORK(KGAB),'GABSRXXX',N2GAB,
