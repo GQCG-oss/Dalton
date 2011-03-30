@@ -111,11 +111,11 @@ C
       WINP = WEND - WSTART
       IF (IPRSTAT .GT. 0) THEN
          WRITE (LUSTAT,'(/A,2F12.3)')
-     *      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
+     &      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
       END IF
       CALL FLSHFO(LUW4)
-      IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-      IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
+      CALL FLSHFO(LUPRI)
+      CALL FLSHFO(LUSTAT)
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions
@@ -375,11 +375,14 @@ C
          CALL GETTIM(TEND,WEND)
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
-         IF (IPRSTAT .GT. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     *      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
          IPRSIR = MPRSIR
          IPRI6  = MPRI6
          IPRI4  = MPRI4
@@ -422,10 +425,12 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     *      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
+     &      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for MP2 :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
          DFT_SPINDNS = DFT_SPINDNS_SAVE
@@ -554,10 +559,13 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     *      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
+     &      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CI :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
          IF (DOCINO) THEN
             FLAG(14) = .FALSE.
             FLAGSV(14) = .FALSE.
@@ -634,10 +642,12 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     *      ' >>>> CPU and wall time for SIROPT :',TUSED,WUSED
+     &      ' >>>> CPU and wall time for MCSCF :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for MCSCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
-         IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
-         IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
       END IF
 C
       IF (ICONV .EQ. -1) THEN
@@ -686,7 +696,21 @@ C            transformation  /hjaaj June 09
          ELSE
             CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1)
          END IF
+
+         CALL GETTIM(TSTART,WSTART)
          CALL KOOPRO4(WORK,LWORK)
+         CALL GETTIM(TEND,WEND)
+         TUSED = TEND - TSTART
+         WUSED = WEND - WSTART
+
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for NEVPT2 :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for NEVPT2 :',TUSED,WUSED
+         CALL FLSHFO(LUW4)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
+
        END IF
       END IF
 C
@@ -720,7 +744,19 @@ C
          CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
 
 !        perform large-scale (GAS)CI calculation with LUCITA
+         CALL GETTIM(TSTART,WSTART)
          CALL LUCITA(WORK,LFREE)
+         CALL GETTIM(TEND,WEND)
+         TUSED = TEND - TSTART
+         WUSED = WEND - WSTART
+
+         IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for LUCITA CI :',TUSED,WUSED
+         IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for LUCITA CI :',TUSED,WUSED
+         CALL FLSHFO(LUW4)
+         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUSTAT)
 
          CALL SET_INFORB_LUCITA('RESET ')
        END IF
@@ -752,8 +788,8 @@ C
          CALL TSTAMP(' ',LUSTAT)
       END IF
  7100 FORMAT(//
-     *   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
-     *   /' >>>> Total wall time used in SIRIUS :',F10.2,' seconds')
+     &   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
+     &   /' >>>> Total wall time used in SIRIUS :',F10.2,' seconds')
 C
       IF (NINFO .GT. 0) THEN
          WRITE (LUPRI,7210) NINFO
