@@ -532,11 +532,7 @@ C
 C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
-#if defined (VAR_MPI) || defined (VAR_PVM)
-         CALL QUIT('No CC in parallel code')
-#else
          CALL ER2INI
-#endif
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
@@ -548,6 +544,7 @@ C
       ITRNMR = ISAVITR 
 
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC    ')
+
       CALL TITLER('End of Coupled Cluster Section (CC)',' ',200)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
@@ -1894,18 +1891,19 @@ C  /* Deck execho */
 C
 C     Run Cholesky stuff
 C
-      CALL QENTER('CHODRV')
+      CALL QENTER('CHOLESKY')
 C
-      WRITE(LUPRI, '(/A/)') '    Starting in Cholesky Section -'
+      CALL TITLER('Starting in Cholesky Integral Section',
+     &  ' ',200)
 C
       CALL CC_CHODRV(WORK(1),LMWORK)
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLES')
 C
 ctst  CLOSE(24)
-      WRITE(LUPRI, '(/A)') '- End of Cholesky Section'
+      CALL TITLER('End of Cholesky Integrl Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('CHODRV')
+      CALL QEXIT('CHOLESKY')
       RETURN
       END
 C
@@ -1931,12 +1929,14 @@ C
 C
       WRITE(LUPRI, '(A/)') '    Starting in Selact Section -'
 C
+      CALL TITLER('Starting in Selact Section',' ',200)
+C
 C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
       write(lupri,*) 'Not yet implemented'
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELACT')
 C
 ctst  CLOSE(24)
-      WRITE(LUPRI, '(/A)') '- End of Selact Section'
+      CALL TITLER('End of selact section',' ',200)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('SELACT')
