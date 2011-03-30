@@ -537,11 +537,17 @@ C               (3) gauge origin   : GAGORG
 C               (4) dipole origin  : DIPORG
 C             London atomic orbitals at zero field
               if (is_lao) then
+C               computes the contracted integrals
+                select case(trim(prop_name))
+                case default
+                  call QUIT("Property"//trim(prop_name)//
+     &                      " is not implemented")
+                end select
 C             normal Gaussians
               else
+C               computes the contracted integrals
                 select case(trim(prop_name))
                 case('.OVERLAP')
-C                 computes the contracted integrals
                   call contr_cgto_carmom(ICENTA, (/CORAX,CORAY,CORAZ/),
      &              NHKTA-1, NUCA, PRIEXP(JSTA+1:JSTA+NUCA),
      &              NRCA, PRICCF(JSTA+1:JSTA+NUCA,NUMCFA:NUMCFA+NRCA-1),

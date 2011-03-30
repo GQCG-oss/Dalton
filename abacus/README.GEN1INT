@@ -1,0 +1,57 @@
+1. How to use Gen1Int in Dalton:
+
+First, please download Gen1Int from http://sourceforge.net/projects/gen1int,
+and compile the library following its README and INSTALL.
+
+You may need to update your file database, so that the "configure" in Dalton
+may find the Gen1Int library (using `locate` command).
+
+When configuring Dalton, please answer "y" when you are asked:
+Do you want to install Gen1Int (see http://sourceforge.net/projects/gen1int)?
+
+Then make ..., hope everything is OK; otherwise, please write to Bin Gao at bin.gao@uit.no
+
+2. For developers:
+
+There are only two files in Dalton related to Gen1Int: abacus/gen1int_wrapper.F and
+include/gen1int.h. I will do my best not to add more new files ;-)
+
+As regards abacus/gen1int_wrapper.F, there are 4 subroutines currently,
+please notice that (2) and (3) still needs to debug (symmetry problem):
+
+(1) gen1int_driver: driver of this interface, called by other surboutines of Dalton,
+                    whose responsibility is to generate the different paths from
+                    subroutine \fn(geom_deriv_cent_tree) and calls (2) gen1int_prop
+                    to do the calculations
+(2) gen1int_prop: core part of this interface, called by (1) gen1int_driver, its task
+                  is to calculate integrals/expectation values for a given differentiated
+                  path from (1) gen1int_driver
+(3) gen1int_expect: calculates the expectation values, called by (2) gen1int_prop
+(4) gen1int_block: prepares the AO blocks used by (2) gen1int_prop, should be called before
+                   any other subroutines in the interface (called from abacus/herrdn.F)
+
+where, (1)-(3) are called from abacus/her1drv.F.
+
+I may still need to add subroutines for file processing, and update some related subroutines
+in Dalton.
+
+For the time being, the following subroutines from Gen1Int are used:
+(1.1) geom_deriv_cent_npath: computes the number of different paths
+                             from subroutine \fn(geom_deriv_cent_tree)
+(1.2) geom_deriv_cent_ndgeo: computes the number of geometric derivatives of
+                             given path from subroutine \fn(geom_deriv_cent_tree)
+(1.3) geom_deriv_cent_tree: generates the centers of geometric derivatives and
+                            their corresponding orders, called recursively
+(2.1) contr_cgto_carmom: calculates the Cartesian multipole moment integrals
+                         using contracted Cartesian Gaussians
+(2.2) cgto_to_sgto: transforms back to the integral between Spherical
+                    Gaussians by Andreas, called twice on bra and ket, separately
+
+There will be definitely more ;-) ...
+
+P.S. The reason I choose Cartesian Gaussians is that Dalton normalizes the
+basis sets as Cartesian Gaussians, so that it is not convenient for me to
+implement Hermite Gaussians in this interface.
+
+Bin Gao (bin.gao@uit.no)
+March 30, 2011
