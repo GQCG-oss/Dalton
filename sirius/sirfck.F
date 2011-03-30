@@ -102,7 +102,7 @@ Cholesky
 C
 #include <ibtfun.h>
 C
-      LOGICAL SFIRST, PREHF, IOPTVP
+      LOGICAL SFIRST, PREHF, IOPTVP, DO_CHOINT
       SAVE SFIRST
       DATA SFIRST  /.TRUE./
 C
@@ -119,13 +119,27 @@ C
       IF (NDMAT.EQ.0) GO TO 9999
 C
 C     Find out if we have spin-density terms
+C     Find out if we shall and can use Cholesky
 C
       DO_SPINDNS = .FALSE.
+      DO_CHOINT = CHOINT .and. CHIVAL .lt. 0.0D0 ! no Cholesky for short-range integrals (yet)
       DO I = 1,NDMAT
          IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
+         IF (IFCTYP(I) .ne. 13 .and. IFCTYP(I) .ne. 12 .and.
+     &       IFCTYP(I) .ne.  3 .and. IFCTYP(I) .ne.  2 .and.
+     /       IFCTYP(I) .ne. 22) DO_CHOINT = .FALSE.
       END DO
       IF (DO_SPINDNS .AND. .NOT. ADDSRI) THEN
          CALL QUIT('SIRFCK can only do spin dens. for srDFT')
+      END IF
+      IF (CHOINT .AND. .NOT. DO_CHOINT) THEN
+         NINFO = NINFO + 1
+         WRITE(LUPRI,'(3(/A),//A)')
+     &   ' INFO: Cholesky decomposed two-electron integrals can',
+     &   ' only be applied for IFCTYP equal to 13, 12, 3, or 2(22).',
+     &   ' You may have to implement the request yourself !',
+     &   ' Proceeding with standard AO-integral direct '//
+     &     'Fock matrix construction.'
       END IF
 C
 #ifdef SIRFCK_DEBUG
@@ -198,20 +212,15 @@ C        a Multiconfigurational SR-DFT calculation.
 C
 #ifdef SIRFCK_DEBUG
 CFRAN 17/02/2010
-      WRITE(LUPRI,*) 'PREHF = ', PREHF
+      WRITE(LUPRI,*) 'PREHF   = ', PREHF
       WRITE(LUPRI,*) 'LSRHYBR = ', LSRHYBR
 CFRAN 17/02/2010 END
 #endif
       HFXFACSAVE = HFXFAC
       CHIVALSAVE = CHIVAL
+      IF (DO_CHOINT) THEN
 C
-C     ****************** AO direct Fock matrices ***************
-C
-      IF (DIRECT) THEN
-        IF (CHOINT) THEN
-C
-C        Cholesky section.
-C        -----------------
+C        *************** Cholesky section *************** 
 C
 C        ... Outermost loop over density matrices in order
 C            to maximize work space for batches of Cholesky
@@ -265,8 +274,11 @@ C
 C
   201     CONTINUE
          ENDDO
+      ELSE IF (DIRECT) THEN ! not Cholesky, AO-direct?
 C
-        ELSE     ! direct no Cholesky
+C
+C     ****************** AO direct Fock matrices ***************
+C
 C
          IF (SFIRST) THEN
             IPRHER = 2*IPRFCK
@@ -555,13 +567,11 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
            call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
 C
-       END IF        ! choint if
+      ELSE ! not Cholesky and not AO-direct
 C
 C     ****************** "conventional" AO Fock matrices ***************
 C                        (from AO integrals or supermatrix integrals on file)
 C
-      ELSE
-C     ... not DIRECT
          IF (HFXMU .NE. D0) CALL QUIT(
      &       'SIRFCK2: nonzero HFXMU requires .DIRECT calculation.') 
 C
@@ -961,23 +971,14 @@ C
  9999 CALL QEXIT('SIRFCK')
       RETURN
 C
-Cholesky
 C
  8000 CONTINUE
       WRITE (LUPRI,'(/A/,(8I10))')
      &   ' FATAL ERROR SIRFCK: Unknown IFCTYP; dump of IFCTYP:',
      &   (IFCTYP(I),I=1,NDMAT)
-      IF (CHOINT) THEN
-         WRITE(LUPRI,'(A,/,A,/,A)')
-     &   ' NOTICE: Cholesky decomposed two-electron integrals can',
-     &   ' only be applied for IFCTYP equal to 13, 12, 3, or 2(22).',
-     &   ' You may have to implement the request yourself !'
-      ENDIF
 C
       CALL QTRACE(LUPRI)
       CALL QUIT('SIRFCK ERROR: Unknown IFCTYP')
-C
-Cholesky
 C
       END
 C  /* Deck sirfck2 */
