@@ -1215,7 +1215,6 @@ C
 #include <inforb.h>
 #include <inflin.h>
 #include <inftim.h>
-#include <line.h>
 C
 C
       KUFCAC = 1

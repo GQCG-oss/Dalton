@@ -668,7 +668,7 @@ C
 #include <infind.h>
 #include <infdim.h>
 #include <infpri.h>
-#include <line.h>
+
 C
 C ***** Step 1: calculate sigma vectors of configuration trial vectors
 C

@@ -32,7 +32,7 @@ C DFT modification tuh
 C
 C Purpose:
 C  Carry out intermediate optimization of orbitals for fixed
-C  CSF coefficients.
+C  CSF coefficients ("absorption")
 C
 C MOTECC-90: The purpose of this module, SIRORB, and the algorithms used
 C            are described in Chapter 8 Section E.5 of MOTECC-90
@@ -262,13 +262,6 @@ C
             IF (.NOT. FLAG(14)) THEN
                CALL TRACTL(JTRLVL,CMO,WRK(KWRK0),LWRK0)
 C              CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
-C
-C              Tell SIROPT to skip integral transformation
-C              (if transformation level is sufficient),
-C              FLAG(14) will be reset if orbitals changed before
-C              returning.
-C
-               IF (JTRLVL .EQ. ITRLVL) FLAG(14) = .TRUE.
 C
             END IF
 C

@@ -1050,11 +1050,11 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <cbgetdis.h>
-#include <line.h>
+
       DIMENSION NEEDMU(6)
       DATA NEEDMU /0,0,1,0,0,0/
 C     ... only active-active distributions needed (type 3)
-#include <line.h>
+
       CALL QENTER('CIIN2B')
       IF (NASHT .LE. 1) THEN
          CALL QTRACE(LUPRI)

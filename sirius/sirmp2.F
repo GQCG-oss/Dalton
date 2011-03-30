@@ -1489,13 +1489,12 @@ C
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C     
       LOGICAL CHOLE,DHOLE, L_MP2_TDA
-#include <line.h>
+
       DIMENSION NEEDTP(6)
       DATA NEEDTP /0,1,1,1,1,0/
 C     ... only particle-hole distributions needed
 C         assumed: NRHF(isym) .ge. NISH(isym)
 C              and NVIR(isym) .le. NSSH(isym)
-#include <line.h>
 C
       CALL QENTER('MP2MUL')
       KFREE = KFRSAV
@@ -1686,13 +1685,12 @@ C
 #include <infpri.h>
 C
       LOGICAL AHOLE, BHOLE, CHOLE, DHOLE
-#include <line.h>
+
       DIMENSION NEEDTP(6)
       DATA NEEDTP /0,1,1,1,1,0/
 C     ... only particle-hole distributions needed
 C         assumed: NRHF(isym) .ge. NISH(isym)
 C              and NVIR(isym) .le. NSSH(isym)
-#include <line.h>
 C
       CALL QENTER('MP2PHD')
 C

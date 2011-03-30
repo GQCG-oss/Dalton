@@ -846,7 +846,7 @@ C
 C     Definition of orbital types
 C
 #include <orbtypdef.h>
-#include <line.h>
+
       CALL QENTER('GETH2 ')
       IF (NASHT.LE.1) THEN
          CALL QUIT('PROGRAM ERROR, GETH2 called with NASHT .le. 1')
