@@ -65,19 +65,11 @@ C
 !  distribution of distributions per chain.
 !TRACD,TRAAB: insert symmetry check in write-to-file loop, gprof showed
 !  for Neon that a lot of time was used in skipping zero integrals.
-!910130-hjaaj
-!TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
 !901028-hjaaj
 ! TRACTL: new MFRO(1:NSYM) = 0 because wrong integral indices are
 !    written to LUINTM if MFRO(isym) .ne. 0
 !901025-hjaaj
 ! TRACTL: JTER=1 only if IPRTRA.gt.1, print TIME IN SORTA if iprtra.gt.0
-!901005-hjaaj
-! TRACTL: s/CMO(NCMOT)/(CMO(I),I=1,NCMOT)/ ; error in write (luintm)
-!   -- This wasn't discovered on Alliant because it didn't stop for end
-!   of record (a small test program showed that reading more than one
-!   variable read the label in the next record and so on; however, after
-!   the reading the pointer was at the beginning of next record!)
 !900801-hjaaj
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
@@ -96,8 +88,6 @@ C
 ! TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
 !900226-hjaaj
 ! TRACTL: if (usedrc) then call DRCCTL
-!900221-hjaaj
-! added drcctl routines as module drcctl.u
 !900115-hjaaj
 ! NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
 ! of that type needed, but not all (in that case needtp(ityp) .gt. 0)
@@ -110,8 +100,6 @@ C
 ! SORTA,TRACD,TRAAB: print threshold for discarding integrals
 ! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
 !         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
-!891117-hjaaj
-! TRAUTH added
 !891116-hjaaj
 ! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
 !   corrupted. Release buffer allocation when no more buffers.
@@ -120,8 +108,6 @@ C
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
 !    and only write TRANSFORMATION level each time if iprtra .gt. 0
 !    and corrected 890615 tractl output error (wrt. ITRSAV) in TRACTL
-!890615-hjaaj
-! disabled FIRST=.FALSE. in TRACTL so it can be used in combination runs.
 !890220-hjaaj
 ! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
