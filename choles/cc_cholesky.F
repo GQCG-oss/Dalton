@@ -1668,11 +1668,11 @@ C
                GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) I
             END IF
          END DO
-         WRITE(LUPRI,*) 'Illegal keyword in input: ',WORD
-         CALL QUIT('Illegal keyword in input')
+         WRITE(LUPRI,*) 'Illegal keyword in **CHOLESKY input: ',WORD
+         CALL QUIT('Illegal keyword in **CHOLESKY input')
       ELSE
-         WRITE(LUPRI,*) 'Illegal prompt in input'
-         CALL QUIT('Illegal prompt in input')
+         WRITE(LUPRI,*) 'Illegal prompt in **CHOLESKY input'
+         CALL QUIT('Illegal prompt in **CHOLESKY input')
       END IF
 
 C
@@ -1801,7 +1801,7 @@ C
 C
       IF (IPRCHO .LE. 0) GOTO 999
 C
-      CALL AROUND('Output from CHOLE_INP')
+      CALL AROUND('Output from **CHOLESKY input')
 C
       IF (REDUCE) THEN
           WRITE(LUPRI,'(A)') 'Cholesky vectors written in reduced set'
@@ -1810,18 +1810,18 @@ C
       END IF
       IF (SCDIAG) THEN
          IF (THSCH1) THEN
-            WRITE(LUPRI,'(2A,D14.4)') 'First screening threshold on ',
-     &                            'diagonal defined by user',THINDI
+            WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'First screening threshold on diagonal defined by user',THINDI
          ELSE
-            WRITE(LUPRI,'(2A,D14.4)') 'Default first screening ',
-     &                            'threshold on diagonal',THINDI
+            WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'Default first screening threshold on diagonal',THINDI
          END IF
          IF (THSCH2) THEN
-            WRITE(LUPRI,'(2A,D14.4)') 'Second screening threshold on ',
-     &                            'diagonal defined by user',THSUDI
+            WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'Second screening threshold on diagonal defined by user',THSUDI
          ELSE
-            WRITE(LUPRI,'(2A,D14.4)') 'Default second screening ',
-     &                            'threshold on diagonal',THSUDI
+            WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'Default second screening threshold on diagonal',THSUDI
          END IF
       ELSE
          WRITE(LUPRI,'(A)') 'No screening on diagonal'
@@ -1832,11 +1832,11 @@ C
           WRITE(LUPRI,'(A)') 'Cholesky vectors are compressed'
       END IF
       IF (THRCHA) THEN
-         WRITE(LUPRI,'(2A,D14.4)') 'Convergence threshold defined ',
-     &                         'by user',THRDEF
+         WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'Convergence threshold defined by user',THRDEF
       ELSE
-         WRITE(LUPRI,'(A,D14.4)') 'Default convergence threshold',
-     &                         THRDEF
+         WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'Default convergence threshold',THRDEF
       END IF
       IF (RSTCHO) THEN
          WRITE(LUPRI,'(A)') 'This is a restarted calculation'
@@ -1850,16 +1850,17 @@ C
          WRITE(LUPRI,'(A,I8)') 'Default buffer length:',LBUF
       END IF
       IF (THRSTA) THEN
-         WRITE(LUPRI,'(A,D14.4)') 'Special restart threshold', THRSTR
+         WRITE(LUPRI,'(A,T60,1P,D14.4)')
+     &  'Special restart threshold', THRSTR
       END IF
       IF (SPANDI) THEN
-         WRITE(LUPRI,'(A,D14.4)') 'Span factor: ',SPAN
+         WRITE(LUPRI,'(A,T60,1P,D14.4)') 'Span factor: ',SPAN
       ELSE
-         WRITE(LUPRI,'(A,D14.4)') 'Default span factor: ',SPAN
+         WRITE(LUPRI,'(A,T60,1P,D14.4)') 'Default span factor: ',SPAN
       END IF
-      WRITE(LUPRI,'(A,I5,I20)') 'File size (Gb/words) :',IGB,MAXLEN
+      WRITE(LUPRI,'(A,I5,I20)') 'File size (Gb; words) :',IGB,MAXLEN
       IF (.NOT. CCMODSK) THEN
-         WRITE(LUPRI,'(A,1P,D15.6)')
+         WRITE(LUPRI,'(A,T60,1P,D15.6)')
      &   'SCF density will be decomposed; threshold: ',THRDC
       ENDIF
 C
@@ -3997,7 +3998,7 @@ C
       END DO
 C
       IF (IPRCHO .GT. 2) THEN
-          WRITE(LUPRI,'(I3,I8,I10,2D14.5,I8,I6,D14.5)')
+          WRITE(LUPRI,'(I3,I8,I10,1P,2D14.5,I8,I6,D14.5)')
      &         ISYMAB,ICHOV,ICAB,XC,OLDIAG,ICONV,INEG,XMAX1
           CALL FLSHFO(LUPRI)
       END IF
