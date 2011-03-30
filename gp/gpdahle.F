@@ -562,7 +562,7 @@ C  /* Deck getdate */
       WRITE (LUPRI,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_AIX)
-      WRITE (LUPRI,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (IBM-AIX): ',FDATE()
 #endif
 C
       RETURN

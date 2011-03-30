@@ -75,7 +75,7 @@ C
  || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
  || defined (SYS_SX) || defined (SYS_DARWIN) || defined (SYS_NEC) 
       CHARACTER*(24) FFDATE
-#if defined(SYS_AIX) || defined (SYS_HAL)
+#if defined (SYS_HAL)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE
@@ -421,16 +421,9 @@ c     bug in gfortran-4.0.2 causes a segfault here.
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_AIX)
-C 930414-hjaaj: apparent error IBM's xlf library routines:
-C    when 'T6' then column 1-5 not blanked but contains text
-C    from a previous print statement!
-C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-C     CALL hostnm_(HSTNAM)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate()
       CALL hostnm(HSTNAM)
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
+      WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 C
       RETURN
