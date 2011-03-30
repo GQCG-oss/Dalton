@@ -257,7 +257,7 @@ C
          CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
      &               IBUF(1,1,1,0),IPRINT)
 C
-C     Cauchy-Schwartz integrals 
+C     Cauchy-Schwarz integrals 
 C     =========================
 C
       ELSE IF (DGABAB) THEN
