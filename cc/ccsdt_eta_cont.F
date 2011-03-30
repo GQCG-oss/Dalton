@@ -89,9 +89,6 @@ C
 *     begin
 *---------------------------------------------------------------------*
       CALL QENTER('CCSDT_ETA_CONT')
-#if !defined CC_AARHUS
-      CALL QUIT('No triples (yet) in CCSDT_ETA_CONT.')
-#else
 
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCSDT_ETA_CONT... NODDY=',NODDY
@@ -313,7 +310,6 @@ C         --------------------
 
       CALL WCLOSE2(LUDEFF,FNDEFF,'DELETE')
 
-#endif
       CALL QEXIT('CCSDT_ETA_CONT')
       RETURN
       END 

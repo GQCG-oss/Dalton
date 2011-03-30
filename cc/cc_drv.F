@@ -126,11 +126,7 @@ C
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
       LOGICAL   CC3RSP, CCR12RSP, CCR12LIM
-#if defined CC_AARHUS
       PARAMETER (CC3RSP = .TRUE.)
-#else
-      PARAMETER (CC3RSP = .FALSE.)
-#endif
       DIMENSION WORK(LWORK)
       CHARACTER FILPQIM*(6), FILXYM*(6)
       PARAMETER (FILPQIM = 'CCPQ00', FILXYM = 'CC_XYM')
@@ -145,6 +141,7 @@ C
       INTEGER ISYEXC2(MAXEXCI),IMULTE2(MAXEXCI)
 C
       CALL QENTER('CC_DRV')
+      CALL GETTIM(TSTART,WSTART)
 C
       IF (.NOT. (ONLYMO)) THEN
       CALL CCTAPINI
@@ -820,12 +817,8 @@ C
          END IF
 
          IF (CCOPA) THEN 
-#if defined CC_AARHUS
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) 
      &          .and. (.not. CCR12)) THEN
-#else
-           IF ((CCS .or. CC2 .or. CCSD) .and. (.not. CCR12)) THEN
-#endif
             CALL CC_OPA(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
@@ -848,7 +841,6 @@ C
            END IF
          END IF
 
-#if defined CC_AARHUS
          IF (CCXOPA) THEN
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
      &          .and. (.not. CCR12)) THEN
@@ -858,7 +850,6 @@ C
      &         ' are not implemented for the requested model.'
            END IF
          END IF
-#endif
 C
 C-------------------------------------------------------
 C        ***********************************************
@@ -1144,6 +1135,19 @@ C
          ISYEXC(IEX) = ISYEXC2(IEX)
          IMULTE(IEX) = IMULTE2(IEX)
       ENDDO
+C
+      CALL GETTIM(TEND,WEND)
+      TUSED = TEND - TSTART
+      WUSED = WEND - WSTART
+      IF (IPRSTAT .GT. 0) THEN
+         WRITE (LUSTAT,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+         CALL FLSHFO(LUSTAT)
+      END IF
+      WRITE (LUPRI,'(/A,2F12.3)')
+     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+      CALL TSTAMP(' ',LUPRI)
+      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('CC_DRV')
 C

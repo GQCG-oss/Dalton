@@ -2069,9 +2069,6 @@ C
 * add CC3 contribution
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
-#if !defined CC_AARHUS
-         CALL QUIT('No triples (yet) in CC_BMAT')
-#else
         IF (IOPTRES.LT.5) THEN
            KTHETA1EFF = KEND2
            KTHETA2EFF = KTHETA1EFF + NT1AM(ISYMAB)
@@ -2165,7 +2162,6 @@ c
 
         END IF
 
-#endif
       END IF
 
 *---------------------------------------------------------------------*
@@ -2224,21 +2220,17 @@ c
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          ELSE IF (IOPTRES.EQ.4) THEN
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
            CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
@@ -2268,14 +2260,12 @@ c
            WRITE (LUPRI,*) 'Listing of the result vector:'
            CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,1,NVEC2)
            IF (CCR12) CALL CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,.TRUE.)
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              XNORM = DDOT(LEN,WORK(KTHETA1EFF),1,WORK(KTHETA1EFF),1)
              WRITE (LUPRI,*) 'norm^2 of eff. result vector:',XNORM
              WRITE (LUPRI,*) 'Listing of the eff. result vector:'
              CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYMAB,1,1)
            END IF
-#endif
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
          CALL CCDOTRSP(IBDOTS,BCONS,IOPTW,FILBMA,ITRAN,NBTRAN,MXVEC,

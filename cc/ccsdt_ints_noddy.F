@@ -304,6 +304,7 @@ C
 #include <ccsdsym.h>
 #include <ccfield.h>
 #include <ccorb.h>
+#include <dummy.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -312,27 +313,16 @@ C
 
       LOGICAL DO_INTXY, DO_INTS0, DO_INTT0
       INTEGER LWORK
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK)
-      REAL XINT1T(NT1AMX*NVIRT*NVIRT)
-      REAL XINT2T(NRHFT*NRHFT*NT1AMX)
-      REAL XINT1S(NT1AMX*NVIRT*NVIRT)
-      REAL XINT2S(NRHFT*NRHFT*NT1AMX)
-      REAL XIAJB(NT1AMX*NT1AMX)
-      REAL YIAJB(NT1AMX*NT1AMX)
-      REAL XLAMDP(*), XLAMDH(*)
-#else
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION XINT1T(NT1AMX*NVIRT*NVIRT)
-      DOUBLE PRECISION XINT2T(NRHFT*NRHFT*NT1AMX)
-      DOUBLE PRECISION XINT1S(NT1AMX*NVIRT*NVIRT)
-      DOUBLE PRECISION XINT2S(NRHFT*NRHFT*NT1AMX)
-      DOUBLE PRECISION XIAJB(NT1AMX*NT1AMX)
-      DOUBLE PRECISION YIAJB(NT1AMX*NT1AMX)
-      DOUBLE PRECISION XLAMDP(*), XLAMDH(*)
-#endif
+      REAL*8  WORK(LWORK)
+      REAL*8  XINT1T(NT1AMX*NVIRT*NVIRT)
+      REAL*8  XINT2T(NRHFT*NRHFT*NT1AMX)
+      REAL*8  XINT1S(NT1AMX*NVIRT*NVIRT)
+      REAL*8  XINT2S(NRHFT*NRHFT*NT1AMX)
+      REAL*8  XIAJB(NT1AMX*NT1AMX)
+      REAL*8  YIAJB(NT1AMX*NT1AMX)
+      REAL*8  XLAMDP(*), XLAMDH(*)
 
-      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1, IRECNR
+      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1
 
       CALL QENTER('CCSDT_INTS0_NODDY')
 
@@ -375,7 +365,7 @@ C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND1),LWRK1,
-     *                  IRECNR,DIRECT)
+     *                  IDUMMY,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
@@ -437,11 +427,7 @@ C           ----------------------------------
       PARAMETER (ISYM0=1)
 
       INTEGER LWORK
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK), FF, DDOT
-#else
-      DOUBLE PRECISION WORK(LWORK), FF, DDOT
-#endif
+      REAL*8  WORK(LWORK), FF, DDOT
 
       LOGICAL DO_L03AM
 
@@ -665,10 +651,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IDUMMY,DIRECT) ! NB! DIRECT always .false. here
  
             CALL CCFOP_TRAN1_R(WORK(K0IOVVO),WORK(K0IOOVV),
      &                         WORK(K0IOOOO),WORK(K0IVVVV),
@@ -770,17 +754,10 @@ C           ---------------------------
 
       LOGICAL RD_FOCK0, RD_INTXY, RD_INTS0, RD_INTT0, RD_INTV0, RD_XLAM0
 
-#if defined (SYS_CRAY)
-      REAL FOCKD(*), FOCK0(*)
-      REAL FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
-      REAL XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
-      REAL XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
-#else
-      DOUBLE PRECISION FOCKD(*), FOCK0(*)
-      DOUBLE PRECISION FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
-      DOUBLE PRECISION XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
-      DOUBLE PRECISION XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
-#endif
+      REAL*8  FOCKD(*), FOCK0(*)
+      REAL*8  FIELD(*), FIELDAO(*), XIAJB(*), YIAJB(*)
+      REAL*8  XINT1S0(*), XINT2S0(*), XINT1T0(*), XINT2T0(*)
+      REAL*8  XOVVO(*), XOOVV(*), XOOOO(*), XVVVV(*)
 
       CALL QENTER('CCTRDI')
 

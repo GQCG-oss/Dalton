@@ -308,9 +308,6 @@ c         -----------------------------------------------------------
        if (iovlp.ne.novlp) call quit('error in CCEXNORM.')
   
        if (ccsdt) then
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CCEXNORM.')
-#else
          if (ipass.eq.1 .and. (.not.ccsdtrenrm)) then
            continue 
          else
@@ -329,7 +326,6 @@ c         -----------------------------------------------------------
      &                         1,1,1,1,dummy,work,lwork)
            END IF
          end if
-#endif
        end if
 
        if (ipass.eq.1) then
@@ -530,7 +526,6 @@ C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
 *---------------------------------------------------------------------*
 *              end of subroutine ccexnorm                             *
 *---------------------------------------------------------------------*
-#if defined CC_AARHUS
 *=====================================================================*
       subroutine ccovlp_noddy(listl,listr,imode,
      &                        overlap,ilstnrst,ilstnrnd,istartend,
@@ -2103,4 +2098,4 @@ C
 C
       RETURN
       END
-#endif
+! -- end of ccexnorm.F --
