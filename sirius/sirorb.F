@@ -96,10 +96,20 @@ C            = 3 : + act-sec rotations
 C
       IF (FLAG(51)) THEN
          LVLABS = 1
-         JTRLVL = 0
+!        JTRLVL = 0 ! Mar2011: TR1H2M sets NEEDMU(5) = 1 and we
+!                     must therefore include secondary orbitals in the
+!                     integral transformation although we will not need
+!                     the integrals. There is no transparent way of
+!                     transferring this information to TR1H2M, and as
+!                     the CPU time saved will be a small fraction of
+!                     the total CPU time, it is not worth doing more
+!                     about. With this change, all levels of absorption
+!                     should work again. /hjaaj
+         JTRLVL = ITRLVL
       ELSE IF (FLAG(52)) THEN
          LVLABS = 2
-         JTRLVL = 0
+!        JTRLVL = 0 ! see comment under FLAG(51) above.
+         JTRLVL = ITRLVL
       ELSE IF (FLAG(53)) THEN
          LVLABS = 3
          JTRLVL = ITRLVL
