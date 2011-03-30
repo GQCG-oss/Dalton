@@ -21,7 +21,7 @@ cat > dipgra_relax.info <<%EOF%
    dipgra_relax
    ------------
    Molecule:       HeH+ in C1
-   Wave Function:  CCSD
+   Wave Function:  CCSD (= FCI in this case)
    Test Purpose:   orbital-relaxed dipole derivatives
 %EOF%
 
@@ -30,10 +30,10 @@ cat > dipgra_relax.info <<%EOF%
 #######################################################################   
 cat > dipgra_relax.mol <<%EOF%
 BASIS
-6-31G* 
+6-31G**
 test job    
-He, 6-31G* basis set
-    2  1 0  X  Y  Z   1.00D-25
+H-He+, 6-31G** basis set, no symmetry
+    2  1 0            1.00D-15
         2.0   1    
 He    0.0000000000000000  0.0000000000000000   0.00000000000
         1.0   1    
@@ -44,7 +44,7 @@ H     0.0000000000000000  0.0000000000000000   2.00000000000
 #  DALTON INPUT
 #######################################################################  
 cat > dipgra_relax.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -94,12 +94,10 @@ ZDIPLEN 1DHAM003
 ZDIPLEN 1DHAM004
 ZDIPLEN 1DHAM005
 ZDIPLEN 1DHAM006
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 
-#######################################################################
-
+############################################################
 
 
 #######################################################################
@@ -116,39 +114,39 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Total SCF   energy:                    -2.89760854" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                    -2.92575841" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy:                    -2.93364928" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy:    * -2.90191526" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy:    * -2.93053877" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:    * -2.93851167" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # SCF relaxed polarizabilities & dipole gradients:
-CRIT1=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) =     ( |0)\.3560435" $log | wc -l`
-CRIT2=`$GREP "<<YDIPLEN ,YDIPLEN >>\( ..000000\) =     ( |0)\.3560435" $log | wc -l`
-CRIT3=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) =     2.0184410" $log | wc -l`
-CRIT4=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =     ( |0)\.1806852" $log | wc -l`
-CRIT5=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =     ( |0)\.8193147" $log | wc -l`
-CRIT6=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =     ( |0)\.1806852" $log | wc -l`
-CRIT7=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =     ( |0)\.8193147" $log | wc -l`
-CRIT8=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =    ( -|-0)\.2157346" $log | wc -l`
-CRIT9=`$GREP "<<ZDIPLEN ,1DHAM006>>\( ..000000\) =     1.2157346" $log | wc -l`
+CRIT1=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = * 0*\.40999" $log | wc -l`
+CRIT2=`$GREP "<<YDIPLEN ,YDIPLEN >>\( ..000000\) = * 0*\.40999" $log | wc -l`
+CRIT3=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  1\.96505" $log | wc -l`
+CRIT4=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) = * 0*\.18593" $log | wc -l`
+CRIT5=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) = * 0*\.81406" $log | wc -l`
+CRIT6=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) = * 0*\.18593" $log | wc -l`
+CRIT7=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) = * 0*\.81406" $log | wc -l`
+CRIT8=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) = *-0*\.19837" $log | wc -l`
+CRIT9=`$GREP "<<ZDIPLEN ,1DHAM006>>\( ..000000\) = *  1\.19837" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
 CTRL[2]=9
 ERROR[2]="SCF DIPOLE GRADIENTS NOT CORRECT"
 
 # CCSD relaxed polarizabilities & dipole gradients:
-CRIT1=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) =    ( -|-0)\.3457481" $log | wc -l`
-CRIT2=`$GREP "<<YDIPLEN ,YDIPLEN >>\( ..000000\) =    ( -|-0)\.3457481" $log | wc -l`
-CRIT3=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) =    -2.4077217" $log | wc -l`
-CRIT4=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =    ( -|-0)\.2003912" $log | wc -l`
-CRIT5=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =    ( -|-0)\.7996087" $log | wc -l`
-CRIT6=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =    ( -|-0)\.2003912" $log | wc -l`
-CRIT7=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =    ( -|-0)\.7996087" $log | wc -l`
-CRIT8=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =     ( |0)\.2056682" $log | wc -l`
-CRIT9=`$GREP "<<ZDIPLEN ,1DHAM006>>\( ..000000\) =    -1.2056682" $log | wc -l`
+CRIT1=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) =  *-0*\.406806" $log | wc -l`
+CRIT2=`$GREP "<<YDIPLEN ,YDIPLEN >>\( ..000000\) =  *-0*\.406806" $log | wc -l`
+CRIT3=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) =  * -2\.328652" $log | wc -l`
+CRIT4=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =  *-0*\.206184" $log | wc -l`
+CRIT5=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =  *-0*\.793815" $log | wc -l`
+CRIT6=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =  *-0*\.206184" $log | wc -l`
+CRIT7=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =  *-0*\.793815" $log | wc -l`
+CRIT8=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =  * 0*\.186541" $log | wc -l`
+CRIT9=`$GREP "<<ZDIPLEN ,1DHAM006>>\( ..000000\) =  * -1\.186541" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
 CTRL[3]=9
@@ -158,7 +156,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

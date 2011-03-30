@@ -38,16 +38,14 @@ f   3    1
 #  DALTON INPUT
 #######################################################################
 cat > LIH1s1p_noddy_pol.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
-.NOSUP
 .DIPLEN
 .THETA
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
 .NODIIS
@@ -79,7 +77,7 @@ XDIPLEN XDIPLEN
 .RHTR
 .LHTR
 .FOPDEN
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -120,7 +118,7 @@ PASSED=1
 for i in 1 2
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

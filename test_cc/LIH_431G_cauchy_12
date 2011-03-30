@@ -29,7 +29,7 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > LIH_431G_cauchy_12.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVEFUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -118,7 +118,7 @@ PASSED=1
 for i in 1 2
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

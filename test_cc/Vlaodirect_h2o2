@@ -29,7 +29,7 @@ H      1.6850730466   -1.4805134201   0.4999836950
 #  DALTON INPUT
 ####################################################################
 cat > Vlaodirect_h2o2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -48,7 +48,7 @@ XYZ-ALL
 *SCF INPUT
 .THRESH
  5.0d-11
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  5 4
 *CC INPUT
 .CCSD
@@ -94,8 +94,7 @@ ZDIPLEN YDIPLEN dh/dBX
 1
 0.11391
 0.0
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -155,7 +154,7 @@ CTRL[4]=6
 ERROR[4]="LAO+RELAXED CCSD VERDET CONSTANT NOT CORRECT"
 
 # Dummy check that it was a direct calculation
-CRIT1=`$GREP "Direct calculation" $log | wc -l`
+CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
 TEST[5]=`expr $CRIT1`
 CTRL[5]=1
 ERROR[5]="DIRECT VERDET CONSTANT WAS NOT RUN DIRECT"
@@ -166,7 +165,7 @@ PASSED=1
 for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

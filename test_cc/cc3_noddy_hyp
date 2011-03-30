@@ -30,14 +30,13 @@ H     0.0000000000000000   0.000000000   0.00000000
 #  DALTON INPUT
 #######################################################################
 cat > cc3_noddy_hyp.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
 .NODIIS
@@ -74,7 +73,7 @@ ZDIPLEN ZDIPLEN ZDIPLEN
 .XI
 .ETA
 .FMAT
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -121,7 +120,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

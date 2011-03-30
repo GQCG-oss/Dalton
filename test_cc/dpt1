@@ -27,7 +27,7 @@ Ne    0.0000000000000000  0.0000000000000000 0.00000000000000000       *
 #  DALTON INPUT
 #######################################################################
 cat > dpt1.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -39,13 +39,12 @@ cat > dpt1.dal <<%EOF%
 .MASSVELO
 .DPTPOT
 .KINENER
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-11
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  2 1 1 0 1 0 0 0 
 *ORBITAL INPUT
 .NOSUPSYM
@@ -69,7 +68,7 @@ cat > dpt1.dal <<%EOF%
 .ALLONE
 .2ELDAR
 .DPTECO
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -191,7 +190,7 @@ PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done
