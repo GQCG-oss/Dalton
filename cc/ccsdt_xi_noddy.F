@@ -457,7 +457,7 @@ C     ----------------------------------------------
       CHARACTER*10 MODEL, LABELB*8
       INTEGER KTB1AM, KEND0, KSCR1, KTB2AM, KEND1, NAI, NBJ, NCK,
      &        LWRK1, IOPT, KXINT, ISYMD, ILLL, IDEL, KEND2, LWRK2,
-     &        KT02AM, ISYDIS, ISYMB, KRECNR, IERR, IRREP, NAIBJCK,
+     &        KT02AM, ISYDIS, ISYMB, IERR, IRREP, NAIBJCK,
      &        ISYMM, ILSTSYM, LWRK0, KFIELD, KFLDB1, NCAU, MCAU,
      &        KFIELDAO, KT03AM, KT3SCR, LUTEMP, IDLSTBM
 
@@ -1247,7 +1247,7 @@ C    *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  )
       LOGICAL LTWOEL, LRELAX, SKIPXI
       INTEGER KINT1T, KINT2T, KXIAJB, KYIAJB, KINT1S, KINT2S, KEND1,
      &        ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND2, LWRK2, LWRK1,
-     &        KRECNR, KT2AM, KT3AM, IOPT, LUSIFC, IDLSTL, KFOCK0,
+     &        IRECNR, KT2AM, KT3AM, IOPT, LUSIFC, IDLSTL, KFOCK0,
      &        LUDEFF, M2BST, KFOCKD, ISYM, IDUMMY, LUFOCK, KSCR1, IF,
      &        KLC3AM, KDIJ, KDAB, KDIA, KMINT, IDENS, IADRIJ, IADRAB,
      &        IADRIA, ITRAN, IOPER, IRELAX, ISYHOP, ISYML, IDX, IVEC,
@@ -1384,10 +1384,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

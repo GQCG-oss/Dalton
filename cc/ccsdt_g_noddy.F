@@ -74,7 +74,7 @@ C
      &        KCIOVVO, KCIOOVV, KCIOOOO, KCIVVVV,
      &        KBCIOVVO, KBCIOOVV, KBCIOOOO, KBCIVVVV,
      &        KOME1, KOME2, KL1AM, KL2AM, KL3AM, KT2AM, KFOCKD,
-     &        KDUM, KRECNR, KSCR1
+     &        KDUM, IRECNR, KSCR1
       INTEGER ISYMD, ILLL, IDEL, ISYDIS, IDUMMY, IJ, NIJ, LUSIFC, INDEX,
      &        ISYMC, ISYMB, LUFOCK, KEND2, LWRK2, IOPT, ILSTSYM
 
@@ -251,10 +251,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

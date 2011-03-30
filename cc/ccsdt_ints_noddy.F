@@ -436,7 +436,7 @@ C           ----------------------------------
      &        KLAMP0, KLAMH0, KINT1T0, KINT2T0, KINT1S0, KINT2S0,
      &        KXIAJB, KYIAJB, K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV,
      &        KT01AM, KT02AM, KT03AM, KT3SCR, LUSIFC, IOPT, LUFOCK,
-     &        LUTEMP, ILLL, IDEL, ISYMD, KRECNR, ISYDIS, KEND2, LWRK2,
+     &        LUTEMP, ILLL, IDEL, ISYMD, ISYDIS, KEND2, LWRK2,
      &        KXINT
 
       CALL QENTER('CCTINI')
