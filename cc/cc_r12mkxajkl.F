@@ -2227,7 +2227,7 @@ C  /* Deck r12exdens*/
 ccc#include <inforb.h>
       integer kcmo,lwork,kfrsav,kfree,lfree,kfcao,kdcao,kdv
       integer pq,kcao,isym,ioff,ioff1,kexia,isymi,NNORB1
-      integer kctao,koff,index,ISYMAI,isyma,mbas1t,nnbast
+      integer kctao,koff,index,ISYMAI,isyma,nnbast
       integer idxkl,idxlk,idxij,idxji,idxklij,idxijkl,idxijlk
       integer idxjikl,isymj,isymij,isymkl,isymk,isyml,idxklji
       integer koffc,kexiaz,noffset,nvir0(8),kextia,kfctao
