@@ -115,14 +115,13 @@ C
       ENDIF
       TIMCPU = SECOND() - TCPU0
 #else
-         TCPU0 = TSECND()
+         TCPU0  = TSECND()
          TWALL0 = TIMEF()
       ENDIF
       TIMCPU = TSECND() - TCPU0
 #endif
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#else
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
 C...  NEC SX4     timing code
       REAL*8  TCPU0, TWALL0
       REAL*8  SECOND1,SECOND2
@@ -144,87 +143,29 @@ C
       TIMCPU = second1 - TCPU0
       TIMWAL = second2 - TWALL0
 #else
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_SUN) || defined (SYS_HAL) \
- || (defined (SYS_LINUX) && defined (VAR_PGF90)) || defined(VAR_ABSOFT) \
- || defined (SYS_DEC) || defined (SYS_SX)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) \
- || defined (SYS_SX)  || defined (SYS_AIX)
-C...  SGI IRIX  etc. code
-      external time
-C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#endif
-      integer*4 time
-      real*4    etime, tarray(2)
+      real*8    TIMCPU, TIMWAL, clock_factor
+      real*4    tcpu, tcpu0
+      integer*4 iwall0, iwall, irate
       logical   first
-      save      first,iwall0,TCPU0
+      save      first,iwall0,tcpu0, clock_factor
       data      first /.true./
 C
       if (first) then
-         first = .false.
-         TCPU0 = etime(tarray)
-         iwall0 = time()
+         first  = .false.
+         CALL CPU_TIME(tcpu0)
+         CALL SYSTEM_CLOCK(iwall0,irate)
+         clock_factor = 1.0d0 / irate
       end if
-      TIMCPU = etime(tarray) - TCPU0
-      itimwl = time() - iwall0
-      TIMWAL = itimwl
-#else
-#if (defined (SYS_LINUX) && defined (VAR_IFORT))
-      integer*4 darr(9)
-      real*4    etime, tarray(2)
-      logical   first
-      save      first,iwall0,TCPU0
-      data      first /.true./
-C
-      if (first) then
-         first = .false.
-         TCPU0 = etime(tarray)
-          call gettimeofday(darr,err)
-          iwall0 = darr(1)
-      end if
-      TIMCPU = etime(tarray) - TCPU0
-      call gettimeofday(darr,err)
-      itimwl = darr(1) - iwall0
-      TIMWAL = itimwl
-#else
-#if defined (VAR_GFORTRAN)
-C 990819-ekd: Use time8() and second() system routines for timings
-C             ONLY available for GNU gfortran compiler!!!!!!!!
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TWALL0 = time8()
-         TCPU0  = second()
-      end if
-      TIMWAL = time8() - TWALL0
-      TIMCPU = second() - TCPU0
-#else
-      PARAMETER (D0 = 0.0D0)
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TCPU0  = second()
-      end if
-      TIMCPU = SECOND() - TCPU0
-C insert appropriate routine to get elapsed real time (wall time)
-C here
-      TIMWAL = D0
-#endif  /* VAR_GFORTRAN */
-#endif  /* VAR_IFORT */
-#endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
-#endif  /* SYS_NEC */
-#endif  /* SYS_CRAY etc. */
+      CALL CPU_TIME(tcpu)
+      TIMCPU = tcpu - tcpu0
+      CALL SYSTEM_CLOCK(iwall)
+      TIMWAL = (iwall - iwall0) * clock_factor
+#endif  /* if SYS_CRAY etc. elif SYS_NEC else */
 C
       RETURN
       END
 C  /* Deck settim */
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF90))||(defined (SYS_LINUX) && defined (VAR_IFORT)) || defined (SYS_AIX)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_LINUX) || defined (SYS_AIX)
       SUBROUTINE SETTIM
 C
 C  Unix timing routines emulating Lund IBM timing routines
