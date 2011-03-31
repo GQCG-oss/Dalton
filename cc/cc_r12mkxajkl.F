@@ -2225,7 +2225,7 @@ C  /* Deck r12exdens*/
 #include <inftap.h>
 #include <ccsdinp.h>
 ccc#include <inforb.h>
-      integer kcmo,lwork,kfrsav,kfree,lfree,kfcao,kdcao,kdv
+      integer kcmo,lwork,kfrsav,kfree,lfree,kfvao,kfcao,kdcao,kdvao,kdv
       integer pq,kcao,isym,ioff,ioff1,kexia,isymi,NNORB1
       integer kctao,koff,index,ISYMAI,isyma,nnbast
       integer idxkl,idxlk,idxij,idxji,idxklij,idxijkl,idxijlk
@@ -2233,7 +2233,7 @@ ccc#include <inforb.h>
       integer koffc,kexiaz,noffset,nvir0(8),kextia,kfctao
       integer icoun1,imatpq(8,8),icoun2,imatsq(8,8),ij,ji
       integer kajfr,isymaj,luvajkl,ncfai,kexfa,kexfaz
-      integer nd
+      logical onlyfc
 c
       integer icoun3,imatfq(8,8),kxij,kxijij,ncvij,nvirf(8)
 #include <maxorb.h>
@@ -2308,7 +2308,9 @@ c
       KFREE  = 1
       LFREE  = lwork
       CALL MEMGET('REAL',kfcao,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kfvao,     0,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',kdcao,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',kdvao,     0,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',kdv  ,     0,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',kcmo, nlamds,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',kexia,nnbast,WORK,KFREE,LFREE)
@@ -2330,9 +2332,10 @@ c
 
       LUSUPM = -1
       call dzero(work(kfcao),n2basx)
-      ND = 1
-      call fckmao(ND,work(kdv),emcmy,cmo(1),dens,work(kfcao),
-     &     work,kfree,lfree)
+      onlyfc = .TRUE.
+      call fckmao(onlyfc,emcmy,work(kfcao),work(kfvao),
+     &     dens,work(kdvao),work(kdv),cmo(1+noffset),work(kfree),lfree)
+      
 !     Note: dens is destroyed in fckmao because of dirfck, but that doesn't
 !     matter as it is not used any more /Jan 2011
 
