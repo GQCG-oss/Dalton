@@ -889,8 +889,7 @@ C
 #if defined (SYS_CRAY)
       CALL WCLOSE('CC_DIIS',IERR)
       INFO = ISHELL('rm CC_DIIS')
-#endif
-#if !defined (SYS_CRAY)
+#else
       CALL GPCLOSE(LUTDIS,'DELETE')
       CALL GPCLOSE(LUSDIS,'DELETE')
 #endif
@@ -4844,14 +4843,14 @@ C
 C
       RETURN
 C
-    1 FORMAT(/,/,7X,'Symmetry number :',I5)
-    2 FORMAT(/,/,7X,'Sirius ordering')
+    1 FORMAT(//,7X,'Symmetry number :',I5)
+    2 FORMAT(//,7X,'Sirius ordering')
     3 FORMAT(7X,'---------------')
-    4 FORMAT(/,/,7X,'CCSD ordering occupied part')
+    4 FORMAT(//,7X,'CCSD ordering occupied part')
     5 FORMAT(7X,'---------------------------')
-    6 FORMAT(/,/,7X,'CCSD ordering virtual part')
+    6 FORMAT(//,7X,'CCSD ordering virtual part')
     7 FORMAT(7X,'--------------------------')
-    8 FORMAT(/,/,7X,'This symmetry is empty')
+    8 FORMAT(//,7X,'This symmetry is empty')
 C
       END
 C  /* Deck ccsd_symsqo */
@@ -4939,9 +4938,10 @@ C
          SCR(IJSQ) = DISTAB(IJPK)
 C
   100 CONTINUE
-#endif
-C
-#if defined (SYS_CRAY)
+#else
+
+C     SYS_CRAY code
+
       KOFF = I2BST(ISYMAB) + 1
       CALL GATHER(N2BST(ISYMAB),SCR,DISTAB,IADRPK(KOFF))
 #endif
@@ -4962,18 +4962,17 @@ C
 C
       CALL QENTER('CCSD_SYMSQT')
 C
+#if defined (SYS_CRAY)
+       WRITE(LUPRI,*) 'computation of Bijal on SYS_CRAY not implemented'
+       CALL QUIT('computation of Bijal on SYS_CRAY not implemented')
+#endif
 C
-#if !defined (SYS_CRAY)
        DO IJSQ = 1,N2BST(ISYMAB)
          KOFF = I2BST(ISYMAB) + IJSQ
          IJPK = IADRPK(KOFF)
          SCR(IJSQ) = -DISTAB1(IJPK) 
        END DO  
-#endif
 C
-#if defined (SYS_CRAY)
-       WRITE(LUPRI,*) 'computation of Bijal on SYS_CRAY not implemented'
-#endif
 C
       CALL QEXIT('CCSD_SYMSQT')
 C
