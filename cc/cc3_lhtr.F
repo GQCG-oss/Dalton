@@ -172,7 +172,7 @@ C
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND0
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND0
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -214,7 +214,7 @@ C
 C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND2
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C

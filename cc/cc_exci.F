@@ -1740,12 +1740,12 @@ C
       IMULT   = 1
 C
       MODEL = 'CCSD      '
-      IF (CCS) MODEL = 'CC2       '
-      IF (CCP2) MODEL = 'CC(2)     '
+      IF (CCS)   MODEL = 'CC2       '
+      IF (CCP2)  MODEL = 'CC(2)     '
       IF (CCR1A) MODEL = 'CCSDR(1A) '
       IF (CCR1B) MODEL = 'CCSDR(1B) '
-      IF (CCRT) MODEL = 'CCSDR(T) '
-      IF (CCR3) MODEL = 'CCSDR(3) '
+      IF (CCRT)  MODEL = 'CCSDR(T) '
+      IF (CCR3)  MODEL = 'CCSDR(3) '
 C
       IF ( CCR3.OR.CCRT.OR.CCR1A.OR.CCR1B ) THEN
          CC3SAV = CCSDT

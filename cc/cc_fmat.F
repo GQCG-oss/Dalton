@@ -348,11 +348,7 @@ c/* Deck CC_FTRAN */
       
       INTEGER ILSTSYM
 
-#if defined (SYS_CRAY) 
-      REAL WORK(LWORK), RDUM
-#else 
-      DOUBLE PRECISION WORK(LWORK), RDUM
-#endif 
+      REAL*8  WORK(LWORK), RDUM
 
       CALL QENTER('CC_FTRAN')
 

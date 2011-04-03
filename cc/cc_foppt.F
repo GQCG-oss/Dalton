@@ -168,7 +168,7 @@ C
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND0
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND0
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -300,7 +300,7 @@ C
 C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND2
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -458,7 +458,7 @@ C
 C
          IF (LWRK4 .LT. 0) THEN
             WRITE(LUPRI,*) 'Memory available : ',LWORK
-            WRITE(LUPRI,*) 'Memory needed    : ',KEND4
+            WRITE(LUPRI,*) 'Memory needed    > ',KEND4
             CALL QUIT('Insufficient space in CCSDT_OMEG')
          END IF
 C
@@ -665,7 +665,7 @@ C
 C
                IF (LWRK4 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
-                  WRITE(LUPRI,*) 'Memory needed    : ',KEND4
+                  WRITE(LUPRI,*) 'Memory needed    > ',KEND4
                   CALL QUIT('Insufficient space in CCSDT_OMEG')
                END IF
 C
@@ -7609,7 +7609,7 @@ C
 C
       RETURN
       END
-C  /* Deck ccsdt_symsort */
+C  /* Deck ccsdpt_symsort */
       SUBROUTINE CCSDPT_SYMSORT(UMAT,ISSMAT,WORK,LWORK)
 C
 C     Written by K. Hald, Fall 2001.

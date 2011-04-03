@@ -94,15 +94,12 @@ c /* deck CC_AAMAT */
 
 * external functions:
       INTEGER ILSTSYM
-#if defined (SYS_CRAY)
-      REAL DDOT, FREQLST
-#else
-      DOUBLE PRECISION DDOT, FREQLST
-#endif
+      REAL*8  DDOT, FREQLST
 
 *---------------------------------------------------------------------*
 * initializations:
 *---------------------------------------------------------------------*
+      CALL QENTER('CC_AAMAT')
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'Entered  cc_aamat...'
         CALL FLSHFO(LUPRI)
@@ -170,10 +167,10 @@ c /* deck CC_AAMAT */
 
         IF ( (IRELAX.GT.0) .OR. LTWOEL ) THEN
 
+           IF (CCSDT) CALL QUIT('relaxed with triples not available!')
+
            CALL CC_FDAAMAT(LISTR,IDLSTR,WORK(KRES1),WORK(KRES2),
      &                     LABEL,IRELAX,WORK(KEND1),LWRK1)
-
-           IF (CCSDT) CALL QUIT('relaxed with triples not available!')
 
         ELSE
 
@@ -334,6 +331,7 @@ c          --------------------------------------------------
 *---------------------------------------------------------------------*
       END DO
 
+      CALL QUIT('CC_AAMAT')
       RETURN
       END
 *---------------------------------------------------------------------*

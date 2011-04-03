@@ -606,12 +606,14 @@ C          ****************************
 C--------------------------------------
 C
 
-           IF ((CCFOP.OR.LTBAR0).AND.(.NOT. 
-     *       (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
+           IF ( (CCFOP.OR.LTBAR0) .AND. 
+     &          (.NOT. (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
 C
              IF (CCR12.AND.MP2.AND..NOT.R12PRP) THEN
-                 WRITE(LUPRI,*) 'Please specify R12PRP in your input...'
-                 WRITE(LUPRI,*) 'CCFOP will be ignored...'
+                 NWARN = NWARN + 1
+                 WRITE(LUPRI,'(//A/A)')
+     &              'WARNING: Please specify R12PRP in your input...',
+     &              'WARNING: CCFOP will be ignored...'
              ELSEIF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
                  !...................................
                  !SONIA: I am not sure but let us try

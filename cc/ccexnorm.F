@@ -1034,10 +1034,10 @@ C
       CHARACTER*5 FN3FOP
       CHARACTER*4 FNDKBC
 C
-      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2 = 'CC3_VI12', 
-     *           FN3FOP='PTFOP'   , FN3FOP2='PTFOP2',
-     *           FNCKJD = 'CKJDEL', FNTOC  = 'CCSDT_OC',
-     *           FNDKBC  = 'DKBC')
+      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2  = 'CC3_VI12', 
+     *           FN3FOP = 'PTFOP' , FN3FOP2 = 'PTFOP2',
+     *           FNCKJD = 'CKJDEL', FNTOC   = 'CCSDT_OC',
+     *           FNDKBC = 'DKBC')
 C
       LOGICAL locdbg
       PARAMETER (locdbg = .false.)
