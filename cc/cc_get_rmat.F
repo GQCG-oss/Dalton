@@ -222,7 +222,7 @@ C           WRITE (LUPRI,*) 'Natural connection for dh/dB used.'
        WRITE (LUPRI,*) 'Error in CC_GET_RMAT:'
        WRITE (LUPRI,*) 'No connection matrix available for ',LABELH,
      &                 'operator.'
-       CALL QUIT('Unkown operator/connection matrix in CC_GET_RMAT.')
+       CALL QUIT('Unknown operator/connection matrix in CC_GET_RMAT.')
       END IF
 
       IF (LOCDBG) THEN

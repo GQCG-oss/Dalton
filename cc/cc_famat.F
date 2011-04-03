@@ -136,7 +136,7 @@ c /* deck cc_famat */
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_FAMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_FAMAT...'
-        CALL QUIT('Unkown CC method in CC_FAMAT.')
+        CALL QUIT('Unknown CC method in CC_FAMAT.')
       END IF
 
 *---------------------------------------------------------------------*
@@ -686,7 +686,7 @@ C
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_FAMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_FAMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -1122,7 +1122,7 @@ C           ----------------------------------
      &                   WORK(KLAMHB),WORK(KT1AMB),ISYMB)
       ELSE
         
-        CALL QUIT('Unkown list '//LISTB//' in CCSDT_FAMAT_NODDY.')
+        CALL QUIT('Unknown list '//LISTB//' in CCSDT_FAMAT_NODDY.')
     
       END IF
 

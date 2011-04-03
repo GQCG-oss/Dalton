@@ -125,7 +125,7 @@ C
        WRITE (LUPRI,*) 'Error in CC_GET_NUCCON:'
        WRITE (LUPRI,*) 'No nuclear contrib. available for ',LABEL,
      &      'operator.'
-       CALL QUIT('Unkown operator in CC_GET_NUCCON.')
+       CALL QUIT('Unknown operator in CC_GET_NUCCON.')
       END IF
 
       RETURN

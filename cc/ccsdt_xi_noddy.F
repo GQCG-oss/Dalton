@@ -1505,7 +1505,7 @@ C     --------------------------------------------
 
         ELSE
           WRITE(LUPRI,*) 'LISTL,IDLSTL:',LISTL(1:3),IDLSTL
-          CALL QUIT('Unkown/Illegal list in CCSDT_XI_CONT_NODDY.')
+          CALL QUIT('Unknown/Illegal list in CCSDT_XI_CONT_NODDY.')
         END IF
 
 

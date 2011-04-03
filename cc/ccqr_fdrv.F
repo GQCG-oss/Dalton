@@ -226,7 +226,7 @@ c      END IF
            MODEL = 'CCSD      '
            IOPT  = 3
         ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_FDRV.')
+           CALL QUIT('Unknown coupled cluster model in CC_FDRV.')
         END IF
 
         IF (LOCDBG) THEN

@@ -65,7 +65,7 @@ Cholesky
       CHARACTER*(18) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_CPHF>  ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE. )
+      PARAMETER (LOCDBG = .true. )
       CHARACTER*8 FNGDVE, FNSOVE, FNREVE, FILCPHF
       PARAMETER(FNGDVE='CCPHFRHS',FNSOVE='CCPHFSOL')
       PARAMETER(FNREVE='CCPHFRES')
@@ -81,20 +81,15 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 
       CHARACTER*8 LABEL(MAXVEC,*)
 
-#if defined (SYS_CRAY)
-      REAL FREQS(MAXVEC,*), EIGV(MAXVEC,*)
-      REAL WORK(LWORK)
-      REAL ZERO, RDUM
-      REAL XNORM, DDOT, DSQRT, GDNORM
-#else
-      DOUBLE PRECISION FREQS(MAXVEC,*), EIGV(MAXVEC,*)
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION ZERO, RDUM
-      DOUBLE PRECISION XNORM, DDOT, DSQRT, GDNORM
-#endif
+      REAL*8  FREQS(MAXVEC,*), EIGV(MAXVEC,*)
+      REAL*8  WORK(LWORK)
+      REAL*8  ZERO, RDUM
+      REAL*8  XNORM, DDOT, DSQRT, GDNORM
+
       PARAMETER (ZERO = 0.0d0)
 
       CHARACTER MODEL*(10), MODWR*(10)
+
       LOGICAL MAYBE_MORE, RELAX, CICLC, HFCLC, TRPCLC,OOTV
       LOGICAL EXCLC, FASAVE, OPTST, EX
       INTEGER IOPT, ISYM, IVEC, NSTAT, ORDER, IDUM, IPERT,LWRK0,LWRK1
@@ -109,15 +104,16 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 *---------------------------------------------------------------------*
 * do some checks:
 *---------------------------------------------------------------------*
-      CALL QENTER('CCCPHF')
+      CALL QENTER('CC_CPHF')
 
       IF (NVEC.LT.1) THEN
-        CALL QEXIT('CCCPHF')
+        CALL QEXIT('CC_CPHF')
         RETURN
       END IF
 
       IF (LOCDBG) THEN
-         WRITE(LUPRI,*) 'Entered CC_CPHF.'
+         WRITE(LUPRI,*) 'Entered CC_CPHF. NVEC =',NVEC
+         WRITE(LUPRI,*) 'TYPE ',TYPE
          CALL FLSHFO(LUPRI)
       END IF
 
@@ -133,6 +129,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 
 * Refuse to do anything for Cholesky.
       IF (CHOINT) THEN
+         NWARN = NWARN + 1
          WRITE(LUPRI,'(/A/A/A/A/)') '*** WARNING from CC_CPHF:',
      &      ' WARNING: Refusing to do CPHF for Cholesky, because',
      &      ' WARNING: ABACUS has not been modified yet!',
@@ -163,6 +160,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 * print some debug/info output
       IF (IPRINT .GT. 10 .OR. LOCDBG) THEN
         WRITE(LUPRI,*) 'CC_CPHF Workspace:',LWORK
+        WRITE(LUPRI,*) '1 MODWR ',MODWR
       END IF
   
       CALL FLSHFO(LUPRI)
@@ -269,6 +267,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
         IF (LOCDBG) THEN
           WRITE (LUPRI,*) 'CC_CPHF> GP vector, label, symmetry:',
      &                     LABEL(IVEC,1), ISYM
+          WRITE(LUPRI,*) '2 MODWR ',MODWR
           CALL FLSHFO(LUPRI)
         END IF
 
@@ -283,6 +282,7 @@ C       ---------------------------
         IF (LOCDBG) THEN
           WRITE (LUPRI,'(5X,I5,F12.8)') (I,WORK(KEND0-1+I),
      &                     I=1,NALLAI(ISYM))
+          WRITE(LUPRI,*) '3 MODWR ',MODWR
         END IF
 
 
@@ -298,6 +298,7 @@ C       check norm of the gradient vector:
 C       ----------------------------------
         GDNORM=DSQRT(DDOT(NALLAI(ISYM),WORK(KEND0),1,WORK(KEND0),1))
         IF (LOCDBG) WRITE (LUPRI,*) 'GDNORM:',GDNORM
+        IF (LOCDBG) WRITE (LUPRI,*) '4 MODWR ',MODWR
 
 
 C       --------------------------------------------------------
@@ -323,6 +324,7 @@ C
           CALL SETSIR(WORK(KEND0),LWRK0)
 
           IF (LOCDBG) WRITE (LUPRI,*) 'going to call ABARSP'
+          IF (LOCDBG) WRITE (LUPRI,*) '5 MODWR ',MODWR
 C         -----------------------
 C         solve CPHF equation(s):
 C         -----------------------
@@ -335,6 +337,7 @@ C         -----------------------
      &                MAXITE,IPRABA,MXRM,MXPHP,WORK(KEND0),LWRK0)
 
           IF (LOCDBG) WRITE (LUPRI,*) 'returned from ABARSP'
+          IF (LOCDBG) WRITE (LUPRI,*) '6 MODWR ',MODWR
 
 C         --------------------------------------------
 C         clean up `left overs' from ABARSP:
@@ -375,6 +378,8 @@ C         --------------------------------------------
            IF (TYPE(1:3).EQ.'R1 ') THEN
             INUM=IR1TAMP(LABEL(IDX,1),.TRUE.,WORK(KFRVAL-1+IFRVAL),ISYM)
            END IF
+           IF (LOCDBG) WRITE (LUPRI,*) 'IFRVAL, TYPE, MODWR ',
+     &         IFRVAL,TYPE,MODWR
 
            ! if yes put the CPHF also on the CC vector file
            IF (INUM.GT.0) THEN
@@ -392,6 +397,7 @@ C         --------------------------------------------
      &           'CC_CPHF> saved CPHF solution for ',TYPE,
      &           ' equation nb. ',IDX,INUM
            END IF
+           IF (LOCDBG) WRITE (LUPRI,*) '7 MODWR ',MODWR
 
         END DO
 
@@ -418,8 +424,9 @@ C         --------------------------------------------
          WRITE(LUPRI,*) 'leave CC_CPHF'
          CALL FLSHFO(LUPRI)
       END IF
+           IF (LOCDBG) WRITE (LUPRI,*) '8 MODWR ',MODWR
 
-      CALL QEXIT('CCCPHF')
+      CALL QEXIT('CC_CPHF')
       RETURN
       END
 *=====================================================================*

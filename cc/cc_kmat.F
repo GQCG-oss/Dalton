@@ -256,7 +256,7 @@ c/* Deck CC_BMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_KMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_KMAT...'
-        CALL QUIT('Unkown CC method in CC_KMAT.')
+        CALL QUIT('Unknown CC method in CC_KMAT.')
       END IF
 
       IF (.NOT. DUMPCD) THEN
@@ -323,7 +323,7 @@ c/* Deck CC_BMAT */
          MODELW = 'CCSD      '
          IOPTW  = 3
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_KMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_KMAT.')
       END IF
 
 

@@ -975,7 +975,7 @@ c       -------------------------------------------------
         end do
 c
       else 
-        call quit('Unkown value for IOPT in CC_R12MKVAMKL0')
+        call quit('Unknown value for IOPT in CC_R12MKVAMKL0')
       end if
 c
       end if !(R12EOR)

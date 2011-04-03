@@ -148,7 +148,7 @@
         idlstb = ister1(idlstab)
 
       else
-        call quit('Unkown LISTAB in CCSDT_T32_NODDY.')
+        call quit('Unknown LISTAB in CCSDT_T32_NODDY.')
       end if
 
       isymab = ilstsym(listab,idlstab)
@@ -160,11 +160,11 @@
       end if
 
       if (listb(1:3).ne.'R1 ' .and. listb(1:3).NE.'RE ') then
-        call quit('Unkown LISTB in CCSDT_T32_NODDY.')
+        call quit('Unknown LISTB in CCSDT_T32_NODDY.')
       end if
 
       if (lista(1:3).ne.'R1 ' .and. lista(1:3).NE.'RE ') then
-        call quit('Unkown LISTA in CCSDT_T32_NODDY.')
+        call quit('Unknown LISTA in CCSDT_T32_NODDY.')
       end if
 
       call dzero(tab3am,nt1amx*nt1amx*nt1amx)
@@ -319,7 +319,7 @@
      &                         work(kend1),lwrk1)
           call dscal(nt1amx*nt1amx*nt1amx,-1.0d0,work(kta3am),1)
         else
-          call quit('Unkown LISTA in CCSDT_T32_NODDY.')
+          call quit('Unknown LISTA in CCSDT_T32_NODDY.')
         end if
 
 c     write(lupri,*) 'norm^2(tab3arm) before cont. of t^B_3:',
@@ -378,7 +378,7 @@ c    &   ddot(nt1amx**3,tab3am,1,tab3am,1)
      &                         work(kend1),lwrk1)
           call dscal(nt1amx*nt1amx*nt1amx,-1.0d0,work(ktb3am),1)
         else
-          call quit('Unkown LISTB in CCSDT_T32_NODDY.')
+          call quit('Unknown LISTB in CCSDT_T32_NODDY.')
         end if
 
         call ccsdt_xksi3_2(tab3am,work(kfocka),work(ktb3am))

@@ -358,7 +358,7 @@ c/* Deck CC_GMAT */
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_GMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_GMAT...'
-        CALL QUIT('Unkown CC method in CC_GMAT.')
+        CALL QUIT('Unknown CC method in CC_GMAT.')
       END IF
 
       IF (LISTB(1:1).NE.'R' .OR. LISTC(1:1).NE.'R') THEN
@@ -1798,7 +1798,7 @@ C
            IOPTWE = 24
            MODELW = 'CC3       '
          ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_GMAT.')
+           CALL QUIT('Unknown coupled cluster model in CC_GMAT.')
          END IF
          IF (CCR12) THEN
            APROXR12 = '   '

@@ -324,7 +324,7 @@ c/* Deck CC_BMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BMAT...'
-        CALL QUIT('Unkown CC method in CC_BMAT.')
+        CALL QUIT('Unknown CC method in CC_BMAT.')
       END IF
 
       IF (LISTA(1:1).NE.'R' .OR. LISTB(1:1).NE.'R') THEN
@@ -411,7 +411,7 @@ c/* Deck CC_BMAT */
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_BMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_BMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -523,7 +523,7 @@ c/* Deck CC_BMAT */
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
-          CALL QUIT('Unkown CC model in CC_BMAT.')
+          CALL QUIT('Unknown CC model in CC_BMAT.')
       END IF
 
       I1HGH(0) = 0
@@ -575,7 +575,7 @@ c/* Deck CC_BMAT */
         ELSE IF (CCSD.OR.CCSDT) THEN
           NNWORK = 2*NGLMDT(ISYMA) + 2*NGLMDT(ISYMB)
         ELSE
-          CALL QUIT('Unkown CC model in CC_BMAT.')
+          CALL QUIT('Unknown CC model in CC_BMAT.')
         END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
@@ -3091,7 +3091,7 @@ c/* Deck CCBPRE1 */
           KDENS(IDX)  = KDUM
           KFOCK(IDX)  = KDUM
         ELSE
-          CALL QUIT('Unkown CC model in CCBPRE1.')
+          CALL QUIT('Unknown CC model in CCBPRE1.')
         END IF
 
         IF ( (LWORK-KENDOUT) .LE. NT1AM(ISYM) ) THEN
@@ -3627,7 +3627,7 @@ c/* Deck CCBINT2 */
 
 *---------------------------------------------------------------------*
       ELSE 
-        CALL QUIT('UNKOWN COUPLED CLUSTER MODEL IN CCBINT2.')
+        CALL QUIT('Unknown Coupled Cluster model in CCBINT2.')
       END IF
 
       CALL QEXIT('CCBINT2')

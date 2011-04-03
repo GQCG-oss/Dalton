@@ -180,7 +180,7 @@ c/* Deck CC_BAMAT */
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BAMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BAMAT...'
-        CALL QUIT('Unkown CC method in CC_BAMAT.')
+        CALL QUIT('Unknown CC method in CC_BAMAT.')
       END IF
 
       IF (LISTO(1:2).NE.'o1') THEN
@@ -209,7 +209,7 @@ c/* Deck CC_BAMAT */
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_BAMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_BAMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '

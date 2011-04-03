@@ -88,7 +88,7 @@ C Models:
       else if (CCSD) then
         modelw = 'CCSD      '
       else
-        call quit('unkown CC method in CC_FTSTNEW!')
+        call quit('unknown CC method in CC_FTSTNEW!')
       end if
       CALL CCSD_MODEL(MODELW,LENMOD,24,MODELW,10,APROXR12)
 C     write(lupri,*) 'MODEL in CC_FTSTNEW: ',MODELW

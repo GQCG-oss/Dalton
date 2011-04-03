@@ -407,12 +407,12 @@ C
             LABELRY = '- none -'
          ELSE
            WRITE(LUPRI,*) 'LISTRY = ', LISTRY
-           CALL QUIT('Unkown list for LISTRY in CC3_AAMATSDVIR.')
+           CALL QUIT('Unnkown list for LISTRY in CC3_AAMATSDVIR.')
          END IF
 C
       ELSE
         WRITE(LUPRI,*) 'LISTRX = ', LISTRX
-        CALL QUIT('Unkown list for LISTRX in CC3_AAMATSDVIR.')
+        CALL QUIT('Unknown list for LISTRX in CC3_AAMATSDVIR.')
       END IF
 C
       FREQXY = FREQRX + FREQRY
@@ -1731,7 +1731,7 @@ C
          LABELRX = LRTLBL(IDLSTRX)
 C
       ELSE
-         CALL QUIT('Unkown list for LISTRX in CC3_AAMATSDOCC.') 
+         CALL QUIT('Unknown list for LISTRX in CC3_AAMATSDOCC.') 
       END IF
 C      
       IF (LISTRY(1:3).EQ.'R1 ') THEN
@@ -1740,7 +1740,7 @@ C
          LABELRY = LRTLBL(IDLSTRY)
 C
       ELSE
-         CALL QUIT('Unkown list for LISTRY in CC3_AAMATSDVIR.') 
+         CALL QUIT('Unknown list for LISTRY in CC3_AAMATSDVIR.') 
       END IF
 C
       FREQXY = FREQRX + FREQRY

@@ -1706,7 +1706,7 @@ C            -----------------------
                 MODEL = 'CCSD      '
                 IOPT  = 3
              ELSE
-                CALL QUIT('Unkown coupled cluster model in CCQR_FADRV.')
+                CALL QUIT('Unknown coupled cluster model in CCQR_FADRV')
              END IF
             
              CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
@@ -1998,7 +1998,7 @@ c /* deck ccqr_eadrv */
            MODEL = 'CCSD      '
            IOPT  = 3
         ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_EADRV.')
+           CALL QUIT('Unknown coupled cluster model in CC_EADRV.')
         END IF
 
         CALL CC_WARSP(LISTB, IFILE, ISYRES, IOPT, MODEL,DUMMY,

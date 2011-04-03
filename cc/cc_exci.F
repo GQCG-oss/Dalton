@@ -2435,7 +2435,7 @@ C
 C     IF (CCS .OR. CC2 .OR. CCSD) THEN
 C       ECURR = 0.0D0
 C     ELSE
-C       CALL QUIT('Entered for unkown model CC_ATRR')
+C       CALL QUIT('Entered for unknown model CC_ATRR')
 C     END IF
 C
       NSIMTR = 1

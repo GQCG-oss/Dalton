@@ -238,7 +238,7 @@ C
         IOPT   = IAND(IOPT,1+2+4+8+16+IBIT32)
         NWRITE = 6
       ELSE 
-        WRITE (LUPRI,*) 'unkown model in CC_WRRSP:',MODFIL
+        WRITE (LUPRI,*) 'Unknown model in CC_WRRSP: ',MODFIL
         CALL QUIT('MODEL not yet implemented in CC_WRRSP.')
       END IF
 

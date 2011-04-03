@@ -484,7 +484,7 @@ c       ----------------
       ELSE IF (CC3) THEN
          CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
-         CALL QUIT('CC_CAUCHY called for an unkown '//
+         CALL QUIT('CC_CAUCHY called for an unknown '//
      &             'Coupled Cluster model.')
       END IF
 
@@ -874,9 +874,9 @@ c /* deck CCCM_VEC */
         MODELW = 'CC3       '
         IOPTW  = 3
       ELSE
-        WRITE (LUPRI,*)'CCCM_VEC> called for unkown coupled '//
+        WRITE (LUPRI,*)'CCCM_VEC> called for unknown coupled '//
      &        'cluster model...'
-        CALL QUIT('CCCM_VEC> called for unkown '//
+        CALL QUIT('CCCM_VEC> called for unknown '//
      &            'coupled cluster model...')
       END IF
   

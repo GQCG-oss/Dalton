@@ -614,7 +614,7 @@ C     END IF
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_XIETA Called for a Coupled Cluster '
      &          //'method not implemented in CC_XIETA...'
-        CALL QUIT('Unkown CC method in CC_XIETA.')
+        CALL QUIT('Unk own CC method in CC_XIETA.')
       END IF
 
       CALL FLSHFO(LUPRI)
@@ -685,7 +685,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_XIETA.')
+         CALL QUIT('Unk own coupled cluster model in CC_XIETA.')
       END IF
 
 
@@ -767,7 +767,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
         MSCRATCH0 = MAX(MT2SQ,MGAMMA,MT2BGD,6*MT2BCD) + 2*MDISAO + 
      &        MAX(MT2SQ,2*MT2ORT) + NEMAT1(ISYM0) + 10*N2BASX
       ELSE
-        CALL QUIT('Unkown CC model in CC_XIETA.')
+        CALL QUIT('Unk own CC model in CC_XIETA.')
       END IF
 
 * requirements per simultaneous transformation:
@@ -778,7 +778,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         MSCRATCH1 = MAX(2*MT2ORT,MT2AM) + MEMAT1 + 2*M2BST
       ELSE
-        CALL QUIT('Unkown CC model in CC_XIETA.')
+        CALL QUIT('Unk own CC model in CC_XIETA.')
       END IF
 
       IF (LOCDBG) THEN
@@ -1775,8 +1775,8 @@ C             END IF
               END IF
            END DO
         ELSE IF (LTWOEL) THEN
-           WRITE (LUPRI,*) 'Unkown 2el operator label in CC_XIETA.'
-           CALL QUIT('Unkown 2el operator label in CC_XIETA.')
+           WRITE (LUPRI,*) 'Unk own 2el operator label in CC_XIETA.'
+           CALL QUIT('Unk own 2el operator label in CC_XIETA.')
         END IF
 
         IF (LOCDBG) THEN

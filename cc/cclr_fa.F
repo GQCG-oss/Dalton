@@ -124,7 +124,7 @@ c /* deck cclr_fa */
       IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CCLR_FA called for a Coupled Cluster '
      &          //'method not implemented in CCLR_FA...'
-        CALL QUIT('Unkown CC method in CCLR_FA.')
+        CALL QUIT('Unknown CC method in CCLR_FA.')
       END IF
 
 *---------------------------------------------------------------------*

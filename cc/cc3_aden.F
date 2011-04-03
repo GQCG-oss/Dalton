@@ -363,7 +363,7 @@ C
         ISYML0 = ISYM0
 C
       ELSE 
-         CALL QUIT('Unkown left list in CC3_ADENOCC')
+         CALL QUIT('Unknown left list in CC3_ADENOCC')
       END IF
 
       IF (LISTR(1:3).EQ.'R1 ') THEN
@@ -373,7 +373,7 @@ C
         FREQR1  = FRQLRT(IDLSTR)
         LABELR1 = LRTLBL(IDLSTR)
       ELSE
-         CALL QUIT('Unkown right list in CC3_ADENOCC')
+         CALL QUIT('Unknown right list in CC3_ADENOCC')
       END IF
 C
 C---------------------------------------------------------------------
@@ -9369,7 +9369,7 @@ C
         ISYML0 = 1
 C
       ELSE
-         CALL QUIT('Unkown left list in CC3_ADENVIR')
+         CALL QUIT('Unknown left list in CC3_ADENVIR')
       END IF
 
       IF (LISTR(1:3).EQ.'R1 ') THEN
@@ -9385,7 +9385,7 @@ c
          LABELR1 = '- none -'
       ELSE
          WRITE(LUPRI,*)'LISTR ',LISTR
-         CALL QUIT('Unkown right list in CC3_ADENVIR')
+         CALL QUIT('Unknown right list in CC3_ADENVIR')
       END IF
 C
 C-------------------------------------------------------

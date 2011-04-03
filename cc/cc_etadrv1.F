@@ -245,7 +245,7 @@ C       MPERM = ??
          MODEL = 'CCSD      '
          IOPT  = 3
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_ETADRV.')
+         CALL QUIT('Unknown coupled cluster model in CC_ETADRV.')
       END IF
 
       DO IVEC = 1, NVEC

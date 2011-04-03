@@ -513,7 +513,7 @@ C       ---------------------------------------
      &                         WORK(KFOCKD),DUMMY,DUMMY,
      &                         WORK(KSCR1),WORK(KEND2),LWRK2)
         ELSE
-          CALL QUIT('Unkown or illegal LISTR in CCSDT_ADEN_NODDY.')
+          CALL QUIT('Unknown or illegal LISTR in CCSDT_ADEN_NODDY.')
         END IF
 
         IF (HAVETB3T3) THEN
@@ -2667,7 +2667,7 @@ c
         LISTR  = 'R1 '
         IDLSTR = IR1TAMP(LABELY,LORX,FREQ,ISYMY)
       ELSE
-        CALL QUIT('Unkown list in CCSDT_GWBIC')
+        CALL QUIT('Unknown list in CCSDT_GWBIC')
       END IF
 
 *---------------------------------------------------------------------*

@@ -343,7 +343,7 @@ C       ------------------------------------------
 
       ELSE
 
-        CALL QUIT('Unkown list '//LISTC//' in CCSDT_AA_NODDY.')
+        CALL QUIT('Unknown list '//LISTC//' in CCSDT_AA_NODDY.')
 
       END IF
 

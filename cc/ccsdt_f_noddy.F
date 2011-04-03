@@ -1207,7 +1207,7 @@ c     -----------------------------
 
       ELSE
         WRITE(LUPRI,*) 'LISTB,IDLSTB:',LISTB(1:3),IDLSTB
-        CALL QUIT('Unkown/Illegal list in CCSDT_TBAR31_NODDY.')
+        CALL QUIT('Unknown/Illegal list in CCSDT_TBAR31_NODDY.')
       END IF
 
       IF (LISTB(1:3).NE.'LE ') THEN

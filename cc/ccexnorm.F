@@ -1069,12 +1069,12 @@ C
 
       if (listl(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTL:',LISTL
-         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
+         CALL QUIT('Unknown/Illegal list in CC3_LR_OVLP.')
       end if
 !
       if ( listr(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTR:',LISTR
-         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
+         CALL QUIT('Unknown/Illegal list in CC3_LR_OVLP.')
       end if
 C
 C-------------------
@@ -1256,12 +1256,12 @@ C------------------------------------
 C
       if (LISTEB(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTEB:',LISTEB
-         CALL QUIT('Unkown/Illegal list in EB3_E3_OVLP.')
+         CALL QUIT('Unknown/Illegal list in EB3_E3_OVLP.')
       end if
 C
       if ( LISTE(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTE:',LISTE
-         CALL QUIT('Unkown/Illegal list in EB3_E3_OVLP.')
+         CALL QUIT('Unknown/Illegal list in EB3_E3_OVLP.')
       end if
 C
 C--------------------------------

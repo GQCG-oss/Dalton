@@ -171,9 +171,9 @@ c/* Deck CC_HMAT */
       END IF
 
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
-        WRITE(LUPRI,'(/1x,a)') 'CC_HMAT called for a Coupled Cluster '
+        WRITE(LUPRI,'(/a)') ' CC_HMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_HMAT...'
-        CALL QUIT('Unkown CC method in CC_HMAT.')
+        CALL QUIT('Unknown CC method in CC_HMAT.')
       END IF
 
 * check list combination:

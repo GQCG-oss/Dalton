@@ -1826,7 +1826,7 @@ C
      &      //'    Eigval 2     T1-norm        T2-norm'     
 
          ELSE
-           WRITE (LUPRI,*) 'Unkown list in CC_TSTLST... ignored.'
+           WRITE (LUPRI,*) 'Unknown list in CC_TSTLST... ignored.'
            RETURN
          ENDIF
 C

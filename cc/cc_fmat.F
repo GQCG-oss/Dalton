@@ -672,7 +672,7 @@ C     DOUBLE PRECISION ECURRSAV
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,2a)')'CC_FMAT called for a Coupled Cluster ',
      &          'method not implemented in CC_FMAT...'
-        CALL QUIT('Unkown CC method in CC_FMAT.')
+        CALL QUIT('Unknown CC method in CC_FMAT.')
       END IF
 
       IF (.NOT. DUMPCD) THEN
@@ -752,7 +752,7 @@ C     DOUBLE PRECISION ECURRSAV
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_FMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_FMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -868,7 +868,7 @@ C     DOUBLE PRECISION ECURRSAV
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
-          CALL QUIT('Unkown CC model in CC_FMAT.')
+          CALL QUIT('Unknown CC model in CC_FMAT.')
       END IF
 
       IRHGH(0) = 0
@@ -919,7 +919,7 @@ C     DOUBLE PRECISION ECURRSAV
           NNWORK = 2*NGLMDT(ISYMR) + 
      &               NT1AO(ISYRES) + NT1AM(ISYRES) + NT2AOIJ(ISYRES)
         ELSE
-          CALL QUIT('Unkown CC model in CC_FMAT.')
+          CALL QUIT('Unknown CC model in CC_FMAT.')
         END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN

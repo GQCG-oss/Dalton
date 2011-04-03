@@ -422,7 +422,7 @@ C
         END IF
 
       ELSE 
-         CALL QUIT('Unkown left list in CC3_ADENOCC_CUB')
+         CALL QUIT('Unknown left list in CC3_ADENOCC_CUB')
       END IF
 
       IF (LISTR(1:3).EQ.'R2 ') THEN
@@ -451,7 +451,7 @@ C
       ELSE
          WRITE(LUPRI,*)'LISTR = ',LISTR(1:3)
          WRITE(LUPRI,*)'CC3_ADENVIR_CUB is designed for LISTR = R2'
-         CALL QUIT('Unkown right list in CC3_ADENOCC_CUB')
+         CALL QUIT('Unknown right list in CC3_ADENOCC_CUB')
       END IF
 
       FREQZU = FREQRZ + FREQRU
@@ -2691,7 +2691,7 @@ C
         FREQL1R = DUMMY
 C
       ELSE
-         CALL QUIT('Unkown left list in CC3_ADENVIR_CUB')
+         CALL QUIT('Unknown left list in CC3_ADENVIR_CUB')
       END IF
 
       IF (LISTR(1:3).EQ.'R2 ') THEN
@@ -2732,7 +2732,7 @@ C
       ELSE
        WRITE(LUPRI,*)'LISTR = ',LISTR(1:3)
        WRITE(LUPRI,*)'CC3_ADENVIR_CUB is designed for LISTR = R2 or ER1'
-       CALL QUIT('Unkown right list in CC3_ADENVIR_CUB')
+       CALL QUIT('Unknown right list in CC3_ADENVIR_CUB')
       END IF
 C
       IF (LORXRZ.OR.LORXRU) THEN

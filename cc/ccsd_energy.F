@@ -90,7 +90,7 @@ C     -------------------------------------------------------------
 C     set model for which the current t-amplitudes were calculated:
 C     -------------------------------------------------------------
 C
-      MODEL = 'UNKOWN    '
+      MODEL = 'UNKNOWN   '
       IF (CIS)   MODEL = 'CIS       '
       IF (CCS)   MODEL = 'CCS       '
       IF (MP2)   MODEL = 'MP2       '

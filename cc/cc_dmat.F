@@ -209,7 +209,7 @@ c/* Deck CC_DMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_DMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_DMAT...'
-        CALL QUIT('Unkown CC method in CC_DMAT.')
+        CALL QUIT('Unknown CC method in CC_DMAT.')
       END IF
 
       IF (    LISTA(1:1).NE.'R' 
@@ -260,7 +260,7 @@ C     END IF
          MODELW = 'CCSD      '
          IOPTW  = 3
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_DMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_DMAT.')
       END IF
 
 * start of scratch space for the following:

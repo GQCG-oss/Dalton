@@ -170,7 +170,7 @@ C
             IRELAX1DX(IDX) = IR1KAPPA(LABRLX(IDX),FRQRLX(IDX),
      &                               ISYMRLX(IDX))
          ELSE
-            CALL QUIT('Unkown List in CC_GRAD2.')
+            CALL QUIT('Unknown List in CC_GRAD2.')
          END IF
       END DO
 C

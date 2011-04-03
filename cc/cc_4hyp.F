@@ -406,7 +406,7 @@ c /* deck CC5HYPPRT */
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
       ELSE
-         CALL QUIT('CC5HYPPRT called for an unkown Coupled '//
+         CALL QUIT('CC5HYPPRT called for an unknown Coupled '//
      &             'Cluster model.')
       END IF
 

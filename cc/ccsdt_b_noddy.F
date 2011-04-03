@@ -277,7 +277,7 @@ C
      &                         WORK(KEND1),LWRK1)
 
       ELSE
-        CALL QUIT('Unkown LISTB in CCSDT_BMAT_NODDY.')
+        CALL QUIT('Unknown LISTB in CCSDT_BMAT_NODDY.')
       END IF
 
       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KTA3AM),1)
@@ -327,7 +327,7 @@ C
      &                         WORK(KEND1),LWRK1)
 
       ELSE
-        CALL QUIT('Unkown LISTB in CCSDT_BMAT_NODDY.')
+        CALL QUIT('Unknown LISTB in CCSDT_BMAT_NODDY.')
       END IF
 
       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KTB3AM),1)

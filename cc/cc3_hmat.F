@@ -329,7 +329,7 @@ C
 *        CONTINUE
          SKIPGEI = .TRUE.
       ELSE
-         CALL QUIT('Unkown left list in CC3_HMAT')
+         CALL QUIT('Unknown left list in CC3_HMAT')
       END IF
 C
       IF (.NOT.LVVVV) THEN
@@ -368,7 +368,7 @@ c        ! get symmetry, frequency and integral label for right list
 c        ! from common blocks defined in ccr1rsp.h
 c       ISYMRB  = ISYLRT(IDLSTB)
 c     ELSE
-c        CALL QUIT('Unkown right list in CC3_HMAT')
+c        CALL QUIT('Unknown right list in CC3_HMAT')
 c     END IF
       ISYMRB = ILSTSYM(LISTB,IDLSTB)
       ISYMRC = ILSTSYM(LISTC,IDLSTC)
@@ -405,7 +405,7 @@ C
            ISYMN1D = MULD2H(ISYM0,ISYMRD)
            ISYMN2D = MULD2H(ISYM0,ISYMRD)
         ELSE
-           CALL QUIT('Unkown left list in CC3_HMAT(x)')
+           CALL QUIT('Unknown left list in CC3_HMAT(x)')
         END IF
       END IF
 C

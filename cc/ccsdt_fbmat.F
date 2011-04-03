@@ -316,7 +316,7 @@ cfp
             LCAUCHY = .TRUE.
          ELSE 
             WRITE(LUPRI,*)'LISTB = ',LISTB
-            CALL QUIT('Unkown list for LISTB in CCSDT_FBMAT.')
+            CALL QUIT('Unknown list for LISTB in CCSDT_FBMAT.')
          END IF
 C
          IF ( (LISTC(1:3).EQ.'R1 ') .OR. (LISTC(1:3).EQ.'R2 ') ) THEN
@@ -344,7 +344,7 @@ cfp
 *           NCAU   = ILRCAU(IDLSTC)
          ELSE
             WRITE(LUPRI,*)'LISTC = ',LISTC
-            CALL QUIT('Unkown list for LISTC in CCSDT_FBMAT.')
+            CALL QUIT('Unknown list for LISTC in CCSDT_FBMAT.')
          END IF
 C
          ISYMW   = MULD2H(ISYMT3,ISYMRB)
