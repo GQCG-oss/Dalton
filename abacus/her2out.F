@@ -620,6 +620,10 @@ C  /* Deck dr2out */
 C
 C     tuh Sep 92
 C
+C     Write derivative integrals (IATOM .gt. 0), magnetic integrals
+C     (IATOM .eq. 0), or spin-orbit integrals (SPNORB .eqv. .TRUE.)
+C     to file (LU2DER).
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
@@ -652,7 +656,7 @@ C
       ELSE
          NIBUF = 2
          NBITS = 16
-         CALL QUIT('More than 255 basis functions and spin-orbit not'//
+         CALL QUIT('More than 255 basis functions is not'//
      &   ' implemented for 32-bit integers, use 64-bit integers')
 !        hjaaj Feb 2011: the problem is that NIBUF=2 is not implemented
 !        here, see DS2OU1 for how to implement if you have the time ...

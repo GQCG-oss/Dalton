@@ -746,7 +746,7 @@ C                 *******************************
 C
 C For the moment, only INTFCK is vectorized. Use TFMAT only then.
 C
-      IF(DIRFCK.AND..NOT.(EXPECT.OR.DDFOCK.OR.SUSCEP.OR.LONDON.OR.
+      IF (DIRFCK .AND. .NOT.(EXPECT.OR.DDFOCK.OR.SUSCEP.OR.LONDON.OR.
      &   PERTUR.OR.SPNORB.OR.UNDIFF.OR.DISTRI.OR.SOFOCK.OR.DIA2SO.OR.
      &   ZFS2EL)) THEN
 
@@ -2682,10 +2682,13 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
+#ifndef VAR_INT64
            IF (NBASIS .GT. 255) THEN
-            CALL QENTER('DR2OUT')
-            CALL QUIT('NBASIS .gt. 255 not implemented here yet, sorry')
+              CALL QENTER('DR2OUT')
+              CALL QUIT('NBASIS .gt. 255 not implemented for 32-bit'//
+     &        ' integers - recompile with 64-bit integers.')
            END IF
+#endif
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
