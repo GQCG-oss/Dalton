@@ -1,0 +1,68 @@
+\chapter{Generalized Active Space CI calculation, GASCI with {\lucita}}\label{ch:lucita}
+
+\section{General}\label{sec:lucita-general}
+
+    {\lucita} is a part of the wave function/density computation code. 
+It is activated via the keyword {\Key{GASCI}} in the **WAVE FUNCTIONS 
+input section:\\[2ex]
+\begin{inputex} \begin{verbatim}
+**WAVE FUNCTIONS
+.GASCI
+\end{verbatim} \end{inputex}
+ 
+\section{\Sec{LUCITA} directives}\label{sec:lucita-inp}
+
+          The following \Sec{LUCITA}\ directives for a succesful GAS-CI calculation 
+are subdivided into {\bf{compulsory}} (Section \ref{sec:lucita-inp-mand}) 
+and {\bf{optional keywords}} (Section \ref{sec:lucita-inp-opt}). 
+
+\subsection{Mandatory keywords of \Sec{LUCITA}}\label{sec:lucita-inp-mand}
+
+\subsection{Optional keywords of \Sec{LUCITA}}\label{sec:lucita-inp-opt}
+
+\begin{description}
+\item[\Key{NROOTS}] number of eigenstates to be calculated \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_nr_roots |
+
+\item[\Key{MAXITR}] maximum number of Davidson CI iterations \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_max_nr_dav_ci_iter |
+
+\item[\Key{ANALYZ}] analyze the composition of the final CI wave function \newline
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+\item[\Key{RSTART}] restart option \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+Allows the restart of the CI calculation from coefficients obtained 
+in a preceding calculation (value == 1) which are read from the file LUCITA\_CIVECS.``SYM''. 
+The file ending ``SYM''\ is a single character in the range a-h and 
+corresponds to the symmetry as specified via the input keyword \Key{SYMMET}, e.g., 
+for symmetry 1\ the correct ending is ``a'', for symmetry 2\ we have to specify ``b'', etc.\\
+The default is no restart of the CI calculation (value == 0).
+\end{description}
