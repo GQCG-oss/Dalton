@@ -166,14 +166,10 @@ C       FIXME: NUCDEP is the number of atoms?
      &    "Number of compositions of differentiated centers:", num_paths
 C       the first path (composition of centers), geometric derivatives
 C       with respect to the first atom
-        visit_depth = order_geo
-        node_list = 1
-        wt_node = 1
-        idx_cent = 0
-        idx_cent(1) = 1
-        order_cent = 0
-        order_cent(1) = order_geo
         start_geo = 1
+        call geom_deriv_cent_tree_init(order_geo, num_cents,
+     &                                 visit_depth, node_list, wt_node,
+     &                                 idx_cent, order_cent, num_dgeo)
 C       dumps to check
         if (level_print>=20) then
           write(LUPRI,1002) ipath, start_geo, wt_node(order_geo),
@@ -190,14 +186,11 @@ C       calculates the geometric and magnetic derivatives
 C       loops over other paths
         do ipath = 2, num_paths
 C         computes the position of current geometric derivatives
-          call geom_deriv_cent_ndgeo(wt_node(order_geo),
-     &                               order_cent(1:wt_node(order_geo)),
-     &                               num_dgeo)
           start_geo = start_geo+num_dgeo
 C         generates the differentiated centers and their orders
           call geom_deriv_cent_tree(NUCDEP, order_geo, num_cents,
      &                              visit_depth, node_list, wt_node,
-     &                              idx_cent, order_cent)
+     &                              idx_cent, order_cent, num_dgeo)
 C         dumps to check
           if (level_print>=20) then
             write(LUPRI,1002) ipath, start_geo, wt_node(order_geo),
@@ -213,10 +206,7 @@ C         calculates the geometric and magnetic derivatives
      &                      len_work, dal_work, level_print)
         end do
         if (level_print>=10) then
-          call geom_deriv_cent_ndgeo(wt_node(order_geo),
-     &                               order_cent(1:wt_node(order_geo)),
-     &                               num_dgeo)
-          write(LUPRI,1001) "Total number of geometric derivatives:",
+          write(LUPRI,1001) "Current number of geometric derivatives:",
      &                      start_geo+num_dgeo-1
         end if
 C     no geometric derivatives
