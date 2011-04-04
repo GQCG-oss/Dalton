@@ -146,7 +146,7 @@ of the following input:
 .RSTCHO          ! Requires files CHOLESKY.RST and CHOLES_*
 **SIRIUS
 .CC
-*SCF IN
+*SCF INPUT
 .THRESHOLD
  5.0D-8
 .MAX DIIS
@@ -154,7 +154,6 @@ of the following input:
 *ORBITAL
 .MOSTART
  NEWORB
-.NOSUPSYM
 *CC INP
 .PRINT
  3
@@ -231,9 +230,7 @@ used. More detailed information can be found at section~\ref{sec:chopt}.
 \begin{verbatim}
 **DALTON INPUT
 .RUN WAVE
-**INTEGRALS
-.NOSUP
-**WAVE FUNCT
+**WAVE FUNCTION
 .CC
 *SCF INPUT
 .THRESH
