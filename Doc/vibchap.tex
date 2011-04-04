@@ -29,7 +29,7 @@ energy corrections\index{zero-point vibrational energy} and vibrational
 and rotational partition functions\index{partition functions}
 at selected temperatures.
 
-\siraba\ evaluates the molecular Hessian\index{Hessian} in Cartesian
+\dalton\ evaluates the molecular Hessian\index{Hessian} in Cartesian
 coordinates\index{Cartesian coordinates}, and
 the vibrational frequencies of any isotopically substituted  species
 may therefore easily be obtained on the basis of the full
@@ -139,7 +139,7 @@ J.Chem.Phys.}, {\bf 84},\hspace{0.25em}6280, (1986).
 
 \index{population analysis} As dipole gradients\index{dipole
 gradient}\index{APT}\index{atomic polar tensor} are readily available in the
-\siraba\ program, the
+\dalton\ program, the
 population analysis basis on the Atomic Polar Tensor as suggested by
 Cioslowski~\cite{jcjacs111,poakrkvmthjpca102} can be obtained from an input like
 
@@ -283,7 +283,7 @@ of all nuclei, as well as calculating the property at the reference
 geometry. Thus, for a molecule with $N$ atoms the properties will need
 to be calculated in a total of 2*3*$N$ + 1 points, which for a 
 molecule with five atoms will amount to 31 points. The default maximum number of
-steps in \siraba\ is 20. However, in numerical differentiation
+steps in \dalton\ is 20. However, in numerical differentiation
 calculations, the number of iterations will always be reset (if there
 are more than 20 steps that need to be taken) to 6$N$+1, as it is
 assumed that the user always wants the calculation to complete

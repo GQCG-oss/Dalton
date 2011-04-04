@@ -1,9 +1,9 @@
 \chapter{General input module}\label{ch:general}
 
-In this chapter the general structure of the input file for \siraba\
+In this chapter the general structure of the input file for \dalton\
 is described, as well as the possible input cards that can be entered in
 the \Sec{*DALTON} input module. This input section should always begin an
-input file for the \siraba\ program.
+input file for the \dalton\ program.
 
 \section{General input to DALTON : \Sec{*DALTON}}\label{sec:general}
 
@@ -19,11 +19,27 @@ numerical geometrical derivatives of molecular energies or selected
 first- and second-order properties.
 
 We note that \verb|**DALTON| identifies that what follows is Dalton input,
-and therefore this input module \emph{must} start any input file for \siraba .
-Lines before the first line with \verb|**DALTON| are ignored by \siraba .
+and therefore this input module \emph{must} start any input file for \dalton .
+Lines before the first line with \verb|**DALTON| are ignored by \dalton .
 
 \begin{description}
 %\item[\Key{ABACUS}] Alternative keyword to \verb|.PROPERTIES|. Obsolete, do not use.
+
+\item[\Key{CHOLES}] The calculation will use Cholesky decomposed two-electron
+integrals~\cite{choint}\index{Cholesky decomposition-based methods}. At present,
+the use of decomposed integrals is only implemented for calculation of energy and
+first and second order molecular properties for limited models.
+In particular, it is possible to carry out Hartree-Fock
+\index{SCF}\index{HF}\index{Hartree--Fock},
+Density Functional Theory
+\index{DFT}\index{Density-Functional Theory}, 
+second-order M{\o}ller-Plesset perturbation theory
+(MP2)\index{M{\o}ller-Plesset!second-order}\index{MP2}, and 
+CC2 coupled cluster calculations\index{CC2}\index{Coupled-Cluster}. Note that
+the decomposition of differentiated integrals is not implemented yet and, therefore,
+gradients cannot be computed. Moreover, Cholesky CCSD(T)~\index{CCSD(T)} 
+calculations are carried out using standard integrals (or in a direct fashion).
+
 
 \item[\Key{DIRECT}] The calculation is to be done in a direct
 manner\index{direct calculation}, that
@@ -111,7 +127,7 @@ done without writing two-electron integrals to disc. This keyword only
 applies to SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions and DFT calculations\index{DFT}\index{Density Functional Theory}, but all two-electron integral
 evaluations in an SCF calculation will be done parallel as well as the integration of the exchange-correlation functionals and kernels. More details
-about the parallelization strategy in \siraba\ can be found
+about the parallelization strategy in \dalton\ can be found
 in Ref.~\cite{pndjhapdkrthhkcpl253}.
 
 The keyword requires that the program has been installed and compiled
@@ -832,7 +848,7 @@ vibrational analysis has been requested.
 
 This submodule controls the performance of the parallel
 version\index{parallel calculation}
-of \siraba . The implementation has been described
+of \dalton . The implementation has been described
 elsewhere~\cite{pndjhapdkrthhkcpl253}. \dalton\ only supports MPI as
 message passing interface in the current release.
 %When PVM\index{PVM} is used as

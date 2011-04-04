@@ -6,19 +6,22 @@
 %\chapter{\label{sec:choles} Decomposition of two-electron integrals, {\choles}}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\index{Cholesky decomposition-based methods}
+\index{Cholesky decomposition-based integrals}
 
 In this Section, we describe the keywords controlling the algorithm to 
-decompose the two-electron integrals, which is  activated by the 
-keyword \Key{CHOLES} in the \Sec{*DALTON} input module. Note that unless
-for the options related to restart and, sometimes, to the decompostion
-threshold, the following keywords are very seldom
-to use except for pathological cases. The same is applicable for sections
+decompose the two-electron integrals, which is activated by the 
+keyword \Key{CHOLES} in the \Sec{*DALTON} input module.
+Note that apart from
+the options related to restart and, sometimes, to the decompostion
+threshold, the following keywords are very seldom needed,
+except for pathological cases. The same is the case for the sections
 \Sec{CHOMP2}~\ref{sec:chomp2} and \Sec{CHOCC2}~\ref{sec:chocc2} 
-of the coupled cluster input. Cholesky CCSD(T) \index{CCSD(T)} is
+of the coupled cluster input.
+
+Note that two types of Cholesky decomposition are implemented in Dalton.
+The other type, the Cholesky decomposition of energy denominators in CCSD(T) \index{CCSD(T)} is
 invoked with keyword \Key{CHO(T)} (or \Sec{CHO(T)}~\ref{sec:chopt} if 
 closer control is needed) in \Sec{CC INP}.
-
 
 
 \begin{center}
