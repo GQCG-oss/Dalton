@@ -62,7 +62,7 @@ cat > qmmm7.dal <<'%EOF%'
 .RUN RESPONSE
 *QMMM
 .QMMM
-.MMITER
+!.MMITER
 .PRINT
  1 
 **WAVE FUNCTIONS
