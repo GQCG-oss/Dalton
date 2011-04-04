@@ -780,7 +780,7 @@ whereas for the same calculation at SOPPA level it will be:
 \end{verbatim}
 
 A coupled cluster calculation of the diamagnetic term of the CTOCD-DZ
-magnetizability requires the following input:
+magnetizability may be done using  the following input:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -823,6 +823,49 @@ $\chi_{\alpha\beta}^{\Delta} = \epsilon_{\beta\lambda\mu}
 << \hat{p}_{\lambda} ; \hat{r_O}_{\mu}\hat{L}_{\alpha} >>$ 
 \end{center}
 where $\hat{r_O}_{\mu}\hat{L}_{\alpha}$ are the $\mu\alpha$RANG operators.
+
+
+
+
+Alternatively~\cite{pccpcctocd}, the keywords \Key{CTOSUS} and \Key{CTOSHI} can be 
+used in the \Sec{CCLR} section of the \Sec{CC INP} input to compute coupled cluster
+CTOCD-DZ \index{CTOCD-DZ} magnetizabilities and shielding tensors, 
+respectively. The needed integrals must be provided by the user in the \Sec{*INTEGRAL} 
+input module. All non-zero necessary response functions will be generated and 
+adequately coupled to build the magnetizabilty or nuclear magnetic shielding 
+tensors. Note that some null response functions may be actually computed 
+when the full symmetry point group is represented by one of its subgroups 
+(For instance, D$_{\infty h}$ represented by D$_{2h}$). Then, a CCSD calculation
+of the nuclear magnetic shileding tensors for all the symmetry independent atoms 
+may be carried out with the following input
+
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPVEL
+.ANGMOM 
+.RPSO  
+.PSO  
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESH
+ 1.0d-8
+*CC INPUT
+.CCSD
+.THRENR
+ 1.0d-8
+.THRLEQ
+ 1.0d-6
+*CCLR
+.CTOSHI
+**END OF DALTON INPUT
+\end{verbatim}
+
+
+
 Input examples for shieldings and shielding polarizabilities can be found in
 the test directory. 
 
