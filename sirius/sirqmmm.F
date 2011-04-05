@@ -2479,24 +2479,17 @@ C     Now iterate...  !
 
               IF (ZEROAL(J) .EQ. -1) GOTO 409 
 
-              if (I.eq.1)print *,'indmom iter 1',iter,indmom(1)
               CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP+LCI-1),MY)
               INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
               INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
               INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
-              if (I.eq.1)print *,'indmom iter 2',iter,indmom(1)
-
               LCI = LCI + 3
  409        CONTINUE
 
             LRI = LRI + 3
  405      CONTINUE
 
-C      DO I = 1, NDIM
-C        PRINT *,'indmom kindp',indmom(I),WRK(KINDP+I-1)
-C      ENDDO
 C      CALL QUIT()
-        PRINT *,'indmom kindp',indmom(1),indmom(2),indmom(3)
           TERROR=0.0D0
           DO 414 I=1,NDIM
             TERROR = TERROR + (INDMOM(I)-WRK(KINDP+I-1))*
@@ -2525,7 +2518,8 @@ C      CALL QUIT()
           ELSE
             DIPCON = .FALSE. 
             IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-            IF (MMDIIS) THEN
+C            IF (MMDIIS) THEN
+            IF (.FALSE.) THEN
               CALL DCOPY(NDIM,INDMOM,1,WRK(KVEC+ITER*NDIM),1)
               CALL MM_DIIS_EXTRAPOLATION(WRK(KVEC),ITER,NDIM,WRK(KINDP),
      *                               WRK(KEND),LWRK1,IPRINT)
@@ -2544,8 +2538,7 @@ C       i.e. not only the diagonal part
 
       ENDIF !parallel mmiter
 
-      print *,'after indmom',indmom(1),indmom(2),indmom(3)
-      call quit()
+C      call quit()
       DTIME = SECOND() - DTIME
       TMMITER = TMMITER + DTIME
 
@@ -5947,6 +5940,7 @@ C      IMPLICIT NONE
 
       CALL QENTER('MMITER_M')
 
+      THRESL = THMMIT
       NDIM = 3*POLDIM
 
 C     Make a vector of pol sites
@@ -6000,7 +5994,6 @@ C     &                 MASTER,MPI_COMM_WORLD,IERR)
       LWRK2 = LWRK - KLAST + 1
 
       DO 100 ITER = 1, MXMMIT
-C        if (iter.eq.8) call quit()
         NRUN = 1
         DO ISLAVE = 1, NODTOT
           IWHO = -1
@@ -6008,7 +6001,7 @@ C        if (iter.eq.8) call quit()
           CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
         ENDDO
         CALL MPIXBCAST(INDP1,NDIM,'DOUBLE',MASTER)
-        print *,'indp1 m',iter,indp1(1),indp1(2),indp1(3)
+
         CALL DZERO(WRK(KINDP2),NDIM)
         CALL DZERO(WRK(KINDP3),NDIM)
 
@@ -6020,13 +6013,13 @@ C        if (iter.eq.8) call quit()
             LCI = 1
             DO K = 1, POLDIM
               J = POLARRAY(K)
-              DIP(1) = WRK(KINDP1+LCI-1+0)
-              DIP(2) = WRK(KINDP1+LCI-1+1)
-              DIP(3) = WRK(KINDP1+LCI-1+2)
-              CALL MMITERATIVE(I,J,LRI,LCI,DIP,MY)
-              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
-              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
-              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
+              CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP1+LCI-1+0),MY)
+              INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
+              INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
+              INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
+C              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+C              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+C              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
               LCI = LCI + 3
             ENDDO
             LRI = LRI + 3
@@ -6036,15 +6029,18 @@ C        if (iter.eq.8) call quit()
         CALL MPI_REDUCE(WRK(KINDP3),WRK(KINDP2),3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-        print *,'indp2 m',iter,wrk(kindp2),wrk(kindp2+1),wrk(kindp2+2)
 C        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-C     &                 WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
-C     &                 MPI_COMM_WORLD,IERR)
+C     &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
+C     &                  MPI_COMM_WORLD,IERR)
 
+        CALL DCOPY(NDIM,WRK(KINDP2),1,INDMOM,1)
+C        DO K = 1, NDIM
+C          INDMOM(K) = INDMOM(K)+WRK(KINDP2+K-1)
+C        ENDDO
         TERROR=0.0D0
         DO I=1,NDIM
-          TERROR = TERROR + (INDP1(I)-WRK(KINDP2+I-1))*
-     &                      (INDP1(I)-WRK(KINDP2+I-1))
+          TERROR = TERROR + (INDMOM(I)-INDP1(I))*
+     &                      (INDMOM(I)-INDP1(I))
         ENDDO
 
         IF ( (LOCDEB) .OR. (IPRINT .GE. 15) ) THEN
@@ -6068,13 +6064,16 @@ C     &                 MPI_COMM_WORLD,IERR)
         ELSE
           DIPCON = .FALSE. 
 C          IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-          IF (MMDIIS) THEN
+c          IF (MMDIIS) THEN
+          IF (.FALSE.) THEN
             CALL DCOPY(NDIM,WRK(KINDP2),1,VEC(ITER*NDIM+1),1)
             CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP1),
      *                                 WRK(KLAST),LWRK2,IPRINT)
           ELSE 
-            CALL DCOPY(NDIM,WRK(KINDP2),1,INDP1(1),1)
+            CALL DCOPY(NDIM,INDMOM,1,INDP1,1)
           ENDIF
+C          IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,INDDIA,1,
+C     *                                       INDMOM,1)
         ENDIF
 
  100  CONTINUE
@@ -6149,10 +6148,6 @@ C     &                MPI_COMM_WORLD,IERR)
 
       ISTART = (MYNUM-1)*NSLICE + 1
       IEND = MYNUM*NSLICE
-
-C      DO I = 1, 3*NSLICE
-C        print *,'slave inddia,mynum',mynum,I,WRK(KINDDIA + I - 1)
-C      ENDDO
       ITER = 0
 
  20   CONTINUE
@@ -6166,25 +6161,21 @@ C        CALL DCOPY(3*NSLICE,WRK(KINDDIA+ISTART),1,WRK(KINDP2),1)
         CALL DZERO(WRK(KINDP2),NDIM)
         CALL DCOPY(ndim,WRK(KINDDIA),1,WRK(KINDP2),1)
         CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
-        print *,'indp1 s',iter,wrk(kindp1),wrk(kindp1+1),wrk(kindp1+2)
         LRI = 1
         DO L = ISTART, IEND
           I = POLARRAY(L)
           LCI = 1
           DO K = 1, POLDIM
             J = POLARRAY(K)
-            if (I.eq.1)print *,'indmom iter 1',iter,WRK(KINDP2)
             CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP1+LCI-1),MY)
             WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
             WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
             WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
-            if (I.eq.1)print *,'indmom iter 2',iter,WRK(KINDP2)
             LCI = LCI + 3
           ENDDO
           LRI = LRI + 3
         ENDDO
 
-        print *,'indp2 s',iter,wrk(kindp2),wrk(kindp2+1),wrk(kindp2+2)
         CALL MPI_REDUCE(WRK(KINDP2),WRK(KINDP2),3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
@@ -6300,9 +6291,7 @@ C     calculate alpha*T
 
           NLDIM = 3
           NTOTI = MAX(NLDIM,1)
-C          print *,'inside dip',I,J,DIP
           CALL DGEMV('N',NLDIM,NLDIM,D1,ATMAT,NTOTI,DIP,1,D0,MY,1)
-C          print *,'inside my ',I,J,MY
         ENDIF
       ENDIF
 
