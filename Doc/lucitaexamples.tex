@@ -80,9 +80,9 @@ FINISH
 \section{Energy calculation with a GAS-type active space decomposition II}
 
 We now repeat the GASCI calculation from the previous section 
-with a slightly modified but otherwise equivalent input. Note that here we split the former GAS II space into three 
-spaces with the ``$\sigma$''-, ``$\pi$''-\ and ``$\delta$''-like orbitals put into different spaces. We also omit 
-the symmetry specification as the default is the totally symmetric irrep (here A1).
+with a modified GA space input and asking for the first two triplet states in B1 symmetry. 
+Note in particular the splitting of the former GAS II space into three 
+spaces with the ``$\sigma$''-, ``$\pi$''-\ and ``$\delta$''-like orbitals separated into different spaces. 
 
 %
 \begin{verbatim}
@@ -101,8 +101,10 @@ the symmetry specification as the default is the totally symmetric irrep (here A
  HF_SCF                       ! we start from a closed-shell HF reference wave function
 .CITYPE
  GASCI                        ! GASCI calculation
+.SYMMET
+ 3                            ! symmetry irrep B1
 .MULTIP
- 1                            ! singlet states
+ 3                            ! triplet states
 .NACTEL
  8                            ! number of active electrons
 .INACTIVE
@@ -117,8 +119,8 @@ the symmetry specification as the default is the totally symmetric irrep (here A
 .GASSPC
  1                            ! always 1
   5  8                        ! minimum # of accumulated e- in GAS I    <--> max. # of e-
-  6  8                        ! minimum # of accumulated e- in GAS II   <--> max. # of e-
-  6  8                        ! minimum # of accumulated e- in GAS III  <--> max. # of e-
+  5  8                        ! minimum # of accumulated e- in GAS II   <--> max. # of e-
+  5  8                        ! minimum # of accumulated e- in GAS III  <--> max. # of e-
   6  8                        ! minimum # of accumulated e- in GAS IV   <--> max. # of e-
   8  8                        ! always: ``number of active e- number of active e-''
 .NROOTS
