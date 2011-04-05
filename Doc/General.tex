@@ -18,16 +18,29 @@ as well as control of the general routines for calculating
 numerical geometrical derivatives of molecular energies or selected
 first- and second-order properties.
 
-We note that \verb|**DALTON| identifies that what follows is Dalton input,
-and therefore this input module \emph{must} start any input file for \dalton .
+We note that \verb|**DALTON| identifies that what follows is Dalton general input.
+This input section is compulsory to do a calculation, by default Dalton does nothing
+(will stop with the error message:
+{\tt End of file on DALTON.INP, no **DALTON input found}.
 Lines before the first line with \verb|**DALTON| are ignored by \dalton .
+The general input module stops at the next line stating with two starts: \verb|**anything|.
+
+If more than one node, \dalton\ will automatically perform those modules in parallel
+which are implemented in parallel, and Fock matrix calculations will be done AO-direct,
+also if you don't specify \verb|.DIRECT|.
+In contrast to previous releases of Dalton, it will not quit in the non-parallelized modules
+but run them on the master node while the other nodes are idling.
+The keyword \verb|.PARALLEL| of previous releases is still recognized for backward compatibility,
+but it is not needed any more.
+Note that in order to evaluate the parallelization efficiency\index{parallel efficiency},
+a print level of at least 2 is needed in the \Sec{PARALLEL} submodule.
 
 \begin{description}
 %\item[\Key{ABACUS}] Alternative keyword to \verb|.PROPERTIES|. Obsolete, do not use.
 
 \item[\Key{CHOLES}] The calculation will use Cholesky decomposed two-electron
-integrals~\cite{choint}\index{Cholesky decomposition-based methods}. At present,
-the use of decomposed integrals is only implemented for calculation of energy and
+integrals~\cite{choint}\index{Cholesky decomposition-based methods} where implemented.
+At present, the use of decomposed integrals is only implemented for calculation of energy and
 first and second order molecular properties for limited models.
 In particular, it is possible to carry out Hartree-Fock
 \index{SCF}\index{HF}\index{Hartree--Fock},
@@ -38,7 +51,8 @@ second-order M{\o}ller-Plesset perturbation theory
 CC2 coupled cluster calculations\index{CC2}\index{Coupled-Cluster}. Note that
 the decomposition of differentiated integrals is not implemented yet and, therefore,
 gradients cannot be computed. Moreover, Cholesky CCSD(T)~\index{CCSD(T)} 
-calculations are carried out using standard integrals (or in a direct fashion).
+calculations, where the energy dominators are Cholesky decomposed,
+are carried out using standard integrals (or in a direct fashion).
 
 
 \item[\Key{DIRECT}] The calculation is to be done in a direct
@@ -59,17 +73,18 @@ requiring a loop over all basis functions for one of the two-electron
 integral indices~\cite{directCC}.
 
 \item[\Key{DOUGLAS-KROLL}] Include scalar relativistic effects by using the
-Douglas-Kroll transformed one-electron potential and kinetic energy Hamiltonian.
+Douglas-Kroll-Hess second-order (DKH2) transformed one-electron potential and kinetic energy Hamiltonian.
 
 %\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
 
 \item[\Key{INPTES}] Test the input of the \Sec{*DALTON INPUT} input
 module. The program will abort after the completion of the input test,
-and no calculation will be executed.
+and no calculations will be executed.
 
-\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} program for generating molecular one-
-and two-electron integrals. See
-Chapter~\ref{ch:hermit} for the \her\ and Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} \eri\ programs, respectively.
+\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} program module for generating molecular one-
+and two-electron integrals.
+See Chapter~\ref{ch:hermit} for the \her\ and
+Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} for the \eri\ program module, respectively.
 
 \item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
@@ -108,7 +123,7 @@ negative Hessian eigenvalues
 methods. However, this may be changed using appropriate
 keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
 the chapter on potential energy surfaces
-(Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
+(Chapter~\ref{ch:geometrywalks}), and subsection~\ref{subsec:minimize}
 describing the input cards for the \Sec{OPTIMIZE} submodule for a more
 detailed description of possible options.
 
@@ -119,20 +134,23 @@ calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module. 
 
-\item[\Key{PARALLEL}] Requests that the calculation of two-electron
-integrals\index{two-electron integral}
-is to be done in parallel\index{parallel calculation}. This also
-implies that the calculation is
-done without writing two-electron integrals to disc. This keyword only
-applies to SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
-functions and DFT calculations\index{DFT}\index{Density Functional Theory}, but all two-electron integral
-evaluations in an SCF calculation will be done parallel as well as the integration of the exchange-correlation functionals and kernels. More details
-about the parallelization strategy in \dalton\ can be found
-in Ref.~\cite{pndjhapdkrthhkcpl253}.
+%% hjaaj Apr 2011: .PARALLEL is not needed any more, Dalton automatically perform the modules
+%% in parallel if more than one MPI node is associated.
+%\item[\Key{PARALLEL}] Requests that the calculation of two-electron
+%integrals\index{two-electron integral}
+%is to be done in parallel\index{parallel calculation}. This also
+%implies that the calculation is
+%done without writing two-electron integrals to disc. This keyword only
+%applies to SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
+%functions and DFT calculations\index{DFT}\index{Density Functional Theory}, but all two-electron integral
+%evaluations in an SCF calculation will be done parallel as well as the integration of the exchange-correlation functionals and kernels. More details
+%about the parallelization strategy in \dalton\ can be found
+%in Ref.~\cite{pndjhapdkrthhkcpl253}.
 
-The keyword requires that the program has been installed and compiled
-with the appropriate preprocessor directives for an MPI
-installation\index{MPI}.
+%The keyword requires that the program has been installed and compiled
+%with the appropriate preprocessor directives for an MPI
+%installation\index{MPI}.
+%
 %, or the construction of a slave program for
 %the PVM installation\index{PVM}.
 %If MPI\index{MPI} is used as message passing\index{message passing}
@@ -142,19 +160,19 @@ installation\index{MPI}.
 %message passing interface, the number of nodes needs to be given in the
 %\Sec{PARALLEL} submodule input, and this number have to be equal to
 %the number of nodes asked for when submitting the job. 
-Note that
-in order to evaluate the parallelization efficiency\index{parallel efficiency}, a print level of
-at least 2 is needed in the \Sec{PARALLEL} submodule.
+%Note that in order to evaluate the parallelization efficiency\index{parallel efficiency},
+%a print level of at least 2 is needed in the \Sec{PARALLEL} submodule.
 
-\item[\Key{PARNMD}] Option non-functional. Do not use.
+%% hjaaj Apr 2011: .PARNMD activates PARIO, which is not functional in current version.
+%\item[\Key{PARNMD}] Option non-functional. Do not use.
 
-\item[\Key{PRESORT}]\index{integral sort} Requests that the
-two-electron integrals should be
-sorted and that the integral transformation routines of Bj\o rn
-Roos should be used during execution of the program. The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
-%This will only
-%work on 32-bit architectures, but is needed in order to be able to run
-%with more than 255 basis functions.
+%% hjaaj Apr 2011: Dalton now automatically selects the "new" integral transformation,
+%% when more than 255 basis functions.
+%\item[\Key{PRESORT}]\index{integral sort} Requests that the
+%two-electron integrals should be
+%sorted and that the integral transformation routines of Bj\o rn
+%Roos should be used during execution of the program.
+%The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
 
 \item[\Key{PRIERR}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRERR|
@@ -168,32 +186,32 @@ file. Default print level is \verb|IPRUSR+1|.
 Reads in the print level that is to be used the rest of the subsequent
 calculations. Default is a print level of 0.
 
-\item[\Key{PROPERTIES}] Invoke the \aba\ program for the evaluation of static
+\item[\Key{PROPERTIES}] Invoke the \aba\ program module for the evaluation of static
 and dynamic properties, using a previously converged and saved wave function. See Chapter~\ref{ch:abacus}.
 
 \item[\Key{RESPONSE}]
 
-Invoke the \resp\ program for the evaluation of static and dynamic
+Invoke the \resp\ program module for the evaluation of static and dynamic
 properties, using a previously converged and saved wave function. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
 
-Invoke all the programs {\her}, {\sir}, {\resp}, and {\aba} for a single point
+Invoke all the program modules {\her}, {\sir}, {\resp}, and {\aba} for a single point
      calculation.
 
 \item[\Key{RUN PROPERTIES}]
 
-Invoke the programs {\her}, {\sir}, and {\aba} for a single point
+Invoke the program modules {\her}, {\sir}, and {\aba} for a single point
 calculation.
 
 \item[\Key{RUN RESPONSE}]
 
-Invoke all the programs {\her}, {\sir}, and {\resp} for a single point
+Invoke all the program modules {\her}, {\sir}, and {\resp} for a single point
 calculation.
 
 \item[\Key{RUN WAVE FUNCTIONS}]
 
-Invoke the programs {\her} and {\sir} for a single point energy calculation.
+Invoke the program modules {\her} and {\sir} for a single point energy calculation.
 
 %\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
 
@@ -228,13 +246,13 @@ local minimum) will be done using a second-order method with
 analytical Hessians. However, this may be changed by appropriate
 keywords in the submodule \Sec{WALK}, and we refer to examples in
 the chapter on potential energy surfaces
-(Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
+(Chapter~\ref{ch:geometrywalks}), and subsection~\ref{sec:abawalk}
 describing the input cards for the \Sec{WALK} submodule for a more
 detailed description of possible options.
 
 \item[\Key{WAVE FUNCTIONS}]
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}\index{MCSCF}\index{CC}
-Invoke the {\sir} program for the evaluation of SCF, MP2, Coupled
+Invoke the {\sir} program module for the evaluation of SCF, MP2, Coupled
 Cluster and MCSCF wave functions as well as DFT calculations.
 Necessary one-electron integrals are already evaluated and saved on files.
 See Chapter~\ref{chap:sirius-inpref}. 
@@ -246,20 +264,25 @@ See Chapter~\ref{chap:sirius-inpref}.
 %The last input card for the general input section (\Sec{*DALTON})
 %may be \Sec{END OF}.
 
-\subsection{General: \Sec{OPTIMIZE}}\label{subsec:minimize}
+\subsection{Geometry optimization module 1: \Sec{OPTIMIZE}}\label{subsec:minimize}
 
-This submodule is the driver for geometry optimizations, although we
+This submodule is the usual driver for geometry optimizations, but we
 note that the \Sec{WALK} module contains another second-order
-geometry optimization driver\index{geometry optimization}. The
-\Sec{OPTIMIZE} module contains both first and second-order methods
-for locating minima and transition states\index{geometry optimization}\index{first-order optimization}\index{geometry optimization!first-order}\index{second-order optimization}\index{geometry optimization!second-order}
-(geometry optimization). Most of the Hessian
-updating\index{Hessian update} schemes were taken from
-ref.\cite{thkrprt95} and \cite{Fletcher}. The implementation of
-redundant internal coordinates\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
-follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}. In
-addition to this, several keywords for VRML visualization are
-included~\cite{VRML}.
+geometry optimization driver\index{geometry optimization} for HF, DFT, and MCSCF.
+Only for analytical second-order optimization of HF, DFT, and MCSCF can you choose
+any of the two geometry optimization modules.
+For the unique capabilities of the other module, see subsection~\ref{sec:abawalk}.
+
+The \Sec{OPTIMIZE} module contains both first and second-order methods
+for locating minima and transition states\index{geometry optimization}\index{first-order optimization}
+\index{geometry optimization!first-order}\index{second-order optimization}\index{geometry optimization!second-order}
+(geometry optimization).
+Most of the Hessian updating\index{Hessian update} schemes were taken from
+ref.\cite{thkrprt95} and \cite{Fletcher}.
+The implementation of redundant internal coordinates
+\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
+follows the work of Peng {\it et al.\/}~\cite{cppyahbsmjfjcc17}.
+In addition to this, several keywords for VRML visualization are included~\cite{VRML}.
 
 \begin{description}
 
@@ -948,7 +971,7 @@ Not documented yet. Examples can be found by grepping for "PCM" in the "dalton/t
 Not documented yet. Examples can be found by grepping for "QM3" in the "dalton/test" directory in the distribution.
 
 
-\subsection{Geometry optimization: \Sec{WALK}}
+\subsection{Geometry optimization module 2: \Sec{WALK}}
 \label{sec:abawalk}
 
 Directives controlling one of the two second-order
@@ -1273,16 +1296,17 @@ when deciding what step to take when starting a walk from a transition
 state.
 \end{description}
 
-\subsection{General: \Sec{MOLBAS}}\label{sec:herrdn}
+\subsection{Molecule geometry and basis sets, \Sec{MOLBAS}}\label{sec:herrdn}
 
-Directives to control the reading of the molecule input appear in the
-\Sec{MOLBAS} section.
+The directives in this section extend or modify the reading of the molecule geometry and basis set
+specifications in the ".mol" input file (internally \verb|MOLECULE.INP|).
+
 \begin{description}
 \item[\Key{CM FUN}]\verb| |\newline
 \verb|READ (LUCMD,*) LCMMAX, CMSTR, CMEND|
 
 Use Rydberg basis functions\index{Rydberg basis function}\index{basis function!Rydberg}
- (center of mass functions\index{center of mass function}) as suggested by
+(center of mass functions\index{center of mass function}) as suggested by
 Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22}. \verb|LCMMAX| denoted
 the maximum quantum number of the Rydberg functions, basis functions
 for all quantum up to and including \verb|LCMMAX| will be generated
@@ -1291,8 +1315,8 @@ start- and ending quantum number for the Rydberg basis functions. The
 basis functions will be placed at the position of a dummy center
 indicated as \verb|X| in the \verb|MOLECULE.INP| file. The charge of
 the ion-core is determined by the keyword \Key{ZCMVAL}. If no center
-named \verb|X| is present in the \verb|MOLECULE.INP| file, this input
-will be ignored.
+named \verb|X| is present in the \verb|MOLECULE.INP| file,
+this input will be ignored.
 
 \item[\Key{MAXPRI}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXPRI|
@@ -1331,7 +1355,7 @@ Read threshold for considering atoms to be related by symmetry. Used
 in the automatic symmetry detection routines. Default is $5.0\cdot
 10^{-6}$.
 
-\item[\Key{UNCONT}] Force the program to use the basis set as a primitive (completely decontracted) set.
+\item[\Key{UNCONT}] Force the program to use all input basis sets as primitive (completely decontracted) sets.
 
 \item[\Key{WRTLIN}] Write out the lines read in during the input
   processing of the \verb|MOLECULE.INP| file. Primarily for debugging

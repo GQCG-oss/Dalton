@@ -95,16 +95,16 @@ CAS) and in addition allow single- and double-excitations into
 
 {\ttfamily
 \begin{tabular}{ll}
-**DALTON INPUT\\
+\*\*DALTON INPUT\\
 .RUN PROPERTIES\hspace{2cm} & Run integrals, wave function\ and properties\\
-***WAVE FUNCTIONS\\
+\*\*WAVE FUNCTIONS\\
 .HF\\
 .MP2\\
 .MCSCF\\
-**SCF INPUT\\
+\*SCF INPUT\\
 .DOUBLY OCCUPIED\\
  3 1 1 0\\
-**CONFIGURATION INPUT\\
+\*CONFIGURATION INPUT\\
 .SYMMETRY\\
  1\\
 .SPIN MUL\\
@@ -123,10 +123,10 @@ CAS) and in addition allow single- and double-excitations into
  0 0\\
 .RAS3 ELECTRONS & From 0 to 2 electrons excited into here\\
  0 2\\
-***PROPERTIES & Input for single geometry run\\
+\*\*PROPERTIES & Input for single geometry run\\
 .SHIELD\\
 .SPIN-S\\
-***END OF DALTON INPUT\\
+\*\*END OF DALTON INPUT\\
 \end{tabular}}
 
 \subsection{A parallel cubic response calculation}\index{parallel calculation}
@@ -150,26 +150,25 @@ specify that we are to do a Hartree--Fock calculation.
 
 {\ttfamily
 \begin{tabular}{ll}
-**DALTON INPUT\\
-.RUN RESPONS\hspace{2.5cm} & Run integrals, wave func.\ and response\\
-.PARALLEL & This is a parallel run\\
-***WAVE FUNCTIONS\\
+\*\*DALTON INPUT\\
+.RUN RESPONS\hspace{2.5cm} & Run integrals, wave function, and response\\
+\**WAVE FUNCTIONS\\
 .HF\\
-***RESPONSE & Input for the response program\\
-**CUBIC & Input for cubic response calculation\\
-.DIPLNX & Only consider x-comp. of dipole moment\\
-.BFREQ & Two frequencies for B operator\\
- 1\\
- 0.0 0.0592& Frequencies in atomic units\\
-.CFREQ & One frequency for C operator\\
- 1\\
- 0.0\\
-.DFREQ & One frequency for D operator\\
+\*\*RESPONSE & Input for the response program\\
+\*CUBIC     & Input for cubic response calculation\\
+.DIPLNX     & Only consider x-comp. of dipole moment\\
+.BFREQ      & Two frequencies for B operator\\
+ 2\\
+ 0.0 0.0592 & Frequencies in atomic units\\
+.CFREQ      & One frequency for C operator\\
  1\\
  0.0\\
-.THCLR & Threshold for linear response equations\\
+.DFREQ      & One frequency for D operator\\
+ 1\\
+ 0.0\\
+.THCLR      & Threshold for linear response equations\\
  1.0D-5\\
-***END OF DALTON INPUT\\
+\*\*END OF DALTON INPUT\\
 \end{tabular}}
 
 \section{General structure of the DALTON.INP file}\label{sec:inputstructure}
