@@ -12,9 +12,13 @@ module par_mcci_io
 !
 !           written by sknecht, may 2007 for DIRAC MCSCF/KR-CI/LUCITA
 !           adapted for DALTON by sknecht, november 2010.
+#if !defined VAR_USE_MPIF
   use mpi
-
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
 
   public mcci_cp_vcd_batch
 

@@ -11,18 +11,22 @@ module sync_coworkers
 !           calculations.
 !
 !           written by sknecht for DALTON, december 2010.
-  use mpi
   use dalton_mpi
   use lucita_cfg
   use lucita_mcscf_ci_task
+#if !defined VAR_USE_MPIF
+  use mpi
+  implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
 
 #if defined (VAR_INT64)
 #define my_MPI_INTEGER MPI_INTEGER8
 #else
 #define my_MPI_INTEGER MPI_INTEGER4
 #endif
-
-  implicit none
 
   public sync_coworkers_cfg
   public set_sync_default
