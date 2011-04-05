@@ -68,7 +68,7 @@ module lucita_cfg
   integer, public :: nas2_lucita(max_number_of_ptg_irreps)
   integer, public :: nas3_lucita(max_number_of_ptg_irreps)
   integer, public :: ngsh_lucita(max_number_of_gas_spaces,max_number_of_ptg_irreps)
-  integer, public :: ngso_lucita(max_number_of_ptg_irreps,2)
+  integer, public :: ngso_lucita(max_number_of_gas_spaces,2)
 
 ! calculated orbital spaces based on input orbital spaces
   integer, public :: nfro_lucita(max_number_of_ptg_irreps) ! might become input in future
