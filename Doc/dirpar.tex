@@ -72,7 +72,8 @@ and H.~Koch. \newblock {\em Chem.~Phys.~Lett.}, {\bf
 
 As for direct methods, the entire Hartree--Fock and Kohn--Sham DFT parts of the \dalton\
 program has been parallelized using MPI\index{MPI}\index{message passing} as
-message passing interface. The use of the parallel code requires,
+message passing interface. Furthermore, the large-scale GASCI code \lucita\ 
+is also available in a fully parallelized version in the \dalton\ release. The use of the parallel code requires,
 however, that the code has been installed as a parallel
 code\index{parallel calculation}, which is
 being determined during the building of the program as described in
@@ -80,7 +81,7 @@ Section~\ref{sec:Makefile}.
 
 All that is needed to do
 of changes in the \verb|DALTON.INP| file is to add the keyword
-\Key{PARALLEL} in the general input section, as demonstrated for a
+\Key{PARALLEL} in the general input section (not required for \lucita), as demonstrated for a
 calculation of vibrational frequencies\index{vibrational frequency}:
 
 \begin{verbatim}
