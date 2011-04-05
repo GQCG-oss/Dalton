@@ -5955,7 +5955,7 @@ C     Make a vector of pol sites
       LM = 0
       NSLICE = POLDIM/NODTOT
       IF ((NODTOT*NSLICE) .LT. POLDIM) THEN
-        MLOOP = NSLICE - (NODTOT * NLOOP)
+        MLOOP = POLDIM - (NODTOT * NSLICE)
         ISTART = NODTOT*NSLICE + 1
         IEND = ISTART + MLOOP - 1
       ELSE
@@ -6008,20 +6008,21 @@ C     &                 MASTER,MPI_COMM_WORLD,IERR)
         IF (MLOOP.NE.0) THEN
           print *,'mloop',mloop
           LRI = 3*NODTOT*NSLICE + 1
-          CALL DCOPY(MLOOP,INDDIA(LRI),1,WRK(KINDP2+LRI-1),1)
+          CALL DCOPY(3*MLOOP,INDDIA(LRI),1,WRK(KINDP2+LRI-1),1)
+          print *,'istart',INDDIA(LRI),WRK(KINDP2+LRI-1),LRI
           DO L = ISTART, IEND
             I = POLARRAY(L)
             LCI = 1
             DO K = 1, POLDIM
               J = POLARRAY(K)
-              CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP1+LCI-1+0),MY)
-              INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
-              INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
-              INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
-C              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
-C              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
-C              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
-              print *,'indmom',lri,indmom(lri)
+              CALL MMITERATIVE(I,J,LRI,LCI,INDP1(LCI),MY)
+C              INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
+C              INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
+C              INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
+              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
+              print *,'indmom',lri,WRK(KINDP2+LRI-1)
               LCI = LCI + 3
             ENDDO
             LRI = LRI + 3
@@ -6167,6 +6168,8 @@ C        CALL DCOPY(ndim,WRK(KINDDIA),1,WRK(KINDP2),1)
 C        LRI = 1
         LRI = 1+3*(ISTART-1)
         DO L = ISTART, IEND
+          if (lri.eq.28) print *,'istart',wrk(KINDDIA+LRI-1),
+     *                        WRK(KINDP2+LRI-1),LRI
           I = POLARRAY(L)
           LCI = 1
           DO K = 1, POLDIM
@@ -6175,7 +6178,8 @@ C        LRI = 1
             WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
             WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
             WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
-              print *,'indmom',lri,WRK(KINDP2+LRI-1)
+
+              if (lri.eq.28) print *,'indmom',lri,WRK(KINDP2+LRI-1)
             LCI = LCI + 3
           ENDDO
           LRI = LRI + 3
