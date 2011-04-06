@@ -178,6 +178,68 @@
 }
 ## qm3energy end  #######################################################
 
+## qmmmq start #######################################################
+{$params={
+  name         => "qmmmq", 
+  type         => 0, 
+  string => "Charge contribution:", 
+  pos    => 1};
+}
+## qmmmq end  #######################################################
+
+## qmmmdip start #######################################################
+{$params={
+  name         => "qmmmdip", 
+  type         => 0, 
+  string => "Dipole contribution:", 
+  pos    => 1};
+}
+## qmmmdip end  #######################################################
+
+## qmmmquad start #######################################################
+{$params={
+  name         => "qmmmquad", 
+  type         => 0, 
+  string => "Quadrupole contribution:", 
+  pos    => 1};
+}
+## qmmmquad end  #######################################################
+
+## qmmmoct start #######################################################
+{$params={
+  name         => "qmmmoct", 
+  type         => 0, 
+  string => "Octuple contribution:", 
+  pos    => 1};
+}
+## qmmmoct end  #######################################################
+
+## qmmmelpol start #######################################################
+{$params={
+  name         => "qmmmelpol", 
+  type         => 0, 
+  string => "Electronic Pol. energy:", 
+  pos    => 1};
+}
+## qmmmelpol end  #######################################################
+
+## qmmmnucpol start #######################################################
+{$params={
+  name         => "qmmmnucpol", 
+  type         => 0, 
+  string => "Nuclear pol. energy:", 
+  pos    => 1};
+}
+## qmmmnucpol end  #######################################################
+
+## qmmmmulpol start #######################################################
+{$params={
+  name         => "qmmmmulpol", 
+  type         => 0, 
+  string => "Multipole Pol. energy:", 
+  pos    => 1};
+}
+## qmmmmulpol end  #######################################################
 
 #
 # test type 1
@@ -668,13 +730,26 @@
 {$params = {
   name   => "qm3convergence",
   type   => 4,
-  string => "QM/MM calculation converged :",
+  string => "QM/MM calculation converged",
   maxout => -1,
   post   => 0,
   rembeg => 0,
   remend => 0};
 }
 ## qm3convergence end  #######################################################
+
+
+## qmmmaniso start #######################################################
+{$params = {
+  name   => "qmmmaniso",
+  type   => 4,
+  string => "Anisotropic polarization",
+  maxout => -1,
+  post   => 0,
+  rembeg => 0,
+  remend => 0};
+}
+## qmmmaniso end  #######################################################
 
 #
 # test type 5 (this test type is discontinued!)
