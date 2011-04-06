@@ -250,8 +250,12 @@ C
 #include <dftcom.h>
 #include <dfterg.h>
 C
-      DIMENSION MBAS(8)
+      INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
+      ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
+      ! SIRIUS.RST from a Dalton with 4 byte integers, and vice versa.
+      INTEGER MBAS(8)
       LOGICAL ONELOK
+
       CALL QENTER('SIRRDI')
 C
 C  ***** Check dimension
@@ -1123,11 +1127,16 @@ C
                IF (INIOCC .EQ. 0 .OR. IREST .GT. 0) THEN
 C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
 C                  may restart with old orbitals, but new charge.
-                  READ (LUIT1) MSYM,MBAS,NORB,NRHF,IOPRHF
-                  INIOCC = 2
+                  READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4,NRHF_i4,IOPRHF_i4
+                  INIOCC  = 2
+                  NRHF(:) = NRHF_i4(:)
+                  IOPRHF  = IOPRHF_i4
                ELSE
-                  READ (LUIT1) MSYM,MBAS,NORB
+                  READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4
                END IF
+               MSYM = NSYM_i4
+               MBAS(:) = NORB_i4(:)
+               NORB(:) = NORB_i4(:)
                NERROR = -1
             END IF
             CALL GPCLOSE(LUIT1,'KEEP')
