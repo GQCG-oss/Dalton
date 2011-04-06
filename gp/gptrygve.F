@@ -77,23 +77,28 @@ C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER TEXT*(*), OUT_TEXT*50
+      CHARACTER TEXT*(*), OUT_TEXT*51, BLANK*10
+      PARAMETER ( BLANK = '          ')
 C
       IF (TEXT(1:6) .EQ. 'START ') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
-#if defined (SYS_T3D)
-         TIMEND = TIMEND + 1.0D0
-#endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
-            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
-            LOUT = 17 + LTEXT + 3
+            IF (LTEXT .GE. 10) THEN
+               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//' is'
+               LOUT = 18 + LTEXT + 3
+            ELSE
+               LBLANK = 10 - LTEXT
+               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//
+     &                    BLANK(1:LBLANK)//' is'
+               LOUT = 18 + 10 + 3
+            END IF
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
             CALL FLSHFO(LUPRI)
          END IF
@@ -234,6 +239,8 @@ C
      &   LUPRIN)
 #if defined (VAR_MPI)
       WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
+      WRITE (0,'(/A,I6/2A/)')
      &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
 #else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
