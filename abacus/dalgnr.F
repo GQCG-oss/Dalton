@@ -1289,11 +1289,12 @@ C         if reading input from a terminal
          END IF
   910 CONTINUE
          WRITE (LUPRI,'(A,I10,A)') 
-     &   'End of file on DALTON.INP, no **DALTON input found in',J,' lines.'
+     &   'End of file on DALTON.INP, no **DALTON input found in',
+     &   J,' lines.'
          CALL QUIT('End of file on DALTON.INP, no **DALTON input found')
   920 CONTINUE
          WRITE (LUPRI,'(A,I10,A)') 
-     &   'Error reading line',J+1, of DALTON.INP'//
+     &   'Error reading line',J+1,' of DALTON.INP'//
      &   ' before finding any **DALTON input.'
          CALL QUIT('Error reading DALTON.INP, no **DALTON input found')
   930 CONTINUE
