@@ -136,14 +136,17 @@ contains
         do i = 1, tmp_nr_gas_spaces
           select case(i)
             case(1) 
-              call icopy(mx_number_of_ptg_irreps,                &
-                         is_nas1_lucita,1,is_ngsh_lucita(i,1),1)
+              do j = 1, number_of_ptg_irreps
+                is_ngsh_lucita(i,j) = is_nas1_lucita(j)
+              end do
             case(2) 
-              call icopy(mx_number_of_ptg_irreps,                &
-                         is_nas2_lucita,1,is_ngsh_lucita(i,1),1)
+              do j = 1, number_of_ptg_irreps
+                is_ngsh_lucita(i,j) = is_nas2_lucita(j)
+              end do
             case(3) 
-              call icopy(mx_number_of_ptg_irreps,                &
-                         is_nas3_lucita,1,is_ngsh_lucita(i,1),1)
+              do j = 1, number_of_ptg_irreps
+                is_ngsh_lucita(i,j) = is_nas3_lucita(j)
+              end do
           end select
         end do
  
@@ -166,6 +169,7 @@ contains
       is_nfro_lucita(i) = 0
     end do
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
     print *, ' debug print of orbital spaces:'
     print *, ' nfro_lucita        : ',(is_nfro_lucita(i),i=1,number_of_ptg_irreps)
@@ -176,6 +180,7 @@ contains
       print *, ' ngsh_lucita per gas: ',(is_ngsh_lucita(j,i),i=1,number_of_ptg_irreps)
     end do
 #endif
+!#undef LUCI_DEBUG
 
   end subroutine fill_lucita_orb_spaces_ci
 !*******************************************************************************

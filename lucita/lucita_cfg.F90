@@ -49,7 +49,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_local_print_lvl      =  0
   integer, public :: lucita_cfg_nr_gas_spaces        =  0
   integer, public :: lucita_cfg_nr_ptg_irreps        =  0
-  integer, public :: lucita_cfg_nr_calc_sequences    =  0
+  integer, public :: lucita_cfg_nr_calc_sequences    =  1
   integer, public :: lucita_cfg_max_holes_ras1       =  0
   integer, public :: lucita_cfg_max_e_ras3           =  0
   integer, public :: lucita_cfg_density_calc_lvl     =  0
