@@ -12,7 +12,7 @@ module communication_model
 !
 !           written by sknecht, may 2007 for DIRAC MCSCF/KR-CI/LUCITA
 !           adapted for DALTON by sknecht, november 2010.
-#if !defined VAR_USE_MPIF
+#ifndef VAR_USE_MPIF
   use mpi
   implicit none
 #else
