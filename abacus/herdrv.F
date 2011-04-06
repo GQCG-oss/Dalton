@@ -431,7 +431,7 @@ C     *** Initialize ***
 C
       CALL HERINI
       !Initialize defaults for density fitting
-      CALL DFIINI
+      CALL DENSFIT_INI
 C
 C     If WESTA - calculate integrals for WESTA program
 C
@@ -1610,6 +1610,11 @@ C
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
+
+!     DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',  ! TABDIR(1:4)
+!    &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',  ! TABDIR(5:8)
+!    &             '*QM3INP'/                                   ! TABDIR(9)
+
 C 302   CALL REAINP(WORD,RELCAL,TSTINP)
   302   CALL QUIT('ERROR, *READIN has been moved to **DALTON section'//
      &     ' as *MOLBAS')
@@ -1625,7 +1630,7 @@ C 302   CALL REAINP(WORD,RELCAL,TSTINP)
   307   CALL SRTINP(WORD)
       GO TO 301
         !Density-fitting input keywords
-  308   CALL DFIINP(WORD)
+  308   CALL DENSFIT_INP(WORD)
       GO TO 301
   309   CALL QUIT('ERROR, *QM3 has been moved to **DALTON section')
       GO TO 301

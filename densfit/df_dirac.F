@@ -1039,16 +1039,14 @@ C
 C
       RETURN
       END
-C  /* Deck dfiinp */
-      SUBROUTINE DFIINP(WORD)
+C  /* Deck densfit_inp */
+      SUBROUTINE DENSFIT_INP(WORD)
 #include <implicit.h>
 #include <priunit.h>
 #include <denfit.h>
-      PARAMETER ( NTABLE = 13 )
+      PARAMETER ( NTABLE = 5 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DATA TABLE /'.DIATOM','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.DIATOM','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       WORD1 = WORD
 C
@@ -1062,13 +1060,14 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
+                     GO TO (1,2,3,4,5), I
                   END IF
  200          CONTINUE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in FCK3INP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in FCK3INP.')
+
  1    CONTINUE
         !.DIATOM - fit density for pairs of atoms
         DIATOM     = .TRUE.
@@ -1079,31 +1078,15 @@ C
       GO TO 100
  4    CONTINUE
       GO TO 100
- 5    CONTINUE 
+ 5    CONTINUE
       GO TO 100
- 6    CONTINUE
-      GO TO 100
- 7    CONTINUE
-      GO TO 100
- 8    CONTINUE
-      GO TO 100
- 9    CONTINUE
-      GO TO 100  
- 10   CONTINUE
-      GO TO 100  
- 11   CONTINUE
-      GO TO 100  
- 12   CONTINUE
-      GO TO 100  
- 13   CONTINUE
-      GO TO 100  
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in DFIINP.'
+     *            '" not recognized for *DENFIT.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 CALL QUIT('Illegal keyword in DFIINP.')
+                 CALL QUIT('Illegal keyword for *DENFIT.')
             END IF
  300  CONTINUE
 
@@ -1126,8 +1109,8 @@ C
 
       RETURN
       END
-C  /* Deck dfiini */
-      SUBROUTINE DFIINI
+C  /* Deck densfit_ini */
+      SUBROUTINE DENSFIT_INI
 #include <implicit.h>
 #include <denfit.h>
 

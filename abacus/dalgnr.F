@@ -1277,18 +1277,25 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
+      J = 0
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      CALL UPCASE(WORD)
-      IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
-     &    (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
-         GO TO 930
-      ELSE
-         GO TO 900
-      END IF
+         J = J + 1
+         CALL UPCASE(WORD)
+         IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
+     &       (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
+            GO TO 930
+         ELSE
+            GO TO 900
+         END IF
   910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no General input found')
+         WRITE (LUPRI,'(A,I10,A)') 
+     &   'End of file on DALTON.INP, no **DALTON input found in',J,' lines.'
+         CALL QUIT('End of file on DALTON.INP, no **DALTON input found')
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no General input found')
+         WRITE (LUPRI,'(A,I10,A)') 
+     &   'Error reading line',J+1, of DALTON.INP'//
+     &   ' before finding any **DALTON input.'
+         CALL QUIT('Error reading DALTON.INP, no **DALTON input found')
   930 CONTINUE
       WORD1 = WORD
 C
@@ -1476,8 +1483,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (PARCAL) THEN
          WRITE (LUPRI,'(//4X,A/4X,A)')
      &      'Parallel calculation requested, but this is not a',
-     &      'parallel version. Please recompile for MPI or PVM'
-         CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
+     &      'parallel version. Please recompile for MPI'
+         CALL QUIT('Parallel calculation requested w/o MPI activated')
+!    &      'parallel version. Please recompile for MPI or PVM'
+!        CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
       END IF
 #endif
       IF (OPTWLK) THEN
