@@ -215,7 +215,7 @@ Invoke the program modules {\her} and {\sir} for a single point energy calculati
 
 %\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
 
-\item[\Key{RUNERI}] Force the use of the vectorized integral code {\eri} where possible.
+\item[\Key{RUNERI}] Force the use of the vectorized 2-electron integral code {\eri} where possible.
 
 %\item[\Key{RUNRSP}] Alternative keyword to \verb|.RUN RESPONSE|. Obsolete, do not use.
 
@@ -251,9 +251,10 @@ describing the input cards for the \Sec{WALK} submodule for a more
 detailed description of possible options.
 
 \item[\Key{WAVE FUNCTIONS}]
-\index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}\index{MCSCF}\index{CC}
+\index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{MCSCF}\index{CC}
+\index{NEVPT2}\index{GASCI}\index{DFT}
 Invoke the {\sir} program module for the evaluation of SCF, MP2, Coupled
-Cluster and MCSCF wave functions as well as DFT calculations.
+Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations.
 Necessary one-electron integrals are already evaluated and saved on files.
 See Chapter~\ref{chap:sirius-inpref}. 
 \end{description}
