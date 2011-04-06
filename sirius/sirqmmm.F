@@ -2462,7 +2462,7 @@ C     Now iterate...  !
 
       IF (NODTOT .GE. 1) THEN
         CALL MMITER_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
-     *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB)
+     *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB,DIPCON)
       ELSE
 
         DIPCON = .FALSE.
@@ -2489,7 +2489,6 @@ C     Now iterate...  !
             LRI = LRI + 3
  405      CONTINUE
 
-C      CALL QUIT()
           TERROR=0.0D0
           DO 414 I=1,NDIM
             TERROR = TERROR + (INDMOM(I)-WRK(KINDP+I-1))*
@@ -2518,8 +2517,7 @@ C      CALL QUIT()
           ELSE
             DIPCON = .FALSE. 
             IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-C            IF (MMDIIS) THEN
-            IF (.FALSE.) THEN
+            IF (MMDIIS) THEN
               CALL DCOPY(NDIM,INDMOM,1,WRK(KVEC+ITER*NDIM),1)
               CALL MM_DIIS_EXTRAPOLATION(WRK(KVEC),ITER,NDIM,WRK(KINDP),
      *                               WRK(KEND),LWRK1,IPRINT)
@@ -2538,6 +2536,8 @@ C       i.e. not only the diagonal part
 
       ENDIF !parallel mmiter
 
+C     print *,'after iter',iter, indmom
+C      print *,'indmom iter ',indmom
 C      call quit()
       DTIME = SECOND() - DTIME
       TMMITER = TMMITER + DTIME
@@ -5910,7 +5910,7 @@ C     total solvation energy
 *******************************************************************
 C  /* Deck mmiter_m */
       SUBROUTINE MMITER_M(POLDIM,INDP1,INDMOM,VEC,INDDIA,
-     *                    WRK,LWRK,LOCDEB)
+     *                    WRK,LWRK,LOCDEB,DIPCON)
 
 #include <implicit.h>
 C      IMPLICIT NONE
@@ -5928,7 +5928,7 @@ C      IMPLICIT NONE
       INTEGER POLDIM, POLARRAY
       DIMENSION POLARRAY(POLDIM)
 
-      LOGICAL LOCDEB,DIPCON
+      LOGICAL LOCDEB,DIPCON,gather
 
       DOUBLE PRECISION INDMOM,INDDIA,INDP1
       DIMENSION INDMOM(3*POLDIM),VEC(MXMMIT+3*POLDIM), INDDIA(3*POLDIM)
@@ -5939,6 +5939,9 @@ C      IMPLICIT NONE
       DIMENSION DIP(3),MY(3)
 
       CALL QENTER('MMITER_M')
+
+      gather = .TRUE.
+C      gather = .FALSE.
 
       THRESL = THMMIT
       NDIM = 3*POLDIM
@@ -5971,6 +5974,7 @@ C     Wake up slaves
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
+      CALL MPIXBCAST(gather,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLARRAY,POLDIM,'INTEGER',MASTER)
@@ -5984,14 +5988,19 @@ C     Wake up slaves
 C      CALL MPI_SCATTER(INDDIA(1),3*NSLICE,MPI_DOUBLE_PRECISION,
 C     &                 INDDIA(1),3*NSLICE,MPI_DOUBLE_PRECISION,
 C     &                 MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPIXBCAST(INDDIA,3*poldim,'DOUBLE',MASTER)
+C      CALL MPIXBCAST(INDDIA,3*poldim,'DOUBLE',MASTER)
 
+      KINDP1  = 1
+      KINDP2  = KINDP1  + NDIM
+      KINDDIA = KINDP2  + NDIM + 3*NSLICE
+      KLAST   = KINDDIA + NDIM + 3*NSLICE
+      LWRK2   = LWRK - KLAST + 1
 
-      KINDP1 = 1
-      KINDP2 = KINDP1 + NDIM
-      KINDP3 = KINDP2 + NDIM
-      KLAST = KINDP3 + NDIM
-      LWRK2 = LWRK - KLAST + 1
+      CALL DCOPY(NDIM,INDDIA,1,WRK(KINDDIA+3*NSLICE),1)
+C      CALL DCOPY(NDIM,INDDIA,1,WRK(KINDDIA),1)
+      CALL MPI_SCATTER(WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                 WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                 MASTER,MPI_COMM_WORLD,IERR)
 
       DO 100 ITER = 1, MXMMIT
         NRUN = 1
@@ -6002,8 +6011,7 @@ C     &                 MASTER,MPI_COMM_WORLD,IERR)
         ENDDO
         CALL MPIXBCAST(INDP1,NDIM,'DOUBLE',MASTER)
 
-        CALL DZERO(WRK(KINDP2),NDIM)
-        CALL DZERO(WRK(KINDP3),NDIM)
+        CALL DZERO(WRK(KINDP2+3*NSLICE),NDIM)
         CALL DZERO(INDMOM,NDIM)
 
         IF (MLOOP.NE.0) THEN
@@ -6024,15 +6032,22 @@ C     &                 MASTER,MPI_COMM_WORLD,IERR)
           ENDDO
         ENDIF
 
+
+        if (gather) then
+        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+        else
         CALL MPI_REDUCE(WRK(KINDP3),WRK(KINDP2),3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
+        endif
 
-C        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-C     &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
-C     &                  MPI_COMM_WORLD,IERR)
-
-        CALL DAXPY(NDIM,1.0D0,WRK(KINDP2),1,INDMOM,1)
+        if (gather) then
+          CALL DAXPY(NDIM,1.0D0,WRK(KINDP2+3*nslice),1,INDMOM,1)
+        else
+          CALL DAXPY(NDIM,1.0D0,WRK(KINDP2),1,INDMOM,1)
+        endif
 
         TERROR=0.0D0
         DO I=1,NDIM
@@ -6044,7 +6059,7 @@ C     &                  MPI_COMM_WORLD,IERR)
           LMAX = 0
           TMAX = 0.0D0
           DO I=1,NDIM
-            TDIFF = ABS(WRK(KINDP1+I-1)-WRK(KINDP2+I-1))
+            TDIFF = ABS(INDMOM(I)-INDP1(I))
             IF (TDIFF .GT. TMAX) THEN
               TMAX = TDIFF
               LMAX = I 
@@ -6060,11 +6075,10 @@ C     &                  MPI_COMM_WORLD,IERR)
           GOTO 200
         ELSE
           DIPCON = .FALSE. 
-C          IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-c          IF (MMDIIS) THEN
-          IF (.FALSE.) THEN
-            CALL DCOPY(NDIM,WRK(KINDP2),1,VEC(ITER*NDIM+1),1)
-            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,WRK(KINDP1),
+          IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
+          IF (MMDIIS) THEN
+            CALL DCOPY(NDIM,INDMOM,1,VEC(ITER*NDIM+1),1)
+            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,INDP1,
      *                                 WRK(KLAST),LWRK2,IPRINT)
           ELSE 
             CALL DCOPY(NDIM,INDMOM,1,INDP1,1)
@@ -6109,10 +6123,11 @@ C  /* Deck mmiter_s */
       ALLOCATABLE POLARRAY
       DOUBLE PRECISION DIP,MY
       DIMENSION DIP(3),MY(3)
+      LOGICAL gather
 
       CALL QENTER('MMITER_S')
 
-
+      CALL MPIXBCAST(gather,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
 
@@ -6120,7 +6135,11 @@ C  /* Deck mmiter_s */
 
       KINDP1  = 1
       KINDP2  = KINDP1  + NDIM
-      KINDDIA = KINDP2  + NDIM
+      if (gather) then
+        KINDDIA = KINDP2  + 3*NSLICE
+      else
+        KINDDIA = KINDP2  + NDIM
+      endif
       KLAST   = KINDDIA + NDIM
 C      KLAST   = KINDDIA + 3*NSLICE
 
@@ -6136,15 +6155,20 @@ C      KLAST   = KINDDIA + 3*NSLICE
         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
-      CALL DZERO(WRK(KINDDIA),NDIM)
-C      CALL DZERO(WRK(KINDDIA),3*NSLICE)
-C      CALL MPI_SCATTER(WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
-C     &                WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
-C     &                MPI_COMM_WORLD,IERR)
-      CALL MPIXBCAST(WRK(KINDDIA),ndim,'DOUBLE',MASTER)
+C      CALL DZERO(WRK(KINDDIA),NDIM)
+      CALL DZERO(WRK(KINDDIA),3*NSLICE)
+      CALL MPI_SCATTER(WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
+     &                MPI_COMM_WORLD,IERR)
+C      CALL MPIXBCAST(WRK(KINDDIA),ndim,'DOUBLE',MASTER)
 
-      ISTART = (MYNUM-1)*NSLICE + 1
-      IEND = MYNUM*NSLICE
+C      if (gather)then
+        ISTART = 1
+        IEND = NSLICE
+C      else
+        ISTART = (MYNUM-1)*NSLICE + 1
+        IEND = MYNUM*NSLICE
+C      endif
       ITER = 0
 
  20   CONTINUE
@@ -6154,13 +6178,21 @@ C     &                MPI_COMM_WORLD,IERR)
 
       IF (IRUN.EQ.1) THEN
         ITER = ITER + 1
+        if (gather) then
+        CALL DZERO(WRK(KINDP2),NSLICE)
+        CALL DCOPY(3*NSLICE,WRK(KINDDIA),1,
+     *             WRK(KINDP2),1)
+C        CALL DCOPY(3*NSLICE,WRK(KINDDIA+3*(ISTART-1)),1,
+C     *             WRK(KINDP2),1)
+        else
         CALL DZERO(WRK(KINDP2),NDIM)
         CALL DCOPY(3*NSLICE,WRK(KINDDIA+3*(ISTART-1)),1,
      *             WRK(KINDP2+3*(ISTART-1)),1)
+        endif
 C        CALL DCOPY(ndim,WRK(KINDDIA),1,WRK(KINDP2),1)
         CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
-C        LRI = 1
-        LRI = 3*(ISTART-1) + 1
+        LRI = 1
+C        LRI = 3*(ISTART-1) + 1
         DO L = ISTART, IEND
           I = POLARRAY(L)
           LCI = 1
@@ -6175,12 +6207,16 @@ C        LRI = 1
           LRI = LRI + 3
         ENDDO
 
+        if (gather) then
+        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+        else
         CALL MPI_REDUCE(WRK(KINDP2),WRK(KINDP2),3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-C        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-C     &                 WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
-C     &                 MPI_COMM_WORLD,IERR)
+
+        endif
         GOTO 20
       ENDIF
 
