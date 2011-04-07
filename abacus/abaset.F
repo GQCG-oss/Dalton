@@ -514,10 +514,18 @@ C
       USEDRC = .FALSE.
       IPRTRA = IPRNTR
       IF (NASHT.GT.1 .OR. H2MO) THEN
-         KTRLVL = 4
-         ITRLVL = KTRLVL
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
+         IF (NEWTRA) THEN
+C            ... we need (ia/ (inactive-secondary) Mulliken distributions;
+C            they are only calculated for level 5 in "NEWTRA"
+C            transformation  /hjaaj June 09
+            KTRLVL = 5
+            ITRLVL = KTRLVL
+         ELSE
+            KTRLVL = 4
+            ITRLVL = KTRLVL
+         END IF
          CALL SIR_INTOPEN
 C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.

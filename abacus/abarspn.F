@@ -216,16 +216,15 @@ cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
 cs
          IF (SOPPA .OR. NEXVAL.EQ.0) THEN
             JTRLVL = -10
+         ELSE IF (NEWTRA) THEN
+            JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
             JTRLVL = -4
          ENDIF
 cs
          FLAGSV = DORSP
          DORSP = .TRUE.
-cSPAS:29.11.2002 debugging newtra for SOPPA
-cSPAS    CALL SIR_INTOPEN
-         IF (.NOT. NEWTRA) CALL SIR_INTOPEN
-cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
+         CALL SIR_INTOPEN
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA) 
       END IF
