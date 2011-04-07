@@ -2479,7 +2479,7 @@ C     Now iterate...  !
 
               IF (ZEROAL(J) .EQ. -1) GOTO 409 
 
-              CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP+LCI-1),MY)
+              CALL MMITERATIVE(I,J,WRK(KINDP+LCI-1),MY)
               INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
               INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
               INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
@@ -2524,8 +2524,8 @@ C     Now iterate...  !
             ELSE 
               CALL DCOPY(NDIM,INDMOM,1,WRK(KINDP),1)
             ENDIF
-C       If no convergence in last iteration keep the values for the induced dipoles, 
-C       i.e. not only the diagonal part 
+C       If no convergence in last iteration keep the values for the
+C       induced dipoles, i.e. not only the diagonal part
             IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,WRK(KINDDIA),1,
      *                                       INDMOM,1)
           ENDIF
@@ -2536,9 +2536,6 @@ C       i.e. not only the diagonal part
 
       ENDIF !parallel mmiter
 
-C     print *,'after iter',iter, indmom
-C      print *,'indmom iter ',indmom
-C      call quit()
       DTIME = SECOND() - DTIME
       TMMITER = TMMITER + DTIME
 
@@ -5928,7 +5925,7 @@ C      IMPLICIT NONE
       INTEGER POLDIM, POLARRAY
       DIMENSION POLARRAY(POLDIM)
 
-      LOGICAL LOCDEB,DIPCON,gather
+      LOGICAL LOCDEB,DIPCON
 
       DOUBLE PRECISION INDMOM,INDDIA,INDP1
       DIMENSION INDMOM(3*POLDIM),VEC(MXMMIT+3*POLDIM), INDDIA(3*POLDIM)
@@ -5940,8 +5937,7 @@ C      IMPLICIT NONE
 
       CALL QENTER('MMITER_M')
 
-      gather = .TRUE.
-C      gather = .FALSE.
+      DIPCON = .FALSE.
 
       THRESL = THMMIT
       NDIM = 3*POLDIM
@@ -5954,9 +5950,9 @@ C     Make a vector of pol sites
         POLARRAY(L) = I
  1    CONTINUE
 
-      DIPCON = .FALSE.
+
       LM = 0
-      NSLICE = POLDIM/NODTOT
+      NSLICE = POLDIM/(NODTOT+1)
       IF ((NODTOT*NSLICE) .LT. POLDIM) THEN
         MLOOP = POLDIM - (NODTOT * NSLICE)
         ISTART = NODTOT*NSLICE + 1
@@ -5974,7 +5970,6 @@ C     Wake up slaves
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
-      CALL MPIXBCAST(gather,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLARRAY,POLDIM,'INTEGER',MASTER)
@@ -5985,22 +5980,10 @@ C     Wake up slaves
         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
-C      CALL MPI_SCATTER(INDDIA(1),3*NSLICE,MPI_DOUBLE_PRECISION,
-C     &                 INDDIA(1),3*NSLICE,MPI_DOUBLE_PRECISION,
-C     &                 MASTER,MPI_COMM_WORLD,IERR)
-C      CALL MPIXBCAST(INDDIA,3*poldim,'DOUBLE',MASTER)
-
       KINDP1  = 1
       KINDP2  = KINDP1  + NDIM
-      KINDDIA = KINDP2  + NDIM + 3*NSLICE
-      KLAST   = KINDDIA + NDIM + 3*NSLICE
+      KLAST   = KINDP2  + NDIM
       LWRK2   = LWRK - KLAST + 1
-
-      CALL DCOPY(NDIM,INDDIA,1,WRK(KINDDIA+3*NSLICE),1)
-C      CALL DCOPY(NDIM,INDDIA,1,WRK(KINDDIA),1)
-      CALL MPI_SCATTER(WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                 WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                 MASTER,MPI_COMM_WORLD,IERR)
 
       DO 100 ITER = 1, MXMMIT
         NRUN = 1
@@ -6011,43 +5994,44 @@ C      CALL DCOPY(NDIM,INDDIA,1,WRK(KINDDIA),1)
         ENDDO
         CALL MPIXBCAST(INDP1,NDIM,'DOUBLE',MASTER)
 
-        CALL DZERO(WRK(KINDP2+3*NSLICE),NDIM)
-        CALL DZERO(INDMOM,NDIM)
-
+        CALL DZERO(WRK(KINDP2),NDIM)
+C     Do some work on master as well
+        LRI = 1
+        DO L = 1, NSLICE
+          I = POLARRAY(L)
+          LCI = 1
+          DO K = 1, POLDIM
+            J = POLARRAY(K)
+            CALL MMITERATIVE(I,J,INDP1(LCI),MY)
+            WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+            WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+            WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
+            LCI = LCI + 3
+          ENDDO
+          LRI = LRI + 3
+        ENDDO
+C     Do the leftovers
         IF (MLOOP.NE.0) THEN
           LRI = 3*NODTOT*NSLICE + 1
-          CALL DCOPY(3*MLOOP,INDDIA(LRI),1,INDMOM(LRI),1)
           DO L = ISTART, IEND
             I = POLARRAY(L)
             LCI = 1
             DO K = 1, POLDIM
               J = POLARRAY(K)
-              CALL MMITERATIVE(I,J,LRI,LCI,INDP1(LCI),MY)
-              INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
-              INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
-              INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
+              CALL MMITERATIVE(I,J,INDP1(LCI),MY)
+              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
               LCI = LCI + 3
             ENDDO
             LRI = LRI + 3
           ENDDO
         ENDIF
 
-
-        if (gather) then
         CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
      &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
      &                  MASTER,MPI_COMM_WORLD,IERR)
-        else
-        CALL MPI_REDUCE(WRK(KINDP3),WRK(KINDP2),3*POLDIM,
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
-        endif
-
-        if (gather) then
-          CALL DAXPY(NDIM,1.0D0,WRK(KINDP2+3*nslice),1,INDMOM,1)
-        else
-          CALL DAXPY(NDIM,1.0D0,WRK(KINDP2),1,INDMOM,1)
-        endif
+        CALL DAXPY(NDIM,1.0D0,WRK(KINDP2),1,INDMOM,1)
 
         TERROR=0.0D0
         DO I=1,NDIM
@@ -6083,8 +6067,10 @@ C      CALL DCOPY(NDIM,INDDIA,1,WRK(KINDDIA),1)
           ELSE 
             CALL DCOPY(NDIM,INDMOM,1,INDP1,1)
           ENDIF
-C          IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,INDDIA,1,
-C     *                                       INDMOM,1)
+C     If no convergence in last iteration keep the values for the
+C     induced dipoles, i.e. not only the diagonal part
+          IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,INDDIA,1,
+     *                                       INDMOM,1)
         ENDIF
 
  100  CONTINUE
@@ -6099,7 +6085,6 @@ C     End message to slaves
         CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
       ENDDO
 
-C      call quit('test')
       CALL QEXIT('MMITER_M')
 
       RETURN
@@ -6123,11 +6108,9 @@ C  /* Deck mmiter_s */
       ALLOCATABLE POLARRAY
       DOUBLE PRECISION DIP,MY
       DIMENSION DIP(3),MY(3)
-      LOGICAL gather
-
+      
       CALL QENTER('MMITER_S')
 
-      CALL MPIXBCAST(gather,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
 
@@ -6135,13 +6118,8 @@ C  /* Deck mmiter_s */
 
       KINDP1  = 1
       KINDP2  = KINDP1  + NDIM
-      if (gather) then
-        KINDDIA = KINDP2  + 3*NSLICE
-      else
-        KINDDIA = KINDP2  + NDIM
-      endif
-      KLAST   = KINDDIA + NDIM
-C      KLAST   = KINDDIA + 3*NSLICE
+      KINDDIA = KINDP2  + 3*NSLICE
+      KLAST   = KINDDIA + 3*NSLICE
 
       LWRK2 = LWRK - KLAST + 1
       IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_S',-KLAST,LWRK)
@@ -6155,21 +6133,8 @@ C      KLAST   = KINDDIA + 3*NSLICE
         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
-C      CALL DZERO(WRK(KINDDIA),NDIM)
-      CALL DZERO(WRK(KINDDIA),3*NSLICE)
-      CALL MPI_SCATTER(WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                WRK(KINDDIA),3*NSLICE,MPI_DOUBLE_PRECISION,MASTER,
-     &                MPI_COMM_WORLD,IERR)
-C      CALL MPIXBCAST(WRK(KINDDIA),ndim,'DOUBLE',MASTER)
-
-C      if (gather)then
-        ISTART = 1
-        IEND = NSLICE
-C      else
-        ISTART = (MYNUM-1)*NSLICE + 1
-        IEND = MYNUM*NSLICE
-C      endif
-      ITER = 0
+      ISTART = MYNUM*NSLICE + 1
+      IEND = (MYNUM+1)*NSLICE
 
  20   CONTINUE
 
@@ -6177,28 +6142,15 @@ C      endif
       CALL MPIXRECV(IRUN,1,'INTEGER',MASTER,MPTAG2)
 
       IF (IRUN.EQ.1) THEN
-        ITER = ITER + 1
-        if (gather) then
-        CALL DZERO(WRK(KINDP2),NSLICE)
-        CALL DCOPY(3*NSLICE,WRK(KINDDIA),1,
-     *             WRK(KINDP2),1)
-C        CALL DCOPY(3*NSLICE,WRK(KINDDIA+3*(ISTART-1)),1,
-C     *             WRK(KINDP2),1)
-        else
-        CALL DZERO(WRK(KINDP2),NDIM)
-        CALL DCOPY(3*NSLICE,WRK(KINDDIA+3*(ISTART-1)),1,
-     *             WRK(KINDP2+3*(ISTART-1)),1)
-        endif
-C        CALL DCOPY(ndim,WRK(KINDDIA),1,WRK(KINDP2),1)
+        CALL DZERO(WRK(KINDP2),3*NSLICE)
         CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
         LRI = 1
-C        LRI = 3*(ISTART-1) + 1
         DO L = ISTART, IEND
           I = POLARRAY(L)
           LCI = 1
           DO K = 1, POLDIM
             J = POLARRAY(K)
-            CALL MMITERATIVE(I,J,LRI,LCI,WRK(KINDP1+LCI-1),MY)
+            CALL MMITERATIVE(I,J,WRK(KINDP1+LCI-1),MY)
             WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
             WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
             WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
@@ -6207,16 +6159,9 @@ C        LRI = 3*(ISTART-1) + 1
           LRI = LRI + 3
         ENDDO
 
-        if (gather) then
         CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
      &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
      &                  MASTER,MPI_COMM_WORLD,IERR)
-        else
-        CALL MPI_REDUCE(WRK(KINDP2),WRK(KINDP2),3*POLDIM,
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
-     &                   IERR)
-
-        endif
         GOTO 20
       ENDIF
 
@@ -6229,15 +6174,18 @@ C        LRI = 3*(ISTART-1) + 1
 
 *******************************************************************
 C  /* Deck mmiterative */
-      SUBROUTINE MMITERATIVE(I,J,LRI,LCI,DIP,MY)
+      SUBROUTINE MMITERATIVE(I,J,DIP,MY)
 
-C Get the polarizability tensor (MY) at site I due to site J (DIP)
+C Input: I,J,DIP
+C Output: MY
+C Get the polarizability tensor MY at site I due to polarizability
+C tensor DIP at site J.
       IMPLICIT NONE
 #include <mxcent.h>
 #include <qmmm.h>
 
       LOGICAL EXCENT
-      INTEGER I, J, K, L, NLDIM, NTOTI, LRI, LCI
+      INTEGER I, J, K, L, NLDIM, NTOTI
       DOUBLE PRECISION AMAT,TTENS,ATMAT,DIP,MY
       DOUBLE PRECISION TEMPJ, TEMP, SCREEN, TEMPI,DIST,DIST2,DIST3,DIST5
       DOUBLE PRECISION ELEM,FEIJ,FTIJ, D0, D1, D3I, D6I
@@ -6247,7 +6195,6 @@ C Get the polarizability tensor (MY) at site I due to site J (DIP)
 
       CALL QENTER('MMITERATIVE')
 
-      
       CALL DZERO(MY,3)
       IF (J .NE. I) THEN
         EXCENT = .FALSE.
