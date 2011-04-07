@@ -1135,10 +1135,10 @@ C                  may restart with old orbitals, but new charge.
                ELSE
                   READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4
                END IF
-               MSYM = NSYM_i4
-               MBAS(:) = NORB_i4(:)
+               MSYM    = NSYM_i4
+               MBAS(:) = NBAS_i4(:)
                NORB(:) = NORB_i4(:)
-               NERROR = -1
+               NERROR  = -1
             END IF
             CALL GPCLOSE(LUIT1,'KEEP')
          ELSE IF (IRDMO .EQ. 10) THEN

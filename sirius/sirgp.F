@@ -892,18 +892,18 @@ C
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
       ! SIRIUS.RST from a Dalton with 4 byte integers, and vice versa.
 C
-      CHARACTER*8 BASINF(4)
-      DATA BASINF(1)/'********'/, BASINF(4)/'BASINFO '/
+      CHARACTER*8 BASINFO(4)
+      DATA BASINFO(1)/'********'/, BASINFO(4)/'BASINFO '/
 C
-      CALL GETDAT(BASINF(2),BASINF(3))
+      CALL GETDAT(BASINFO(2),BASINFO(3))
       REWIND LUIT1
-      WRITE (LUIT1) BASINF
+      WRITE (LUIT1) BASINFO
       NSYM_i4    = NSYM
       NBAS_i4(:) = NBAS(:)
       NORB_i4(:) = NORB(:)
       NRHF_i4(:) = NRHF(:)
       IOPRHF_i4  = IOPRHF
-      WRITE (LUIT1) NSYM_i4,NBAS_i4,NORB_i4,NRH_i4F,IOPRHF_i4
+      WRITE (LUIT1) NSYM_i4,NBAS_i4,NORB_i4,NRHF_i4,IOPRHF_i4
       RETURN
       END
 C  /* Deck getac */
