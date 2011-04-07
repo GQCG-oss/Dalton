@@ -62,7 +62,6 @@ cat > qmmm1.dal <<'%EOF%'
 .RUN PROPERTIES
 *QMMM
 .QMMM
-.MMITER
 .PRINT
  1 
 .MMPROP

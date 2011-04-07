@@ -22,7 +22,7 @@ cat > qmmm6.info <<'%EOF%'
    -----------
    Molecule:         CH2O(DFT)/2 H2O(MM)
    Wave Function:    B3LYP / cc-pVDZ  
-   Test Purpose:     Test of freq. dep. hyper polarizability therough RESPONSE
+   Test Purpose:     Test of freq. dep. hyper polarizability through RESPONSE
 %EOF%
 #######################################################################
 #  INTEGRAL INPUT
@@ -62,7 +62,6 @@ cat > qmmm6.dal <<'%EOF%'
 .RUN RESPONSE
 *QMMM
 .QMMM
-.MMITER
 .PRINT
  1 
 **WAVE FUNCTIONS

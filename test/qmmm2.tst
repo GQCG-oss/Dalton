@@ -32,6 +32,10 @@ START DALINP
 *QMMM
 .QMMM
 .MMITER
+.ITERIN
+ 50 1.0D-10
+.MMDIIS
+ 5
 .PRINT
  1 
 .MMPROP
@@ -83,14 +87,12 @@ END POTINP
 START REFOUT
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+   ****************************************************************************
+   *************** DALTON2011 - An electronic structure program ***************
+   ****************************************************************************
 
     This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+   ----------------------------------------------------------------------------
     NOTE:
      
     This is an experimental code for the evaluation of molecular
@@ -109,9 +111,7 @@ START REFOUT
      
     "Dalton, a molecular electronic structure program,
     Release DALTON2011 (2011), see http://daltonprogram.org"
-
  --------------------------------------------------------------------------------
-
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
@@ -167,18 +167,16 @@ START REFOUT
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
  --------------------------------------------------------------------------------
 
-
-     Date and time (Linux)  : Wed Apr  6 09:17:48 2011 
+     Date and time (Linux)  : Thu Apr  7 15:31:08 2011 
      Host name              : stanley                                 
 
  * Work memory size             :   100000000 =  762.94 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/jobb/dalton/svn/qmmm_devel/test/2011-04-06T09_17-testjob-pid-973
-   2) /home/arnfinn/jobb/dalton/svn/qmmm_devel/basis/
+   1) /home/arnfinn/jobb/dalton/svn/pure_trunk/test/2011-04-07T15_29-testjob-pid-10167
+   2) /home/arnfinn/jobb/dalton/svn/pure_trunk/basis/
 
 
        *******************************************************************
@@ -187,7 +185,7 @@ START REFOUT
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -205,12 +203,15 @@ START REFOUT
  |   QMMM |       T |
  | MMPROP |       T |
  | MMITER |       T |
+ | MMDIIS |       T |
  +------------------+
 
 
  Induced MM dipoles are solved iteratively
- Max. number of iterations:          100
+ Max. number of iterations:           50
  Thresshold:   1.00000000000000004E-010
+ DIIS is invoked for induced dipoles
+ Maximum number of DIIS vectors:            5
 
 
 
@@ -235,7 +236,7 @@ START REFOUT
   Number of basis sets to read;    2
   The basis set is "cc-pVDZ" from the basis set library.
   Used basis set file for basis set for elements with Z =   6 :
-     "/home/arnfinn/jobb/dalton/svn/qmmm_devel/basis/cc-pVDZ"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
@@ -244,7 +245,7 @@ START REFOUT
   Number of basis sets to read;    2
   The basis set is "cc-pVDZ" from the basis set library.
   Used basis set file for basis set for elements with Z =   8 :
-     "/home/arnfinn/jobb/dalton/svn/qmmm_devel/basis/cc-pVDZ"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/cc-pVDZ"
 
   Atomic type no.    3
   --------------------
@@ -253,7 +254,7 @@ START REFOUT
   Number of basis sets to read;    2
   The basis set is "cc-pVDZ" from the basis set library.
   Used basis set file for basis set for elements with Z =   1 :
-     "/home/arnfinn/jobb/dalton/svn/qmmm_devel/basis/cc-pVDZ"
+     "/home/arnfinn/jobb/dalton/svn/pure_trunk/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
@@ -440,9 +441,9 @@ Point group: C1
  Number of two-electron integrals written:      265159 ( 96.5% )
  Megabytes written:                              3.037
 
- >>> Time used in TWOINT is   0.20 seconds
- >>>> Total CPU  time used in HERMIT:   0.23 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>  Time used in TWOINT     is   0.22 seconds
+ >>>> Total CPU  time used in HERMIT:   0.26 seconds
+ >>>> Total wall time used in HERMIT:   0.26 seconds
 
 
                         .----------------------------------.
@@ -476,7 +477,7 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Apr  6 09:17:48 2011 
+     Date and time (Linux)  : Thu Apr  7 15:31:08 2011 
      Host name              : stanley                                 
 
  Title lines from ".mol" input file:
@@ -547,149 +548,85 @@ Point group: C1
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
          DFT grid generation - Radial Quadrature  : LMG scheme
-         DFT grid generation -  partitioning : Original Becke partitioning
+         DFT grid generation - Partitioning : Original Becke partitioning
          DFT grid generation - Radial integration threshold: 1e-13
          DFT grid generation - Angular polynomials in range [15 35]
-         DFT grid generation - Atom:    1*1 points= 21894 compressed from 21894 (117 radial)
-         DFT grid generation - Atom:    2*1 points= 21522 compressed from 21522 (117 radial)
-         DFT grid generation - Atom:    3*1 points= 20634 compressed from 20634 ( 87 radial)
-         DFT grid generation - Atom:    4*1 points= 20634 compressed from 20634 ( 87 radial)
-         DFT grid generation - Number of grid points:    84684; grid generation time:      0.1 s
+         DFT grid generation - Atom:    1*1 points= 22038 compressed from 22038 (117 radial)
+         DFT grid generation - Atom:    2*1 points= 21630 compressed from 21630 (117 radial)
+         DFT grid generation - Atom:    3*1 points= 20742 compressed from 20742 ( 87 radial)
+         DFT grid generation - Atom:    4*1 points= 20742 compressed from 20742 ( 87 radial)
+         DFT grid generation - Number of grid points:    85152; grid generation time:      0.0 s 
+
       K-S energy, electrons, error :    -11.716637424232  15.9999999914   -8.63D-09
-
- Done with induced dipoles in            6  iterations
-
- Acc. iterations:           6
-   1  -114.001203848     -3.382252482250E-02    2.71747D+00   -1.14D+02
+   1  -114.001203949     -3.382262611394E-02    2.71747D+00   -1.14D+02
       Virial theorem: -V/T =      2.006749
       MULPOP  C       1.08; O      -0.74; H      -0.17; H      -0.17; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.859865843002  15.9999999671   -3.29D-08
-
- Done with induced dipoles in            7  iterations
-
- Acc. iterations:          13
-   2  -113.462768295      8.621707698802E-03    4.34174D+00    5.38D-01
+      K-S energy, electrons, error :    -11.859865879436  15.9999999671   -3.29D-08
+   2  -113.462768610      8.621675636958E-03    4.34174D+00    5.38D-01
       Virial theorem: -V/T =      1.998566
       MULPOP  C      -1.67; O       1.17; H       0.28; H       0.21; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -12.009761936348  15.9999999416   -5.84D-08
-
- Done with induced dipoles in            7  iterations
-
- Acc. iterations:          20
-   3  -114.421416388     -3.502101906112E-02    1.02590D+00   -9.59D-01
+      K-S energy, electrons, error :    -12.009761936648  15.9999999416   -5.84D-08
+   3  -114.421416407     -3.502105493425E-02    1.02590D+00   -9.59D-01
       Virial theorem: -V/T =      1.994010
       MULPOP  C       0.36; O      -0.54; H       0.13; H       0.05; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.806144826139  15.9999999442   -5.58D-08
-
- Done with induced dipoles in            6  iterations
-
- Acc. iterations:          26
-   4  -114.467190768     -2.472441403510E-02    2.46225D-01   -4.58D-02
+      K-S energy, electrons, error :    -11.806144828998  15.9999999442   -5.58D-08
+   4  -114.467190748     -2.472439802814E-02    2.46225D-01   -4.58D-02
       Virial theorem: -V/T =      2.009365
       MULPOP  C       0.21; O      -0.26; H       0.07; H      -0.02; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.858469437566  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:          31
-   5  -114.470391098     -2.661344167658E-02    2.53548D-02   -3.20D-03
+      K-S energy, electrons, error :    -11.858469423038  15.9999999431   -5.69D-08
+   5  -114.470391109     -2.661345008099E-02    2.53547D-02   -3.20D-03
       Virial theorem: -V/T =      2.005373
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.02; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853504962967  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            3  iterations
-
- Acc. iterations:          34
-   6  -114.470427534     -2.630591381529E-02    2.52684D-03   -3.64D-05
+      K-S energy, electrons, error :    -11.853504966331  15.9999999431   -5.69D-08
+   6  -114.470427488     -2.630587017402E-02    2.52677D-03   -3.64D-05
       Virial theorem: -V/T =      2.005734
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853968549426  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            2  iterations
-
- Acc. iterations:          36
-   7  -114.470427781     -2.633238260099E-02    1.23203D-04   -2.48D-07
+      K-S energy, electrons, error :    -11.853968533475  15.9999999431   -5.69D-08
+   7  -114.470427786     -2.633238073448E-02    1.23321D-04   -2.98D-07
       Virial theorem: -V/T =      2.005700
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853979923873  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            1  iterations
-
- Acc. iterations:          37
-   8  -114.470427798     -2.633446409214E-02    2.71748D-05   -1.71D-08
+      K-S energy, electrons, error :    -11.853979931416  15.9999999431   -5.69D-08
+   8  -114.470427799     -2.633446584027E-02    2.72412D-05   -1.22D-08
       Virial theorem: -V/T =      2.005699
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853977555492  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            0  iterations
-
- Acc. iterations:          37
-   9  -114.470427815     -2.633403548600E-02    2.51279D-06   -1.71D-08
+      K-S energy, electrons, error :    -11.853977556104  15.9999999431   -5.69D-08
+   9  -114.470427816     -2.633403575332E-02    2.51017D-06   -1.69D-08
       Virial theorem: -V/T =      2.005700
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853977610106  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            0  iterations
-
- Acc. iterations:          37
-  10  -114.470427810     -2.633404392654E-02    7.64732D-07    5.53D-09
+      K-S energy, electrons, error :    -11.853977610069  15.9999999431   -5.69D-08
+  10  -114.470427810     -2.633404396755E-02    7.65839D-07    5.59D-09
       Virial theorem: -V/T =      2.005700
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853977647570  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            0  iterations
-
- Acc. iterations:          37
-  11  -114.470427809     -2.633404960966E-02    5.79058D-08    1.06D-09
+      K-S energy, electrons, error :    -11.853977647513  15.9999999431   -5.69D-08
+  11  -114.470427809     -2.633404961309E-02    5.83654D-08    1.07D-09
       Virial theorem: -V/T =      2.005700
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853977651043  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            0  iterations
-
- Acc. iterations:          37
-  12  -114.470427809     -2.633404968259E-02    6.88791D-09    1.08D-10
+      K-S energy, electrons, error :    -11.853977651047  15.9999999431   -5.69D-08
+  12  -114.470427809     -2.633404968513E-02    6.84038D-09    1.13D-10
       Virial theorem: -V/T =      2.005700
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853977652089  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            0  iterations
-
- Acc. iterations:          37
-  13  -114.470427809     -2.633404972022E-02    4.37177D-10    2.33D-11
+      K-S energy, electrons, error :    -11.853977652090  15.9999999431   -5.69D-08
+  13  -114.470427809     -2.633404972070E-02    4.29917D-10    2.43D-11
       Virial theorem: -V/T =      2.005700
       MULPOP  C       0.16; O      -0.28; H       0.10; H       0.01; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.853977652111  15.9999999431   -5.69D-08
-
- Done with induced dipoles in            0  iterations
-
- Acc. iterations:          37
-  14  -114.470427809     -2.633404971692E-02    7.61731D-11    4.89D-12
+      K-S energy, electrons, error :    -11.853977652110  15.9999999431   -5.69D-08
+  14  -114.470427809     -2.633404971691E-02    7.62980D-11    4.53D-12
 
  *** DIIS converged in  14 iterations !
    - total time used in SIRFCK :              0.08 seconds
-   - QM/MM times:
-     - total time used in QMMMFCK      :       1.29 seconds
-     - total time used in QMMM MULPOLES:       0.78 seconds
-     - total time used in QMMM_POLARI  :       0.51 seconds
-     - MMITER times:
-       - total time used in GET_IND_DIPOLES_2:       0.28 seconds
-       - total time used in MMPOLARI_ITER2   :       0.28 seconds
-       - total time used in F2QMMM           :       0.00 seconds
-       - total time used in the iteration    :       0.00 seconds
 
 
  *** SCF orbital energy analysis ***
@@ -713,6 +650,10 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
+ >>> Transforming 2-el. integrals acc. to .FINAL TRANSFORMATION =  4 <<<
+
+ >>>> CPU and wall time for SCF :      33.210      33.451
+
 
                        .-----------------------------------.
                        | >>> Final results from SIRIUS <<< |
@@ -734,9 +675,9 @@ Point group: C1
      Multipole Pol. energy:       -0.005373850100
      Total QM/MM energy:          -0.026334049717
 
-     Final DFT energy:           -114.470427808760                 
+     Final DFT energy:           -114.470427808754                 
      Nuclear repulsion:            31.249215315972
-     Electronic energy:          -145.693309075016
+     Electronic energy:          -145.693309075009
 
      Final gradient norm:           0.000000000076
   -------------------------------------- 
@@ -753,17 +694,17 @@ Point group: C1
   1.11274526999999568E-002 -8.43115480999999944E-002 -0.11572617469999998     
 
   MM total induced dipole moment (x,y,z): 
- -0.23469464574702148       0.40359089589126856       4.44990090830958869E-003
+ -0.23469464574906229       0.40359089589633318       4.44990090861821855E-003
 
   MM total dipole moment (x,y,z): 
- -0.34077043591549794        1.0666465960451730       0.88728397113941482     
+ -0.34077043591753875        1.0666465960502376       0.88728397113972346     
 
  MM properties skipped since MMITER
   ---------------------------------------
 
 
  
-     Date and time (Linux)  : Wed Apr  6 09:18:21 2011 
+     Date and time (Linux)  : Thu Apr  7 15:31:42 2011 
      Host name              : stanley                                 
 
  (Only coefficients >0.0100 are printed.)
@@ -808,11 +749,11 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :     32.53 seconds
- >>>> Total wall time used in SIRIUS :     33.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     33.22 seconds
+ >>>> Total wall time used in SIRIUS :     33.47 seconds
 
  
-     Date and time (Linux)  : Wed Apr  6 09:18:21 2011 
+     Date and time (Linux)  : Thu Apr  7 15:31:42 2011 
      Host name              : stanley                                 
 
 
@@ -858,116 +799,27 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Apr  6 09:18:21 2011 
+     Date and time (Linux)  : Thu Apr  7 15:31:42 2011 
      Host name              : stanley                                 
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
 
- Done with induced dipoles in            3  iterations
-
- Acc. iterations:          40
-
- Done with induced dipoles in            6  iterations
-
- Acc. iterations:          46
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            3  iterations
-
- Acc. iterations:          49
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:          54
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            4  iterations
-
- Acc. iterations:          58
-
- Done with induced dipoles in            6  iterations
-
- Acc. iterations:          64
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            4  iterations
-
- Acc. iterations:          68
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:          73
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            3  iterations
-
- Acc. iterations:          76
-
- Done with induced dipoles in            4  iterations
-
- Acc. iterations:          80
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            3  iterations
-
- Acc. iterations:          83
-
- Done with induced dipoles in            4  iterations
-
- Acc. iterations:          87
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:          92
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:          97
-       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.4 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         102
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         107
+ TRACTL_1: Integral transformation abandoned,
+ the required MO integrals are already available.
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.5 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.5 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.5 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.5 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.6 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.6 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.5 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*2 evaluation time:       2.5 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.9 s
        Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         112
+       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.9 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.9 s
        Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            3  iterations
-
- Acc. iterations:         115
-       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         120
-       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         125
-       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         130
-       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         135
-       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.8 s
-
- Done with induced dipoles in            5  iterations
-
- Acc. iterations:         140
- >>> Time used in EXCITA is  33.58 seconds
+       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.9 s
+       Electrons: 16.000000(-5.69e-08): LR-DFT*1 evaluation time:       1.9 s
+ >>>  Time used in EXCITA     is  34.89 seconds
 
 
    ***************************************************************************
@@ -976,7 +828,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Wed Apr  6 09:18:55 2011 
+     Date and time (Linux)  : Thu Apr  7 15:32:17 2011 
      Host name              : stanley                                 
 
 
@@ -1111,27 +963,24 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- EXCITA     00:00:34     100 %
+ EXCITA     00:00:35     100 %
 
- TOTAL      00:00:34     100 %
+ TOTAL      00:00:35     100 %
 
 
-   - QM/MM times:
-     - total time used in QMMMFIRST:       0.00 seconds
-     - total time used in QMMMB2   :       0.00 seconds
- >>>> Total CPU  time used in ABACUS:  33.60 seconds
- >>>> Total wall time used in ABACUS:  34.00 seconds
+ >>>> Total CPU  time used in ABACUS:  34.91 seconds
+ >>>> Total wall time used in ABACUS:  35.62 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute   6 seconds
- >>>> Total wall time used in DALTON:  1 minute   7 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute   8 seconds
+ >>>> Total wall time used in DALTON:  1 minute   9 seconds
 
  
-     Date and time (Linux)  : Wed Apr  6 09:18:55 2011 
+     Date and time (Linux)  : Thu Apr  7 15:32:17 2011 
      Host name              : stanley                                 
 END REFOUT
 
