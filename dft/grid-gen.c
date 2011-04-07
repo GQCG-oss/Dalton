@@ -1530,7 +1530,7 @@ grid_generate(const char* filename, integer atom_cnt,
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
 
-    fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s", 
+    fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s \n", 
                res, utm/(double)sysconf(_SC_CLK_TCK));
     return res;
 }
