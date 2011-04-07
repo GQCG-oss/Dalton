@@ -110,9 +110,9 @@ C#include <ccr1rsp.h>
 * begin:
 *---------------------------------------------------------------------*
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
-        WRITE(LUPRI,'(/1x,a)') 'CCCR_AA called for a Coupled Cluster '
+        WRITE(LUPRI,'(/a)') ' CCCR_AA called for a Coupled Cluster '
      &          //'method not implemented in CCCR_AA...'
-        CALL QUIT('Unkown CC method in CCCR_AA.')
+        CALL QUIT('Unknown CC method in CCCR_AA.')
       END IF
 
 *---------------------------------------------------------------------*

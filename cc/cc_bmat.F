@@ -324,7 +324,7 @@ c/* Deck CC_BMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BMAT...'
-        CALL QUIT('Unkown CC method in CC_BMAT.')
+        CALL QUIT('Unknown CC method in CC_BMAT.')
       END IF
 
       IF (LISTA(1:1).NE.'R' .OR. LISTB(1:1).NE.'R') THEN
@@ -411,7 +411,7 @@ c/* Deck CC_BMAT */
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_BMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_BMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -523,7 +523,7 @@ c/* Deck CC_BMAT */
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
-          CALL QUIT('Unkown CC model in CC_BMAT.')
+          CALL QUIT('Unknown CC model in CC_BMAT.')
       END IF
 
       I1HGH(0) = 0
@@ -575,7 +575,7 @@ c/* Deck CC_BMAT */
         ELSE IF (CCSD.OR.CCSDT) THEN
           NNWORK = 2*NGLMDT(ISYMA) + 2*NGLMDT(ISYMB)
         ELSE
-          CALL QUIT('Unkown CC model in CC_BMAT.')
+          CALL QUIT('Unknown CC model in CC_BMAT.')
         END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
@@ -2069,9 +2069,6 @@ C
 * add CC3 contribution
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
-#if !defined CC_AARHUS
-         CALL QUIT('No triples (yet) in CC_BMAT')
-#else
         IF (IOPTRES.LT.5) THEN
            KTHETA1EFF = KEND2
            KTHETA2EFF = KTHETA1EFF + NT1AM(ISYMAB)
@@ -2165,7 +2162,6 @@ c
 
         END IF
 
-#endif
       END IF
 
 *---------------------------------------------------------------------*
@@ -2224,21 +2220,17 @@ c
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          ELSE IF (IOPTRES.EQ.4) THEN
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
            CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
@@ -2268,14 +2260,12 @@ c
            WRITE (LUPRI,*) 'Listing of the result vector:'
            CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYMAB,1,NVEC2)
            IF (CCR12) CALL CC_PRPR12(WORK(KTHETAR12),ISYMAB,1,.TRUE.)
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              XNORM = DDOT(LEN,WORK(KTHETA1EFF),1,WORK(KTHETA1EFF),1)
              WRITE (LUPRI,*) 'norm^2 of eff. result vector:',XNORM
              WRITE (LUPRI,*) 'Listing of the eff. result vector:'
              CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYMAB,1,1)
            END IF
-#endif
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
          CALL CCDOTRSP(IBDOTS,BCONS,IOPTW,FILBMA,ITRAN,NBTRAN,MXVEC,
@@ -3101,7 +3091,7 @@ c/* Deck CCBPRE1 */
           KDENS(IDX)  = KDUM
           KFOCK(IDX)  = KDUM
         ELSE
-          CALL QUIT('Unkown CC model in CCBPRE1.')
+          CALL QUIT('Unknown CC model in CCBPRE1.')
         END IF
 
         IF ( (LWORK-KENDOUT) .LE. NT1AM(ISYM) ) THEN
@@ -3637,7 +3627,7 @@ c/* Deck CCBINT2 */
 
 *---------------------------------------------------------------------*
       ELSE 
-        CALL QUIT('UNKOWN COUPLED CLUSTER MODEL IN CCBINT2.')
+        CALL QUIT('Unknown Coupled Cluster model in CCBINT2.')
       END IF
 
       CALL QEXIT('CCBINT2')
@@ -5502,8 +5492,8 @@ c/* Deck CC_BTST */
 *---------------------------------------------------------------------*
       LISTA = 'R1 '
       LISTB = 'R1 '
-      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,ISYMA)
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,ISYMB)
+      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYMA)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,ISYMB)
       IBTRAN(1,1) = IDLSTA
       IBTRAN(2,1) = IDLSTB
       NBTRAN = 1
@@ -5660,7 +5650,7 @@ C     This part is NOT adapted for CC-R12 yet!
 
       LABELA = 'ZDIPLEN '
       LISTC  = 'L1 '
-      IDLSTC = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,1)
+      IDLSTC = IL1ZETA('ZDIPLEN ',.FALSE.,0.0D0,1)
       ISYMC  = ILSTSYM(LISTC,IDLSTC)
 
       KRESLT1 = 1

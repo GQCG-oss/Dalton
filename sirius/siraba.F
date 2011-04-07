@@ -255,7 +255,7 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <infdim.h>
-#include <line.h>
+
 #include <inflin.h>
 C
       IF (IMAGOP) THEN
@@ -668,7 +668,6 @@ C
 C
 C Externals:
 C   DDOT, DZERO, MOLLAB, QTRACE
-#include <line.h>
 #include <implicit.h>
       DIMENSION PV(LPV,*),TMAT(N2ORBX,*)
       DIMENSION H2XAC(NASHT,NASHT,NASHT,NASHT,*)
@@ -698,13 +697,13 @@ C
 #include <inflin.h>
 #include <infpri.h>
 #include <cbgetdis.h>
-#include <line.h>
+C
 #include <orbtypdef.h>
-#include <line.h>
+C
 C     Local variables
 C
       DIMENSION NEEDMU(6)
-#include <line.h>
+
       CALL QENTER('TR1L2M')
       KFRSAV = 1
       KFREE  = KFRSAV

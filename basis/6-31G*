@@ -17,13 +17,12 @@ $ program
 $                                                                               
 $ Elements                             References                               
 $ --------                             ----------                               
-$ Li - Ne: P.C. Hariharan and J.A. Pople, Theoret. Chimica Acta 28, 213 (1973). 
-$ Na - Ar: M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon, D.J. 
-$          DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982).              
-$ K  - Zn: V. Rassolov, J.A. Pople, M. Ratner and T.L. Windus, J. Chem. Phys.   
-$          109, 1223 (1998)                                                     
-$                                                                               
-$          Note: He and Ne are unpublished basis sets taken from Gaussian.      
+$ Li - Ne  : P.C. Hariharan and J.A. Pople, Theoret. Chimica Acta 28, 213 (1973).
+$ Na - Ar  : M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon, D.J.
+$            DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982).
+$ K  - Zn  : V.A. Rassolov, J.A. Pople, M.A. Ratner, and T.L. Windus,
+$            J. Chem. Phys. 109, 1223 (1998)
+$            Note: He and Ne are unpublished basis sets taken from Gaussian.
 $                                                                               
 $****************************************************                 
 a 1
@@ -44,7 +43,6 @@ $ S-TYPE FUNCTIONS
      0.29796400  0.00000000  1.00000000
 a 3
 $ LITHIUM       (10s,4p,1d) -> [3s,2p,1d]                                       
-$ LITHIUM       (1d)                                                            
 $ S-TYPE FUNCTIONS
    10    3    0
    642.41892000  0.00214260  0.00000000  0.00000000

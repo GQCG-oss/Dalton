@@ -1,3 +1,26 @@
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 *=====================================================================*
       subroutine cc_r12mkxajkl(kvajkl,cmo,work,lwork,fel)
 c---------------------------------------------------------------------
@@ -31,11 +54,7 @@ c---------------------------------------------------------------------
       integer nklaj(8),nr1vir(8),iglmro(8,8),icou3
       character*10 fnelena
       data fnelena/'DDR12xxxxx'/
-#if defined (SYS_CRAY)
-      real cmo(*),work(*),kvajkl(*)
-#else
-      double precision cmo(*),work(*),kvajkl(*)
-#endif
+      real*8 cmo(*),work(*),kvajkl(*)
 c
       call qenter('cc_r12mkxajkl')
       fnelena = fnelena(1:5)//fnvajkl(6:10)
@@ -126,7 +145,7 @@ c
 
       noffro = 0
       do isym = 1,nsym
-         noffro = noffro+nbas(isym)*nrhf(isym)
+         noffro = noffro + nbas(isym)*nrhf(isym)
       enddo
 
 
@@ -1700,7 +1719,7 @@ C  /* Deck r12gradbd */
       integer nr1xbas(8),koff,idxji,idxij,kzmunu,kxdpmu,ir1bas(8,8)
       integer nrhftria,kxsing,kxtrip,n2,isymv,lu43,nxajkl(8),kcmoa
       integer isym,noffset,kspjkl,nvir0t,nvir0(8),ntklaj,krajkl
-      integer imbas1(8),dens,lxdnumu,icou4,imatmunu(8,8),lxdpmu
+      integer imbas1(8),kdens,lxdnumu,icou4,imatmunu(8,8),lxdpmu
       integer nrhfst,ksqijklz,ksqjkl,ksajkl,sajkl,icoun1,norb1t
       integer imataj(8,8),idx,kl,aj,ajkl,kspjklf,ksajklf
       integer imatmn(8,8),icou6,nmatkl1(8),imatkl1(8,8),icou5
@@ -1863,11 +1882,11 @@ C  /* Deck r12gradbd */
       kxpjkl  = smujkl  + nrhfst**4
       kxdpmu  = kxpjkl  + ntklpj
       kzmunu  = kxdpmu  + mbas1t*nrhft  
-      kcmoa   = kzmunu  + nbast**2
+      kcmoa   = kzmunu  + n2basx
       kxmujkl = kcmoa   + nlamds
       kspjkl  = kxmujkl + nvajkl(1)
-      dens    = kspjkl  + ntklpj   
-      sajkl   = dens    + nbast**2 
+      kdens   = kspjkl  + ntklpj   
+      sajkl   = kdens   + n2basx
       ksajkl  = sajkl   + nvir0t*nrhfst**3
       ksqjkl  = ksajkl  + nvir0t*nrhfst**3 
       ksajklf = ksqjkl  + ntklpj
@@ -2006,8 +2025,6 @@ c
          enddo
 
       endif
-       
-
 
 c     Read MO-coefficients
 
@@ -2021,8 +2038,12 @@ c     Read MO-coefficients
       read(lusifc)
       read(lusifc) (work(kcmo+i-1),i=1,nlamds)
       call gpclose(lusifc,'KEEP')
+
+!     reorder to occupied, symmetry; virtual, symmetry
+!             from symmetry, (occupied,virtual)
+
       call cmo_reorder(work(kcmo),work(kend1),lwrk1)
-      
+
       noffset  = 0
       noffset1 = 0
       do isym = 1,nsym
@@ -2030,8 +2051,7 @@ c     Read MO-coefficients
          noffset1 = noffset1 + nbas(isym)*nrhfs(isym)
       enddo
 
-
-c     Trnasform into orbital basis
+c     Transform into orbital basis
 
       call dzero(work(kxpjkl),ntklpj)
       kxpjklz = kxpjkl 
@@ -2188,8 +2208,8 @@ c---------------------------------------------------------------------
 
 
 
-      call dzero(work(kzmunu),nbast**2)
-      call dzero(work(dens),nbast**2) 
+      call dzero(work(kzmunu),n2basx)
+      call dzero(work(kdens),n2basx) 
       koff = 0
       do isymij = 1,nsym
          isymj = isymij
@@ -2206,10 +2226,10 @@ c---------------------------------------------------------------------
       enddo
 
 
-      call cc_r12fsym(imatmunu,work(kzmunu),work(dens))
+      call cc_r12fsym(imatmunu,work(kzmunu),work(kdens))
 
        
-      call r12exdens(res,work(kcmo),work(dens),work(kend1),lwrk1)
+      call r12exdens(res,work(kcmo),work(kdens),work(kend1),lwrk1)
 
  
       call qexit('r12gradbd')
@@ -2227,22 +2247,22 @@ C  /* Deck r12exdens*/
 #include <ccfro.h>
 #include <inftap.h>
 #include <ccsdinp.h>
-c#include <inforb.h>
+ccc#include <inforb.h>
       integer kcmo,lwork,kfrsav,kfree,lfree,kfvao,kfcao,kdcao,kdvao,kdv
-      integer pq,kcao,isym,ioff,ioff1,nnbast,kexia,isymi,NNORB1
-      integer kctao,koff,index,ISYMAI,isyma
-      integer kdens,idxkl,idxlk,idxij,idxji,idxklij,idxijkl,idxijlk
+      integer pq,kcao,isym,ioff,ioff1,kexia,isymi,NNORB1
+      integer kctao,koff,index,ISYMAI,isyma,nnbast
+      integer idxkl,idxlk,idxij,idxji,idxklij,idxijkl,idxijlk
       integer idxjikl,isymj,isymij,isymkl,isymk,isyml,idxklji
       integer koffc,kexiaz,noffset,nvir0(8),kextia,kfctao
       integer icoun1,imatpq(8,8),icoun2,imatsq(8,8),ij,ji
       integer kajfr,isymaj,luvajkl,ncfai,kexfa,kexfaz
+      logical onlyfc
 c
       integer icoun3,imatfq(8,8),kxij,kxijij,ncvij,nvirf(8)
 #include <maxorb.h>
 #include <infinp.h>
       real*8 res(*),cmo(*),emcmy,zero,one,two,work(*),dens(*),densx
       parameter (zero = 0.0d0,one = 1.0d0, two = 2.0d0)
-      logical onlyfc
 
       index(i,j) = max(i,j)*(max(i,j)-3)/2 +i+j
 
@@ -2339,6 +2359,8 @@ c
       call fckmao(onlyfc,emcmy,work(kfcao),work(kfvao),
      &     dens,work(kdvao),work(kdv),cmo(1+noffset),work(kfree),lfree)
       
+!     Note: dens is destroyed in fckmao because of dirfck, but that doesn't
+!     matter as it is not used any more /Jan 2011
 
 c
       WRITE(LUPRI,'(/A,I1,A)')

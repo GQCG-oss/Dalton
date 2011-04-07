@@ -116,7 +116,7 @@ c but now I put:
             ISYMRZU = ILSTSYM(LISTZU,IDLSTZU)
 cfp
          ELSE
-            CALL QUIT('Unkown list for LISTZU in CC3_FBMATT3ZU.')
+            CALL QUIT('Unknown list for LISTZU in CC3_FBMATT3ZU.')
          END IF
 C
          IF ( (LISTX(1:3).EQ.'R1 ') .OR. (LISTX(1:3).EQ.'R2 ') ) THEN
@@ -127,7 +127,7 @@ c but now I put:
             ISYMRX = ILSTSYM(LISTX,IDLSTX)
 cfp
          ELSE
-            CALL QUIT('Unkown list for LISTX in CC3_FBMATT3ZU.')
+            CALL QUIT('Unknown list for LISTX in CC3_FBMATT3ZU.')
          END IF
 C
          ISYRES  = MULD2H(ISYMRZU,ISYMRX)
@@ -661,7 +661,7 @@ C
 C
 C
       ELSE 
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUVIR.')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUVIR.')
       END IF
 C
       FREQZU = FREQRZ + FREQRU
@@ -693,7 +693,7 @@ cfp
          ! below as the sum of "first-order" frequencies
          !LABELZU = LRTLBL(IDLSTZU) not needed for LISTZU
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUVIR')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUVIR')
       END IF
 C
       !Symmetry check
@@ -2003,7 +2003,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_AMATT3ZUOCC')
 C
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUOCC.')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUOCC.')
       END IF
 C
       FREQZU = FREQRZ + FREQRU
@@ -2677,7 +2677,7 @@ C
 C
 C
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_BMATT3ZU.')
+         CALL QUIT('Unknown list for LISTZU in CC3_BMATT3ZU.')
       END IF
 C
       ISYMZU   = MULD2H(ISYMRZ,ISYMRU)
@@ -2694,7 +2694,7 @@ cfp
          ! below as the sum of "first-order" frequencies
          !LABELZU = LRTLBL(IDLSTZU) not needed for LISTZU
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_BMATT3ZU')
+         CALL QUIT('Unknown list for LISTZU in CC3_BMATT3ZU')
       END IF
 C
       !Symmetry check

@@ -23,7 +23,6 @@
 !
 #include <single.h>
 C
-#if defined (PRG_DIRAC)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       BLOCK DATA BDQALGEBRA
 C
@@ -47,6 +46,7 @@ C
       DATA QUNIT  / '1','i','j','k'/
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#if defined (PRG_DIRAC)
 C  /* Deck prqmat */
       SUBROUTINE PRQMAT(QMAT,NROW,NCOL,LRQ,LCQ,NZ,IQP,IUNIT)
 #include <implicit.h>

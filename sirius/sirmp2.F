@@ -763,12 +763,12 @@ C     END IF (MP2FRO .AND. .NOT.FCKFRO)
 C
       CALL GETTIM(TIMEND,DUMMY)
       TIMMP2 = TIMEND - TIMMP2
-      WRITE (LUERR,1860) TIMMP2
+      WRITE (LUSTAT,1860) TIMMP2
       IF (IPRMP2 .GE. 2) WRITE (LUPRI,1860) TIMMP2
  1860 FORMAT (/' Time used for MP2 natural orbitals :',F12.3,
      *        ' CPU seconds.')
       CALL MEMREL('MP2CTL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
-      CALL FLSHFO(LUERR)
+      CALL FLSHFO(LUSTAT)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('MP2CTL')
       RETURN
@@ -1489,13 +1489,12 @@ C
       DIMENSION IADR1(MAXVIR,MAXOCC)
 C     
       LOGICAL CHOLE,DHOLE, L_MP2_TDA
-#include <line.h>
+
       DIMENSION NEEDTP(6)
       DATA NEEDTP /0,1,1,1,1,0/
 C     ... only particle-hole distributions needed
 C         assumed: NRHF(isym) .ge. NISH(isym)
 C              and NVIR(isym) .le. NSSH(isym)
-#include <line.h>
 C
       CALL QENTER('MP2MUL')
       KFREE = KFRSAV
@@ -1686,13 +1685,12 @@ C
 #include <infpri.h>
 C
       LOGICAL AHOLE, BHOLE, CHOLE, DHOLE
-#include <line.h>
+
       DIMENSION NEEDTP(6)
       DATA NEEDTP /0,1,1,1,1,0/
 C     ... only particle-hole distributions needed
 C         assumed: NRHF(isym) .ge. NISH(isym)
 C              and NVIR(isym) .le. NSSH(isym)
-#include <line.h>
 C
       CALL QENTER('MP2PHD')
 C

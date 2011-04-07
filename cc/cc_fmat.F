@@ -186,9 +186,6 @@ Cholesky
 *               F matrix contractions 
 *---------------------------------------------------------------------*
       IF (IOPTRES.EQ.5 .AND. CCSDT .AND. CCSDT_F_ALTER) THEN
-#if !defined CC_AARHUS
-         CALL QUIT('No triples (yet) in CC_FMATRIX')
-#else
          MXRAMP  = MAX(NFTRAN,MXVEC)
          MXLAMP  = NFTRAN
          MXBTRAN = MXRAMP*MXRAMP
@@ -301,7 +298,6 @@ Cholesky
      &                        WORK(KB2CON),NB2TRAN,MXLAMP,
      &                        LISTL,LISTR,FILFMA,MXBTRAN,MXBTRAN)
 
-#endif
       END IF
 
       IF (LOCDBG) WRITE(LUPRI,*) 'Leave CC_FMATRIX...'
@@ -352,11 +348,7 @@ c/* Deck CC_FTRAN */
       
       INTEGER ILSTSYM
 
-#if defined (SYS_CRAY) 
-      REAL WORK(LWORK), RDUM
-#else 
-      DOUBLE PRECISION WORK(LWORK), RDUM
-#endif 
+      REAL*8  WORK(LWORK), RDUM
 
       CALL QENTER('CC_FTRAN')
 
@@ -676,7 +668,7 @@ C     DOUBLE PRECISION ECURRSAV
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,2a)')'CC_FMAT called for a Coupled Cluster ',
      &          'method not implemented in CC_FMAT...'
-        CALL QUIT('Unkown CC method in CC_FMAT.')
+        CALL QUIT('Unknown CC method in CC_FMAT.')
       END IF
 
       IF (.NOT. DUMPCD) THEN
@@ -756,7 +748,7 @@ C     DOUBLE PRECISION ECURRSAV
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_FMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_FMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -872,7 +864,7 @@ C     DOUBLE PRECISION ECURRSAV
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         NSECMAR = 10 * MT2BGD
       ELSE
-          CALL QUIT('Unkown CC model in CC_FMAT.')
+          CALL QUIT('Unknown CC model in CC_FMAT.')
       END IF
 
       IRHGH(0) = 0
@@ -923,7 +915,7 @@ C     DOUBLE PRECISION ECURRSAV
           NNWORK = 2*NGLMDT(ISYMR) + 
      &               NT1AO(ISYRES) + NT1AM(ISYRES) + NT2AOIJ(ISYRES)
         ELSE
-          CALL QUIT('Unkown CC model in CC_FMAT.')
+          CALL QUIT('Unknown CC model in CC_FMAT.')
         END IF
 
         IF( (NWORK+NNWORK+NSECMAR).GT.MEMAVAIL ) THEN
@@ -2227,9 +2219,6 @@ C----------------------------------------------------------
 C
         
         IF (CCSDT) THEN
-#if !defined CC_AARHUS
-           CALL QUIT('No triples (yet) in CC_FMATNEW')
-#else
 
            ! allocate memory for effective rhs vector
            IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
@@ -2363,7 +2352,6 @@ C            ------------------------------------------
               CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),1,1,1)
            ENDIF
 
-#endif
         END IF
 
 
@@ -2438,13 +2426,11 @@ C
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          ELSE IF (IOPTRES.EQ.4) THEN
            CALL CC_WARSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
@@ -2454,13 +2440,11 @@ C
      &                     MODELW,DUMMY,DUMMY,WORK(KTHETAR12),
      &                     WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WARSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
          END IF
 
          IF (LOCDBG) THEN
@@ -2479,7 +2463,6 @@ C
            WRITE (LUPRI,*) 'norm^2 of result vector:',XNORM
            CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),ISYRES,1,1)
            IF (CCR12) CALL CC_PRPR12(WORK(KTHETAR12),ISYRES,1,.TRUE.)
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              WRITE(LUPRI,*) 'CCSDT effective vector:'
              XNORM = DDOT(NT1AM(ISYRES),WORK(KTHETA1EFF),1,
@@ -2488,7 +2471,6 @@ C
              WRITE (LUPRI,*) 'norm^2:',XNORM
              CALL CC_PRP(WORK(KTHETA1EFF),WORK(KTHETA2EFF),ISYRES,1,1)
            END IF
-#endif
          END IF
       ELSE IF (IOPTRES.EQ.5) THEN
          IF (LOCDBG.AND.CCSDT) THEN

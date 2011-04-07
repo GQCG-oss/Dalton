@@ -1,0 +1,115 @@
+~%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Cholesky based CCSD(T): \Sec{CHO(T)}}
+\label{sec:chopt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{CCSD(T)}
+\index{Cholesky decomposition-based methods}
+
+In this Section, we describe the keywords controlling the calculation of the 
+CCSD(T) energy correction using Cholesky decomposed energy denominators. The
+calculation can also be invoked by using \Key{CHO(T)} in the \Sec{CC INPUT} 
+section. In this case, default values will be used. 
+
+
+The calculation is driven in a batched loop over virtual orbitals followed by
+the computation of the contributions from the occupied terms in the order 
+H, H1, F1, C1 and, finally, C2. Note that in the case of restarted calculations,
+the user must provide the value of the already computed contributions by means 
+of the keywords \Key{OLD4V}, \Key{OLD5V}, \Key{OLD4O}, and \Key{OLD5O}.
+The required numerical values can be found in the CHOPT\_RST file from the
+previous calculation.
+For further details on the implementation, see 
+Refs.~\cite{jcp_chopt,ijqc_chopt}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item H.~Koch and {A.~M.~J.~S{\'a}nchez~de~Mer{\'a}s} \newblock {\em J.~Chem.~Phys.}, {\bf 113},\hspace{0.25em}508, (2000).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+\item[\Key{MXCHVE}]\verb| |\newline
+\verb|READ (LUCMD,*) MXCHVE|\newline
+        Maximum number of vector to include in the expansion of the
+        orbital energy denominators. Defaults to 10, but normally 
+        6 vectors are enough to get micro-hartree precision.
+%
+\item[\Key{OLD4O}] \verb| |\newline
+\verb|READ (LUCMD,*) OLD4O|\newline
+        Read in the contribution to the 4th-order correction from
+        occupied orbitals as specified in the CHOPT\_RST file from a
+        previous calculation. (Default: 0.0D0).
+%
+\item[\Key{OLD5O}] \verb| |\newline
+\verb|READ (LUCMD,*) OLD5O|\newline
+        Read in the contribution to the 5th-order correction from
+        occupied orbitals as specified in the CHOPT\_RST file from a
+        previous calculation. (Default: 0.0D0).
+%
+\item[\Key{OLD4V}] \verb| |\newline
+\verb|READ (LUCMD,*) OLD4V|\newline
+        Read in the contribution to the 4th-order correction from
+        virtual orbitals as specified in the CHOPT\_RST file from a
+        previous calculation. (Default: 0.0D0).
+%
+\item[\Key{OLD5V}] \verb| |\newline
+\verb|READ (LUCMD,*) OLD5V|\newline
+        Read in the contribution to the 5th-order correction from
+        virtual orbitals as specified in the CHOPT\_RST file from a
+        previous calculation. (Default: 0.0D0).
+%
+
+%
+\item[\Key{RSTC1}] 
+        Restart the calculation from the C1 term. The virtual contribution
+        as well as those from some occupied terms will
+        not be computed (see above).
+%
+\item[\Key{RSTC2}] 
+        Restart the calculation from the C2 term. The virtual contribution
+        as well as those from some occupied terms will
+        not be computed (see above).
+%
+\item[\Key{RSTF1}] 
+        Restart the calculation from the F1 term. The virtual contribution
+        as well as those from some occupied terms will
+        not be computed (see above).
+%
+\item[\Key{RSTH}] 
+        Restart the calculation from the H term. The virtual contribution
+        will not be computed (see above).
+%
+\item[\Key{RSTH1}] 
+        Restart the calculation from the H1 term. The virtual contribution
+        as well as that from the occupied H term will
+        not be computed (see above).
+%
+\item[\Key{RSTVIR}]\verb| |\newline
+\verb|READ (LUCMD,*) IFVISY,IFVIOR|\newline 
+        Restart the virtual loop at B-orbital IFVIOR of symmetry IFVISY.
+        The contribution due to previous virtual orbitals will 
+        not be computed.
+
+%
+\item[\Key{SKIVI1}] 
+        Use existing CHO\_VI1 file instead of building it up 
+        from CC3\_VI.
+%
+\item[\Key{SKIVI2}] 
+        Use existing CHO\_VI2 file instead of building it up 
+        from CC3\_VI12.
+%
+        
+%
+\item[\Key{THRCHO}] \verb| |\newline
+\verb|READ (LUCMD,*)') THRCHO|\newline
+        Threshold for skipping remaining Cholesky vectors in 
+        each term. (Default: 0.0D0).
+%
+\end{description}

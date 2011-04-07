@@ -358,7 +358,7 @@ c/* Deck CC_GMAT */
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_GMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_GMAT...'
-        CALL QUIT('Unkown CC method in CC_GMAT.')
+        CALL QUIT('Unknown CC method in CC_GMAT.')
       END IF
 
       IF (LISTB(1:1).NE.'R' .OR. LISTC(1:1).NE.'R') THEN
@@ -975,7 +975,7 @@ C
               CALL HERDI2(WORK(KEND2),LEND2,INDEXA,ILLL,NUMDIS,
      &                    IPRINT)          
             ELSE
-              CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+              CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0D0,
      *                    WORK(KODCL1),WORK(KODCL2),
      *                    WORK(KODBC1),WORK(KODBC2),
      *                    WORK(KRDBC1),WORK(KRDBC2),
@@ -1580,9 +1580,6 @@ C
          DTIME = SECOND()
 
          IF (CCSDT) THEN
-#if !defined CC_AARHUS
-            CALL QUIT('No triples (yet) in CC_GMAT.')
-#else
             IF (NODDY_GMAT) THEN
                CALL CCSDT_GMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
      &                               LISTC,IDLSTC,
@@ -1622,7 +1619,6 @@ C
 
 
             END IF
-#endif
          END IF
 
          TIMTRIP = TIMTRIP + SECOND() - DTIME
@@ -1802,7 +1798,7 @@ C
            IOPTWE = 24
            MODELW = 'CC3       '
          ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_GMAT.')
+           CALL QUIT('Unknown coupled cluster model in CC_GMAT.')
          END IF
          IF (CCR12) THEN
            APROXR12 = '   '
@@ -4219,7 +4215,7 @@ c/* Deck CCG_RDIAJB */
 
       IF (LOCDBG) THEN
          CALL AROUND( 'CCG_RDIAJB:  Integrals (ia|jb) ' )
-         CALL CC_PRP(0.00,XIAJB,ISYMOP,0,1)
+         CALL CC_PRP(0.00D0,XIAJB,ISYMOP,0,1)
       ENDIF
 
       CALL QEXIT('CCG_RDIAJB')
@@ -4989,7 +4985,6 @@ c/* Deck CCG_LXD */
       RETURN
       END
 *---------------------------------------------------------------------*
-#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_GMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,
@@ -5562,4 +5557,3 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_GMAT_NODDY                     *
 *---------------------------------------------------------------------*
-#endif

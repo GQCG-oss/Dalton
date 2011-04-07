@@ -49,7 +49,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_local_print_lvl      =  0
   integer, public :: lucita_cfg_nr_gas_spaces        =  0
   integer, public :: lucita_cfg_nr_ptg_irreps        =  0
-  integer, public :: lucita_cfg_nr_calc_sequences    =  0
+  integer, public :: lucita_cfg_nr_calc_sequences    =  1
   integer, public :: lucita_cfg_max_holes_ras1       =  0
   integer, public :: lucita_cfg_max_e_ras3           =  0
   integer, public :: lucita_cfg_density_calc_lvl     =  0
@@ -68,7 +68,7 @@ module lucita_cfg
   integer, public :: nas2_lucita(max_number_of_ptg_irreps)
   integer, public :: nas3_lucita(max_number_of_ptg_irreps)
   integer, public :: ngsh_lucita(max_number_of_gas_spaces,max_number_of_ptg_irreps)
-  integer, public :: ngso_lucita(max_number_of_ptg_irreps,2)
+  integer, public :: ngso_lucita(max_number_of_gas_spaces,2)
 
 ! calculated orbital spaces based on input orbital spaces
   integer, public :: nfro_lucita(max_number_of_ptg_irreps) ! might become input in future

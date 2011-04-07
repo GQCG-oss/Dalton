@@ -369,7 +369,7 @@ C  /* Deck bndchk */
       SUBROUTINE BNDCHK(WORK, LMWORK2, WRKDLM, PROG)
 #include <implicit.h>
       DIMENSION WORK(LMWORK2)
-      CHARACTER*6 PROG
+      CHARACTER*(*) PROG
 #include <priunit.h>
 C
 C     Check memory traps. Gives error message if any of the programs
@@ -377,8 +377,8 @@ C     have been outside the declared memory area.
 C
       IF (WORK(1) .NE. WRKDLM .OR.
      &    WORK(LMWORK2) .NE. WRKDLM) THEN
-         WRITE (LUPRI,'(//A,A6,A)')
-     *      ' >>> WARNING, ',PROG,' has been out of bounds.'
+         WRITE (LUPRI,'(//3A)')
+     *      ' >>> WARNING, ',PROG,' module has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
      *      ' >>> WORK(0) has been destroyed'
          IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
@@ -532,11 +532,7 @@ C
 C
       IF (RNSIRI .AND. .NOT. RNHERM) THEN
          CALL SETHER(IPRUSR,.FALSE.,WORK(1),LMWORK)
-#if defined (VAR_MPI) || defined (VAR_PVM)
-         CALL QUIT('No CC in parallel code')
-#else
          CALL ER2INI
-#endif
       END IF
 
       ! ITRNMR > 0 required for proper restart of CPHF solver
@@ -547,7 +543,8 @@ C
 
       ITRNMR = ISAVITR 
 
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC    ')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CC')
+
       CALL TITLER('End of Coupled Cluster Section (CC)',' ',200)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC')
@@ -1280,18 +1277,26 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
+      J = 0
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      CALL UPCASE(WORD)
-      IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
-     &    (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
-         GO TO 930
-      ELSE
-         GO TO 900
-      END IF
+         J = J + 1
+         CALL UPCASE(WORD)
+         IF ((WORD .EQ. '**GENER') .OR. (WORD .EQ. '*GENERA') .OR.
+     &       (WORD .EQ. '**DALTO') .OR. (WORD .EQ. '*DALTON')) THEN
+            GO TO 930
+         ELSE
+            GO TO 900
+         END IF
   910 CONTINUE
-         CALL QUIT('End of file on LUCMD, no General input found')
+         WRITE (LUPRI,'(A,I10,A)') 
+     &   'End of file on DALTON.INP, no **DALTON input found in',
+     &   J,' lines.'
+         CALL QUIT('End of file on DALTON.INP, no **DALTON input found')
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no General input found')
+         WRITE (LUPRI,'(A,I10,A)') 
+     &   'Error reading line',J+1,' of DALTON.INP'//
+     &   ' before finding any **DALTON input.'
+         CALL QUIT('Error reading DALTON.INP, no **DALTON input found')
   930 CONTINUE
       WORD1 = WORD
 C
@@ -1306,7 +1311,7 @@ C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-32: '.THRRED', '.DOUGLA'
 C
-      IPRERR = -10
+      IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
       CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
@@ -1338,7 +1343,7 @@ C
             READ (LUCMD,*) ITERNR
             GO TO 100
   103    CONTINUE
-            READ (LUCMD,*) IPRERR
+            READ (LUCMD,*) IPRSTAT
             GO TO 100
   104    CONTINUE
             RNHERM = .TRUE.
@@ -1448,9 +1453,10 @@ C
   999 CONTINUE
       WRITE (LUPRI,'(1X,A)') SEPARATOR
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
-      IF (IPRERR .EQ. -10)IPRERR = IPRUSR + 1
-      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.ERR :',IPRERR
-      WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.ERR ',IPRERR
+      IF (IPRSTAT .EQ. -10) IPRSTAT = IPRUSR + 1
+      WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT:',IPRSTAT
+!     WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT',IPRSTAT
+      WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
       IF (THR_REDFAC .GT. 0.0D0) THEN
@@ -1478,8 +1484,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (PARCAL) THEN
          WRITE (LUPRI,'(//4X,A/4X,A)')
      &      'Parallel calculation requested, but this is not a',
-     &      'parallel version. Please recompile for MPI or PVM'
-         CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
+     &      'parallel version. Please recompile for MPI'
+         CALL QUIT('Parallel calculation requested w/o MPI activated')
+!    &      'parallel version. Please recompile for MPI or PVM'
+!        CALL QUIT('Parallel calc. requested w/o MPI or PVM activated')
       END IF
 #endif
       IF (OPTWLK) THEN
@@ -1893,21 +1901,21 @@ C  /* Deck execho */
 C
 C     Run Cholesky stuff
 C
-      CALL QENTER('CHODRV')
+      CALL QENTER('CHOLESKY')
 C
-      WRITE(LUPRI, '(/A/)') '    Starting in Cholesky Section -'
+      CALL TITLER('Starting in Cholesky Integral Section',
+     &  ' ',200)
 C
       CALL CC_CHODRV(WORK(1),LMWORK)
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLES')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOLESKY')
 C
 ctst  CLOSE(24)
-      WRITE(LUPRI, '(/A)') '- End of Cholesky Section'
+      CALL TITLER('End of Cholesky Integral Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('CHODRV')
+      CALL QEXIT('CHOLESKY')
       RETURN
       END
-C
 C
 C /* Deck exeact */
 C
@@ -1930,12 +1938,14 @@ C
 C
       WRITE(LUPRI, '(A/)') '    Starting in Selact Section -'
 C
+      CALL TITLER('Starting in Selact Section',' ',200)
+C
 C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
       write(lupri,*) 'Not yet implemented'
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELACT')
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
 C
 ctst  CLOSE(24)
-      WRITE(LUPRI, '(/A)') '- End of Selact Section'
+      CALL TITLER('End of Selact Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('SELACT')

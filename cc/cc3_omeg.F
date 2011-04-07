@@ -155,7 +155,7 @@ C
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND0
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND0
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -228,7 +228,7 @@ C
 C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
-         WRITE(LUPRI,*) 'Memory needed    : ',KEND2
+         WRITE(LUPRI,*) 'Memory needed    > ',KEND2
          CALL QUIT('Insufficient space in CCSDT_OMEG')
       END IF
 C
@@ -673,7 +673,7 @@ C
 C
                IF (LWRK4 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
-                  WRITE(LUPRI,*) 'Memory needed    : ',KEND4
+                  WRITE(LUPRI,*) 'Memory needed    > ',KEND4
                   CALL QUIT('Insufficient space in CCSDT_OMEG')
                END IF
 C
@@ -1603,7 +1603,7 @@ C
       LENGTH = NCKIJ(ISCIKJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Insufficient core in CCSDT_QMAT')
+         CALL QUIT('Insufficient core in CC3_QMAT')
       ENDIF
 C
       DO 100 ISYMK = 1,NSYM
@@ -1852,7 +1852,7 @@ C     First virtual term.
 C------------------------
 C
       IF (LWORK .LT. NCKIJ(ISCKIJ)) THEN
-         CALL QUIT('Insufficient core in CCSDT_CONVIR')
+         CALL QUIT('Insufficient core in CC3_CONVIR')
       ENDIF
 C
 c     CALL DCOPY(LENGTH,SMAT,1,TMAT,1)
@@ -1898,7 +1898,7 @@ C
          LWRK1  = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient work space in CCSDT_CONVIR')
+            CALL QUIT('Insufficient work space in CC3_CONVIR')
          ENDIF
 C
          DO 210 J = 1,NRHF(ISYMJ)
@@ -1975,7 +1975,7 @@ C
          LWRK1  = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
-            CALL QUIT('Insufficient work space in CCSDT_CONVIR')
+            CALL QUIT('Insufficient work space in CC3_CONVIR')
          ENDIF
 C
          DO 310 J = 1,NRHF(ISYMJ)
@@ -2259,7 +2259,7 @@ C
          ISYCKL = MULD2H(ISYMI,JSCKLI)
 C
          IF (LWORK .LT. NRHF(ISYMI)*NRHF(ISYMJ)) THEN
-            CALL QUIT('Insufficient memory in CCSDT_CONOCC')
+            CALL QUIT('Insufficient memory in CC3_CONOCC')
          END IF
 C
          NTOCKL = MAX(NCKI(ISYCKL),1)
@@ -2613,7 +2613,7 @@ C
       LENGTH = NCKIJ(JSAIKJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Not enough core in CCSDT_ONEL')
+         CALL QUIT('Not enough core in CC3_ONEL')
       END IF
 C
 c     CALL CC_GATHER(LENGTH,TMAT,SMAT,INDSQ(1,4))
@@ -2647,7 +2647,7 @@ C
       IF ((.NOT. CC3LR) .AND. (NRHF(ISYMI) .NE. 0)) THEN
 C
          IF (LWORK .LT. NCKI(ISYAKJ)) THEN
-            CALL QUIT('Not enough core in CCSDT_ONEL')
+            CALL QUIT('Not enough core in CC3_ONEL')
          END IF
 C
 C        Construct M(ak,j) = L(ak,bj)
@@ -2698,7 +2698,7 @@ C
       LENGTH = NCKIJ(JSAIKJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Not enough core in CCSDT_ONEL')
+         CALL QUIT('Not enough core in CC3_ONEL')
       END IF
 C
 c     CALL CC_GATHER(LENGTH,TMAT,SMAT,INDSQ(1,5))
@@ -2783,7 +2783,7 @@ C
       LENGTH = NCKIJ(JSAKIJ)
 C
       IF (LWORK .LT. LENGTH) THEN
-         CALL QUIT('Not enough core in CCSDT_ONEL')
+         CALL QUIT('Not enough core in CC3_ONEL')
       END IF
 C
 c     CALL CC_GATHER(LENGTH,TMAT,SMAT,INDSQ(1,1))

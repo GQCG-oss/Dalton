@@ -99,7 +99,7 @@ struct GridGenAtomGrid_ {
 };  
 
 struct GridGenMolGrid_ {
-    integer atom_cnt;                  /* number of atoms grid is generated for*/
+    integer atom_cnt;               /* number of atoms grid is generated for*/
     const GridGenAtom* atom_coords;/* array with atom data */
     GridGenAtomGrid**   atom_grids;/* array of atom grids */
     real* rij;  /* triangular array of inverse distances between atoms */
@@ -312,25 +312,27 @@ static struct radial_scheme_t *radial_quad = &quad_lmg;
 /* ------------------------------------------------------------------- */
 
 /* routines for generation of Lebedev grid */
-void ld0026_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0038_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0050_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0074_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0086_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0110_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0146_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0170_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0194_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0230_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0266_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0302_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0350_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0434_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0590_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0770_(real* x, real* y, real* z, real* w, int *pnt);
-void ld0974_(real* x, real* y, real* z, real* w, int *pnt);
-void ld1202_(real* x, real* y, real* z, real* w, int *pnt);
-void ld1454_(real* x, real* y, real* z, real* w, int *pnt);
+
+void ld0014_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0026_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0038_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0050_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0074_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0086_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0110_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0146_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0170_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0194_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0230_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0266_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0302_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0350_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0434_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0590_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0770_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld0974_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld1202_(real* x, real* y, real* z, real* w, integer *pnt);
+void ld1454_(real* x, real* y, real* z, real* w, integer *pnt);
 
 /* some of the point type values were guessed but since it was only used
    for ANGMIN -> quadrature mapping type, the accuracy is not really relevant.
@@ -340,8 +342,9 @@ void ld1454_(real* x, real* y, real* z, real* w, int *pnt);
 
 static struct leb_gen_{
   int point_cnt, poly_order;
-  void (*func)(real* x, real* y, real* z, real* w, int *pnt);
+  void (*func)(real* x, real* y, real* z, real* w, integer *pnt);
 } leb_gen[] = {
+ {  14,  5, ld0014_},
  {  38,  9, ld0038_},
  {  50, 11, ld0050_},
  {  86, 15, ld0086_},
@@ -349,8 +352,8 @@ static struct leb_gen_{
  { 146, 19, ld0146_},
  { 170, 21, ld0170_},
  { 194, 23, ld0194_},
- { 302, 25, ld0230_},
- { 302, 27, ld0266_},
+ { 230, 25, ld0230_},
+ { 266, 27, ld0266_},
  { 302, 29, ld0302_},
  { 350, 31, ld0350_},
  { 434, 35, ld0434_}, 
@@ -831,11 +834,13 @@ block_postprocess(GridGenMolGrid *mg, real *center,
     for(dest=0, ptno=0; ptno<point_cnt; ptno++) {
         int atom = map2r[atom_nums[ptno]];
 	real factor = ggw.p_kg[ggw.LDA*atom+ptno]/ggw.vec[ptno];
-        coorw[dest][3] = coorw[ptno][3]*factor;
-        coorw[dest][0] = coorw[ptno][0];
-        coorw[dest][1] = coorw[ptno][1];
-        coorw[dest][2] = coorw[ptno][2];
-        if(factor >= WEIGHT_THRESHOLD) dest++;
+        if(factor >= WEIGHT_THRESHOLD) {
+           coorw[dest][0] = coorw[ptno][0];
+           coorw[dest][1] = coorw[ptno][1];
+           coorw[dest][2] = coorw[ptno][2];
+           coorw[dest][3] = coorw[ptno][3]*factor;
+           dest++;
+        }
     }
     free(relevant_atoms);
     free(map2r);
@@ -1368,7 +1373,8 @@ static void*
 mgrid_compute_coords_worker(GridGenMolGrid* mgrid)
 {
     int atom, ptno, j, idx, cnt;
-    int tpt, off = mgrid->off, done;
+    integer tpt;
+    int off = mgrid->off, done;
     GridGenWork ggw;
 
     mgrid_unlock(mgrid); /* off has been copied, can unlock */
@@ -1503,7 +1509,7 @@ grid_generate(const char* filename, integer atom_cnt,
     struct tms starttm, endtm; clock_t utm;
     GridGenMolGrid* mgrid =  mgrid_new(atom_cnt, atom_arr);
     fort_print("        DFT grid generation - Radial Quadrature  : %s", radial_quad->name);
-    fort_print("        DFT grid generation -  partitioning : %s", selected_partitioning->name);
+    fort_print("        DFT grid generation - Partitioning : %s", selected_partitioning->name);
     fort_print("        DFT grid generation - Radial integration threshold: %g", threshold);
     fort_print("        DFT grid generation - Angular polynomials in range [%i %i]", minang, maxang);
 
@@ -1524,7 +1530,7 @@ grid_generate(const char* filename, integer atom_cnt,
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
 
-    fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s", 
+    fort_print("        DFT grid generation - Number of grid points: %8d; grid generation time:%9.1f s \n", 
                res, utm/(double)sysconf(_SC_CLK_TCK));
     return res;
 }

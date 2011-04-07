@@ -1706,7 +1706,7 @@ C            -----------------------
                 MODEL = 'CCSD      '
                 IOPT  = 3
              ELSE
-                CALL QUIT('Unkown coupled cluster model in CCQR_FADRV.')
+                CALL QUIT('Unknown coupled cluster model in CCQR_FADRV')
              END IF
             
              CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
@@ -1788,9 +1788,6 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
 *---------------------------------------------------------------------*
       IF (CCSDT .AND. IOPTRES.EQ.5 .AND. 
      &    .NOT. ( NODDY_FAMAT .AND. .NOT. FADEN_NODDY ) ) THEN
-#if !defined CC_AARHUS
-        CALL QUIT('No triples (yet) in CCQR_FADRV.')
-#else
 
         MXFADEN = NFATRAN*MXVEC
         MXINTER = 2*MXFADEN
@@ -1831,7 +1828,6 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
      &                    WORK(KIADR_INTER),WORK(KIADR_FADEN),
      &                    WORK(KEND1),LWRK1)
 
-#endif
       END IF
 
 *---------------------------------------------------------------------*
@@ -2002,7 +1998,7 @@ c /* deck ccqr_eadrv */
            MODEL = 'CCSD      '
            IOPT  = 3
         ELSE
-           CALL QUIT('Unkown coupled cluster model in CC_EADRV.')
+           CALL QUIT('Unknown coupled cluster model in CC_EADRV.')
         END IF
 
         CALL CC_WARSP(LISTB, IFILE, ISYRES, IOPT, MODEL,DUMMY,
@@ -2356,9 +2352,6 @@ c /* deck CC_DOTDRV */
 * triples part of the vectors:
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
-#if !defined CC_AARHUS
-        CALL QUIT('No triples (yet) in CC_DOTDRV.')
-#else
         IF (NODDY_OVLP) THEN  
           CALL CCOVLP_NODDY(LISTL,LISTR,2,DUMMY,1,1,1,
      &                      NDTRAN,MXVEC,IDTRAN,IDDOTS,DCON,
@@ -2368,7 +2361,6 @@ c /* deck CC_DOTDRV */
      &                     NDTRAN,MXVEC,IDTRAN,IDDOTS,DCON,
      &                     WORK,LWORK)  
         END IF
-#endif
       END IF
 
 *---------------------------------------------------------------------*

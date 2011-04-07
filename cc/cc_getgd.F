@@ -1397,7 +1397,7 @@ C
       IF (CCS)  MODEL = 'CCS       '
       IF (CCSD) MODEL = 'CCSD      '
       IF (CC3)  MODEL = 'CC3       '
-      IF (MODEL(1:1).EQ.'-') CALL QUIT('Unkown model in CC_FRE.')
+      IF (MODEL(1:1).EQ.'-') CALL QUIT('Unknown model in CC_FRE.')
 C
       NTAMP = NT1AMX + NT2AMX
       IF (CCS) NTAMP = NT1AMX

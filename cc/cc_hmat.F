@@ -171,9 +171,9 @@ c/* Deck CC_HMAT */
       END IF
 
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
-        WRITE(LUPRI,'(/1x,a)') 'CC_HMAT called for a Coupled Cluster '
+        WRITE(LUPRI,'(/a)') ' CC_HMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_HMAT...'
-        CALL QUIT('Unkown CC method in CC_HMAT.')
+        CALL QUIT('Unknown CC method in CC_HMAT.')
       END IF
 
 * check list combination:
@@ -340,9 +340,6 @@ c/* Deck CC_HMAT */
 * add CC3 contributions:
 *---------------------------------------------------------------------*
         IF (CCSDT) THEN
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CC_HMAT.')
-#else
           ! allocate and initialize doubles result vector:
           KEPSI1 = KSTART
           KEPSI2 = KEPSI1 + NT1AM(ISYRES)
@@ -371,7 +368,6 @@ c/* Deck CC_HMAT */
 
           END IF
 
-#endif
         ELSE
           KEPSI2 = KSTART
 C         ! to not get undefined address in calls below /hjaaj Aug 07
@@ -675,9 +671,9 @@ C----------------------------------------------------------------------
       LISTD = 'R1'
 
       IDLSTL = 0
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTD = IR1TAMP('XDIPLEN ',.FALSE.,0.0,1)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTD = IR1TAMP('XDIPLEN ',.FALSE.,0.0D0,1)
 
       IHTRAN(1,1) = IDLSTL
       IHTRAN(2,1) = IDLSTB
@@ -1195,7 +1191,6 @@ C
       RETURN
       END
 *=====================================================================*
-#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_HMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,LISTD,IDLSTD,
@@ -1688,4 +1683,3 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_HMAT_NODDY                     *
 *---------------------------------------------------------------------*
-#endif

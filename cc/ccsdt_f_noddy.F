@@ -86,7 +86,7 @@ C
      &        KL2AM, KINT1T0, KINT2T0, KINT1TB, KINT2TB, KEND3, LWRK3,
      &        K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV,
      &        KBIOVVO, KBIOOVV, KBIOOOO, KBIVVVV,
-     &        KL3AM, KT02AM, KF3AM, KRECNR, KINT1S0, KINT2S0, KSCR1,
+     &        KL3AM, KT02AM, KF3AM, IRECNR, KINT1S0, KINT2S0, KSCR1,
      &        KFOCK0, KFOCKB, KLAMPB, KLAMHB, KOME1, KOME2, KDUM,
      &        LUFOCK, ISYML, KFOCKD, ISYMB, KEND4, LWRK4, 
      &        KTC3AM, KINT1SC, KINT2SC, KLAMPC, KLAMHC, KFOCKC, IDLSTC,
@@ -382,10 +382,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND3),LWRK3,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:
@@ -1094,7 +1092,7 @@ C------------------------------------------------------
       INTEGER ISYMB, KFOCKB, KL1AM, KL2AM, KL3AM, KEND1, LWRK1,
      &        IOPT, IRREP, IERR, NAI, NBJ, NCK, NAIBJCK, ILSTNR,
      &        KTB1AM, KLAMPB, KLAMHB, KINT1TB, KINT2TB, ISYMD, ILLL,
-     &        IDEL, ISYDIS, KXINT, KEND2, LWRK2, KRECNR, IR1TAMP,
+     &        IDEL, ISYDIS, KXINT, KEND2, LWRK2, IRECNR, IR1TAMP,
      &        ILSTSYM, ILSTNL, ISYML, ISYMR, IMAT, KFIELD, KFIELDAO,
      &        KFLDB1, KT3SCR
       
@@ -1209,7 +1207,7 @@ c     -----------------------------
 
       ELSE
         WRITE(LUPRI,*) 'LISTB,IDLSTB:',LISTB(1:3),IDLSTB
-        CALL QUIT('Unkown/Illegal list in CCSDT_TBAR31_NODDY.')
+        CALL QUIT('Unknown/Illegal list in CCSDT_TBAR31_NODDY.')
       END IF
 
       IF (LISTB(1:3).NE.'LE ') THEN
@@ -1314,10 +1312,8 @@ C           ----------------------------
 C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
-            call quit('hjaaj aug 07: krecnr is not defined, FIXME')
-            KRECNR = 1 ! hjaaj: so ftnchek does not complain again
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
-     &                  WORK(KRECNR),DIRECT)
+     &                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

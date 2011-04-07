@@ -44,7 +44,7 @@
 *     initialisation step:                                             *
 *     - compute the largest subdiagonal element                        *
 *----------------------------------------------------------------------*
-      ASqrMax=0.0  
+      ASqrMax=0.0D0
       Do i=2,N
          ii=i*(i-1)/2
          Do j=1,i-1
@@ -75,7 +75,7 @@
                Ajj=A(jj+j)
                Diff=Aii-Ajj
                SigRot=1.0
-               If ( Diff.lt.0.0 ) then
+               If ( Diff.lt.0.0D0 ) then
                   SigRot=-SigRot
                   Diff=-Diff
                End If
@@ -269,7 +269,7 @@
                CosA2=CosA*CosA
                SinA2=SinA*SinA
                A(jj+j)=SinA2*Aii+CosA2*Ajj-Temp
-               A(ii+j)=0.0
+               A(ii+j)=0.0D0
                A(ii+i)=CosA2*Aii+SinA2*Ajj+Temp
 *---  update rows/columnes of the eigenvectors C ----------------------*
                kmin=1  
@@ -326,7 +326,7 @@
          End Do
       End Do
 *---  find the value of the largest subdiagonal element ---------------*
-      ASqrMax=0.0
+      ASqrMax=0.0D0
       Do i=2,N
          ii=i*(i-1)/2
          Do j=1,i-1

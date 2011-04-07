@@ -209,7 +209,7 @@ c/* Deck CC_DMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_DMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_DMAT...'
-        CALL QUIT('Unkown CC method in CC_DMAT.')
+        CALL QUIT('Unknown CC method in CC_DMAT.')
       END IF
 
       IF (    LISTA(1:1).NE.'R' 
@@ -260,7 +260,7 @@ C     END IF
          MODELW = 'CCSD      '
          IOPTW  = 3
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_DMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_DMAT.')
       END IF
 
 * start of scratch space for the following:
@@ -808,12 +808,12 @@ c/* Deck CC_DTST */
       LISTB = 'R1'
       LISTC = 'R1'
       LISTD = 'R1'
-C     IZETAV = IL2ZETA('ZDIPLEN ',0.0,1,'ZDIPLEN ',0.0,1)
-      IZETAV = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTD = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
+C     IZETAV = IL2ZETA('ZDIPLEN ',0.0D0,1,'ZDIPLEN ',0.0D0,1)
+      IZETAV = IL1ZETA('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTD = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
       IDTRAN(1,1) = IDLSTA
       IDTRAN(2,1) = IDLSTB
       IDTRAN(3,1) = IDLSTC

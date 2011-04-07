@@ -93,7 +93,7 @@ C     SAMEOD: ODs are the same for both electrons
 C
       SAMEOD = ODTRI1 .EQV. ODTRI2 .AND. ODALL1 .EQV. ODALL2
 C
-C     Gab integrals for Cauchy-Schwartz inequality
+C     Gab integrals for Cauchy-Schwarz inequality
 C     ============================================
 C
       CALL MEMGET('REAL',KGAB,NGAB*NGAB,WORK,KFREE,LFREE)
@@ -340,7 +340,7 @@ C
          WRITE(LUPRI,'(1X,A,3I5)')' Number of OD classes NODCLS:',NODCLS
          WRITE(LUPRI,'(1X,A, L5)')' ODTRI:                      ',ODTRI
          CALL HEADER(
-     &    '       #     class     A    B           Cauchy-Schwartz',1)
+     &    '       #     class     A    B           Cauchy-Schwarz',1)
          DO 300 I = 1, NODBCH
             WRITE (LUPRI,'(6X,I5,5X,4I5,5X,F20.15)')
      &        I, (IODBCH(J,I),J=1,NITBC), RODBCH(1,I)

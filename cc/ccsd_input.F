@@ -5344,9 +5344,9 @@ C           -------------------------------------------------------
                 END IF
               ELSE
                 NWARN = NWARN + 1
-                WRITE(LUPRI,'(/4A/A/)') '@ WARNING: LABEL "',
-     &           LINE(1:8),'" UNKOWN FOR .AVERAG KEYWORD',
-     &           'IN *CCQR SECTION.','@ WARNING: INPUT IS IGNORED...'
+                WRITE(LUPRI,'(/4A/A/)') '@ WARNING: Label "',
+     &           LINE(1:8),'" unknown for .AVERAG keyword',
+     &           'in *CCQR section.','@ WARNING: INPUT IS IGNORED...'
               ENDIF 
             GO TO 100
 
@@ -7102,7 +7102,7 @@ C
           INDOP(NOP+6) = INDPRPCC('ZZROTSTR')
         END IF
       ELSE
-        CALL QUIT('Unkown OPERATOR in CC_PUT1OP')
+        CALL QUIT('Unknown OPERATOR in CC_PUT1OP')
       END IF
 
       IF (FAILED) THEN
@@ -7158,7 +7158,7 @@ C
           IOP(3) = INDPRPCC('ZANGMOM ')
         END IF
       ELSE
-        CALL QUIT('Unkown OPERATOR in CC_PUT2OP')
+        CALL QUIT('Unknown OPERATOR in CC_PUT2OP')
       END IF
 
       IF (FAILED) THEN

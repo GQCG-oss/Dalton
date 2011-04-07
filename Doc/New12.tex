@@ -1,11 +1,89 @@
-\chapter{New features in Dalton}
+\chapter{New features in the Dalton releases}
 %\pagestyle{myheadings}
 %\markboth{ }
 %{ }
 %\markright{ }
 %\addcontentsline{toc}{chapter}{New features in Dalton 1.2}
 
-\section{New features in Dalton~2.0}
+\section{New features in Dalton2011}
+
+\begin{enumerate}
+
+\item{\bf Cholesky decomposition of integrals and CC equations:} \\
+Main authors: Alfredo Sanchez de Meras, Henrik Koch, Thomas Bondo Pedersen
+
+\item{\bf Extensions to the coupled cluster module:} CC3 etc. \\
+Main authors: Christof H\"{a}ttig, Ove Christiansen, ...
+
+\item{\bf CCSD-R12 methods:} \\
+Main authors: Christian Neiss, Wim Klopper, Christof H\"{a}ttig
+
+\item{\bf Parllel, large scale configuration interaction (LUCITA):} \\
+Main authors: Stefan Knecht, Hans J\o rgen Aagaard Jensen, Jeppe Olsen.
+
+\item{\bf Extensions to the DFT module:}
+\begin{enumerate}
+  \item{\bf TD-DFT Diagnostic for excitation energies:}  \\
+   Main authors: Trygve Helgaker \\
+   Reference: "Excitation energies in density functional theory: An evaluation and a diagnostic test", 
+     M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer, 
+     J. Chem. Phys. 128, 044118 (2008).
+  \item{\bf Coulomb-Attenuating Method:} The new hybrid
+    exchange-correlation functional named CAM-B3LYP is
+    included~\cite{tydptnchcpl393}. This hybrid functional  combines the
+    hybrid qualities of B3LYP and the long-range correction presented by
+    Tawada {\it et al.\/}~\cite{ytttsytykhjcp120}.
+  \item{\bf More functionals:}
+\end{enumerate}
+
+\item{\bf PCM model for solvation effects} \\
+Main authors: Luca Frediana, ...
+
+\item{\bf Quadratic response with life time:} The quadratic response code now also
+includes phenomenological life time (complex energies).  \\
+Main authors: Hans J\o rgen Aagaard Jensen, Patrick Norman
+
+\item{\bf QM3 module for QM/MM calculations:} Only for experienced users. Development of this module has been discontinued,
+and a better implementation for QM/MM is planned for next Dalton release.  \\
+Main authors: Kurt V. Mikkelsen, Anders Osted, Jacob Kongsted
+
+\item{\bf Code for vibrational and rotational g-factors, interface to WESTA for adiabatic corrections.}  \\
+Main authors: Stephan P. A. Sauer, Hans J\o rgen Aa. Jensen
+
+\item{\bf Interface to the general GEN1INT property integral generator:} see http://sss.sss.sss \\
+Main author: Bin Gao
+
+\item{\bf More basis sets and extended basis sets:}
+\begin{enumerate}
+  \item{pc-n} The polarization consistent basis sets by Frank Jensen.
+\end{enumerate}
+
+\item{\bf Code improvements:}
+\begin{enumerate}
+  \item{Mulliken population analysis works} A nice feature is the printing of populations in each
+   SCF iteration -- often quite illuminating when convergence problems.
+  \item{Large intermediate files for AO to MO transformation have been eliminated.}
+  \item{All modules can run under MPI} However, most parts of the code are not parallellized and will run
+    on only the master node, while the nodes idle. Yet, as the Fock matrices are constructed in parallel,
+    all calculations of Fock-type matrices in MCSCF and CC will be done in parallel, although the MCSCF and CC
+    codes themselves are not parallellized (yet). In Dalton 2.0 you HAD to use a sequential code for MCSCF and CC
+    calculations, and often this may not be practical.
+  \item{} CODATA 2002 constants instead of CODATA 1998 constants
+    (changes some values in output, if you compare with Dalton 1.0 output)
+  \item{} user input not needed to transform 2-el integrals for > 255 basis functions
+    (switches by default to .NEWTRA if > 255 bf)
+  \item{} eliminated at times very large intermediate files for integral transformation
+    with > 255 basis functions (NEWTRA).
+  \item{} more modules of the program run correctly if Dalton run in parallel.
+    Example: the MCSCF code per se is not parallelized yet, but it will
+    give correct results when run in parallel, and the construction of
+    generalized Fock matrices will be done in parallel.
+% \item{} Interface to the MIDAS program.
+\end{enumerate}
+
+\end{enumerate}
+
+\section{New features in Dalton~2.0 (2005)}
 
 There are several new additions introduced in the Dalton~2.0. The most
 important and largest extension to the code is the addition of a
@@ -28,12 +106,6 @@ perturbing operators) and geometric Hessians, nuclear shielding
 tensors, and magnetizabilities as well as indirect spin--spin coupling
 constants. Energies and linear response properties are also available
 for spin-restricted, high-spin DFT ({\em vide infra\/}).
-
-%\item{\bf Coulomb-Attenuating Method:} The new hybrid
-%  exchange-correlation functional named CAM-B3LYP is
-%  included~\cite{tydptnchcpl393}. This hybrid functional  combines the
-%  hybrid qualities of B3LYP and the long-range correction presented by
-%  Tawada {\it et al.\/}~\cite{ytttsytykhjcp120}.
 
 
 \item{\bf NEVPT2:} Dalton~2.0 allows for the calculation of
@@ -59,7 +131,7 @@ MP2 energies are available in a couple of  approximations~\cite{wkccmsjcp116,ccm
   and absorptions processes to be taken into account simultaneously.
 
 \item{\bf Improvements for 64-bit machines:} The code can now also
-  calculate two-electron spin--orbit integrals as well as do AO2MO
+  calculate two-electron spin--orbit integrals as well as do AO to MO
   transformations for more than 255 basis functions also on 64-bit
   machines.
 
@@ -80,10 +152,10 @@ species~\cite{fjthjcp121}.
 
 \begin{center}
 \begin{tabular}{|l|l|}\hline
-Old label & New label\\\hline
-**START & **START\\
-****PROPERTIES & **EACH STEP\\
-****FINAL & **PROPERTIES\\\hline
+\ Old label     & \ New label     \\\hline
+\ **START       & \ **START       \\
+\ **PROPERTIES\ & \ **EACH STEP   \\
+\ **FINAL       & \ **PROPERTIES\ \\\hline
 \end{tabular}
 \end{center}
 

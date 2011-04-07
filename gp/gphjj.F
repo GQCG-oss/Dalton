@@ -75,7 +75,7 @@ C
  || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
  || defined (SYS_SX) || defined (SYS_DARWIN) || defined (SYS_NEC) 
       CHARACTER*(24) FFDATE
-#if defined(SYS_AIX) || defined (SYS_HAL)
+#if defined (SYS_HAL)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE
@@ -115,14 +115,13 @@ C
       ENDIF
       TIMCPU = SECOND() - TCPU0
 #else
-         TCPU0 = TSECND()
+         TCPU0  = TSECND()
          TWALL0 = TIMEF()
       ENDIF
       TIMCPU = TSECND() - TCPU0
 #endif
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#else
-#if defined (SYS_NEC)
+#elif defined (SYS_NEC)
 C...  NEC SX4     timing code
       REAL*8  TCPU0, TWALL0
       REAL*8  SECOND1,SECOND2
@@ -144,87 +143,29 @@ C
       TIMCPU = second1 - TCPU0
       TIMWAL = second2 - TWALL0
 #else
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_SUN) || defined (SYS_HAL) \
- || (defined (SYS_LINUX) && defined (VAR_PGF90)) || defined(VAR_ABSOFT) \
- || defined (SYS_DEC) || defined (SYS_SX)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) \
- || defined (SYS_SX)  || defined (SYS_AIX)
-C...  SGI IRIX  etc. code
-      external time
-C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#endif
-      integer*4 time
-      real*4    etime, tarray(2)
+      real*8    TIMCPU, TIMWAL, clock_factor
+      real*4    tcpu, tcpu0
+      integer*4 iwall0, iwall, irate
       logical   first
-      save      first,iwall0,TCPU0
+      save      first,iwall0,tcpu0, clock_factor
       data      first /.true./
 C
       if (first) then
-         first = .false.
-         TCPU0 = etime(tarray)
-         iwall0 = time()
+         first  = .false.
+         CALL CPU_TIME(tcpu0)
+         CALL SYSTEM_CLOCK(iwall0,irate)
+         clock_factor = 1.0d0 / irate
       end if
-      TIMCPU = etime(tarray) - TCPU0
-      itimwl = time() - iwall0
-      TIMWAL = itimwl
-#else
-#if (defined (SYS_LINUX) && defined (VAR_IFORT))
-      integer*4 darr(9)
-      real*4    etime, tarray(2)
-      logical   first
-      save      first,iwall0,TCPU0
-      data      first /.true./
-C
-      if (first) then
-         first = .false.
-         TCPU0 = etime(tarray)
-          call gettimeofday(darr,err)
-          iwall0 = darr(1)
-      end if
-      TIMCPU = etime(tarray) - TCPU0
-      call gettimeofday(darr,err)
-      itimwl = darr(1) - iwall0
-      TIMWAL = itimwl
-#else
-#if defined (VAR_GFORTRAN)
-C 990819-ekd: Use time8() and second() system routines for timings
-C             ONLY available for GNU gfortran compiler!!!!!!!!
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TWALL0 = time8()
-         TCPU0  = second()
-      end if
-      TIMWAL = time8() - TWALL0
-      TIMCPU = second() - TCPU0
-#else
-      PARAMETER (D0 = 0.0D0)
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         TCPU0  = second()
-      end if
-      TIMCPU = SECOND() - TCPU0
-C insert appropriate routine to get elapsed real time (wall time)
-C here
-      TIMWAL = D0
-#endif  /* VAR_GFORTRAN */
-#endif  /* VAR_IFORT */
-#endif  /* SYS_AIX, SYS_IRIX, SYS_SUN, SYS_HPUX etc. */
-#endif  /* SYS_NEC */
-#endif  /* SYS_CRAY etc. */
+      CALL CPU_TIME(tcpu)
+      TIMCPU = tcpu - tcpu0
+      CALL SYSTEM_CLOCK(iwall)
+      TIMWAL = (iwall - iwall0) * clock_factor
+#endif  /* if SYS_CRAY etc. elif SYS_NEC else */
 C
       RETURN
       END
 C  /* Deck settim */
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF90))||(defined (SYS_LINUX) && defined (VAR_IFORT)) || defined (SYS_AIX)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_LINUX) || defined (SYS_AIX)
       SUBROUTINE SETTIM
 C
 C  Unix timing routines emulating Lund IBM timing routines
@@ -409,7 +350,11 @@ c     bug in gfortran-4.0.2 causes a segfault here.
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
  || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC)   \
  || defined (SYS_SUN)
+#ifdef VAR_G95
+      IRET = HOSTNM(HSTNAM)
+#else
       CALL HOSTNM(HSTNAM)
+#endif
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_HAL)
@@ -417,16 +362,9 @@ c     bug in gfortran-4.0.2 causes a segfault here.
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_AIX)
-C 930414-hjaaj: apparent error IBM's xlf library routines:
-C    when 'T6' then column 1-5 not blanked but contains text
-C    from a previous print statement!
-C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-C     CALL hostnm_(HSTNAM)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate()
       CALL hostnm(HSTNAM)
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
+      WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 C
       RETURN
@@ -971,9 +909,9 @@ C
          CALL DCOPY(N,W,1,VC(1,I),1)
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
-            IF (IPRERR .GT. 0) THEN
-               WRITE (LUERR,*) 'Info: second round in NORM, I=',I
-               CALL QDUMP(LUERR)
+            IF (IPRSTAT .GT. 0) THEN
+               WRITE (LUSTAT,*) 'Info: second round in NORM, I=',I
+               CALL QDUMP(LUSTAT)
             END IF
             GO TO 1
          END IF
@@ -1328,7 +1266,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1383,7 +1321,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE (LU,ERR=7)
 C     ... aug07-hjaaj: new ERR branch to avoid problems with backspace on empty files.
       GO TO 8
@@ -1424,7 +1362,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
          BACKSPACE LU
 #endif
          LUERR = -1
@@ -1477,7 +1415,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 FNDLB2 = .FALSE.
@@ -1490,7 +1428,7 @@ C
 C  06-Jun-2000 ALig
 C  (as FNDLB2, but the IVALUE returns the value of the
 C   symmetry representation of the operator SRCLBL and 0 if the
-C   label doesn't exist)
+C   label does not exist)
 C
 #include "implicit.h"
       CHARACTER*8 SRCLBL, B(4), STAR8
@@ -1512,7 +1450,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 IVALUE = 0
@@ -1547,7 +1485,7 @@ C
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
-C 940510-hjaaj: same change for Cray's multifile datasets
+C 940510-hjaaj: same change for Cray multifile datasets
       BACKSPACE LU
 #endif
     8 NXTLAB = .FALSE.
@@ -1635,20 +1573,11 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_GFORTRAN)
-      FUNCTION SECOND ()
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
- || defined (SYS_T3D) || defined (SYS_HAL)  || defined (SYS_SX)   \
- || (defined (SYS_LINUX) && (defined(VAR_PGF90)||defined(VAR_IFORT)))
-#include "implicit.h"
-      real*4 etime,tarray(2)
-#if !defined (SYS_T3D)
-      SECOND = etime(tarray)
-#else
-      SECOND = 1.0D0
-#endif
-#endif
+#if !defined (SYS_CRAY) && !defined (SYS_T90) && !defined (VAR_GFORTRAN)
+      REAL*8 FUNCTION SECOND ()
+      REAL*4 TIME_CPU
+      CALL CPU_TIME(TIME_CPU)
+      SECOND = TIME_CPU
       RETURN
       END
 #endif
@@ -1939,3 +1868,4 @@ C
 
       !print *,'COMPOFF: KADDR, KBASE', KADDR, KBASE, KBASE*8
       END
+C -- end of gphjj.F --

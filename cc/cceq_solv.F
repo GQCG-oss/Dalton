@@ -1979,7 +1979,7 @@ C             put S * b into WRK(KSPRE)
                 CALL CC_GETVEC(LUFC1,C1FIL,LUFS2,S2FIL,LUFS12,S12FIL,
      *                      TRIPLET,K,WRK(KSPRE))
               ELSE 
-                CALL QUIT('Unkown IANR12 in CCORT')
+                CALL QUIT('Unknown IANR12 in CCORT')
               END IF
             END IF
             DO J = 1, NBADD
@@ -2173,7 +2173,7 @@ C
                 CALL CC_GETVEC(LUFC1,C1FIL,LUFS2,S2FIL,LUFS12,S12FIL,
      *                         TRIPLET,I,WRK(RVEC))
               ELSE
-                CALL QUIT('Unkown IANR12 in CCORT')
+                CALL QUIT('Unknown IANR12 in CCORT')
               END IF 
             END IF
             LVEC = LVEC + NCCVAR

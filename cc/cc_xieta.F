@@ -242,9 +242,6 @@ C
 *     in CC_XIETA_DENPREP.
 *---------------------------------------------------------------------*
       IF (IOPTRES.EQ.5 .AND. CCSDT) THEN
-#if !defined CC_AARHUS
-        CALL QUIT('No triples (yet) in CC_XIETA')
-#else
 
         MXXIDEN  = MXVEC
         MXEALEFT = NXETRAN
@@ -305,7 +302,6 @@ C
      &                        FNDELD,FNCKJD,FNDKBC,FNTOC,
      &                        FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X)
         END IF
-#endif
       END IF
 
  1234 CONTINUE      ! From Cholesky
@@ -618,7 +614,7 @@ C     END IF
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_XIETA Called for a Coupled Cluster '
      &          //'method not implemented in CC_XIETA...'
-        CALL QUIT('Unkown CC method in CC_XIETA.')
+        CALL QUIT('Unk own CC method in CC_XIETA.')
       END IF
 
       CALL FLSHFO(LUPRI)
@@ -689,7 +685,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_XIETA.')
+         CALL QUIT('Unk own coupled cluster model in CC_XIETA.')
       END IF
 
 
@@ -771,7 +767,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
         MSCRATCH0 = MAX(MT2SQ,MGAMMA,MT2BGD,6*MT2BCD) + 2*MDISAO + 
      &        MAX(MT2SQ,2*MT2ORT) + NEMAT1(ISYM0) + 10*N2BASX
       ELSE
-        CALL QUIT('Unkown CC model in CC_XIETA.')
+        CALL QUIT('Unk own CC model in CC_XIETA.')
       END IF
 
 * requirements per simultaneous transformation:
@@ -782,7 +778,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
       ELSE IF (CC2 .OR. CCSD .OR. CCSDT) THEN
         MSCRATCH1 = MAX(2*MT2ORT,MT2AM) + MEMAT1 + 2*M2BST
       ELSE
-        CALL QUIT('Unkown CC model in CC_XIETA.')
+        CALL QUIT('Unk own CC model in CC_XIETA.')
       END IF
 
       IF (LOCDBG) THEN
@@ -1779,8 +1775,8 @@ C             END IF
               END IF
            END DO
         ELSE IF (LTWOEL) THEN
-           WRITE (LUPRI,*) 'Unkown 2el operator label in CC_XIETA.'
-           CALL QUIT('Unkown 2el operator label in CC_XIETA.')
+           WRITE (LUPRI,*) 'Unk own 2el operator label in CC_XIETA.'
+           CALL QUIT('Unk own 2el operator label in CC_XIETA.')
         END IF
 
         IF (LOCDBG) THEN
@@ -2679,9 +2675,6 @@ C----------------------------------
 
 
         IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CC_XIETA')
-#else
 
           ! allocate extra memory for the 'effective' CC3 rhs vector
           KXI1EFF = KEND2
@@ -2752,7 +2745,6 @@ C
      &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
           END IF
 c
-#endif
         END IF
 
 *---------------------------------------------------------------------*
@@ -2765,11 +2757,9 @@ c
 
           IF (.NOT.CCS) THEN
             CALL CCLR_DIASCL(WORK(KXI2),HALF,ISYRES)
-#if defined CC_AARHUS
             IF (CCSDT) THEN
               CALL CCLR_DIASCL(WORK(KXI2EFF),HALF,ISYRES)
             END IF
-#endif
           END IF
 
           IF (IOPTRES.EQ.0 .OR. IOPTRES.EQ.1) THEN
@@ -2800,12 +2790,10 @@ c
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
             END IF
-#if defined CC_AARHUS
             IF (CCSDT) THEN
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
             END IF
-#endif
           ELSE IF (IOPTRES.EQ.4) THEN
             IFILE  = IXETRAN(3,ITRAN)
             IF (LCAUCHY) IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
@@ -2820,12 +2808,10 @@ c
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
             END IF
-#if defined CC_AARHUS
             IF (CCSDT) THEN
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
             END IF
-#endif
           ELSE IF (IOPTRES.EQ.5) THEN
 
             IF (LOCDBG.AND.CCSDT) THEN
@@ -3062,9 +3048,6 @@ C-------------------------------------
           END IF
   
           IF (CCSDT) THEN
-#if !defined CC_AARHUS
-            CALL QUIT('No triples (yet) in CC_XIETA')
-#else
             ! allocate extra memory for the 'effective' CC3 rhs vector
             KETA1EFF = KEND2
             KETA2EFF = KETA1EFF + NT1AM(ISYRES)
@@ -3145,7 +3128,6 @@ C             ------------
 
             END IF
 
-#endif
           END IF
 
 
@@ -3176,12 +3158,10 @@ C             ------------
              CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                  DUMMY,WORK(KETAR12),WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
           ELSE IF (IOPTRES.EQ.4) THEN
            IFILE  = IXETRAN(4,ITRAN)
            IF (ILSTSYM(FILETA,IFILE).NE.ISYRES) THEN
@@ -3193,12 +3173,10 @@ C             ------------
              CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                  DUMMY,WORK(KETAR12),WORK(KEND2),LWRK2)
            END IF
-#if defined CC_AARHUS
            IF (CCSDT) THEN
             CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
            END IF
-#endif
           ELSE IF (IOPTRES.EQ.5) THEN
            IF (LOCDBG) THEN
              IVEC = 1
@@ -3265,7 +3243,6 @@ C
      &          DDOT(NT2AM(ISYRES),WORK(KETA2),1,WORK(KETA2),1) +
      &          DDOT(NTR12AM(ISYRES),WORK(KETAR12),1,WORK(KETAR12),1)
             END IF
-#if defined CC_AARHUS
             IF (CCSDT.AND.IOPTRES.LT.5) THEN
               XNORM = DDOT(NT1AM(ISYRES),WORK(KETA1EFF),1,
      &                                   WORK(KETA1EFF),1)
@@ -3274,7 +3251,6 @@ C
               WRITE (LUPRI,*) 'effective Eta vector:',XNORM
               CALL CC_PRP(WORK(KETA1EFF),WORK(KETA2EFF),ISYRES,1,I)
             END IF
-#endif
             CALL FLSHFO(LUPRI)
           END IF
 

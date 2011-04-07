@@ -176,26 +176,26 @@ c     >.GRID5 < grid parameters.
       CALL HEADER('Settings for DFT calculation:',0)
 c     code goes here
          IF (IPRDFT .NE. IPRUSR) THEN
-            WRITE (LUPRI,'(4X,A,I5)')
-     &        ' Redefined print level for DFT',IPRDFT
+            WRITE (LUPRI,'(4X,A,T160,I5)')
+     &        ' Redefined print level for DFT :',IPRDFT
          END IF
          IF (DFTHRS) THEN
-            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,T60,1P,3D12.2)')
      &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 
          ELSE
-            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,T60,1P,3D12.2)')
      &        ' Default thresholds:  ', DFTHR0, DFTHRL, DFTHRI 
          END IF
          IF (DFTHRS) THEN
-            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,T60,1P,3D12.2)')
      &        ' Redefined threshold for number of electrons: ', DFTELS 
          ELSE
-            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,T60,1P,3D12.2)')
      &        ' Default threshold for number of electrons:   ', DFTELS 
          END IF
-         WRITE (LUPRI,'(4X,A,E10.2,I4)')
-     $        ' DFT radial quadrature accuracy/ang. expansion order:',
-     &        RADINT,ANGINT
+         WRITE (LUPRI,'(4X,A,T74,1P,D10.2,I4)')
+     $      ' DFT radial quadrature accuracy and ang. expansion order:',
+     &      RADINT,ANGINT
 
       if (angint .gt. 64) then
 !radovan:

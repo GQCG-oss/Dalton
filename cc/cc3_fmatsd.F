@@ -179,7 +179,7 @@ C
         FREQY  = EIGVAL(IDLSTY)
 C
       ELSE
-        CALL QUIT('Unkown/Illegal list in CC3_FMATSD')
+        CALL QUIT('Unknown/Illegal list in CC3_FMATSD')
       END IF
 C
       !frequency asscociated with the L1 and M1 and N2, respectivly.

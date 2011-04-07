@@ -131,38 +131,6 @@ C
      &                    D0,SO(1,1,S,T,ICMPAB,ICMPCD),NCCS)
   500       CONTINUE
 C
-C#if defined (SYS_CRAY)
-C            CALL SGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
-C     &                 RMAT(1,IPARB),MLTPR,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
-C            CALL SGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
-C     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
-C     &                 SMAT(1,IPARD),MLTPS,
-C     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
-C            CALL SGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
-C     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
-C#endif
-C#if defined (SYS_DEC)
-C            CALL QUIT('This will require ESSL (eri2sym)')
-C#endif
-C#if !defined (SYS_CRAY) && !defined (SYS_DEC)
-C            CALL DGEMM('T','N',MLTPS*MLTPT*NCCS,MLTPR,MLTPR,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPR,
-C     &                 RMAT(1,IPARB),MLTPR,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),MLTPS*MLTPT*NCCS)
-C            CALL DGEMM('T','N',MLTPT*NCCS*MLTPR,MLTPS,MLTPS,
-C     &                 D1,SO(1,ICMPAB,ICMPCD),MLTPS,
-C     &                 SMAT(1,IPARD),MLTPS,
-C     &                 D0,AO(1,ICMPAB,ICMPCD),MLTPT*NCCS*MLTPR)
-C            CALL DGEMM('T','N',NCCS*MLTPR*MLTPS,MLTPT,MLTPT,
-C     &                 D1,AO(1,ICMPAB,ICMPCD),MLTPT,
-C     &                 TMAT(1,IBTXOR(IPARC,IPARD)),MLTPT,
-C     &                 D0,SO(1,ICMPAB,ICMPCD),NCCS*MLTPR*MLTPS)
-C#endif
-C
 C           Print
 C           =====
 C

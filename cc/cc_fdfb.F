@@ -377,7 +377,7 @@ C
       IPRSAV = IPRINT
       IPRINT = 0
 C
-      MODEL = 'UNKOWN'
+      MODEL = 'UNKNOWN'
       IF (CCS)  MODEL = 'CCS'
       IF (CC2)  MODEL = 'CC2'
       IF (CCSD) MODEL = 'CCSD'
@@ -660,7 +660,7 @@ C
       IPRSAV = IPRINT
       IPRINT = 0
 C
-      MODEL = 'UNKOWN'
+      MODEL = 'UNKNOWN'
       IF (CCS)  MODEL = 'CCS'
       IF (CC2)  MODEL = 'CC2'
       IF (CCSD) MODEL = 'CCSD'

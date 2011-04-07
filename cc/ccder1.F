@@ -296,7 +296,7 @@ c    *                      IGAM,ICOOR,ICORSY,IOFF2+KOFFX-KEND1,YNORM
 c                        END DO
 c                        IPRC = IPRC + N2BST(ISYMAB)*NBAS(IPSYMG)
 c                      ELSE
-c                        CALL QUIT('Unkown ITYPE in CCSORTDERAO.')
+c                        CALL QUIT('Unknown ITYPE in CCSORTDERAO.')
 c                      END IF
 c                    END DO
 c                    WRITE (LUPRI,*) 'Norm of distribution:',XNORM
@@ -362,7 +362,7 @@ C
                                   CONTINUE
                                ELSE
                                   CALL QUIT(
-     *                                 'Unkown ITYPE in CCSORTDERAO.')
+     *                                 'Unknown ITYPE in CCSORTDERAO.')
                                END IF
                               END DO
                             END DO
@@ -380,7 +380,7 @@ C
                               IPRC = IPRC + N2BST(ISYMAB)*NBAS(IPSYMG)
                             ELSE
                                   CALL QUIT(
-     *                                 'Unkown ITYPE in CCSORTDERAO.')
+     *                                 'Unknown ITYPE in CCSORTDERAO.')
                             END IF
                           END IF
                         END DO
@@ -678,7 +678,7 @@ C        --------------------------------------------------------
          END DO
 C
        ELSE
-         CALL QUIT('Unkown ITYPE in CCSD_INIT2B.')
+         CALL QUIT('Unknown ITYPE in CCSD_INIT2B.')
        END IF
 C
       END IF

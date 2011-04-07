@@ -17,17 +17,16 @@ $ program
 $                                                                               
 $ Elements                             References                               
 $ --------                             ----------                               
-$ H,Li - Ne: P.C. Hariharan and J.A. Pople, Theoret. Chimica Acta 28, 213 (1973)
-$ Na - Ar  : M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon, D.J
-$            DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982).            
-$ K  - Zn:   V.A. Rassolov, J.A. Pople, M.A. Ratner, and T.L. Windus            
-$            J. Chem. Phys. 109, 1223 (1998)                                    
-$            Note: He and Ne are unpublished basis sets taken from Gaussian.    
+$ H,Li - Ne: P.C. Hariharan and J.A. Pople, Theoret. Chimica Acta 28, 213 (1973).
+$ Na - Ar  : M.M. Francl, W.J. Petro, W.J. Hehre, J.S. Binkley, M.S. Gordon, D.J.
+$            DeFrees and J.A. Pople, J. Chem. Phys. 77, 3654 (1982).
+$ K  - Zn  : V.A. Rassolov, J.A. Pople, M.A. Ratner, and T.L. Windus,
+$            J. Chem. Phys. 109, 1223 (1998)
+$            Note: He and Ne are unpublished basis sets taken from Gaussian.
 $                                                                               
 $****************************************************                 
 a 1
-$ HYDROGEN       (4s,1p) -> [2s,1p]                                             
-$ HYDROGEN       (1p)                                                           
+$ HYDROGEN       (4s,1p) -> [2s,1p]
 $ S-TYPE FUNCTIONS
     4    2    0
     18.73113700  0.03349460  0.00000000
@@ -38,8 +37,7 @@ $ P-TYPE FUNCTIONS
     1    1    0
      1.10000000  1.00000000
 a 2
-$ HELIUM       (4s,1p) -> [2s,1p]                                               
-$ HELIUM       (1p)                                                             
+$ HELIUM       (4s,1p) -> [2s,1p]
 $ S-TYPE FUNCTIONS
     4    2    0
     38.42163400  0.02376600  0.00000000
@@ -51,7 +49,6 @@ $ P-TYPE FUNCTIONS
      1.10000000  1.00000000
 a 3
 $ LITHIUM       (10s,4p,1d) -> [3s,2p,1d]                                       
-$ LITHIUM       (1d)                                                            
 $ S-TYPE FUNCTIONS
    10    3    0
    642.41892000  0.00214260  0.00000000  0.00000000

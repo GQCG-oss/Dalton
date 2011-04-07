@@ -30,7 +30,7 @@ H1    .000000  .000000  3.143437
 #  DALTON INPUT
 #######################################################################
 cat > triplet2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **WAVE FUNCTIONS
@@ -39,7 +39,7 @@ cat > triplet2.dal <<%EOF%
 .CC
 *ORBITALS 
 .NOSUPSYM
-*HF INPUT 
+*SCF INPUT
 .THRESH
  1.0D-10
 *CC INPUT 
@@ -61,7 +61,7 @@ cat > triplet2.dal <<%EOF%
  2 0 0 1 0 0 0 0
 .THREXC
  1.0D-10
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -123,7 +123,7 @@ PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

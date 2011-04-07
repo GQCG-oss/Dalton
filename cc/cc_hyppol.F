@@ -1746,7 +1746,7 @@ c /* deck ccqhypprt */
       ELSE IF (CC3) THEN
          CALL AROUND120( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
-         CALL QUIT('CCQHYPPRT called for an unkown '//
+         CALL QUIT('CCQHYPPRT called for an unknown '//
      &             'Coupled Cluster model.')
       END IF
 
@@ -2105,7 +2105,7 @@ C
         ELSE IF (CCSD) THEN
            CALL AROUND120( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
         ELSE
-           CALL QUIT('CCQHYPPRT called for an unkown '//
+           CALL QUIT('CCQHYPPRT called for an unknown '//
      &             'Coupled Cluster model.')
         END IF
 C

@@ -538,7 +538,6 @@ C Used from common blocks:
 C   INFINP : DIRFCK
 C   INFORB : NNORBX, N2ORBX, N2BASX, NISHT,NASHT, ...
 C   INFVAR : JWOPSY
-C   INFPRI : LUERR
 C   DFTCOM : DFT_SPINDNS
 C
 #include <maxorb.h>
@@ -2195,7 +2194,6 @@ C
 C
 C Externals:
 C   DDOT, DZERO, MOLLAB, QTRACE
-#include <line.h>
 #include <implicit.h>
       DIMENSION PV(NNASHX,*),PTV(NNASHX,NNASHX,*),UBO(N2ORBX,*)
       DIMENSION H2XAC(NNASHX,NNASHX,*)
@@ -2229,13 +2227,13 @@ C
 #include <inflin.h>
 #include <infpri.h>
 #include <cbgetdis.h>
-#include <line.h>
+C
 C     Local variables
 C
       DIMENSION NEEDMU(6)
-#include <line.h>
+
 #include <orbtypdef.h>
-#include <line.h>
+
       CALL QENTER('TR1H2M')
       KFRSAV = 1
       KFREE  = KFRSAV

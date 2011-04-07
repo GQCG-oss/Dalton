@@ -1287,7 +1287,6 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
 C    INFTAP : LUSOL
-C    INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -1526,7 +1525,7 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFTAP : LUSOL
-C    INFPRI : LUERR,  IPRSOL
+C    INFPRI : IPRSOL
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -1881,7 +1880,6 @@ C
 C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFLIN : LSYMRF,LSYMST,LSYMPT,NCONRF,NCONST
-C   INFPRI : LUERR
 C
 #include <priunit.h>
 #include <inforb.h>

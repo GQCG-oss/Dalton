@@ -300,7 +300,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then
@@ -393,23 +393,6 @@ if [ $ninfo -gt 0 ] ; then
    echo "output from 'grep -n INFO'  (max 10 lines):"
    grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -10
 fi
-
-# Disabled check of DALTON.ERR, it is generally duplication
-# of the warnings etc. in DALTON.OUT /hjaaj
-
-#if [ -s DALTON.ERR -a -r DALTON.ERR ]; then
-#  if [ `grep -c -i WARNING DALTON.ERR` -gt 0 ] ; then
-#   echo; echo "WARNINGS have been issued by Dalton in DALTON.ERR file"
-#   echo "output from 'grep -n -i WARNING DALTON.ERR' :"
-#   grep -n -i WARNING DALTON.ERR
-#  fi
-#  if [ `grep -c INFO DALTON.ERR` -gt 0 ] ; then
-#   echo; echo "INFO messages have been issued by Dalton in DALTON.ERR file"
-#  echo "output from 'grep -n INFO DALTON.ERR' :"
-#  grep -n INFO DALTON.ERR
-#  fi
-#fi
-
 
 if [ $optD -eq 1 ] ; then
    rm -rf $SCRATCHDIR

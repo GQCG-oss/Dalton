@@ -212,7 +212,7 @@ case $WHICH in
               complist='if90 f90'
               ccmplist='cc';;
     linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
-              complist='ifort pgf95 pgf90 gfortran'
+              complist='ifort pgf95 pgf90 gfortran g95'
               ccmplist='icc ecc pgcc gcc';;
     hp)       liblist='libblas.a libveclib.a'
               complist='f90'
@@ -938,19 +938,19 @@ case "$WHICH" in
           else
              if [ $F90 = 'f90' ]; then
                  case $bit in
-                     64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
-                         LIB="$LIB +U77 +DA2.0W"
+                     64)  opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
+                          LIB="$LIB +U77 +DA2.0W"
                          copt='+DA2.0W +O3 +Onolimit +Ofastaccess'
                           cpp=${cpp}" -DVAR_INT64";;
-                     *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
-                         LIB="-lV7 +U77 $LIB"
+                     *)   opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
+                          LIB="-lV7 +U77 $LIB"
                          copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
                  esac
              else
-                 opt='+O2 +U77 +E4 +E5'
-                 safe_opt='+O1 +U77 +E4 +E5'
+                  opt='+O2 +U77 +E4 +E5'
+             safe_opt='+O1 +U77 +E4 +E5'
                  copt='-D_FILE_OFFSET_BITS=64 +O3'
-                 LIB="-lV7 +U77 $LIB"
+                  LIB="-lV7 +U77 $LIB"
              fi
           fi
           copt=${copt}" -AC99"
@@ -1038,10 +1038,10 @@ case "$WHICH" in
                opt="$opt -i8"
                safe_opt="$safe_opt -i8"
                $ECHO "INFO: Compiling with 64-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 64-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 64-bit integers!!!\n"
              else
                $ECHO "INFO: Compiling with 32-bit integers."
-               $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 32-bit integers!!!\n"
+               $ECHO "INFO: Make sure pre-compiled BLAS etc. libraries are also with 32-bit integers!!!\n"
              fi
              #LIB="$LIB"
              ;;
@@ -1049,8 +1049,24 @@ case "$WHICH" in
              cpp="-DVAR_PGF90 $cpp"
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
              copt="-fast -m32 -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
-              opt="-fast -Munroll -m32"; safe_opt="-m32 -Mframe"
+              opt="-fast -Munroll -m32"
+             safe_opt="-m32 -Mframe"
              F90mod='-module ../modules'
+             ;;
+          g95)
+             case $prc in
+             i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
+                     march="-march=$prc";;
+             x86_64) march="-march=x86-64";;
+                  *) march=" ";;
+             esac
+
+                cpp="-DVAR_G95 $cpp"
+             F90mod='-I../modules -fmod=../modules'
+                opt="$march -O3 -ffast-math -funroll-loops -ftrace=full -fsloppy-char"
+           safe_opt="$march -O1 -ffast-math -funroll-loops -ftrace=full -fsloppy-char"
+#                   -fsloppy-char is needed for gp/mempkg.F
+               copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
              ;;
           *)
 #            assume gfortran also if not gfortran (but write a WARNING)
@@ -1066,9 +1082,6 @@ case "$WHICH" in
              case $prc in
              i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                      march="-march=$prc";;
-# remove VAR_INT64 for gfortran - it breaks linking against
-# precompiled BLAS libraries./pawsa-Mar-08
-# hjaaj Jan 2011: instead we now ask the user explicitly
              x86_64) march="-march=x86-64";;
                   *) march=" ";;
              esac
@@ -1080,7 +1093,6 @@ case "$WHICH" in
              if [ $bit = "64" ]; then
                cpp="${cpp} -DVAR_INT64"
                opt="$opt -fdefault-integer-8"
-               safe_opt="$safe_opt -fdefault-integer-8"
                $ECHO "INFO: Compiling with 64-bit integers."
                $ECHO "INFO: Make sure pre-compiled BLAS, MPI etc. libraries are also with 64-bit integers!!!\n"
              else

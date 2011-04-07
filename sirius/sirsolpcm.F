@@ -56,7 +56,7 @@ C   INFVAR: NCONF,  NWOPT,  NVAR,   NVARH
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
-C   INFPRI: LUERR,  LUPRI,   IPRSOL
+C   INFPRI: IPRSOL
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -475,7 +475,6 @@ C
 C
 C Used from common blocks:
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
-C   INFPRI: LUERR,  LUPRI
 C
 #include <pcm.h>
 #include <pcmlog.h>
@@ -804,7 +803,6 @@ C  Used from common blocks:
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
-C    INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -1015,7 +1013,7 @@ C  Used from common blocks:
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
-C    INFPRI : LUERR,  IPRSOL
+C    INFPRI : IPRSOL
 C
 #include <pcmdef.h>
 #include <maxash.h>

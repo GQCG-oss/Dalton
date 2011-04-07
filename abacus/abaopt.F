@@ -5575,9 +5575,11 @@ C
      &           'Trust radius squarely decreased due to bad ratio.'
             TRSTRA = TRSTDE*TRSTDE*STPNRM
          ELSE
-            WRITE(LUPRI,'(/A/A,F12.6)')
-     &           ' Step rejected because ratio between predicted',
-     &           ' and actual energy change is : ', RATIO
+            WRITE(LUPRI,'(/A,2(/A,F14.8),/A,F14.2)')
+     &           ' Step rejected because ratio between',
+     &           '        actual energy change :', ERGDIF,
+     &           ' and predicted energy change :', ERGPRD,
+     &           '                          is :', RATIO
             REJGEO = .TRUE.
          END IF
       ELSE IF (RATIO .LT. RTENBD) THEN

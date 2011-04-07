@@ -29,7 +29,7 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > alpha_relax.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -76,8 +76,7 @@ ALPHA_ANI
 LINEAR
 .OPERATOR
 ZZTHETA ZZTHETA
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -98,43 +97,43 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Total SCF * energy: * \-100.00891992" $log | wc -l`
-CRIT2=`$GREP "Total MP2 * energy: * \-100.19366261" $log | wc -l`
-CRIT3=`$GREP "Total CCSD * energy: * \-100.19779093" $log | wc -l`
+CRIT1=`$GREP "Total SCF * energy:  * \-100.008919" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy:  * \-100.193662" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy: * \-100.197790" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # SCF polarizabilities
-CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = * 4.3809250" $log | wc -l`
-CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = * 1.8933727" $log | wc -l`
-CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * 29.6855000" $log | wc -l`
+CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  4.380925" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = *  1.893372" $log | wc -l`
+CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * 29.685500" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[2]=3
 ERROR[2]="SCF POLARIZABILITIES NOT CORRECT"
 
 # unrelaxed CCSD polarizabilities
-CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = * -4\.5154269" $log | wc -l`
-CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = * -1\.916742(4|5)" $log | wc -l`
-CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * -30\.1147398" $log | wc -l`
+CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  -4\.51542" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = *  -1\.91674" $log | wc -l`
+CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * -30\.1147" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[3]=6
+CTRL[3]=3
 ERROR[3]="UNRELAXED CCSD POLARIZABILITIES NOT CORRECT"
 
 
 # relaxed CCSD polarizabilities
-CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = * -4.5709111" $log | wc -l`
-CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = * -1.9306569" $log | wc -l`
-CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * -30.3826599" $log | wc -l`
+CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  -4.57091" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = *  -1.93065" $log | wc -l`
+CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * -30.3826" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=6
+CTRL[4]=3
 ERROR[4]="RELAXED CCSD POLARIZABILITIES NOT CORRECT"
 
 # symmetry of the polarizabilities
-CRIT1=`$GREP "<<XDIPLEN ,ZDIPLEN >>\( ..000000\) = * ..0000000" $log | wc -l`
+CRIT1=`$GREP "<<XDIPLEN ,ZDIPLEN >>\( ..000000\) = * -*0*\.0000000" $log | wc -l`
 TEST[5]=`expr $CRIT1`
-CTRL[5]=5
+CTRL[5]=3
 ERROR[5]="SYMMETRY OF POLARIZABILITY TENSORS NOT CORRECT"
 
 
@@ -142,7 +141,7 @@ PASSED=1
 for i in 1 2 3 4 5
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

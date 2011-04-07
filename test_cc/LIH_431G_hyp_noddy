@@ -19,7 +19,7 @@ BASIS
 4-31G
 blubber
 blubber
-    2    0  X  Y      1.00D-18
+    2    0  X  Y      1.00D-15
         3.0   1    1    1
 Li    0.0000000000000000   0.000000000   1.30000000
         1.0   1    1    1
@@ -30,19 +30,18 @@ H     0.0000000000000000   0.000000000   0.00000000
 #  DALTON INPUT
 #######################################################################
 cat > LIH_431G_hyp_noddy.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .DIPVEL
 .ANGMOM
-*END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-12
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  2
 .NODIIS
 *ORBITAL INPUT
@@ -85,7 +84,7 @@ ZDIPLEN ZDIPLEN ZDIPLEN
 .SHGFRE
   1
  0.00 0.1120058274
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -132,7 +131,7 @@ PASSED=1
 for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

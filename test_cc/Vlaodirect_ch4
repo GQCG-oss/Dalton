@@ -28,7 +28,7 @@ H1    0.626887      0.626887      0.626887
 #  DALTON INPUT
 #######################################################################
 cat > Vlaodirect_ch4.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 .DIRECT
 **INTEGRAL
@@ -45,7 +45,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0d-10
 *CC INPUT
@@ -70,7 +70,7 @@ ZDIPLEN XDIPLEN dh/dBY
 1
 0.11391
 0.0
-*END OF
+**END OF DALTON
 %EOF%
 ############################################
 
@@ -87,33 +87,33 @@ else
 fi
 
 
-# SCF, MP2 and CCSD energie
-CRIT1=`$GREP "Total SCF * energy\: * \-4(0| )\.1855971154" $log | wc -l`
-CRIT2=`$GREP "Total MP2 * energy\: * \-4(0| )\.2911749298" $log | wc -l`
-CRIT3=`$GREP "Total CCSD * energy\: * \-4(0| )\.3117925327" $log | wc -l`
+# SCF, MP2 and CCSD energy
+CRIT1=`$GREP "Total SCF  * energy\: * \-4(0| )\.185597115" $log | wc -l`
+CRIT2=`$GREP "Total MP2  * energy\: * \-4(0| )\.291174929" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-4(0| )\.311792532" $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=6
 ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
 
 # Unrelaxed, relaxed and LAO+Relax V(w) components
-CRIT1=`$GREP "(0| )\.1139 * YANGMOM * \(unrel\.\) * (0| )\.0000 * 1\.3850587" $log | wc -l`
-CRIT2=`$GREP "(0| )\.1139 * YANGMOM * \(relax\.\) * (0| )\.0000 * 1\.3947507" $log | wc -l`
-CRIT3=`$GREP "(0| )\.1139 * dh\/dBY * \(relax\.\) * (0| )\.0000 * 4\.6397505" $log | wc -l`
+CRIT1=`$GREP "(0| )\.1139 * YANGMOM * \(unrel\.\) * (0| )\.0000 * 1\.385058" $log | wc -l`
+CRIT2=`$GREP "(0| )\.1139 * YANGMOM * \(relax\.\) * (0| )\.0000 * 1\.394750" $log | wc -l`
+CRIT3=`$GREP "(0| )\.1139 * dh\/dBY * \(relax\.\) * (0| )\.0000 * 4\.639750" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="UNRELAXED/RELAXED/LAO VERDET CONSTANT COMPONENTS NOT CORRECT"
 
 # Dummy check that it was a direct calculation
-CRIT1=`$GREP "Direct calculation" $log | wc -l`
+CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
 TEST[3]=`expr $CRIT1`
 CTRL[3]=1
-ERROR[3]="DIRECT LAO VERDET WAS NOT RUN DIRECT"
+ERROR[3]="DIRECT LAO VERDET WAS NOT RUN AO-DIRECT"
 
 PASSED=1
 for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

@@ -12,15 +12,19 @@ module dalton_mpi
 !           written by radovan bast, for DIRAC.
 !           adapted and extended for DALTON by sknecht, december 2010.
 
+#ifndef VAR_USE_MPIF
   use mpi
+  implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
 
 #if defined (VAR_INT64)
 #define my_MPI_INTEGER MPI_INTEGER8
 #else
 #define my_MPI_INTEGER MPI_INTEGER4
 #endif
-
-  implicit none
 
   public dalton_mpi_bcast
   public dalton_mpi_reduce

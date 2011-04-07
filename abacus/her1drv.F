@@ -551,39 +551,59 @@ C
       CALL IZERO(ISOFRA, 8)
 
 #ifdef BUILD_GEN1INT
+
+#ifdef GEN1INT_DEBUG
+C...   see abacus/gen1int_wrapper.F for details
+C...   call gen1int_driver(prop_name, order_geo, order_mag,
+C...  &                    is_lao, get_int, wrt_int, vals_int,
+C...  &                    do_exp, ndens, ao_dens,
+C...  &                    get_exp, wrt_exp, vals_expect,
+C...  &                    len_work, dal_work, level_print)
+       call gen1int_driver('.OVERLAP', 5, 3,
+     &                     .false., .false., .true., (/DUMMY/),
+     &                     .true., 1, DENMAT,
+     &                     .false., .true., (/DUMMY/),
+     &                     LWRK, WORK(KLAST), 20)
+C...   FIXME: adds test suites for Gen1Int
+       call QUIT("Gen1Int test")
+#endif
+
 C...  added by Bin Gao, Feb. 15, 2011
       if (ECP) then
 C...    computes expectation values
         if (PROPTY) then
 C...      expectation values from ECP integrals
-          call gen1int_wrapper('.ECP', 0, 0, .false., .false.,
-     &                         (/DUMMY/), .true., 1, DENMAT,
-     &                         WORK(KLAST:KLAST), DOINT, LWRK-1,
-     &                         WORK(KLAST+1), IPRINT)
+          call gen1int_driver('.ECP', 0, 0, .false., .false., .false.,
+     &                        (/DUMMY/), .true., 1, DENMAT,
+     &                        .true., .false., WORK(KLAST:KLAST),
+     &                        LWRK-1, WORK(KLAST+1), IPRINT)
           ENERNA = ENERNA+WORK(KLAST)
 C...      expectation values and writing the integrals of first-order geometric derivatives
           if (SECDER .OR. DIFDIP .OR. DIFQDP) then
-            call gen1int_wrapper('.ECP', MAXDIF, 0, .false., .true.,
-     &                           (/DUMMY/), .true., 1, DENMAT, GRADNA,
-     &                           DOINT, LWRK, WORK(KLAST), IPRINT)
+            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
+     &                          .true., (/DUMMY/), .true., 1, DENMAT,
+     &                          .true., .false., GRADNA,
+     &                          LWRK, WORK(KLAST), IPRINT)
 C...      expectation values of first-order geometric derivatives
           else
-            call gen1int_wrapper('.ECP', MAXDIF, 0, .false., .false.,
-     &                           (/DUMMY/), .true., 1, DENMAT, GRADNA,
-     &                           DOINT, LWRK, WORK(KLAST), IPRINT)
+            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
+     &                          .false., (/DUMMY/), .true., 1, DENMAT,
+     &                          .true., .false., GRADNA,
+     &                          LWRK, WORK(KLAST), IPRINT)
           end if
 C...      expectation values of second-order geometric derivatives
           if (SECDER) then
-            call gen1int_wrapper('.ECP', MAXDIF, 0, .false., .false.,
-     &                           (/DUMMY/), .true., 1, DENMAT, HESSNA,
-     &                           DOINT, LWRK, WORK(KLAST), IPRINT)
+            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
+     &                          .false., (/DUMMY/), .true., 1, DENMAT,
+     &                          .true., .false., HESSNA,
+     &                          LWRK, WORK(KLAST), IPRINT)
           end if
 C...    ECP integrals, do not write the integrals (FIXME)?
         else
-          call gen1int_wrapper('.ECP', MAXDIF, 0, .true., .false.,
-     &                         STHMAT(:,2), .false., 1, DENMAT,
-     &                         (/DUMMY/), DOINT, LWRK, WORK(KLAST),
-     &                         IPRINT)
+          call gen1int_driver('.ECP', MAXDIF, 0, .false., .true.,
+     &                        .false., STHMAT(:,2), .false., 1, DENMAT,
+     &                        .false., .false., (/DUMMY/),
+     &                        LWRK, WORK(KLAST), IPRINT)
         end if
       end if
 #endif
@@ -1408,7 +1428,7 @@ C  /* Deck tlmwr1 */
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
-      LOGICAL ERRORE, ERRORN
+      LOGICAL ERRORE, ERRORN, OLDDX
 #include "nuclei.h"
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)

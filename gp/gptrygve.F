@@ -46,7 +46,7 @@ c   LUPRI = 6 (to use stdout on unix)
 c   LUW4  = 6 (same as LUPRI by default)
 c   NINFO = 0, NWARN = 0 (zero counters moved to here)
 c   LUERR = -8xxx (let GPOPEN assign this one, could be = stderr on unix)
-c   IPRERR = 0 (no debug print on LUERR)
+c   IPRSTAT = 0 (no statistics print on LUSTAT)
 c----------------------------
 crevision 1.3 2000/04/10 10:52:18 hjj
 c changed test for "no more available file numbers" in GPOPEN and DAINTF
@@ -77,23 +77,28 @@ C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER TEXT*(*), OUT_TEXT*50
+      CHARACTER TEXT*(*), OUT_TEXT*51, BLANK*10
+      PARAMETER ( BLANK = '          ')
 C
       IF (TEXT(1:6) .EQ. 'START ') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
-#if defined (SYS_T3D)
-         TIMEND = TIMEND + 1.0D0
-#endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
-            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
-            LOUT = 17 + LTEXT + 3
+            IF (LTEXT .GE. 10) THEN
+               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//' is'
+               LOUT = 18 + LTEXT + 3
+            ELSE
+               LBLANK = 10 - LTEXT
+               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//
+     &                    BLANK(1:LBLANK)//' is'
+               LOUT = 18 + 10 + 3
+            END IF
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
             CALL FLSHFO(LUPRI)
          END IF
@@ -234,6 +239,8 @@ C
      &   LUPRIN)
 #if defined (VAR_MPI)
       WRITE (LUPRIN,'(/A,I6/2A/)')
+     &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
+      WRITE (0,'(/A,I6/2A/)')
      &   ' MPI node no.:',MYNUM, ' Reason: ',TEXT
 #else
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
@@ -874,7 +881,7 @@ c44         CONTINUE
       END IF
       END IF
 C
-C     We've got a file number now, get rid of the direct access case
+C     We have got a file number now, get rid of the direct access case
 C
       IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
          IF (FILELN .LE. 1) THEN
@@ -900,7 +907,7 @@ C
              END IF
             END IF
          END IF
-         IF (IPRERR.GT.1) WRITE (LUERR,*) 'GPOPEN calling OPENDX ',
+         IF (IPRSTAT.GT.1) WRITE (LUSTAT,*) 'GPOPEN calling OPENDX ',
      &      LUNIT,' ',FILENM(1:FILELN),NELEM,' ',STATUF(1:STATLN)
          CALL OPENDX(LUNIT,FILENM(1:FILELN),NELEM,STATUF(1:STATLN),
      &               OLDDX)
@@ -927,7 +934,7 @@ C
 C
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
             IF (.NOT. FEXST) GOTO 9007
-            IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq OLD ',LUNIT,
+            IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPOPEN seq OLD ',LUNIT,
      &         ' ',FILENM(1:FILELN),' ',FORMF(1:FORMLN)
             OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),STATUS='OLD',
      &           ACCESS='SEQUENTIAL',FORM=FORMF(1:FORMLN),ERR=9004,
@@ -959,13 +966,13 @@ C
                END IF
             END IF
             IF (STATUF(1:7) .EQ. 'SCRATCH') THEN
-               IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq scratch ',
+               IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPOPEN seq scratch ',
      &            LUNIT,' ',FORMF(1:FORMLN)
                OPEN(UNIT=LUNIT,STATUS='SCRATCH',
      &              ACCESS='SEQUENTIAL',FORM=FORMF(1:FORMLN),
      &              ERR=9004,IOSTAT=IOS)
             ELSE
-               IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq ',
+               IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPOPEN seq ',
      &            STATUF(1:STATLN),LUNIT,' ',FILENM(1:FILELN),
      &            ' ',FORMF(1:FORMLN)
                IF(STATUF(1:STATLN) .EQ. 'NEW') THEN
@@ -975,7 +982,7 @@ C                  This will often be the case if we restart a
 C                  calculation.
                   INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
                   IF (FEXST) THEN
-                     IF (IPRERR.gt.1) write (LUERR,*)
+                     IF (IPRSTAT.gt.1) write (LUSTAT,*)
      &                  'GPOPEN INFO: file ',FILENM(1:FILELN),
      &                  ' already exists and is deleted first.'
                      OPEN(UNIT=LUNIT,FILE=FILENM(1:FILELN),
@@ -1160,7 +1167,7 @@ C
          CALL FLSHFO(LUPRI)
       END IF
       IF (DISP .EQ. 'KEEP') THEN
-         IF (IPRERR.gt.1) write (LUERR,*) 'GPCLOSE keep',LUNIT
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
          CLOSE (LUNIT,STATUS='KEEP',ERR=9003)
          IUNTAB(LUNIT) = 0
          LUNIT = -30000-LUNIT
@@ -1192,7 +1199,7 @@ C
                OPEN (UNIT=LUNIT,FILE=FNNAME(1:LN),STATUS='OLD')
             END IF
          END IF
-         IF (IPRERR.gt.1) write (LUERR,*) 'GPCLOSE delete',LUNIT
+         IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE delete',LUNIT
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
          IUNIT = 0
  16      CONTINUE

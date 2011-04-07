@@ -424,7 +424,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_AMATT3ZUVIR')
 C
       ELSE 
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUVIR.')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUVIR.')
       END IF
 C
       FREQZU = FREQRZ + FREQRU
@@ -1673,7 +1673,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_AMATT3ZUOCC')
 C
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_AMATT3ZUOCC.')
+         CALL QUIT('Unknown list for LISTZU in CC3_AMATT3ZUOCC.')
       END IF
 C
       FREQZU = FREQRZ + FREQRU
@@ -2301,7 +2301,7 @@ C
         IF (LORXRU) CALL QUIT('NO ORBITAL RELAX. IN CC3_BMATT3ZU')
 C
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_BMATT3ZU.')
+         CALL QUIT('Unknown list for LISTZU in CC3_BMATT3ZU.')
       END IF
 C
       ISYMZU   = MULD2H(ISYMRZ,ISYMRU)
@@ -2312,7 +2312,7 @@ C
          ! below as the sum of "first-order" frequencies
          !LABELZU = LRTLBL(IDLSTZU) not needed for LISTZU
       ELSE
-         CALL QUIT('Unkown list for LISTZU in CC3_BMATT3ZU')
+         CALL QUIT('Unknown list for LISTZU in CC3_BMATT3ZU')
       END IF
 C
       !Symmetry check

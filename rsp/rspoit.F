@@ -345,11 +345,11 @@ C
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
-#include <line.h>
+C
 C     Local variables
 C
       DIMENSION NEEDMU(6), N2DIS(8)
-#include <line.h>
+
       CALL QENTER('OIT2M')
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -511,9 +511,9 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <infpri.h>
-#include <line.h>
+C
       LOGICAL CDEQDC
-#include <line.h>
+
       CALL QENTER('OIT2M2')
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -802,11 +802,11 @@ C
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
-#include <line.h>
+C
 C     Local variables
 C
       DIMENSION NEEDMU(6), N2DIS(8)
-#include <line.h>
+
       CALL QENTER('OIT2X')
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -968,9 +968,9 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <infpri.h>
-#include <line.h>
+
       LOGICAL CDEQDC
-#include <line.h>
+
       CALL QENTER('OIT2X2')
       KFREE  = KFRSAV
       LFREE  = LFRSAV

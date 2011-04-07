@@ -89,9 +89,6 @@ C
 *     begin
 *---------------------------------------------------------------------*
       CALL QENTER('CCSDT_ETA_CONT')
-#if !defined CC_AARHUS
-      CALL QUIT('No triples (yet) in CCSDT_ETA_CONT.')
-#else
 
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCSDT_ETA_CONT... NODDY=',NODDY
@@ -313,7 +310,6 @@ C         --------------------
 
       CALL WCLOSE2(LUDEFF,FNDEFF,'DELETE')
 
-#endif
       CALL QEXIT('CCSDT_ETA_CONT')
       RETURN
       END 
@@ -798,7 +794,7 @@ C
       ELSE
         WRITE(LUPRI,*) 'LISTL = ', LISTL(1:3) 
         WRITE(LUPRI,*) 'CCSDT_ETA_FA_DEN handles only L0 or LE as LISTL'
-        CALL QUIT('Unkown left list in CCSDT_ETA_FA_DEN')
+        CALL QUIT('Unknown left list in CCSDT_ETA_FA_DEN')
       END IF
 C
       DO ISYMDL = 1, NSYM

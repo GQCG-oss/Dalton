@@ -60,7 +60,8 @@ C LUCMD    input unit for program control
 C LUPRI    output unit for print output
 C LUW4     do.
 C LUPNCH   Formatted output of final MCSCF or natural/canonical orbitals
-C LUERR    output unit for error messages and statistics
+C LUERR    output unit for error and warning messages
+C LUSTAT   output unit for statistics
 C LUINDX   orbital operators of symmetry 1 to NSYM.
 C LUSYMB   symbolic matrix elements
 C LUINTA   AO integral file
@@ -285,7 +286,7 @@ C
      *         ' SIRSET - FATAL ERRORS DETECTED, SEE ABOVE'
          END IF
          WRITE (LUERR,'(//A)')
-     *       ' *** ERROR *** input inconsistent (SIRSET)'
+     *       ' *** ERROR *** input is inconsistent (SIRSET)'
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR *** input inconsistent (SIRSET)')
       END IF
@@ -311,7 +312,7 @@ C
 C Used from common blocks:
 C   INFINP : FLAG(*)
 C   INFTAP : LU*
-C   INFPRI : NINFO, LUERR
+C   INFPRI : NINFO
 C
 #include <maxorb.h>
 #include <infinp.h>
@@ -889,10 +890,10 @@ C
      &  //' To run this calculation you must modify the Dalton source:'
      &   /'   Increase MAXWOP in include/infvar.h; make depend; make')
 C
-         IF (IPRERR.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
+         IF (IPRSTAT.GE.5) WRITE (LUERR,'(/A,I3,A,I3,/A,2I5/)')
      *      ' (SETWOP) orbital rotation operators, abs level',
      *      LVLABS,', symmetry',IOPSY,' NWOPT,NWOPH =',NWOPT,NWOPH
-         IF (IPRERR.GE.10) WRITE (LUERR,'(A//,(2I10,I5))')
+         IF (IPRSTAT.GE.10) WRITE (LUERR,'(A//,(2I10,I5))')
      *      ' I, JWOP(1,I), JWOP(2,I) for I = 1,NWOPH:',
      *      (I,JWOP(1,I),JWOP(2,I),I=1,NWOPH)
 C

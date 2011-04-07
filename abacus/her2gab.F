@@ -1091,7 +1091,7 @@ C/* Deck Gaogat */
      &                  IPRINT,NINDAB,NINDCD,SUSCEP,MAXDER)
 C*****************************************************************************
 C
-C  Gather AO-Cauchy-Schwartz-integrals
+C  Gather AO-Cauchy-Schwarz-integrals
 C
 C  Written by T.Saue Oct 10 1996
 C
@@ -1785,7 +1785,7 @@ C/* Deck Gabgen */
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of 
-C     Cauchy-Schwartz integrals and write it to file AOPROPER
+C     Cauchy-Schwarz integrals and write it to file AOPROPER
 C
 C     Written by T.Saue Mar 19 1997
 C

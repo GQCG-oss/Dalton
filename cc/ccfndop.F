@@ -67,11 +67,7 @@ C
       INTEGER KEND1, LWRK1, ISIGN
       INTEGER ISYMA, ISYMB, INUMA, INUMB, INUMAB
 
-#if defined (SYS_CRAY)
-      REAL WORK(LWORK)
-#else
-      DOUBLE PRECISION WORK(LWORK)
-#endif
+      REAL*8   WORK(LWORK)
 
 * external functions:
       INTEGER IROPER2
@@ -220,13 +216,13 @@ C
 *---------------------------------------------------------------------*
       ELSEIF(LABELA(1:5).EQ.'dh/dB'.AND.LABELB(1:4).EQ.'PSO ') THEN
 
-        WRITE(LABSOP,'(A2,A5,A1)') LABELB(5:6),' NST ',LABELA(6:6)
+        WRITE(LABSOP,'(A3,A4,A1)') LABELB(5:7),' NST',LABELA(6:6)
         FOUND = .TRUE.
         ISIGN = +1
 
       ELSEIF(LABELB(1:5).EQ.'dh/dB'.AND.LABELA(1:4).EQ.'PSO ') THEN
 
-        WRITE(LABSOP,'(A2,A5,A1)') LABELA(5:6),' NST ',LABELB(6:6)
+        WRITE(LABSOP,'(A3,A4,A1)') LABELA(5:7),' NST',LABELB(6:6)
         FOUND = .TRUE.
         ISIGN = +1
 

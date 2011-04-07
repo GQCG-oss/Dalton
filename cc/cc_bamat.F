@@ -180,7 +180,7 @@ c/* Deck CC_BAMAT */
       IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_BAMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_BAMAT...'
-        CALL QUIT('Unkown CC method in CC_BAMAT.')
+        CALL QUIT('Unknown CC method in CC_BAMAT.')
       END IF
 
       IF (LISTO(1:2).NE.'o1') THEN
@@ -209,7 +209,7 @@ c/* Deck CC_BAMAT */
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_BAMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_BAMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -603,9 +603,6 @@ C
 * compute CC3 contributions:
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
-#if !defined CC_AARHUS
-         CALL QUIT('No triples (yet) in CC_BAMAT.')
-#else
 
          IF (IOPTRES.EQ.5) THEN
            FREQB = 0.0D0
@@ -621,7 +618,6 @@ C
      &                          IBDOTS,BCONS,FILBAM,ITRAN,
      &                          NBATRAN,MXVEC,WORK(KEND2),LEND2)
 
-#endif
       END IF
 
 *---------------------------------------------------------------------*

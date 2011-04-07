@@ -334,7 +334,7 @@ C   INFORB: MULD2H()
 C   INFVAR: MAXOCC,NWOPT,NVAR,NWOPH,NVARH,JWOP(2,*),JWOPSY
 C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
-C   INFPRI: NWARN,LUERR
+C   INFPRI: NWARN
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -887,13 +887,23 @@ C
 #include <scbrhf.h>
 #include <inftap.h>
 C
+C
+      INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
+      ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
+      ! SIRIUS.RST from a Dalton with 4 byte integers, and vice versa.
+C
       CHARACTER*8 BASINF(4)
       DATA BASINF(1)/'********'/, BASINF(4)/'BASINFO '/
 C
       CALL GETDAT(BASINF(2),BASINF(3))
       REWIND LUIT1
       WRITE (LUIT1) BASINF
-      WRITE (LUIT1) NSYM,NBAS,NORB,NRHF,IOPRHF
+      NSYM_i4    = NSYM
+      NBAS_i4(:) = NBAS(:)
+      NORB_i4(:) = NORB(:)
+      NRHF_i4(:) = NRHF(:)
+      IOPRHF_i4  = IOPRHF
+      WRITE (LUIT1) NSYM_i4,NBAS_i4,NORB_i4,NRH_i4F,IOPRHF_i4
       RETURN
       END
 C  /* Deck getac */
@@ -1396,7 +1406,7 @@ C
 C Used from common blocks:
 C  INFORB : NBAST,N2BASX
 C  INFTAP : LUSUPM
-C  INFPRI : IPRERR,LUERR
+C  PRIUNIT : IPRSTAT
 C  CBIHRS : parameters for FORMSUP
 C
 #include <inforb.h>
@@ -1489,7 +1499,7 @@ C   INFORB : N2BASX,MULD2H(8,8),...
 C   INFIND : IROW(:),ISAO(:)
 C   INFVAR : JWOPSY
 C   INFTAP : LUSUPM
-C   INFPRI : LUERR, IPRERR
+C   PRIUNIT : LUERR, IPRSTAT
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -1531,7 +1541,7 @@ C
          CALL QTRACE(LUPRI)
          CALL QUIT('RDSUPP ERROR: AOSUPINT inconsistent with AOONEINT')
       END IF
-      IF (IPRERR .GT. 5) THEN
+      IF (IPRSTAT .GT. 5) THEN
          WRITE (LUERR,*) 'Test output from RDSUPP, NOSYM =',NOSYM
       END IF
 C
@@ -1591,7 +1601,7 @@ C
 #else
          READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
 #endif
-         IF (IPRERR .GT. 20) THEN
+         IF (IPRSTAT .GT. 20) THEN
             WRITE (LUERR,*) 'ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS'
             WRITE (LUERR,'(7I10)') ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
          END IF
@@ -1716,7 +1726,7 @@ C
   820 CONTINUE
          CALL ERRWRK('RDSUPP.TYP2',LENP,LFREE)
   900 CONTINUE
-      IF (IPRERR .GT. 5) THEN
+      IF (IPRSTAT .GT. 5) THEN
          WRITE (LUERR,*) 'Total number of records :',IREC
          WRITE (LUERR,*) 'No. of records of type 1:',IREC1
          WRITE (LUERR,*) 'No. of records of type 2:',IREC2

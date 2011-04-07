@@ -215,7 +215,7 @@ c/* Deck CC_CMAT */
       IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_CMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_CMAT...'
-        CALL QUIT('Unkown CC method in CC_CMAT.')
+        CALL QUIT('Unknown CC method in CC_CMAT.')
       END IF
 
       IF (    LISTA(1:1).NE.'R' 
@@ -266,7 +266,7 @@ C     END IF
          MODELW = 'CCSD      '
          IOPTW  = 3
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_CMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_CMAT.')
       END IF
 
 
@@ -1528,10 +1528,10 @@ c/* Deck CC_CTST */
       LISTB = 'R1'
       LISTC = 'R1'
       LISTD = 'L1'
-      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0,1)
-      IDLSTD = IL1ZETA('ZDIPLEN ',.FALSE.,0.0,1)
+      IDLSTA = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTB = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTC = IR1TAMP('ZDIPLEN ',.FALSE.,0.0D0,1)
+      IDLSTD = IL1ZETA('ZDIPLEN ',.FALSE.,0.0D0,1)
       ICTRAN(1,1) = IDLSTA
       ICTRAN(2,1) = IDLSTB
       ICTRAN(3,1) = IDLSTC

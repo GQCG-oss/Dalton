@@ -393,7 +393,7 @@ C
               LORXQ  = .TRUE.
               LABELQ = LRTHFLBL(IFILE)
            ELSE
-              CALL QUIT('Unkown LISTQ in CCXIMCON.')
+              CALL QUIT('Unknown LISTQ in CCXIMCON.')
            END IF
 
            IOPERQ = IROPER(LABELQ,ISYMQ)

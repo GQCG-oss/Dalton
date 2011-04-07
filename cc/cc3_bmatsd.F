@@ -162,7 +162,7 @@ C
          FREQB  = FRQLRT(IDLSTB)
          LABELB = LRTLBL(IDLSTB)
       ELSE
-         CALL QUIT('Unkown list for LISTB in CC3_BMATSD')
+         CALL QUIT('Unknown list for LISTB in CC3_BMATSD')
       END IF
 C
       IF (LISTC(1:3).EQ.'R1 ') THEN
@@ -174,7 +174,7 @@ C
          FREQC  = EIGVAL(IDLSTC)
          LABELC = '- none -'
       ELSE
-         CALL QUIT('Unkown list for LISTC in CC3_BMATSD')
+         CALL QUIT('Unknown list for LISTC in CC3_BMATSD')
       END IF
 C
 C-------------------------------------------

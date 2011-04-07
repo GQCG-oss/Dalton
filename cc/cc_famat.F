@@ -136,7 +136,7 @@ c /* deck cc_famat */
       IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_FAMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_FAMAT...'
-        CALL QUIT('Unkown CC method in CC_FAMAT.')
+        CALL QUIT('Unknown CC method in CC_FAMAT.')
       END IF
 
 *---------------------------------------------------------------------*
@@ -620,9 +620,6 @@ C
 * CC3 part:
 *=====================================================================*
       IF (CCSDT) THEN
-#if !defined CC_AARHUS
-        CALL QUIT('No triples (yet) in CC_FAMAT.')
-#else
         IF (IOPTRES.LT.5) THEN
           KGAMMA1EFF = KEND0
           KGAMMA2EFF = KGAMMA1EFF + NT1AM(ISYRES)
@@ -657,7 +654,6 @@ C
 
         END IF
 
-#endif
       END IF
 
 *=====================================================================*
@@ -690,7 +686,7 @@ C
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unkown coupled cluster model in CC_FAMAT.')
+         CALL QUIT('Unknown coupled cluster model in CC_FAMAT.')
       END IF
       IF (CCR12) THEN
         APROXR12 = '   '
@@ -714,12 +710,10 @@ C
      &                 MODELW,DUMMY,DUMMY,WORK(KGAMMAR12),
      &                 WORK(KEND0),LEND0)
        END IF
-#if defined CC_AARHUS
        IF (CCSDT) THEN
          CALL CC_WRRSP(FILFA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &             WORK(KGAMMA1EFF),WORK(KGAMMA2EFF),WORK(KEND0),LEND0)
        END IF
-#endif
       ELSE IF (IOPTRES.EQ.4) THEN
        IFILE  = IFATRAN(4,ITRAN)
        IF (ILSTSYM(FILFA,IFILE).NE.ISYRES) THEN
@@ -732,12 +726,10 @@ C
      &                 MODELW,DUMMY,DUMMY,WORK(KGAMMAR12),
      &                 WORK(KEND0),LEND0)
        END IF
-#if defined CC_AARHUS
        IF (CCSDT) THEN
         CALL CC_WARSP(FILFA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &             WORK(KGAMMA1EFF),WORK(KGAMMA2EFF),WORK(KEND0),LEND0)
        END IF
-#endif
       ELSE IF (IOPTRES.EQ.5) THEN
        IF (LOCDBG) THEN
          IVEC = 1
@@ -778,7 +770,6 @@ C
 *=====================================================================*
 *                  END OF SUBROUTINE CC_FAMAT                         *
 *=====================================================================*
-#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_FAMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,IOPTRES,
      &                             LABELA,FREQA,
@@ -1131,7 +1122,7 @@ C           ----------------------------------
      &                   WORK(KLAMHB),WORK(KT1AMB),ISYMB)
       ELSE
         
-        CALL QUIT('Unkown list '//LISTB//' in CCSDT_FAMAT_NODDY.')
+        CALL QUIT('Unknown list '//LISTB//' in CCSDT_FAMAT_NODDY.')
     
       END IF
 
@@ -2294,4 +2285,4 @@ C     ----------------------------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_FA_DEN1                        *
 *---------------------------------------------------------------------*
-#endif
+! -- end of cc_famat.F --

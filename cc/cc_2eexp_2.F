@@ -279,7 +279,7 @@ C
 C
          LUCCK = -987
          CALL GPOPEN(LUCCK,'CCKABAR0','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,FALSE)
+     *               IDUMMY,.FALSE.)
          REWIND(LUCCK)
          READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
          CALL GPCLOSE(LUCCK,'KEEP')

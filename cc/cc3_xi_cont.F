@@ -551,7 +551,7 @@ C
         ISYCTR = ILSTSYM(LISTL,IDLSTL)
 
       ELSE
-        CALL QUIT('Unkown list in CC3_XI_DEN')
+        CALL QUIT('Unknown list in CC3_XI_DEN')
       END IF
 C
 c     IF (FREQ .NE. FREQY) THEN

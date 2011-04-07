@@ -29,7 +29,7 @@ H      1.6850730466   -1.4805134201   0.4999836950
 #  DALTON INPUT
 ####################################################################
 cat > mcdlao_h2o2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -47,7 +47,7 @@ XYZ-ALL
 *SCF INPUT
 .THRESH
  5.0d-11
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  5 4
 *CC INPUT
 .CCSD
@@ -97,8 +97,7 @@ XDIPLEN dh/dBZ  YDIPLEN
 YDIPLEN dh/dBX  ZDIPLEN
 ZDIPLEN dh/dBY  XDIPLEN
 .USEPL1
-*END OF
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -244,7 +243,7 @@ PASSED=1
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

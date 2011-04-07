@@ -30,7 +30,7 @@ HL    -1.000000           0.899623572        0.000000
 #  DALTON INPUT
 #######################################################################
 cat > mcd_lao.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -45,7 +45,7 @@ XYZ-ALL
 .CC
 *ORBITAL
 .NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
   1.0d-12
 *CC INPUT
@@ -75,7 +75,7 @@ YDIPLEN ZANGMOM XDIPLEN
 (UNREL) (RELAX) (UNREL)
 YDIPLEN dh/dBZ  XDIPLEN
 .USEPL1
-*END OF
+**END OF DALTON
 %EOF%
 
 #######################################################################
@@ -124,7 +124,7 @@ PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

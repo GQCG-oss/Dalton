@@ -97,9 +97,9 @@ c
       CHARACTER*8 FNTOC,FN3VI2
       CHARACTER*4 FNDKBC
 C        
-      PARAMETER (FNCKJD='CKJDEL', FNTOC   = 'CCSDT_OC' )
-      PARAMETER (FNDELD  = 'CKDELD'  , FNDKBC  = 'DKBC' )
-      PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
+      PARAMETER (FNCKJD ='CKJDEL' , FNTOC   = 'CCSDT_OC' )
+      PARAMETER (FNDELD = 'CKDELD', FNDKBC  = 'DKBC' )
+      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2  = 'CC3_VI12')
 C
       CHARACTER*12 FN3SRTR, FNCKJDR, FNDELDR, FNDKBCR, FNDKBCR4
       CHARACTER*13 FNCKJDR2, FNDKBCR2
@@ -276,7 +276,7 @@ C
          FREQB  = FRQLRT(IDLSTB)
          LABELB = LRTLBL(IDLSTB)
       ELSE 
-         CALL QUIT('Unkown list for LISTB in CC3_AABMAT_DOUB.')
+         CALL QUIT('Unknown list for LISTB in CC3_AABMAT_DOUB.')
       END IF
 C
       IF (LISTC(1:3).EQ.'R1 ') THEN
@@ -288,7 +288,7 @@ C
          FREQC  = EIGVAL(IDLSTC)
          LABELC = '- none -'
       ELSE
-         CALL QUIT('Unkown list for LISTC in CC3_AABMAT_DOUB.')
+         CALL QUIT('Unknown list for LISTC in CC3_AABMAT_DOUB.')
       END IF
 C
       ISYMWB   = MULD2H(ISYMT3,ISYMRB)

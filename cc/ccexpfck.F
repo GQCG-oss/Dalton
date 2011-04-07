@@ -1350,7 +1350,7 @@ C  /* Deck i1dxfck */
         IF (LST1DXFCK(N1DXFLBL)(1:2).EQ.'R1') THEN
            IRELAX1DX(N1DXFLBL) = IR1KAPPA(LABELX,FREQX,ISYMX)
         ELSE
-           CALL QUIT('Unkown list in I1DXFCK.')
+           CALL QUIT('Unknown list in I1DXFCK.')
         END IF
 
         ISYMO = 0

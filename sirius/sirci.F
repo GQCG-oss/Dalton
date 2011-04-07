@@ -303,7 +303,7 @@ C           ... try put H2AC on disk :
          LNEED = KW2 + LA + LB
          CALL ERRWRK('CICTL.CILIN',-LNEED,LWRK )
       END IF
-      IF (IPRERR .GT. 1) WRITE (LUERR,'(/A,I8/A,4I12/)')
+      IF (IPRSTAT .GT. 1) WRITE (LUSTAT,'(/A,I8/A,4I12/)')
      &   ' CICTL :  MAXSIM =',MAXSIM,
      &   ' KW1, KW2, LWRK  =',KW1,KW2,LWRK
 C
@@ -315,7 +315,7 @@ C
       MW3    = MAX(KW3 + 2 * MAXRC, KSVECS + MAXRC*MAXRC)
       IF (MW3 .GT. LWRK ) THEN
          MAXSIM = MAXSIM - 1 - (MW3 - LWRK ) / (2*NCONF)
-         WRITE (LUERR,'(/A,I8/)')
+         WRITE (LUSTAT,'(/A,I8/)')
      &      ' CICTL: MAXSIM REDUCED TO',MAXSIM
          IF (MAXSIM .GT. 0) GO TO 11
          CALL ERRWRK('CICTL.CIRED',MW3,LWRK )
@@ -1050,11 +1050,11 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <cbgetdis.h>
-#include <line.h>
+
       DIMENSION NEEDMU(6)
       DATA NEEDMU /0,0,1,0,0,0/
 C     ... only active-active distributions needed (type 3)
-#include <line.h>
+
       CALL QENTER('CIIN2B')
       IF (NASHT .LE. 1) THEN
          CALL QTRACE(LUPRI)
@@ -1241,7 +1241,8 @@ C   CICB01 : NJCR,NKCR,JCROOT(*),KCROOT(*),NCIRED,THRCIT
 C   INFINP : FLAG(*),JOLSEN,RESPHP,ISTACI
 C   INFVAR : NCONF
 C   INFTAP : LUIT3,LUIT5
-C   INFPRI : P4FLAG(*),IPRERR
+C   INFPRI : P4FLAG(*)
+C   PRIUNIT: IPRSTAT
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -1327,11 +1328,11 @@ C        solution vector plus residual vector
 C        only residual vector
       END IF
       MAXRCV = MIN(NCSIM, (LFREE-MWRK0) / MWRK1)
-      IF (IPRERR .GE. 5) THEN
-         WRITE (LUERR,'(/,(A,I10))')
+      IF (IPRSTAT .GE. 5) THEN
+         WRITE (LUSTAT,'(/,(A,I10))')
      *      ' (CINEX) number of residual vectors',NCSIM,
      *      '         number of residuals/batch ',MAXRCV
-         WRITE (LUERR,'(/A,I4,A/,(10I5))') '         Index of',NJCR,
+         WRITE (LUSTAT,'(/A,I4,A/,(10I5))') '         Index of',NJCR,
      *      ' non-conv. vectors from last iteration:',
      *      (KCROOT(I),I=1,NJCR)
       END IF
@@ -1366,14 +1367,14 @@ C           here ought to be a symmetry test of IJCR vs. IJCR + 1
             GO TO 3
          END IF
       END IF
-      IF (IPRERR .GT. 0 .AND. MJCR .GT. NJCR) THEN
-         WRITE (LUERR,'(//A,2(/A,I4),//A)')
+      IF (IPRSTAT .GT. 0 .AND. MJCR .GT. NJCR) THEN
+         WRITE (LUSTAT,'(//A,2(/A,I4),//A)')
      *      ' -- CINEX, number of trial vectors increased --',
      *      ' Number of CI roots                   :',NJCR,
      *      ' Number of simultaneous trial vectors :',MJCR,
      *      ' Lowest eigenvalues of reduced CI matrix:'
          I = MIN(NCIRED, MJCR+2)
-         WRITE (LUERR,'(5X,5F12.8)') (EVAL(J), J = 1,I)
+         WRITE (LUSTAT,'(5X,5F12.8)') (EVAL(J), J = 1,I)
       END IF
 C
 C     **********
@@ -2120,7 +2121,6 @@ C Used from common blocks :
 C   INFINP : NROOTS
 C   INFOPT : NREDL
 C   INFTAP : LUIT1
-C   INFPRI : LUERR
 C
 #include <maxorb.h>
 #include <infinp.h>
@@ -2671,7 +2671,6 @@ C   INFINP : ISTACI,ISPIN,NACTEL,FLAG(1:NFLAG)
 C   INFORB : NSYM,NISHT,NASHT,NNASHX,NNASHY,NOCCT,NNOCCX,NCMOT,...
 C   INFVAR : NCONF
 C   INFTAP : LUIT1, LUSIFC
-C   INFPRI : LUERR
 C   CBGETD : IADH2
 C
 #include <maxorb.h>
@@ -2798,7 +2797,7 @@ C
 C
 C Used from common blocks:
 C  infvar: NCONF
-C  inftap: LUIT1,LUERR
+C  inftap: LUIT1
 C
 #include "infvar.h"
 #include "inftap.h"

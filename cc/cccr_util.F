@@ -347,7 +347,7 @@ c /* deck iccset1 */
       DO I = 1, MAXTAB
        IF (VTABLE(I)(1:LEN).EQ.LIST(1:LEN)) ILIST = I
       END DO
-      IF (ILIST .EQ.0) CALL QUIT('Unkown list in ICCSET1.')
+      IF (ILIST .EQ.0) CALL QUIT('Unknown list in ICCSET1.')
 
       INDEX = 1
       DO WHILE ( .NOT. (LTST(INDEX,ILIST,IDLST) .OR. LEND(INDEX)) )

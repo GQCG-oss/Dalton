@@ -73,21 +73,23 @@ C
       CALL GPIO_INI_DALTON
       IF (MYNUM .EQ. MASTER) THEN
          SLAVE = .FALSE.
-         CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',
+         CALL GPOPEN(LUSTAT,'DALTON.STAT','UNKNOWN',' ','FORMATTED',
      &               IDUMMY,.FALSE.)
       ELSE
          SLAVE = .TRUE.
-#ifdef SYS_LINUX
-         LUERR = 0
-#else
-         LUERR = 6
-#endif
       END IF
-      LMWORK = 0
+
+#ifdef SYS_LINUX
+      LUERR = 0 ! stderr
+#else
+      LUERR = 6 ! stdout (which is not DALTON.OUT !)
+#endif
+
 C
 C     Read environment variables for LMWORK and BASDIR
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
 C
+      LMWORK = 0
       CALL GETMMBAS(LMWORK,BASDIR,LBASDIR)
       IF (LMWORK .LE. 0) LMWORK = LWORK_DEF
 C
@@ -95,20 +97,25 @@ C
       XMBYTES = (LMWORK+2) * 8.D0
       XMBYTES = XMBYTES / (1.024D3**2)
       GBYTES  = XMBYTES / 1.024D3
-      IF (GBYTES .GE. 1.D0) THEN
-        WRITE(LUERR,'(/A,I12,A,F7.3,A)')' Work memory size (LMWORK+2):',
-     &        LMWORK+2,' =',GBYTES,' gigabytes.'
-      ELSE
-        WRITE(LUERR,'(/A,I12,A,F8.2,A)')' Work memory size (LMWORK+2):',
-     &        LMWORK+2,' =',XMBYTES,' megabytes.'
+      
+      IF (MYNUM .LE. 1) THEN
+         IF (GBYTES .GE. 1.D0) THEN
+            WRITE(LUERR,'(/A,I12,A,F7.3,A,I4)')
+     &        ' Work memory size (LMWORK+2):',
+     &        LMWORK+2,' =',GBYTES,' gigabytes; node',MYNUM
+         ELSE
+            WRITE(LUERR,'(/A,I12,A,F8.2,A,I4)')
+     &        ' Work memory size (LMWORK+2):',
+     &        LMWORK+2,' =',XMBYTES,' megabytes; node',MYNUM
+         END IF
       END IF
  
 !     allocate memory using f90 utilities
       allocate(work(lmwork+2),stat=i)
 
       IF(I .NE. 0)THEN
-         WRITE (LUERR,*) 'ALLOCATE command failed to allocate the '//
-     &        'requested memory'
+         WRITE (LUERR,*) MYNUM,': ALLOCATE command failed to allocate'//
+     &        ' the requested memory'
          WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
          CALL QUIT('Failed to allocate memory')
       END IF
@@ -146,9 +153,11 @@ C      print *,'dalton.F: After IZERO: Printing NODTOT: ',NODTOT
 Cef end
 
       LEN_BASDIR = MAX(1,LNBLNK(BASDIR))
-      WRITE(LUERR,'(/I4,A/5X,A)')
-     &   MYNUM,': Directories for basis set searches:',
-     &   BASDIR(1:LEN_BASDIR)
+      IF (MYNUM .LE. 1) THEN
+         WRITE(LUERR,'(/I4,A/5X,A)')
+     &      MYNUM,': Directories for basis set searches:',
+     &      BASDIR(1:LEN_BASDIR)
+      END IF
 C
 C     Set memory traps and initialize unit numbers
 C
@@ -171,6 +180,7 @@ c      END IF
 C
       CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
+      IF (SLAVE) LUSTAT = LUPRI
 C     ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
 C         for Master if OUTFIL is an environment variable;
 C         for slaves the name will be changed to
@@ -191,12 +201,12 @@ C
      &            IDUMMY,.FALSE.)
 C
          CALL TITLER('DALTON2011 - An electronic structure program',
-     &               '*',120)
+     &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
      &'This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)'
 
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
@@ -218,7 +228,7 @@ C
      &'"Dalton, a molecular electronic structure program,',
      &'Release DALTON2011 (2011), see http://daltonprogram.org"'
 C
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(1X,A)') SEPARATOR
          WRITE (LUPRI,'(T5,A//,(T3,A,T29,A,T59,A,T71,A))')
      *'Authors in alphabetical order '//
      &  '(major contribution(s) in parenthesis):',
@@ -320,7 +330,7 @@ C
      *'Hans Agren,','KTH Stockholm,','Sweden',
      &  '(SIRIUS module, MC-SCRF solvation model)'
 C
-         WRITE (LUPRI,'(/1X,80A1/)') ('-',I=1,80)
+         WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
 C     Stamp date and time and hostname to output
 C
@@ -389,7 +399,7 @@ C
          IPRTYP = 0
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
          CALL GPCLOSE(LUCME,'KEEP')
-         CALL GPCLOSE(LUERR,'KEEP')
+         CALL GPCLOSE(LUSTAT,'KEEP')
          CALL GPCLOSE(LUMOLDEN,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
@@ -432,7 +442,7 @@ C
             CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
      &           MPI_COMM_WORLD,IERR)
             CALL GPCLOSE(LUCME,'KEEP')
-            CALL GPCLOSE(LUERR,'KEEP')
+            CALL GPCLOSE(LUSTAT,'KEEP')
             CALL GPCLOSE(LUMOLDEN,'KEEP')
             CALL GPCLOSE(LUNDPF,'KEEP')
             CALL GPCLOSE(LUNMPF,'KEEP')
@@ -485,7 +495,7 @@ C
       IPRLOC = MAX(IPRUSR,IPRRHF)
 C     IF (IPRLOC .GT. 2) CALL PRPRPC(LUNDPF,1,DUMMY,NPRMI)
       IF (IPRLOC .GT. 2) CALL PRPRPC(LUNMPF,1,DUMMY,NPRMI)
-      CALL GPCLOSE(LUERR,'KEEP')
+      CALL GPCLOSE(LUSTAT,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUMOLDEN,'KEEP')
       CALL GPCLOSE(LUNDPF,'KEEP')
@@ -583,13 +593,14 @@ C
 C     priunit.h:
 C
       LUERR  = -8000
+      LUSTAT = -8001
       LUW4   = -8004
       LUCMD  = -8005
       LUPRI  = -8006
       LUPOT  = -8009
       NINFO  = 0
       NWARN  = 0
-      IPRERR = 0
+      IPRSTAT= 0
 C
 C     inftap.h:
 C

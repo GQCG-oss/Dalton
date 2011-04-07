@@ -1756,7 +1756,7 @@ C
 Clf Don't change this threshold unless you know exactly what you are doing.
       TOL = 1.0D-12
       ALPHAT = 0.5D+00
-      DELTA = 0.0D+00
+      DELTA  = 0.0D+00
 Clf Check distances of P1 and P2 from P3
       P1P3 = SQRT((P1(1)-P3(1))**2+(P1(2)-P3(2))**2+(P1(3)-P3(3))**2)
       P2P3 = SQRT((P2(1)-P3(1))**2+(P2(2)-P3(2))**2+(P2(3)-P3(3))**2)
@@ -1810,7 +1810,7 @@ C
       M = 1
  10   CONTINUE
         ALPHAT = ALPHAT + DELTA
-        DNORM = 0.0D+00
+        DNORM  = 0.0D+00
         DO JJ = 1,3
          P4(JJ)=P1(JJ)+ALPHAT*(P2(JJ)-P1(JJ))-P3(JJ)
          DNORM = DNORM + P4(JJ)**2
@@ -2298,53 +2298,53 @@ C
       Character*20 COLOUR
 C
       IF(COLOUR.EQ.'White') THEN
-        C1 = 1.0
-        C2 = 1.0
-        C3 = 1.0
+        C1 = 1.0D0
+        C2 = 1.0D0
+        C3 = 1.0D0
       ELSE IF(COLOUR.EQ.'Gray') THEN
-        C1 = 0.66
-        C2 = 0.66
-        C3 = 0.66
+        C1 = 0.66D0
+        C2 = 0.66D0
+        C3 = 0.66D0
       ELSE IF(COLOUR.EQ.'Blue'.or.COLOUR.EQ.'Dark Blue') THEN
-        C1 = 0.0 
-        C2 = 0.0 
-        C3 = 1.0 
+        C1 = 0.0D0
+        C2 = 0.0D0
+        C3 = 1.0D0
       ELSE IF(COLOUR.EQ.'Light Blue') THEN
-        C1 = 0.0 
-        C2 = 1.0 
-        C3 = 1.0 
+        C1 = 0.0D0
+        C2 = 1.0D0
+        C3 = 1.0D0
       ELSE IF(COLOUR.EQ.'Green') THEN
-        C1 = 0.0 
-        C2 = 1.0 
-        C3 = 0.0 
+        C1 = 0.0D0
+        C2 = 1.0D0
+        C3 = 0.0D0
       ELSE IF(COLOUR.EQ.'Yellow') THEN
-        C1 = 1.0 
-        C2 = 1.0 
-        C3 = 0.0 
+        C1 = 1.0D0
+        C2 = 1.0D0
+        C3 = 0.0D0
       ELSE IF(COLOUR.EQ.'Orange') THEN
-        C1 = 1.0 
-        C2 = 0.5 
-        C3 = 0.0 
+        C1 = 1.0D0
+        C2 = 0.5D0
+        C3 = 0.0D0
       ELSE IF(COLOUR.EQ.'Violet') THEN
-        C1 = 0.6 
-        C2 = 0.0 
-        C3 = 1.0 
+        C1 = 0.6D0
+        C2 = 0.0D0
+        C3 = 1.0D0
       ELSE IF(COLOUR.EQ.'Pink'.or.COLOUR.EQ.'Light Red') THEN
-        C1 = 1.0 
-        C2 = 0.5 
-        C3 = 1.0 
+        C1 = 1.0D0
+        C2 = 0.5D0
+        C3 = 1.0D0
       ELSE IF(COLOUR.EQ.'Fuchsia') THEN
-        C1 = 1.0 
-        C2 = 0.0 
-        C3 = 1.0 
+        C1 = 1.0D0
+        C2 = 0.0D0
+        C3 = 1.0D0
       ELSE IF(COLOUR.EQ.'Red'.or.COLOUR.EQ.'Dark Red') THEN
-        C1 = 1.0 
-        C2 = 0.0 
-        C3 = 0.0  
+        C1 = 1.0D0
+        C2 = 0.0D0
+        C3 = 0.0D0
       ELSE IF(COLOUR.EQ.'Black') THEN
-        C1 = 0.0 
-        C2 = 0.0 
-        C3 = 0.0 
+        C1 = 0.0D0
+        C2 = 0.0D0
+        C3 = 0.0D0
       ELSE
         CALL QUIT('Unrecognized COLOUR in ColTss')
         ENDIF

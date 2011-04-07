@@ -308,9 +308,6 @@ c         -----------------------------------------------------------
        if (iovlp.ne.novlp) call quit('error in CCEXNORM.')
   
        if (ccsdt) then
-#if !defined CC_AARHUS
-          CALL QUIT('No triples (yet) in CCEXNORM.')
-#else
          if (ipass.eq.1 .and. (.not.ccsdtrenrm)) then
            continue 
          else
@@ -329,7 +326,6 @@ c         -----------------------------------------------------------
      &                         1,1,1,1,dummy,work,lwork)
            END IF
          end if
-#endif
        end if
 
        if (ipass.eq.1) then
@@ -530,7 +526,6 @@ C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
 *---------------------------------------------------------------------*
 *              end of subroutine ccexnorm                             *
 *---------------------------------------------------------------------*
-#if defined CC_AARHUS
 *=====================================================================*
       subroutine ccovlp_noddy(listl,listr,imode,
      &                        overlap,ilstnrst,ilstnrnd,istartend,
@@ -1039,10 +1034,10 @@ C
       CHARACTER*5 FN3FOP
       CHARACTER*4 FNDKBC
 C
-      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2 = 'CC3_VI12', 
-     *           FN3FOP='PTFOP'   , FN3FOP2='PTFOP2',
-     *           FNCKJD = 'CKJDEL', FNTOC  = 'CCSDT_OC',
-     *           FNDKBC  = 'DKBC')
+      PARAMETER (FN3VI  = 'CC3_VI', FN3VI2  = 'CC3_VI12', 
+     *           FN3FOP = 'PTFOP' , FN3FOP2 = 'PTFOP2',
+     *           FNCKJD = 'CKJDEL', FNTOC   = 'CCSDT_OC',
+     *           FNDKBC = 'DKBC')
 C
       LOGICAL locdbg
       PARAMETER (locdbg = .false.)
@@ -1074,12 +1069,12 @@ C
 
       if (listl(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTL:',LISTL
-         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
+         CALL QUIT('Unknown/Illegal list in CC3_LR_OVLP.')
       end if
 !
       if ( listr(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTR:',LISTR
-         CALL QUIT('Unkown/Illegal list in CC3_LR_OVLP.')
+         CALL QUIT('Unknown/Illegal list in CC3_LR_OVLP.')
       end if
 C
 C-------------------
@@ -1261,12 +1256,12 @@ C------------------------------------
 C
       if (LISTEB(1:2).ne.'LE ' ) then
          WRITE(LUPRI,*) 'LISTEB:',LISTEB
-         CALL QUIT('Unkown/Illegal list in EB3_E3_OVLP.')
+         CALL QUIT('Unknown/Illegal list in EB3_E3_OVLP.')
       end if
 C
       if ( LISTE(1:2).ne.'RE ') then
          WRITE(LUPRI,*) 'LISTE:',LISTE
-         CALL QUIT('Unkown/Illegal list in EB3_E3_OVLP.')
+         CALL QUIT('Unknown/Illegal list in EB3_E3_OVLP.')
       end if
 C
 C--------------------------------
@@ -2103,4 +2098,4 @@ C
 C
       RETURN
       END
-#endif
+! -- end of ccexnorm.F --

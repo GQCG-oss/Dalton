@@ -306,7 +306,7 @@ C  /* Deck getmrh */
 #include <mxcent.h>
       PARAMETER (D10 = 10.D0, DP5 = 0.5D0)
 C
-      LOGICAL EXCLC, TRPCLC, CICLC, HFCLC, ZERNRM(*)
+      LOGICAL EXCLC, TRPCLC, CICLC, HFCLC, OOTV, ZERNRM(*), OLDDX
       DIMENSION NABATY(*), WORK(LWORK)
 #include <inftap.h>
 #include <infvar.h>
@@ -442,7 +442,7 @@ C  /* Deck getrhs */
 #include <maxorb.h>
 #include <mxcent.h>
 C
-      LOGICAL TRIPLE
+      LOGICAL TRIPLE, OLDDX
       DIMENSION WORK(LWORK)
 #include <inftap.h>
 #include <infvar.h>

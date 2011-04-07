@@ -13,6 +13,8 @@
 \index{Cauchy moments}
 \index{optical rotation!Coupled Cluster}
 \index{dipole gradient!Coupled Cluster}
+\index{magnetizabilty!Coupled Cluster}
+\index{nuclear shielding!Coupled Cluster}
 
 In the \Sec{CCLR} section the input that is
 specific for coupled cluster linear response properties is read in. 
@@ -36,6 +38,7 @@ This section includes presently
       while for imaginary response functions only odd moments
       $D_{AB}(2n+1) = S_{AB}(-2n-3)$ with $n \ge -2$ are available.
 \end{itemize}
+
 Coupled cluster linear response functions and dispersion coefficients
 are implemented for the models CCS, CC2 and CCSD. 
 %Publications that report results obtained with CC linear response
@@ -88,6 +91,18 @@ symmetry axis with $n \ge 3$),  and \verb+GENER+ (use point
 group symmetry from geometry input).
 Integrals needed for operator DIPLEN.
 \index{dipole polarizability}
+
+\item[\Key{CTOSHI}]
+Determine the CTOCD-DZ\index{CTOCD-DZ} magnetic shielding tensors. Integrals 
+needed for computation are DIPVEL, ANGMOM, RPSO, and PSO. Specific atoms can 
+be selected by using the option \Key{SELECT} in the \Sec{*INTEGRAL} input 
+module.
+\index{nuclear shielding!Coupled Cluster}
+
+\item[\Key{CTOSUS}]
+Determine the CTOCD-DZ\index{CTOCD-DZ} magnetizabilty. Integrals needed for 
+computation are DIPVEL, RANGMO, and ANGMOM.
+\index{magnetizabilty!Coupled Cluster}
 
 \item[\Key{DIPGRA}]
 Evaluate dipole gradients, i.e. compute the Atomic Polar Tensor, and

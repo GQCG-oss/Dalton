@@ -289,7 +289,7 @@ C
          LABELB = '- none -'
 C
       ELSE
-         CALL QUIT('Unkown list in CC3_FT3B.') 
+         CALL QUIT('Unknown list in CC3_FT3B.') 
       END IF
 C
       !symmetry check

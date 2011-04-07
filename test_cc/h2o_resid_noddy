@@ -47,7 +47,7 @@ H     0.0000000000000000  -1.44761450000000   1.07875057000000         *
 #  DALTON INPUT
 #######################################################################
 cat > h2o_resid_noddy.dal <<'%EOF%'
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRALS
 .DIPLEN
@@ -56,7 +56,7 @@ cat > h2o_resid_noddy.dal <<'%EOF%'
 *ORBITALS
 .NOSUPSYM
 *HAMILTONIAN
-*HF INPUT
+*SCF INPUT
 .THRESH
 1.0D-10
 *CC INP
@@ -118,7 +118,7 @@ ZDIPLEN YDIPLEN
 .BMAT
 .FAMAT
 .AAMAT
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -193,7 +193,7 @@ PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

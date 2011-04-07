@@ -133,7 +133,6 @@ C
          NIBUF = 1
          NBITS = 8
       ELSE
-         call quit('GETFD1 only implemented for < 256 basis functions')
          NIBUF = 2
          NBITS = 16
       END IF
@@ -141,7 +140,7 @@ C
       LBUF = 600
       JBUF = 256
 C
-      LENINT = IRAT*LBUF + LBUF + 1
+      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
 C
 C
 C     ***************************************************
@@ -185,19 +184,17 @@ c        IF (DFTADD .AND. IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
 c            CALL DFTBRHS(FCD,WORK,LWORK,IPRINT)
 c        END IF
 C
-         IF (IATOM .GT. 0) THEN
+         IF (IATOM .GT. 0) THEN ! nuclear derivative - symmetric matrix
             CALL DSITSP(NBAST,FCD(1,1),FCSOX)
             CALL DSITSP(NBAST,FCD(1,2),FCSOY)
             CALL DSITSP(NBAST,FCD(1,3),FCSOZ)
-         ELSE
-            CALL DGETAP(NBAST,FCD(1,1),FCSOX)
-            CALL DGETAP(NBAST,FCD(1,2),FCSOY)
-            CALL DGETAP(NBAST,FCD(1,3),FCSOZ)
-         END IF
-         IF (IATOM .GT. 0) THEN
             IF (DERX) EMY1X = DDOT(NNBASX,DCFOLD,1,FCSOX,1)
             IF (DERY) EMY1Y = DDOT(NNBASX,DCFOLD,1,FCSOY,1)
             IF (DERZ) EMY1Z = DDOT(NNBASX,DCFOLD,1,FCSOZ,1)
+         ELSE ! magnetic field - antisymmetric matrix
+            CALL DGETAP(NBAST,FCD(1,1),FCSOX)
+            CALL DGETAP(NBAST,FCD(1,2),FCSOY)
+            CALL DGETAP(NBAST,FCD(1,3),FCSOZ)
          END IF
       END IF
 C
@@ -224,7 +221,7 @@ C
             IF (FCKDDR) THEN
                KREAD = 1
                LLAST = KREAD + NNBASX
-               IF(LLAST.GT.LWORK) CALL STOPIT('GETFD1','1',LLAST,LWORK)
+               IF (LLAST.GT.LWORK) CALL STOPIT('GETFD1','1',LLAST,LWORK)
                IREC = 0
                IF (DOREAL) THEN
                   IREC = 3
@@ -246,11 +243,11 @@ C
             ELSE
                KFCSQ = 1
                KDCSQ = KFCSQ + 3*NBAST*NBAST
-               LLAST = KDCSQ + NBAST*NBAST
+               LLAST = KDCSQ +   NBAST*NBAST
                IF (NASHT .GT. 0) THEN
                   KFVSQ = LLAST
                   KDVSQ = KFVSQ + 3*NBAST*NBAST
-                  LLAST = KDVSQ + NBAST*NBAST
+                  LLAST = KDVSQ +   NBAST*NBAST
                END IF
                LVLAST = LLAST + 600*(IRAT + 1) + 1
 C
@@ -269,10 +266,10 @@ C
             IF (FCKDDR) THEN
                IREC = 0
                IF (EXPFCK) IREC = 3*(IATOM - 1)
-               IF (DOFV) IREC = 2*IREC
+               IF (DOFV)   IREC = 2*IREC
                KREAD = 1
                LLAST = KREAD + NNBASX
-               IF(LLAST.GT.LWORK) CALL STOPIT('GETFD1','2',LLAST,LWORK)
+               IF (LLAST.GT.LWORK) CALL STOPIT('GETFD1','2',LLAST,LWORK)
                LNGTH = IRAT*NNBASX
                CALL READDX(LUDFCK,IREC+1,LNGTH,WORK(KREAD))
                CALL DAXPY(NNBASX,D1,WORK(KREAD),1,FCSOX,1)
@@ -287,7 +284,7 @@ C
                END IF
             ELSE
                CALL REWSPL(LU2DER)
-               KINT = 1
+               KINT  = 1
                KIINT = KINT + LBUF
  150           CONTINUE
 #if defined (VAR_SPLITFILES)         
@@ -322,7 +319,7 @@ C     ===========
 C
       KFSOSQ = 1
       KLAST  = KFSOSQ + N2BASX
-      LFREE  = LWORK - KLAST + 1
+      LFREE  = LWORK  - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('GETFD1',' ',KLAST,LWORK)
       IF (DERX) THEN
          IF (IPRINT .GE. 5 .OR. AOMAT) CALL TITLER
@@ -964,9 +961,9 @@ C
       END IF
 #endif
 C
-      LENINT = IRAT*LBUF + LBUF + 1
-      KINT = 1
-      KIINT = KINT + LBUF
+      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      KINT   = 1
+      KIINT  = KINT + LBUF
 C
       CALL DZERO(FCSQ,3*N2BASX)
       IF (NASHT .GE. 1) CALL DZERO(FVSQ,3*N2BASX)
@@ -975,25 +972,9 @@ C     Form full (squared) active and inactive density matrices
 C     ========================================================
 C
       IF (SYMMET) THEN
-         IPCK = 0
+         CALL DSPTSI(NBAST,DC,DCSQ)
          IF (NASHT .GT. 0) THEN
-            DO 200 J = 1,NBAST
-               DO 100 I = 1,J
-                  IPCK = IPCK + 1
-                  DCSQ(I,J) = DC(IPCK)
-                  DCSQ(J,I) = DC(IPCK)
-                  DVSQ(I,J) = DV(IPCK)
-                  DVSQ(J,I) = DV(IPCK)
- 100           CONTINUE
- 200        CONTINUE
-         ELSE
-            DO 210 J = 1, NBAST
-               DO 110, I = 1, J
-                  IPCK = IPCK + 1
-                  DCSQ(I,J) = DC(IPCK)
-                  DCSQ(J,I) = DC(IPCK)
- 110           CONTINUE
- 210        CONTINUE
+            CALL DSPTSI(NBAST,DV,DVSQ)
          END IF
       END IF
 C

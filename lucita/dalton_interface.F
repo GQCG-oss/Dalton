@@ -1,36 +1,26 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
 C 
 ***********************************************************************
 *                                                                     *
@@ -231,8 +221,9 @@ C
       INACOB = 0
       if(lucita_cfg_inactive_shell_set)then
         INACOB = 1
-!       not in use for GASCI
+!       not in use for GASCI/RASCI
         if(lucita_cfg_ci_type(1:6).eq.'GASCI ') INACOB = 0
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') INACOB = 0
       else
         if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
           write(lupri,*) 'Number of inactive orbitals per sym'
@@ -1803,7 +1794,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       if(luci_myproc .eq. 0)then
         if(flag(13).and..not.(doscf.or.domc))then 
           nracte = 0
-          if(citype.ne.'GASCI ')then
+          if(citype.eq.'SDCI  ')then
             write(lupri,'(/a)') ' *** WARNING from set_nracte_wf:'
             write(lupri,'(a )') ' number of active e- is unknown if'//
      &    ' the MO restart option is used but not a single ensuing'//
@@ -1811,7 +1802,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
             write(lupri,'(a/)') ' Since the number of active e- is'//
      &    ' essential to the following CI setup LUCITA will stop here.'
             call quit('*** ERROR in set_nracte_wf: # of active e- is 
-     &      required for CI types other than GASCI. ***')
+     &      required for CI types other than GASCI/RASCI. ***')
           end if
         end if
       end if
@@ -2717,6 +2708,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *  Print input for LUCITA input file           
 *-----------------------------------------------------------------*
 *
+!     IPLOCAL = 5
       if (IPLOCAL.ge.5) then
          write(lupri,*) '==========================================='
          write(lupri,*) '  Input written to file LUCIAIN     '
@@ -3600,25 +3592,14 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !       synchronize module lucita_orbital_spaces (initialized after input ci/mcscf reading) 
 !       and internal lucita common blocks
 
-        is_any_sshell = 0
         do isym = 1, nsym
-          nshpgs(1,isym) = nish_lucita(isym)
-          nshpgs(2,isym) = nas1_lucita(isym)
-          nshpgs(3,isym) = nas2_lucita(isym)
-          nshpgs(4,isym) = nas3_lucita(isym)
-          is_any_sshell  = max(is_any_sshell,NSSH(isym))
+          nshpgs(1,isym) = nas1_lucita(isym)
+          nshpgs(2,isym) = nas2_lucita(isym)
+          nshpgs(3,isym) = nas3_lucita(isym)
         end do
 
-        if(is_any_sshell .gt. 0)then
-          do isym = 1, nsym
-            nshpgs(5,isym) = NSSH(isym)
-          end do
-          ngas         = 5
-          ngas_tmp_ras = 5
-        else
-          ngas         = 4
-          ngas_tmp_ras = 4
-        end if
+        ngas         = 3
+        ngas_tmp_ras = 3
         do isym = 1, nsym
           if(nshpgs(ngas_tmp_ras,isym) .gt. mxtsob)then
             call gassplit(nshpgs(1,isym),ngas_tmp_ras,mxpngas,
@@ -3645,12 +3626,12 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         MXELR1 = 0
         MXELR2 = 0
         do ISYM=1,NSYM,1
-          MXELR1 = MXELR1 + 2*NSHPGS(2,ISYM)
-          MXELR2 = MXELR2 + 2*NSHPGS(3,ISYM)
+          MXELR1 = MXELR1 + 2*NSHPGS(1,ISYM)
+          MXELR2 = MXELR2 + 2*NSHPGS(2,ISYM)
         end do
 *
-        NFMN = 2*NSUM
-        NFMX = 2*NSUM
+        NFMN = 0
+        NFMX = 0
         NIMX = MXELR1 + NFMX
         NIMN = NIMX - MXHOL1
         NEMN = NACTEL + NFMX
@@ -3659,20 +3640,12 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
         NAMN = NAMX - MXELR3
 *
         do ICISPC=1,NCISPC,1
-          NELGS(1,1,ICISPC) = NFMN
-          NELGS(1,2,ICISPC) = NFMX
-          NELGS(2,1,ICISPC) = NIMN
-          NELGS(2,2,ICISPC) = NIMX
-          NELGS(3,1,ICISPC) = NAMN
-          NELGS(3,2,ICISPC) = NAMX
-          NELGS(4,1,ICISPC) = NEMN
-          NELGS(4,2,ICISPC) = NEMX
-          if (NGAS.eq.5) then
-            do IGAS = 5,NGAS,1
-              NELGS(IGAS,1,ICISPC) = NACTEL + NFMX
-              NELGS(IGAS,2,ICISPC) = NACTEL + NFMX
-            end do
-          end if
+          NELGS(1,1,ICISPC) = NIMN
+          NELGS(1,2,ICISPC) = NIMX
+          NELGS(2,1,ICISPC) = NAMN
+          NELGS(2,2,ICISPC) = NAMX
+          NELGS(3,1,ICISPC) = NEMN
+          NELGS(3,2,ICISPC) = NEMX
         end do
         NACTEL = NACTEL+NFMX
         if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
@@ -3683,24 +3656,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
           write(lupri,*) 'Number of active electrons does not match'
           write(lupri,*) 'total number of electrons in GAS spaces.'
           Call Abend2( 'Quitting.' )
-        end if
-*
-*  Omit first GAS if no INACTIVE orbitals given
-        INUMBER = 0
-        do ISYM=1,NSYM,1
-          INUMBER = max(INUMBER,NSHPGS(1,ISYM))
-        end do
-        if (INUMBER.eq.0) then
-          NGAS = NGAS - 1
-          do IGAS=1,NGAS,1
-            do ISYM=1,NSYM,1
-              NSHPGS(IGAS,ISYM) = NSHPGS(IGAS+1,ISYM)
-              do ICISPC=1,NCISPC,1
-                NELGS(IGAS,1,ICISPC) = NELGS(IGAS+1,1,ICISPC)
-                NELGS(IGAS,2,ICISPC) = NELGS(IGAS+1,2,ICISPC)
-              end do
-            end do
-          end do
         end if
 *
 *  MULTS (just a check for consistence)
@@ -4208,13 +4163,19 @@ C
       CALL READT(LUINT_LUCITA, NNASHX*NNASHX, tmp_dal_WORK(KH2AC))
       CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
+      WRITE(LUPRI,'(A,2i8)') 
+     &            'dimension: NASHT,NASHT * NASHT',NASHT,NASHT**2
       CALL OUTPAK(tmp_dal_work(kfcac),NASHT,-1,LUPRI)
       WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
+      WRITE(LUPRI,'(A,2i8)') 
+     &            'dimension: NNASHX, NNASHX**2',NNASHX,NNASHX**2
       CALL OUTPUT(tmp_dal_work(kh2ac),1,NNASHX,1,NNASHX,NNASHX,
      &            NNASHX,-1,LUPRI)
 #endif
+!#undef LUCI_DEBUG
 
 !--------------------------------------------------------------
 !     transfer 1e- and 2e-integrals from Dalton to LUCITA order
@@ -4320,6 +4281,7 @@ C
       character (len=90) :: error_message
 !     -----------------------------------------------------------------
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       print *,' h1_in:'
       do isym = 1, nnashx
@@ -4383,6 +4345,7 @@ C
       write(lupri,*) '  final 1e- list: # of ints =', nr_1int
       call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
 #endif
+!#undef LUCI_DEBUG
 
       end
 ***********************************************************************

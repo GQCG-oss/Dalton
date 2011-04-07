@@ -29,7 +29,7 @@ F     0.0000000000000000  0.000000000000000   1.76320000000000        *
 #  DALTON INPUT
 #######################################################################
 cat > cc_grad_ccpt_hf.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -39,7 +39,7 @@ cat > cc_grad_ccpt_hf.dal <<%EOF%
 .TITLE
    test case for CCSD(T) gradient calculation
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
 *ORBITAL INPUT
@@ -61,7 +61,7 @@ cat > cc_grad_ccpt_hf.dal <<%EOF%
 !.DIPMOM
 .ETAPTI
 *DERIVA
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -126,7 +126,7 @@ PASSED=1
 for i in 1 2 3 4 5 6
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done 

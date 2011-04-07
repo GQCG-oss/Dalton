@@ -84,7 +84,6 @@ C
 C Used from common blocks:
 C  INFINP : SUPSYM
 C  INFVAR : NWOPT,JWOPSY
-C  INFPRI : LUERR
 C
 #include <maxorb.h>
 #include <infinp.h>
@@ -134,7 +133,6 @@ C Used from common blocks:
 C   INFORB : NSSYM,NORBSS(),IORBSS(),NINFSS(*,3), NOCCT,NORBT
 C   INFIND : ISW(*),ISSORD(*)
 C   INFVAR : NWOPT
-C   INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -1137,7 +1135,6 @@ C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ICH(*), ISSMO(*), ISSORD(*)
-C     INFPRI    : LUERR
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -1267,7 +1264,6 @@ C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ICH(*), ISSMO(*), ISSORD(*)
-C     INFPRI    : LUERR
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -1394,7 +1390,6 @@ C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : IROW(*), ICH(*), ISSMO(*), ISSORD(*)
-C     INFPRI    : LUERR
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -1529,7 +1524,6 @@ C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ISSMO(*), ISSORD(*)
-C     INFPRI    : LUERR
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -1652,7 +1646,6 @@ C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ISSMO(*), ISSORD(*)
-C     INFPRI    : LUERR
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -1878,7 +1871,6 @@ C Used from common blocks:
 C   INFINP : SUPSYM
 C   INFORB : NSSYM,NORBSS(),IORBSS(),NINFSS(*,3)
 C   INFIND : ISW(*),ISSORD(*)
-C   INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>

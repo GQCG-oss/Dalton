@@ -32,7 +32,7 @@ C DFT modification tuh
 C
 C Purpose:
 C  Carry out intermediate optimization of orbitals for fixed
-C  CSF coefficients.
+C  CSF coefficients ("absorption")
 C
 C MOTECC-90: The purpose of this module, SIRORB, and the algorithms used
 C            are described in Chapter 8 Section E.5 of MOTECC-90
@@ -55,7 +55,6 @@ C  INFTAP : ?
 C  INFOPT : ITMAC, RTRUST
 C  INFDIM : NWOPMA
 C  INFORB : N2BAST,..
-C  INFPRI : LUERR,?
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -97,10 +96,20 @@ C            = 3 : + act-sec rotations
 C
       IF (FLAG(51)) THEN
          LVLABS = 1
-         JTRLVL = 0
+!        JTRLVL = 0 ! Mar2011: TR1H2M sets NEEDMU(5) = 1 and we
+!                     must therefore include secondary orbitals in the
+!                     integral transformation although we will not need
+!                     the integrals. There is no transparent way of
+!                     transferring this information to TR1H2M, and as
+!                     the CPU time saved will be a small fraction of
+!                     the total CPU time, it is not worth doing more
+!                     about. With this change, all levels of absorption
+!                     should work again. /hjaaj
+         JTRLVL = ITRLVL
       ELSE IF (FLAG(52)) THEN
          LVLABS = 2
-         JTRLVL = 0
+!        JTRLVL = 0 ! see comment under FLAG(51) above.
+         JTRLVL = ITRLVL
       ELSE IF (FLAG(53)) THEN
          LVLABS = 3
          JTRLVL = ITRLVL
@@ -195,8 +204,8 @@ C    *               CMO,GORB,DV,PV,FC,FV,WRK,LFREE)
      *      ' Orbital rotation step length =',OSTP0
 C
  1100    CONTINUE
-            CALL ROTATE(WRK(KXKAP),CMO,WRK(KWRK0),LWRK0)
-C           CALL ROTATE(XKAP,CMO,WRK,LFREE)
+            CALL MO_ROTATE(WRK(KXKAP),CMO,WRK(KWRK0),LWRK0)
+C           CALL MO_ROTATE(XKAP,CMO,WRK,LFREE)
             CALL NEWORB('(ABSORP)',CMO,.FALSE.)
             FLAG(14) = FLAG(34)
 C           ... new orbitals, integral transformation may be needed.
@@ -263,13 +272,6 @@ C
             IF (.NOT. FLAG(14)) THEN
                CALL TRACTL(JTRLVL,CMO,WRK(KWRK0),LWRK0)
 C              CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
-C
-C              Tell SIROPT to skip integral transformation
-C              (if transformation level is sufficient),
-C              FLAG(14) will be reset if orbitals changed before
-C              returning.
-C
-               IF (JTRLVL .EQ. ITRLVL) FLAG(14) = .TRUE.
 C
             END IF
 C

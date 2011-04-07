@@ -292,7 +292,7 @@ Cholesky
            IOPT  = 3
            IOPTE = 24
         ELSE
-           CALL QUIT('Unkown coupled cluster model in CCRHSVEC.')
+           CALL QUIT('Unknown coupled cluster model in CCRHSVEC.')
         END IF
         IF (CCR12) THEN
           APROXR12 = '   '

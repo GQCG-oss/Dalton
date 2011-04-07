@@ -31,9 +31,6 @@ C
 !Revision 1.7  2000/05/01 14:11:43  hjj
 !removed obsolete KAVER, KSYM(4); removed .AVERAG from input
 !
-!revision 1.6 2000/04/14 09:11:03 hjj
-!removed .IPRERR in PRIINP (IPRERR is now set under **DALTON) /hjaaj
-!----------------------------
 !revision 1.5 2000/04/14 08:32:47 hjj
 !1) CALL QUIT if VAR_NONAMELIST and .FLAGS specified
 !   (removed special do nothing for T3D, seemed inconsistent ???)
@@ -253,8 +250,12 @@ C
 #include <dftcom.h>
 #include <dfterg.h>
 C
-      DIMENSION MBAS(8)
+      INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
+      ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
+      ! SIRIUS.RST from a Dalton with 4 byte integers, and vice versa.
+      INTEGER MBAS(8)
       LOGICAL ONELOK
+
       CALL QENTER('SIRRDI')
 C
 C  ***** Check dimension
@@ -847,7 +848,8 @@ c        END IF
 C
 C     set ITRFIN for ABAIPH
       IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
-         IF (DOMC .OR. DOCI) ITRFIN = 4
+         ITRFIN = 4
+         IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
       END IF
 C
       IF (DOCI .AND. ISTACI .LE. 0) THEN
@@ -1126,11 +1128,16 @@ C
                IF (INIOCC .EQ. 0 .OR. IREST .GT. 0) THEN
 C              ... 081205 hjaaj: not for INIOCC .lt. 0, because we
 C                  may restart with old orbitals, but new charge.
-                  READ (LUIT1) MSYM,MBAS,NORB,NRHF,IOPRHF
-                  INIOCC = 2
+                  READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4,NRHF_i4,IOPRHF_i4
+                  INIOCC  = 2
+                  NRHF(:) = NRHF_i4(:)
+                  IOPRHF  = IOPRHF_i4
                ELSE
-                  READ (LUIT1) MSYM,MBAS,NORB
+                  READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4
                END IF
+               MSYM = NSYM_i4
+               MBAS(:) = NORB_i4(:)
+               NORB(:) = NORB_i4(:)
                NERROR = -1
             END IF
             CALL GPCLOSE(LUIT1,'KEEP')
@@ -5656,11 +5663,11 @@ C
 C     ***** PROCESS INPUT FOR NEVPT2INP *****
 C
       do i=1,nsym
-       NFRNEVPT2(i)=0
+         NFRNEVPT2(i) = 0
       enddo
-      THRNEVPT=0.d0
-      WORD1 = WORD
-      ISTNEVCI=0
+      THRNEVPT = 0.d0
+      WORD1    = WORD
+      ISTNEVCI = 0
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD

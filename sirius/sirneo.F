@@ -149,10 +149,10 @@ C        CALL LINMEM(NCSIM,NOSIM,LNEED)
          MAXSIM = (LWRK1 - LA) / (2 + LBC)
          I      = 2*ABS(LROOTS)
          MAXSIM = MIN(MAXSIM,I,NVAR)
-         IF (IPRERR .GT. 1) WRITE (LUERR,9011) NCONF,NWOPT,MAXRL,
+         IF (IPRSTAT .GT. 1) WRITE (LUSTAT,9011) NCONF,NWOPT,MAXRL,
      *      LA,LB,LC,LBC,LFREE,LWRK1,MAXSIM
          IF (FLAG(62)) THEN
-            IF (IPRERR .GT. 0) WRITE (LUERR,'(/A)')
+            IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A)')
      *         ' INFO: MAXSIM reduced to 1 by request (flag(62))'
             MAXSIM = MIN(MAXSIM,1)
          END IF
@@ -861,11 +861,11 @@ C
       IF (FLAG(62)) THEN
          NSIMC = MIN(NSIMC, 1)
       END IF
-      IF (IPRERR .GT. 7) THEN
-         WRITE (LUERR,'(/,(A,I10))')
+      IF (IPRSTAT .GT. 7) THEN
+         WRITE (LUSTAT,'(/,(A,I10))')
      *      ' (NEONEX) number of non-conv. vectors',NROOTC,
      *      '          number of residuals/batch  ',NSIMC
-         WRITE (LUERR,'(A,10I5/,(T29,10I5))')
+         WRITE (LUSTAT,'(A,10I5/,(T29,10I5))')
      *      ' Index of non-conv. vectors:',
      *      (JROOT(I),I=1,NROOTC)
       END IF
@@ -1883,7 +1883,6 @@ C   INFVAR : NCONF,NWOPT,NVAR
 C   INFOPT : NROOTC,JROOT(*)
 C   INFDIM : MAXPHP,LPHPMX
 C   INFTAP : LUIT1,LUIT3
-C   INFPRI : LUERR
 C
 #include <maxorb.h>
 #include <priunit.h>

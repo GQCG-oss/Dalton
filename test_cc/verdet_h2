@@ -28,7 +28,7 @@ H1    .000000  .000000  -0.7
 #  DALTON INPUT
 #######################################################################
 cat > verdet_h2.dal <<%EOF%
-**GENERAL
+**DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -87,7 +87,7 @@ ZDIPLEN YDIPLEN dh/dBX
 1
 0.11391
 0.0
-*END OF
+**END OF DALTON
 %EOF%
 #######################################################################
 
@@ -151,7 +151,7 @@ PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-     echo ${ERROR[i]}
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
 done

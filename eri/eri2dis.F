@@ -128,6 +128,7 @@ C  /* Deck eridi2 */
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
+      LOGICAL   OLDDX
 #include <ccom.h>
 #include <cbieri.h>
 #include <ericom.h>
@@ -868,12 +869,7 @@ C     Transfer information
 C     ====================
 C
       NUMDIS = NDISTR
-!fox
-!fox  25-04-2003
-!fox  CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF (NUMDIS .GT. 0) CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
-!fox
-c      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIIDX',2)
          WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')

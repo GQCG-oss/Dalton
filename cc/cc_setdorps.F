@@ -97,8 +97,8 @@ C
 
       ELSE
 
-        WRITE (LUPRI,*) 'Unkown operator label in CC_SETDORPS:',LABELOP
-        CALL QUIT('Unkown operator label in CC_SETDORPS.')
+        WRITE (LUPRI,*) 'Unknown operator label in CC_SETDORPS:',LABELOP
+        CALL QUIT('Unknown operator label in CC_SETDORPS.')
 
       END IF
 
