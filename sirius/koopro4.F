@@ -67,11 +67,7 @@ C-----------------------------------------------------------------------
 #define GO_ON_COMP
 
 #ifdef GO_ON_COMP
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#else
-      DOUBLE PRECISION koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#endif
+      REAL*8  koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
       logical*1 zseg
       COMMON /CIP/NORBFE,NOCB,NCF,ZSEG
       common /actspace/mact,nact2,nact3,nact4
@@ -414,18 +410,18 @@ C
         escf=emcscf
       endif
 
-      write (lupri,'(/1x,a,i7)')  'NORB   =',norbt
-      write (lupri,'(1x,a,i7)')   'NOCB   =',NOCB
-      write (lupri,'(1x,a,i7)')   'NCF    =',ncf
-      write (lupri,'(1x,a,i7)')   'NTOTHP =',ntothp
-      write (lupri,'(1x,a,8I3)')  'FROZEN =',(NFRNEVPT2(i),i=1,nsym)
+      write (lupri,'(/1x,a,i8)')      'NORB   =',norbt
+      write (lupri,'(1x,a,i8)')       'NOCB   =',NOCB
+      write (lupri,'(1x,a,i8)')       'NCF    =',ncf
+      write (lupri,'(1x,a,i8)')       'NTOTHP =',ntothp
+      write (lupri,'(1x,a,8I4)')      'FROZEN =',(NFRNEVPT2(i),i=1,nsym)
       if(doci)then
-         write(lupri,'(1x,a,i7)') 'STATE  =',ISTNEVCI
-         write (lupri,'(1x,a,f14.8)')'E-CASCI= ',escf
+         write(lupri,'(1x,a,i8)')     'STATE  =',ISTNEVCI
+         write (lupri,'(1x,a,f16.8)')'E-CASCI =',escf
       else
-         write (lupri,'(1x,a,f14.8)')'E-MCSCF= ',escf
+         write (lupri,'(1x,a,f16.8)')'E-MCSCF =',escf
       endif
-      write (lupri,'(1x,a,d8.2)') 'THR    = ',thr
+      write (lupri,'(1x,a,d8.2)')    'THR     =',thr
       call flshfo(lupri)
       mact=nasht
       nact2=nasht**2
@@ -442,16 +438,16 @@ c      if(zion)nele=nele-1
          CALL QUIT('nevpt2 error: nact greater than "max_act" ')
       endif
       do i=1,nasht
-      lindi(i)=(i-1)*i*(i+1)*(i+2)/24
-      lindj(i)=(i-1)*i*(i+1)/6
-      lindk(i)=i*(i-1)/2
+        lindi(i)=(i-1)*i*(i+1)*(i+2)/24
+        lindj(i)=(i-1)*i*(i+1)/6
+        lindk(i)=i*(i-1)/2
       enddo
       do i=1,nasht
       do j=1,nasht
       do k=1,nasht
       do l=1,nasht
-      call getnorm(i,j,k,l,norm)
-      normind(i,j,k,l)=norm
+        call getnorm(i,j,k,l,norm)
+        normind(i,j,k,l)=norm
       enddo
       enddo
       enddo
@@ -651,7 +647,7 @@ c         enddo
             if(fprov.gt.fmax)fmax=fprov
          enddo
       enddo
-      write(lupri,'(/a,d10.3)') ' Maximum value of F matrix is:',fmax
+      write(lupri,'(/a,1p,d10.3)') ' Maximum value of F matrix is:',fmax
       call wr4(koopaa,koopbb,koopab,nasht,lun31)
 c-----scrittura matrici A e D-----------------------------------
 
@@ -747,11 +743,7 @@ c-------------------------------------------------------------------
       subroutine rofour(c,amat,nisht,nasht,thr,icomp,iconf,ioccfe,
      $     zcapos,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca
      $     ,ioccb,flip)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8  (A-H,O-Y), LOGICAL*1 (Z)
 #include <priunit.h>
       dimension amat(nwords,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
@@ -1452,18 +1444,14 @@ c---renzo debug
       write(lupri,*)'number of double    differences=',ndoubs
       write(lupri,*)'number of triple    differences=',ntrips
       write(lupri,*)'number of quadruple differences=',nfours
-      write(lupri,*)'number of jdifgen calls',ijcal
+      write(lupri,*)'number of jdifgen calls         ',ijcal
 c---contributi diagonali
       return
       end
 c--------------------------------------------------------------------
       subroutine ro3(c,daaa,nisht,nasht,thr,icomp,iconf,ioccfe,zcapos
      $,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca,ioccb,flip)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 #include <priunit.h>
 c      include 'rotwo.par'
       allocatable dbbb(:,:,:,:,:,:),daab(:,:,:,:,:,:),dbba(:,:,:,:,:,:)
@@ -1893,11 +1881,7 @@ c--costruzione matrice ro3 spinless
 c-------------------------------------------------------
       subroutine ro2(c,d2alal,nisht,nasht,thr,trou,part,ne,nd,
      $               ispinfe,iorbfe,itsym,iocca,ioccb,flip)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 #include <priunit.h>
       dimension d2alal(nasht,nasht,nasht,nasht)
       allocatable d2bebe(:,:,:,:),d2albe(:,:,:,:)
@@ -2077,11 +2061,9 @@ c--costruzione ro2 spinless
 c-----------------------------------------------------
       subroutine ro1(c,d1,nisht,nasht,thr,trou,part,ne,nd,ispinfe,iorbfe
      $     ,itsym)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+
 #include <priunit.h>
       dimension d1(nasht,nasht)
       integer segno
@@ -2256,11 +2238,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc,nec
      $     ,ndm,trou,part,iorbfe,ispinfe) 
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 #include <priunit.h>
       dimension iocca(*),ioccb(*),trou(*),part(*),iorbfe(*),ispinfe(*)
       integer*2 trou,part,iorbfe,ispinfe
@@ -2307,11 +2285,8 @@ c----------------------------------------------------------------
       end
 c--------------------------------------------------------------------
       subroutine perm3(d,i,j,k,l,m,n,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 #include <priunit.h>
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
@@ -2814,15 +2789,12 @@ c---permutazioni dispari
       end
 c---------------------------------------------------------------------
       FUNCTION Jdifgen(ne,nd,trou,part,II,JJ,nv1,nv2,nma,zsig)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
 C     
 C     SSP DE RECHERCHE DES ELEMENTS D'INTERACTION
 C     ENTRE DEUX DETERMINANTS, NUMEROTES II ET JJ
 C     
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
+#include <priunit.h>
       parameter (nmax=4)
       dimension ne(*),nd(*),trou(*),part(*)
       INTEGER*2 NE,TROU,PART
@@ -2932,12 +2904,12 @@ C     CALCUL DE L ELEMENT DE MATRICE
          RETURN
  24      Jdifgen=0
          RETURN
- 44      WRITE (6,1006) II,JJ,NE1,NE2
+ 44      WRITE (lupri,1006) II,JJ,NE1,NE2
  1006    FORMAT (//5X,'IDENTITE DANS HNTD'/' II,JJ,NE1,NE2 =',4I4)
-         WRITE (6,1007) (ITA(K),K=1,NE1)
-         WRITE (6,1008) (ITA(K+NE1),K=1,NE1)
-         WRITE (6,1007) (ITB(K),K=1,NE2)
-         WRITE (6,1008) (ITB(K+NE2),K=1,NE2)
+         WRITE (lupri,1007) (ITA(K),K=1,NE1)
+         WRITE (lupri,1008) (ITA(K+NE1),K=1,NE1)
+         WRITE (lupri,1007) (ITB(K),K=1,NE2)
+         WRITE (lupri,1008) (ITB(K+NE2),K=1,NE2)
  1007    FORMAT (' TROU',8I4)
  1008    FORMAT (' PART',8I4)
          STOP
@@ -2997,8 +2969,8 @@ c      K=M+10
       K=N2
    10 WRITE(lupri,20) (J,J=M,K)
       WRITE(lupri,36)
-c     WRITE(6,35) (ME(I),I=M,K)
-c     WRITE(6,37) (SYMB(I),I=M,K)
+c     WRITE(lupri,35) (ME(I),I=M,K)
+c     WRITE(lupri,37) (SYMB(I),I=M,K)
       WRITE(lupri,36)
       DO 40 I=1,N
       WRITE(lupri,30) I,(A(I,J),J=M,K)
@@ -3017,11 +2989,7 @@ c---F e' la matrice dei monoelettronici!
       dimension atwo(nasht,nasht,nasht,nasht)
       dimension koopaa(nasht,nasht,nasht,nasht),
      $ koopeaa(nasht,nasht,nasht,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#else
-      DOUBLE PRECISION koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
-#endif
+      REAL*8  koopaa,koopbb,koopab,koopeaa,koopebb,koopeab
       
       dimension itsym(*),its(8,8)
       dimension f(*),aj(*)
@@ -3153,11 +3121,7 @@ c---F e' la matrice dei monoelettronici!
      $     ,nasht)
       dimension koopaa(nasht,nasht,nasht,nasht),koopbb(nasht,nasht,nasht
      $     ,nasht),koopab(nasht,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopaa,koopbb,koopab
-#else
-      DOUBLE PRECISION koopaa,koopbb,koopab
-#endif
+      REAL*8  koopaa,koopbb,koopab
       dimension itsym(*),its(8,8)
       dimension f(*),aj(*)
       integer a,b,c,d,ac,bc,cc,dc,ap,bp,apc,bpc
@@ -3956,11 +3920,7 @@ c------------------------------------------------------------------------
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension koopipa(nasht,nasht),koopeaa(nasht,nasht)
       dimension atwo(nasht,nasht,nasht,nasht)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL koopipa,koopipb,koopeaa,koopeab
-#else
-      DOUBLE PRECISION koopipa,koopipb,koopeaa,koopeab
-#endif
+      REAL*8  koopipa,koopipb,koopeaa,koopeab
       dimension f(*),aj(*)
       integer a,b,ac,bc,c,ap,apc,cc,d,dc
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
@@ -4684,11 +4644,7 @@ c------------------------------------------------------------------------
       subroutine wr2(koopaa,taa,dal,nasht,lun31)
 #include <implicit.h>
 #include <priunit.h>
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL KOOPAA
-#else
-      DOUBLE PRECISION KOOPAA
-#endif
+      REAL*8  KOOPAA
       DIMENSION dal(nasht,nasht),koopaa(nasht,nasht,nasht,nasht
      $     ),taa(nasht,nasht,nasht,nasht)
       do i=1,nasht
@@ -4712,13 +4668,9 @@ c------------------------------------------------------------------------
       subroutine wr3(koopeaa,taa,koopaa,nasht,lun31)
 #include <implicit.h>
 #include <priunit.h>
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL (A-H,O-Z) KOOPAA, KOOPEAA
-#else
-      DOUBLE PRECISION KOOPAA, KOOPEAA
-#endif
-      DIMENSION koopaa(nasht,nasht,nasht,nasht),
-     * taa(nasht,nasht,nasht,nasht),koopeaa(nasht,nasht,nasht,nasht)
+      REAL*8  koopaa(nasht,nasht,nasht,nasht),
+     &           taa(nasht,nasht,nasht,nasht),
+     &       koopeaa(nasht,nasht,nasht,nasht)
       do i=1,nasht
          do j=1,nasht
             write(lun31)((koopeaa(i,j,k,l),k=1,nasht),l=1,nasht)
@@ -4742,11 +4694,7 @@ c----------------------------------------------------------------------
       subroutine wr4(koopaa,koopbb,koopab,nasht,lun31)
 #include <implicit.h>
 #include <priunit.h>
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      REAL KOOPAA, KOOPBB, KOOPAB
-#else
-      DOUBLE PRECISION KOOPAA, KOOPBB, KOOPAB
-#endif
+      REAL*8  KOOPAA, KOOPBB, KOOPAB
       DIMENSION koopaa(nasht,nasht,nasht,nasht
      $     ),koopbb(nasht,nasht,nasht,nasht),koopab(nasht,nasht)
       do i=1,nasht
@@ -4935,11 +4883,8 @@ c      call flshfo(lupri)
       end
 c------------------------------------------------------------------------
       SUBROUTINE ESAME(flip,ne,nd,trou,part,ispinfe,iorbfe,ncf)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
-      IMPLICIT REAL (A-H,O-Y),LOGICAL*1(Z)
-#else
-      IMPLICIT DOUBLE PRECISION (A-H,O-Y),LOGICAL*1(Z)
-#endif
+
+      IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 
 #include <priunit.h>
       integer*2 ne,trou,part,ispinfe,iorbfe

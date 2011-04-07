@@ -198,6 +198,7 @@ C
          CALL DARMOV(LUORDA)
       END IF
 C
+      IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
       CALL FLSHFO(LUPRI)
       CALL QEXIT('N_TRACTL')
       RETURN
@@ -647,11 +648,16 @@ C
       END IF
 C
       IF (ITYPCD .GT. 0 .AND. ICDTRA(ICDNEW) .EQ. 0) THEN
-         WRITE (LUERR,*) ' NX2H2M ERROR: needed integral distribution'
-         WRITE (LUERR,*) '               has not been calculated'
-         WRITE (LUERR,*) 'IC    ,ID     :',ICNEW,IDNEW
-         WRITE (LUERR,*) 'IYPC  ,ITYPD  :',COBTYP(ITYPC),COBTYP(ITYPD)
-         CALL QTRACE(LUERR)
+         WRITE(LUPRI,'(//A/)') 'NX2H2M ERROR: '//
+     &     'needed integral distribution has not been calculated'
+         WRITE(LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
+         WRITE(LUPRI,*) 'IYPC  ,ITYPD  : ',COBTYP(ITYPC),
+     &                                 '  ',COBTYP(ITYPD)
+         WRITE (LUPRI,'(/A)') 'ICDTRA matrix:'
+         DO I = 1,NORBT
+            IR = IROW(I)
+            WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+         END DO
          CALL QUIT('N_NX2H2M error: needed integrals not calculated')
       END IF
 C
@@ -3307,9 +3313,8 @@ C
 C
 C     Define ICDTRA matrix
 C
-      DO 600 I = 1,MMORBX
-         ICDTRA(I) = 0
-  600 CONTINUE
+      ICDTRA(1:MMORBX) = 0
+
       IDIST = 0
       DO 780 I = 1,MORBT
          IF (ITRTYP(I) .GE. 3) THEN

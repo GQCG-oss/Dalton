@@ -848,7 +848,8 @@ c        END IF
 C
 C     set ITRFIN for ABAIPH
       IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
-         IF (DOMC .OR. DOCI) ITRFIN = 4
+         ITRFIN = 4
+         IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
       END IF
 C
       IF (DOCI .AND. ISTACI .LE. 0) THEN
@@ -5662,11 +5663,11 @@ C
 C     ***** PROCESS INPUT FOR NEVPT2INP *****
 C
       do i=1,nsym
-       NFRNEVPT2(i)=0
+         NFRNEVPT2(i) = 0
       enddo
-      THRNEVPT=0.d0
-      WORD1 = WORD
-      ISTNEVCI=0
+      THRNEVPT = 0.d0
+      WORD1    = WORD
+      ISTNEVCI = 0
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD

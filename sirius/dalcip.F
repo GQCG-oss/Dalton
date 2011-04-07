@@ -26,7 +26,7 @@
 #include <implicit.h>
 #include <priunit.h>
 
-! ** The nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
+! ** Before 2011, the nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
 ! ** Now code is compiled for all compilers, if your compiler cannot handle
 ! ** the code then do NOT #define GO_ON_COMP in dalcip.F (below) and koopro4.F /Jan. 2011
 
