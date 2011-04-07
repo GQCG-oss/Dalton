@@ -2479,7 +2479,7 @@ C     Now iterate...  !
 
               IF (ZEROAL(J) .EQ. -1) GOTO 409 
 
-              CALL MMITERATIVE(I,J,WRK(KINDP+LCI-1),MY)
+              CALL GET_MY(I,J,WRK(KINDP+LCI-1),MY)
               INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
               INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
               INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
@@ -6002,7 +6002,7 @@ C     Do some work on master as well
           LCI = 1
           DO K = 1, POLDIM
             J = POLARRAY(K)
-            CALL MMITERATIVE(I,J,INDP1(LCI),MY)
+            CALL GET_MY(I,J,INDP1(LCI),MY)
             WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
             WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
             WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
@@ -6018,7 +6018,7 @@ C     Do the leftovers
             LCI = 1
             DO K = 1, POLDIM
               J = POLARRAY(K)
-              CALL MMITERATIVE(I,J,INDP1(LCI),MY)
+              CALL GET_MY(I,J,INDP1(LCI),MY)
               WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
               WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
               WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
@@ -6150,7 +6150,7 @@ C  /* Deck mmiter_s */
           LCI = 1
           DO K = 1, POLDIM
             J = POLARRAY(K)
-            CALL MMITERATIVE(I,J,WRK(KINDP1+LCI-1),MY)
+            CALL GET_MY(I,J,WRK(KINDP1+LCI-1),MY)
             WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
             WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
             WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
@@ -6173,8 +6173,8 @@ C  /* Deck mmiter_s */
       END
 
 *******************************************************************
-C  /* Deck mmiterative */
-      SUBROUTINE MMITERATIVE(I,J,DIP,MY)
+C  /* Deck get_my */
+      SUBROUTINE GET_MY(I,J,DIP,MY)
 
 C Input: I,J,DIP
 C Output: MY
@@ -6193,7 +6193,7 @@ C tensor DIP at site J.
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('MMITERATIVE')
+      CALL QENTER('GET_MY')
 
       CALL DZERO(MY,3)
       IF (J .NE. I) THEN
@@ -6277,7 +6277,7 @@ C     calculate alpha*T
         ENDIF
       ENDIF
 
-      CALL QEXIT('MMITERATIVE')
+      CALL QEXIT('GET_MY')
 
       RETURN
       END
