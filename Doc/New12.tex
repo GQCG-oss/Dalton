@@ -48,7 +48,9 @@ and a better implementation for QM/MM is planned for next Dalton release.  \\
 Main authors: Kurt V. Mikkelsen, Anders Osted, Jacob Kongsted
 
 \item{\bf Code for vibrational and rotational g-factors, interface to WESTA for adiabatic corrections.}  \\
-Main authors: Stephan P. A. Sauer, Hans J\o rgen Aa. Jensen
+Main authors: Stephan P. A. Sauer, Hans J\o rgen Aa.\ Jensen. The WESTA
+program can be obtained from Hans J\o rgen Aa.\ Jensen (contact e-mail
+for this: westa@dirac.chem.sdu.dk).
 
 \item{\bf Interface to the general GEN1INT property integral generator:} see http://sss.sss.sss \\
 Main author: Bin Gao
@@ -78,7 +80,19 @@ Main author: Bin Gao
     Example: the MCSCF code per se is not parallelized yet, but it will
     give correct results when run in parallel, and the construction of
     generalized Fock matrices will be done in parallel.
+
+\item{\bf .THRRED option} to scale all (most?) significant
+convergence thresholds, in order to check what digits in the results are
+affected by such a change.\\
+Main author: Hans J\o rgen Aagaard Jensen.
+
+\item{\bf WESTA interface} works again for adiabatic corrections. See
+e.g. ref. \cite{xxx} for a recent example of use. \\
+Main author: Hans J\o rgen Aagaard Jensen. The WESTA program may be
+obtained from the author (hjj@ifk.sdu.dk).
+
 % \item{} Interface to the MIDAS program.
+
 \end{enumerate}
 
 \end{enumerate}
