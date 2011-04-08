@@ -4317,7 +4317,7 @@ C
 #include <inftra.h>
 C
       DATA TABLE /'.RESIDE','.FINAL ','.LEVEL ','.OLD TR','.PRINT ',
-     *            '.P THRE','.Q THRE','xxxxxxx½/
+     *            '.P THRE','.Q THRE','xxxxxxx'/
 C
 C     ***** PROCESS INPUT FOR TRAINP *****
 C
