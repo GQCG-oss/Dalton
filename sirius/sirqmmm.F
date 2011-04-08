@@ -5925,7 +5925,7 @@ C      IMPLICIT NONE
       INTEGER POLDIM, POLARRAY
       DIMENSION POLARRAY(POLDIM)
 
-      LOGICAL LOCDEB,DIPCON
+      LOGICAL LOCDEB,DIPCON,LEFTOVERS
 
       DOUBLE PRECISION INDMOM,INDDIA,INDP1
       DIMENSION INDMOM(3*POLDIM),VEC(MXMMIT+3*POLDIM), INDDIA(3*POLDIM)
@@ -5953,12 +5953,13 @@ C     Make a vector of pol sites
 
       LM = 0
       NSLICE = POLDIM/(NODTOT+1)
-      IF ((NODTOT*NSLICE) .LT. POLDIM) THEN
-        MLOOP = POLDIM - (NODTOT * NSLICE)
-        ISTART = NODTOT*NSLICE + 1
-        IEND = ISTART + MLOOP - 1
+C     check if there is leftovers
+      IF (((NODTOT+1)*NSLICE) .LT. POLDIM) THEN
+        NSLICE = NSLICE + 1
+        LEFT =  POLDIM - NSLICE*NODTOT
+        LEFTOVERS = .TRUE.
       ELSE
-        MLOOP = 0
+        LEFTOVERS = .FALSE.
       END IF
 
 C     Beginning of parallel section 
@@ -5980,9 +5981,8 @@ C     Wake up slaves
         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
-      KINDP1  = 1
-      KINDP2  = KINDP1  + NDIM
-      KLAST   = KINDP2  + NDIM
+      KINDP2  = 1
+      KLAST   = KINDP2  + ((NODTOT+1)*NSLICE)
       LWRK2   = LWRK - KLAST + 1
 
       DO 100 ITER = 1, MXMMIT
@@ -5990,11 +5990,16 @@ C     Wake up slaves
         DO ISLAVE = 1, NODTOT
           IWHO = -1
           CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
-          CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
+          IF ( (NWHO.EQ.NODTOT) .AND. (LEFTOVERS) )THEN
+            CALL MPIXSEND(2, 1, 'INTEGER', NWHO, MPTAG2)
+            CALL MPIXSEND(LEFT,1,'INTEGER', NWHO, MPTAG2)
+          ELSE
+            CALL MPIXSEND(1, 1, 'INTEGER', NWHO, MPTAG2)
+          ENDIF
         ENDDO
         CALL MPIXBCAST(INDP1,NDIM,'DOUBLE',MASTER)
 
-        CALL DZERO(WRK(KINDP2),NDIM)
+        CALL DZERO(WRK(KINDP2),3*((NODTOT+1)*NSLICE))
 C     Do some work on master as well
         LRI = 1
         DO L = 1, NSLICE
@@ -6010,23 +6015,6 @@ C     Do some work on master as well
           ENDDO
           LRI = LRI + 3
         ENDDO
-C     Do the leftovers
-        IF (MLOOP.NE.0) THEN
-          LRI = 3*NODTOT*NSLICE + 1
-          DO L = ISTART, IEND
-            I = POLARRAY(L)
-            LCI = 1
-            DO K = 1, POLDIM
-              J = POLARRAY(K)
-              CALL GET_MY(I,J,INDP1(LCI),MY)
-              WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
-              WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
-              WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
-              LCI = LCI + 3
-            ENDDO
-            LRI = LRI + 3
-          ENDDO
-        ENDIF
 
         CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
      &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
@@ -6054,6 +6042,7 @@ C     Do the leftovers
           ENDIF 
         ENDIF
 
+
         IF (ABS(TERROR) .LT. THRESL) THEN
           DIPCON = .TRUE.
           GOTO 200
@@ -6063,7 +6052,7 @@ C     Do the leftovers
           IF (MMDIIS) THEN
             CALL DCOPY(NDIM,INDMOM,1,VEC(ITER*NDIM+1),1)
             CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,INDP1,
-     *                                 WRK(KLAST),LWRK2,IPRINT)
+     *                                 WRK(KLAST),LWRK2,PIRINT)
           ELSE 
             CALL DCOPY(NDIM,INDMOM,1,INDP1,1)
           ENDIF
@@ -6078,7 +6067,7 @@ C     induced dipoles, i.e. not only the diagonal part
  200  CONTINUE                  !Done
 
 C     End message to slaves
-      NRUN = 2
+      NRUN = 5
       DO ISLAVE = 1, NODTOT
         IWHO = -1
         CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
@@ -6108,6 +6097,7 @@ C  /* Deck mmiter_s */
       ALLOCATABLE POLARRAY
       DOUBLE PRECISION DIP,MY
       DIMENSION DIP(3),MY(3)
+      LOGICAL RUN
       
       CALL QENTER('MMITER_S')
 
@@ -6142,6 +6132,16 @@ C  /* Deck mmiter_s */
       CALL MPIXRECV(IRUN,1,'INTEGER',MASTER,MPTAG2)
 
       IF (IRUN.EQ.1) THEN
+        RUN = .TRUE.
+      ELSEIF (IRUN.EQ.2) THEN
+        RUN = .TRUE.
+        CALL MPIXRECV(LEFT,1,'INTEGER',MASTER,MPTAG2)
+        IEND = ISTART + LEFT - 1
+      ELSE
+        RUN = .FALSE.
+      ENDIF        
+
+      IF (RUN) THEN
         CALL DZERO(WRK(KINDP2),3*NSLICE)
         CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
         LRI = 1
