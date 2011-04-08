@@ -4317,7 +4317,7 @@ C
 #include <inftra.h>
 C
       DATA TABLE /'.RESIDE','.FINAL ','.LEVEL ','.OLD TR','.PRINT ',
-     *            '.P THRE','.Q THRE','.PRESOR'/
+     *            '.P THRE','.Q THRE','xxxxxxx½/
 C
 C     ***** PROCESS INPUT FOR TRAINP *****
 C
@@ -4381,9 +4381,8 @@ C *** Option  107 >Q THRE<
   107 READ(LUCMD,*) THRQ
       GO TO 100
 C
-C *** Option  107 >SORTED<
+C *** Option  108 >      <
   108 CONTINUE
-      NEWTRA=.TRUE.
       GO TO 100
 C
  8000 CONTINUE
