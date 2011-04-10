@@ -847,9 +847,12 @@ c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
+C
       IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
-         ITRFIN = 4
-         IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
+         IF (DOMC .OR. DOCI) THEN
+            ITRFIN = 4
+            IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
+         END IF
       END IF
 C
       IF (DOCI .AND. ISTACI .LE. 0) THEN
