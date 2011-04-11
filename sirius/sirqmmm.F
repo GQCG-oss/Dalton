@@ -4867,7 +4867,6 @@ C     Send data to slaves (Lick it up)
 
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(MMITER,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
@@ -5015,7 +5014,6 @@ C     Receiving data from master (I was made for lovin' you)
 
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(MMITER,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
@@ -5207,8 +5205,6 @@ C      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Start parallelized loop
       LRI = 1
@@ -5341,8 +5337,6 @@ C     Damping
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -5695,8 +5689,6 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
       IINIM = 0   ! important should be zero due to the indexing used !
 
@@ -5836,8 +5828,6 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Compute polarization contributions to the Fock/KS matrix and
 C     total solvation energy
@@ -5925,7 +5915,7 @@ C      IMPLICIT NONE
       INTEGER POLDIM, POLARRAY
       DIMENSION POLARRAY(POLDIM)
 
-      LOGICAL LOCDEB,DIPCON,LEFTOVERS
+      LOGICAL LOCDEB,DIPCON
 
       DOUBLE PRECISION INDMOM,INDDIA,INDP1
       DIMENSION INDMOM(3*POLDIM),VEC(MXMMIT+3*POLDIM), INDDIA(3*POLDIM)
@@ -5936,6 +5926,8 @@ C      IMPLICIT NONE
       DIMENSION DIP(3),MY(3)
 
       CALL QENTER('MMITER_M')
+
+C     Version of mmiter_m where we use mpi_reduce
 
       DIPCON = .FALSE.
 
@@ -5950,18 +5942,6 @@ C     Make a vector of pol sites
         POLARRAY(L) = I
  1    CONTINUE
 
-
-      LM = 0
-      NSLICE = POLDIM/(NODTOT+1)
-C     check if there is leftovers
-      IF (((NODTOT+1)*NSLICE) .LT. POLDIM) THEN
-        NSLICE = NSLICE + 1
-        LEFT =  POLDIM - NSLICE*NODTOT
-        LEFTOVERS = .TRUE.
-      ELSE
-        LEFTOVERS = .FALSE.
-      END IF
-
 C     Beginning of parallel section 
 
       IPRTYP = 25
@@ -5971,8 +5951,8 @@ C     Wake up slaves
       CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
 
-      CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NODTOT,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLARRAY,POLDIM,'INTEGER',MASTER)
       CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
       IF (IPOLTP .EQ. 1) THEN
@@ -5981,44 +5961,27 @@ C     Wake up slaves
         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
-      KINDP2  = 1
-      KLAST   = KINDP2  + ((NODTOT+1)*NSLICE)
+      KINDP1  = 1
+      KINDP2  = KINDP1  + NDIM
+      KLAST   = KINDP2  + NDIM
       LWRK2   = LWRK - KLAST + 1
 
       DO 100 ITER = 1, MXMMIT
-        NRUN = 1
         DO ISLAVE = 1, NODTOT
           IWHO = -1
+          NRUN = 1
           CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
-          IF ( (NWHO.EQ.NODTOT) .AND. (LEFTOVERS) )THEN
-            CALL MPIXSEND(2, 1, 'INTEGER', NWHO, MPTAG2)
-            CALL MPIXSEND(LEFT,1,'INTEGER', NWHO, MPTAG2)
-          ELSE
-            CALL MPIXSEND(1, 1, 'INTEGER', NWHO, MPTAG2)
-          ENDIF
+          CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
         ENDDO
+
         CALL MPIXBCAST(INDP1,NDIM,'DOUBLE',MASTER)
+        CALL DZERO(WRK(KINDP1),NDIM)
+        CALL DZERO(WRK(KINDP2),NDIM)
 
-        CALL DZERO(WRK(KINDP2),3*((NODTOT+1)*NSLICE))
-C     Do some work on master as well
-        LRI = 1
-        DO L = 1, NSLICE
-          I = POLARRAY(L)
-          LCI = 1
-          DO K = 1, POLDIM
-            J = POLARRAY(K)
-            CALL GET_MY(I,J,INDP1(LCI),MY)
-            WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
-            WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
-            WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
-            LCI = LCI + 3
-          ENDDO
-          LRI = LRI + 3
-        ENDDO
+        CALL MPI_REDUCE(WRK(KINDP1),WRK(KINDP2),NDIM, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
 
-        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                  MASTER,MPI_COMM_WORLD,IERR)
         CALL DAXPY(NDIM,1.0D0,WRK(KINDP2),1,INDMOM,1)
 
         TERROR=0.0D0
@@ -6067,7 +6030,7 @@ C     induced dipoles, i.e. not only the diagonal part
  200  CONTINUE                  !Done
 
 C     End message to slaves
-      NRUN = 5
+      NRUN = -1
       DO ISLAVE = 1, NODTOT
         IWHO = -1
         CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
@@ -6095,24 +6058,14 @@ C  /* Deck mmiter_s */
       INTEGER POLDIM, POLARRAY
       DIMENSION WRK(LWRK), POLARRAY(:)
       ALLOCATABLE POLARRAY
-      DOUBLE PRECISION DIP,MY
+      DOUBLE PRECISION DIP,MY 
       DIMENSION DIP(3),MY(3)
       LOGICAL RUN
       
       CALL QENTER('MMITER_S')
 
-      CALL MPIXBCAST(NSLICE,1,'INTEGER',MASTER)
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
-
-      NDIM = 3*POLDIM
-
-      KINDP1  = 1
-      KINDP2  = KINDP1  + NDIM
-      KINDDIA = KINDP2  + 3*NSLICE
-      KLAST   = KINDDIA + 3*NSLICE
-
-      LWRK2 = LWRK - KLAST + 1
-      IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_S',-KLAST,LWRK)
+      CALL MPIXBCAST(NODTOT,1,'INTEGER',MASTER)
 
       ALLOCATE(POLARRAY(POLDIM))
       CALL MPIXBCAST(POLARRAY,POLDIM,'INTEGER',MASTER)
@@ -6123,28 +6076,41 @@ C  /* Deck mmiter_s */
         CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
-      ISTART = MYNUM*NSLICE + 1
-      IEND = (MYNUM+1)*NSLICE
+      NSLICE = POLDIM/NODTOT
+      ISTART = (MYNUM-1)*NSLICE + 1
+      IEND   = ISTART + NSLICE - 1
+C     check if there is leftovers
+      IF ( (NODTOT*NSLICE) .LT. POLDIM) THEN
+        LEFT = POLDIM - NODTOT*NSLICE
+        IF (MYNUM .LE. LEFT) THEN
+          ISTART = ISTART + MYNUM - 1
+          IEND   = IEND + MYNUM
+        ELSE
+          ISTART = ISTART + LEFT
+          IEND   = IEND + LEFT
+        ENDIF
+      END IF
+
+      NDIM = 3*POLDIM
+
+      KINDP1  = 1
+      KINDP2  = KINDP1  + NDIM
+      KLAST   = KINDP2  + NDIM
+
+      LWRK2 = LWRK - KLAST + 1
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_S',-KLAST,LWRK)
+
+      CALL DZERO(WRK(KINDP2),NDIM)
 
  20   CONTINUE
 
       CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
       CALL MPIXRECV(IRUN,1,'INTEGER',MASTER,MPTAG2)
 
-      IF (IRUN.EQ.1) THEN
-        RUN = .TRUE.
-      ELSEIF (IRUN.EQ.2) THEN
-        RUN = .TRUE.
-        CALL MPIXRECV(LEFT,1,'INTEGER',MASTER,MPTAG2)
-        IEND = ISTART + LEFT - 1
-      ELSE
-        RUN = .FALSE.
-      ENDIF        
-
-      IF (RUN) THEN
-        CALL DZERO(WRK(KINDP2),3*NSLICE)
+      IF (IRUN .EQ. 1) THEN
+        CALL DZERO(WRK(KINDP2),NDIM)
         CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
-        LRI = 1
+        LRI = 1 + 3*(ISTART-1)
         DO L = ISTART, IEND
           I = POLARRAY(L)
           LCI = 1
@@ -6159,9 +6125,10 @@ C  /* Deck mmiter_s */
           LRI = LRI + 3
         ENDDO
 
-        CALL MPI_GATHER(WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                  WRK(KINDP2),3*NSLICE,MPI_DOUBLE_PRECISION,
-     &                  MASTER,MPI_COMM_WORLD,IERR)
+        CALL MPI_REDUCE(WRK(KINDP2),WRK(KINDP2),NDIM, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
         GOTO 20
       ENDIF
 
