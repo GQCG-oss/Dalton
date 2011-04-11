@@ -2460,13 +2460,13 @@ C     Now iterate...  !
 
       DTIME = SECOND()
 
+      LM = 0
+      DIPCON = .FALSE.
       IF (NODTOT .GE. 1) THEN
         CALL MMITER_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
-     *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB,DIPCON)
+     *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB,DIPCON,LM)
       ELSE
 
-        DIPCON = .FALSE.
-        LM = 0
         DO 999 ITER = 1, MXMMIT
           LM = LM + 1
 
@@ -2541,8 +2541,7 @@ C       induced dipoles, i.e. not only the diagonal part
 
       LM = LM - 1
       IF (DIPCON) THEN
-C        IF (IPRINT .GT. 1) THEN
-        IF (.TRUE.) THEN
+        IF (IPRINT .GT. 1) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Done with induced dipoles in ',LM,' iterations'
          WRITE(LUPRI,*)
@@ -2554,8 +2553,7 @@ C        IF (IPRINT .GT. 1) THEN
       ENDIF
 
       NMMAC = NMMAC + LM
-C      IF (IPRINT .GT. 1) THEN
-      IF (.TRUE.) THEN
+      IF (IPRINT .GT. 1) THEN
         WRITE(LUPRI,*) 'Acc. iterations:', NMMAC
       ENDIF
 
@@ -5897,7 +5895,7 @@ C     total solvation energy
 *******************************************************************
 C  /* Deck mmiter_m */
       SUBROUTINE MMITER_M(POLDIM,INDP1,INDMOM,VEC,INDDIA,
-     *                    WRK,LWRK,LOCDEB,DIPCON)
+     *                    WRK,LWRK,LOCDEB,DIPCON,LM)
 
 #include <implicit.h>
 C      IMPLICIT NONE
@@ -5967,6 +5965,7 @@ C     Wake up slaves
       LWRK2   = LWRK - KLAST + 1
 
       DO 100 ITER = 1, MXMMIT
+        LM = LM + 1
         DO ISLAVE = 1, NODTOT
           IWHO = -1
           NRUN = 1
