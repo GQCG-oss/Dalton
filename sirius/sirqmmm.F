@@ -4720,12 +4720,14 @@ C***********************************************************
 C  /* Deck qmmmtimes */
       SUBROUTINE QMMMTIMES(WORD)
 
-#include <implicit.h>
+      IMPLICIT NONE
+
 #include <priunit.h>
 #include <mxcent.h>
 #include <qmmm.h>
 #include <mmtimes.h>
       CHARACTER*(*) WORD
+      DOUBLE PRECISION ZERO
       PARAMETER(ZERO = 0.0D0)
       CALL QENTER('QMMMTIMES')
 
@@ -4738,11 +4740,11 @@ C  /* Deck qmmmtimes */
           WRITE(LUPRI,*) '    - MMITER times:'
           WRITE(LUPRI,2) 'GET_IND_DIPOLES_2',TMMGID2
           WRITE(LUPRI,2) 'MMPOLARI_ITER2   ',TMMPOL2
-          WRITE(LUPRI,2) 'F2QMMM           ',TMMF2  
+          WRITE(LUPRI,2) 'F2QMMM           ',TF2QMMM
           WRITE(LUPRI,2) 'the iteration    ',TMMITER
           TMMGID2 = ZERO
           TMMPOL2 = ZERO
-          TMMF2   = ZERO
+          TF2QMMM = ZERO
           TMMITER = ZERO
         ENDIF
       ELSEIF (WORD .EQ. 'RESPONSE') THEN
@@ -4751,7 +4753,7 @@ C  /* Deck qmmmtimes */
         WRITE(LUPRI,2) 'QMMMQRO      ',TMMQRO
         WRITE(LUPRI,2) 'QMMMCRO      ',TMMCRO
         IF (MMITER) THEN
-          WRITE(LUPRI,2) 'F2QMMM       ',TMMF2  
+          WRITE(LUPRI,2) 'F2QMMM       ',TF2QMMM
           WRITE(LUPRI,2) 'the iteration',TMMITER
         ENDIF
       ELSEIF (WORD .EQ. 'ABACUS') THEN
