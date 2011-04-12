@@ -4716,6 +4716,115 @@ C     Octupole contribution
 
       RETURN
       END
+*******************************************************************
+C  /* Deck get_my */
+      SUBROUTINE GET_MY(I,J,DIP,MY)
+
+C Input: I,J,DIP
+C Output: MY
+C Get the polarizability tensor MY at site I due to polarizability
+C tensor DIP at site J.
+      IMPLICIT NONE
+#include <mxcent.h>
+#include <qmmm.h>
+
+      LOGICAL EXCENT
+      INTEGER I, J, K, L, NLDIM, NTOTI
+      DOUBLE PRECISION AMAT,TTENS,ATMAT,DIP,MY
+      DOUBLE PRECISION TEMPJ, TEMP, SCREEN, TEMPI,DIST,DIST2,DIST3,DIST5
+      DOUBLE PRECISION ELEM,FEIJ,FTIJ, D0, D1, D3I, D6I
+      DIMENSION AMAT(3,3),TTENS(3,3),ATMAT(3,3),DIP(3),MY(3)
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('GET_MY')
+
+      CALL DZERO(MY,3)
+      IF (J .NE. I) THEN
+        EXCENT = .FALSE.
+        DO L=1,NEXLST
+          IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+        ENDDO
+
+        IF (.NOT. EXCENT) THEN
+C     Get the polarizability tensor for this site
+          DO K=1,3
+            DO L=1,3
+              AMAT(K,L)  = 0.0D0
+            ENDDO
+          ENDDO
+
+          IF (IPOLTP .EQ. 1)  THEN
+            DO L=1,3
+              AMAT(L,L) = POLIMM(I)
+            ENDDO
+          ELSE IF (IPOLTP .EQ. 2)  THEN
+            AMAT(1,1) = POLMM(1,I)
+            AMAT(1,2) = POLMM(2,I)
+            AMAT(1,3) = POLMM(3,I)
+            AMAT(2,1) = POLMM(2,I)
+            AMAT(2,2) = POLMM(4,I)
+            AMAT(2,3) = POLMM(5,I)
+            AMAT(3,1) = POLMM(3,I)
+            AMAT(3,2) = POLMM(5,I)
+            AMAT(3,3) = POLMM(6,I)
+          ENDIF
+
+C     Now calculate the T tensor for these sites
+          DIST2 = 0.0D0
+          DO K=1,3
+            DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
+          ENDDO
+          DIST  = SQRT(DIST2)
+          DIST3 = DIST**3
+          DIST5 = DIST**5
+
+          DO K=1,3
+            DO L=1,3
+
+C     Include damping in the exponential form
+C     JPC A 102 (1998) 2399
+              IF (MMDAMP) THEN
+                IF (IPOLTP .EQ. 1) THEN
+                  TEMPI = POLIMM(I)
+                  TEMPJ = POLIMM(J)
+                ELSE IF (IPOLTP .EQ. 2) THEN
+                  TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
+                  TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+                ENDIF
+                TEMP = (TEMPI*TEMPJ)**(D6I)
+                SCREEN = 2.1304*DIST/TEMP
+                FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
+     &                     *EXP(-SCREEN)
+                FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
+     &                     *EXP(-SCREEN)
+              ELSE
+                FEIJ = D1
+                FTIJ = D1
+              ENDIF
+
+              ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
+     &                          (MMCORD(L,I) - MMCORD(L,J))
+              ELEM = ELEM/DIST5
+              IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
+              TTENS(K,L) = ELEM
+            ENDDO
+          ENDDO
+
+C     calculate alpha*T
+          CALL DGEMM('N','N',3,3,3,1.D0,AMAT,3,
+     &                   TTENS,3,0.D0,ATMAT,3)
+
+          NLDIM = 3
+          NTOTI = MAX(NLDIM,1)
+          CALL DGEMV('N',NLDIM,NLDIM,D1,ATMAT,NTOTI,DIP,1,D0,MY,1)
+        ENDIF
+      ENDIF
+
+      CALL QEXIT('GET_MY')
+
+      RETURN
+      END
 C***********************************************************
 C  /* Deck qmmmtimes */
       SUBROUTINE QMMMTIMES(WORD)
@@ -6140,112 +6249,3 @@ C     check if there is leftovers
       RETURN
       END
 
-*******************************************************************
-C  /* Deck get_my */
-      SUBROUTINE GET_MY(I,J,DIP,MY)
-
-C Input: I,J,DIP
-C Output: MY
-C Get the polarizability tensor MY at site I due to polarizability
-C tensor DIP at site J.
-      IMPLICIT NONE
-#include <mxcent.h>
-#include <qmmm.h>
-
-      LOGICAL EXCENT
-      INTEGER I, J, K, L, NLDIM, NTOTI
-      DOUBLE PRECISION AMAT,TTENS,ATMAT,DIP,MY
-      DOUBLE PRECISION TEMPJ, TEMP, SCREEN, TEMPI,DIST,DIST2,DIST3,DIST5
-      DOUBLE PRECISION ELEM,FEIJ,FTIJ, D0, D1, D3I, D6I
-      DIMENSION AMAT(3,3),TTENS(3,3),ATMAT(3,3),DIP(3),MY(3)
-      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
-
-      CALL QENTER('GET_MY')
-
-      CALL DZERO(MY,3)
-      IF (J .NE. I) THEN
-        EXCENT = .FALSE.
-        DO L=1,NEXLST
-          IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
-        ENDDO
-
-        IF (.NOT. EXCENT) THEN
-C     Get the polarizability tensor for this site
-          DO K=1,3
-            DO L=1,3
-              AMAT(K,L)  = 0.0D0
-            ENDDO
-          ENDDO
-
-          IF (IPOLTP .EQ. 1)  THEN
-            DO L=1,3
-              AMAT(L,L) = POLIMM(I)
-            ENDDO
-          ELSE IF (IPOLTP .EQ. 2)  THEN
-            AMAT(1,1) = POLMM(1,I)
-            AMAT(1,2) = POLMM(2,I)
-            AMAT(1,3) = POLMM(3,I)
-            AMAT(2,1) = POLMM(2,I)
-            AMAT(2,2) = POLMM(4,I)
-            AMAT(2,3) = POLMM(5,I)
-            AMAT(3,1) = POLMM(3,I)
-            AMAT(3,2) = POLMM(5,I)
-            AMAT(3,3) = POLMM(6,I)
-          ENDIF
-
-C     Now calculate the T tensor for these sites
-          DIST2 = 0.0D0
-          DO K=1,3
-            DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
-          ENDDO
-          DIST  = SQRT(DIST2)
-          DIST3 = DIST**3
-          DIST5 = DIST**5
-
-          DO K=1,3
-            DO L=1,3
-
-C     Include damping in the exponential form
-C     JPC A 102 (1998) 2399
-              IF (MMDAMP) THEN
-                IF (IPOLTP .EQ. 1) THEN
-                  TEMPI = POLIMM(I)
-                  TEMPJ = POLIMM(J)
-                ELSE IF (IPOLTP .EQ. 2) THEN
-                  TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
-                  TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-                ENDIF
-                TEMP = (TEMPI*TEMPJ)**(D6I)
-                SCREEN = 2.1304*DIST/TEMP
-                FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
-     &                     *EXP(-SCREEN)
-                FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
-     &                     *EXP(-SCREEN)
-              ELSE
-                FEIJ = D1
-                FTIJ = D1
-              ENDIF
-
-              ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
-     &                          (MMCORD(L,I) - MMCORD(L,J))
-              ELEM = ELEM/DIST5
-              IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
-              TTENS(K,L) = ELEM
-            ENDDO
-          ENDDO
-
-C     calculate alpha*T
-          CALL DGEMM('N','N',3,3,3,1.D0,AMAT,3,
-     &                   TTENS,3,0.D0,ATMAT,3)
-
-          NLDIM = 3
-          NTOTI = MAX(NLDIM,1)
-          CALL DGEMV('N',NLDIM,NLDIM,D1,ATMAT,NTOTI,DIP,1,D0,MY,1)
-        ENDIF
-      ENDIF
-
-      CALL QEXIT('GET_MY')
-
-      RETURN
-      END
