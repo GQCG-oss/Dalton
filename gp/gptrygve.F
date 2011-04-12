@@ -1336,7 +1336,7 @@ C
       ELSE IF (TASK(1:5) .EQ. 'OPENE') THEN
          INQUIRE(FILE=FILTMP(1:FILELN),OPENED=VALUE)
       ELSE
-         CALL QUIT('Unknown inquire status requested')
+         CALL QUIT('Unknown inquire status requested: '//TASK)
       END IF
       RETURN
       END
