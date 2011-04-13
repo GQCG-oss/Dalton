@@ -15,7 +15,7 @@
  NOTE : MXSHEL should have value of MXSHEL in maxorb.h
 #endif
 #define MXSHEL 750
-#define MAXNOD 800
+#define MAXNOD 2000
 #define NPARI  ((MAXNOD + 1) + 6)
 #define MAXTSK ( MXSHEL * (MXSHEL + 1) / 2 )
 extern struct common_infpar {
@@ -41,7 +41,7 @@ C           Character (NODNAM,MYNAME) should NOT be sent to slaves
 C     THUS: NPARI is length from NODTOT,...,PARIO
 C
       INTEGER   MAXNOD, NPARI, MAXTSK
-      PARAMETER ( MAXNOD = 800, NPARI = (MAXNOD + 1) + 6 )
+      PARAMETER ( MAXNOD = 2000, NPARI = (MAXNOD + 1) + 6 )
       PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
