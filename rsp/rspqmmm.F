@@ -97,19 +97,13 @@ C                                                   can arrise in that case
 
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
-      KFSOLMO = KUBO    + NOSIM*N2ORBX
-      KUFSOL  = KFSOLMO + NNORBX
-      KRXYO   = KUFSOL  + N2ORBX
+      KRXYO   = KUBO    + NOSIM*N2ORBX
       IF (TRPLET) THEN
         KRXYOT  = KRXYO   + NOSIM*N2ORBX
-        KURXAC  = KRXYOT  + NOSIM*N2ORBX
+        KEFIELD = KRXYOT  + NOSIM*N2ORBX
       ELSE
-        KURXAC  = KRXYO   + NOSIM*N2ORBX
+        KEFIELD = KRXYO   + NOSIM*N2ORBX
       ENDIF
-      KTRMO   = KURXAC  + N2ASHX
-      KUTR    = KTRMO   + NNORBX
-      KUTRX   = KUTR    + N2ORBX
-      KEFIELD = KUTRX   + N2ORBX
       KINDMOM = KEFIELD + 3*NNZAL
       IF (MMMAT) THEN
         KINVMAT = KINDMOM + 3*NNZAL
@@ -123,14 +117,8 @@ C                                                   can arrise in that case
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KUBO),NOSIM*N2ORBX)
-      CALL DZERO(WRK(KFSOLMO),NNORBX)
-      CALL DZERO(WRK(KUFSOL),N2ORBX)
       CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
-      CALL DZERO(WRK(KURXAC),N2ASHX)
-      CALL DZERO(WRK(KTRMO),NNORBX)
-      CALL DZERO(WRK(KUTR),N2ORBX)
-      CALL DZERO(WRK(KUTRX),N2ORBX)
       CALL DZERO(WRK(KEFIELD),3*NNZAL)
       CALL DZERO(WRK(KINDMOM),3*NNZAL)
       IF (MMMAT) CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
