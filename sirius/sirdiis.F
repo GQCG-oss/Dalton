@@ -487,8 +487,7 @@ Chj      ... if (GEOWLK) then
          EMCGEO = EMCOLD
          DEPGEO = DEPRED
       END IF
-C ahs parallel QMMM initialization (send QMMM data to nodes)
-C      IF (QMMM .AND. NODTOT .GE. 1) CALL PARQMMM_INIT()
+C
   100 CONTINUE
          ITDIIS = ITDIIS + 1
          JTDIIS = JTDIIS + 1

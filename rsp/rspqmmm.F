@@ -43,6 +43,7 @@ C
 #include <mxcent.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <priunit.h>
 #include <dummy.h>
 #include <inftap.h>
@@ -74,6 +75,8 @@ C
       LOCDEB = .FALSE.
 
       CALL QENTER('QMMMLNO')
+
+      DTIME = SECOND()
 
       IF (NNZAL .EQ. 0) THEN ! no pol. and nothing to do here
         CALL QEXIT('QMMMLNO')
@@ -168,6 +171,8 @@ C     Read the relay matrix from file
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
       END IF
 
+      DTIME = SECOND() - DTIME
+      TMMLNO0 = TMMLNO0 + DTIME
 C     In contrast to the old code, the zero-order contribution, i.e.
 C     - sum_a mu_ind_a t_a_pq has been included since we in 
 C     sirius do not subtract this from the fock/ks-operator. We here only 
@@ -177,6 +182,7 @@ C     response/change in the density due to the applied perturbation.
 C
       DO 200 IOSIM = 1,NOSIM
 
+        DTIME = SECOND()
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX
          IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
          JUBO  = KUBO  + (IOSIM-1)*N2ORBX
@@ -215,9 +221,11 @@ C-------------------------------------------------------
            CALL OUTPUT(WRK(KEFIELD),1,NDIM,1,1,NDIM,1,1,LUPRI)
            WRITE(LUPRI,*)
          ENDIF
-
+         DTIME = SECOND() - DTIME
+         TMMLNO1 = TMMLNO1 + DTIME
 C        Calculate the induced dipoles corresponding to this field
 
+        DTIME = SECOND()
          IF (MMMAT) THEN
            CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEFIELD), 1,
      &                ZERO, WRK(KINDMOM), 1)
@@ -236,6 +244,9 @@ C        Calculate the induced dipoles corresponding to this field
 C        Now we need the integrals again transformed to the MO basis. 
 C        These could have been stored
 C        before, but we choose to do all of this integral-direct.
+         DTIME = SECOND() - DTIME
+         TMMLNO2 = TMMLNO2 + DTIME
+         DTIME = SECOND()
          
          IF (TRPLET) THEN
             LRXYO = JRXYOT
@@ -257,12 +268,15 @@ C        before, but we choose to do all of this integral-direct.
                LRI = LRI + 3
  202        CONTINUE 
          ENDIF
+         DTIME = SECOND() - DTIME
+         TMMLNO3 = TMMLNO3 + DTIME
  200  CONTINUE
 
 C--------------------------------------------
 C 3.  Add effective operators to response
 C--------------------------------------------
 
+      DTIME = SECOND()
 
       IF (TRPLET) THEN
          CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,EVECS(1,1),WRK(KRXYO))
@@ -271,6 +285,8 @@ C--------------------------------------------
          CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYO))
       ENDIF
 
+      DTIME = SECOND() - DTIME
+      TMMLNO3 = TMMLNO3 + DTIME
       CALL QEXIT('QMMMLNO')
       RETURN
       END 
@@ -304,6 +320,7 @@ C
 #include <mxcent.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <orgcom.h>
@@ -330,6 +347,7 @@ C
 
       CALL QENTER('QMMMQRO')
 
+      DTIME = SECOND()
       IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 
       LOCDEB = .FALSE.
@@ -437,6 +455,10 @@ C     Unpack symmetry blocked CMO
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO',-KLAST,LWRK2)
 
+      DTIME = SECOND() - DTIME
+      TMMQRO0 = TMMQRO0 + DTIME
+      DTIME = SECOND()
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK(KLAST),LWRK2)
@@ -451,8 +473,11 @@ C     Unpack symmetry blocked CMO
   100   CONTINUE
       ENDIF
 
+      DTIME = SECOND() - DTIME
+      TMMQRO1 = TMMQRO1 + DTIME
 C     Calculate the induced dipoles corresponding to the 
 C     (transformed) fields 1 and 2
+      DTIME = SECOND()
 
       NDIM = 3*NNZAL
       NTOTI = MAX(NDIM,1)
@@ -499,10 +524,13 @@ C     (transformed) fields 1 and 2
         WRITE(LUPRI,*)
       ENDIF
 
+      DTIME = SECOND() - DTIME
+      TMMQRO2 = TMMQRO2 + DTIME
 C     Now we need the integrals again transformed to the MO basis 
 C     and also one-index transformed integrals. 
 C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
+      DTIME = SECOND()
 
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M2(WRK(KIND1),WRK(KIND2),WRK(KUCMO),
@@ -519,6 +547,9 @@ C     before, but we choose to do all of this integral-direct.
  101    CONTINUE
       ENDIF
 
+      DTIME = SECOND() - DTIME
+      TMMQRO3 = TMMQRO3 + DTIME
+      DTIME = SECOND()
 C       Make the gradient
 C
 C     / <0| [qj ,TRES] |0> \
@@ -546,6 +577,8 @@ C
      *            XINDX,MJWOP,WRK(KWRK),LWRK1,LORB,LCON,LREF)
 C
       IF (IPQMMM .GT. 1) CALL TIMER('QMMMQRO',TIMSTR,TIMEND)
+      DTIME = SECOND() - DTIME
+      TMMQRO4 = TMMQRO4 + DTIME
       CALL QEXIT('QMMMQRO')
       RETURN
       END
@@ -578,6 +611,7 @@ C
 #include <mxcent.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <orgcom.h>
@@ -598,6 +632,8 @@ C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       CALL QENTER('QMMMCRO')
+
+      DTIME = SECOND()
 
       IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 
@@ -708,6 +744,10 @@ C     Unpack symmetry blocked CMO
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO',-KLAST,LWRK2)
 
+      DTIME = SECOND() - DTIME
+      TMMCRO0 = TMMCRO0 + DTIME
+      DTIME = SECOND()
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
@@ -724,6 +764,9 @@ C     Unpack symmetry blocked CMO
  100    CONTINUE
       ENDIF
 
+      DTIME = SECOND() - DTIME
+      TMMCRO1 = TMMCRO1 + DTIME
+      DTIME = SECOND()
 C     Calculate the induced dipoles corresponding to the 
 C     (transformed) fields 1, 2 and 3 either by matrix inversion or 
 C     iteratively.
@@ -799,6 +842,10 @@ C     and also one-index transformed integrals.
 C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
 
+      DTIME = SECOND() - DTIME
+      TMMCRO2 = TMMCRO2 + DTIME
+      DTIME = SECOND()
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M2(WRK(KIND1),WRK(KIND2),WRK(KIND3),WRK(KUCMO),
      &        WRK(KTRES),ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
@@ -814,6 +861,10 @@ C     before, but we choose to do all of this integral-direct.
             LRI = LRI + 3
  101     CONTINUE
       ENDIF
+
+      DTIME = SECOND() - DTIME
+      TMMCRO3 = TMMCRO3 + DTIME
+      DTIME = SECOND()
 
 C       Make the gradient
 C
@@ -842,6 +893,9 @@ C
      *            XINDX,MJWOP,WRK(KLAST),LWRK2,LORB,LCON,LREF)
 
       IF (IPQMMM .GT. 1) CALL TIMER('QMMMCRO',TIMSTR,TIMEND)
+
+      DTIME = SECOND() - DTIME
+      TMMCRO4 = TMMCRO4 + DTIME
 
       CALL QEXIT('QMMMCRO')
       RETURN

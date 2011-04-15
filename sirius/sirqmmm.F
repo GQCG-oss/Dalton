@@ -785,8 +785,8 @@ C       of atoms in previous and current run.
 
         IF (.NOT. FIXDIP) THEN
           DTIME = SECOND()
-          CALL GET_IND_DIPOLES_2(DCAO,NNZAL,WRK(KINDMOM),WRK(KWRK2),
-     &                             LWRK2,IPRINT)
+          CALL GET_IND_DIPOLES_2(DCAO,NNZAL,WRK(KINDMOM),
+     &                           WRK(KWRK2),LWRK2,IPRINT)
           DTIME = SECOND() - DTIME
           TMMGID2 = TMMGID2 + DTIME
         ELSE
@@ -2120,7 +2120,8 @@ c
 
 C**************************************************************************************
 C  /* Deck GET_IND_DIPOLES_2 */
-      SUBROUTINE GET_IND_DIPOLES_2(DCAO,POLDIM,INDMOM,WRK,LWRK,IPRINT)
+      SUBROUTINE GET_IND_DIPOLES_2(DCAO,POLDIM,INDMOM,
+     &                             WRK,LWRK,IPRINT)
 C
 C A subroutine to calculate induced dipole moments by simple Jacobi iteration
 C
@@ -2352,7 +2353,6 @@ C JK
       BTIME = SECOND()
 
       LOCDEB = .FALSE.
-C      LOCDEB = .TRUE.
 
 c      IF (IOPT .EQ. 1) THRESL = THMMIT
 c      IF (IOPT .EQ. 2) THRESL = SQRT(THMMIT)/10.0D0
@@ -2557,9 +2557,8 @@ C       induced dipoles, i.e. not only the diagonal part
         WRITE(LUPRI,*) 'Acc. iterations:', NMMAC
       ENDIF
 
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-      END IF
+      IF (FIRST) FIRST = .FALSE.
+
       BTIME = SECOND() - BTIME
       TF2QMMM = TF2QMMM + BTIME
 
@@ -4859,7 +4858,17 @@ C  /* Deck qmmmtimes */
       ELSEIF (WORD .EQ. 'RESPONSE') THEN
         WRITE(LUPRI,1) 'QMMMRSP',TMMRSP
         WRITE(LUPRI,2) 'QMMMLNO      ',TMMLNO
+        WRITE(LUPRI,3) 'QMMMLNO0     ',TMMLNO0
+        WRITE(LUPRI,3) 'QMMMLNO1     ',TMMLNO1
+        WRITE(LUPRI,3) 'QMMMLNO2     ',TMMLNO2
+        WRITE(LUPRI,3) 'QMMMLNO3     ',TMMLNO3
+        WRITE(LUPRI,3) 'QMMMLNO4     ',TMMLNO4
         WRITE(LUPRI,2) 'QMMMQRO      ',TMMQRO
+        WRITE(LUPRI,3) 'QMMMQRO0     ',TMMQRO0
+        WRITE(LUPRI,3) 'QMMMQRO1     ',TMMQRO1
+        WRITE(LUPRI,3) 'QMMMQRO2     ',TMMQRO2
+        WRITE(LUPRI,3) 'QMMMQRO3     ',TMMQRO3
+        WRITE(LUPRI,3) 'QMMMQRO4     ',TMMQRO4
         WRITE(LUPRI,2) 'QMMMCRO      ',TMMCRO
         IF (MMITER) THEN
           WRITE(LUPRI,2) 'F2QMMM       ',TF2QMMM
@@ -4872,6 +4881,7 @@ C  /* Deck qmmmtimes */
 
  1    FORMAT( '     - total time used in ',A,': ',F10.2,' seconds')
  2    FORMAT( '       - total time used in ',A,': ',F10.2,' seconds')
+ 3    FORMAT( '         - total time used in ',A,': ',F10.2,' seconds')
 
       CALL QEXIT('QMMMTIMES')
 
@@ -4981,6 +4991,7 @@ C     Send data to slaves (Lick it up)
       CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMDIIS,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(LOCDEB,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMDAMP,1,'LOGICAL',MASTER)
 
 C     The loop (Shock me)
       LNUM = 0
@@ -5128,6 +5139,7 @@ C     Receiving data from master (I was made for lovin' you)
       CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMDIIS,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(LOCDEB,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMDAMP,1,'LOGICAL',MASTER)
 
 C     Do the work (I love it load)
 
@@ -6122,10 +6134,10 @@ C     Wake up slaves
         ELSE
           DIPCON = .FALSE. 
           IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-          IF (MMDIIS) THEN
+          IF ( MMDIIS ) THEN
             CALL DCOPY(NDIM,INDMOM,1,VEC(ITER*NDIM+1),1)
             CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,INDP1,
-     *                                 WRK(KLAST),LWRK2,PIRINT)
+     *                                 WRK(KLAST),LWRK2,IPRINT)
           ELSE 
             CALL DCOPY(NDIM,INDMOM,1,INDP1,1)
           ENDIF

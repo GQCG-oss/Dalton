@@ -418,7 +418,7 @@ C
      *                   UDV,WRK(KFREE),LFREE,
      *                   KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
      *                   ISPINA,ISPINC,ISPINB)
-            DTIME = SECOND() - DTTIME
+            DTIME = SECOND() - DTIME
             TMMQRO = TMMQRO + DTIME
             TMMRSP = TMMRSP + DTIME
          END IF
