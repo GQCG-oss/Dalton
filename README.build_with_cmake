@@ -46,7 +46,6 @@ On many clusters you need to load cmake:
    $ module load cmake
 
 Now:
-   $ ./pamadm --a [--xcfun]
    $ mkdir build
    $ cd build
    $ cmake ..
@@ -54,7 +53,6 @@ Now:
 
 There is nothing special about the directory "build".
 You can do this instead:
-   $ ./pamadm --a [--xcfun]
    $ mkdir /buildpath
    $ cd /buildpath
    $ cmake /sourcepath
