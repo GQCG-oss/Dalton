@@ -1,0 +1,267 @@
+#! /usr/bin/env python
+
+# primitive frontend to cmake
+# radovan bast <radovan.bast@uit.no> 2011-04-15
+
+import os
+import sys
+import string
+import subprocess
+from optparse import OptionParser, OptionGroup
+
+root_directory = os.path.realpath(__file__)[:-5]
+
+default_path = root_directory + 'build/'
+
+# define example usage
+
+usage = '''
+  Examples:
+    ./%prog --fc=gfortran --debug
+    ./%prog --fc=ifort --cc=icc --prefix=/path/to/build/dir/
+    ./%prog --fc=mpif90 --cc=mpicc --mpi --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+    ./%prog --fc=pgf90 --cc=pgcc --nomath
+    ./%prog --auto'''
+
+# initialize parser
+
+parser = OptionParser(usage)
+
+# define options
+
+group = OptionGroup(parser, 'Basic options')
+group.add_option('--auto',
+                 action='store_true',
+                 dest='auto',
+                 default=False,
+                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %default]')
+group.add_option('--fc',
+                 type='string',
+                 action='store',
+                 dest='fc',
+                 default=None,
+                 help='set the Fortran compiler [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--cc',
+                 type='string',
+                 action='store',
+                 dest='cc',
+                 default=None,
+                 help='set the C compiler [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--cpp',
+                 type='string',
+                 action='store',
+                 dest='cpp',
+                 default=None,
+                 help='set the C++ compiler [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--math',
+                 type='string',
+                 action='store',
+                 dest='math',
+                 default=None,
+                 help='provide math library to link [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--nomath',
+                 action='store_true',
+                 dest='nomath',
+                 default=False,
+                 help='force the use of own math library [default: %default]')
+group.add_option('--mpi',
+                 action='store_true',
+                 dest='mpi',
+                 default=False,
+                 help='build using MPI parallelization [default: %default]')
+group.add_option('--omp',
+                 action='store_true',
+                 dest='omp',
+                 default=False,
+                 help='build using OpenMP parallelization [default: %default]')
+group.add_option('--int64',
+                 action='store_true',
+                 dest='int64',
+                 default=False,
+                 help='build for 64bit integers [default: %default]')
+group.add_option('--show',
+                 action='store_true',
+                 dest='show',
+                 default=False,
+                 help='show cmake command and exit [default: %default]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'Change default paths')
+group.add_option('--scratch',
+                 type='string',
+                 action='store',
+                 dest='scratch',
+                 default=None,
+                 help='set the scratch directory [default: will try /work, /scratch, /scr, /temp, /tmp]',
+                 metavar='PATH')
+group.add_option('--prefix',
+                 type='string',
+                 action='store',
+                 dest='prefix',
+                 default=default_path,
+                 help='set the build path (you can build several binaries with the same source) [default: %default]',
+                 metavar='PATH')
+group.add_option('--install',
+                 type='string',
+                 action='store',
+                 dest='install',
+                 default=None,
+                 help='set the install path for make install [default: %default]',
+                 metavar='PATH')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'Advanced options')
+group.add_option('--debug',
+                 action='store_true',
+                 dest='debug',
+                 default=False,
+                 help='build in debug mode (no optimization) [default: %default]')
+group.add_option('--check',
+                 action='store_true',
+                 dest='check',
+                 default=False,
+                 help='enable bounds checking [default: %default]')
+group.add_option('--coverage',
+                 action='store_true',
+                 dest='coverage',
+                 default=False,
+                 help='enable code coverage [default: %default]')
+group.add_option('-D',
+                 action="append",
+                 dest='cmake',
+                 default=[],
+                 help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1)',
+                 metavar='STRING')
+parser.add_option_group(group)
+
+# process input
+
+(options, args) = parser.parse_args()
+
+# find out whether cmake exists
+
+def which(program):
+    import os
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+if not which('cmake'):
+    # there is no cmake
+    # print info
+    print '   You are not running autoconf/automake tools!'
+    print '   This code is built using cmake'
+    print
+    print '   cmake is not found'
+    print '   get cmake at http://www.cmake.org/'
+    print '   on many clusters cmake is installed'
+    print '   but you have to load it first:'
+    print '   $ module load cmake'
+    # and exit
+    sys.exit()
+
+if len(sys.argv) == 1:
+    # user has given no arguments: print help and exit
+    print parser.format_help().strip()
+    sys.exit()
+
+# create cmake command from flags
+
+command = ''
+
+if not options.auto:
+    if options.fc:
+        command += ' FC=%s' % options.fc
+    if options.cc:
+        command += ' CC=%s' % options.cc
+    if options.cpp:
+        command += ' CXX=%s' % options.cpp
+
+command += ' cmake'
+
+if options.nomath:
+    command += ' -DENABLE_EXTERNAL_MATH=0'
+if options.math:
+    command += ' -DUSERDEFINED_LIBS="%s"' % options.math
+if options.mpi:
+    command += ' -DENABLE_MPI=1'
+if options.omp:
+    command += ' -DENABLE_OMP=1'
+
+if options.int64:
+    command += ' -DENABLE_64BIT_INTEGERS=1'
+if options.check:
+    command += ' -DENABLE_BOUNDS_CHECK=1'
+if options.coverage:
+    command += ' -DENABLE_CODE_COVERAGE=1'
+if options.install:
+    command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
+if options.scratch:
+    command += ' -DSCRATCH_DIR=' + options.scratch
+
+if options.debug:
+    command += ' -DCMAKE_BUILD_TYPE=Debug'
+else:
+    command += ' -DCMAKE_BUILD_TYPE=Release'
+
+if options.cmake:
+    for definition in options.cmake:
+        command += ' -D%s' % definition
+
+command += ' %s' % root_directory
+
+print '   CMake command: %s\n' % command
+if options.show:
+    sys.exit()
+
+build_path = options.prefix
+
+if not os.path.isdir(build_path):
+    # if you change this to proper python make it mkdir *with parent*
+    os.system('mkdir -p %s' % build_path)
+os.chdir(build_path)
+
+p = subprocess.Popen(command,
+                     shell=True,
+                     stdin=subprocess.PIPE,
+                     stdout=subprocess.PIPE)
+
+s = p.communicate()[0]
+print s
+
+normal_cmake_termination = True
+if 'Configuring incomplete' in s:
+    normal_cmake_termination = False
+
+if normal_cmake_termination:
+    print '   configure step is done'
+    print '   now you need to compile the sources'
+    print
+    print '   to compile with configured parameters (recommended):'
+    print '   $ cd ' + build_path
+    print '   $ make'
+    print
+    print '   to modify configured parameters and then compile:'
+    print '   $ cd ' + build_path
+    print '   $ ccmake ' + root_directory
+    print '   $ make'
+
+    file_name = 'rebuild'
+    f = open(build_path + file_name, 'w')
+    f.write('%s; make' % command)
+    f.close()
+    os.system('chmod 700 %s' % build_path + file_name)
