@@ -4,7 +4,7 @@ message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_I
 # Fortran compilers
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    set(CMAKE_Fortran_FLAGS         "-x f95-cpp-input -DVAR_GFORTRAN -DGFORTRAN=445")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     if(ENABLE_64BIT_INTEGERS)
@@ -25,7 +25,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
-    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95 -cpp")
+    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
     if(ENABLE_64BIT_INTEGERS)
@@ -46,7 +46,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -fpp1 -DVAR_IFORT")
+    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
     if(ENABLE_64BIT_INTEGERS)
