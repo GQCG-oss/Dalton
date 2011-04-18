@@ -29,6 +29,10 @@ if(    NOT cmake_build_type_tolower STREQUAL "debug"
 	Allowed values are Debug, Release, RelWithDebInfo (case-insensitive).")
 endif()
 
+# do not rebuild if rules (compiler flags) change
+# this has advantages and disadvantages
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
