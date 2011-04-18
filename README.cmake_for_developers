@@ -46,8 +46,7 @@ Advantages of using cmake:
     ------------------------------------------------
 
 DIRAC: new files are automatically added by pamadm which generates cmake/Sources.list
-Dalton trunk: add/remove files in CMakeLists.txt of the corresponding subdirectory
-Dalton linsca: add/remove files in cmake/Sources.list
+Dalton: add/remove files in cmake/Sources.list. The order does not matter.
 
 
  3. How do I set compiler flags?

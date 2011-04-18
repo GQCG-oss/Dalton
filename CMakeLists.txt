@@ -90,6 +90,7 @@ if(THIS_CODE STREQUAL "linsca")
 endif()
 
 include(Archs)
+include(Sources)
 include(Compilers)
 
 set(LIBS)
@@ -126,17 +127,19 @@ if(ENABLE_GEN1INT)
     message(FATAL_ERROR "fix Gen1Int compilation in CMakeLists.txt")
 endif()
 
+set(CMAKE_Fortran_MODULE_DIRECTORY
+    ${PROJECT_BINARY_DIR}/modules
+    )
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_BINARY_DIR}/modules
+    ${PROJECT_SOURCE_DIR}/mm
+    ${PROJECT_SOURCE_DIR}/dft
+    ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
-    )
-
-set(CMAKE_Fortran_MODULE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/modules
     )
 
 configure_file(${CMAKE_SOURCE_DIR}/dalton.in
@@ -144,75 +147,14 @@ configure_file(${CMAKE_SOURCE_DIR}/dalton.in
 execute_process(COMMAND
 	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
 
-if(THIS_CODE STREQUAL "linsca")
-    include_directories(
-        ${CMAKE_SOURCE_DIR}/mm
-        ${CMAKE_SOURCE_DIR}/dft
-        )
+add_executable(
+    dalton.x
+    ${C_SOURCES}
+    ${FREE_FORTRAN_SOURCES}
+    ${FIXED_FORTRAN_SOURCES}
+    )
 
-    include(Sources)
-
-    add_library(
-        linsca
-        ${LINSCA_SOURCES}
-        )
-else()
-    add_subdirectory(abacus)
-    add_subdirectory(amfi)
-    add_subdirectory(cc)
-    add_subdirectory(choles)
-    add_subdirectory(densfit)
-    add_subdirectory(dft)
-    add_subdirectory(eri)
-    add_subdirectory(lucita)
-    add_subdirectory(gp)
-    add_subdirectory(pdpack)
-    add_subdirectory(rsp)
-    add_subdirectory(sirius)
-    add_subdirectory(soppa)
-
-    set(SOURCES
-        abacus/dalton.F
-        )
-    set(SOURCE_LIBS
-        abacus
-        sirius
-        eri
-        abacus # sirius & eri have cross dependencies to abacus (ugly)
-        amfi
-        soppa
-        rsp
-        cc
-        choles
-        densfit
-        dft
-        lucita
-        pdpack
-        gp
-        )
-endif()
-
-if(THIS_CODE STREQUAL "linsca")
-    add_executable(
-        dalton.x
-        linears/lsdalton_wrapper.f90
-        )
-else()
-    add_executable(
-        dalton.x
-        ${SOURCES}
-        )
-endif()
-
-if(THIS_CODE STREQUAL "linsca")
-    target_link_libraries(
-        dalton.x
-        linsca
-        ${LIBS}
-        )
-else()
-    target_link_libraries(
-        dalton.x
-        ${SOURCE_LIBS} ${LIBS}
-        )
-endif()
+target_link_libraries(
+    dalton.x
+    ${LIBS}
+    )
