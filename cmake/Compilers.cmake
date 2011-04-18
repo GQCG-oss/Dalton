@@ -5,7 +5,7 @@ message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_I
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
