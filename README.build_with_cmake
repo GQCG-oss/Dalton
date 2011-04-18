@@ -50,6 +50,11 @@ Now:
    $ cd build
    $ cmake ..
    $ make
+Try also ccmake to modify parameters and [r]econfigure:
+   $ cd build
+   $ cmake ..
+   $ ccmake ..
+   $ make
 
 There is nothing special about the directory "build".
 You can do this instead:
