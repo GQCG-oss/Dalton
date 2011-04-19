@@ -1,14 +1,14 @@
-C
-C     FILE: nuclei.h
-C
+!
+!     FILE: nuclei.h
+!
       REAL*8  CHARGE, CORD, GNUEXP
       INTEGER NUCPRE, NUCNUM, NUCDEG, ISTBNU, NCTOT,                    &
      &        NUCIND, NUCDEP, NTRACO, ITRACO, NATOMS, NFLOAT,           &
      &        NBASIS, NLARGE, NSMALL, NPBAS,  NPLRG,  NPSML,            &
-     &        NCHTOT, INCENT, INUNIQ, NDEGNM, ISOTOP, IZATOM,
+     &        NCHTOT, INCENT, INUNIQ, NDEGNM, ISOTOP, IZATOM,           &
      &        NBASISAUX, NPBASAUX,    NAUX,   NPAUX
       INTEGER MULBSI
-C     MULBSI has been added for multiple basis sets (WK/UniKA/31-10-2002).
+!     MULBSI has been added for multiple basis sets (WK/UniKA/31-10-2002).
       LOGICAL NOORBT, GAUNUC
       COMMON /NUCLEI/ CHARGE(MXCENT), CORD(3,MXCENT), GNUEXP(MXCENT),   &
      &                NUCPRE(MXCENT), NUCNUM(MXCENT,8), NUCDEG(MXCENT), &
@@ -23,4 +23,4 @@ C     MULBSI has been added for multiple basis sets (WK/UniKA/31-10-2002).
       CHARACTER       NAMN*4, NAMEX*6, NAMDEP*6, NAMDPX*8
       COMMON /NUCLEC/ NAMN(MXCENT),   NAMEX(MXCOOR),                    &
      &                NAMDEP(MXCENT), NAMDPX(MXCOOR)
-C  -- end of nuclei.h --
+!  -- end of nuclei.h --
