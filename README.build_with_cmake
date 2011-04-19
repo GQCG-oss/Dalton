@@ -90,7 +90,7 @@ equivalent:
 Using cmake directly:
    $ mkdir build
    $ cd build
-   $ FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 ..
+   $ FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release ..
    $ make
 
 Using setup:
