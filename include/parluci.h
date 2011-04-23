@@ -18,8 +18,8 @@
      &        N_MASTER_SM, MYNEW_ID_SM_C, MYNEW_COMM_SM_C,              &
      &        NEWCOMM_PROC_SM_C, N_MASTER_SM_C, IXCOMM, IXCOMM_SZ,      &
      &        IXCOMM_RK, IBLOCKCOMM, NUM_BLOCKS, NUM_BLOCKS2,           &
-     &        NPTEST_VAR, IRC_SAVE, LUCIWT, JVEC_SF, LBLOCK_LUCI,       &
-     &        IAM_NOT_INV, IRUNPA,IODENSEPAR, NCBLOCKS_USED, IIOMOD,    &
+     &        NPTEST_VAR, IRC_SAVE,         JVEC_SF, LBLOCK_LUCI,       &
+     &        IAM_NOT_INV,                    NCBLOCKS_USED, IIOMOD,    &
      &        NFLGRPS, NROOT_INFO, IDISTROUTE, IPRINTSTAT,I_NZERO_LEN,  &
      &        MSLVOUT_REL, LUWRT, IIOMOD_REL, NFLGRPS_REL, NROOT_SAVE,  &
      &        NVEC_SAVE, L_COMBI, ISHARE_DENSM, IPARALLELIO,            &
@@ -38,8 +38,8 @@
      &                N_MASTER_SM, MYNEW_ID_SM_C, MYNEW_COMM_SM_C,      &
      &                NEWCOMM_PROC_SM_C, N_MASTER_SM_C,IXCOMM,          &
      &                IXCOMM_SZ,IXCOMM_RK, NUM_BLOCKS, NUM_BLOCKS2,     &
-     &                NPTEST_VAR, IRC_SAVE, LUCIWT, JVEC_SF,            &
-     &                LBLOCK_LUCI, IAM_NOT_INV, IRUNPA,IODENSEPAR,      &
+     &                NPTEST_VAR, IRC_SAVE,         JVEC_SF,            &
+     &                LBLOCK_LUCI, IAM_NOT_INV,                         &
      &                NCBLOCKS_USED, IIOMOD, NFLGRPS, NROOT_INFO,       &
      &                IDISTROUTE, IPRINTSTAT, LUWRT, IIOMOD_REL,        &
      &                NFLGRPS_REL, NROOT_SAVE, NVEC_SAVE, L_COMBI,      &
