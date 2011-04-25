@@ -1799,6 +1799,36 @@ CHJ      END IF
             CALL QUIT('Inconsistent input in ABACUS for SOPPA')
          END IF
       END IF
+CAMT--------------
+CAMT DFT Contributions for Magnetizabilities do not work with symmetry
+CAMT g-tensors and spin-rotation constants also do not work, put a 
+CAMT quit here to catch this...
+      IF ((NSYM.GT.1).AND.
+     &    (MAGSUS.OR.MOLGFA.OR.SPINRO).AND.(DFTRUN)) THEN
+            IF (MAGSUS) THEN
+              WRITE(LUPRI,'(5X,A50)')
+     &           'WARNING: Magnetic Suceptibilities requested with '
+              WRITE(LUPRI,'(5X,A50)')
+     &           '         DFT and symmetry but not yet implemented'
+            ENDIF
+            IF (MOLGFA) THEN
+              WRITE(LUPRI,'(5X,A50)')
+     &           'WARNING: Rotational g-tensors requested with     '
+              WRITE(LUPRI,'(5X,A50)')
+     &           '         DFT and symmetry but not yet implemented'
+            ENDIF
+            IF (SPINRO) THEN
+              WRITE(LUPRI,'(5X,A50)')
+     &           'WARNING: Spin-rotation constants requested with  '
+              WRITE(LUPRI,'(5X,A50)')
+     &           '         DFT and symmetry but not yet implemented'
+            ENDIF
+              WRITE(LUPRI,'(5X,A50)')
+     &           '         Please re-run with NoSymmetry...        '
+            CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
+      ENDIF
+CAMT--------------
+
 C
 C
 C
