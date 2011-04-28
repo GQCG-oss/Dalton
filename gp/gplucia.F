@@ -2499,17 +2499,7 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DOUBLE PRECISION   MATRIX(MATDIM,MATDIM),VECIN(2),VECOUT(2)
