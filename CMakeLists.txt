@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project(DALTON Fortran C)
 
+# do not rebuild if rules (compiler flags) change
+# this has advantages and disadvantages
+# set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+
 set(THIS_CODE "trunk")
 if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
@@ -75,8 +79,8 @@ set(SCRATCH_DIR
     "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch"
     CACHE STRING
     "Default scratch directory"
-    FORCE
     )
+message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
 
 set(BASIS_DIR
     "${CMAKE_SOURCE_DIR}/basis"
@@ -107,12 +111,7 @@ if(ENABLE_MPI)
 endif()
 
 if(ENABLE_OMP)
-    find_package(OpenMP)
-    if(OpenMP_FOUND)
-        add_definitions(-DVAR_OMP)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_COMPILE_FLAGS}")
-        include_directories(${OpenMP_INCLUDE_PATH})
-    endif()
+    add_definitions(-DVAR_OMP)
 endif()
 
 if(ENABLE_64BIT_INTEGERS)
@@ -126,6 +125,22 @@ if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
     message(FATAL_ERROR "fix Gen1Int compilation in CMakeLists.txt")
 endif()
+
+# set cdash buildname
+set(BUILDNAME
+    "BUILDNAME-not-set"
+    CACHE STRING
+    "Name of build on the dashboard"
+    )
+# set ctest own timeout
+set(DART_TESTING_TIMEOUT
+    "1200"
+    CACHE STRING
+    "Set timeout in seconds for every single test"
+    )
+#include(Tests)
+#include(CTest)
+#enable_testing()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
