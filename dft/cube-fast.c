@@ -1143,7 +1143,7 @@ add_dft_contribution(DftGrid* grid, CubeFastData* d)
     pref +=  RZZ*4*d->rox[x]*(d->sB*d->roCD + d->sC*d->roBD +
                d->sD*d->roBC)*drvs.fRZZ;
     pref +=  RZZ*4*(d->roBx[x]*(d->roC*d->sD + d->roD*d->sC) + 
-               d->roCx[x]*(d->roD*d->sB + d->roB*d->sC) +
+               d->roCx[x]*(d->roD*d->sB + d->roB*d->sD) +
                d->roDx[x]*(d->roC*d->sB + d->roB*d->sC))*drvs.fRZZ;
     pref +=  RRZ*2*(d->roBx[x]*d->roC*d->roD + d->roCx[x]*d->roB*d->roD +
                d->roDx[x]*d->roB*d->roC)*drvs.fRRZ;
