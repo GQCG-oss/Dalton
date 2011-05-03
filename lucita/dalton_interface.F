@@ -140,14 +140,24 @@ C
 *     Active electrons
 !     transfer to common block in lucita/lucinp.inc
       nactel = lucita_cfg_nr_active_e
+
+      if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
+        if(nactel .ne. ngso_lucita(lucita_cfg_nr_gas_spaces,2))then
+          write(lupri,'(/a,i3,a/a,i3/)')
+     &    ' Number of active electrons ==>',NACTEL,' must be identical',
+     &    ' with the max number of e- in the last GAS space ==>',
+     &      ngso_lucita(lucita_cfg_nr_gas_spaces,2)
+          call quit(' *** error in dalton_lucita: # of active electrons
+     &   does not match the max number of e- in the last GAS space.')
+        end if
+      end if
       if(nactel.lt.0)then
-        if(lucita_cfg_ci_type(1:6).eq.'GASCI '.or.
-     &     lucita_cfg_ci_type(1:6).eq.'RASCI ') then
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') then
             write(lupri,'(//A/A/)')
      &         ' Number of active electrons NACTEL must be',
      &         ' specified for this type of calculation. Quitting.'
-          call quit(' *** error in dalton_lucita: # electrons
-     &   (.NACTEL) must be specified for GASCI or RASCI.')
+          call quit(' *** error in dalton_lucita: # of active electrons
+     &   (.NACTEL) must be specified for RASCI.')
         end if
       end if
 *

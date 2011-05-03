@@ -148,6 +148,9 @@ contains
           call quit('Input error for .GAS SHELL under *LUCITA')
         end if
       end do
+
+!     set # of active electrons ==> max occupation in last GAS space
+      lucita_cfg_nr_active_e = ngso_lucita(lucita_cfg_nr_gas_spaces,2)
     end if
 
     if (kw_matches(word, '.RAS1  ')) then
