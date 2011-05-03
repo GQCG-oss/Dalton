@@ -123,7 +123,7 @@ contains
         if(islash <= 1)then
           write(lupri,'(/a,i2,a,i2/a/2a)') 'ERROR for *LUCITA .GAS SHELL shell no.',                           &
                 i,'/',lucita_cfg_nr_gas_spaces,'- the defining input line does not contain a "/":',            &
-                '- the bad line : ',INPUT_LINE
+                '- the bad line : ',input_line
           write(lupri,'(a)') '- Or the specification of the number of GAS-shells might be wrong! Check the input.'
           call quit('Input error for .GAS SHELL under *LUCITA')
         end if
@@ -134,7 +134,7 @@ contains
         if(ios /= 0)then
           write(lupri,'(/a,i2,a,i2/a/2a)') 'ERROR for *LUCITA .GAS SHELL shell no.',                           &
                 i,'/',lucita_cfg_nr_gas_spaces, '- the input line does not contain correct min max electrons', &
-                '- the bad line : ',INPUT_LINE
+                '- the bad line : ',input_line
           call quit('Input error for .GAS SHELL under *LUCITA')
         end if
 
@@ -148,40 +148,6 @@ contains
           call quit('Input error for .GAS SHELL under *LUCITA')
         end if
       end do
-    end if
-
-    if (kw_matches(word, '.GASSHE')) then
-
-      lucita_cfg_init_wave_f_type = 1
-      lucita_cfg_nr_gas_space_set = .true.
-
-      call kw_read(word, lucita_cfg_nr_gas_spaces)
-
-      if(lucita_cfg_nr_gas_spaces <= max_number_of_gas_spaces)then
-
-        do i = 1, lucita_cfg_nr_gas_spaces
-          read(unit_in, *) (ngsh_lucita(i,j), j=1,nsym)
-        end do
-
-      else
-        call quit('# gas spaces too high. max = 6.')
-      end if
-
-    end if
-
-    if (kw_matches(word, '.GASSPC')) then
-
-      lucita_cfg_minmax_occ_gas_set = .true.
-
-      if(.not.lucita_cfg_nr_gas_space_set)then 
-        call quit(' error in input reading: .GASSHE has to be specified before .GASSPC.')
-      else
-       
-        do i = 1, lucita_cfg_nr_gas_spaces
-          read(unit_in, *) (ngso_lucita(i,j), j=1,2)
-        end do
-      end if
-
     end if
 
     if (kw_matches(word, '.RAS1  ')) then
