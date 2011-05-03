@@ -85,7 +85,7 @@ C     QMMM contribution to the energy returned in EQMMM.
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_fck_ao */
       SUBROUTINE QMMM_FCK_AO(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
 
@@ -151,10 +151,10 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-C     All the corrections to the Fock/KS operator due to the static
-C     multipoles when the calculation is done in parallel
       DTIME = SECOND()
       IF (NODTOT.GE.1) THEN
+C     All the corrections to the Fock/KS operator due to the static
+C     multipoles when the calculation is done in parallel
         CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,LOCDEB,
      &                  WRK(KWRK1),LWRK1,IPRINT)
       ELSE
@@ -211,7 +211,7 @@ C     Finally, put back the dipole origin
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_charge */
       SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -319,7 +319,7 @@ C     Write integrals to file
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_dipole */
       SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -426,7 +426,7 @@ C     Write integrals to file
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_quadpole */
       SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -533,7 +533,7 @@ C     Write integrals to file
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_octupole */
       SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -641,7 +641,7 @@ C     Write integrals to file
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_polari */
       SUBROUTINE QMMM_POLARI(DCAO,ESOLT,TAO,LOCDEB,
      &                       WRK,LWRK,IPRINT)
@@ -653,7 +653,6 @@ C
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
-
 #include <qmmm.h>
 #include <mmtimes.h>
 #include <qm3.h>
@@ -678,7 +677,6 @@ C
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_POLARI')
-
 
 C     Zero out a list of centers having zero polarizability. We don't
 C     know yet the number of zero polarizabilities so we take the
@@ -767,8 +765,8 @@ C       of atoms in previous and current run.
         ENDIF
       ELSE IF (MMITER) THEN
 
-        KINDMOM = 1                               ! List for induced dipoles
-        KMAT    = KINDMOM + 3*NNZAL
+        KINDMOM = 1                 
+        KMAT    = KINDMOM + 3*NNZAL      ! List for induced dipoles
         KTAO    = KMAT    + 3*NNBASX
         KWRK2   = KTAO    + NNBASX
         LWRK2   = LWRK    - KWRK2 + 1
@@ -814,7 +812,7 @@ C     total solvation energy
       CALL DZERO(WRK(KTAO),NNBASX)
 
       IF (NODTOT .GE. 1) THEN
-        CALL QMMM_POLARI_M3(DCAO,WRK(KTAO),WRK(KINDMOM),
+        CALL MM_POLAR_CONTR_M(DCAO,WRK(KTAO),WRK(KINDMOM),
      &                      WRK(KWRK2),LWRK2,IPRINT)
       ELSE
 
@@ -826,7 +824,7 @@ C     total solvation energy
 
           IF (ZEROAL(I) .EQ. -1) GOTO 500
 
-          CALL MMPOLARI_ITER3(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
+          CALL GET_POL_CONTR(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
      &                        DCAO,WRK(KTAO),WRK(KWRK3),LWRK3)
 
           EDELD  = EDELD  + WRK(KEDALL)
@@ -877,7 +875,7 @@ C      IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
       RETURN
       END
 C
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmmfckmo */
       SUBROUTINE QMMMFCKMO(CMO,FSOL,WRK,LWRK,IPRINT)
 C
@@ -930,7 +928,7 @@ C
       CALL QEXIT('QMMMFCKMO')
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_IND_DIPOLES_1 */
       SUBROUTINE GET_IND_DIPOLES_1(DCAO,POLDIM,INVMAT,INDMOM,WRK,IPVT,
      &                             WRKV,LWRK,IPRINT)
@@ -953,16 +951,15 @@ C
 C   ZEROAL  - a vector containing +1 for polarizable MM centers and -1
 C             for non-polarizable
 C
-C Oct. 2009: JMO
-C   Changed the routines used to construct the classical response matrix to more
-C   efficient ones that use the fact that it is symmetric.
+C Oct. 2009: JMO 
+C   Changed the routines used to construct the classical response matrix
+C   to more efficient ones that use the fact that it is symmetric.
 C Sep 2010: JMO & KS
 C   Starting sharing of DFT/MM and CC/MM field routines
-C Oct 2010: AES
+C Oct 2010: AHS 
 C   Sharing of parallel and serial routines
 C Jan 2011: JMO
 C   Construct the classical response matrix using packed storage.
-C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -970,7 +967,6 @@ C
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
-
 #include <qmmm.h>
 #include <qm3.h>
 #include <inforb.h>
@@ -1041,7 +1037,7 @@ C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M1! AH
 
 C     Form F vector due to permanent MM moments
       IF (NODTOT .GE. 1) THEN
-        CALL QMMM_POLARI_M1(DCAO,WRK(KELF),POLDIM,
+        CALL MM_FIELD_M1(DCAO,WRK(KELF),POLDIM,
      &                      WRK(KEND),LWRK1,IPRINT)
       ELSE
 
@@ -1051,7 +1047,7 @@ C     Form F vector due to permanent MM moments
 
           IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-          CALL MMPOLARI_ITER1(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
+          CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
      &                          DCAO,LOCDEB,WRK(KEND),LWRK1)
           LRI = LRI + 3
  200    CONTINUE
@@ -1334,8 +1330,7 @@ C     Finally, write the nonzero induced dipoles to file
       CALL QEXIT('GET_IND_DIPOLES_1')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_CHARGE_ELFLD */
       SUBROUTINE GET_CHARGE_ELFLD(Q,XORI,YORI,ZORI,
      &                            XTAR,YTAR,ZTAR,
@@ -1402,7 +1397,7 @@ C
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_DIPOLE_ELFLD */
       SUBROUTINE GET_DIPOLE_ELFLD(MJUX,MJUY,MJUZ,
      &                            XORI,YORI,ZORI,
@@ -1484,7 +1479,7 @@ C
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_QUADRUPOLE_ELFLD */
       SUBROUTINE GET_QUADRUPOLE_ELFLD(QXX,QXY,QXZ,
      &                                QYY,QYZ,QZZ,
@@ -1609,10 +1604,9 @@ C
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck Put_To_File_1 */
       SUBROUTINE PUT_TO_FILE_1(FLNAME,NULOOP,DDATA)
-C**************************************************************
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -1635,6 +1629,7 @@ C
 C
       END
 C
+C******************************************************************************
 C**************************************************************
 C  /* Deck Get_From_File_1 */
       SUBROUTINE GET_FROM_FILE_1(FLNAME,NULOOP,DDATA)
@@ -1665,7 +1660,7 @@ C
 C
       END
 C
-C**************************************************************
+C******************************************************************************
 C  /* Deck MM_PROPS */
       SUBROUTINE MM_PROPS(WRK,LWRK,IPRINT)
 C
@@ -1726,8 +1721,7 @@ C
       CALL QEXIT('MM_PROPS')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck MM_POLARIZABILITY */
       SUBROUTINE MM_POLARIZABILITY(INVMAT,FULLMAT,BMATS,POLMAT,IPRINT)
 C
@@ -1866,8 +1860,7 @@ C     Contract to molecular polarizability
       CALL QEXIT('MM_POLARIZABILITY')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck MM_DIPANDCHARGE */
       SUBROUTINE MM_DIPANDCHARGE(WRK,LWRK,IPRINT)
 C
@@ -1996,8 +1989,7 @@ C     Add all contributions to the dipule moment
       CALL QEXIT('MM_DIPANDCHARGE')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck MM_OPTROT */
       SUBROUTINE MM_OPTROT(INVMAT,FULLMAT,POLCORD,IPRINT)
 C
@@ -2117,8 +2109,7 @@ c
       CALL QEXIT('MM_OPTROT')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_IND_DIPOLES_2 */
       SUBROUTINE GET_IND_DIPOLES_2(DCAO,POLDIM,INDMOM,
      &                             WRK,LWRK,IPRINT)
@@ -2209,7 +2200,7 @@ C     1. Form F vector due to permanent MM moments
 
       DTIME = SECOND()
       IF (NODTOT .GE. 1) THEN
-        CALL QMMM_POLARI_M2(DCAO,WRK(KELF),POLDIM,
+        CALL MM_FIELD_M2(DCAO,WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
       ELSE
 
@@ -2219,8 +2210,8 @@ C     1. Form F vector due to permanent MM moments
 
           IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-          CALL MMPOLARI_ITER2(I,LRI,WRK(KELF),DCAO,LOCDEB,
-     *                        WRK(KEND),LWRK1)
+          CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KEND),WRK(KEND),
+     *                   DCAO,LOCDEB,WRK(KEND),LWRK1)
           LRI = LRI + 3
 
  200    CONTINUE
@@ -2293,7 +2284,7 @@ C     Write the nonzero induced dipoles to file
       CALL QEXIT('GET_IND_DIPOLES_2')
       RETURN
       END
-C********************************************************************************************
+C******************************************************************************
 C  /* Deck F2QMMM */
       SUBROUTINE F2QMMM(ELF,POLDIM,INDMOM,WRK,LWRK,IOPT,IPRINT)
 C
@@ -2463,7 +2454,7 @@ C     Now iterate...  !
       LM = 0
       DIPCON = .FALSE.
       IF (NODTOT .GE. 1) THEN
-        CALL MMITER_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
+        CALL MMITER_INDDIP_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
      *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB,DIPCON,LM)
       ELSE
 
@@ -2730,7 +2721,7 @@ C JK
       CALL QEXIT('MM_DIIS_EXTRAPOLATION')
       RETURN
       END
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck DOMEP */
       SUBROUTINE DOMEP(CMO,WRK,KFRSAV,LFRSAV)
 
@@ -2933,7 +2924,7 @@ C     Only scf for the moment
       CALL QEXIT('DOMEP')
 
       END
-C*********************************************************************************************************
+C******************************************************************************
 #ifdef VAR_MPI
 C  /* Deck DOMEP_SLAVE */
       SUBROUTINE DOMEP_SLAVE(WRK,LWRK)
@@ -3019,7 +3010,7 @@ C  /* Deck DOMEP_SLAVE */
      &                IERR)
 
       END
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck DOMEP_LOOP */
       SUBROUTINE DOMEP_LOOP(XMEP,YMEP,ZMEP,NCENTERS,DENS,
      &                      WRK,LWRK,MEP,MEFX,MEFY,MEFZ)
@@ -3136,7 +3127,7 @@ C  /* Deck DOMEP_LOOP */
 
       END
 #endif
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck GET_OCTUPOLE_ELFLD */
       SUBROUTINE GET_OCTUPOLE_ELFLD(QXXX,QXXY,QXXZ,QXYY,QXYZ,
      &                              QXZZ,QYYY,QYYZ,QYZZ,QZZZ,
@@ -3312,7 +3303,7 @@ C
       RETURN
       END
 
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck make_matrix */
       SUBROUTINE MAKE_MATRIX(INVMAT,POLDIM)
 C
@@ -3520,7 +3511,7 @@ C               JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
 
       RETURN
       END
-C*******************************************************************************
+C******************************************************************************
 C 'Inside loops' routines (can be used both by parallel and sequential code) 
 C Arnfinn Oct. 2010
 C******************************************************************************
@@ -3657,7 +3648,7 @@ C     Now the QM nuclear contribution
       RETURN
       END
 C
-C********************************************************************
+C******************************************************************************
 C  /* Deck dipole_iter */
       SUBROUTINE DIPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      *                       TAO,WRK,LWRK,IPRTMP)
@@ -3842,8 +3833,7 @@ C     by writing CORD(1,J) - MMCORD(1,I)
 
       RETURN
       END
-
-C***************************************************************
+C******************************************************************************
 C  /* Deck quadpole_iter */
       SUBROUTINE QUADPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
@@ -3996,7 +3986,7 @@ C     Remember the factor of 1/2 from the Taylor expansion
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck octupole_iter */
       SUBROUTINE OCTUPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
@@ -4298,12 +4288,12 @@ C     Remember the factor of 1/6 from the Taylor expansion
 
       RETURN
       END
-C***********************************************************
-C  /* Deck mmpolari_iter1 */
-      SUBROUTINE MMPOLARI_ITER1(I,LRI,ELF,ELFEL,ELFNU,DCAO,
+C******************************************************************************
+C  /* Deck get_field */
+      SUBROUTINE GET_FIELD(I,LRI,ELF,ELFEL,ELFNU,DCAO,
      &                         LOCDEB,WRK,LWRK)
 
-#include <implicit.h>
+      IMPLICIT NONE
 #include <mxcent.h>
 #include <inforb.h>
 #include <nuclei.h>
@@ -4313,11 +4303,16 @@ C  /* Deck mmpolari_iter1 */
 #include <orgcom.h>
 #include <priunit.h>
 
+      INTEGER LWRK, I, LRI
+      DOUBLE PRECISION WRK, DCAO, ELF, ELFEL, ELFNU
       DIMENSION WRK(LWRK), DCAO(NNBASX)
       DIMENSION ELF(*), ELFEL(*), ELFNU(*)
       LOGICAL LSKIP, LOCDEB
 
-      CALL QENTER('MMPOLARI_ITER1')
+      INTEGER KMAT, KEND, LWRK1
+      DOUBLE PRECISION EXELCO, EYELCO, EZELCO, DDOT
+
+      CALL QENTER('GET_FIELD')
 
       KMAT  = 1
       KEND  = KMAT + 3*NNBASX
@@ -4337,7 +4332,7 @@ C     A) electronic contribution
       CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KEND),LWRK1)
 
       IF (LSKIP) THEN
-         CALL QEXIT('MMPOLARI_ITER1')
+         CALL QEXIT('GET_FIELD')
          RETURN
       END IF
 
@@ -4366,74 +4361,13 @@ C     B) nuclear contribution
          CALL CCMM_FNUC(ELF,LRI,I)
       END IF
 
-      CALL QEXIT('MMPOLARI_ITER1')
+      CALL QEXIT('GET_FIELD')
 
       RETURN
       END
-
-
-C***********************************************************
-C  /* Deck mmpolari_iter2 */
-      SUBROUTINE MMPOLARI_ITER2(I,LRI,ELF,DCAO,
-     &                         LOCDEB,WRK,LWRK)
-
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
-      
-C      INTEGER POLDIM
-      DIMENSION WRK(LWRK), DCAO(NNBASX), ELF(*)
-      LOGICAL LSKIP, LOCDEB
-
-      CALL QENTER('MMPOLARI_ITER2')
-
-      KMAT  = 1
-      KEND  = KMAT + 3*NNBASX
-      LWRK1 = LWRK - KEND + 1
-
-      CALL CCMM_FMUL(ELF,LRI,I)
-
-C     Add QM region contribution to the F vector
-C     A) electronic contribution
-
-      CALL DZERO(WRK(KMAT),3*NNBASX)
-      LSKIP = .FALSE.
-
-      CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KEND),LWRK1)
-
-      IF (LSKIP) THEN
-         CALL QEXIT('MMPOLARI_ITER2')
-         RETURN
-      END IF
-
-      EXELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-      EYELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
-      EZELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
-
-      ELF(LRI+0) = ELF(LRI+0) + EXELCO
-      ELF(LRI+1) = ELF(LRI+1) + EYELCO
-      ELF(LRI+2) = ELF(LRI+2) + EZELCO
-
-      IF (LOCDEB) THEN
-         WRITE(LUPRI,*) 'electronic field:',EXELCO,EYELCO,EZELCO
-      ENDIF
-
-C     B) nuclear contribution
-      CALL CCMM_FNUC(ELF,LRI,I)
-
-      CALL QEXIT('MMPOLARI_ITER2')
-
-      RETURN
-      END
-C***********************************************************
-C  /* Deck mmpolari_iter3 */
-      SUBROUTINE MMPOLARI_ITER3(I,DINDMOM,EDALL,DCAO,TAO,
+C******************************************************************************
+C  /* Deck get_pol_contr */
+      SUBROUTINE GET_POL_CONTR(I,DINDMOM,EDALL,DCAO,TAO,
      &                         WRK,LWRK)
 
 #include <implicit.h>
@@ -4452,7 +4386,7 @@ C  /* Deck mmpolari_iter3 */
       PARAMETER ( DMINV2 = -0.50D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0 )
 
-      CALL QENTER('MMPOLARI_ITER3')
+      CALL QENTER('GET_POL_CONTR')
 
       FACM1 = -1.0D0
 
@@ -4465,7 +4399,7 @@ C  /* Deck mmpolari_iter3 */
       CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KLAST),LWRK2)
 
       IF (LSKIP) THEN
-         CALL QEXIT('MMPOLARI_ITER3')
+         CALL QEXIT('GET_POL_CONTR')
          RETURN
       ENDIF
 
@@ -4711,11 +4645,11 @@ C     Octupole contribution
 
       ENDIF
 
-      CALL QEXIT('MMPOLARI_ITER3')
+      CALL QEXIT('GET_POL_CONTR')
 
       RETURN
       END
-*******************************************************************
+C******************************************************************************
 C  /* Deck get_my */
       SUBROUTINE GET_MY(I,J,DIP,MY)
 
@@ -4824,7 +4758,7 @@ C     calculate alpha*T
 
       RETURN
       END
-C***********************************************************
+C******************************************************************************
 C  /* Deck qmmmtimes */
       SUBROUTINE QMMMTIMES(WORD)
 
@@ -4847,7 +4781,7 @@ C  /* Deck qmmmtimes */
         IF (MMITER) THEN
           WRITE(LUPRI,*) '    - MMITER times:'
           WRITE(LUPRI,2) 'GET_IND_DIPOLES_2',TMMGID2
-          WRITE(LUPRI,2) 'MMPOLARI_ITER2   ',TMMPOL2
+          WRITE(LUPRI,2) 'GET_FIELD        ',TMMPOL2
           WRITE(LUPRI,2) 'F2QMMM           ',TF2QMMM
           WRITE(LUPRI,2) 'the iteration    ',TMMITER
           TMMGID2 = ZERO
@@ -5045,14 +4979,14 @@ C     Collect data from all slaves (Great expectations)
          EXPNST = EXPNST + WRK(KNSEL  + I - 1)
       END DO
 
+      ENUMUL = ECHCH
       ESOLT = ECHART + EDIPT + EQUADT + EOCTUP
 
       CALL QEXIT('PARQMMM_M')
 
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck parqmmm_s */
       SUBROUTINE PARQMMM_S(WRK,LWRK,IPRTMP)
 
@@ -5240,8 +5174,9 @@ C     Send data to master (Do you love me?)
       CALL QEXIT('PARQMMM_S')
       RETURN
       END
-C  /* Deck qmmm_polari_m1 */
-      SUBROUTINE QMMM_POLARI_M1(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mm_field_m1 */
+      SUBROUTINE MM_FIELD_M1(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5275,7 +5210,7 @@ C ----
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
 
-      CALL QENTER('QMMM_POLARI_M1')
+      CALL QENTER('MM_FIELD_M1')
 
       KELF  = 1
       KEND  = KELF + 3*POLDIM
@@ -5285,7 +5220,7 @@ C ----
          KEND    = KELFNU + 3*POLDIM
       ENDIF
       LWRK1 = LWRK - KEND
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_POLARI_M1',-KEND,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('MM_FIELD_M1',-KEND,LWRK)
 
 C     Beginning of parallel section
 
@@ -5367,14 +5302,13 @@ C     Collect data from all slaves
      &                   IERR)
       ENDIF
 
-      CALL QEXIT('QMMM_POLARI_M1')
+      CALL QEXIT('MM_FIELD_M1')
 
       RETURN
       END
-
-C*******************************************************
-C  /* Deck qmmm_polari_s1 */
-      SUBROUTINE QMMM_POLARI_S1(WRK,LWRK,IPRTMP)
+C******************************************************************************
+C  /* Deck mm_field_s1 */
+      SUBROUTINE MM_FIELD_S1(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5408,7 +5342,7 @@ C ----
       DIMENSION WRK(LWRK)
       INTEGER POLDIM
 
-      CALL QENTER('QMMM_POLARI_S1')
+      CALL QENTER('MM_FIELD_S1')
 
       QMMM = .TRUE.
       IPQMMM = IPRTMP
@@ -5432,7 +5366,7 @@ C     Receiving data from master
       KLAST   = KMAT    + 3*NNBASX
       LWRK2   = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S1',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MM_FIELD_S1',-KLAST,LWRK)
 
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
@@ -5474,7 +5408,7 @@ C     Do the work
       CALL MPIXRECV(LRI,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-         CALL MMPOLARI_ITER1(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
+         CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
      &                       WRK(KDCAO),.FALSE.,WRK(KLAST),LWRK2)
          GO TO 200
       ENDIF
@@ -5496,14 +5430,14 @@ C     Do the work
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 
-      CALL QEXIT('QMMM_POLARI_S1')
+      CALL QEXIT('MM_FIELD_S1')
 
       RETURN
       END
 C
-C****************************************************************
-C  /* Deck qmmm_polari_m2 */
-      SUBROUTINE QMMM_POLARI_M2(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mm_field_m2 */
+      SUBROUTINE MM_FIELD_M2(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5537,12 +5471,12 @@ C ----
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
 
-      CALL QENTER('QMMM_POLARI_M2')
+      CALL QENTER('MM_FIELD_M2')
 
       KELF  = 1
       KEND  = KELF + 3*POLDIM
       LWRK1 = LWRK - KEND
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_POLARI_M2',-KEND,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('MM_FIELD_M2',-KEND,LWRK)
 
 C     Beginning of parallel section
 
@@ -5608,14 +5542,13 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-      CALL QEXIT('QMMM_POLARI_M2')
+      CALL QEXIT('MM_FIELD_M2')
 
       RETURN
       END
-
-C***************************************************
-C  /* Deck qmmm_polari_s2 */
-      SUBROUTINE QMMM_POLARI_S2(WRK,LWRK,IPRTMP)
+C******************************************************************************
+C  /* Deck mm_field_s2 */
+      SUBROUTINE MM_FIELD_S2(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5649,9 +5582,10 @@ C ----
       DIMENSION WRK(LWRK)
       INTEGER POLDIM
 
-      CALL QENTER('QMMM_POLARI_S2')
+      CALL QENTER('MM_FIELD_S2')
 
       QMMM = .TRUE.
+      SPLDIP = .FALSE.          ! Not implemented for iterative QMMM
       IPQMMM = IPRTMP
 
 C     Receiving data from master
@@ -5665,7 +5599,7 @@ C     Receiving data from master
       KLAST   = KMAT    + 3*NNBASX
       LWRK2   = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S2',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MM_FIELD_S2',-KLAST,LWRK)
 
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
@@ -5703,8 +5637,8 @@ C     Do the work
       CALL MPIXRECV(LRI,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-         CALL MMPOLARI_ITER2(I,LRI,WRK(KELF),WRK(KDCAO),.FALSE.,
-     *                       WRK(KLAST),LWRK2)
+         CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KLAST),WRK(KLAST),
+     *                  WRK(KDCAO),.FALSE.,WRK(KLAST),LWRK2)
          GOTO 200
       ENDIF
 
@@ -5716,14 +5650,13 @@ C     Do the work
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 
-      CALL QEXIT('QMMM_POLARI_S2')
+      CALL QEXIT('MM_FIELD_S2')
 
       RETURN
       END
-
-*******************************************************************
-C  /* Deck qmmm_polari_m3 */
-      SUBROUTINE QMMM_POLARI_M3(DCAO,TAO,CINDMOM,WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mm_polar_contr_m */
+      SUBROUTINE MM_POLAR_CONTR_M(DCAO,TAO,CINDMOM,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5756,7 +5689,7 @@ C ----
 
       DIMENSION WRK(LWRK), TAO(NNBASX), CINDMOM(*)
 
-      CALL QENTER('QMMM_POLARI_M3')
+      CALL QENTER('MM_POLAR_CONTR_M')
 
       KTAO    = 1
       KTAO2   = KTAO   + NNBASX
@@ -5765,7 +5698,7 @@ C ----
       LWRK2   = LWRK    - KWRK2 + 1
 
       IF (LWRK2 .LT. 0) THEN
-         CALL ERRWRK('QMMM_POLARI_M3',-KWRK2,LWRK)
+         CALL ERRWRK('MM_POLAR_CONTR_M',-KWRK2,LWRK)
       ENDIF
 
       EDELD  = 0.0D0            ! For interaction with electronic density
@@ -5865,14 +5798,13 @@ C     Collect data from all slaves
 
       EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
 
-      CALL QEXIT('QMMM_POLARI_M3')
+      CALL QEXIT('MM_POLAR_CONTR_M')
 
       RETURN
       END
-
-C*************************************************
-C  /* Deck qmmm_polari_s3 */
-      SUBROUTINE QMMM_POLARI_S3(WRK,LWRK,IPRTMP)
+C******************************************************************************
+C  /* Deck mm_polar_contr_s */
+      SUBROUTINE MM_POLAR_CONTR_S(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5905,7 +5837,7 @@ C ----
 
       DIMENSION WRK(LWRK)
 
-      CALL QENTER('QMMM_POLARI_S3')
+      CALL QENTER('MM_POLAR_CONTR_S')
 
       QMMM = .TRUE.
       IPQMMM = IPRTMP
@@ -5922,7 +5854,7 @@ C     Receiving data from master
       KLAST   = KEDALL + 6
       LWRK2   = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S3',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MM_POLAR_CONTR_S',-KLAST,LWRK)
 
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
@@ -5972,7 +5904,7 @@ C     total solvation energy
       CALL MPIXRECV(IINIM,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-         CALL MMPOLARI_ITER3(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
+         CALL GET_POL_CONTR(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
      &                      WRK(KDCAO),WRK(KTAO),WRK(KLAST),LWRK2)
          EDELD  = EDELD  + WRK(KEDALL)
          EDNUC  = EDNUC  + WRK(KEDALL + 1)
@@ -6011,13 +5943,13 @@ C     total solvation energy
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 
-      CALL QEXIT('QMMM_POLARI_S3')
+      CALL QEXIT('MM_POLAR_CONTR_S')
 
       RETURN
       END
-*******************************************************************
-C  /* Deck mmiter_m */
-      SUBROUTINE MMITER_M(POLDIM,INDP1,INDMOM,VEC,INDDIA,
+C******************************************************************************
+C  /* Deck mmiter_inddip_m */
+      SUBROUTINE MMITER_INDDIP_M(POLDIM,INDP1,INDMOM,VEC,INDDIA,
      *                    WRK,LWRK,LOCDEB,DIPCON,LM)
 
 #include <implicit.h>
@@ -6046,9 +5978,7 @@ C      IMPLICIT NONE
       DOUBLE PRECISION DIP,MY
       DIMENSION DIP(3),MY(3)
 
-      CALL QENTER('MMITER_M')
-
-C     Version of mmiter_m where we use mpi_reduce
+      CALL QENTER('MMITER_INDDIP_M')
 
       DIPCON = .FALSE.
 
@@ -6159,13 +6089,13 @@ C     End message to slaves
         CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
       ENDDO
 
-      CALL QEXIT('MMITER_M')
+      CALL QEXIT('MMITER_INDDIP_M')
 
       RETURN
       END
-*******************************************************************
-C  /* Deck mmiter_s */
-      SUBROUTINE MMITER_S(WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mmiter_inddip_s */
+      SUBROUTINE MMITER_INDDIP_S(WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <maxorb.h>
@@ -6184,7 +6114,7 @@ C  /* Deck mmiter_s */
       DIMENSION DIP(3),MY(3)
       LOGICAL RUN
       
-      CALL QENTER('MMITER_S')
+      CALL QENTER('MMITER_INDDIP_S')
 
       CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NODTOT,1,'INTEGER',MASTER)
@@ -6220,7 +6150,7 @@ C     check if there is leftovers
       KLAST   = KINDP2  + NDIM
 
       LWRK2 = LWRK - KLAST + 1
-      IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_S',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_INDDIP_S',-KLAST,LWRK)
 
       CALL DZERO(WRK(KINDP2),NDIM)
 
@@ -6256,7 +6186,7 @@ C     check if there is leftovers
 
       DEALLOCATE(POLARRAY)
 
-      CALL QEXIT('MMITER_S')
+      CALL QEXIT('MMITER_INDDIP_S')
 
       RETURN
       END
