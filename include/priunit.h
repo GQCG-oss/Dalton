@@ -6,7 +6,7 @@ extern struct common_priunit priunit_;
 #else
 !     FILE: priunit.h
       CHARACTER*80 SEPARATOR
-      PARAMETER (SEPARATOR = '----------------------------------------'  &
+      PARAMETER (SEPARATOR = '----------------------------------------' &
      &                     //'----------------------------------------')
       INTEGER LUCMD
       INTEGER LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT

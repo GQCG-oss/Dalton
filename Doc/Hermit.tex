@@ -1050,10 +1050,12 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 \verb|d| refers to the x, y, or z component of the spin--orbit operator.
 \end{list}
 
-\item[\Key{SORT I}]\index{integral sort} Requests that the
-two-electron integrals should be
-sorted for later use in \sir . See also keywords \Key{PRESORT} in the
-\Sec{*DALTON} and \Sec{TRANSFORMATION} input sections.
+\item[\Key{SORT I}]\label{key:SORT_I}\index{integral sort} Requests that the
+two-electron integrals should be sorted for later use in the "new"
+integral transformation. This option is deprecated, since
+2011 the default is not to presort the integrals, but rather to
+obtain them directly from the AOTWOINT file. This saves a lot of disk
+space for big basis sets.
 
 \item[\Key{SOTEST}] Test the calculation of spin-orbit integrals as
 requested by the keyword \Key{SPIN-O}.
@@ -1425,13 +1427,16 @@ input module.
 \subsection{Integral sorting: \Sec{SORINT}}
 
 Affects the sorting of the two-electron
-integrals\index{integral sort}. Note that in order for \sir\ to use
-the sorted integrals
-generated with the keyword \Key{SORT I}, the keyword
-\Key{PRESORT} has to used in the \Sec{TRANSFORMATION} input
-module of the \Sec{*WAVE FUNCTIONS} input section. For standard
-calculation you will in general not need to change any of the
-default settings.
+integrals\index{integral sort} over AOs for the "new" integral transformation.
+You will in general not need to change any of the default settings below.
+
+Note that this AO integral sorting is not needed any more.
+Since 2011 the default is not to presort the integrals, but rather
+to obtain them directly from the AOTWOINT file.
+This saves a lot of disk space for big basis sets.
+However, if you insist, you can get the
+old behavior with sorted AO integrals with the keyword \Key{SORT I}
+(see p. \ref{key:SORT_I})).
 
 \begin{description}
 

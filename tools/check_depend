@@ -36,7 +36,7 @@ END {
 !
 
 # search all Fortran and C source files for includes
-for file in *.F *.f *.c *.cc; do
+for file in *.F *.F90 *.f *.c *.cc; do
     if [ -f "$file" ]; then
         awk -v f=$file -f $DIR/awk.tmp$$ $file || exit 1
     fi

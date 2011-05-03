@@ -1379,13 +1379,15 @@ C
       END IF
 C
 C        Transform integrals for abacus or response, 
-C        if converged and if not followed by higher level.
+C        if converged and if not followed by higher level,
+C        and if not Cholesky decomposition
 C
       IF (ICONV .NE. 0 .AND. ABS(ITRFIN) .LE. 10 .AND.
-     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) ) THEN
+     &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
+     &    .NOT. CHOINT) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
-     *      ' >>> Transforming 2-el. integrals acc. to'//
-     *      ' .FINAL TRANSFORMATION =',ITRFIN,' <<<'
+     &      ' >>> Transforming 2-el. integrals acc. to'//
+     &      ' .FINAL TRANSFORMATION =',ITRFIN,' <<<'
          JTRLVL = ITRFIN
          CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
       END IF

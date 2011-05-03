@@ -1435,9 +1435,11 @@ C        '.NMDDRV' and '.PARNMD'
             NOMOVE = .TRUE.
             OPTWLK = .TRUE.
          GOTO 100
+C        '.THRRED'
  131     CONTINUE
             READ (LUCMD,*) THR_REDFAC
          GOTO 100
+C        '.DOUGLA'
  132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100

@@ -186,9 +186,12 @@ C
 C     Initialize MAGONE
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <mxcent.h>
 #include <abainf.h>
 #include <magone.h>
+COBL/AMT CAM magnetizabilities fix
+#include <suscpt.h>
 C
 
       MPRINT = IPRDEF
@@ -209,6 +212,8 @@ C
       MNQCC  = NQCC
       ALLCOM = .NOT. DODRCT
       MPQUAD = 40
+COBL/AMT CAM magnetizabilities fix
+      DONETWOLOP = .FALSE.
       RETURN
       END
 C  /* Deck magint */

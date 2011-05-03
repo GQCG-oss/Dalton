@@ -1162,7 +1162,6 @@ C* Comdeck notes and ideas*
 !  - #include "dacodes.h"and use symbolic names for DAFILE operations.
 !  - #include "dalistgs.h"for gslist.
 !890826-hjaaj
-!   s/LUINTA/LUAINT/ and s/LUINTM/LUMINT/
 !   moved IDATA(352),KEEP(18) to TRUNIT (was local to TR2CTL)
 !   changed IADOUT(3888) to IADOUT(3,LIADUT), LIADUT = 1296
 !   new IDATA(LIDATA), LIDATA = 1296=36*36 for absolute addressing
@@ -3041,7 +3040,7 @@ C
 C     for BUF(600), IBUF(600), and INDX(4,600) for both i*4 and i*8
 C        /Bugfix Oct07-hjaaj
 C MAERKE: remember to change here when new UN2OUT in her2out.F
-C TODO: use infor on LUINTA for allocation /Sep 2010 hjaaj
+C TODO: use info on LUINTA for allocation /Sep 2010 hjaaj
 C
       KEEP(1) = MSYM
       INTSYM = 1
@@ -3134,16 +3133,16 @@ C
          CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 200 I = 1, LENGTH
-                  JP = IBUF(1,I)
+                  JP  = IBUF(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
-                  JQ = IBUF(2,I)
+                  JQ  = IBUF(2,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 100
-                  JR = IBUF(3,I)
+                  JR  = IBUF(3,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 100
-                  JS = IBUF(4,I)
+                  JS  = IBUF(4,I)
                   JSS = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 100
 C
@@ -3167,16 +3166,16 @@ C
 
   100       CONTINUE
 
-                  JP = IBUF(3,I)
+                  JP  = IBUF(3,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 200
-                  JQ = IBUF(4,I)
+                  JQ  = IBUF(4,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 200
-                  JR = IBUF(1,I)
+                  JR  = IBUF(1,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 200
-                  JS = IBUF(2,I)
+                  JS  = IBUF(2,I)
                   JSS = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 200
 C

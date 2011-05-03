@@ -1,0 +1,69 @@
+
+
+    Table of contents
+    -----------------
+
+ 1. Configure vs. cmake for developers
+ 2. What do I need to do to add/remove source files?
+ 3. How do I set compiler flags?
+ 4. Creating DEB, RPM, and other packages (currently only DIRAC)
+
+
+ 1. Configure vs. cmake for developers
+    ----------------------------------
+
+Disadvantages of the present configure script:
+ - It is *not* cross-platform, for instance it cannot be used on Microsoft OS.
+ - Configuring a large source code containing Fortran, C, and C++, linking to
+   math and MPI/OpenMP libraries is a highly nontrivial problem. Therefore the
+   configure script is (has to be) very complicated.
+ - Platforms and limitations come and go and it is hard to keep up with the
+   developments.  Therefore the configure script contains a significant amount
+   of outdated information.
+ - Significant amount of code and complication is devoted to implement a
+   cross-platform user interface.
+ - Detection of math libraries and available compilers is not ideal.
+ - Objects are built in-source, polluting the source tree. This means that you
+   cannot build several binaries (parallel, sequential, debug, release) using
+   the same source without a complete recompilation.
+ - Hard to learn and hard to maintain.
+
+Advantages of using cmake:
+ - It is easier to add new modules and external code parts to the build,
+   basically with a one-liner.
+ - Cross-platform.
+ - User interface (command line, terminal menu, GUI) for free.
+ - Easy to learn and easy to maintain.
+ - Out of source compilation. You can build several binaries (parallel,
+   sequential, debug, release, gfortran, ifort) using the same source. This is
+   invaluable for code development.
+ - You can create DEB, RPM, TGZ, ... packages with a one-liner.
+ - ctest/cdash makes it easy to implement nightly build dashboards (see for
+   instance http://repo.ctcc.no/CDash/index.php?project=DIRAC).
+
+
+ 2. What do I need to do to add/remove source files?
+    ------------------------------------------------
+
+DIRAC: new files are automatically added by pamadm which generates cmake/Sources.list
+Dalton: add/remove files in cmake/Sources.list. The order does not matter.
+
+
+ 3. How do I set compiler flags?
+    ----------------------------
+
+Compiler flags are set in cmake/Compilers.cmake. These flags control
+compilation in release mode (with optimization; FLAGS_RELEASE; default in
+./setup) or debug mode (without optimization; FLAGS_DEBUG; default when calling
+cmake directly).
+
+
+ 4. Creating DEB, RPM, and other packages (currently only DIRAC)
+    -------------------------------------
+
+Configure and build the source, then:
+   $ cpack -G DEB
+or
+   $ cpack -G RPM
+Always use the help that is available:
+   $ cpack --help

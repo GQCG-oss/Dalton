@@ -12,7 +12,7 @@
 
 #if defined(__CVERSION__)
 #ifdef COMMENT
- NOTE : MXSHEL should have value of MXSHEL in maxorb.h
+! NOTE : MXSHEL should have value of MXSHEL in maxorb.h
 #endif
 #define MXSHEL 750
 #define MAXNOD 2000
@@ -31,15 +31,15 @@ extern struct common_infpar {
     char nodnam[MAXNOD][20], myname[20];
 } daltoninfpar_;
 #else
-C File: infpar.h for Dalton; special information for parallel calculations
-C
-C     Parameters NPARI must be updated after changes (for parallelization)
-C
-C     NOTE: Integers  (IPRPAR,...,MASTER,...,MYTID)
-C           Logicals  (TIMING,SLAVE)
-C           Character (NODNAM,MYNAME) should NOT be sent to slaves
-C     THUS: NPARI is length from NODTOT,...,PARIO
-C
+! File: infpar.h for Dalton; special information for parallel calculations
+!
+!     Parameters NPARI must be updated after changes (for parallelization)
+!
+!     NOTE: Integers  (IPRPAR,...,MASTER,...,MYTID)
+!           Logicals  (TIMING,SLAVE)
+!           Character (NODNAM,MYNAME) should NOT be sent to slaves
+!     THUS: NPARI is length from NODTOT,...,PARIO
+!
       INTEGER   MAXNOD, NPARI, MAXTSK
       PARAMETER ( MAXNOD = 2000, NPARI = (MAXNOD + 1) + 6 )
       PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )

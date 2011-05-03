@@ -3,7 +3,18 @@
 \usepackage{makeidx}
 % separate longtable is needed for tetex-latex-2.0.2-21.3
 \usepackage{supertabular,longtable,hyperref}
+\usepackage{color}
 % Specifies the document style.
+\usepackage{bibentry}
+\usepackage[numbers]{natbib}
+
+
+\newcommand{\ignore}[1]{}
+\newcommand{\nobibentry}[1]{{\let\nocite\ignore\bibentry{#1}}}
+% apsrev entries in the text need definitions of these commands
+\newcommand{\bibfnamefont}[1]{#1}
+\newcommand{\bibnamefont}[1]{#1}
+
 
 \typeout{***               }
 \typeout{***   Modification history: }
@@ -154,8 +165,8 @@
 \ttfamily{*#1}}|textbf}}
 \renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\ttfamily{#1}}
 \begin{document}
+\nobibliography*
 %
-\bibliographystyle{unsrt}
 %
 \baselineskip=15pt
 %
@@ -284,6 +295,7 @@ and H.~{\AA}gren,
 \part{Appendix: DALTON Tool box}
 \include{Appendix}
 \part{References}
+\bibliographystyle{unsrt}
 \bibliography{dalton,dft}
 %
 \part{Index}

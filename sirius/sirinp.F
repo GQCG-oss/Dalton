@@ -847,9 +847,12 @@ c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
+C
       IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
-         ITRFIN = 4
-         IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
+         IF (DOMC .OR. DOCI) THEN
+            ITRFIN = 4
+            IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
+         END IF
       END IF
 C
       IF (DOCI .AND. ISTACI .LE. 0) THEN
@@ -1135,10 +1138,10 @@ C                  may restart with old orbitals, but new charge.
                ELSE
                   READ (LUIT1) NSYM_i4,NBAS_i4,NORB_i4
                END IF
-               MSYM = NSYM_i4
-               MBAS(:) = NORB_i4(:)
+               MSYM    = NSYM_i4
+               MBAS(:) = NBAS_i4(:)
                NORB(:) = NORB_i4(:)
-               NERROR = -1
+               NERROR  = -1
             END IF
             CALL GPCLOSE(LUIT1,'KEEP')
          ELSE IF (IRDMO .EQ. 10) THEN
@@ -4317,7 +4320,7 @@ C
 #include <inftra.h>
 C
       DATA TABLE /'.RESIDE','.FINAL ','.LEVEL ','.OLD TR','.PRINT ',
-     *            '.P THRE','.Q THRE','.PRESOR'/
+     *            '.P THRE','.Q THRE','xxxxxxx'/
 C
 C     ***** PROCESS INPUT FOR TRAINP *****
 C
@@ -4381,9 +4384,8 @@ C *** Option  107 >Q THRE<
   107 READ(LUCMD,*) THRQ
       GO TO 100
 C
-C *** Option  107 >SORTED<
+C *** Option  108 >      <
   108 CONTINUE
-      NEWTRA=.TRUE.
       GO TO 100
 C
  8000 CONTINUE

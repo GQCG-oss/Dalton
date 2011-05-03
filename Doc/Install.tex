@@ -5,40 +5,29 @@ supported}\label{sec:hardsoft}\index{hardware/software support}
 
 {\dalton} can be run on a variety of systems running the UNIX
 operating system. The current release of the program supports
-Cray-UNICOS\index{Cray},
-Cray-T3D/E\index{Cray!T3D}\index{Cray!T3E}\index{Cray},
-HP-UX,
+%Cray-UNICOS\index{Cray},
+%Cray-T3D/E\index{Cray!T3D}\index{Cray!T3E}\index{Cray},
+%HP-UX,
 IBM-AIX\index{IBM-AIX},
-IBM-SP2,
-Linux\index{Linux} using g77, pgf77 or ifc,
-SGI-IRIX\index{SGI}\index{SGI-IRIX},
-Sun\index{Sun},
-MacOS X (darwin)\index{MacOSX} using xlf/xlc or g77/gcc,
-and DEC-Alpha\index{DEC-Alpha}.
-We furthermore note that response calculations involving the
-spin--orbit\index{spin-orbit} operator only will work on some of these
-computers (more details are given in the file
-\verb|dalton/test/KNOWN_PROBLEMS|).
+Linux\index{Linux} using gfortran, pgf90/95 or ifort, and 
+MacOS X (darwin)\index{MacOSX} using xlf/xlc or gfortran/gcc.
+%We furthermore note that response calculations involving the
+%spin--orbit\index{spin-orbit} operator only will work on some of these
+%computers (more details are given in the file
+%\verb|dalton/test/KNOWN_PROBLEMS|).
 
-The program is written in FORTRAN~77\index{FORTRAN~77} and C~\index{C}, with
-machine dependencies isolated using C preprocessor directives\index{C
-preprocessor}.  All floating-point computations are
-performed in 64-bit precision, but if 32-bit integers are
-available the code will take advantage of this to reduce storage
+The program is written in FORTRAN~77\index{FORTRAN~77}, 
+FORTRAN~90\index{FORTRAN~90} and C~\index{C}, with
+machine dependencies isolated using C preprocessor directives\index{C preprocessor}.  
+All floating-point computations are performed in 64-bit precision, 
+but if 32-bit integers are available the code will take advantage of this to reduce storage
 requirements in some sections.
 
 The program should be easily portable to other UNIX
-platforms\index{porting}: indeed, the IBM-AIX version
-may very well work without change on typical 32-bit UNIX workstations.
+platforms\index{porting}.
 Users who port the codes to other platforms are encouraged to
 communicate any required changes in the original source with the
 appropriate C preprocessor directives to the authors.
-
-For installation under MacOS X\index{MacOSX} with the G5 architecture, note that the 
-current release of \dalton\ requires OSX 10.3, XTools version 1.5 
-and gcc version 3.3, all available from the Apple website. 
-We recommend the use of the IBM xlf (v8.1) and xlc (v6.0) 
-compilers, as development and testing is with these compilers. 
 
 \section{Source files}\label{sec:source}
 
@@ -58,21 +47,23 @@ tar xf dalton.tar
 will produce the following subdirectory structure in the current
 directory:
 \begin{verbatim}
-dalton/abacus    dalton/dft        dalton/include   dalton/test
-dalton/amfi      dalton/Doc        dalton/pdpack    dalton/tools
-dalton/basis     dalton/eri        dalton/rsp
-dalton/cc        dalton/gp         dalton/sirius
+dalton/abacus    dalton/densfit    dalton/eri       dalton/pdpack     dalton/test_cc
+dalton/amfi      dalton/dft        dalton/gp        dalton/rsp        dalton/tools
+dalton/basis     dalton/dftxcfun   dalton/include   dalton/sirius
+dalton/cc        dalton/Doc        dalton/lucita    dalton/soppa
+dalton/choles    dalton/Doc_cc     dalton/modules   dalton/test
 \end{verbatim}
 Most of the subdirectories contain source code for the different sections
-constituting the program (\verb|abacus|, \verb|amfi|, \verb|cc|, \verb|dft|,
-\verb|eri|, \verb|gp|, \verb|rsp| and \verb|sirius|). Furthermore,
+constituting the program (\verb|abacus|, \verb|amfi|, \verb|cc|, \verb|choles|, \verb|densfit|,
+\verb|dft|, \verb|eri|, \verb|gp|, \verb|lucita|,\verb|rsp| and \verb|sirius|, and \verb|soppa|). Furthermore,
 there's a directory containing
 various public domain routines (\verb|pdpack|), a directory with the
 necessary include files containing common blocks and
-machine dependent routines (\verb|include|), a directory containing
-all the basis sets supplied with this distribution (\verb|basis|), a
+machine dependent routines (\verb|include|), a directory 
+which will (after compilation) contain necessary module files (\verb|modules|), 
+a directory containing all the basis sets supplied with this distribution (\verb|basis|), a
 fairly large set of test jobs including reference output files
-(\verb|test|), a directory containing some useful pre- and
+(\verb|test|, \verb|test_cc|), a directory containing some useful pre- and
 post-processing programs supplied to us from various users
 (\verb|tools|), and finally this documentation (\verb|Doc|). 
 
@@ -93,31 +84,25 @@ Makefile}\label{sec:Makefile}
 
 The program is easily installed through the use of the supplied
 \verb|configure| script\index{configure script}. Based on the
-architecture supplied by the user, the
+automatically guessed architecture, the
 script will try to build a suitable
 \verb|Makefile.config|\index{Makefile.config} on the
 basis of what kind of mathematical libraries are found, and user
 input. Thus, to execute the script, type
 \begin{verbatim}
-> ./configure -hosttype
+> ./configure
 \end{verbatim}
-where hosttype may be one of
 
 \bigskip
 
-\begin{tabular}{lll}
-aix \hspace{3cm} & darwin \hspace{3cm} & linux-alpha\\
-cray             & dec-alpha             & nec\\
-cray-t90         & hal                   & sgi\\
-cray-t3d         & hp                    & sun\\
-cray-t3e         & linux                 &\\\end{tabular}
-\index{installation!supported platforms}
+If the automatic hosttype detection (which usually works fine for most common
+platforms) is not correct, the user may provide the correct \verb|<architecture>|\ type 
+to the script by typing
+\begin{verbatim}
+> ./configure -<architecture>
+\end{verbatim}
 
 \bigskip
-
-If no hosttype is specified, the script will try to guess what sort of
-machine it is running on. This usually works fine for most common
-platforms.
 
 Although this script in most cases is capable of making a correct
 \verb|Makefile.config|, we always recommend users to check the created
@@ -125,9 +110,20 @@ Although this script in most cases is capable of making a correct
 
 During the execution of the \verb|configure| script, you will be
 asked a few questions, most of which require a quite obvious
-answer. Let us only comment upon four of the questions asked:
+answer. Let us only comment upon five of the questions asked:
 
 \begin{enumerate}
+\item 64-bit integers\index{64-bit integers}\index{installation!64-bit}:
+When installing \dalton\ on a 64-bit architecture (for example Linux x86\_64) 
+the user will be asked if 64-bit integers should be used throughout the program. 
+\dalton\ is designed such that it can be excuted with either 32-bit or 64-bit 
+integers but in some cases it may be advantageous and/or compulsory 
+to use 64-bit integers, e.g., memory allocation for more than 16Gbytes  
+of scratch-memory (see also next paragraph) and execution of some modules 
+with more than 255 basis functions. {\textcolor{red}{\em @Hans J{\o}rgen: 
+should we add examples of modules which require 64-bit when 
+$\geq$\ 255 basis functions are being used?}}
+
 \item Scratch memory\index{scratch memory}\index{installation!memory}
 size: Dalton uses approximately 6.5 Mwords (54 Mbytes)
 in static memory allocations. The program defines a large scratch-memory
@@ -172,7 +168,7 @@ Default: a subdirectory {\tt ./bin} to the main \dalton\ directory.
 
 Compiler options will be supplied in \verb|Makefile.config|, in the manner
 we use ourselves. {\em These options often do not include aggressive
-optimization\index{optimization (f77)} (for instance on the Cray), as
+optimization\index{optimization (f90)}, as
 it is our experience that
 the code is optimized incorrectly if the optimization is too
 aggressive.} The proper options to the C preprocessor for an ordinary
@@ -182,9 +178,8 @@ installation of the program are also supplied with
 The \verb|configure| script attempts to detect mathematical libraries
 available on the system and use them whenever possible. {\dalton} can
 use third-party BLAS and LAPACK libraries or libraries providing
-equivalent functionality like ESSL on AIX, COMPLIB.sgimath on SGI,
-DXML and CXML on Alpha architectures, ATLAS, ACML, MKL on Intel
-architectures, VECLIB on HP/UX.
+equivalent functionality like ESSL on AIX, ATLAS, ACML, MKL on Intel
+architectures.
 You will be asked which one you want of the found libraries.
 You can also point the \verb|configure|
 script to the location of the preferred libraries by setting
@@ -239,40 +234,8 @@ F90 type checking and argument list checking functionalities of F90 which is pre
 easily identify programming bugs.
 
 For MacOS X\index{MacOSX}, the program may be installed either with the IBM
-xlf compiler (version 8.1 at the time of release) for best  performance 
-or with the g77 compiler (version 3.4.2 at the time of release). Be sure
-to use the latest Xcode from \verb|http://developer.apple.com/|. The
-g77 compiler may be obtained from \verb|http://hpc.sourceforge.net/|.  With
-the g77 compiler, the program may be installed as configured by default
-(-O2 optimization level). However, for slightly better performance,
-perform the following two-step process: First, make a copy of the original
-\verb|Makefile.config| file. Next, in \verb|Makefile.config|, 
-change -O2 to -O3 and type
-\begin{verbatim}
-> make -k
-\end{verbatim}
-Finally, revert to the original \verb|Makefile.config| file and then type
-\begin{verbatim} 
-> make 
-\end{verbatim} 
-This process results in a code where -O3 has been used wherever possible.
-
-%Note to users who want to install a parallel program\index{parallel
-%program} employing PVM3\index{PVM}
-%as message passing interface: Whereas a normal installation will
-%create a single executable, the PVM installation will
-%create both a master\index{master program} and a slave
-%program\index{slave program}.
-%The slave program, called \verb|node.x|\index{node}, must be placed in
-%the proper directory, as defined by the PVM3 installation on the
-%platform you are using. NOTE: Default location of the slave program
-%will be the same directory as the master program, that is, the default
-%installation directory.
-%
-%MPI\index{MPI} parallel executables will be called \verb|dalpar.x|,
-%PVM\index{PVM} parallel executables are called \verb|dalpvm.x| and
-%\verb|node.x|, whereas a single-processor executable will be called
-%\verb|dalton.x|.
+xlf compiler for best performance or with the gfortran/ifort compiler. Be sure
+to use the latest Xcode from \verb|http://developer.apple.com/|.
 
 \section{Running the {\dalton} test suite}\label{sec:testsuite}
 \index{test suite}\index{installation!test suite}
@@ -306,7 +269,7 @@ input-files (these are described in more detail in
 Chapter~\ref{ch:starting}), and the output-file from the test
 calculation which will have the extension \verb|.log| ({\dalton}
 output-files usually have the extension \verb|.out|). For all
-successful tests these files, as well as some other auxiliary files,
+successful tests all files, except the output-file (\verb|.log|),
 will be deleted as soon as the output has been checked, unless
 \verb|TEST| is being run with the option \verb|-keep|.
 

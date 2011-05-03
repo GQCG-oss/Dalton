@@ -471,7 +471,12 @@ C
       IF (SUSCEP) THEN
          IF (.NOT.NOPV) CALL REWSPL(LUPAO)
          IF (.NOT.NOPV) CALL REWSPL(LUPAS)
-         CALL DZERO(SUS2EL,9)
+COBL/AMT
+C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
+         IF (.NOT. DONETWOLOP)THEN
+             DONETWOLOP = .TRUE.
+             CALL DZERO(SUS2EL,9)
+         END IF
       END IF
       IF (DIA2SO) THEN
          IF (.NOT. NOPV) CALL REWSPL(LUPAO)
