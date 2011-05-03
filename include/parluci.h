@@ -49,18 +49,21 @@
      &                IBI_MULT_BL,L_COMBI_S,L_COMBI_MAX,I_NZERO_LEN_S,  &
      &                I_NZERO_LEN_C, IFERM_SYM_T,                       &
      &                LU_INFO
-!
+
+!     currently we work with 9 scratch files
+!     --------------------------------------
+      integer, parameter :: nr_files = 9
+
 !     MPI file lists and MPI file handles
-!
-      INTEGER            IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC
+!     --------------------------------------
+      INTEGER IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC
       INTEGER IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5,         &
      &        IALL_LU6, IALL_LU7, IALL_LUC, IIJKL_ROD, ILPRP_X,         &
-     &        IJKL_PRE, nr_files
-      COMMON/LUCIAPFILE/ IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,       &
-     &                   ILUC,                                          &
+     &        IJKL_PRE
+      COMMON/LUCIAPFILE/ IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC,  &
      &                   IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,        &
      &                   IALL_LU5, IALL_LU6, IALL_LU7, IALL_LUC,        &
-     &                   IIJKL_ROD, ILPRP_X, IJKL_PRE, nr_files
+     &                   IIJKL_ROD, ILPRP_X, IJKL_PRE
 #if defined (VAR_MPI)
       INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, FILE_INFO_OBJ
       INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,     &
@@ -99,7 +102,7 @@
      &        CKRCIONLY, LOWSRT_IJKL, TIMING_par
 !     character block
       CHARACTER*9 NIIJKL_ROD
-	CHARACTER*1 SYMFLABEL, symflab_data(8)
+        CHARACTER*1 SYMFLABEL, symflab_data(8)
       data symflab_data/'a','b','c','d','e','f','g','h'/
       COMMON/LUCI_CHAR/ NIIJKL_ROD, SYMFLABEL
 ! --- end of parluci.h ---
