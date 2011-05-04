@@ -13,6 +13,21 @@
 #       he/she ran 'configure', the you should modify the
 #       DALTON definition to pint to that place.
 
+
+# radovan: this is to figure out whether TEST is called from test directory
+#          or from outside
+SCRIPT_DIR="${0%/*}"
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "$SCRIPT_DIR" == "." ; then
+  SCRIPT_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
+cd $SCRIPT_DIR
+
 if [ -x '/usr/bin/time' ]; then
  TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
 else
