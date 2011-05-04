@@ -138,9 +138,9 @@ set(DART_TESTING_TIMEOUT
     CACHE STRING
     "Set timeout in seconds for every single test"
     )
-#include(Tests)
-#include(CTest)
-#enable_testing()
+include(Tests)
+include(CTest)
+enable_testing()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
@@ -172,4 +172,4 @@ add_executable(
 target_link_libraries(
     dalton.x
     ${LIBS}
-    )
+    ) 
