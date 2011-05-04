@@ -28,6 +28,8 @@ elif test "${SCRIPT_DIR:0:1}" != "/" ; then
 fi
 cd $SCRIPT_DIR
 
+exitcode=0
+
 if [ -x '/usr/bin/time' ]; then
  TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
 else
@@ -668,6 +670,7 @@ do
         if [ "$trouble" -eq 1 ]; then
             problems="$problems $item"
         fi
+        exitcode=1
       elif [ "$keep" = "false" ]; then
         #rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
         rm -f $dalfile.dal $dalfile.BAS $checkfile $item.info # keep $logfile, can be interesting to look closer at
@@ -780,4 +783,4 @@ fi
 rm "$tmpfile"
 myprint "date and time         : `date`"
 
-exit 0
+exit $exitcode
