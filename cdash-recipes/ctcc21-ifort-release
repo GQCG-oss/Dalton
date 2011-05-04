@@ -13,8 +13,7 @@ cd $TMP_DIR
 ./setup --fc=ifort --cc=icc --scratch=$SCRATCH_DIR -D BUILDNAME="linux-ifort-release"
 
 cd $TMP_DIR/build
-#make Nightly
-make Experimental
+make Nightly
 
 rm -rf $TMP_DIR $SCRATCH_DIR
 
