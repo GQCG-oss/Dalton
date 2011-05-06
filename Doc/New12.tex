@@ -10,7 +10,16 @@
 \begin{enumerate}
 
 \item{\bf Cholesky decomposition of integrals and CC equations:} \\
-Main authors: Alfredo Sanchez de Meras, Henrik Koch, Thomas Bondo Pedersen
+Main authors: Alfredo S{\'a}nchez {de Mer{\'a}s}, Henrik Koch, 
+Thomas Bondo Pedersen.
+\begin{enumerate}
+  \item{\bf Decomposition of orbital energy denominators:}  \\
+   Reference: \nobibentry{jcp_chopt}
+   \cite{jcp_chopt}
+  \item{\bf Decomposition of two-electron integrals:}  \\
+   Reference: \nobibentry{choint}
+   \cite{choint}
+\end{enumerate}
 
 \item{\bf Extensions to the coupled cluster module:} CC3 etc. \\
 Main authors: Christof H\"{a}ttig, Ove Christiansen, ...
@@ -75,10 +84,10 @@ Main author: Bin Gao
     calculations, and often this may not be practical.
   \item{} CODATA 2002 constants instead of CODATA 1998 constants
     (changes some values in output, if you compare with Dalton 1.0 output)
-  \item{} user input not needed to transform 2-el integrals for > 255 basis functions
-    (switches by default to .NEWTRA if > 255 bf)
+  \item{} user input not needed to transform 2-el integrals for $>$ 255 basis functions
+    (switches by default to .NEWTRA if $>$ 255 bf)
   \item{} eliminated at times very large intermediate files for integral transformation
-    with > 255 basis functions (NEWTRA).
+    with $>$ 255 basis functions (NEWTRA).
   \item{} more modules of the program run correctly if Dalton run in parallel.
     Example: the MCSCF code per se is not parallelized yet, but it will
     give correct results when run in parallel, and the construction of
@@ -93,6 +102,9 @@ Main author: Hans J\o rgen Aagaard Jensen.
 e.g. ref. \cite{xxx} for a recent example of use. \\
 Main author: Hans J\o rgen Aagaard Jensen. The WESTA program may be
 obtained from the author (hjj@ifk.sdu.dk).
+
+\item{\bf .CTOSHI} and {\bf .CTOSUS options} to compute CTOCD-DZ magnetic 
+shieldings and magnetizabilities at the coupled cluster level 
 
 % \item{} Interface to the MIDAS program.
 
