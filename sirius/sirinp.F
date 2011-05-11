@@ -3072,7 +3072,7 @@ C *** Option 25 >SHIFT < Shift level
       DEFLVL = -ABS(DEFLVL)
       GO TO 100
 C     Option 26 >MEP   <
- 126  MEP = .TRUE.
+ 126  DOMEP = .TRUE.
       GO TO 100
 C
  2000 CONTINUE
