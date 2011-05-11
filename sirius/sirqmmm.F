@@ -2781,8 +2781,8 @@ C JK
       RETURN
       END
 C*********************************************************************************************************
-C  /* Deck domep */
-      SUBROUTINE DOMEP(CMO,WRK,KFRSAV,LFRSAV)
+C  /* Deck domep_routine */
+      SUBROUTINE domep_routine(CMO,WRK,KFRSAV,LFRSAV)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -2816,7 +2816,7 @@ C  /* Deck domep */
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('DOMEP')
+      CALL QENTER('domep_routine')
 
 C     Only scf for the moment 
 
@@ -2914,7 +2914,7 @@ C     Only scf for the moment
         RUNQM3=.FALSE.
 
         IF (LOCDEB)  THEN
-          WRITE (LUPRI,'(/A)') 'Pot. energy matrix in DOMEP'
+          WRITE (LUPRI,'(/A)') 'Pot. energy matrix in domep_routine'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
         ENDIF
 
@@ -3011,11 +3011,11 @@ C     Calculate also electric the electric field at these points
 
       CLOSE(LUMEP) 
 
-      CALL MEMREL('DOMEP',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('domep_routine',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
 
  1000 FORMAT(7(F15.10,2X))
 
-      CALL QEXIT('DOMEP')
+      CALL QEXIT('domep_routine')
       RETURN
       END
 C*********************************************************************************************************
