@@ -1,0 +1,20 @@
+#!/bin/bash
+
+source /opt/intel/bin/compilervars.sh ia32
+export PATH=$PATH':/opt/intel/mkl'
+
+TMP_DIR=/tmp/dalton
+SCRATCH_DIR=/tmp/dalton-cdash-scratch
+mkdir -p $TMP_DIR
+
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/trunk $TMP_DIR
+
+cd $TMP_DIR
+./setup --fc=ifort --cc=icc --scratch=$SCRATCH_DIR -D BUILDNAME="linux-ifort-release"
+
+cd $TMP_DIR/build
+make Nightly
+
+rm -rf $TMP_DIR $SCRATCH_DIR
+
+exit 0

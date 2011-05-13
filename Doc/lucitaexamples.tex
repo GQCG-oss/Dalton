@@ -37,20 +37,13 @@ first excited singlet state of A1 symmetry:
  1                            ! symmetry irrep A1
 .MULTIP
  1                            ! singlet states
-.NACTEL
- 8                            ! number of active electrons
 .INACTIVE
  7 3 3 1                      ! inactive (doubly occupied) orbitals
-.GASSHE
+.GAS SHELLS
  3                            ! number of GA spaces
-  2  1  1  0                  ! orbital distribution in GA space I
-  4  2  2  1                  ! orbital distribution in GA space II
-  3  1  1  0                  ! orbital distribution in GA space III
-.GASSPC
- 1                            ! always 1
-  5  8                        ! minimum # of accumulated e- in GAS I   <--> max. # of e-
-  6  8                        ! minimum # of accumulated e- in GAS II  <--> max. # of e-
-  8  8                        ! always: ``number of active e- number of active e-''
+ 5  8 / 2  1  1  0            ! min max # of accumulated e- / orbitals in GA space I
+ 6  8 / 4  2  2  1            ! min max # of accumulated e- / orbitals in GA space II
+ 8  8 / 3  1  1  0            ! min max # of accumulated e- / orbitals in GA space III
 .NROOTS
  2                            ! we want to converge on two eigenstates
 .MAXITR
@@ -85,6 +78,9 @@ with a modified GA space input (yielding nevertheless the {\bf{same}}\ CI config
 and asking for the first two triplet states in B1 symmetry. 
 Note in particular the splitting of the former GAS II space into three 
 spaces with the ``$\sigma$''-, ``$\pi$''-\ and ``$\delta$''-like orbitals separated into different spaces. 
+Remember that the min/max number of electrons in the final GAS space have to be always identical and 
+specify the number of active (``correlated'') electrons. The kewyword \Key{NACTEL} is thus merely optional for 
+GASCI calculations whereas it is mandatory for RASCI calculations (see next section \ref{cc:lucitaex:ras}). 
 
 %
 \begin{verbatim}
@@ -107,24 +103,15 @@ spaces with the ``$\sigma$''-, ``$\pi$''-\ and ``$\delta$''-like orbitals separa
  3                            ! symmetry irrep B1
 .MULTIP
  3                            ! triplet states
-.NACTEL
- 8                            ! number of active electrons
 .INACTIVE
  7 3 3 1                      ! inactive (doubly occupied) orbitals
-.GASSHE
+.GAS SHELLS
  5                            ! number of GA spaces
-  2  1  1  0                  ! orbital distribution in GA space I
-  4  0  0  0                  ! orbital distribution in GA space II
-  0  2  2  0                  ! orbital distribution in GA space III
-  0  0  0  1                  ! orbital distribution in GA space IV
-  3  1  1  0                  ! orbital distribution in GA space V
-.GASSPC
- 1                            ! always 1
-  5  8                        ! minimum # of accumulated e- in GAS I    <--> max. # of e-
-  5  8                        ! minimum # of accumulated e- in GAS II   <--> max. # of e-
-  5  8                        ! minimum # of accumulated e- in GAS III  <--> max. # of e-
-  6  8                        ! minimum # of accumulated e- in GAS IV   <--> max. # of e-
-  8  8                        ! always: ``number of active e- number of active e-''
+ 5  8 / 2  1  1  0            ! min max # of accumulated e- / orbitals in GA space I
+ 5  8 / 4  0  0  0            ! min max # of accumulated e- / orbitals in GA space II
+ 5  8 / 0  2  2  0            ! min max # of accumulated e- / orbitals in GA space III
+ 6  8 / 0  0  0  1            ! min max # of accumulated e- / orbitals in GA space IV
+ 8  8 / 3  1  1  0            ! min max # of accumulated e- / orbitals in GA space  V
 .NROOTS
  2                            ! we want to converge on two eigenstates
 .ANALYZ                       ! print leading coefficients of the final CI wave function

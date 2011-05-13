@@ -52,51 +52,42 @@ and {\bf{optional keywords}} (Section \ref{sec:lucita-inp-opt}).
 \item[\Key{MULTIP}] Spin state multiplicity (singlett: 1, triplett: 3, etc.) \verb| |\newline
 \verb|READ(LUCMD,*) lucita_cfg_is_spin_multiplett |
 
-\item[\Key{NACTEL}] Number of active electrons \verb| |\newline
-\verb|READ(LUCMD,*) lucita_cfg_nr_active_e |
 
 \vspace{0.75cm}
 
 \noindent {\bf{\large{``RASCI''\ specific input (i.e. if \Key{CITYPE} == ``RASCI''):}}}
 
+\item[\Key{NACTEL}] Number of active electrons \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_nr_active_e |
+
 \item[\Key{RAS1}] RAS1 specification and maximum number of holes. 
 First line with orbitals per point group irrep separated by white spaces, 
 followed by a line with the maximum number of holes in RAS1 \verb| |\newline
-\verb|READ(LUCMD,*) (nas1_lucita(i), i = 1, number_of_point_group_irreps) |\\
+\verb|READ(LUCMD,*) (nas1_lucita(i), i = 1, #point_group_irreps) |\\
 \verb|READ(LUCMD,*) lucita_cfg_max_holes_ras1 |
 
 \item[\Key{RAS2}] RAS2 specification. A line with orbitals per point group irrep separated by white spaces \verb| |\newline
-\verb|READ(LUCMD,*) (nas2_lucita(i), i = 1, number_of_point_group_irreps) |
+\verb|READ(LUCMD,*) (nas2_lucita(i), i = 1, #point_group_irreps) |
 
 \item[\Key{RAS3}] RAS3 specification and maximum number of electrons. 
 First line with orbitals per point group irrep separated by white spaces, 
 followed by a line with the maximum number of electrons in RAS3 \verb| |\newline
-\verb|READ(LUCMD,*) (nas3_lucita(i), i = 1, number_of_point_group_irreps) |\\
+\verb|READ(LUCMD,*) (nas3_lucita(i), i = 1, #point_group_irreps) |\\
 \verb|READ(LUCMD,*) lucita_cfg_max_e_ras3 |
 
 \newpage
 \noindent {\bf{\large{``GASCI''\ specific input (i.e. if \Key{CITYPE} == ``GASCI''):}}}
 
-\item[\Key{GASSHE}] Number and specification of GAS orbitals. 
-A integer value in the first line specifies the number of GA spaces to be used (minimum 1; maximum 6), 
-followed by one line per GAS with number of orbitals per point group irrep, separated by white spaces \verb| |\newline
-\verb|READ(LUCMD,*) lucita_cfg_nr_gas_spaces |\\
-\verb|READ(LUCMD,*) (ngsh_lucita(1,i), i = 1, number_of_point_group_irreps) |\\
-\verb|READ(LUCMD,*) (ngsh_lucita(2,i), i = 1, number_of_point_group_irreps) |\\
-\verb|READ(LUCMD,*) (ngsh_lucita(3,i), i = 1, number_of_point_group_irreps) |\\
-\verb|READ(LUCMD,*) until ``j'' = lucita_cfg_nr_gas_spaces for ngsh_lucita(j,*) |
-
-\item[\Key{GASSPC}] Number and specification of sequential CI calculations. The first line specifies 
-the number of CI calculations with the given GA spaces (kept for compatibility reasons; 
-currently only a value of ``1'' is allowed), followed by one line per GAS with 2 numbers each: 
-The first variable gives the minimal number of accumulated electrons after this GAS, 
-the second indicates the corresponding maximum number, 
-separated by white spaces (thus defining occupation constraints of each GAS) \verb| |\newline
-\verb|READ(LUCMD,*) lucita_cfg_nr_calc_sequences |\\
-\verb|READ(LUCMD,*) (ngso_lucita(1,i), i = 1, 2) |\\
-\verb|READ(LUCMD,*) (ngso_lucita(2,i), i = 1, 2) |\\
-\verb|READ(LUCMD,*) (ngso_lucita(3,i), i = 1, 2) |\\
-\verb|READ(LUCMD,*) until ``j'' = lucita_cfg_nr_gas_spaces for ngso_lucita(j,*) |
+\item[\Key{GAS SHELLS}] Number and specification of GAS shell excitation constraints and orbital occupations. 
+A integer value (NGAS) in the first line specifies the number of GA spaces to be used (minimum 1; maximum 6). 
+The next NGAS lines comprise one line per GAS with the minimum resp. maximum number of 
+accumulated electrons after this GAS followed by (after the ``/'') the number 
+of orbitals per point group irrep, separated by white spaces \verb| |\newline
+\verb|READ(LUCMD,*) NGAS |\\
+\verb|READ(LUCMD,*) (ngso_lucita(1,i), i=1,2)/(ngsh_lucita(1,i), i=1,#point_group_irreps) |\\
+\verb|READ(LUCMD,*) (ngso_lucita(2,i), i=1,2)/(ngsh_lucita(2,i), i=1,#point_group_irreps) |\\
+\verb|READ(LUCMD,*) (ngso_lucita(3,i), i=1,2)/(ngsh_lucita(3,i), i=1,#point_group_irreps) |\\
+\verb|READ(LUCMD,*) until ``j'' = NGAS for ngso_lucita(j,*) and ngsh_lucita(j,*) |
 
 \end{description}
 \subsection{Optional keywords of \Sec{LUCITA}}\label{sec:lucita-inp-opt}
@@ -111,7 +102,7 @@ referring to an irrep ordering as defined by the group generators (default: 1, e
 
 \item[\Key{INACTI}] Inactive doubly orbitals per point group irrep, 
 separated by white spaces. (default: all orbitals active) \verb| |\newline
-\verb|READ(LUCMD,*) (nish_lucita(i), i = 1, number_of_point_group_irreps) |
+\verb|READ(LUCMD,*) (nish_lucita(i), i = 1, #point_group_irreps) |
 
 \item[\Key{NROOTS}] number of eigenstates to be calculated (default: 1) \verb| |\newline
 \verb|READ(LUCMD,*) lucita_cfg_nr_roots |

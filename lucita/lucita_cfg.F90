@@ -15,8 +15,9 @@ module lucita_cfg
 
 ! parameters
 
-  integer, parameter, public :: max_number_of_gas_spaces = 6
-  integer, parameter, public :: max_number_of_ptg_irreps = 8
+  integer, parameter, public :: max_number_of_gas_spaces     =  6
+  integer, parameter, public :: max_number_of_ptg_irreps     =  8
+  integer, parameter, public :: lucita_cfg_nr_calc_sequences =  1 ! always one in this version, therefore a "parameter"
 
 ! character block
 
@@ -49,7 +50,7 @@ module lucita_cfg
   integer, public :: lucita_cfg_local_print_lvl      =  0
   integer, public :: lucita_cfg_nr_gas_spaces        =  0
   integer, public :: lucita_cfg_nr_ptg_irreps        =  0
-  integer, public :: lucita_cfg_nr_calc_sequences    =  1
+ !integer, public :: lucita_cfg_nr_calc_sequences    =  1 ! number of different GAS specifications
   integer, public :: lucita_cfg_max_holes_ras1       =  0
   integer, public :: lucita_cfg_max_e_ras3           =  0
   integer, public :: lucita_cfg_density_calc_lvl     =  0

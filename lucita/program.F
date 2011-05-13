@@ -1072,9 +1072,6 @@ C     character line
       proclist             = -1
       grouplist            = -1
 
-!     currently we work with 9 scratch files (nr_files in parluci.h)
-      nr_files = 9
-
 #ifdef VAR_MPI
       IF (LUCI_NMPROC .GT. 1) THEN
 

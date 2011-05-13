@@ -2722,8 +2722,8 @@ C JK
       RETURN
       END
 C******************************************************************************
-C  /* Deck DOMEP */
-      SUBROUTINE DOMEP(CMO,WRK,KFRSAV,LFRSAV)
+C  /* Deck domep_routine */
+      SUBROUTINE domep_routine(CMO,WRK,KFRSAV,LFRSAV)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -2763,7 +2763,7 @@ C  /* Deck DOMEP */
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
       INTEGER NCENTERS, NLOOP, MLOOP, IPRTYP, IERR
 
-      CALL QENTER('DOMEP')
+      CALL QENTER('domep_routine')
 
 C     Only scf for the moment 
 

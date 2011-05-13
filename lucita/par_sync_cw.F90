@@ -141,7 +141,7 @@ contains
       call dalton_mpi_bcast(lucita_cfg_max_batch_size,      0, mpi_comm_world)
       call dalton_mpi_bcast(lucipar_cfg_ttss_dist_strategy, 0, mpi_comm_world)
       call dalton_mpi_bcast(lucipar_cfg_mem_reduction_multp,0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_nr_calc_sequences,   0, mpi_comm_world)
+!     call dalton_mpi_bcast(lucita_cfg_nr_calc_sequences,   0, mpi_comm_world)
 
 !     symmetry, spin and orbital spaces
       call dalton_mpi_bcast(lucita_cfg_ptg_symmetry,        0, mpi_comm_world)

@@ -127,7 +127,8 @@ C
          IF (IFCTYP(I) .LT. 0) DO_SPINDNS = .TRUE.
          IF (IFCTYP(I) .ne. 13 .and. IFCTYP(I) .ne. 12 .and.
      &       IFCTYP(I) .ne.  3 .and. IFCTYP(I) .ne.  2 .and.
-     /       IFCTYP(I) .ne. 22) DO_CHOINT = .FALSE.
+     /       IFCTYP(I) .ne. 22 .and. IFCTYP(I) .ne. 11)
+     &       DO_CHOINT = .FALSE.
       END DO
       IF (DO_SPINDNS .AND. .NOT. ADDSRI) THEN
          CALL QUIT('SIRFCK can only do spin dens. for srDFT')
@@ -136,7 +137,7 @@ C
          NINFO = NINFO + 1
          WRITE(LUPRI,'(3(/A),//A)')
      &   ' INFO: Cholesky decomposed two-electron integrals can',
-     &   ' only be applied for IFCTYP equal to 13, 12, 3, or 2(22).',
+     &   ' only be applied for IFCTYP equal to 2-3, 11-13 or 22.',
      &   ' You may have to implement the request yourself !',
      &   ' Proceeding with standard AO-integral direct '//
      &     'Fock matrix construction.'
@@ -2113,8 +2114,12 @@ C           --------------
 
                KOFFF = IAODIS(ISYMA,ISYMB) + 1
                KOFFH = KHOLE + IHOLE(ISYMA,ISYMK)
-
-               CALL DGEMM('N','T',NA,NB,NVK,
+Casm
+C              Very dirty hack to solve weird bug when linking
+C              against some ATLAS libraries.
+C              See the end of cc_cholesky.F for more info
+Casm
+               CALL OTHER_DGEMM('N','T',NA,NB,NVK,
      &                    HFXFAC*XMONE,WORK(KOFFH),NTOTA,WORK(KOFFH),
      &                    NTOTB,ONE,FOCK(KOFFF),NTOTA)
 

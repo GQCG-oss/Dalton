@@ -33,7 +33,7 @@ BASIS
 aug-cc-pVDZ
 HCN 
 aug-cc-pVDZ basis
-    3    
+    3    0
         1.    1    
 H   0.3   0.0    -1.0 
         7.    1    
@@ -95,16 +95,17 @@ ERROR[1]="LDA ENERGY NOT CORRECT"
 
 # Dipole moment
 CRIT1=`$GREP  "( |0)\.8738" $log | wc -l`
-CRIT2=`$GREP  "( -|-0)\.8707" $log | wc -l`
-CRIT3=`$GREP  "( -|-0)\.0731" $log | wc -l`
+CRIT2=`$GREP  "( -|-0)\.8703" $log | wc -l`
+CRIT3=`$GREP  "( -|-0)\.0784" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
+
 # Polarizability
-CRIT1=`$GREP Ex $log | $GREP "11.9712" | $GREP "( \-|-0).5013"  | $GREP "( |0).000000" | wc -l`
-CRIT2=`$GREP Ey $log | $GREP "( \-|-0).5013" | $GREP "9.6987"  | $GREP "( |0).000000" | wc -l`
-CRIT3=`$GREP Ez $log | $GREP "( |0).000000" | $GREP "( |0).000000"  | $GREP "8.5379" | wc -l`
+CRIT1=`$GREP Ez $log | $GREP "11.7327" | $GREP "( |0).8582"  | $GREP "( |0).000000" | wc -l`
+CRIT2=`$GREP Ex $log | $GREP "( |0).8582" | $GREP "9.9372"  | $GREP "( |0).000000" | wc -l`
+CRIT3=`$GREP Ey $log | $GREP "( |0).000000" | $GREP "( |0).000000"  | $GREP "9.5600" | wc -l`
 
 TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 
@@ -116,8 +117,8 @@ ERROR[3]="POLARIZABILTY NOT CORRECT"
 CRIT1=`$GREP "Isotropic magnetizability\: * \-3\.038." $log | wc -l`
 CRIT2=`$GREP "Diamagnetic contribution\: * \-5\.568. " $log | wc -l`
 CRIT3=`$GREP "Paramagnetic contribution\: * 2\.529. " $log | wc -l`
-CRIT4=`$GREP "1st anisotropy\: * \-2\.116. " $log | wc -l`
-CRIT5=`$GREP "2nd anisotropy\: * 1\.727. " $log | wc -l`
+CRIT4=`$GREP "1st anisotropy:" $log | $GREP "( -|-0)\.95(4|5)" | wc -l`
+CRIT5=`$GREP "2nd anisotropy\: * 0\.539. " $log | wc -l`
 
 TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 

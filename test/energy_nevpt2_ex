@@ -22,7 +22,8 @@ cat > energy_nevpt2_ex.info <<'%EOF%'
    ----------------
    Molecule:         H2CO
    Wave Functions:   MCSCF (CAS) / NEVPT2 / ano-1 basis
-   Test Purpose:     Check NEVPT2 energy calculation for el.exc. state
+   Test Purpose:     Check NEVPT2 energy calculation for electronic excited state
+                     and check freezing of orbitals in NEVPT2
 %EOF%
 
 #######################################################################
@@ -63,6 +64,8 @@ EOF
 .CAS SPACE
  4 1
 *NEVPT2
+.FROZEN
+ 2 0
 .THRESHOLD
  0.D0
 *OPTIMIZATION
@@ -121,7 +124,9 @@ CTRL[3]=1
 ERROR[3]="MCSCF ENERGY NOT CORRECT"
 
 # NEVPT2 energy corrections
-CRIT1=`$GREP "1 * \-113\.8516440[0-9] * \-114\.11243(59|60)[0-9] * \-114\.1148655[0-9]" $log | wc -l`
+#old input, without frozen orbitals:
+#CRIT1=`$GREP "1 * \-113\.8516440[0-9] * \-114\.11243(59|60)[0-9] * \-114\.1148655[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * \-113\.8516440. * \-114\.1040139. * \-114\.1064429." $log | wc -l`
 TEST[4]=`expr $CRIT1`
 CTRL[4]=1
 ERROR[4]="NEVPT2 energies not correct."

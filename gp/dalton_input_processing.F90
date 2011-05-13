@@ -19,6 +19,7 @@ module dalton_input_processing
   public read_dalton_input
 
 #include "inforb.h"
+#include "priunit.h"
 
 contains
 
@@ -50,7 +51,9 @@ contains
     character(kw_length), intent(in) :: word
     character(kw_length), intent(in) :: kw_section
 !   ----------------------------------------------------------------------------
+    character(len=400)               :: input_line
     integer                          :: i, j
+    integer                          :: ios, islash
 !   ----------------------------------------------------------------------------
 
     call reset_available_kw_list()
@@ -98,39 +101,56 @@ contains
 
     end if
 
-    if (kw_matches(word, '.GASSHE')) then
+    if (kw_matches(word, '.GAS SH')) then
 
-      lucita_cfg_init_wave_f_type = 1
-      lucita_cfg_nr_gas_space_set = .true.
+!     set GAS control variables
+      lucita_cfg_init_wave_f_type   = 1
+      lucita_cfg_nr_gas_space_set   = .true.
+      lucita_cfg_minmax_occ_gas_set = .true.
 
+!     read the # of GAS spaces
       call kw_read(word, lucita_cfg_nr_gas_spaces)
 
-      if(lucita_cfg_nr_gas_spaces <= max_number_of_gas_spaces)then
+      if(lucita_cfg_nr_gas_spaces > 6) call quit('# gas spaces too high. max = 6.')
 
-        do i = 1, lucita_cfg_nr_gas_spaces
-          read(unit_in, *) (ngsh_lucita(i,j), j=1,nsym)
-        end do
+!     process the min max occupation / per orbital occupation in each GAS shell
+      do i = 1, lucita_cfg_nr_gas_spaces
 
-      else
-        call quit('# gas spaces too high. max = 6.')
-      end if
+        read(unit_in,'(a)') input_line
+        call upcase(input_line)
+ 
+        islash = index(input_line,'/')
+        if(islash <= 1)then
+          write(lupri,'(/a,i2,a,i2/a/2a)') 'ERROR for *LUCITA .GAS SHELL shell no.',                           &
+                i,'/',lucita_cfg_nr_gas_spaces,'- the defining input line does not contain a "/":',            &
+                '- the bad line : ',input_line
+          write(lupri,'(a)') '- Or the specification of the number of GAS-shells might be wrong! Check the input.'
+          call quit('Input error for .GAS SHELL under *LUCITA')
+        end if
 
-    end if
+!       min max occupation
+        read(input_line(1:islash-1),*,iostat=ios) ngso_lucita(i,1), ngso_lucita(i,2)
 
-    if (kw_matches(word, '.GASSPC')) then
+        if(ios /= 0)then
+          write(lupri,'(/a,i2,a,i2/a/2a)') 'ERROR for *LUCITA .GAS SHELL shell no.',                           &
+                i,'/',lucita_cfg_nr_gas_spaces, '- the input line does not contain correct min max electrons', &
+                '- the bad line : ',input_line
+          call quit('Input error for .GAS SHELL under *LUCITA')
+        end if
 
-      lucita_cfg_minmax_occ_gas_set = .true.
-      call kw_read(word, lucita_cfg_nr_calc_sequences)
+!       GAS shell orbital occupation
+        read(input_line(islash+1:),*,iostat=ios) (ngsh_lucita(i,j), j=1,nsym)
 
-      if(.not.lucita_cfg_nr_gas_space_set)then 
-        call quit(' error in input reading: .GASSHE has to be specified before .GASSPC.')
-      else
-       
-        do i = 1, lucita_cfg_nr_gas_spaces
-          read(unit_in, *) (ngso_lucita(i,j), j=1,2)
-        end do
-      end if
+        if(ios /= 0)then
+          write(lupri,'(/a,i2,a,i2/a,i2,a/2a)') 'ERROR for *LUCITA .GAS SHELL shell no.',                      &
+                i,'/',lucita_cfg_nr_gas_spaces,'- the input line does not contain',nsym,' occupations',        &
+                '- the bad line : ',input_line
+          call quit('Input error for .GAS SHELL under *LUCITA')
+        end if
+      end do
 
+!     set # of active electrons ==> max occupation in last GAS space
+      lucita_cfg_nr_active_e = ngso_lucita(lucita_cfg_nr_gas_spaces,2)
     end if
 
     if (kw_matches(word, '.RAS1  ')) then
