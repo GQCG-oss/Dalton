@@ -1063,8 +1063,8 @@ case "$WHICH" in
 
                 cpp="-DVAR_G95 $cpp"
              F90mod='-I../modules -fmod=../modules'
-                opt="$march -O3 -ffast-math -funroll-loops -ftrace=full -fsloppy-char"
-           safe_opt="$march -O1 -ffast-math -funroll-loops -ftrace=full -fsloppy-char"
+                opt="$march -O3 -ffast-math -funroll-loops -ftrace=full -fsloppy-char -Wno=155"
+           safe_opt="$march -O1 -ffast-math -funroll-loops -ftrace=full -fsloppy-char -Wno=155"
 #                   -fsloppy-char is needed for gp/mempkg.F
                copt="$march -O3 -ffast-math -funroll-loops -ftree-vectorize -std=c99 -DRESTRICT=restrict -DFUNDERSCORE=2"
              ;;
