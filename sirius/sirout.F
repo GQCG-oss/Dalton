@@ -483,7 +483,7 @@ C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
        END IF
 
        IF (DOMEP) THEN
-         CALL domep_routine(WRK(KCMO),WRK,KFREE,LFREE)
+         CALL CALC_MEP(WRK(KCMO),WRK,KFREE,LFREE)
        ENDIF
 
        KREL2 = KFREE

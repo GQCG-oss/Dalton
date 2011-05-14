@@ -25,26 +25,24 @@
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
-!Revision 1.2  2001/01/17 10:41:34  vebjornb
-!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 !
 !Revision 1.5  2000/05/24 12:43:25  hjj
-!1) attempted to get WLKREJ true working again (not tested)
-!2) new parameter lists to SOLFCK and WRSIFC
-!3) write CREF in determinants on SIRIFC in WRSIFC
+! 1) attempted to get WLKREJ true working again (not tested)
+! 2) new parameter lists to SOLFCK and WRSIFC
+! 3) write CREF in determinants on SIRIFC in WRSIFC
 !
 !Revision 1.4  2000/05/01 14:07:33  hjj
-!removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
+! removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
 !
 !revision 1.3 2000/05/01 07:21:48 hjj
-!polishing of warnings so that 'grep WARNING' gets more relevant information.
+! polishing of warnings so that 'grep WARNING' gets more relevant information.
 !----------------------------
 !revision 1.2 2000/04/14 10:10:52 hjj
 !\hjaaj jan 2000:
-!also screening for SIRCNO in OPTST
+! also screening for SIRCNO in OPTST
 !\hjaaj dec 1999:
-!1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
-!2) polishing
+! 1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
+! 2) polishing
 !===========================================================================
 #endif
 C  /* Deck siropt */
@@ -278,7 +276,7 @@ C
 C     Get CI information if active orbitals
 C
       IF (.NOT.RHFCLC)
-     *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
+     &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
 C
 C ****************************
 C *** GET STARTING VECTORS ***
@@ -410,7 +408,7 @@ C        CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
       END IF
       TIMITR = SECOND() - TIMITR
       IF (NWOPT.EQ.0 .OR. FLAG(34)) THEN
-C        ... We don't need the integrals for optimization.
+C        ... We do not need the integrals for optimization.
 C        ... flag(34) = (int.transf. not needed in optimization)
          FLAG(14) = .TRUE.
       ELSE
@@ -2400,13 +2398,13 @@ C                orbitals or natural orbitals or ?
 C
 C  The following records are written:
 C
-C    0) label
+C    0) label LBSIFC ("SIR IPH ")
 C    1) POTNUC,EMY,EACTIV,EMCSCF
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
 C    5) DV
-C    6) F
+C    6) FOCK
 C    7) PV
 C    8) FC
 C    9) FV
@@ -2445,6 +2443,10 @@ C   If (CSF's) then
 C    *) label "CREFDETS"
 C    *) CREF in dets
 C   end if
+C    *) label 'TRCCINT"
+C    *) NSYM, NORBT, ...
+C    *) FCDIA, ISMO
+C    *) CMO
 C
 #include <implicit.h>
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
@@ -2497,7 +2499,7 @@ C
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
      *            'PCMINFO ','PCMJXMAT'/
-      DATA LABEOD, LABCC /'EODATA  ', 'TRCCINT '/
+      DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
       CALL QENTER('WRSIFC')
@@ -2521,7 +2523,7 @@ C VB mar 2001:
 C     KWRK1, KFCDIA and MMORBT have to initialized before we jump
 C     further down in the subroutine.
 C
-         KWRK1 = 1
+         KWRK1  = 1
          KFCDIA = 1
          MMORBT = MAX(4,NNORBT)
          NCMOT4 = MAX(4,NCMOT)
@@ -2620,13 +2622,13 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     *               ISTATE,ISPIN,NACTEL,LSYM
+     &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
-     *               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
-     *               NSYM,MULD2H, NRHF,NFRO,
-     *               NISH,NASH,NORB,NBAS,
-     *               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
-     *               NAS1, NAS2, NAS3
+     &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
+     &               NSYM,MULD2H, NRHF,NFRO,
+     &               NISH,NASH,NORB,NBAS,
+     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+     &               NAS1, NAS2, NAS3
 C
 C 880920-hjaaj: later write label here for orbitals
 C
@@ -2640,21 +2642,21 @@ C
       MMASHY = MAX(4,NNASHY)
       M2ASHY = MAX(4,NNASHX*NNASHX)
 C
-      CALL WRITT (LUSIFC,NCMOT4,CMO)
-      CALL WRITT (LUSIFC,NC4,CREF)
-      CALL WRITT (LUSIFC,MMASHX,DV)
+      CALL WRITT (LUSIFC,NCMOT4,CMO) ! rec no. 3
+      CALL WRITT (LUSIFC,NC4,CREF)   ! rec no. 4
+      CALL WRITT (LUSIFC,MMASHX,DV)  ! rec no. 5
 C Write Fock matrix.
-      CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK))
-      CALL WRITT (LUSIFC,M2ASHY,PV)
-      CALL WRITT (LUSIFC,MMORBT,FC)
+      CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK)) ! rec no. 6
+      CALL WRITT (LUSIFC,M2ASHY,PV)  ! rec no. 7
+      CALL WRITT (LUSIFC,MMORBT,FC)  ! rec no. 8
       IF (NASHT .EQ. 0) THEN
          CALL DZERO(WRK(KFOCK),NNORBT)
          CALL WRITT (LUSIFC,MMORBT,WRK(KFOCK))
       ELSE
-         CALL WRITT (LUSIFC,MMORBT,FV)
+         CALL WRITT (LUSIFC,MMORBT,FV) ! rec. no. 9
       END IF
 C
-      CALL WRITT (LUSIFC,MMASHX,FCAC)
+      CALL WRITT (LUSIFC,MMASHX,FCAC) ! rec. no. 10
       IF (IADH2 .GE. 0) THEN
 #if defined (VAR_NEWCODE)
 ... 27-Jun-1987/hjaaj -- noget lignende : MAERKE
@@ -2670,9 +2672,9 @@ C
          CALL QUIT('SIRCI.WRSIFC: ".DISKH2" not implemented here yet.')
 #endif
       ELSE
-         CALL WRITT (LUSIFC,(MMASHX*MMASHX),H2AC)
+         CALL WRITT (LUSIFC,(MMASHX*MMASHX),H2AC) ! rec no. 11
       END IF
-      CALL WRITT (LUSIFC,NWH4,GORB)
+      CALL WRITT (LUSIFC,NWH4,GORB) ! rec no. 12
 C
 C *** now write diagonals of L-matrix needed for LINTRN
 C     and for conjugate gradient "next" algorithm
@@ -2811,7 +2813,7 @@ C
      &      NCDETS, NCONF
             CALL QUIT('WRSIFC: NCDETS.gt. NCONF for .DETERMINANTS')
          END IF
-         WRITE (LUSIFC) LAB123,TABLE(8)
+         WRITE (LUSIFC) LAB123,TABLE(8) ! label "CREFDETS"
          KWRK1 = 1 + NCDETS
          LWRK1 = LFREE - KWRK1
          CALL GETDETS(LSYM,NCONF,NCDETS,XINDX,CREF,WRK,WRK(KWRK1),LWRK1)
@@ -2836,7 +2838,7 @@ C
             ENDDO
          ENDDO
          NCMOTX = MAX(4,NCMOT1)
-         WRITE (LUSIFC) LAB123, LABCC
+         WRITE (LUSIFC) LAB123, LABCC ! label "TRCCINT "
          WRITE (LUSIFC) NSYM,NORBT,NBAST1,NCMOT1,(NOCC(I),I=1,NSYM),
      *        (NORB(I),I=1,NSYM),(MBAS1(I),I=1,NSYM),POTNUC,EMCSCF
          WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
@@ -2899,7 +2901,7 @@ C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
             END DO
          END DO
          CALL GPCLOSE(LUMULB,'KEEP')
-         WRITE (LUSIFC) LAB123, LABAUX
+         WRITE (LUSIFC) LAB123, LABAUX ! label "AUXILBAS"
          WRITE (LUSIFC) NSYM,NAUXT,NBAST,MOAUX,
      *                  (0,I=1,NSYM),
      *                  (NORB2(I),I=1,NSYM),

@@ -2781,8 +2781,12 @@ C JK
       RETURN
       END
 C*********************************************************************************************************
-C  /* Deck domep_routine */
-      SUBROUTINE domep_routine(CMO,WRK,KFRSAV,LFRSAV)
+C  /* Deck calc_mep */
+      SUBROUTINE CALC_MEP(CMO,WRK,KFRSAV,LFRSAV)
+!
+! Jacob Kongsted, calculate Molecular Electrostatic Potential
+!                 in (x,y,z) points listed on MEP.INP file;
+!                 values are written to MEP.OUT file.
 
 #include <implicit.h>
 #include <priunit.h>
@@ -2816,7 +2820,7 @@ C  /* Deck domep_routine */
       PARAMETER ( D2 = 2.0D0, DMINV2 = -0.50D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
-      CALL QENTER('domep_routine')
+      CALL QENTER('CALC_MEP')
 
 C     Only scf for the moment 
 
@@ -2914,7 +2918,7 @@ C     Only scf for the moment
         RUNQM3=.FALSE.
 
         IF (LOCDEB)  THEN
-          WRITE (LUPRI,'(/A)') 'Pot. energy matrix in domep_routine'
+          WRITE (LUPRI,'(/A)') 'Pot. energy matrix in CALC_MEP'
           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
         ENDIF
 
@@ -2934,7 +2938,7 @@ C     Only scf for the moment
 
   102 CONTINUE
 
-C     Calculate also electric the electric field at these points
+C     Calculate also the electric field at these points
 
       DO 104 J = 1,NCENTERS
         KPATOM = 0
@@ -3011,11 +3015,11 @@ C     Calculate also electric the electric field at these points
 
       CLOSE(LUMEP) 
 
-      CALL MEMREL('domep_routine',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('CALC_MEP',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
 
  1000 FORMAT(7(F15.10,2X))
 
-      CALL QEXIT('domep_routine')
+      CALL QEXIT('CALC_MEP')
       RETURN
       END
 C*********************************************************************************************************

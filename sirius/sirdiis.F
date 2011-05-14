@@ -1316,10 +1316,10 @@ C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
       END IF
 C
-C     If (FLAG(25) .OR. INERSI) write LUSIFC
+C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)
 C                         or .RESPONS (response calculation)
-C                         or .INTERFACE (request for LUSIFC)
+C                         or .INTERFACE (request for write of SIRIFC)
 C       INERSI is true if this is initial state calculation
 C              in a solvent calculation with inertial polarization
 C
@@ -1371,7 +1371,7 @@ C
      &               WRK(KFQ),WRK(KDUM),WRK(KDUM),WRK(KDUM),
      &               WRK(KFREE),LFREE,WRK(KGORB),TNLM,.FALSE.,WRK(KDUM))
 C        CALL WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
-C    *               GORB,ERLM,ORBHES,XINDX)
+C    &               GORB,ERLM,ORBHES,XINDX)
 C
          CALL MEMREL('DIIS_CTL.WRSIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
       END IF

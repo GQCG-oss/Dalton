@@ -575,7 +575,7 @@ C (this second option is active only for calculations without symmetry, i.e. C1)
       ELSE
         IPOLYG=INT(POLYG*1000)
       ENDIF
-      WRITE(LUPRI,*)'POLYG',IPOLYG
+      WRITE(LUPRI,*)'    POLYG',IPOLYG
 C
 
       WRITE(LUPRI,9010)
@@ -1448,7 +1448,7 @@ C
      &            + (CORD(2,N)-CORD(2,N)*PT(IBTAND(ISYMAX(2,1),K)))**2
      &            + (CORD(3,N)-CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K)))**2
                DIST = SQRT(DS)
-               IF (DIST.LT.0.1) GOTO 5000
+               IF (DIST.LT.0.1D0) GOTO 5000
                I=I+1
                IF (I.GT.MXCENT) GOTO 5010
                PCMCORD(1,I)=CORD(1,N)*PT(IBTAND(ISYMAX(1,1),K))
@@ -1456,7 +1456,7 @@ C
                PCMCORD(3,I)=CORD(3,N)*PT(IBTAND(ISYMAX(3,1),K))
                PCMCHG(I)=CHARGE(N)
                RSPH(I) = RSPH(N)
-               print *, 'nucdep',i,rsph(i)
+               !print *, 'nucdep',i,rsph(i)
             END IF
          END DO
       END DO

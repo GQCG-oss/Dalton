@@ -137,10 +137,9 @@ c
         igelo(ngel)=i
        endif
        enddo
-      if (ngel.gt.0) write (lupri,271) (igelo(i),i=1,ngel)
-  271 format(/'     FROZEN ORBITALS:'/10(5x,18i4/))
-      write (lupri,*)
-      write (lupri,*)
+      if (ngel.gt.0) write (lupri,271) ngel,(igelo(i),i=1,ngel)
+  271 format(/i5,' FROZEN CORE ORBITALS:'/10(5x,18i4/))
+      write (lupri,'(/)')
       call flshfo(lupri)
 
 cele
@@ -419,14 +418,14 @@ c
       write (lupri,*) 
       write (lupri,'(10x,a)')
      $      '   Norm  SC       Energy SC      Norm  PC       Energy PC '
-      write (lupri,123) '(0)  ',psiscc(1),e2scc(1),psipcc(1),e2pcc(1)
+      write (lupri,123) ' (0) ',psiscc(1),e2scc(1),psipcc(1),e2pcc(1)
       write (lupri,123) '(+1) ',psiscc(2),e2scc(2),psipcc(2),e2pcc(2)
       write (lupri,123) '(-1) ',psiscc(3),e2scc(3),psipcc(3),e2pcc(3)
       write (lupri,123) '(+2) ',psiscc(4),e2scc(4),psipcc(4),e2pcc(4)
       write (lupri,123) '(-2) ',psiscc(5),e2scc(5),psipcc(5),e2pcc(5)
-      write (lupri,123) '(+1)''',psiscc(6),e2scc(6),psipcc(6),e2pcc(6)
-      write (lupri,123) '(-1)''',psiscc(7),e2scc(7),psipcc(7),e2pcc(7)
-      write (lupri,123) '(0)'' ',psiscc(8),e2scc(8),psipcc(8),e2pcc(8)
+      write (lupri,123) "(+1)'",psiscc(6),e2scc(6),psipcc(6),e2pcc(6)
+      write (lupri,123) "(-1)'",psiscc(7),e2scc(7),psipcc(7),e2pcc(7)
+      write (lupri,123) " (0)'",psiscc(8),e2scc(8),psipcc(8),e2pcc(8)
       write (lupri,'(2x,65a1)')('-',i=1,65)
       write (lupri,123) 'Total',psisc(1),e2sc(1),psipc(1),e2pc(1)
   123 format (2x,A,4f15.10)
@@ -497,7 +496,7 @@ c      WRITE (lupri,1105) ESCF
  1060 FORMAT (5X,'TOTAL ENERGY CONTRIBUTIONS')
  1070 FORMAT (' STATE',3X,'DIAGONALISATION        PERTURBATION SC-D',
      * '        PERTURBATION PC-D')
- 1100 FORMAT (1x,I4,F17.8,3F24.8)
+ 1100 FORMAT (I5,F17.8,3F24.8)
 c 1105 FORMAT (' REFERENCE: ',F16.8,//)
  2000 FORMAT (5X,32('*'))
       CALL QEXIT('DYPC')
@@ -703,7 +702,7 @@ c      thr=1.d-8                 !perhaps too strict
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:1'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact-ndep
 c--   costruzione della matrice di trasformazione
@@ -817,7 +816,7 @@ c       call flshfo(lupri)
 
        if(abs(dnormk).lt.1.d-15)goto 600    
        if(dnormk.lt.0.d0)then
-         write(lupri,*)'Waring v1k: dnormk=',dnormk
+         write(lupri,*)'Warning v1k: dnormk=',dnormk
          dnormk=0.d0
        endif
        if (dnormk.eq.0.d0) goto 600
@@ -925,7 +924,7 @@ c      thr=1.d-8                 !perhaps too strict
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:2'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact-ndep
 c--   costruzione della matrice di trasformazione
@@ -973,15 +972,15 @@ c------ two-electron part with mulliken distr (ir,ii|**)
       ic=id2n(icd)
       id=id2n(idd)
       if (ic.gt.id) then
-      ir=ic
-      ii=id
+       ir=ic
+       ii=id
       else
-      ir=id
-      ii=ic
+       ir=id
+       ii=ic
       endif
       irc=ir-ncoat
       do ia=1,nact
-      iad=in2d(ia+ncore)
+       iad=in2d(ia+ncore)
        do is=1,nvirt
         isd=in2d(is+ncoat)
         tint(irc,ii,is,ia)=h2m(isd,iad)
@@ -1015,38 +1014,38 @@ C --------- Strongly Contracted -----------------
       epsimk=0.d0
       do ia=1,nact
        iaa=ia+ncore
+       contj=tint(irc,ii,isc,ia)
+       contk=tint(isc,ii,irc,ia)
        do iap=1,nact
         iaap=iap+ncore
-        contj=tint(irc,ii,isc,ia)
         contjp=tint(irc,ii,isc,iap)
        if (ir.eq.is) then
-       cint=.5d0*contj*contjp
+        cint=.5d0*contj*contjp
        else
-       contk=tint(isc,ii,irc,ia)
-       contkp=tint(isc,ii,irc,iap)
-       cint=contj*contjp+contk*contkp-
+        contkp=tint(isc,ii,irc,iap)
+        cint=contj*contjp+contk*contkp-
      *       0.5d0*contj*contkp-0.5d0*contk*contjp
        endif
-       dnormk=dnormk+2.d0*da(ia,iap)*cint
-       epsimk=epsimk+gkm1a(ia,iap)*cint
-       enddo
-      enddo
+        dnormk=dnormk+2.d0*da(ia,iap)*cint
+        epsimk=epsimk+gkm1a(ia,iap)*cint
+       enddo ! iap
+      enddo ! ia
 
       if (abs(dnormk).lt.1.d-15) goto 600
       if(dnormk.lt.0.d0)then
-         write(lupri,*)'Waring vm1k: dnormk=',dnormk
+         write(lupri,*)'Warning vm1k: dnormk=',dnormk
          dnormk=0.d0
       endif
 
       if (dnormk.ne.0.d0) then
-      epsimk=-epsimk/dnormk
-      den=epsimk+fmpb(ii)-fmpb(ir)-fmpb(is)
-      co=dnormk/den
-      con=co/den
-      e2sc(1)=e2sc(1)+co
-      psisc(1)=psisc(1)+con
-      e2scc(3)=e2scc(3)+co
-      psiscc(3)=psiscc(3)+con
+        epsimk=-epsimk/dnormk
+        den=epsimk+fmpb(ii)-fmpb(ir)-fmpb(is)
+        co=dnormk/den
+        con=co/den
+        e2sc(1)=e2sc(1)+co
+        psisc(1)=psisc(1)+con
+        e2scc(3)=e2scc(3)+co
+        psiscc(3)=psiscc(3)+con
       endif
 
 
@@ -1591,7 +1590,7 @@ c      thr=1.d-8                 !perhaps too strict
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:3'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact3-ndep
 c--   costruzione della matrice di trasformazione
@@ -1656,7 +1655,7 @@ c      thr=1.d-8                 !perhaps too strict
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:4'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact3-ndep
 c--   costruzione della matrice di trasformazione
@@ -1859,7 +1858,7 @@ c      thr=1.d-8                 !perhaps too strict
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:5'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact3-ndep
       if(nnew.le.0)then
@@ -1932,7 +1931,7 @@ c      thr=1.d-8                 !perhaps too strict
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:6'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact3-ndep
       if(nnew.le.0)then
@@ -2381,7 +2380,7 @@ c     $         ,w(ioffw+i-1)
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:7'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact2-ndep
 c--costruzione della matrice di trasformazione
@@ -2947,7 +2946,7 @@ c     $      ,w(ioffw+i-1)
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:8'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact3-ndep
 c--costruzione della matrice di trasformazione
@@ -3196,7 +3195,7 @@ c     $        ,w(ioffw+i-1)
       enddo
       if (ndep.gt.0) then
       write (lupri,*)'Linear dependencies analysis:9'
-      write (lupri,'(a,i4,a)')' There are ',ndep,' linear dependencies'
+      write (lupri,'(a,i5,a)')' There are',ndep,' linear dependencies'
       endif
       nnew=nact3-ndep
       if(nnew.le.0)then
@@ -3307,14 +3306,14 @@ C     One-electron contributions to heffd
 C
 
       do i=1,norb
-      id=in2d(i)
+       id=in2d(i)
        do j=i,norb
-       jd=in2d(j)
-       ij=indice(i,j)
-       ijd=indice(id,jd)
-       heffd(ij)=onel(ijd)
-       fock(i,j)=onel(ijd)
-       fock(j,i)=onel(ijd)
+        jd=in2d(j)
+        ij=indice(i,j)
+        ijd=indice(id,jd)
+        heffd(ij)=onel(ijd)
+        fock(i,j)=onel(ijd)
+        fock(j,i)=onel(ijd)
        enddo
       enddo
 
@@ -3375,11 +3374,11 @@ c----- (tj,ju) part of heff (t=iar,u=i)
 
 c----- (tu,jj) part of heff (tu=ri,ra,ai)
       do it=1,norb
-      itd=in2d(it)
+       itd=in2d(it)
        do iu=it,norb
-       iud=in2d(iu)
-       itu=indice(it,iu)
-       heffd(itu)=heffd(itu)+2.d0*h2m(itd,iud)
+        iud=in2d(iu)
+        itu=indice(it,iu)
+        heffd(itu)=heffd(itu)+2.d0*h2m(itd,iud)
        enddo
       enddo
 
@@ -3389,9 +3388,9 @@ c----- Core eps
           jd=in2d(j)
           fmpb(ic)=fmpb(ic)+2.d0*h2m(jd,jd)
           fock(ic,ic)=fock(ic,ic)+2.d0*h2m(jd,jd)
-         if (ic.ne.j) then
-          fock(ic,j)=fock(ic,j)-h2m(icd,jd)
-         endif
+          if (ic.ne.j) then
+           fock(ic,j)=fock(ic,j)-h2m(icd,jd)
+          endif
           if (j.eq.ic) then
           fmpb(ic)=fmpb(ic)-h2m(jd,jd)
           fock(ic,ic)=fock(ic,ic)-h2m(jd,jd)

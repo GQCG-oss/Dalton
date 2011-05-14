@@ -416,12 +416,12 @@ C
       write (lupri,'(1x,a,i8)')       'NTOTHP =',ntothp
       write (lupri,'(1x,a,8I4)')      'FROZEN =',(NFRNEVPT2(i),i=1,nsym)
       if(doci)then
-         write(lupri,'(1x,a,i8)')     'STATE  =',ISTNEVCI
-         write (lupri,'(1x,a,f16.8)')'E-CASCI =',escf
+         write (lupri,'(1x,a,i8)')    'STATE  =',ISTNEVCI
+         write (lupri,'(1x,a,f16.8)') 'E-CASCI=',escf
       else
-         write (lupri,'(1x,a,f16.8)')'E-MCSCF =',escf
+         write (lupri,'(1x,a,f16.8)') 'E-MCSCF=',escf
       endif
-      write (lupri,'(1x,a,d8.2)')    'THR     =',thr
+      write (lupri,'(1x,a,1p,d16.2)') 'THR    =',thr
       call flshfo(lupri)
       mact=nasht
       nact2=nasht**2
@@ -442,15 +442,15 @@ c      if(zion)nele=nele-1
         lindj(i)=(i-1)*i*(i+1)/6
         lindk(i)=i*(i-1)/2
       enddo
-      do i=1,nasht
-      do j=1,nasht
-      do k=1,nasht
       do l=1,nasht
-        call getnorm(i,j,k,l,norm)
-        normind(i,j,k,l)=norm
-      enddo
-      enddo
-      enddo
+       do k=1,nasht
+        do j=1,nasht
+         do i=1,nasht
+          call getnorm(i,j,k,l,norm)
+          normind(i,j,k,l)=norm
+         enddo
+        enddo
+       enddo
       enddo
       nwords=nasht*(nasht+1)*(nasht+2)*(nasht+3)/24
       call nwadd(nwall,nasht**6*8)
@@ -593,8 +593,8 @@ c      endif
       call nwdel(nwall,norbt*ncapos*2)
       deallocate (ioccfe)
       t2=second()
-      write(lupri,'(a,f8.2,a)')
-     &   ' Elapsed time after density matrices ',t2-tdal,' sec.'
+      write(lupri,'(a,f10.2,a)')
+     &   ' Elapsed time after density matrices',t2-tdal,' seconds'
       n=nasht
       nstop=(n+n*n)/2
 c---calcolo Koopmans esteso doppie ionizzazioni---------------------
@@ -630,19 +630,19 @@ c         enddo
 !     write(lupri,*)
 !     write(lupri,*) 'Done with two part/hole Koopmans'' matrices'
       t3=second()
-      write(lupri,'(a,f10.2,a)')' KoopE and KoopE2 have taken ',t3-t2,
-     * ' seconds'
+      write(lupri,'(a,f10.2,a)')
+     &   ' KoopE and KoopE2 have taken        ',t3-t2,' seconds'
       call wr3(koopeaa,taa,koopaa,nasht,lun31)
       call koopman0pE(atwo,daaa,taa,dal,koopaa,koopbb,koopab,
      $ nasht,nisht,f,aj,itsym,its)
 !     write(lupri,*)
 !     write(lupri,*) 'Done with excitation Koopmans'' matrix'
       t4=second()
-      write(lupri,'(a,f10.2,a)')' Koopman0pE has taken ',t4-t3,
-     *                 ' seconds'
+      write(lupri,'(a,f10.2,a)')
+     &   ' Koopman0pE has taken               ',t4-t3,' seconds'
       fmax=0.d0
-      do i=1,nasht
-         do j=1,nasht
+      do j=1,nasht
+         do i=1,nasht
             fprov=abs(koopab(i,j))
             if(fprov.gt.fmax)fmax=fprov
          enddo
@@ -4727,9 +4727,8 @@ c------------------------------------------------------------------
             enddo
          enddo
       enddo
-      write (lupri,*)
-      write (lupri,'(a,a,d10.3)')' Largest difference between bmat ',
-     * 'and cmat  =',bigdiff
+      write (lupri,'(/a,1P,d10.2)')
+     & ' Largest difference between bmat  and cmat  =',bigdiff
       bigdiff=0.d0
       do i =1,nasht
          do j=1,nasht
@@ -4743,8 +4742,8 @@ c------------------------------------------------------------------
             enddo
          enddo
       enddo
-      write(lupri,'(a,a,d10.3)')' Largest difference between ', 
-     $ 'btmat and ctmat=',bigdiff
+      write (lupri,'(/a,1P,d10.2)')
+     & ' Largest difference between btmat and ctmat =',bigdiff
       call flshfo(lupri)
       return
       end
