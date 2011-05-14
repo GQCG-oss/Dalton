@@ -38,7 +38,7 @@ C----------------------------------------------------------
 C
       IF ( (LABEL(3:8).EQ.'SPNORB') .OR. (LABEL(5:8).EQ.'LAGR') .OR.
      &     (LABEL(2:7).EQ.'LONMAG') ) THEN
-         WRITE(LUPRI,'()') LABEL,' is not implemented yet.'
+         WRITE(LUPRI,*) LABEL,' is not implemented yet.'
          CALL QUIT('ERROR, Program have to stop')
       END IF
 C
