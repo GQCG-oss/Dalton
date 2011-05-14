@@ -572,9 +572,9 @@ CHJ Sep 2001 end
             IF (DOSEL) THEN
                IF (IOP .NE. JOP) THEN
                   IF (DOTRPL) THEN
-                     JREC = 2*ITRREC(JOP,LSYMPT) - 1
+                     JREC = 2*ITRREC(JOP,LSYMPT)
                   ELSE                  
-                     JREC = 2*IGDREC(JOP,LSYMPT,ITYPE) - 1
+                     JREC = 2*IGDREC(JOP,LSYMPT,ITYPE)
                   ENDIF
                   CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
                   REL(IOP,JOP) = REL(IOP,JOP)
