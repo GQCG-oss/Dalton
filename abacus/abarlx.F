@@ -143,6 +143,9 @@ C
 C
       LOGICAL PASS, OLDDX, DOREAL, DOIMAG, DOSEL, DOTRPL, SELLER
       DIMENSION SPNPSO(*),SPNSD(*), SPNFC(*), SPSDFC(*), WORK(LWORK)
+
+      real(8), allocatable :: fc_contribution(:, :)
+
 C
 C      Used from common blocks:
 C       /ENERGY/: HESREL(*,*)
@@ -215,8 +218,7 @@ C
       WORK(KTEST) = -999.9D0
       IF (DOTRPL) THEN
          KWRKSD = KLAST
-         KWRKFC = KWRKSD + 9*9*NUCDEP*NUCDEP
-         KWRKSF = KWRKFC + NUCDEP*NUCDEP
+         KWRKSF = KWRKSD + 9*9*NUCDEP*NUCDEP
          KLAST  = KWRKSF + 9*NUCDEP*NUCDEP
          LWRK1  = LWORK - KLAST + 1
       ELSE
@@ -252,8 +254,9 @@ C
          CALL HESZER(SPNFC)
          CALL HESZER(SPSDFC)
          CALL DZERO(WORK(KWRKSD),9*9*NUCDEP*NUCDEP)
-         CALL DZERO(WORK(KWRKFC),NUCDEP*NUCDEP)
          CALL DZERO(WORK(KWRKSF),9*NUCDEP*NUCDEP)
+         allocate(fc_contribution(nucdep, nucdep))
+         fc_contribution = 0.0d0
       ELSE
          IF (POLAR)  CALL DZERO(POLARS,9)
          IF (MOLHES) CALL HESZER(WORK(KHESRL))
@@ -336,7 +339,7 @@ C
                END IF
                IF (DOTRPL) THEN
                   CALL ADDTRP(WORK(KREL),NVEC,IPRINT,WORK(KWRKSD),
-     &                        WORK(KWRKFC),WORK(KWRKSF))
+     &                        fc_contribution,WORK(KWRKSF))
                ELSE
                   CALL ADDREL(WORK(KREL),WORK(KHESRL),SPNPSO,NVEC,
      &                        ITYPE,IPRINT)
@@ -390,8 +393,11 @@ C     ******************************************
 C     ***** Add up SD and FC contributions *****
 C     ******************************************
 C
-      IF (DOTRPL) CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
-     &                        WORK(KWRKFC),WORK(KWRKSF))
+      IF (DOTRPL) then
+          CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
+     &                fc_contribution,WORK(KWRKSF))
+         deallocate(fc_contribution)
+      end if
       IF (MOLHES .AND. .NOT. DOTRPL) CALL ADDHES(WORK(KHESRL))
 C
 C     ************************************
