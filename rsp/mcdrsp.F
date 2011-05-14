@@ -490,7 +490,7 @@ C
          !iprrsp = 25
          CALL RSPREDMCD(ICTL,LINEQ,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *               EIVAL,EIVEC,WRK(KBCVEC),WRK(KBOVEC),
-     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2,Xf,S2Xf)
+     *               UDV,WRK(KEVECS),XINDX,WRK(KWRK2),LWRK2)
          !iprrsp = iprsav
 
          !write(lupri,*)'RSPCTLMCD: at exit REDMCD, KZYRED=', KZYRED
@@ -897,7 +897,7 @@ C
          !Orthonormalize 
          nold=1
          CALL RSPORTmcd(WRK(KBCVEC),NLSIM,NOLD,IBTYP,
-     *               THRLDV,WRK(KWRK1),Xf,S2Xf,LURSP3,WRK(KWRK1),LWRK1)
+     *               THRLDV,WRK(KWRK1),Xf,S2Xf,LURSP3)
          IF (IPRRSP.GT.80) THEN
             WRITE(LUPRI,'(/A)')' AFTER RSPORTMCD IN LRSTMCD'
             WRITE(LUPRI,'(/A,I5)')
