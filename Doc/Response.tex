@@ -7,14 +7,14 @@ The directives in the following subsections may be included in the input to \res
 They are organized according to the program section names in which they
 appear.
 
-\resp\ is the most general part of the code for calculating 
+\resp\ is the most general part of the code for calculating
 many different electronic linear, quadratic, or cubic molecular
 response properties based on SCF, MCSCF or CI wave functions, as well as Kohn--Sham-based time-dependent density functional theory.
 No nuclear contributions are added.
 
 If the final wave function from \Sec{*WAVE FUNCTIONS} was \Key{CI}, then
 a configuration interaction\index{Configuration Interaction!response}\index{CI!response}
-response calculation will be performed. 
+response calculation will be performed.
 This is equivalent to a CI sum-over-states\index{response!CI sum-over-states}
 calculation of response properties,
 but of course calculated directly without diagonalization of the full
@@ -36,20 +36,20 @@ by different modules and are described
 in Chapter~\ref{ch:CC} on coupled cluster calculations.
 
 In addition, SOPPA\index{SOPPA}\index{polarization propagator}
-(Second-Order Polarization Propagator 
-approximation) or SOPPA(CCSD)\index{SOPPA(CCSD)} (Second Order Polarization
-Propagator Approximation with Coupled Cluster Singles and Doubles Amplitudes) 
-for the calculation of linear response
+(Second-Order Polarization Propagator approximation),
+SOPPA(CC2)\index{SOPPA(CC2)} or SOPPA(CCSD)\index{SOPPA(CCSD)} (Second
+Order Polarization Propagator Approximation with Coupled Cluster
+Singles and Doubles Amplitudes) for the calculation of linear response
 \index{linear response}\index{response!linear}
-properties and excitation energies with transition moments
-may be requested in this input section. The current
-implementation of the SOPPA method is described 
-in Ref.~\cite{mjpekdtehjajjojcp} and of the SOPPA(CCSD) method in 
-Ref.~\cite{soppaccsd}. Note that a SOPPA calculation
-requires the keyword \Key{SOPPA}, whereas a SOPPA(CCSD) calculation requires
-the keyword \Key{SOPPA(CCSD)}.
+properties and excitation energies with transition moments may be
+requested in this input section. The current implementation of the
+SOPPA method is described in Ref.~\cite{mjpekdtehjajjojcp}, of the
+SOPPA(CC2) method in Ref.~\cite{spas097} and of the SOPPA(CCSD) method
+in Ref.~\cite{soppaccsd}. Note that a SOPPA calculation requires the
+keyword \Key{SOPPA}, whereas a SOPPA(CC2) or SOPPA(CCSD) calculation
+requires the keyword \Key{SOPPA(CCSD)}.
 %M. J. Packer, E. K. Dalskov, T. Enevoldsen, H. J. Aa. Jensen, and
-%J. Oddershede, J. Chem. Phys., submitted. 
+%J. Oddershede, J. Chem. Phys., submitted.
 
 
 \subsection{General: \Sec{*RESPONSE}}
@@ -69,7 +69,7 @@ Invoke the higher RPA approximation for the calculation of linear
 response properties\index{linear response!higher RPA}.
 This approximation is identical to that of McKoy
 and coworkers~\cite{jrtsvmjcp58,tsjrvmjcp58}. The requirements to the
-preceding wave function 
+preceding wave function
 calculation is the same as for the \Key{SOPPA} keyword.
 This keyword overrides a simultaneous specification of \Key{SOPPA}.
 
@@ -83,11 +83,11 @@ Change the maximum dimension of $H_0$ subspace.   Default is 100.
 PHP is a subblock of the CI matrix which is calculated explicitly
 in order to obtain improved CI trial vectors compared to the
 straight Davidson algorithm\cite{erdjcp17}.  The configurations
-corresponding to 
+corresponding to
 the lowest diagonal elements are selected, unless \Key{PHPRESIDUAL} is
-specified. MAXPHP is the maximum dimension of PHP, the 
+specified. MAXPHP is the maximum dimension of PHP, the
 actual dimension will be less if MAXPHP will split degenerate configurations.
- 
+
 \item{\Key{MAXRM}}\\
 \verb|READ *, MAXRM |\\
 Change the maximum dimension of the reduced space. Default is 200.
@@ -107,15 +107,15 @@ orbital diagonal. Not recommended as the approximate orbital diagonal
 normally will become more different from the exact orbital diagonal.
 
 \item{\Key{NODOIT}}
-Turns off direct one-index transformation \cite{ovhahjajjcc15}. 
+Turns off direct one-index transformation \cite{ovhahjajjcc15}.
 In this way all one-index transformed integrals are stored on disk.
 
 \item{\Key{NOITRA}}
-No integral transformation. Normally the two-electron integrals are 
+No integral transformation. Normally the two-electron integrals are
 transformed in the beginning of a response calculation. In some cases
 this is not desirable, {\it e.g.\/}, if the response part is only used for
 calculating average values of an operator, or if the transformed two-electron
-integrals already exist from a previous response calculation. 
+integrals already exist from a previous response calculation.
 
 \item{\Key{OPTORB}}
 Orbital trial vectors are calculated with optimal orbital
@@ -127,10 +127,10 @@ algorithm \cite{tuhjahjajpjjcp84}.
 Change the amount for shifting the orbital
 diagonal\index{orbital diagonal Hessian} of the MCSCF Hessian.
 May be used if there is a large number of negative eigenvalues.
-Default is $10^{-4}$. 
+Default is $10^{-4}$.
 
 \item{\Key{ORBSPC}}
-Calculation with only orbital operators. 
+Calculation with only orbital operators.
 
 \item{\Key{PHPRESIDUAL}}
 Select configurations for PHP matrix based on largest residual
@@ -139,7 +139,7 @@ rather than lowest diagonal elements.
 %\item[\Key{PROP2A}] Not yet implemented apparently.
 
 \item{\Key{SOPPA}}
-Requests the second order polarization propagator approximation 
+Requests the second order polarization propagator approximation
 in the linear response module.
 The SOPPA\index{SOPPA}\index{polarization propagator!SOPPA}\index{response!SOPPA}
 flag requires that
@@ -167,28 +167,30 @@ are available on the RSPVEC file.
 \item{\Key{S0MIX}}
 Sum rule is calculated in mixed representation, that is, calculate
 $N_e=\langle0\mid [r,p] \mid0\rangle$ provided that dipole length and
-velocity integrals are available on the property integral file 
+velocity integrals are available on the property integral file
 (calculated with \Sec{*HERMIT} options \Key{DIPLEN} and \Key{DIPVEL}).
 The calculated quantity gives a measure of the quality of the basis
 set\index{basis set!quality}.
 
 \item{\Key{SOPPA(CCSD)}}
-Requests the second order polarization propagator approximation with coupled 
-cluster singles and doubles amplitudes in the linear response module.
-The SOPPA(CCSD)\index{SOPPA(CCSD)}\index{polarization propagator!SOPPA(CCSD)}
-\index{response!SOPPA(CCSD)} flag requires that the preceding coupled cluster 
-calculation has generated the CCSD amplitudes and written them to disk 
-(set \Key{RUN RESPONSE} in 
-\Sec{*DALTON} input, \Key{HF} and \Key{CC} in \Sec{*WAVE FUNCTIONS}  and 
-\Key{SOPPA(CCSD)} in \Sec{CC INPUT}). See example input in 
+Requests the second order polarization propagator approximation with
+coupled cluster singles and doubles amplitudes or the second order
+polarization propagator approximation with CC2 amplitudes in the linear
+response module. The SOPPA(CCSD)\index{SOPPA(CCSD)}\index{polarization
+propagator!SOPPA(CCSD)}
+\index{response!SOPPA(CCSD)} flag requires that the preceding coupled cluster
+calculation has generated the CC2 or CCSD amplitudes and written them
+to disk (set \Key{RUN RESPONSE} in \Sec{*DALTON} input, \Key{HF} and
+\Key{CC} in \Sec{*WAVE FUNCTIONS}  and \Key{SOPPA2}
+ or \Key{SOPPA(CCSD)} in \Sec{CC INPUT}). See example input in
 Chapter~\ref{ch:starting}.
 
 \item{\Key{SOPW4}}
 Calculate explicitly the W4 term described by Oddershede {\it et
 al.\/}~\cite{jopjdycpr2}. This term is already included in the normal
-SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} or 
+SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} or
 SOPPA(CCSD)\index{SOPPA(CCSD)} result, and used mostly for comparing to older
-calculations. Note that this keyword requires that \Key{SOPPA} or 
+calculations. Note that this keyword requires that \Key{SOPPA} or
 \Key{SOPPA(CCSD)}is set.
 
 \item{\Key{TRPFLG}}
@@ -213,7 +215,7 @@ choice of operators,
 
 In the same \resp\ calculation these linear response properties can be calculated
 together with excitation energies
-and with long range dispersion coefficients, but not 
+and with long range dispersion coefficients, but not
 together with quadratic or cubic response.
 
 \begin{description}
@@ -254,7 +256,7 @@ operator, respectively\index{dipole velocity}.
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Response equations are evaluated at given
-frequencies\index{frequency}. Two lines following 
+frequencies\index{frequency}. Two lines following
 this option must contain 1) The number of frequencies, 2) Frequencies
 in atomic units.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
@@ -266,14 +268,14 @@ Remember to increase \Key{MAXRM} if many frequencies are specified.
 
 \item{\Key{MAX IT}}\\
 \verb|READ (LUCMD,*) MAXITL|\\
-Maximum number of iterations for solving a linear response 
+Maximum number of iterations for solving a linear response
 equation. Default is 60.
 
 \item{\Key{MAXITO}}\\
 \verb|READ (LUCMD,*) MAXITO|\\
 Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
-\cite{tuhjahjajpjjcp84}. 
+\cite{tuhjahjajpjjcp84}.
 Default is 5.
 
 \item{\Key{MAXOCK}} Selects the last row in setting up the orbital
@@ -292,7 +294,7 @@ the Cartesian electric quadrupole velocity operators.
 \item{\Key{PRINT}}\\
 \verb|READ *,IPRLR|\\
 Sets print level for linear response module. Default is 2.
- 
+
 \item{\Key{PROPRT}}\\
 \verb|READ '(A)', LABEL|\\
 Sets $A$ and $B$ to a given operator with label; LABEL.
@@ -329,7 +331,7 @@ quadrupole\index{quadrupole operator} operator, respectively.
 
 \item{\Key{RESTLR}}
 Restart\index{restart!linear response} of response calculation. This
-can only be used if the  
+can only be used if the
 operator specified is the same which was used \textit{last} in the previous
 response calculation.
 
@@ -353,7 +355,7 @@ operator, respectively\index{spin-orbit}.
 Relative convergence threshold for all requested linear response functions.
 Default is 1.0D-3; note that this number should be at least 10 times
 bigger than the final gradient norm in the SCF/MCSCF
-wave function optimization. The accuracy of the linear response 
+wave function optimization. The accuracy of the linear response
 properties will be quadratic in this threshold; thus the default
 corresponds to convergence to approximately 6 digits.
 
@@ -378,7 +380,7 @@ correspond to vertical electronic excitation energies.
 
 In the same \resp\ calculation these excitation properties can be calculated
 together with linear response properties
-and with long range dispersion coefficients, but not 
+and with long range dispersion coefficients, but not
 together with quadratic or cubic response.
 
 Required keywords:
@@ -433,7 +435,7 @@ linear response eigenvalue equation. Default is 60.
 \verb|READ *, MAXITO|\\
 Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
-\cite{tuhjahjajpjjcp84}. 
+\cite{tuhjahjajpjjcp84}.
 Default is 5.
 
 \item{\Key{NSTART}}\\
@@ -474,7 +476,7 @@ quadrupole\index{quadrupole operator} operator, respectively.
 
 \item{\Key{RESTPP}}
 Restart\index{restart!excitation energy} of single residue response
-calculation. This can only be used if the root which is 
+calculation. This can only be used if the root which is
 specified is the same which was used \textit{last} in the previous
 single residue response calculation.
 
@@ -483,9 +485,9 @@ single residue response calculation.
 Number of roots.  The line following this option contains the number
 of excited states\index{excited state} per symmetry. Excitation
 energies\index{excitation energy} are calculated for each state and if
-any operators are given, 
+any operators are given,
 symmetry-allowed transition moments\index{transition moment} are
-calculated between the 
+calculated between the
 reference state and the excited states.
 Remember to increase \Key{MAXRM} if many roots are specified.
 Default: one of each symmetry.
@@ -507,12 +509,12 @@ and all operators---including
 
 \item{\Key{THCPP}}\\
 \verb|READ *, THCPP|\\
-Threshold for solving the single residue linear response eigenvalue equation. 
+Threshold for solving the single residue linear response eigenvalue equation.
 Default is 1.0D-3; note that this number should be at least 10 times
 bigger than the final gradient norm in the SCF/MCSCF
 wave function optimization, otherwise you may encounter
 numerical problems.
-The accuracy of the pole (excitation energy) will be 
+The accuracy of the pole (excitation energy) will be
 quadratic in this threshold, thus the default corresponds to approximately
 6 digits. The accuracy of transition moments will be linear in this threshold.
 
@@ -530,7 +532,7 @@ Calculation of third order properties\index{properties!third order}
  as quadratic response
 functions\index{quadratic response}\index{response!quadratic}.
 $A$, $B$, and $C$-named options refer to the operators in the quadratic
-response function 
+response function
 $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 \cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
 
@@ -549,7 +551,7 @@ the $A^{\left[2\right]}$ term. Mainly for debugging purposes.
 \verb|READ(LUCMD,'( A )')LABEL|\\
 Specify the operators $A$, $B$, and $C$. The line following this
 option should be the label of the operator as it appears in the file
-AOPROPER. 
+AOPROPER.
 
 Note that giving the label \verb|ANGMOM|, \verb|1SPNORB|,
 \verb|2SPNORB|, or \verb|MNFSPNOR|, all the components of angular
@@ -566,7 +568,7 @@ appropriate keywords in the \Sec{*INTEGRALS} input module.
 \verb|READ(LUCMD,*)ISPINA|\\
 Spin information for quadratic response calculations.
 The line following these options contains the spin
-rank\index{spin rank} of the operators 
+rank\index{spin rank} of the operators
 $A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
 operators.
 In a triplet response calculations two of these operators are of rank one,
@@ -586,18 +588,18 @@ Sets $A$, $B$, and $C$ to dipole operators\index{dipole length}.
 
 \item{\Key{DIPLNX/Y/Z}}
 Sets $A$, $B$, and $C$ operators to the X, Y, or Z component of the
-dipole length operators, respectively\index{dipole length}. 
+dipole length operators, respectively\index{dipole length}.
 
 \item{\Key{E3TEST}}
 Test the contributions to the quadratic response function arising from
 the $E^{\left[3\right]}$ and $S^{\left[3\right]}$ terms.  Mainly for
-debugging purposes. 
+debugging purposes.
 
 \item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Response equations are evaluated at given
-frequencies\index{frequency!quadratic response}. Two lines 
+frequencies\index{frequency!quadratic response}. Two lines
 following this option must contain 1) The number of frequencies, 2)
 Frequencies.
 For the Kerr effect only the $B$-frequency is set,
@@ -617,8 +619,8 @@ Default is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of iterations in the optimal
-orbital\index{optimal orbital trial vector} algorithm 
-\cite{tuhjahjajpjjcp84}. 
+orbital\index{optimal orbital trial vector} algorithm
+\cite{tuhjahjajpjjcp84}.
 Default is 5.
 
 \item{\Key{OPTREF}}
@@ -665,7 +667,7 @@ Analyze the calculated response equations to give the quadratic
 response spin-orbit contributions to the indirect spin--spin coupling
 constants. Will calculate the spin-orbit corrections to the reduced spin--spin
 coupling constants. Note that this keyword will not set up the
-required quadratic 
+required quadratic
 response functions, only analyze the calculated results if appropriate
 quadratic response functions have been requested.
 
@@ -691,7 +693,7 @@ the $X^{\left[2\right]}$ term. Mainly for debugging purposes.
 %Calculation of third order properties as quadratic response
 %functions\index{quadratic response}\index{response!quadratic}.
 %$A, B$, and $C$-named options refer to the operators in the quadratic
-%response function 
+%response function
 %$\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 %\cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
 
@@ -711,7 +713,7 @@ AOPROPER.
 \verb|READ *, FREQ(1:NFREQ)|\\
 The frequencies $\omega_b$ in atomic units.
 Response equations are evaluated at given
-frequencies\index{frequency}. Two lines 
+frequencies\index{frequency}. Two lines
 following this option must contain 1) The number of frequencies, 2)
 Frequencies.
 
@@ -730,7 +732,7 @@ Sets $A$ and $B$ to the $z$ dipole operator\index{dipole length}.
 \item{\Key{E3TEST}}
 Test the contributions to the quadratic response function arising from
 the $E^{\left[3\right]}$ and $S^{\left[3\right]}$ terms.  Mainly for
-debugging purposes. 
+debugging purposes.
 
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
@@ -743,7 +745,7 @@ Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
 %\index{quadratic response}\index{response!quadratic}
 %Spin information for quadratic response calculations.
 %The line following these options contains the spin
-%rank\index{spin rank} of the operators 
+%rank\index{spin rank} of the operators
 %$A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
 %operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
 %spin of the excited state. If \Key{DOUBLE} is specified,
@@ -757,50 +759,50 @@ Default is 60.
 
 \item{\Key{MAXITP}}
 Maximum number of iterations in solving the linear
-response\index{linear response}\index{response!linear} eigenvalue 
+response\index{linear response}\index{response!linear} eigenvalue
 equations.
 Default is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of iterations in the optimal
-orbital\index{optimal orbital trial vector} algorithm 
-\cite{tuhjahjajpjjcp84}. 
+orbital\index{optimal orbital trial vector} algorithm
+\cite{tuhjahjajpjjcp84}.
 Default is 5.
 
 \item{\Key{MCDBTERM}}
-Specifies the calculation of all individual components to the 
+Specifies the calculation of all individual components to the
 ${\cal{B}}(0\to f)$ term of magnetic circular dichroism
 (MCD)\index{magnetic circular dichroism}\index{B-term}\index{MCD}.
-This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}. 
-The $A$ operator is set equal to the $\alpha$ component of dipole 
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}.
+The $A$ operator is set equal to the $\alpha$ component of dipole
 operator\index{dipole length} and
 the $B$ operator to the $\beta$ component of the angular momentum\index{angular momentum}
-operator. The resulting "mixed" two-photon transition moment to state $f$ 
-is then multiplied the dipole-allowed one-photon transition moment 
+operator. The resulting "mixed" two-photon transition moment to state $f$
+is then multiplied the dipole-allowed one-photon transition moment
 from state $f$ (for the $\gamma$ component, with $\alpha \neq \beta \neq \gamma$).
-\cite{Coriani:MCDRSP} 
+\cite{Coriani:MCDRSP}
 
 \item{\Key{MNFPHO}}
 Specifies a phosphorescence\index{phosphorescence} calculation using
 the atomic mean-field approximation for the spin--orbit operator, {\it i.e.\/}
-the spin-orbit\index{spin-orbit} 
-induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the  
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
 calculation so that no further response input is required except \Key{ROOTS}; the
 $A$ operator is set to the dipole operators\index{dipole length} and
-the $B$ operator  
+the $B$ operator
 is set to the atomic mean-field spin-orbit\index{spin-orbit}
 operators.
 The reference state {\em must} be a singlet spin state.
 
 \item{\Key{PHOSPHORESCENCE}}
 Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}
-the spin-orbit\index{spin-orbit} 
-induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the  
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
 calculation so that no further response input is required except \Key{ROOTS}; the
 $A$ operator is set to the dipole operators\index{dipole length} and
-the $B$ operator  
+the $B$ operator
 is set to the spin-orbit\index{spin-orbit}
-operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27} 
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27}
 The reference state {\em must} be a singlet spin state.
 
 \item{\Key{PRINT}}\\
@@ -812,9 +814,9 @@ Print level. Default is 2.
 Number of roots.  The line following this option contains the number
 of excited states\index{excited state!second order moment} per symmetry. Excitation
 energies\index{excitation energy!second order moment} are calculated for each state and if
-any operators are given, 
+any operators are given,
 symmetry-allowed second order transition moments\index{transition moment!second order} are
-calculated between the 
+calculated between the
 reference state and the excited states.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
 
@@ -838,7 +840,7 @@ Threshold for solving the linear response
 eigenvalue equation. Default is $10^{-3}$.
 
 \item{\Key{TPCD}}
-Sets up the calculation of the tensor components of the two-photon circular dichroism rotatory 
+Sets up the calculation of the tensor components of the two-photon circular dichroism rotatory
 strength according to \cite{Rizzo:TPACD}, the TI equation.
 The tensor components are computed for all the excited states
 requested by the keyword \Key{ROOTS}, calculating the necessary
@@ -869,7 +871,7 @@ the $X^{\left[2\right]}$ term. Mainly for debugging purposes.
 Calculation of third-order properties as quadratic response
 functions\index{quadratic response}\index{response!quadratic}.
 $A,B$, and $C$-named options refer to the operators in the quadratic
-response function 
+response function
 $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 \cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
 
@@ -903,7 +905,7 @@ of the quadratic
 response function\index{double residue!quadratic response}\index{response!quadratic, double residue}.
 Double residues of the quadratic response function correspond to transition
 moments between excited states\index{transition moment!between excited states},
-$\langle B \mid A \mid C \rangle$. 
+$\langle B \mid A \mid C \rangle$.
 
 \item{\Key{DIPVEL}}
 Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
@@ -915,7 +917,7 @@ operator, respectively\index{dipole velocity}.
 \item{\Key{E3TEST}}
 Test the contributions to the quadratic response function arising from
 the $E^{\left[3\right]}$ and $S^{\left[3\right]}$ terms.  Mainly for
-debugging purposes. 
+debugging purposes.
 
 \item{\Key{EXMTES}}
 Test that the transition moment is symmetric, {\it i.e.\/} that
@@ -938,7 +940,7 @@ Default is "0,0,0", {\it i.e.\/} all of singlet spin symmetry.
 %\index{quadratic response}\index{response!quadratic}
 %Spin information for quadratic response calculations.
 %The line following these options contains the spin
-%rank\index{spin rank} of the operators 
+%rank\index{spin rank} of the operators
 %$A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
 %operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
 %spin of the excited state. If \Key{DOUBLE} is specified,
@@ -953,8 +955,8 @@ eigenvalue equation in this section.
 
 \item{\Key{MAXITO}}
 Maximum number of iterations in the optimal
-orbital\index{optimal orbital trial vector} algorithm 
-\cite{tuhjahjajpjjcp84}. 
+orbital\index{optimal orbital trial vector} algorithm
+\cite{tuhjahjajpjjcp84}.
 Default is 5.
 
 \item{\Key{PRINT}}\\
@@ -1005,7 +1007,7 @@ the $X^{\left[2\right]}$ term. Mainly for debugging purposes.
 Calculation of fourth-order properties as cubic response functions\index{cubic response}\index{response!cubic}
 \cite{pndjovhacpl242,djpnhajcp105,pndjhapdkrthhkcpl253}.
 $A,B$,$C$, and $D$-named options refer to the operators in the cubic
-response function 
+response function
 $\langle\!\langle A;B,C,D \rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$
 
 \begin{description}
@@ -1046,12 +1048,12 @@ Sets $A$, $B$, $C$ and $D$ to the $z$ dipole operator\index{dipole length}.
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Sets the frequencies\index{frequency!cubic response} whenever a optical process is specified.
-Can also be used for the residue calculation and in which case 
+Can also be used for the residue calculation and in which case
 both $\omega_b$ and $\omega_c$ for the single residue and only
 $\omega_b$ for the double residue.
 
 \item{\Key{IDRI  }}
-Only response functions connected to the intensity dependent 
+Only response functions connected to the intensity dependent
 refractive\index{refractive index!intensity dependent} index are computed,
 $\gamma(-\omega;\omega,-\omega,\omega)$.
 
@@ -1070,7 +1072,7 @@ Maximum number of iterations for solving linear equations, default value is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of optimal orbital trial vector microiterations,
-default value is 5. 
+default value is 5.
 
 \item{\Key{PRINT}}
 Print flag for output, default value is 2. Timer information is printed
@@ -1090,14 +1092,14 @@ Threshold for norm of property vector $X^{[1]}$ to be considered to be
 greater than zero in order to solve the linear
 equation \\
 $\left( E^{[2]} - S^{[2]} \right)N^{X} = X^{[1]}$, default
-value is $10^{-9}$. 
+value is $10^{-9}$.
 
 %hjaaj June 2001: is triplet tested ?? (was not listed in dalton1.1 manual)
 %item{\Key{ISABCD}}\\
 %verb|READ *, ISPINA,ISPINB,ISPINC,ISPIND|\\
 
 %hjaaj June 2001
-%\Key{INVEXP} is a programmers test option 
+%\Key{INVEXP} is a programmers test option
 
 \end{description}
 
@@ -1106,7 +1108,7 @@ Calculation of single residues\index{single residue!cubic response} of
 cubic response functions\index{cubic response!single residue}\index{response!cubic, single residue}
 \cite{pndjovhacpl242,djpnhajcp105,pndjhapdkrthhkcpl253}.
 $A,B$,$C$, and $D$-named options refer to the operators in the cubic
-response function 
+response function
 $\langle\!\langle A;B,C,D \rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$
 
 \begin{description}
@@ -1147,7 +1149,7 @@ Maximum number of iterations for solving linear equations, default value is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of optimal orbital trial vector microiterations,
-default value is 5. 
+default value is 5.
 
 \item{\Key{MAXITP}}
 Maximum number of iteration for solving eigenvalue equation, default
@@ -1196,7 +1198,7 @@ Calculation of double residues\index{double residue!cubic response} of
 cubic response functions\index{cubic response!double residue}\index{response!cubic, double residue}
 \cite{pndjovhacpl242,djpnhajcp105,pndjhapdkrthhkcpl253}.
 $A,B$,$C$, and $D$-named options refer to the operators in the cubic
-response function 
+response function
 $\langle\!\langle A;B,C,D \rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$.
 $C$ and $D$ refer to the left hand state and right hand state
 after the double residue has been taken.
@@ -1236,14 +1238,14 @@ Computes the double\index{double residue} residue of the cubic
 response function\index{cubic response}\index{response!cubic}.
 In the case of dipole operators this corresponds to excited
 state polarizabilities and two-photon transition
-moments\index{two-photon!transition moment!excited states}\index{excited state!polarizability} 
+moments\index{two-photon!transition moment!excited states}\index{excited state!polarizability}
 between excited states \cite{djpnylhajcp105}.
 
 \item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
 \verb|READ *, FREQ(1:NFREQ)|\\
 Sets the frequencies\index{frequency!cubic response} whenever a optical process is specified.
-Can also be used for the residue calculation and it does then set 
+Can also be used for the residue calculation and it does then set
 both $\omega_b$ and $\omega_c$ for the single residue and only
 $\omega_b$ for the double residue.
 Default only zero frequency (static).
@@ -1253,7 +1255,7 @@ Maximum number of iterations for solving linear equations, default value is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of optimal orbital trial vector microiterations,
-default value is 5. 
+default value is 5.
 
 \item{\Key{MAXITP}}
 Maximum number of iteration for solving eigenvalue equation, default
@@ -1285,7 +1287,7 @@ Threshold for convergence of eigenvector, default value is $10^{-3}$.
 \item{\Key{C6ATM}, \Key{C8ATM}, \Key{C10ATM}}
 \Key{C6ATM}, \Key{C8ATM}, \Key{C10ATM} do the same as \Key{C6SPH} etc. for
 atoms. Only $M_L=0$ is
-calculated and written to file (all $M_L$ values give same multipole moment 
+calculated and written to file (all $M_L$ values give same multipole moment
 for atoms).
 
 \item{\Key{C6LMO}, \Key{C8LMO}, \Key{C10LMO}}
@@ -1324,7 +1326,7 @@ operator, respectively\index{dipole velocity}.
 \verb|READ *, NCFREQ|\\
 \verb|READ *, CFREQ(1:NCFREQ)|\\
 Response equations are evaluated at given
-frequencies\index{frequency}. Two lines following 
+frequencies\index{frequency}. Two lines following
 this option must contain 1) The number of frequencies, 2) Frequencies
 in atomic units.
 
@@ -1332,14 +1334,14 @@ in atomic units.
 
 \item{\Key{MAX IT}}\\
 \verb|READ (LUCMD,*) MAXITC|\\
-Maximum number of iterations for solving a linear response 
+Maximum number of iterations for solving a linear response
 equation. Default is 60.
 
 \item{\Key{MAXITO}}\\
 \verb|READ (LUCMD,*) MAXITO|\\
 Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
-\cite{tuhjahjajpjjcp84}. 
+\cite{tuhjahjajpjjcp84}.
 Default is 5.
 
 \item{\Key{MAXMOM}}\\
@@ -1398,7 +1400,7 @@ Calculation of ESR parameters\index{ESR}
 
 \subsubsection{Hyperfine coupling}
 
-Default\index{hyperfine coupling}: hyperfine coupling tensors using 
+Default\index{hyperfine coupling}: hyperfine coupling tensors using
 the Restricted-Unrestricted Approach\index{restricted-unrestricted method}.
 
 \begin{description}
@@ -1479,7 +1481,7 @@ The following are utility options for modifying the default calculational
 procedure.
 \begin{description}
   \item{\Key{ADD-SO}}
-  Adds the 1- and 2-electron spin-orbit operators. This 
+  Adds the 1- and 2-electron spin-orbit operators. This
   option may be used when one is not interested in the individual
   1- and 2-electron contribution to the paramagnetic g-tensor,
   since it reduces the number of response equations to be solved.
@@ -1488,16 +1490,14 @@ procedure.
    for evaluating the paramagnetic contributions.
 %   \item{\Key{OWN-OT}} Calculates separately the spin-own-orbit and
 %   spin-other-orbit contributions to the 2-electron spin-orbit
-%   operator contribution to the g tensor. 
+%   operator contribution to the g tensor.
    \item{\Key{SCALED}}
    Uses the approximate 1-electron spin-orbit operator with scaled nuclear
    charges taken from Ref.~\cite{skmwsmsgjpca102} for evaluating the paramagnetic contributions.
-%\item{\Key{TEST A}} 
+%\item{\Key{TEST A}}
   \item{\Key{ZERO}}
   \verb|READ(LUCMD,'(A80)')G_LINE |\\
   This option is mainly for linear molecules in a $\Sigma$ state.
   Specifying e.g. "ZZ" on the input line instructs the program
   to skip the calculation of the paramagnetic contribution to $g_{zz}$.
 \end{description}
-
-

@@ -5,7 +5,10 @@
 !     NOTE: DOSYM(NSYML) is sent to slaves in a parallel calculation and
 !           should not be moved from this common block !
 !
-      INTEGER NSYML, IPRDEF, NWNABA
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+C     INTEGER NSYML, IPRDEF, NWNABA
+      INTEGER NSYML, IPRDEF, NWNABA, IRVIBG
+CKeinSPASmehr
       PARAMETER (NSYML = 8)
       LOGICAL MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -18,7 +21,11 @@
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
-     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+C    &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU
+     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
+     &        VIBGIR
+CKeinSPASmehr
       COMMON /ABAINF/ IPRDEF, NWNABA, 
      &        MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -31,5 +38,9 @@
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
-     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+C    &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU
+     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
+     &        VIBGIR, IRVIBG
+CKeinSPASmehr
 ! -- end of abainf.h --

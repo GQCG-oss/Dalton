@@ -1,21 +1,139 @@
 \chapter{Calculation of optical and Raman properties}\label{ch:optchap}
 
-This chapter describes the calculation of different optical
-properties which have been implemented in the \dalton\ program system.
-This includes properties related to different kinds of circular
+This chapter describes the calculation of different optical properties
+which have been implemented in the \dalton\ program system. This
+includes electronic excitation energies and corresponding oscillator
+strengths as well as properties related to different kinds of circular
 dichroism, more specifically vibrational circular dichroism
-(VCD)\index{VCD}\index{vibrational circular dichroism} as 
-described in Ref.~\cite{klbpjthkrhjajjcp98}, electronic circular
-dichroism (ECD)\index{ECD}\index{electronic circular dichroism} as
-described in Refs.~\cite{klbaehkrthjopjtca90,tbpaehcpl246}, Raman 
-Optical Activity (ROA)\index{ROA}\index{Raman optical activity} as
-described in Ref.~\cite{thkrklbpjjofd99}, and optical rotation~\cite{plpmp91,plpdkckrcpl319}.
+(VCD)\index{VCD}\index{vibrational circular dichroism} as described in
+Ref.~\cite{klbpjthkrhjajjcp98}, electronic circular dichroism
+(ECD)\index{ECD}\index{electronic circular dichroism} as described in
+Refs.~\cite{klbaehkrthjopjtca90,tbpaehcpl246}, Raman Optical Activity
+(ROA)\index{ROA}\index{Raman optical activity} as described in
+Ref.~\cite{thkrklbpjjofd99}, and optical
+rotation~\cite{plpmp91,plpdkckrcpl319}.
 
-By default, all calculations of optical properties are done with
-the use of London atomic orbitals\index{London orbitals} in order to
-enhance the basis set 
-convergence as well as to give the correct physical dependence on the
-gauge origin\index{gauge origin}. 
+By default, all calculations of optical properties are done with the
+use of London atomic orbitals,\index{London orbitals} if possible for
+the chosen wave function, in order to enhance the basis set convergence
+as well as to give the correct physical dependence on the gauge
+origin\index{gauge origin}.
+
+
+\section{Electronic excitation energies and oscillator strengths}\label{sec:uvvis}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small \noindent {\bf Reference literature:}
+\begin{list}{}{}
+\item MCSCF: K.L.Bak, Aa.E.Hansen, K.Ruud, T.Helgaker, J.Olsen, and
+P.J{\o}rgensen. \newblock {\em Theor. Chim. Acta.}, {\bf
+90},\hspace{0.25em}441, (1995).
+\item SOPPA: M.~J.~Packer, E.~K.~Dalskov, T.~Enevoldsen,
+H.~J.~Aa.~Jensen and J.~Oddershede,
+\newblock {\em J. Chem. Phys.}, {\bf 105}, \hspace{0.25em}5886, (1996).
+\item AO direct SOPPA:
+K.~L.~Bak, H.~Koch, J.~Oddershede, O.~Christiansen and S.~P.~A.~Sauer,
+\newblock {\em J. Chem. Phys.}, {\bf 112}, \hspace{0.25em} 4173,
+(2000).
+\item RPA(D):
+O.~Christiansen, K.~L.~Bak, H.~Koch and S.~P.~A.~Sauer,  Chem. Phys.
+\newblock {\em Chem. Phys.}, {\bf 284}, \hspace{0.25em} 47, (1998).
+\item SOPPA(CCSD):
+H.~H.~Falden, K.~R.~Falster-Hansen, K.~L.~Bak, S.~Rettrup and
+S.~P.~A.~Sauer,
+\newblock {\em J. Phys. Chem. A}, {\bf 113}, \hspace{0.25em} 11995,
+(2009).
+\end{list}
+}}
+\end{center}
+
+The calculation of electronic singlet and triplet excitation energies
+\index{electronic excitation} is invoked by the keyword \Key{EXCITA} in
+the \Sec{*PROPERTIES} input module. However, it is also necessary to
+specify the number of electronic excitations\index{electronic
+excitation} in each symmetry with the keyword \Key{NEXCIT} in the
+\Sec{EXCITA} section. The corresponding dipole oscillator
+strengths\index{transition moment} can conveniently be calculated at
+the same time by adding the keyword \Key{DIPSTR} in the \Sec{EXCITA}
+section.
+
+A typical input for the calculation of electronic singlet excitation
+energies and corresponding dipole oscillator strengths for a molecule
+with C$_{2v}$ symmetry would look like:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.EXCITA
+*EXCITA
+.DIPSTR
+.NEXCIT
+    3    2    1    0
+**END OF DALTON INPUT
+\end{verbatim}
+This input will calculate the oscillator strength (\Key{DIPSTR}) of the
+6 lowest electronic excitations distributed in a total of 4 irreducible
+representations (as in C$_{2v}$). The oscillator strength will be
+calculated both in length and velocity forms.
+
+A typical input for the calculation of electronic triplet excitation
+energies would look like:
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.EXCITA
+*EXCITA
+.TRIPLE
+.NEXCIT
+    3    2    1    0
+**END OF DALTON INPUT
+\end{verbatim}
+
+
+
+For a SOPPA\index{SOPPA}, SOPPA(CC2)\index{SOPPA(CC2)} or
+SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of electronic excitation
+energies and corresponding oscillator strengths the additional keywords
+\Key{SOPPA} or \Key{SOPPA(CCSD)} have to be specified in the
+\Sec{*PROPERTIES} input module. For SOPPA an MP2 calculation has to be
+requested by the keyword \Key{MP2} in the \Sec{*WAVE FUNCTIONS} input
+module, whereas for SOPPA(CC2) or SOPPA(CCSD) a CC2 or CCSD calculation
+has to be requested by the keyword \Key{CC} in the \Sec{*WAVE
+FUNCTIONS} input module with the \Sec{CC INPUT} option \Key{SOPPA2} or
+\Key{SOPPA(CCSD)}. Details on how to invoke an atomic integral direct
+RPA(D), SOPPA or SOPPA(CCSD) calculation of the oscillator strengths
+are given in Chapters \ref{sec:AOsoppa} and {sec:soppa}.
+
+
+We also note that excitation energies also can be obtained using the
+\resp\ program (see Chapter~\ref{ch:rspchap}).
+
+For a more detailed control of the individual parts of the
+calculation of properties related to electronic excitation energies,
+we refer to the input modules affecting the different parts of such
+calculations:
+
+\begin{description}
+\item[\Sec{EXCITA}] Controls the calculation of electronic excitation
+energies and the evaluation of all terms contributing to for instance
+dipole strength.
+
+\item[\Sec{GETSGY}] Controls the setup of the necessary right-hand
+sides.
+
+\item[\Sec{SOPPA}] Controls the details of a SOPPA calculation.
+
+\end{description}
+
+
 
 \section{Vibrational Circular Dichroism calculations}
 
@@ -34,7 +152,7 @@ gauge origin\index{gauge origin}.
 
 The calculation of vibrational circular
 dichroism\index{VCD}\index{vibrational circular dichroism} is invoked
-by the 
+by the
 keyword \Key{VCD} in the \Sec{*PROPERTIES} input module. Thus a complete
 input file for the calculation of vibrational circular dichroism will
 look like:
@@ -51,9 +169,9 @@ look like:
 
 This will invoke the calculation of vibrational circular dichroism
 using London atomic orbitals\index{London orbitals} to ensure fast
-basis set convergence as 
+basis set convergence as
 well as gauge origin\index{gauge origin} independent results. By
-default the natural 
+default the natural
 connection\index{natural connection} is used in order to get
 numerically accurate
 results~\cite{joklbkrthpjtca90,krthjopjklbcpl235}.
@@ -61,15 +179,15 @@ results~\cite{joklbkrthpjtca90,krthjopjklbcpl235}.
 We notice, however, that vibrational circular dichroism only arises in
 vibrationally chiral molecules. An easy way of introducing
 vibrational chirality into small molecular systems is by isotopic
-substitution. This is in 
+substitution. This is in
 \dalton\ controlled in the \Sec{VIBANA} submodule, and the reader is
-referred to that section for an exemplification of how this is done. 
+referred to that section for an exemplification of how this is done.
 
 There has only  been a few investigation of basis set requirement for
 the calculation of VCD given in
-Ref.~\cite{klbpjthkrhjajjcp100,klbpjthkrfd99}, 
+Ref.~\cite{klbpjthkrhjajjcp100,klbpjthkrfd99},
 and the reader is referred to these references when choosing basis set
-for the calculations of VCD. 
+for the calculations of VCD.
 
 In the current implementation, the \Key{NOCMC} option is automatically
 turned on in VCD calculations, that is, the coordinate system origin
@@ -93,7 +211,7 @@ alternative Hessian\index{Hessian} matrix with the input
 
 We note that in the current release of Dalton, Vibrational Circular
 Dichroism can not be calculated using density function theory, and if
-requested, the program will stop. 
+requested, the program will stop.
 
 If more close control of the different parts of the calculation of
 vibrational circular dichroism is wanted, we refer the reader to the
@@ -127,8 +245,7 @@ molecule, for instance its isotopic substitution.
 Tensors (dipole gradient).
 \end{description}
 
-\section{Electronic circular dichroism (ECD) and electronic absorption
-calculations}\label{sec:ecd} 
+\section{Electronic circular dichroism (ECD)}\label{sec:ecd}
 
 \begin{center}
 \fbox{
@@ -146,14 +263,14 @@ P.J{\o}rgensen. \newblock {\em Theor. Chim. Acta.}, {\bf 90},\hspace{0.25em}441,
 \end{center}
 
 The calculation of Electronic Circular Dichroism
-(ECD)\index{ECD}\index{electronic circular dichroism} is invoked by 
-the keyword \Key{ECD} in the \aba\ input module. However,
-it is also necessary to specify the number of electronic
-excitations\index{electronic excitation} in 
-each symmetry. As ECD only is observed for chiral molecules, such
-calculations will in general not employ any symmetry
-(although the implementation does make use of it, if present), a complete
-input for a molecule without symmetry will thus look like:
+(ECD)\index{ECD}\index{electronic circular dichroism} is invoked by the
+keyword \Key{ECD} in the \Sec{*PROPERTIES} input module. However, it is
+also necessary to specify the number of electronic
+excitations\index{electronic excitation} in each symmetry. As ECD only
+is observed for chiral molecules, such calculations will in general not
+employ any symmetry (although the implementation does make use of it,
+if present), a complete input for a molecule without symmetry will thus
+look like:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -169,10 +286,10 @@ input for a molecule without symmetry will thus look like:
 \end{verbatim}
 
 In this run we will calculate the rotatory strength
-corresponding to 
+corresponding to
 the three lowest electronic excitations\index{electronic excitation}
-(the \Key{NEXCIT} keyword) 
-using London atomic orbitals\index{London orbitals}. 
+(the \Key{NEXCIT} keyword)
+using London atomic orbitals\index{London orbitals}.
 If rotatory strengths obtained without London atomic orbitals is also
 wanted, this is easily accomplished by adding the keyword
 \Key{ROTVEL} in the \Sec{EXCITA} input module.
@@ -195,63 +312,42 @@ the input
     3
 **END OF DALTON INPUT
 \end{verbatim}
-
-requests calculation of OECD as well as ECD.
-Note that London orbitals are not implemented for OECD and
-the rotatory strength tensors are calculated using both the
-length and velocity forms (the latter being origin invariant).
-Since the rotatory strength tensor is composed of electric quadrupole
-and magnetic dipole contributions~\cite{tbpaehcpl246}, these parts must
-be computed at the same origin. Therefore, the \Key{NOCMC}
-option is automatically turned on for OECD calculations.
+requests calculation of OECD as well as ECD. Note that London orbitals
+are not implemented for OECD and the rotatory strength tensors are
+calculated using both the length and velocity forms (the latter being
+origin invariant). Since the rotatory strength tensor is composed of
+electric quadrupole and magnetic dipole
+contributions~\cite{tbpaehcpl246}, these parts must be computed at the
+same origin. Therefore, the \Key{NOCMC} option is automatically turned
+on for OECD calculations.
 
 There are only a few studies of Electronic Circular
 Dichroism using London atomic
 orbitals~\cite{klbaehkrthjopjtca90,mpkrthcpl388}, and the results of
 these investigations indicate that the aug-cc-pVDZ or the d-aug-cc-pVDZ
-basis set, which is supplied with the \dalton\ basis set library, is 
+basis set, which is supplied with the \dalton\ basis set library, is
 reasonable for such calculations, the double augmentation being
-important in the case of diffuse/Rydberg-like excited states. 
+important in the case of diffuse/Rydberg-like excited states.
 
-Another property that may often be of interest is the
-oscillator strength\index{transition moment}. This property can be
-calculated by an input 
-similar to the one for ECD calculation, and for a molecule with
-C$_{2v}$ symmetry an input would look like:
+For a SOPPA\index{SOPPA}, SOPPA(CC2)\index{SOPPA(CC2)} or
+SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of rotatory strengths the
+additional keywords \Key{SOPPA} or \Key{SOPPA(CCSD)} have to be
+specified in the \Sec{*PROPERTIES} input module. For SOPPA an MP2
+calculation has to be requested by the keyword \Key{MP2} in the
+\Sec{*WAVE FUNCTIONS} input module, whereas for SOPPA(CC2) or
+SOPPA(CCSD) a CC2 or CCSD calculation has to be requested by the
+keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS} input module with the
+\Sec{CC INPUT} option \Key{SOPPA2} or \Key{SOPPA(CCSD)}. Details on how
+to invoke an atomic integral direct RPA(D), SOPPA or SOPPA(CCSD)
+calculation of rotatory strengths are give in chapters
+\ref{sec:AOsoppa} and {sec:soppa}.
 
-\begin{verbatim}
-**DALTON INPUT
-.RUN PROPERTIES
-**WAVE FUNCTIONS
-.HF
-**PROPERTIES
-.EXCITA
-*EXCITA
-.DIPSTR
-.NEXCIT
-    3    2    1    0
-**END OF DALTON INPUT
-\end{verbatim}
 
-This input will calculate the oscillator strength (\Key{DIPSTR}) of the
-6 lowest electronic excitations distributed in a total of 4
-irreducible representations (as in C$_{2v}$). The oscillator strength will
-be calculated both in 
-length and velocity forms. It is expected that the same requirements
-for basis set quality applies to this property as for ECD.
-
-For a SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of
-the oscillator strength the additional keywords \Key{SOPPA} or
-\Key{SOPPA(CCSD)} have to be specified in the \Sec{*PROPERTIES} input
-module. For SOPPA an MP2 calculation has to be requested by the keyword
-\Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module, whereas for SOPPA(CCSD) a
-CCSD calculation has to be requested by the keyword \Key{CC} in the \Sec{*WAVE
-  FUNCTIONS} input module with the \Sec{CC INPUT} option
-\Key{SOPPA(CCSD)}.
-
-The two properties may of course be combined in a single run with an
-input that would then look like (where we also request the rotatory
-strength to be calculated without the use of London orbitals):
+The calculation of rotatory strengths may of course be combined with
+the calculation of oscillator strengths (chapter \ref{sec:uvvis}) in a
+single run with an input that would then look like (where we also
+request the rotatory strength to be calculated without the use of
+London orbitals):
 
 \begin{verbatim}
 **DALTON INPUT
@@ -269,9 +365,8 @@ strength to be calculated without the use of London orbitals):
 **END OF DALTON INPUT
 \end{verbatim}
 
-We also note that excitation energies also can be obtained using the
-\resp\ program (see Chapter~\ref{ch:rspchap}).
-For a more detailed control of the individual parts of the 
+
+For a more detailed control of the individual parts of the
 calculation of properties related to electronic excitation energies,
 we refer to the input modules affecting the different parts of such
 calculations:
@@ -283,6 +378,8 @@ dipole strength or electronic circular dichroism.
 
 \item[\Sec{GETSGY}] Controls the setup of the necessary right-hand
 sides.
+
+\item[\Sec{SOPPA}] Controls the details of a SOPPA calculation.
 \end{description}
 
 \section{Optical Rotation}\label{sec:optrot}
@@ -344,7 +441,7 @@ as this has a negligible computational
 cost compared to the calculation using London atomic orbitals only,
 since we will anyway have to solve only three response equations
 corresponding to the perturbing electric field. The optical rotation
-will only be observed for chiral molecules, 
+will only be observed for chiral molecules,
 and by definition the optical
 rotation will be zero in the static limit. One can approximate the
 static limit by supplying the program with a very large wavelength
@@ -410,7 +507,7 @@ J.Olsen. \newblock {\em Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
 
 The calculation of vibrational Raman intensities and vibrational Raman optical
 activity (VROA)\index{ROA}\index{Raman intensity}\index{Raman
-optical activity} 
+optical activity}
 is one of the more computationally expensive properties that can be
 evaluated with \dalton .
 
@@ -425,7 +522,7 @@ the time used in the solution of the time-dependent response
 equations~\cite{thkrklbpjjofd99}. Because of this,  all relevant Raman
 properties (intensities and depolarization ratios)\index{Raman
 intensity}\index{depolarization ratio} are also calculated
-at the same time as ROA.  
+at the same time as ROA.
 
 
 A very central part in the evaluation of Raman Optical Activity is the
@@ -438,10 +535,10 @@ detailed description of the input for such calculations.
 When calculating Raman intensities\index{Raman intensity} and
 ROA\index{ROA}\index{Raman optical activity} we need to do a numerical
 differentiation\index{numerical differentiation} of the electric
-dipole-electric dipole, the electric 
+dipole-electric dipole, the electric
 dipole-magnetic dipole, and the electric dipole-electric quadrupole
 polarizabilities along the normal modes\index{normal mode} of the
-molecule. The procedure 
+molecule. The procedure
 is described in Ref.~\cite{thkrklbpjjofd99}. We thus need to do a
 geometry walk of the type numerical differentiation. In each geometry
 we need to evaluate the electric dipole-electric dipole, the electric
@@ -497,42 +594,40 @@ polarizabilities. This may be achieved by the following input:
 
 This is the complete input for a calculation of
 VROA\index{ROA}\index{Raman optical activity} on the CFHDT
-molecule\index{fluoromethane}.  
-In addition to the keyword \Key{VROA} in the different \aba\ input
-modules, we still need to tell the program that frequencies of the
-laser field are to be
-read in the \Sec{ABALNR} section.
+molecule\index{fluoromethane}. In addition to the keyword \Key{VROA} in
+the different \Sec{*PROPERTIES} input modules, we still need to tell
+the program that frequencies of the laser field are to be read in the
+\Sec{ABALNR} section.
 
-The only isotopic substitution of this molecule that shows
-vibrational optical activity is the one containing one hydrogen, one
-deuterium and one tritium nucleus. If we want the
-center-of-mass\index{center of mass} to 
-be the gauge origin\index{gauge origin} for the VROA calculation not
-employing London atomic orbitals, this have to be reflected in the
-specification of the isotopic constitution of the molecule, see
-Chapter~\ref{ch:molinp}.  
-We note that a user specified gauge origin can be supplied with the
-keyword \Key{GAUGEO} in the \aba\ input modules. The gauge origin
-can also be chosen as the origin of the Cartesian Coordinate
-system~(0,0,0) by using the keyword \Key{NOCMC}. Note that neither of
-these options will affect the results obtained with London orbitals.
+The only isotopic substitution of this molecule that shows vibrational
+optical activity is the one containing one hydrogen, one deuterium and
+one tritium nucleus. If we want the center-of-mass\index{center of
+mass} to be the gauge origin\index{gauge origin} for the VROA
+calculation not employing London atomic orbitals, this have to be
+reflected in the specification of the isotopic constitution of the
+molecule, see Chapter~\ref{ch:molinp}. We note that a user specified
+gauge origin can be supplied with the keyword \Key{GAUGEO} in the
+\Sec{*PROPERTIES} input modules. The gauge origin can also be chosen as
+the origin of the Cartesian Coordinate system~(0,0,0) by using the
+keyword \Key{NOCMC}. Note that neither of these options will affect the
+results obtained with London orbitals.
 
 The input in the \Sec{ABALNR} input section should be
 self-explanatory from the discussion of the frequency dependent
 polarizability\index{polarizability} in Sec.~\ref{sec:polari}. Note
 that because of the numerical differentiation\index{numerical
-differentiation} the response equations need to be converged 
+differentiation} the response equations need to be converged
 rather tightly (1.0$\cdot$10$^{-7}$). Remember also that this will
 require you to converge your wave function\index{wave
 function}\index{convergence!threshold} more
-tightly than is the default. 
+tightly than is the default.
 
 The numerical differentiation\index{numerical differentiation} is
-invoked through the keyword 
+invoked through the keyword
 \Key{NUMERI} in the \Sec{WALK} submodule. Note that this will
-automatically 
+automatically
 turn off the calculation of the molecular Hessian\index{Hessian},
-putting limitations 
+putting limitations
 on what properties may be calculated during a ROA calculation. Because
 of this there will not be any prediction of the energy at the new
 point.
@@ -542,7 +637,7 @@ step plus and minus one displacement along each Cartesian
 coordinate
 of all nuclei, as well as calculating the property in the reference
 geometry. Thus, for a molecule with $N$ atoms the properties will be
-calculated in a total of $2*3*N + 1$ points, which for a 5 atom 
+calculated in a total of $2*3*N + 1$ points, which for a 5 atom
 molecule will amount to 31 points. The default maximum number of steps
 of the program is 20. By default the program will for numerical
 differentiation calculations reset the maximum number of iterations to
@@ -553,9 +648,9 @@ described in Section~\ref{sec:general}.
 The default step length in the numerical integration is 10$^{-4}$
 a.u., and this step length may be adjusted by the keyword
 \Key{DISPLA} in the \Sec{WALK} module. The steps are taken in
-the Cartesian directions\index{Cartesian coordinates} and 
+the Cartesian directions\index{Cartesian coordinates} and
 not along normal modes\index{normal mode}. This enables us to study a
-large number of 
+large number of
 isotopically substituted\index{isotopic constitution} molecules at
 once, as the London orbital \index{London orbitals}
 results for ROA does not depend on the choice of gauge origin. This is

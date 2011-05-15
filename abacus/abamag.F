@@ -2841,6 +2841,24 @@ C MBH+JK
      &                       'Isotropic PSO contribution:',PSO   ,' Hz',
      &                       'Isotropic SD contribution :',SD    ,' Hz',
      &                       'Isotropic FC contribution :',FC    ,' Hz'
+CSPAS: trying to print the whole tensor
+                        DO ICOOR1 = 1, 3
+                           DO ICOOR2 = 1, 3
+                              IADR1 = 3*(IATOM1 - 1) + ICOOR1
+                              IADR2 = 3*(IATOM2 - 1) + ICOOR2
+                        COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,1)
+     &                                                *FACTOR
+                           END DO
+                        END DO
+                    CALL TITLER('Total Coupling Tensor in Hz','-',-1)
+                        WRITE(LUPRI,'(16X,3(A14,1X),/)') 'x','y','z'
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'x',(COUPLM(1,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'y',(COUPLM(2,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'z',(COUPLM(3,J), J=1,3)
+CKeinSPASmehr: trying to print the whole tensor
                      END IF
                   END IF
                END IF
@@ -3029,6 +3047,24 @@ C
      &                       'Isotropic PSO contribution:',PSO   ,' Hz',
      &                       'Isotropic SD contribution :',SD    ,' Hz',
      &                       'Isotropic FC contribution :',FC    ,' Hz'
+CSPAS: trying to print the whole tensor
+                        DO ICOOR1 = 1, 3
+                           DO ICOOR2 = 1, 3
+                              IADR1 = 3*(IATOM1 - 1) + ICOOR1
+                              IADR2 = 3*(IATOM2 - 1) + ICOOR2
+                        COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,1)
+     &                                                *FACTOR
+                           END DO
+                        END DO
+                    CALL TITLER('Total Coupling Tensor in Hz','-',-1)
+                        WRITE(LUPRI,'(16X,3(A14,1X),/)') 'x','y','z'
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'x',(COUPLM(1,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'y',(COUPLM(2,J), J=1,3)
+                        WRITE(LUPRI,'(16X,A,2X,1P,3(G14.7,1X))')
+     &                       'z',(COUPLM(3,J), J=1,3)
+CKeinSPASmehr: trying to print the whole tensor
                            END IF
                            END IF
  100                    CONTINUE

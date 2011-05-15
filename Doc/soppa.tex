@@ -1,15 +1,17 @@
-\chapter{SOPPA and SOPPA(CCSD) calculations}\label{ch:soppa}
+\chapter{SOPPA, SOPPA(CC2), SOPPA(CCSD) and RPA(D)}\label{ch:soppa}
 
 The Dalton program system can also be used to perform Second-Order
 Polarization Propagator Approximation (SOPPA) \index{SOPPA}
-\index{polarization propagator} calculations
-\cite{esnpjjodjcp73,mjpekdtehjajjojcp,spascpl260,tejospastcan100} or
-Second-Order Polarization Propagator Approximation with Coupled Cluster
-Singles and Doubles Amplitudes [SOPPA(CCSD)] \index{SOPPA(CCSD)}
+\index{polarization propagator}
+\cite{esnpjjodjcp73,mjpekdtehjajjojcp,spascpl260,tejospastcan100,spas037},
+Second-Order Polarization Propagator Approximation with CC2 Amplitudes
+[SOPPA(CC2)] \index{SOPPA(CC2)} \cite{spas097} or Second-Order
+Polarization Propagator Approximation with Coupled Cluster Singles and
+Doubles Amplitudes [SOPPA(CCSD)] \index{SOPPA(CCSD)} \cite{soppaccsd}
 calculations of optical properties like singlet or triplet excitation
-energies\index{electronic   excitation} and oscillator
-strengths\index{transition moment} as well as the 
-following list of electric and magnetic properties
+energies\index{electronic excitation} and oscillator
+strengths\index{transition moment} as well as the following list of
+electric and magnetic properties
 \begin{center}
 \begin{list}{}{}
 \item polarizability\index{polarizability}
@@ -21,40 +23,64 @@ following list of electric and magnetic properties
 \end{list}
 \end{center}
 as well as all the linear response functions described in chapter
-\ref{ch:rspchap}.
+\ref{ch:rspchap}. Furthermore it can be used to calculate singlet
+excitation energies\index{electronic excitation} and oscillator
+strengths\index{transition moment} at the SOPPA,\cite{spas037}
+SOPPA(CCSD) \cite{spas089} and RPA(D) \cite{spas025}\index{RPA(D)}
+using an atomic integral direct implementation of the SOPPA methods.
 
 
 \section{General considerations}\label{sec:soppageneral}
 
-The Second-Order Polarization Propagator Approximation is a generalization of
-the SCF linear response function
-\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp}. In SOPPA, the SCF reference
-wave function in the linear response function or polarization propagator is
-replaced by a M{\o}ller-Plesset wave function and all matrix elements in the
-response function are then evaluated through second order in the fluctuation
-potential. This implies that electronic excitation energies and oscillator
-strengths as well as linear response functions are correct through second
-order. Although it is a second-order method like MP2, the SOPPA equations
-differ significantly from the expressions for second derivatives of an MP2
-energy. 
+The Second-Order Polarization Propagator Approximation is a
+generalization of the SCF linear response function \cite{esnpjjodjcp73,
+jopjdycpr2, mjpekdtehjajjojcp, spas037}. In SOPPA, the SCF reference
+wave function in the linear response function or polarization
+propagator is replaced by a M{\o}ller-Plesset wave function and all
+matrix elements in the response function are then evaluated through
+second order in the fluctuation potential. This implies that electronic
+excitation energies and oscillator strengths as well as linear response
+functions are correct through second order. Although it is a
+second-order method like MP2, the SOPPA equations differ significantly
+from the expressions for second derivatives of an MP2 energy.
 
-In the Second Order Polarization Propagator Approximation with Coupled Cluster
-Singles and Doubles Amplitudes [SOPPA(CCSD)], the M{\o}ller-Plesset
-correlation coefficients are replaced by the corresponding coupled cluster
-singles and doubles amplitudes
-\cite{soppaccsd,ekdspasjpca102,tejospastcan100,ctocd}.
-Apart from the use of the CCSD amplitudes, the equations are essentially the
-same as for SOPPA.  
-Note that SOPPA(CCSD) is not a coupled cluster linear response function
-and neither SOPPA nor SOPPA(CCSD) are the same as the CC2 model, and
-although they all three are of at least second order in all terms they
-differ in the terms included.
-The SOPPA(CCSD) model is thus not implemented in the CC module but
-is implemented in the RESPONSE and ABACUS
-modules of the Dalton program, using basically the same code as SOPPA.
+In the RPA(D) model \cite{spas025}\index{RPA(D)} the excitation
+energies and transition moments of the random phase approximation /
+time-dependent Hartree-Fock or SCF linear response theory are corrected
+with a non-iterative second order doubles correction derived from the
+SOPPA model using pseudo-perturbation theory
+\cite{Christiansen:PERTURBATIVE_TRIPLES}. The RPA(D) is thus similar to
+the CIS(D) model \cite{Head-Gordon:94},
+\index{CIS(D)} but is based on the RPA model instead of on a simple CIS
+model. The performance of both methods has been compared e.g. in Ref.
+\cite{spas089}.
+
+In the Second Order Polarization Propagator Approximation with Coupled
+Cluster Singles and Doubles Amplitudes [SOPPA(CCSD)] \cite{soppaccsd,
+ekdspasjpca102, tejospastcan100, ctocd, spas089} \index{SOPPA(CCSD)} or
+the Second Order Polarization Propagator Approximation with CC2
+Amplitudes [SOPPA(CC2)] \cite{spas097} methods,\index{SOPPA(CC2)} the
+M{\o}ller-Plesset correlation coefficients are replaced by the
+corresponding CCSD or CC2 singles and doubles amplitudes. Apart from
+the use of the CCSD or CC2 amplitudes, the equations are essentially
+the same as for SOPPA. Note that the SOPPA(CCSD) or SOPPA(CC2)
+polarization propagators are not coupled cluster linear response
+functions and neither SOPPA, SOPPA(CC2) nor SOPPA(CCSD) are the same as
+the CC2 model, and although they all three are of at least second order
+in all terms they differ in the terms included. The SOPPA(CC2) and
+SOPPA(CCSD) models are thus not implemented in the CC module but are
+implemented in the RESPONSE and ABACUS modules of the Dalton program,
+using the same code as SOPPA. Starting with \dalton\ a second
+implementation of the SOPPA equations is available which makes use of
+an atomic integral direct algorithm thereby avoiding the storage of the
+two-electron repulsion integrals in the molecular orbital basis
+\cite{spas025, spas037, spas089}. This implementation can currently be
+used to calculate singlet electronic excitation energies and
+corresponding transition moments and oscillator strengths using the
+SOPPA, SOPPA(CCSD) and RPA(D) models.\index{RPA(D)}
 
 
-\section{Input description}\label{sec:soppainput}
+\section{Input description molecular orbital based SOPPA}\label{sec:soppainput}
 
 \begin{center}
 \fbox{
@@ -63,30 +89,42 @@ modules of the Dalton program, using basically the same code as SOPPA.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item General reference : E.~S. Nielsen, Poul J{\o}rgensen, and Jens
-  Oddershede. 
-\newblock {\em J.~Chem.~Phys.}, {\bf 73},\hspace{0.25em}6238, (1980)
-\item General reference : J. Oddershede, Poul J{\o}rgensen and Danny Yeager,
-\newblock {\em Comput. Phys. Rep.}, {\bf 2},\hspace{0.25em}33, (1984)
-\item Excitation energy : Martin J. Packer, Erik K. Dalskov, Thomas
-  Enevoldsen, Hans J{\o}rgen Aagaard Jensen and Jens Oddershede,  
-\newblock {\em J. Chem. Phys.}, {\bf 105}, \hspace{0.25em}5886, (1996)
-\item Rotational {\em g} tensor : Stephan P.~A. Sauer,
-\newblock {\em Chem. Phys. Lett.}  {\bf 260},\hspace{0.25em}271, (1996)
-\item Polarizability : Erik K. Dalskov and Stephan P.~A. Sauer.
-\newblock {\em J.~Phys.~Chem.~{\bf A}}, {\bf 102},\hspace{0.25em}5269, (1998)
-\item  Spin-Spin Coupling Constants : Thomas Enevoldsen, Jens Oddershede, 
-and Stephan P.~A. Sauer.
+\item General reference : E.~S. Nielsen, P.~J{\o}rgensen, and J.~Oddershede.
+\newblock {\em J.~Chem.~Phys.}, {\bf 73},\hspace{0.25em}6238, (1980).
+\item General reference : J.~Oddershede, P.~J{\o}rgensen and D.~Yeager,
+\newblock {\em Comput. Phys. Rep.}, {\bf 2},\hspace{0.25em}33, (1984).
+\item General reference SOPPA(CCSD): S.~P.~A.~Sauer,
+\newblock {\em J.~Phys.\ B: At.~Mol.~Phys.}, {\bf 30},\hspace{0.25em}3773, (1997).
+\item General reference SOPPA(CC2): H.~Kj{\ae}r, S.~P.~A.~Sauer, and J.~Kongsted.
+\newblock {\em J. Chem. Phys.}, {\bf 133},\hspace{0.25em} 144106, (2010).
+\item Excitation energy : M.~J.~Packer, E.~K.~Dalskov, T.~Enevoldsen,
+H.~J.~Aa.~Jensen and J.~Oddershede,
+\newblock {\em J. Chem. Phys.}, {\bf 105}, \hspace{0.25em}5886, (1996).
+\item SOPPA(CCSD) excitation energy :
+H.~H.~Falden, K.~R.~Falster-Hansen, K.~L.~Bak, S.~Rettrup and
+S.~P.~A.~Sauer,
+\newblock {\em J. Phys. Chem. A}, {\bf 113}, \hspace{0.25em} 11995,
+(2009).
+\item Rotational {\em g} tensor : S.~P.~A.~Sauer,
+\newblock {\em Chem. Phys. Lett.}  {\bf 260},\hspace{0.25em}271,
+(1996).
+\item Polarizability : E.~K.~Dalskov and S.~P.~A.~Sauer.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, {\bf 102},\hspace{0.25em}5269,
+(1998).
+\item  Spin-Spin Coupling Constants : T.~Enevoldsen, J.~Oddershede,
+and S.~P.~A.~Sauer.
 \newblock {\em Theor.~Chem.~Acc.}, {\bf 100},\hspace{0.25em}275, (1998)
-\item CTOCD-DZ nuclear shieldings: A.Ligabue, S.P.A.Sauer, P.Lazzeretti.
-\newblock {\em J.Chem.Phys.}, {\bf 118},\hspace{0.25em}6830, (2003).\end{list}
+\item CTOCD-DZ nuclear shieldings: A.~Ligabue, S.~P.~A.~Sauer, P.~Lazzeretti.
+\newblock {\em J.Chem.Phys.}, {\bf 118},\hspace{0.25em}6830, (2003).
+
+\end{list}
 }}
 \end{center}
 
 A prerequisite for any SOPPA calculation is that the calculation of
 the MP2 energy and wavefunction is invoked by the keyword \Key{MP2} in
 the \Sec{*WAVE FUNCTIONS} input module. Furthermore in the
-\Sec{*PROPERTIES} or \Sec{*RESPONSE} input modules it has to be specified 
+\Sec{*PROPERTIES} or \Sec{*RESPONSE} input modules it has to be specified
 by the keyword \Key{SOPPA} that a SOPPA calculation of the properties
 should be carried out.
 
@@ -106,7 +144,7 @@ spin-spin coupling constants of a molecule will be:
 \end{verbatim}
 whereas as typical input file for the calculation of triplet
 excitation energies\index{electronic excitation} with the
-\Sec{*RESPONSE} module will be: 
+\Sec{*RESPONSE} module will be:
 \begin{verbatim}
 **DALTON INPUT
 .RUN RESPONSE
@@ -115,7 +153,6 @@ excitation energies\index{electronic excitation} with the
 .MP2
 **RESPONSE
 .TRPFLG
-.NOITRA
 .SOPPA
 *LINEAR
 .SINGLE RESIDUE
@@ -123,16 +160,62 @@ excitation energies\index{electronic excitation} with the
  4
 **END OF DALTON INPUT
 \end{verbatim}
-The {\tt .NOITRA} keyword has the effect that the transformation of the two 
-electron integrals necessary for a MP2 and SOPPA calculation is only performed
-once in the \Sec{*WAVE FUNCTIONS} module.
 
-A prerequisite for any SOPPA(CCSD) calculation is that the calculation of
+
+A prerequisite for any SOPPA(CC2)\index{SOPPA(CC2)} calculation is that
+the calculation of the CC2 amplitudes for the SOPPA program is invoked
+by the keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS} input module
+together with the \Key{SOPPA2} option in the \Sec{CC INPUT} section.
+Furthermore, in the \Sec{*PROPERTIES} or \Sec{*RESPONSE} input modules
+it has to specified by the keyword \Key{SOPPA(CCSD)} that a SOPPA(CC2)
+calculation of the properties should be carried out.
+
+A typical input file for a SOPPA(CC2) calculation of the indirect
+nuclear spin-spin coupling constants of a molecule will be:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.SOPPA2
+**PROPERTIES
+.SOPPA(CCSD)
+.SPIN-S
+**END OF DALTON INPUT
+\end{verbatim}
+whereas as typical input file for the calculation of triplet
+excitation energies\index{electronic excitation} with the
+\Sec{*RESPONSE} module will be:
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.SOPPA2
+**RESPONSE
+.TRPFLG
+.SOPPA(CCSD)
+*LINEAR
+.SINGLE RESIDUE
+.ROOTS
+ 4
+**END OF DALTON INPUT
+\end{verbatim}
+
+
+
+
+A prerequisite for any SOPPA(CCSD) calculation\index{SOPPA(CCSD)} is that the calculation of
 the CCSD amplitudes for the SOPPA program is invoked by the keyword \Key{CC}
 in the \Sec{*WAVE FUNCTIONS} input module together with the \Key{SOPPA(CCSD)}
 option in the \Sec{CC INPUT} section. Furthermore, in the \Sec{*PROPERTIES} or
 \Sec{*RESPONSE} input modules it has to specified by the keyword \Key{SOPPA(CCSD)}
-that a SOPPA(CCSD) calculation of the properties should be carried out. 
+that a SOPPA(CCSD) calculation of the properties should be carried out.
 
 A typical input file for a SOPPA(CCSD) calculation of the indirect nuclear
 spin-spin coupling constants of a molecule will be:
@@ -152,7 +235,7 @@ spin-spin coupling constants of a molecule will be:
 \end{verbatim}
 whereas as typical input file for the calculation of triplet
 excitation energies\index{electronic excitation} with the
-\Sec{*RESPONSE} module will be: 
+\Sec{*RESPONSE} module will be:
 \begin{verbatim}
 **DALTON INPUT
 .RUN RESPONSE
@@ -171,3 +254,153 @@ excitation energies\index{electronic excitation} with the
 **END OF DALTON INPUT
 \end{verbatim}
 
+
+
+\section{Input description atomic orbital based SOPPA module}\label{sec:AOsoppa}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small \noindent {\bf Reference literature:}
+\begin{list}{}{}
+\item General reference :
+K.~L.~Bak, H.~Koch, J.~Oddershede, O.~Christiansen and S.~P.~A.~Sauer,
+\newblock {\em J. Chem. Phys.}, {\bf 112}, \hspace{0.25em} 4173,
+(2000).
+\item RPA(D) excitation energy :
+O.~Christiansen, K.~L.~Bak, H.~Koch and S.~P.~A.~Sauer,  Chem. Phys.
+\newblock {\em Chem. Phys.}, {\bf 284}, \hspace{0.25em} 47, (1998).
+\item SOPPA(CCSD) excitation energy :
+H.~H.~Falden, K.~R.~Falster-Hansen, K.~L.~Bak, S.~Rettrup and
+S.~P.~A.~Sauer,
+\newblock {\em J. Phys. Chem. A}, {\bf 113}, \hspace{0.25em} 11995,
+(2009).
+\end{list}
+}}
+\end{center}
+
+A prerequisite for any atomic orbital based RPA(D), SOPPA or
+SOPPA(CCSD) calculation of electronic singlet excitation energies and
+corresponding oscillator strengths is the calculation of the
+M{\o}ller-Plesset first order doubles and second order singles
+correlation coefficients or the CCSD singles and doubles amplitudes.
+This is invoked by the keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS}
+input module together with the keywords \Key{MP2} and \Key{AO-SOPPA} or
+\Key{CCSD} and \Key{AO-SOPPA} in \Sec{CC INPUT} section of the
+\Sec{*WAVE FUNCTIONS} input module. Furthermore in the
+\Sec{*PROPERTIES} input module it has to be specified by the keywords
+\Key{SOPPA} and \Key{EXCITA} that a SOPPA calculation of optical
+properties should be carried out. Finally in the \Sec{SOPPA} section of
+the \Sec{*PROPERTIES} input module the atomic integral direct
+calculation has to be invoked by the one of the three keywords
+\Key{AOSOP}, \Key{DCRPA}  or \Key{AOSOC} for either a SOPPA, RPA(D) or
+SOPPA(CCSD) calculation. Alternatively an atomic integral direct SOPPA
+or SOPPA(CCSD) calculation can be invoked by adding the \Key{DIRECT}
+keyword in the \Sec{SOPPA} section of the \Sec{*PROPERTIES} input
+module in addition to the \Key{SOPPA} and \Key{EXCITA} or
+\Key{SOPPA(CCSD)} and \Key{EXCITA} keywords in the \Sec{*PROPERTIES}
+input module. Further keywords, which control the details of an atomic
+orbital direct SOPPA, RPA(D) or SOPPA(CCSD) calculation, are described
+in chapter \ref{sec:soppa}.
+
+A typical input file for an atomic integral direct calculation of 5
+electronic singlet excitation energies to states which transform like
+the totally symmetric irreducible representation and their
+corresponding oscillator and rotatory strengths at the RPA(D), SOPPA and SOPPA(CCSD)
+level of a molecule will be:\index{SOPPA}\index{RPA(D)}\index{SOPPA(CCSD)}
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.CCSD
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+*SOPPA
+.DCRPA
+.AOSOP
+.AOSOC
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
+The corresponding inputs for calculations using only the RPA(D) model will be
+\index{RPA(D)}
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+*SOPPA
+.DCRPA
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
+and using only the SOPPA model:\index{SOPPA}
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.MP2
+.AO-SOPPA
+**PROPERTIES
+.SOPPA
+.EXCITA
+*SOPPA
+.DIRECT
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
+and finally using only the SOPPA(CCSD) model:\index{SOPPA(CCSD)}
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.CCSD
+.AO-SOPPA
+**PROPERTIES
+.SOPPA(CCSD)
+.EXCITA
+*SOPPA
+.DIRECT
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    0    0    0    0    0    0    0
+**END OF DALTON INPUT
+\end{verbatim}
+
+However, one should note, that is computationally advantageous to
+combine calculations at different SOPPA levels in one input file, as
+the program automatically uses the converged solutions of the lower
+level as start guess for the higher levels.

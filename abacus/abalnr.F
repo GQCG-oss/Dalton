@@ -63,7 +63,10 @@ C
       DATA LONMAG/'XLONMAG','YLONMAG','ZLONMAG'/
 C
       DATA TABLE /'.SKIP  ', '.WAVELE','.MAX IT','.THRESH',
-     *            '.MAXRED', '.MAXPHP','.STATIC','.XXXXXX',
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+C    *            '.MAXRED', '.MAXPHP','.STATIC','.XXXXXX',
+     *            '.MAXRED', '.MAXPHP','.STATIC','.IRREP ',
+CKeinSPASmehr
      *            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
      *            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE'/
 C
@@ -170,6 +173,10 @@ C              .THRESH
                   ICHANG = ICHANG + 1
                GO TO 100
     8          CONTINUE
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+                  VIBGIR = .TRUE.
+                  READ(LUCMD,*) IRVIBG
+CKeinSPASmehr
                GO TO 100
     9             OOTV   = .TRUE.
                   ICHANG = ICHANG + 1
@@ -404,6 +411,9 @@ C
       MAXITE   = 60
       MXRM     = 400
       MXPHP    = 0
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+      VIBGIR = .FALSE.
+CKeinSPASmehr
       RETURN
       END
 C  /* Deck lnraba */
@@ -728,6 +738,9 @@ C
          END IF
 C
          DO ISYM=1,NSYM
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+            IF (.NOT.(VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG))) THEN
+CKeinSPASmehr
             KSYMOP = ISYM
             DO IOPER=1,NOPER(KSYMOP)
                KOPER=IOPER
@@ -1041,6 +1054,9 @@ C
 C     
 C     End loop over symmetries
 C     
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+            END IF
+CKeinSPASmehr
          END DO
 C
 C     Close and delete files.
@@ -1174,6 +1190,9 @@ C
          NBR = 0
 C
          DO ISYM = 1,NSYM
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+            IF (.NOT.(VIBGIR .AND. (ISYM .NE. IRVIBG))) THEN
+CKeinSPASmehr
 C
             CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
 C
@@ -1606,6 +1625,9 @@ C
 C
 CKeinSPASmehr
 C
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+            END IF
+CKeinSPASmehr
          END DO
 C
          CALL GPCLOSE(LUSOVE,'DELETE')
@@ -2497,13 +2519,16 @@ CSPAS:8/10-08 there is no frequency for VIB_G
 C        DO IFRVAL = 1,NFRVAL
          IFRVAL = 1
 CKeinSPASmehr
-            WRITE(LUPRI,9110) FRVAL(IFRVAL)
+CSPAS       WRITE(LUPRI,9110) FRVAL(IFRVAL)
             WRITE(LUPRI,9111)
             WRITE(LUPRI,'(16X,A,21X,A,5X,A,8X,A)')
      &         'Coordinates','Sym','(au)','(cm-1 u)'
             WRITE(LUPRI,'(4X,2A)') 
      &          ('--------------------------------------',I=1,2)
             DO ISYM = 1,NSYM
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+               IF (.NOT.(VIBGIR .AND. (ISYM .NE. IRVIBG))) THEN
+CKeinSPASmehr
                DO ISCOOR = 1,3*NATOMS
                   CALL GENCOR(WORK(KCSTRA),NCOOR,ISCOOR,COORDI,ICORSY)
                   IF (ICORSY .EQ. ISYM) THEN
@@ -2530,7 +2555,7 @@ CSPAS:6/10-08: trying to add mass independent vibrational g-factor
                            JDIPSY = ISYMAX(3,1) + 1
                         END IF
                         IF (JDIPSY .EQ. ISYM) THEN
-                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+                           WRITE(LUPRI,'(5X,2A,I3,F12.6,F14.3)') 
      &                           COORDI, COORDJ, ISYM, 
      &                           FOVIBG(ISCOOR,3*NATOMS+JDIPV,ISYM,
      &                                  IFRVAL)
@@ -2556,7 +2581,7 @@ CSPAS:6/10-08: trying to add mass independent vibrational g-factor
                         CALL GENCOR(WORK(KCSTRA),NCOOR,JSCOOR,COORDJ,
      &                              JCORSY)
                         IF (JCORSY .EQ. ISYM) THEN
-                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+                           WRITE(LUPRI,'(5X,2A,I3,F12.6,F14.3)') 
      &                           COORDI, COORDJ, ISYM, 
      &                           FOVIBG(3*NATOMS+IDIPV,JSCOOR,ISYM,
      &                                  IFRVAL)
@@ -2574,7 +2599,7 @@ CSPAS:6/10-08: trying to add mass independent vibrational g-factor
                            JDIPSY = ISYMAX(3,1) + 1
                         END IF
                         IF (JDIPSY .EQ. ISYM) THEN
-                           WRITE(LUPRI,'(14X,A,A,2X,I2,F12.6)') 
+                           WRITE(LUPRI,'(5X,2A,I3,F12.6,F14.3)') 
      &                           COORDI, COORDJ, ISYM, 
      &                           FOVIBG(3*NATOMS+IDIPV,3*NATOMS+JDIPV,
      &                                  ISYM,IFRVAL)
@@ -2582,6 +2607,9 @@ CSPAS:6/10-08: trying to add mass independent vibrational g-factor
                      END DO
                   END IF
                END DO
+CKeinSPASmehr
+CSPAS:20/3-2011: allowing for perturbations in only one irrep
+               END IF
 CKeinSPASmehr
             END DO
             WRITE(LUPRI,9111)
