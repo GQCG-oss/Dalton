@@ -1344,9 +1344,6 @@ C
       CALL CC_PRPC(ZERO,STHELP,666,
      *             LABEL1,LABEL1,LABEL1,LABEL1,
      *             ZERO,ZERO,ZERO,1,0,0,0)
-      CALL WRIPRO(ZERO,STHELP,666,
-     *            LABEL1,LABEL1,LABEL1,LABEL1,
-     *            ZERO,ZERO,ZERO,1,0,0,0)
 
       CALL QEXIT('CC_RESUME')
 C
