@@ -1338,28 +1338,40 @@ Chj      ... if (GEOWLK) then
 Chj         ... WLKREJ in gnrinf.h will be true if geom. step rejected.
          END IF
 
-         CALL MEMGET('REAL',KPV,NNASHX*NNASHX,WRK,KFREE,LFREE)
+         LPV = NNASHX*NNASHX
+         CALL MEMGET('REAL',KPV,LPV,WRK,KFREE,LFREE)
          IF (NASHT .EQ. 1) THEN
-Chj         make PV(1) = D0 for open shell RHF
+Chj         PV(1) is 0.0D0 for a single open shell RHF
             WRK(KPV) = D0
          ELSE IF (NASHT .GT. 1) THEN ! HSROHF
-            ! if PV programmed for HSROHF, remember also FQ below /May 2011 hjaaj
-            CALL QUIT('Cannot write SIRIFC because PV not calculated')
+            ! we fill PV with a very large number, to make sure it gives
+            ! problems if used later. As it is now, HSROHF is done
+            ! completely in AO basis, thus PV (and FQ below) are not
+            ! used. This filling makes it very clear that there are
+            ! problems if someone programs use of PV for HSROHF without
+            ! checking code.
+            WRK(KPV:KPV+LPV-1) = -9.87654321D123
          END IF
 
          CALL MEMGET('REAL',KGORB,NWOPH,WRK,KFREE,LFREE)
          CALL DZERO(WRK(KGORB),NWOPH)
 Chj      ... set orbital gradient to zero (i.e. completely converged!)
-         CALL MEMGET('REAL',KFQ,NASHT*NORBT,WRK,KFREE,LFREE)
-C
+
+         LFQ = NASHT*NORBT
+         CALL MEMGET('REAL',KFQ,LFQ,WRK,KFREE,LFREE)
          IF (NASHT.GT.0) THEN
 C           put FV in DCAO
             CALL UTHUB(FAOSAV(1,INDEVC,2),DCAO,CMO,WRK(KFREE),
      &                 NSYM,NBAS,NORB)
 C           form FC = FD - FV in FCAO
             CALL DAXPY(NNORBT,DM1,DCAO,1,FCAO,1)
-            CALL DZERO(WRK(KFQ),NASHT*NORBT)
-C           make FQ matrix zero matrix for open shell RHF
+            IF (NASHT .EQ. 1) THEN
+               CALL DZERO(WRK(KFQ),NASHT*NORBT)
+C              FQ matrix is zero matrix for single open shell RHF
+            ELSE
+               WRK(KFQ:KFQ+LFQ-1) = -9.87654321D123
+               ! see notes in connection with PV above
+            END IF
          END IF
 C
 C *** LOCALIZATION
