@@ -1244,7 +1244,16 @@ C
             WRITE(LUPRI,'(//A/A)')
      &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
      &     ,'             The difference matrix is :'
-            CALL PRORB(SCRA(KCMO_diff),.FALSE.,LUPRI,1.0D-9)
+            !CALL PRORB(SCRA(KCMO_diff),.FALSE.,LUPRI)
+            ! problem: PRORB only prints coefficients .gt. 0.0001, thus
+            ! call output instead
+            DO ISYM = 1,NSYM
+               WRITE(LUPRI,'(/A,I5)')
+     &         ' CMO(SIRIFC) - CMO(SIRIUS.RST), symmetry',ISYM
+               JCMO_diff = KCMO_diff + ICMO(ISYM)
+               CALL OUTPUT(SCRA(JCMO_diff),1,NBAS(ISYM),1,NORB(ISYM),
+     &            NBAS(ISYM),NORB(ISYM),-1,LUPRI)
+            END DO
             WRITE(LUPRI,'(//A/A)')
      &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
      &     ,'             CMO matrix from SIRIFC :'
