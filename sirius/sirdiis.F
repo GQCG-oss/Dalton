@@ -34,11 +34,11 @@ C
 !restart DIIS if DIIS is stalled ...
 !
 !Revision 1.8  2001/01/31 13:49:00  hjj
-!allocate FQ matrix for open shell before WRSIFC
+!allocate FQ matrix for open shell before WR_SIRIFC
 !
 !Revision 1.6  2000/05/24 12:28:27  hjj
 !1) fixed solvent calculations (DIFDEN must be false for solvent)
-!2) fixed WRSIFC call for open shell and solvent
+!2) fixed WR_SIRIFC call for open shell and solvent
 !   (required change in SOLFCK also)
 !=============================================================================
 !970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC and more
@@ -1337,9 +1337,16 @@ Chj      ... if (GEOWLK) then
             CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
 Chj         ... WLKREJ in gnrinf.h will be true if geom. step rejected.
          END IF
-Chj      make PV(1) = D0 for open shell RHF
-         CALL MEMGET('REAL',KPV,1,WRK,KFREE,LFREE)
-         WRK(KPV) = D0
+
+         CALL MEMGET('REAL',KPV,NNASHX*NNASHX,WRK,KFREE,LFREE)
+         IF (NASHT .EQ. 1) THEN
+Chj         make PV(1) = D0 for open shell RHF
+            WRK(KPV) = D0
+         ELSE IF (NASHT .GT. 1) THEN ! HSROHF
+            ! if PV programmed for HSROHF, remember also FQ below /May 2011 hjaaj
+            CALL QUIT('Cannot write SIRIFC because PV not calculated')
+         END IF
+
          CALL MEMGET('REAL',KGORB,NWOPH,WRK,KFREE,LFREE)
          CALL DZERO(WRK(KGORB),NWOPH)
 Chj      ... set orbital gradient to zero (i.e. completely converged!)
@@ -1354,11 +1361,10 @@ C           form FC = FD - FV in FCAO
             CALL DZERO(WRK(KFQ),NASHT*NORBT)
 C           make FQ matrix zero matrix for open shell RHF
          END IF
-         CALL MEMGET('REAL',KDUM,0,WRK,KFREE,LFREE)
 C
 C *** LOCALIZATION
 C
-         IF (BOYORB.OR.PIPORB) CALL SIRLOC(CMO,WRK(KFREE),LFREE)
+         IF (BOYORB .OR. PIPORB) CALL SIRLOC(CMO,WRK(KFREE),LFREE)
 C
          IF (LMULBS .OR. R12CAL) THEN
 C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).
@@ -1367,13 +1373,15 @@ C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).
             CALL TIMER('R12AUX',TIMSTR,TIMEND)
          END IF
 C
-         CALL WRSIFC(CMO,DV,WRK(KPV),FCAO,DCAO,
+C *** and now we are ready to call WR_SIRIFC to write SIRIFC
+         CALL MEMGET('REAL',KDUM,0,WRK,KFREE,LFREE)
+         CALL WR_SIRIFC(CMO,DV,WRK(KPV),FCAO,DCAO,
      &               WRK(KFQ),WRK(KDUM),WRK(KDUM),WRK(KDUM),
      &               WRK(KFREE),LFREE,WRK(KGORB),TNLM,.FALSE.,WRK(KDUM))
-C        CALL WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
+C        CALL WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
 C    &               GORB,ERLM,ORBHES,XINDX)
 C
-         CALL MEMREL('DIIS_CTL.WRSIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
+         CALL MEMREL('DIIS_CTL.WR_SIRIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
       END IF
 C
 C        Transform integrals for abacus or response, 

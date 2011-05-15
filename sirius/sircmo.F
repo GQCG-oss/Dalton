@@ -1413,7 +1413,7 @@ C
       RETURN
       END
 C  /* Deck prorb */
-      SUBROUTINE PRORB(CMO,PROCC,IOUT)
+      SUBROUTINE PRORB(CMO,PROCC,IOUT,THRPRI_in)
 C
 C Written 11-Dec-1983 by ha/hjaaj
 C Revised  8-Jul-1992 hjaaj
@@ -1422,13 +1422,14 @@ C Purpose:
 C  Print molecular orbital coefficients on unit IOUT.
 C
 C Input:
-C  CMO, MO orbital coefficients (symmetry blocked)
-C  PROCC, print only occupied orbitals
-C  IOUT, output file unit
+C  CMO:    MO orbital coefficients (symmetry blocked)
+C  PROCC:  print only occupied orbitals
+C  IOUT:   output file unit
 C
 #include <implicit.h>
       DIMENSION CMO(*)
       LOGICAL   PROCC
+      real(8), optional :: THRPRI_in
 C
 C Used from common blocks:
 C   INFINP : CENT,TYPE,SUPSYM,?
@@ -1461,6 +1462,7 @@ C
       ELSE
          THRPRI = 1.0D-4
       END IF
+      IF (present(THRPRI_in)) THRPRI = THRPRI_in
 C
       ISTBAS = 0
       DO 400 ISYM = 1,NSYM

@@ -2756,7 +2756,7 @@ C
       IF (NCDETS .GT. NCONF) THEN
          IF (FLAG(27)) THEN
             WRITE (LUPRI,*)
-     &      'WRSIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
+     &      'WR_SIRIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
      &      NCDETS, NCONF
             CALL QUIT('CIRSPS: NCDETS .gt. NCONF for .DETERMINANTS')
          END IF

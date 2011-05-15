@@ -761,7 +761,7 @@ C
 C-- IRDMO = 10:
 C
  1000 CONTINUE
-      CALL RDSIFC('CMO',FOUND,CMO,WRK,LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WRK,LFREE)
       IF (.NOT.FOUND) THEN
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -1866,8 +1866,8 @@ C
       CALL QEXIT('RDPROP')
       RETURN
       END
-C  /* Deck rdsifc */
-      SUBROUTINE RDSIFC(KEY,FOUND,AMAT,WRK,LWRK)
+C  /* Deck rd_sirifc */
+      SUBROUTINE RD_SIRIFC(KEY,FOUND,AMAT,WRK,LWRK)
 C
 C Read specific information from Sirius interface file
 C
@@ -1875,7 +1875,7 @@ C 10-Dec-1992 HJAaJ
 C Revision 2000/05/24 HJAaJ: new options (read CMO and others)
 C Revision 2011/05/02 HJAaJ: new keys FC, FCDIAG
 C
-C The following records have been written by WRSIFC:
+C The following records have been written by WR_SIRIFC:
 C
 C    0) label LBSIFC ("SIR IPH ")
 C    1) POTNUC,EMY,EACTIV,EMCSCF
@@ -1947,7 +1947,7 @@ C
 C
       LOGICAL CLSIFC, FNDLAB
 C
-      CALL QENTER('RDSIFC')
+      CALL QENTER('RD_SIRIFC')
       IF (LUSIFC .GT. 0) THEN
          CLSIFC = .FALSE.
       ELSE
@@ -2027,19 +2027,19 @@ C
          IF (.NOT. FNDLAB('TRCCINT ',LUSIFC)) GO TO 8888
          READ (LUSIFC) NSYM_SIRIFC
          IF (NSYM .NE. NSYM_SIRIFC) THEN
-            CALL QUIT('RDSIFC - key FCDIAG : NSYM inconsistent')
+            CALL QUIT('RD_SIRIFC - key FCDIAG : NSYM inconsistent')
          END IF
          CALL READT(LUSIFC,NORBT,AMAT)
       ELSE
-         WRITE(LUPRI,*) 'RDSIFC error, invalid key word ',KEY
-         CALL QUIT('RDSIFC error, invalid key word ')
+         WRITE(LUPRI,*) 'RD_SIRIFC error, invalid key word ',KEY
+         CALL QUIT('RD_SIRIFC error, invalid key word ')
       END IF
       FOUND = .TRUE.
       GO TO 9999
 C
  8888 FOUND = .FALSE.
  9999 IF (CLSIFC) CALL GPCLOSE (LUSIFC,'KEEP')
-      CALL QEXIT('RDSIFC')
+      CALL QEXIT('RD_SIRIFC')
       RETURN
       END
 C  /* Deck rdcref */

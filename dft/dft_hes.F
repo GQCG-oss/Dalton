@@ -131,7 +131,7 @@ C
 C     Construct DMAT and QMAT from MOs
 C
       CALL DZERO(CMO,NCMOT)
-      CALL RDSIFC('CMO',FOUND,CMO,WORK,LWRK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWRK)
       IF(.NOT.FOUND)CALL QUIT('GETV1MAT error: CMO not found on SIRIFC')
       IF (NSYM.GT.1)CALL QUIT(
      &     'DFT analytical Hessians do not work with symmetry')

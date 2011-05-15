@@ -316,7 +316,7 @@ C
 C
 C     Read MO coefficients
 C
-      CALL RDSIFC('CMO',FOUND,CMO,WORK,LWORK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWORK)
       IF (.NOT.FOUND) CALL QUIT('AATEL1 error: CMO not found on SIRIFC')
 C
       IF (NODIFC) THEN
@@ -487,7 +487,7 @@ C
       LOGICAL   FOUND
 C
       IF (NASHT .GT. 0) THEN
-         CALL RDSIFC('DV',FOUND,DV,DTOT,N2ORBX)
+         CALL RD_SIRIFC('DV',FOUND,DV,DTOT,N2ORBX)
          IF (.NOT.FOUND)
      &      CALL QUIT('MKDEN1 error: DV not found on SIRIFC')
          IF (IPRINT .GT. 10) THEN

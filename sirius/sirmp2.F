@@ -1232,20 +1232,30 @@ C
       IF ( EMBEDDING ) THEN ! read EMY and Fock matrix from SIRFC
          WRITE (LUPRI,'(/A)')
      &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
-         KCMO = 1
-         KWRK = KCMO + NCMOT
-         LWRK = LSCRA - KWRK
-         CALL RDSIFC('CMO',FOUND,SCRA(KCMO),SCRA(KWRK),LWRK)
-         CALL DAXPY(NCMOT,-1.0D0,CMO,1,SCRA(KCMO),1)
-         J_MAX = KCMO - 1 + IDAMAX(NCMOT,SCRA(KCMO),1)
-         IF ( abs(SCRA(J_MAX)) .GT. 1.0D-8) THEN
+         KCMO      = 1
+         KCMO_diff = KCMO  + NCMOT
+         KWRK      = KCMO_diff  + NCMOT
+         LWRK      = LSCRA - KWRK
+         CALL RD_SIRIFC('CMO',FOUND,SCRA(KCMO),SCRA(KWRK),LWRK)
+         CALL DCOPY(NCMOT,CMO,1,SCRA(KCMO_diff),1)
+         CALL DAXPY(NCMOT,-1.0D0,CMO,1,SCRA(KCMO_diff),1)
+         KCMO_diff_MAX = KCMO_diff - 1 + IDAMAX(NCMOT,SCRA(KCMO_diff),1)
+         IF ( abs(SCRA(KCMO_diff_MAX)) .GT. 1.0D-8) THEN
             WRITE(LUPRI,'(//A/A)')
      &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
      &     ,'             The difference matrix is :'
-            CALL PRORB(NCMOT,SCRA(KCMO),.TRUE.,LUPRI)
+            CALL PRORB(SCRA(KCMO_diff),.FALSE.,LUPRI,1.0D-9)
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             CMO matrix from SIRIFC :'
+            CALL PRORB(SCRA(KCMO),.FALSE.,LUPRI)
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             CMO matrix from SIRIUS.RST :'
+            CALL PRORB(CMO       ,.FALSE.,LUPRI)
             CALL QUIT('CMO on SIRIFC not same as CMO from SIRIUS.RST')
          END IF
-         CALL RDSIFC('FC for MP2',FOUND,FC,SCRA,LSCRA)
+         CALL RD_SIRIFC('FC for MP2',FOUND,FC,SCRA,LSCRA)
          IF (.NOT. FOUND) THEN
             CALL QUIT('Info for "FC for MP2" not found on SIRIFC')
          END IF

@@ -51,7 +51,7 @@ hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
 Revision 1.2  2000/05/24 12:53:44  hjj
 SOLFCK: corrected sign error in FCSOL introduced with AO code;
         fixed AO code for open shell and for all information
-        needed for call WRSIFC in sirdiis.F
+        needed for call WR_SIRIFC in sirdiis.F
 
 980826-hjaaj: revised SOLLNC and SOLLNO for LSYMPT .ne. 1
 950829-hjaaj: (ver n07) fixed error in SOLLNC (/INFVAR/ with NWOPH was missing)

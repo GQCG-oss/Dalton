@@ -40,12 +40,12 @@ C
 !/hjaaj dec 1999 - apr 2000:
 !1) removed obsolete RNALL references
 !2) do not activate QCSCF (flag(21)) for solvent or writing interface
-!if MXDIIS.gt.0; solvent and CALL WRSIFC are now also implemented
-!in the DIIS module.
+!   if MXDIIS.gt.0; solvent and CALL WR_SIRIFC are now also implemented
+!   in the DIIS module.
 !3) removed absolete input tests on NACTEL and ISPIN
 !4) if not QCSCF then zero iteration limits, for consistent output in PRTINP
 !5) BUG FIX: hucdrv was not called for start orbitals when
-!         not automatic occupation (when HF OCC specified in input)
+!   not automatic occupation (when HF OCC specified in input)
 !6) fix: corrected output error in max # of QCSCF iteration
 !7) polishing ...
 !----------------------------

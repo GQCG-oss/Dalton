@@ -987,14 +987,15 @@ C           **********************
 C           ***** CMO and DV *****
 C           **********************
 C
-            CALL RDSIFC('CMO',FOUND,WORK(KCMO),WORK(KGETFD),LGETFD)
+            CALL RD_SIRIFC('CMO',FOUND,WORK(KCMO),WORK(KGETFD),LGETFD)
             IF (.NOT.FOUND)
      &         CALL QUIT('RHSIDE error: CMO not found on SIRIFC')
             IF (NASHT .GT. 0) THEN
                IF (NODV) THEN
                   CALL DZERO(WORK(KDV),  NNASHX)
                ELSE
-                  CALL RDSIFC('DV',FOUND,WORK(KDV),WORK(KGETFD),LGETFD)
+                  CALL RD_SIRIFC('DV',FOUND,WORK(KDV),
+     &               WORK(KGETFD),LGETFD)
                   IF (.NOT.FOUND)
      &            CALL QUIT('RHSIDE error: DV not found on SIRIFC')
                END IF
@@ -1049,7 +1050,7 @@ C           ******************************
 C           ***** Read Fock matrix F *****
 C           ******************************
 C
-            CALL RDSIFC('FOCK',FOUND,WORK(KFOCK),WORK(KWRKGD),LWRKGD)
+            CALL RD_SIRIFC('FOCK',FOUND,WORK(KFOCK),WORK(KWRKGD),LWRKGD)
             IF (.NOT.FOUND)
      &      CALL QUIT('RHSIDE error: FOCK not found on SIRIFC')
 C
@@ -1297,7 +1298,7 @@ C
 C           Case 2: Densities read in
 C
             ELSE
-               CALL RDSIFC('PV',FOUND,PV,WORK(KFREE),LFREE)
+               CALL RD_SIRIFC('PV',FOUND,PV,WORK(KFREE),LFREE)
                IF (.NOT.FOUND)
      &            CALL QUIT('RHSIDE error: PV not found on SIRIFC')
             END IF
@@ -2872,16 +2873,16 @@ C  /* Deck ofabmo */
       DIMENSION CMO(NCMOT), DV(NASHT,NASHT), FMAT(N2ORBT), WORK(LWORK)
       LOGICAL FOUND
 C
-      CALL RDSIFC('CMO',FOUND,CMO,WORK,LWORK)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WORK,LWORK)
       IF (.NOT.FOUND) CALL QUIT('OFABMO error: CMO not found on SIRIFC')
       IF (NASHT .GT. 0) THEN
          IF (NNASHX .GT. LWORK) CALL STOPIT('OFABMO',' ',LWORK,NNASHX)
-         CALL RDSIFC('DV',FOUND,WORK,WORK,LWORK)
+         CALL RD_SIRIFC('DV',FOUND,WORK,WORK,LWORK)
          IF (.NOT.FOUND)
      &      CALL QUIT('OFABMO error: DV not found on SIRIFC')
          CALL DSPTSI(NASHT,WORK,DV)
       END IF
-      CALL RDSIFC('FOCK',FOUND,FMAT,WORK,LWORK)
+      CALL RD_SIRIFC('FOCK',FOUND,FMAT,WORK,LWORK)
       IF (.NOT.FOUND)
      &   CALL QUIT('OFABMO error: FOCK not found on SIRIFC')
       RETURN
