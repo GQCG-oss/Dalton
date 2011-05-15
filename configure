@@ -1181,7 +1181,12 @@ rm configure_conftest.c configure_conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in DALTON
 # 1) Gen1Int
-get_yes_or_no "\nDo you want to install Gen1Int (see http://sourceforge.net/projects/gen1int)?" n
+$ECHO "\nGen1Int is a tool package for computing the one-electron integrals as well as"
+$ECHO "their high-order magnetic and geometric derivatives using London atomic-orbitals."
+$ECHO "Please see http://sourceforge.net/projects/gen1int for more details and"
+$ECHO "the instruction of installation. Before enabling this feature, make sure you have"
+$ECHO "successfully compiled the library of Gen1Int (libgen1int.a)."
+get_yes_or_no "\nDo you want to install Gen1Int?" n
 if [ "$answer" = "y" ]; then
   $ECHO "\n-->Trying to find Gen1Int (libgen1int.a) ..."
   lib_genint=`locate libgen1int.a`
