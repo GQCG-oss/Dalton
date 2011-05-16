@@ -707,7 +707,7 @@ C
 C     NOTE: only C-vectors will be saved.
 C
       CALL REWINE(LUC,-1)
-      call copy_vector_mpi_2_sequential_io(ILU1,LUSC41,WORK(KVEC1),
+      call copy_vector_mpi_2_sequential_io(ILU1,LUC,WORK(KVEC1),
      &                                     MY_LU1_OFF,WORK(KILU1LIST),
      &                                     par_dist_block_list,
      &                                     block_list,MPI_COMM_WORLD,

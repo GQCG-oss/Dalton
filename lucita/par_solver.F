@@ -1344,7 +1344,7 @@ C       copy c-vectors from nodes and master back to the master
      &                                       MY_LU1_OFF,LU1LIST,
      &                                       NBLOCKDN,IBLOCKL,
      &                                       MPI_COMM_WORLD,
-     &                                       NUM_BLOCKS2,NROOT,1)
+     &                                       NUM_BLOCKS2,nroot,1)
         IF(luci_myproc .eq. luci_master) CALL REWINE(61,-1)
       END IF
 C
