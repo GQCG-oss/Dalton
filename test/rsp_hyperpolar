@@ -145,8 +145,8 @@ CTRL[5]=5
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Firs hyperpolarizabilities
-CRIT1=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Z\;Z\,Z\) \= * \-7\.6649...." $log | wc -l`
-CRIT2=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(X\;X\,Z\) \= * \-1\.6427...." $log | wc -l`
+CRIT1=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Z\;Z\,Z\) \= * \-7\.66...." $log | wc -l`
+CRIT2=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(X\;X\,Z\) \= * \-1\.642...." $log | wc -l`
 CRIT3=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Y\;Y\,Z\) \= * \-16\.6592...." $log | wc -l`
 CRIT4=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(X\;Z\,X\) \= beta\(X\,X\,Z\)" $log | wc -l`
 CRIT5=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Z\;X\,X\) \= beta\(X\,X\,Z\)" $log | wc -l`
