@@ -249,8 +249,8 @@ CTRL[12]=12
 ERROR[12]="INITIAL CHEMICAL SHIELDING FOR HYDROGEN NOT CORRECT"
 
 # Summary of initial shieldings
-CRIT1=`$GREP "\@1N * 299\.7727 * 415\.1852 \-115\.4125 * \-1\.0000 * 14\.0008 * 7\.0004 * 3\.0000" $log | wc -l`
-CRIT2=`$GREP "\@1H * 32\.2659 * 31\.6749 * 0*\.5910 * 0*\.6669 * 15\.2184 * 13\.9511 * 0*\.2725" $log | wc -l`
+CRIT1=`$GREP "\@1 N * 299\.7727 * 415\.1852 \-115\.4125 * \-1\.0000 * 14\.0008 * 7\.0004 * 3\.0000" $log | wc -l`
+CRIT2=`$GREP "\@1 H * 32\.2659 * 31\.6749 * 0*\.5910 * 0*\.6669 * 15\.2184 * 13\.9511 * 0*\.2725" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[13]=4
 ERROR[13]="SUMMARY OF INITIAL SHIELDINGS NOT CORRECT"
