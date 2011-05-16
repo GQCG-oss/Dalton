@@ -479,7 +479,7 @@ C       loop over blocks
 C
         DO IBLK = 1, NBLOCKS
 C
-          ILEN = IBLOCKL(IBLK)
+          ILEN = block_list(IBLK)
           IF(ILEN .GT. 0)THEN
 C
 C           get number of CPU that will recieve the block
@@ -617,7 +617,7 @@ C         loop over blocks
 C
           DO IBLK = 1, NBLOCKS
 C
-            ILEN = IBLOCKL( IBLK )
+            ILEN = block_list( IBLK )
 CSK            WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
             IF( ILEN .GT. 0 ) THEN
 C
