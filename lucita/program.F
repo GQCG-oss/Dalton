@@ -647,10 +647,10 @@ C
      &   ' to MPIs file-i/o format ...'
 C
          IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,-1)
-         CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
+         CALL COP_REST_VEC_REL(LUC,ILU1,WORK(KVEC1),MY_LU1_OFF,
      &                         WORK(KILU1LIST),
      &                         par_dist_block_list,block_list,
-     &                         NBLOCK,NROOT,IRC_SAVE)
+     &                         MPI_COMM_WORLD,NBLOCK,NROOT,IRC_SAVE)
         WRITE(LUWRT,'(1X,A)') ' ... done! '
       END IF
 C

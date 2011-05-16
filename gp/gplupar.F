@@ -41,8 +41,9 @@ C
 *   collected by Stefan Knecht, Jan 18 - ???, 2007           *
 *============================================================*
 *
-      SUBROUTINE COPVCD_PAR_BDRIV_REL(LUIN,LUOUT,SEGMNT,NDISTND,NBLOCK,
-     &                                LBLOCKL,JCOMM,LBLK,IROOT,
+      SUBROUTINE COPVCD_PAR_BDRIV_REL(LUIN,LUOUT,SEGMNT,
+     &                                par_dist_block_list,NBLOCK,
+     &                                block_list,JCOMM,LBLK,IROOT,
      &                                LUINLIST,MY_IOFF_LUIN,I_RUN_CPLX)
 C
 C     Written by  S. Knecht         - June 11 2007
@@ -59,13 +60,13 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
+      DIMENSION SEGMNT(*) 
+      integer, intent(in) :: par_dist_block_list(nblock), block_list(*)
       DIMENSION LUINLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
@@ -78,17 +79,16 @@ C     initialize scratch offsets
       IOFFSET_IN_LUIN   = 0
       IOFFSET_INT_IN    = 0
 C
-C     initialize slave tag 
-C
+C     initialize co-worker tag 
       MYNSLV = 0
 C
 #ifdef LUCI_DEBUG
       print *, 'I_RUN_CPLX',I_RUN_CPLX
       print *, 'NBLOCK',NBLOCK
       print *, 'par_dist list'
-      call iwrtma(NDISTND,1,NBLOCK,1,NBLOCK)
+      call iwrtma(par_dist_block_list,1,NBLOCK,1,NBLOCK)
       print *, 'lbl_dist list'
-      call iwrtma(LBLOCKL,1,NBLOCK,1,NBLOCK)
+      call iwrtma(block_list,1,NBLOCK,1,NBLOCK)
 #endif
    
 C
@@ -96,9 +96,9 @@ C     ================
 C      COMPLEX VECTOR
 C     ================
 C
-C     .................
-C      REAL PART FIRST 
-C     .................
+C     ...............
+C     REAL PART FIRST 
+C     ...............
 C
 C     set new offset
 C
@@ -111,108 +111,78 @@ C
       IOFFSET_INT_IN   = 1 + NUM_BLK  +
      &                 ( IROOT - 1 )   * MY_ACT_BLK2
 C
-C
-C LOOP OVER BLOCKS
-C
-       DO 501 II = 1, NBLOCK 
-C
-C         slaves first ...
-C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
-C
-             IOFFSET_SCRATCH = 0
-             NUM_BLK = 0
-C
-             GOTO 500
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-             GOTO 100
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IMZERO = 1
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
-C
-               IOFFSET_SCRATCH = 0
-               NUM_BLK = 0
-C
-               GOTO 500
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
-C
-C              recieve block from node MYNSLV
-C
-               MYNSLV = NDISTND(II) 
-               GOTO 100 
-             END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-C
-C            LUCI_MASTER block
-C
-             LBL = LBLOCKL(II)
-C  
-             CALL ITODS(LBL,1,-1,LUOUT)
-C
-             IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
+      DO II = 1, NBLOCK ! loop over vector blocks
+
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
+
+        IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers first ...
+
+          IF(par_dist_block_list(II) .ne. LUCI_MYPROC) GOTO 500
+
+        ELSE ! LUCI_MASTER
+
+!         recieve block from co-worker MYNSLV
+          MYNSLV = par_dist_block_list(II)
+
+          if(abs(MYNSLV) .gt. 0)then
+
+            if(mynslv .eq. -2)then
+!             block has zero length
+              CALL ITODS(0,1,-1,LUOUT)
+              IMZERO  = 1
+              IAMPACK = 0
+              CALL ZERORC(0,LUOUT,IAMPACK)
+              GOTO 500
+            end if
+
+          else
+ 
+!           LUCI_MASTER block
+!           -----------------
+            LBL = block_list(II)
+   
+            CALL ITODS(LBL,1,-1,LUOUT)
+            IMZERO = 1
+            IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
 C
 C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,my_STATUS,IERR)
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
+     &                              MPI_REAL8,my_STATUS,IERR)
 #ifdef LUCI_DEBUG
-               print *,'master - read-in: my vector piece'
-               call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
+              print *,'master - read-in: my vector piece'
+              call wrtmatmn(SEGMNT,1,lbl,1,lbl,luwrt)
 #endif
-               IMZERO = 0
-             ELSE
-               IMZERO = 1
-             END IF
+              IMZERO = 0
+            END IF
 C
-             IF(IMZERO.EQ.0) THEN
-                CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-             ELSE
-                CALL ZERORC(LBL,LUOUT,0)
-             END IF
+            IF(IMZERO.EQ.0) THEN
+               CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+            ELSE
+               CALL ZERORC(LBL,LUOUT,0)
+            END IF
 C
-             NUM_BLK = 1
-             IOFFSET_SCRATCH = LBL
+            IOFFSET_SCRATCH = LBL
+            NUM_BLK         = 1
 C
-             GOTO 500
-           END IF
-*         /\NDISTND eq 0 or ne 0
-        END IF
-C
-C  ... continue
-C
- 100    CONTINUE
-C
-C       slave block
-C
-        LBL = LBLOCKL(II)
-C
-        IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-C
-           CALL ITODS(LBL,1,-1,LUOUT)
-C
-        END IF
-C
-        IF(LUCI_MYPROC.NE.LUCI_MASTER) THEN
+            GOTO 500
+          END IF ! abs(MYNSLV) > 0?
+
+        END IF ! co-worker / master switch
+ 
+!       co-worker block
+!       ---------------
+        LBL = block_list(II)
+ 
+        if(luci_myproc .ne. luci_master)then
 C
           ISENDTOM = 0
-          ISENDTOM = LUINLIST( IOFFSET_INT_IN )
+          ISENDTOM = LUINLIST(IOFFSET_INT_IN)
 C
           CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
      &                  JCOMM,IERR)
 C
-          IF( ISENDTOM .gt. 0 ) THEN
+          IF(ISENDTOM .gt. 0)THEN
 C
             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
      &                            MPI_REAL8,my_STATUS,IERR)
@@ -220,46 +190,47 @@ C
      &                    JCOMM,IERR)
 #ifdef LUCI_DEBUG
                print *,'co-worker - read-in: my vector piece'
-               call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
+               call wrtmatmn(SEGMNT,1,lbl,1,lbl,luwrt)
 #endif
 C
           END IF
           IOFFSET_SCRATCH = LBL
-          NUM_BLK = 1
-        END IF
-C
-C
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
+          NUM_BLK         = 1
+
+        else ! LUCI_MASTER
+ 
+          CALL ITODS(LBL,1,-1,LUOUT)
+
           ISENDTOM = 0
-C
           CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,90,
      &                  JCOMM,my_STATUS,IERR)
 C
-          IF( ISENDTOM .gt. 0 ) THEN
+          IF(ISENDTOM .gt. 0)THEN
 C
             CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
      &                     JCOMM,my_STATUS,IERR)
 #ifdef LUCI_DEBUG
             print *,'master- recieve: my vector piece'
-            call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
+            call wrtmatmn(SEGMNT,1,lbl,1,lbl,luwrt)
 #endif
             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
           ELSE
             CALL ZERORC(LBL,LUOUT,0)
           END IF
           IOFFSET_SCRATCH = 0
-          NUM_BLK = 0
-        END IF
-C
+          NUM_BLK         = 0
+
+        end if ! co-worker / master switch
+
  500    CONTINUE
-C       
-C       keep track of correct offset
+        
+!       keep track of correct offset
         IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
         IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
- 501  CONTINUE
+
+      end do ! loop over vector blocks
 C
-      IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
+      IF(LUCI_MYPROC. eq. LUCI_MASTER)THEN
 C       write an EOF-mark
         CALL ITODS(-1,1,-1,LUOUT)
       ENDIF
@@ -269,9 +240,9 @@ C        IMAG PART
 C     ..............
 C
       IOFFSET_SCRATCH = 0
-      NUM_BLK = 0
+      NUM_BLK         = 0
 C
-      IF( I_RUN_CPLX .eq. 2 )THEN
+      IF(I_RUN_CPLX .eq. 2)THEN
 C
 C       set new offset
 C
@@ -292,21 +263,21 @@ C
 C         slaves first ...
 C
          IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
+           IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN 
 C
              IOFFSET_SCRATCH = 0
              NUM_BLK = 0
 C
              GOTO 600
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
+           ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
              GOTO 102
            ENDIF
 C
 C        LUCI_MASTER follows ...
 C
          ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
+           IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN
+             IF(par_dist_block_list(II) .eq. -2 )THEN
 C
 C              block has zero length
 C
@@ -320,18 +291,18 @@ C
                NUM_BLK = 0
 C
                GOTO 600
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
+             ELSE IF( par_dist_block_list(II) .gt. 0 )THEN
 C
 C              recieve block from node MYNSLV
 C
-               MYNSLV = NDISTND(II) 
+               MYNSLV = par_dist_block_list(II) 
                GOTO 102 
              END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
+           ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
 C
 C            LUCI_MASTER block
 C
-             LBL = LBLOCKL(II)
+             LBL = block_list(II)
 C  
              CALL ITODS(LBL,1,-1,LUOUT)
 C
@@ -356,7 +327,7 @@ C
 C
              GOTO 600
            END IF
-*          ^NDISTND eq 0 or ne 0
+*          ^par_dist_block_list eq 0 or ne 0
           END IF
 C
 C     ... continue
@@ -365,7 +336,7 @@ C
 C
 C         slave block
 C
-          LBL = LBLOCKL(II)
+          LBL = block_list(II)
 C
           IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
 C
@@ -428,6 +399,325 @@ C
       END IF
 C     ^ COMPLEX PART NEEDED?
 C
+      END
+!**********************************************************************
+
+      SUBROUTINE COP_REST_VEC_REL(LUIN,LUOUT,VEC1,MY_IOFF_LUOUT,
+     &                            LUOUTLIST,par_dist_block_list,
+     &                            block_list,communicator_group,nblocks,
+     &                            NVEC,I_RUN_CPLX)
+C
+C     Written by  S. Knecht         - June 19 2007
+C
+C**********************************************************************
+C
+C     copy vector from sequential file LUIN to MPI-file LUOUT.
+C     master sends a block to a co-worker according to par_dist_block_list.
+C
+C     NOTE: NVEC = NVEC
+C
+C     active blocks on the MPI-file are flagged by a nonzero list entry
+C
+C     Last revision:     S. Knecht       - June  2007
+C
+************************************************************************
+#include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#include "parluci.h"
+!------------------------------------------------------------------------------
+      real(8), intent(inout) :: vec1(*)
+      integer, intent(in)    :: nblocks, nvec, i_run_cplx, luin, luout
+      integer, intent(out)   :: luoutlist(*)
+      integer, intent(in)    :: par_dist_block_list(nblocks) 
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: communicator_group
+      integer(kind=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUOUT
+!------------------------------------------------------------------------------
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER NUM_BLK
+C
+C     initialize scratch offsets
+      NUM_BLK           = 0
+      IOFFSET_SCRATCH   = 0
+      IOFFSET_LUOUT     = 0
+      IOFFSET_INT_LUOUT = 0
+C
+      ILEN = 0
+C
+C     loop over vectors
+C
+      DO IVEC = 1, NVEC
+C
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
+C
+C       ================
+C        COMPLEX VECTOR
+C       ================
+C
+C       .................
+C        REAL PART FIRST
+C       .................
+C
+C       set new offset
+C
+C       position in file is at the end of vector IVEC - 1
+C
+C       note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
+C
+        IOFFSET_LUOUT      = MY_IOFF_LUOUT + IOFFSET_SCRATCH +
+     &                       ( IVEC - 1 )  * MY_VEC2_IOFF
+C
+        IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
+     &                       ( IVEC - 1 ) * MY_ACT_BLK2
+C
+C       loop over blocks
+C
+        DO IBLK = 1, NBLOCKS
+C
+          ILEN = IBLOCKL(IBLK)
+          IF(ILEN .GT. 0)THEN
+C
+C           get number of CPU that will recieve the block
+            I_NEED_BLK = par_dist_block_list( IBLK )
+C
+            IF(LUCI_MYPROC .ne. LUCI_MASTER .AND.
+     &         LUCI_MYPROC .ne. I_NEED_BLK) GOTO 500
+C
+C           slaves first...
+C
+            IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
+C
+              NUM_BLK = NUM_BLK + 1
+              IMZERO = 0
+C
+              CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,90,
+     &                      communicator_group,my_STATUS,IERR)
+C
+              IF( IMZERO .eq. 0 ) THEN
+C
+C               recieve block and transfer to file
+                CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,91,
+     &                        communicator_group,my_STATUS,IERR)
+                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+csk             WRITE(6,*) ' S will write this to disk for block',
+csk     &       IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk             CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
+                CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
+     &                                 MPI_REAL8,my_STATUS,IERR)
+C
+              ELSE
+C
+C               mark block as zero block
+                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
+C
+              END IF
+C
+C             keep track of correct offset
+              IOFFSET_SCRATCH = ILEN
+              IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+C
+C           LUCI_MASTER follows...
+C
+            ELSE
+C
+C             read block in core and send to CPU I_NEED_BLK if necessary
+              IMZERO = 0
+              NO_ZEROING = 1
+              CALL IFRMDS(LBL,1,-1,LUIN)
+              IF( LBL .ne. ILEN ) THEN
+                WRITE(LUWRT,*) '  Error in restart routine detected, I
+     & quit'
+                WRITE(LUWRT,*) '  Different blocksizes!!! '
+                CALL Abend2('Error in COP_REST_VEC_REL detected!')
+              END IF
+              CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
+     &                     NO_ZEROING)
+              IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
+                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,90,
+     &                        communicator_group,IERR)
+CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
+CSK     &                        communicator_group,IERR)
+                IF( IMZERO .eq. 0 ) THEN
+                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,91,
+     &                          communicator_group,IERR)
+                END IF
+              ELSE
+C               count active blocks
+                NUM_BLK = NUM_BLK + 1
+C
+                IF( IMZERO .eq. 0 ) THEN
+C
+csk                  WRITE(LUWRT,*) ' M will write this to disk for block',
+csk     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
+C
+                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
+     &                                 MPI_REAL8,my_STATUS,IERR)
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+                ELSE
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
+                END IF 
+C               keep track of correct offset
+                IOFFSET_SCRATCH = ILEN
+                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+C
+              END IF
+C             ^ needs send?
+C
+            END IF
+C           ^ slave or master
+         ELSE
+C          skip zero block on disk
+           IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
+             CALL IFRMDS(LBL,1,-1,LUIN)
+             NO_ZEROING = 1
+             CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
+     &                    NO_ZEROING)
+           END IF
+         END IF
+C        ^ ILEN > 0?
+ 500     CONTINUE
+C
+        END DO
+C       ^ loop over blocks
+C
+C       ..............
+C        COMPLEX PART
+C       ..............
+C
+        IOFFSET_SCRATCH = 0
+        NUM_BLK = 0
+C
+        IF( I_RUN_CPLX .eq. 2 ) THEN
+C
+          IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
+C           skip marker on file 
+            CALL IFRMDS(LBL,1,-1,LUIN)
+C
+          END IF
+C
+          IOFFSET_SCRATCH = 0
+          NUM_BLK = 0
+C
+C         new offset for writing on LUOUT - complex part
+C
+          IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH +
+     &                          ( IVEC - 1 )  * MY_VEC2_IOFF +
+     &                                          MY_VEC1_IOFF
+C
+          IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
+     &                         ( IVEC - 1 ) * MY_ACT_BLK2 + MY_ACT_BLK1
+C
+C         loop over blocks
+C
+          DO IBLK = 1, NBLOCKS
+C
+            ILEN = IBLOCKL( IBLK )
+CSK            WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
+            IF( ILEN .GT. 0 ) THEN
+C
+C             get number of CPU that will recieve the block
+              I_NEED_BLK = par_dist_block_list( IBLK )
+CSK              WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
+C
+              IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
+     &            LUCI_MYPROC .NE. I_NEED_BLK ) 
+     &           GOTO 600
+!
+              IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers
+!
+                NUM_BLK = NUM_BLK + 1
+                IMZERO = 0
+!
+                CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,93,
+     &                        communicator_group,my_STATUS,IERR)
+!
+                IF( IMZERO .eq. 0 ) THEN
+!
+!                 recieve block and transfer to file
+                  CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,94,
+     &                          communicator_group,my_STATUS,IERR)
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
+     &                                   MPI_REAL8,my_STATUS,IERR)
+!
+                ELSE
+!
+!                 mark block as zero block
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
+!
+                END IF
+!
+!               keep track of correct offset
+                IOFFSET_SCRATCH = ILEN
+                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+!
+              ELSE ! LUCI_MASTER
+!
+!               read block in core and send to CPU I_NEED_BLK if necessary
+                IMZERO = 0
+                NO_ZEROING = 1
+                CALL IFRMDS(LBL,1,-1,LUIN)
+                IF( LBL .ne. ILEN ) THEN
+                  WRITE(LUWRT,*) '  Error in COP_REST_VEC_REL:'//
+     &                           ' block sizes do not match! '
+                  call quit('Error in COP_REST_VEC_REL detected!')
+                END IF
+                CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
+     &                       NO_ZEROING)
+                IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
+                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,93,
+     &                          communicator_group,IERR)
+                  IF(IMZERO .eq. 0)THEN
+                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,94,
+     &                            communicator_group,IERR)
+                  END IF
+                ELSE
+!                 count active blocks
+                  NUM_BLK = NUM_BLK + 1
+!
+                  IF( IMZERO .eq. 0 ) THEN
+!
+                    CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
+     &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
+                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+                  ELSE
+                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
+                  END IF 
+!                 keep track of correct offset
+                  IOFFSET_SCRATCH = ILEN
+                  IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+!
+                END IF ! needs send?
+!
+              END IF ! co-worker or master
+           ELSE
+!            skip zero block on disk
+             IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
+               CALL IFRMDS(LBL,1,-1,LUIN)
+               NO_ZEROING = 1
+               CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
+     &                      NO_ZEROING)
+             END IF
+           END IF ! ILEN > 0?
+ 600       CONTINUE
+!
+          END DO ! loop over blocks
+!
+        END IF ! COMPLEX PART NEEDED? 
+!
+        IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
+!         skip end-of-vector marker on file LUIN
+          CALL IFRMDS(LBL,1,-1,LUIN)
+        END IF
+!
+      END DO ! loop over vectors
+!
       END
 ***********************************************************************
 
@@ -729,339 +1019,7 @@ C
       END IF
 C
       END
-***********************************************************************
-
-      SUBROUTINE COP_REST_VEC_REL(VEC1,LUIN,LUOUT,MY_IOFF_LUOUT,
-     &                            LUOUTLIST,NPARBLOCK,IBLOCKL,NBLOCKS,
-     &                            NVEC,I_RUN_CPLX)
-C
-C     Written by  S. Knecht         - June 19 2007
-C
-C**********************************************************************
-C
-C     copy vector from sequential file LUIN to MPI-file LUOUT.
-C     Master sends blocks to Node according to NPARBLOCK.
-C
-C     NOTE: NVEC = NVEC
-C
-C     active blocks on the MPI-file are flagged by a nonzero list entry
-C
-C     Last revision:     S. Knecht       - June  2007
-C
-************************************************************************
-#include "implicit.h"
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION VEC1(*)
-      DIMENSION LUOUTLIST(*), NPARBLOCK(*), IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER NUM_BLK
-C
-C     initialize scratch offsets
-      NUM_BLK           = 0
-      IOFFSET_SCRATCH   = 0
-      IOFFSET_LUOUT     = 0
-      IOFFSET_INT_LUOUT = 0
-C     some constants
-      NNULL = 0
-      IONE  = 1
-C
-      ILEN = 0
-C
-C     loop over vectors
-C
-      DO IVEC = 1, NVEC
-C
-        IOFFSET_SCRATCH = 0
-        NUM_BLK = 0
-C
-C       ================
-C        COMPLEX VECTOR
-C       ================
-C
-C       .................
-C        REAL PART FIRST
-C       .................
-C
-C       set new offset
-C
-C       position in file is at the end of vector IVEC - 1
-C
-C       note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
-C
-        IOFFSET_LUOUT      = MY_IOFF_LUOUT + IOFFSET_SCRATCH +
-     &                       ( IVEC - 1 )  * MY_VEC2_IOFF
-C
-        IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
-     &                       ( IVEC - 1 ) * MY_ACT_BLK2
-C
-C       loop over blocks
-C
-        DO IBLK = 1, NBLOCKS
-C
-          ILEN = IBLOCKL( IBLK )
-csk          WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
-          IF( ILEN .GT. 0 ) THEN
-C
-C           get number of CPU that will recieve the block
-            I_NEED_BLK = NPARBLOCK( IBLK )
-csk            WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
-C
-            IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
-     &          LUCI_MYPROC .NE. I_NEED_BLK ) GOTO 500
-C
-C           slaves first...
-C
-            IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
-C
-              NUM_BLK = NUM_BLK + 1
-              IMZERO = 0
-C
-              CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,90,
-     &                      MPI_COMM_WORLD,my_STATUS,IERR)
-C
-              IF( IMZERO .eq. 0 ) THEN
-C
-C               recieve block and transfer to file
-                CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,91,
-     &                        MPI_COMM_WORLD,my_STATUS,IERR)
-                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-csk                WRITE(6,*) ' S will write this to disk for block',
-csk     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
-                CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,my_STATUS,IERR)
-C
-              ELSE
-C
-C               mark block as zero block
-                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-C
-              END IF
-C
-C             keep track of correct offset
-              IOFFSET_SCRATCH = ILEN
-              IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-C           LUCI_MASTER follows...
-C
-            ELSE
-C
-C             read block in core and send to CPU I_NEED_BLK if necessary
-              IMZERO = 0
-              NO_ZEROING = 1
-              CALL IFRMDS(LBL,1,-1,LUIN)
-              IF( LBL .ne. ILEN ) THEN
-                WRITE(LUWRT,*) '  Error in restart routine detected, I
-     & quit'
-                WRITE(LUWRT,*) '  Different blocksizes!!! '
-                CALL Abend2('Error in COP_REST_VEC_REL detected!')
-              END IF
-              CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
-     &                     NO_ZEROING)
-              IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
-                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,90,
-     &                        MPI_COMM_WORLD,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        MPI_COMM_WORLD,IERR)
-                IF( IMZERO .eq. 0 ) THEN
-                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,91,
-     &                          MPI_COMM_WORLD,IERR)
-                END IF
-              ELSE
-C               count active blocks
-                NUM_BLK = NUM_BLK + 1
-C
-                IF( IMZERO .eq. 0 ) THEN
-C
-csk                  WRITE(LUWRT,*) ' M will write this to disk for block',
-csk     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
-C
-                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,my_STATUS,IERR)
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                ELSE
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-                END IF 
-C               keep track of correct offset
-                IOFFSET_SCRATCH = ILEN
-                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-              END IF
-C             ^ needs send?
-C
-            END IF
-C           ^ slave or master
-         ELSE
-C          skip zero block on disk
-           IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-             CALL IFRMDS(LBL,1,-1,LUIN)
-             NO_ZEROING = 1
-             CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
-     &                    NO_ZEROING)
-           END IF
-         END IF
-C        ^ ILEN > 0?
- 500     CONTINUE
-C
-        END DO
-C       ^ loop over blocks
-C
-C       ..............
-C        COMPLEX PART
-C       ..............
-C
-        IOFFSET_SCRATCH = 0
-        NUM_BLK = 0
-C
-        IF( I_RUN_CPLX .eq. 2 ) THEN
-C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-C           skip marker on file 
-            CALL IFRMDS(LBL,1,-1,LUIN)
-C
-          END IF
-C
-          IOFFSET_SCRATCH = 0
-          NUM_BLK = 0
-C
-C         new offset for writing on LUOUT - complex part
-C
-          IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH +
-     &                          ( IVEC - 1 )  * MY_VEC2_IOFF +
-     &                                          MY_VEC1_IOFF
-C
-          IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
-     &                         ( IVEC - 1 ) * MY_ACT_BLK2 + MY_ACT_BLK1
-C
-C         loop over blocks
-C
-          DO IBLK = 1, NBLOCKS
-C
-            ILEN = IBLOCKL( IBLK )
-CSK            WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
-            IF( ILEN .GT. 0 ) THEN
-C
-C             get number of CPU that will recieve the block
-              I_NEED_BLK = NPARBLOCK( IBLK )
-CSK              WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
-C
-              IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
-     &            LUCI_MYPROC .NE. I_NEED_BLK ) 
-     &           GOTO 600
-C
-C           slaves first...
-C
-              IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
-C
-                NUM_BLK = NUM_BLK + 1
-                IMZERO = 0
-C
-                CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,93,
-     &                        MPI_COMM_WORLD,my_STATUS,IERR)
-C
-                IF( IMZERO .eq. 0 ) THEN
-C
-C                 recieve block and transfer to file
-                  CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,94,
-     &                          MPI_COMM_WORLD,my_STATUS,IERR)
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                   MPI_REAL8,my_STATUS,IERR)
-C
-                ELSE
-C
-C                 mark block as zero block
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-C
-                END IF
-C
-C               keep track of correct offset
-                IOFFSET_SCRATCH = ILEN
-                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-C             LUCI_MASTER follows...
-C
-              ELSE
-C
-C               read block in core and send to CPU I_NEED_BLK if necessary
-                IMZERO = 0
-                NO_ZEROING = 1
-                CALL IFRMDS(LBL,1,-1,LUIN)
-                IF( LBL .ne. ILEN ) THEN
-                  WRITE(LUWRT,*) '  Error in restart routine detected, I
-     & quit'
-                  WRITE(LUWRT,*) '  Different blocksizes!!! '
-                  CALL Abend2('Error in COP_REST_VEC_REL detected!')
-                END IF
-                CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
-     &                       NO_ZEROING)
-                IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
-                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,93,
-     &                          MPI_COMM_WORLD,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        MPI_COMM_WORLD,IERR)
-                  IF( IMZERO .eq. 0 ) THEN
-                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,94,
-     &                            MPI_COMM_WORLD,IERR)
-                  END IF
-                ELSE
-C                 count active blocks
-                  NUM_BLK = NUM_BLK + 1
-C
-                  IF( IMZERO .eq. 0 ) THEN
-C
-                    CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
-     &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
-                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                  ELSE
-                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-                  END IF 
-C                 keep track of correct offset
-                  IOFFSET_SCRATCH = ILEN
-                  IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-                END IF
-C               ^ needs send?
-C
-              END IF
-C             ^ slave or master
-           ELSE
-C            skip zero block on disk
-             IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-               CALL IFRMDS(LBL,1,-1,LUIN)
-               NO_ZEROING = 1
-               CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
-     &                      NO_ZEROING)
-             END IF
-           END IF
-C          ^ ILEN > 0?
- 600       CONTINUE
-C
-          END DO
-C         ^ loop over blocks
-C
-        END IF
-C       ^ COMPLEX PART NEEDED? 
-C
-        IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
-C         skip end-of-vector marker on file LUIN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-        END IF
-C
-      END DO
-C     ^ loop over vectors
-csk      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',LUCI_MYPROC
-csk      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
-C
-      END
-***********************************************************************
+!**********************************************************************
 
       SUBROUTINE H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,
      &                          LUOUTLIST,LUINLIST,
