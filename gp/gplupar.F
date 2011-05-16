@@ -1,50 +1,25 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dalton_copyright_start
+!
+!
+!dalton_copyright_end
+
 #ifdef VAR_MPI
-***********************************************************************
-*
-*============================================================*
-*  Common LUCITA and LUCIAREL routines for parallel purposes *
-*                                                            *
-*   collected by Stefan Knecht, Jan 18 - ???, 2007           *
-*============================================================*
-*
-      SUBROUTINE COPVCD_PAR_BDRIV_REL(LUIN,LUOUT,SEGMNT,
-     &                                par_dist_block_list,NBLOCK,
-     &                                block_list,JCOMM,LBLK,IROOT,
-     &                                LUINLIST,MY_IOFF_LUIN,I_RUN_CPLX)
+!**********************************************************************
+!
+!============================================================*
+!  Common LUCITA and LUCIAREL routines for parallel purposes *
+!                                                            *
+!   collected by Stefan Knecht, Jan 18 - ???, 2007           *
+!============================================================*
+!
+      subroutine copy_vector_mpi_2_sequential_io(luin,luout,vec1,
+     &                                           my_ioff_luin,
+     &                                           luinlist,
+     &                                           par_dist_block_list,
+     &                                           block_list,
+     &                                           communicator_group,
+     &                                           nblock,nvec,
+     &                                           i_run_cplx)
 C
 C     Written by  S. Knecht         - June 11 2007
 C
@@ -52,7 +27,7 @@ C**********************************************************************
 C
 C     copy vector from MPI file LUIN to 'normal file' LUOUT blockwise
 C
-C     NOTE: IROOT = IROOT
+C     NOTE: nvec = nvec
 C
 C     active blocks on the MPI-files are flagged by a nonzero list entry
 C
@@ -65,13 +40,21 @@ C
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION SEGMNT(*) 
-      integer, intent(in) :: par_dist_block_list(nblock), block_list(*)
-      DIMENSION LUINLIST(*)
+      real(8), intent(inout) :: vec1(*) 
+      integer, intent(in)    :: nblock, nvec, i_run_cplx
+      integer, intent(in)    :: par_dist_block_list(nblock)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: communicator_group
+      integer, intent(in)    :: luin, luout
+      integer, intent(in)    :: luinlist(*)
+      INTEGER(KIND=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUIN
+!-------------------------------------------------------------------------------
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
+      integer sender_id
+!-------------------------------------------------------------------------------
 C
 C     initialize scratch offsets
       NUM_BLK           = 0
@@ -80,7 +63,7 @@ C     initialize scratch offsets
       IOFFSET_INT_IN    = 0
 C
 C     initialize co-worker tag 
-      MYNSLV = 0
+      sender_id = 0
 C
 #ifdef LUCI_DEBUG
       print *, 'I_RUN_CPLX',I_RUN_CPLX
@@ -102,14 +85,14 @@ C     ...............
 C
 C     set new offset
 C
-C     position in file is at the end of vector IROOT - 1
+C     position in file is at the end of vector nvec - 1
 C
 C     note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
 C
       IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                 ( IROOT - 1 )   * MY_VEC2_IOFF
+     &                 ( nvec - 1 )   * MY_VEC2_IOFF
       IOFFSET_INT_IN   = 1 + NUM_BLK  +
-     &                 ( IROOT - 1 )   * MY_ACT_BLK2
+     &                 ( nvec - 1 )   * MY_ACT_BLK2
 C
       DO II = 1, NBLOCK ! loop over vector blocks
 
@@ -122,12 +105,12 @@ C
 
         ELSE ! LUCI_MASTER
 
-!         recieve block from co-worker MYNSLV
-          MYNSLV = par_dist_block_list(II)
+!         receive block from co-worker sender_id
+          sender_id = par_dist_block_list(II)
 
-          if(abs(MYNSLV) .gt. 0)then
+          if(abs(sender_id) .gt. 0)then
 
-            if(mynslv .eq. -2)then
+            if(sender_id .eq. -2)then
 !             block has zero length
               CALL ITODS(0,1,-1,LUOUT)
               IMZERO  = 1
@@ -147,17 +130,17 @@ C
             IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
 C
 C             read block in
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
      &                              MPI_REAL8,my_STATUS,IERR)
 #ifdef LUCI_DEBUG
               print *,'master - read-in: my vector piece'
-              call wrtmatmn(SEGMNT,1,lbl,1,lbl,luwrt)
+              call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
 #endif
               IMZERO = 0
             END IF
 C
             IF(IMZERO.EQ.0) THEN
-               CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+               CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
             ELSE
                CALL ZERORC(LBL,LUOUT,0)
             END IF
@@ -166,7 +149,7 @@ C
             NUM_BLK         = 1
 C
             GOTO 500
-          END IF ! abs(MYNSLV) > 0?
+          END IF ! abs(sender_id) > 0?
 
         END IF ! co-worker / master switch
  
@@ -180,17 +163,17 @@ C
           ISENDTOM = LUINLIST(IOFFSET_INT_IN)
 C
           CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
-     &                  JCOMM,IERR)
+     &                  communicator_group,IERR)
 C
           IF(ISENDTOM .gt. 0)THEN
 C
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
+            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
      &                            MPI_REAL8,my_STATUS,IERR)
-            CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
-     &                    JCOMM,IERR)
+            CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,91,
+     &                    communicator_group,IERR)
 #ifdef LUCI_DEBUG
                print *,'co-worker - read-in: my vector piece'
-               call wrtmatmn(SEGMNT,1,lbl,1,lbl,luwrt)
+               call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
 #endif
 C
           END IF
@@ -202,18 +185,18 @@ C
           CALL ITODS(LBL,1,-1,LUOUT)
 
           ISENDTOM = 0
-          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,90,
-     &                  JCOMM,my_STATUS,IERR)
+          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,90,
+     &                  communicator_group,my_STATUS,IERR)
 C
           IF(ISENDTOM .gt. 0)THEN
 C
-            CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                     JCOMM,my_STATUS,IERR)
+            CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,91,
+     &                     communicator_group,my_STATUS,IERR)
 #ifdef LUCI_DEBUG
             print *,'master- recieve: my vector piece'
-            call wrtmatmn(SEGMNT,1,lbl,1,lbl,luwrt)
+            call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
 #endif
-            CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+            CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
           ELSE
             CALL ZERORC(LBL,LUOUT,0)
           END IF
@@ -246,15 +229,15 @@ C
 C
 C       set new offset
 C
-C       position in file is at the end of vector IROOT - 1
+C       position in file is at the end of vector nvec - 1
 C
 C       note: complex part: --> MY_VEC1_IOFF and MY_ACT_BLK1
 C
         IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                   ( IROOT - 1 )  * MY_VEC2_IOFF    +
+     &                   ( nvec - 1 )  * MY_VEC2_IOFF    +
      &                                    MY_VEC1_IOFF
         IOFFSET_INT_IN   = 1 + NUM_BLK  +
-     &                   ( IROOT - 1 )  * MY_ACT_BLK2 + MY_ACT_BLK1
+     &                   ( nvec - 1 )  * MY_ACT_BLK2 + MY_ACT_BLK1
 C
 C LOOP OVER BLOCKS
 C
@@ -293,9 +276,9 @@ C
                GOTO 600
              ELSE IF( par_dist_block_list(II) .gt. 0 )THEN
 C
-C              recieve block from node MYNSLV
+C              recieve block from node sender_id
 C
-               MYNSLV = par_dist_block_list(II) 
+               sender_id = par_dist_block_list(II) 
                GOTO 102 
              END IF
            ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
@@ -309,7 +292,7 @@ C
              IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
 C
 C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
+               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
      &                               MPI_REAL8,my_STATUS,IERR)
                IMZERO = 0
              ELSE
@@ -317,7 +300,7 @@ C             read block in
              END IF
 C
              IF( IMZERO .eq. 0 ) THEN
-                call todsc_luci(SEGMNT,LBL,-1,LUOUT)
+                call todsc_luci(vec1,LBL,-1,LUOUT)
              ELSE
                 CALL ZERORC(LBL,LUOUT,0)
              END IF
@@ -350,14 +333,14 @@ C
             ISENDTOM = LUINLIST( IOFFSET_INT_IN )
 C
             CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,93,
-     &                    JCOMM,IERR)
+     &                    communicator_group,IERR)
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
      &                              MPI_REAL8,my_STATUS,IERR)
-              CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,94,
-     &                      JCOMM,IERR)
+              CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,94,
+     &                      communicator_group,IERR)
 C
             END IF
             IOFFSET_SCRATCH = LBL
@@ -369,14 +352,14 @@ C
 C
             ISENDTOM = 0
 C
-            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,93,
-     &                    JCOMM,my_STATUS,IERR)
+            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,93,
+     &                    communicator_group,my_STATUS,IERR)
 C
             IF( ISENDTOM .gt. 0 ) THEN
 C
-              CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
-     &                       JCOMM,my_STATUS,IERR)
-              CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+              CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,94,
+     &                       communicator_group,my_STATUS,IERR)
+              CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
             ELSE
               CALL ZERORC(LBL,LUOUT,0)
             END IF
@@ -402,10 +385,14 @@ C
       END
 !**********************************************************************
 
-      SUBROUTINE COP_REST_VEC_REL(LUIN,LUOUT,VEC1,MY_IOFF_LUOUT,
-     &                            LUOUTLIST,par_dist_block_list,
-     &                            block_list,communicator_group,nblocks,
-     &                            NVEC,I_RUN_CPLX)
+      subroutine copy_vector_sequential_2_mpi_io(LUIN,LUOUT,VEC1,
+     &                                           MY_IOFF_LUOUT,
+     &                                           LUOUTLIST,
+     &                                           par_dist_block_list,
+     &                                           block_list,
+     &                                           communicator_group,
+     &                                           nblocks,NVEC,
+     &                                           I_RUN_CPLX)
 C
 C     Written by  S. Knecht         - June 19 2007
 C
@@ -438,18 +425,20 @@ C
 !------------------------------------------------------------------------------
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER NUM_BLK
+      INTEGER                :: NUM_BLK     = 0 
+      integer                :: receiver_id = 0
+      integer                :: ilen        = 0
+      integer, parameter     :: no_zeroing  = 1
+!------------------------------------------------------------------------------
+
 C
 C     initialize scratch offsets
-      NUM_BLK           = 0
       IOFFSET_SCRATCH   = 0
       IOFFSET_LUOUT     = 0
       IOFFSET_INT_LUOUT = 0
-C
-      ILEN = 0
+ 
 C
 C     loop over vectors
-C
       DO IVEC = 1, NVEC
 C
         IOFFSET_SCRATCH = 0
@@ -480,111 +469,90 @@ C
         DO IBLK = 1, NBLOCKS
 C
           ILEN = block_list(IBLK)
+
           IF(ILEN .GT. 0)THEN
 C
-C           get number of CPU that will recieve the block
-            I_NEED_BLK = par_dist_block_list( IBLK )
+C           get CPU id that will receive the block
+            receiver_id = par_dist_block_list(IBLK)
 C
-            IF(LUCI_MYPROC .ne. LUCI_MASTER .AND.
-     &         LUCI_MYPROC .ne. I_NEED_BLK) GOTO 500
+            IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-worker part...
 C
-C           slaves first...
-C
-            IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
-C
-              NUM_BLK = NUM_BLK + 1
-              IMZERO = 0
-C
+              if(LUCI_MYPROC .ne. receiver_id) GOTO 500
+
+              NUM_BLK                                    = NUM_BLK + 1
+              LUOUTLIST(IOFFSET_INT_LUOUT + NUM_BLK - 1) = 0
+              IMZERO                                     = 0
+
               CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,90,
      &                      communicator_group,my_STATUS,IERR)
-C
-              IF( IMZERO .eq. 0 ) THEN
-C
+
+              IF(IMZERO .eq. 0)THEN
 C               recieve block and transfer to file
                 CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,91,
      &                        communicator_group,my_STATUS,IERR)
-                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
 csk             WRITE(6,*) ' S will write this to disk for block',
 csk     &       IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
 csk             CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
                 CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,my_STATUS,IERR)
-C
-              ELSE
-C
-C               mark block as zero block
-                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
-C
+
+                LUOUTLIST(IOFFSET_INT_LUOUT + NUM_BLK - 1) = 1
               END IF
 C
 C             keep track of correct offset
               IOFFSET_SCRATCH = ILEN
-              IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+              IOFFSET_LUOUT   = IOFFSET_LUOUT + IOFFSET_SCRATCH
+
+            ELSE ! LUCI_MASTER part...
 C
-C           LUCI_MASTER follows...
-C
-            ELSE
-C
-C             read block in core and send to CPU I_NEED_BLK if necessary
+C             read block in core and send to CPU receiver_id if necessary
               IMZERO = 0
-              NO_ZEROING = 1
               CALL IFRMDS(LBL,1,-1,LUIN)
-              IF( LBL .ne. ILEN ) THEN
-                WRITE(LUWRT,*) '  Error in restart routine detected, I
-     & quit'
-                WRITE(LUWRT,*) '  Different blocksizes!!! '
-                CALL Abend2('Error in COP_REST_VEC_REL detected!')
+              IF(LBL .ne. ILEN)THEN
+                WRITE(LUWRT,*) ' Error in COP_REST_VEC_REL:'//
+     &                         ' block sizes do not match. '
+                call quit('Error in COP_REST_VEC_REL detected!')
               END IF
-              CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
-     &                     NO_ZEROING)
-              IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
-                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,90,
+              CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,NO_ZEROING)
+
+              IF(LUCI_MYPROC .ne. receiver_id)THEN ! co-workers block
+                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,receiver_id,90,
      &                        communicator_group,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        communicator_group,IERR)
-                IF( IMZERO .eq. 0 ) THEN
-                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,91,
+                IF(IMZERO .eq. 0)THEN
+                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,receiver_id,91,
      &                          communicator_group,IERR)
                 END IF
-              ELSE
+              ELSE ! master block
+
 C               count active blocks
-                NUM_BLK = NUM_BLK + 1
+                NUM_BLK                                    = NUM_BLK + 1
+                LUOUTLIST(IOFFSET_INT_LUOUT + NUM_BLK - 1) = 0
 C
-                IF( IMZERO .eq. 0 ) THEN
-C
-csk                  WRITE(LUWRT,*) ' M will write this to disk for block',
-csk     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
-C
+                IF(IMZERO .eq. 0)THEN
+csk               WRITE(LUWRT,*) ' M will write this to disk for block',
+csk  &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
                   CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,my_STATUS,IERR)
                   LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
-                ELSE
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
                 END IF 
-C               keep track of correct offset
+
+!               keep track of correct offset
                 IOFFSET_SCRATCH = ILEN
-                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-              END IF
-C             ^ needs send?
-C
+                IOFFSET_LUOUT   = IOFFSET_LUOUT + IOFFSET_SCRATCH
+              END IF ! send id /= master?
+            END IF ! co-workers / master switch
+          ELSE
+C           skip zero block on disk
+            IF(LUCI_MYPROC .EQ. LUCI_MASTER)THEN
+              CALL IFRMDS(LBL,1,-1,LUIN)
+              CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,NO_ZEROING)
             END IF
-C           ^ slave or master
-         ELSE
-C          skip zero block on disk
-           IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-             CALL IFRMDS(LBL,1,-1,LUIN)
-             NO_ZEROING = 1
-             CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
-     &                    NO_ZEROING)
-           END IF
-         END IF
-C        ^ ILEN > 0?
+          END IF ! length of block > 0
+
  500     CONTINUE
 C
-        END DO
-C       ^ loop over blocks
+        END DO ! loop over vector blocks
 C
 C       ..............
 C        COMPLEX PART
@@ -622,11 +590,11 @@ CSK            WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
             IF( ILEN .GT. 0 ) THEN
 C
 C             get number of CPU that will recieve the block
-              I_NEED_BLK = par_dist_block_list( IBLK )
-CSK              WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
+              receiver_id = par_dist_block_list( IBLK )
+CSK              WRITE(LUWRT,*) ' receiver_id of IBLK',receiver_id,IBLK
 C
               IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
-     &            LUCI_MYPROC .NE. I_NEED_BLK ) 
+     &            LUCI_MYPROC .NE. receiver_id ) 
      &           GOTO 600
 !
               IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers
@@ -659,7 +627,7 @@ C
 !
               ELSE ! LUCI_MASTER
 !
-!               read block in core and send to CPU I_NEED_BLK if necessary
+!               read block in core and send to CPU receiver_id if necessary
                 IMZERO = 0
                 NO_ZEROING = 1
                 CALL IFRMDS(LBL,1,-1,LUIN)
@@ -670,11 +638,11 @@ C
                 END IF
                 CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
      &                       NO_ZEROING)
-                IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
-                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,93,
+                IF( LUCI_MYPROC .ne. receiver_id )THEN
+                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,receiver_id,93,
      &                          communicator_group,IERR)
                   IF(IMZERO .eq. 0)THEN
-                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,94,
+                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,receiver_id,94,
      &                            communicator_group,IERR)
                   END IF
                 ELSE
@@ -4444,7 +4412,7 @@ CSK        DATATYPE = MPI_REAL8
         DATATYPE  =  MPI_CHARACTER 
       ELSE
         WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
-        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
+        CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
       IF(NTARGET.GE.0)THEN
@@ -4488,7 +4456,7 @@ CSK        DATATYPE = MPI_REAL8
         DATATYPE  =  MPI_CHARACTER 
       ELSE
         WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
-        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
+        CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
       IF(NTARGET.GE.0)THEN

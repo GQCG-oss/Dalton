@@ -647,10 +647,12 @@ C
      &   ' to MPIs file-i/o format ...'
 C
          IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,-1)
-         CALL COP_REST_VEC_REL(LUC,ILU1,WORK(KVEC1),MY_LU1_OFF,
-     &                         WORK(KILU1LIST),
-     &                         par_dist_block_list,block_list,
-     &                         MPI_COMM_WORLD,NBLOCK,NROOT,IRC_SAVE)
+         call copy_vector_sequential_2_mpi_io(LUC,ILU1,WORK(KVEC1),
+     &                                        MY_LU1_OFF,
+     &                                        WORK(KILU1LIST),
+     &                                        par_dist_block_list,
+     &                                        block_list,MPI_COMM_WORLD,
+     &                                        NBLOCK,NROOT,IRC_SAVE)
         WRITE(LUWRT,'(1X,A)') ' ... done! '
       END IF
 C
@@ -707,11 +709,11 @@ C
       CALL REWINE(LUC,-1)
       DO JROOT = 1, NROOT
         CALL REWINE(LUSC41,-1)
-        CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
-     &                            par_dist_block_list,NUM_BLOCKS2,
-     &                            block_list,
-     &                            MPI_COMM_WORLD,-1,JROOT,
-     &                            WORK(KILU1LIST),MY_LU1_OFF,1)
+        call copy_vector_mpi_2_sequential_io(ILU1,LUSC41,WORK(KVEC1),
+     &                                       MY_LU1_OFF,WORK(KILU1LIST),
+     &                                       par_dist_block_list,
+     &                                       block_list,MPI_COMM_WORLD,
+     &                                       NUM_BLOCKS2,JROOT,1)
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
           CALL REWINE(LUSC41,-1)
           CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,-1)

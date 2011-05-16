@@ -1659,9 +1659,11 @@ C       copy c-vectors from nodes and master back to the master
         CALL REWINE(61,-1)
         DO JXROOT = 1, NROOT
           CALL REWINE(97,-1)
-          CALL COPVCD_PAR_BDRIV_REL(ILU1,97,VEC1,NBLOCKDN,NUM_BLOCKS2,
-     &                              IBLOCKL,MPI_COMM_WORLD,-1,JXROOT,
-     &                              LU1LIST,MY_LU1_OFF,1)
+          call copy_vector_mpi_2_sequential_io(ILU1,97,VEC1,
+     &                                         MY_LU1_OFF,LU1LIST,
+     &                                         NBLOCKDN,IBLOCKL,
+     &                                         MPI_COMM_WORLD,
+     &                                         NUM_BLOCKS2,JXROOT,1)
           if(luci_myproc .eq. luci_master)then
              CALL REWINE(97,-1)
              CALL COPVCD(97,61,VEC1,0,-1)
