@@ -707,18 +707,11 @@ C
 C     NOTE: only C-vectors will be saved.
 C
       CALL REWINE(LUC,-1)
-      DO JROOT = 1, NROOT
-        CALL REWINE(LUSC41,-1)
-        call copy_vector_mpi_2_sequential_io(ILU1,LUSC41,WORK(KVEC1),
-     &                                       MY_LU1_OFF,WORK(KILU1LIST),
-     &                                       par_dist_block_list,
-     &                                       block_list,MPI_COMM_WORLD,
-     &                                       NUM_BLOCKS2,JROOT,1)
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-          CALL REWINE(LUSC41,-1)
-          CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,-1)
-        END IF
-      END DO
+      call copy_vector_mpi_2_sequential_io(ILU1,LUSC41,WORK(KVEC1),
+     &                                     MY_LU1_OFF,WORK(KILU1LIST),
+     &                                     par_dist_block_list,
+     &                                     block_list,MPI_COMM_WORLD,
+     &                                     NUM_BLOCKS2,NROOT,1)
       CALL REWINE(LUC,-1)
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
@@ -733,7 +726,6 @@ C
       NPTESTVAR = 00
 C
  505    CONTINUE
-      close(unit=LUSC41,status='DELETE')
 *
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
@@ -886,6 +878,7 @@ C     -----------------------
       close(unit=LUSC38,status='DELETE')
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
+      close(unit=LUSC41,status='DELETE')
 C
       END
 ***********************************************************************

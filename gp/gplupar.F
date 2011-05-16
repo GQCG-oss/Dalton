@@ -53,6 +53,7 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
       integer sender_id
+      integer ivec
 !-------------------------------------------------------------------------------
 C
 C     initialize scratch offsets
@@ -77,309 +78,315 @@ C
 C     ================
 C      COMPLEX VECTOR
 C     ================
-C
-C     ...............
-C     REAL PART FIRST 
-C     ...............
-C
-C     set new offset
-C
-C     position in file is at the end of vector nvec - 1
-C
-C     note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
-C
-      IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                 ( nvec - 1 )   * MY_VEC2_IOFF
-      IOFFSET_INT_IN   = 1 + NUM_BLK  +
-     &                 ( nvec - 1 )   * MY_ACT_BLK2
-C
-      DO II = 1, NBLOCK ! loop over vector blocks
 
+C     loop over vectors
+      DO IVEC = 1, NVEC
+C
         IOFFSET_SCRATCH = 0
         NUM_BLK         = 0
-
-        IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers first ...
-
-          IF(par_dist_block_list(II) .ne. LUCI_MYPROC) GOTO 500
-
-        ELSE ! LUCI_MASTER
-
-!         receive block from co-worker sender_id
-          sender_id = par_dist_block_list(II)
-
-          if(abs(sender_id) .gt. 0)then
-
-            if(sender_id .eq. -2)then
-!             block has zero length
-              CALL ITODS(0,1,-1,LUOUT)
-              IMZERO  = 1
-              IAMPACK = 0
-              CALL ZERORC(0,LUOUT,IAMPACK)
-              GOTO 500
-            end if
-
-          else
- 
-!           LUCI_MASTER block
-!           -----------------
-            LBL = block_list(II)
-   
-            CALL ITODS(LBL,1,-1,LUOUT)
-            IMZERO = 1
-            IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
 C
-C             read block in
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
-     &                              MPI_REAL8,my_STATUS,IERR)
-#ifdef LUCI_DEBUG
-              print *,'master - read-in: my vector piece'
-              call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
-#endif
-              IMZERO = 0
-            END IF
-C
-            IF(IMZERO.EQ.0) THEN
-               CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
-            ELSE
-               CALL ZERORC(LBL,LUOUT,0)
-            END IF
-C
-            IOFFSET_SCRATCH = LBL
-            NUM_BLK         = 1
-C
-            GOTO 500
-          END IF ! abs(sender_id) > 0?
-
-        END IF ! co-worker / master switch
- 
-!       co-worker block
-!       ---------------
-        LBL = block_list(II)
- 
-        if(luci_myproc .ne. luci_master)then
-C
-          ISENDTOM = 0
-          ISENDTOM = LUINLIST(IOFFSET_INT_IN)
-C
-          CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
-     &                  communicator_group,IERR)
-C
-          IF(ISENDTOM .gt. 0)THEN
-C
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
-     &                            MPI_REAL8,my_STATUS,IERR)
-            CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,91,
-     &                    communicator_group,IERR)
-#ifdef LUCI_DEBUG
-               print *,'co-worker - read-in: my vector piece'
-               call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
-#endif
-C
-          END IF
-          IOFFSET_SCRATCH = LBL
-          NUM_BLK         = 1
-
-        else ! LUCI_MASTER
- 
-          CALL ITODS(LBL,1,-1,LUOUT)
-
-          ISENDTOM = 0
-          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,90,
-     &                  communicator_group,my_STATUS,IERR)
-C
-          IF(ISENDTOM .gt. 0)THEN
-C
-            CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,91,
-     &                     communicator_group,my_STATUS,IERR)
-#ifdef LUCI_DEBUG
-            print *,'master- recieve: my vector piece'
-            call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
-#endif
-            CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
-          ELSE
-            CALL ZERORC(LBL,LUOUT,0)
-          END IF
-          IOFFSET_SCRATCH = 0
-          NUM_BLK         = 0
-
-        end if ! co-worker / master switch
-
- 500    CONTINUE
-        
-!       keep track of correct offset
-        IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
-        IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
-
-      end do ! loop over vector blocks
-C
-      IF(LUCI_MYPROC. eq. LUCI_MASTER)THEN
-C       write an EOF-mark
-        CALL ITODS(-1,1,-1,LUOUT)
-      ENDIF
-C
-C     ..............
-C        IMAG PART 
-C     ..............
-C
-      IOFFSET_SCRATCH = 0
-      NUM_BLK         = 0
-C
-      IF(I_RUN_CPLX .eq. 2)THEN
+C       ...............
+C       REAL PART FIRST 
+C       ...............
 C
 C       set new offset
 C
 C       position in file is at the end of vector nvec - 1
 C
-C       note: complex part: --> MY_VEC1_IOFF and MY_ACT_BLK1
+C       note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
 C
         IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                   ( nvec - 1 )  * MY_VEC2_IOFF    +
-     &                                    MY_VEC1_IOFF
+     &                   ( ivec - 1 )   * MY_VEC2_IOFF
         IOFFSET_INT_IN   = 1 + NUM_BLK  +
-     &                   ( nvec - 1 )  * MY_ACT_BLK2 + MY_ACT_BLK1
+     &                   ( ivec - 1 )   * MY_ACT_BLK2
 C
-C LOOP OVER BLOCKS
+        DO II = 1, NBLOCK ! loop over vector blocks
+
+          IOFFSET_SCRATCH = 0
+          NUM_BLK         = 0
+
+          IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers first ...
+
+            IF(par_dist_block_list(II) .ne. LUCI_MYPROC) GOTO 500
+
+          ELSE ! LUCI_MASTER
+
+!           receive block from co-worker sender_id
+            sender_id = par_dist_block_list(II)
+
+            if(abs(sender_id) .gt. 0)then
+
+              if(sender_id .eq. -2)then
+!               block has zero length
+                CALL ITODS(0,1,-1,LUOUT)
+                IMZERO  = 1
+                IAMPACK = 0
+                CALL ZERORC(0,LUOUT,IAMPACK)
+                GOTO 500
+              end if
+
+            else
+ 
+!             LUCI_MASTER block
+!             -----------------
+              LBL = block_list(II)
+   
+              CALL ITODS(LBL,1,-1,LUOUT)
+              IMZERO = 1
+              IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
 C
-       DO 601 II = 1, NBLOCK 
+C               read block in
+                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                                MPI_REAL8,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+                print *,'master - read-in: my vector piece'
+                call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
+                IMZERO = 0
+              END IF
 C
-C         slaves first ...
+              IF(IMZERO.EQ.0) THEN
+                 CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
+              ELSE
+                 CALL ZERORC(LBL,LUOUT,0)
+              END IF
 C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN 
+              IOFFSET_SCRATCH = LBL
+              NUM_BLK         = 1
 C
-             IOFFSET_SCRATCH = 0
-             NUM_BLK = 0
-C
-             GOTO 600
-           ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
-             GOTO 102
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN
-             IF(par_dist_block_list(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IMZERO = 1
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
-C
-               IOFFSET_SCRATCH = 0
-               NUM_BLK = 0
-C
-               GOTO 600
-             ELSE IF( par_dist_block_list(II) .gt. 0 )THEN
-C
-C              recieve block from node sender_id
-C
-               sender_id = par_dist_block_list(II) 
-               GOTO 102 
-             END IF
-           ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
-C
-C            LUCI_MASTER block
-C
-             LBL = block_list(II)
-C  
-             CALL ITODS(LBL,1,-1,LUOUT)
-C
-             IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
-C
-C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
-     &                               MPI_REAL8,my_STATUS,IERR)
-               IMZERO = 0
-             ELSE
-               IMZERO = 1
-             END IF
-C
-             IF( IMZERO .eq. 0 ) THEN
-                call todsc_luci(vec1,LBL,-1,LUOUT)
-             ELSE
-                CALL ZERORC(LBL,LUOUT,0)
-             END IF
-C
-             NUM_BLK = 1
-             IOFFSET_SCRATCH = LBL
-C
-             GOTO 600
-           END IF
-*          ^par_dist_block_list eq 0 or ne 0
-          END IF
-C
-C     ... continue
-C
- 102      CONTINUE
-C
-C         slave block
-C
+              GOTO 500
+            END IF ! abs(sender_id) > 0?
+
+          END IF ! co-worker / master switch
+ 
+!         co-worker block
+!         ---------------
           LBL = block_list(II)
-C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
-C
-             CALL ITODS(LBL,1,-1,LUOUT)
-C  
-          END IF
-C
-          IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
+ 
+          if(luci_myproc .ne. luci_master)then
 C
             ISENDTOM = 0
-            ISENDTOM = LUINLIST( IOFFSET_INT_IN )
+            ISENDTOM = LUINLIST(IOFFSET_INT_IN)
 C
-            CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,93,
+            CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
      &                    communicator_group,IERR)
 C
-            IF( ISENDTOM .gt. 0 ) THEN
+            IF(ISENDTOM .gt. 0)THEN
 C
               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
      &                              MPI_REAL8,my_STATUS,IERR)
-              CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,94,
+              CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,91,
      &                      communicator_group,IERR)
+#ifdef LUCI_DEBUG
+                 print *,'co-worker - read-in: my vector piece'
+                 call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
 C
             END IF
             IOFFSET_SCRATCH = LBL
-            NUM_BLK = 1
-          END IF
-C
-C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
-C
+            NUM_BLK         = 1
+
+          else ! LUCI_MASTER
+ 
+            CALL ITODS(LBL,1,-1,LUOUT)
+
             ISENDTOM = 0
-C
-            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,93,
+            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,90,
      &                    communicator_group,my_STATUS,IERR)
 C
-            IF( ISENDTOM .gt. 0 ) THEN
+            IF(ISENDTOM .gt. 0)THEN
 C
-              CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,94,
+              CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,91,
      &                       communicator_group,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+              print *,'master- recieve: my vector piece'
+              call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
               CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
             ELSE
               CALL ZERORC(LBL,LUOUT,0)
             END IF
             IOFFSET_SCRATCH = 0
-            NUM_BLK = 0
-          END IF
-C
- 600      CONTINUE
-C       
-C         keep track of correct offset
+            NUM_BLK         = 0
+
+          end if ! co-worker / master switch
+
+ 500      CONTINUE
+        
+!         keep track of correct offset
           IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
           IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
- 601    CONTINUE
+
+        end do ! loop over vector blocks
 C
-        IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
+        IF(LUCI_MYPROC. eq. LUCI_MASTER)THEN
 C         write an EOF-mark
           CALL ITODS(-1,1,-1,LUOUT)
         ENDIF
 C
-      END IF
-C     ^ COMPLEX PART NEEDED?
+C       ..............
+C          IMAG PART 
+C       ..............
+C
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
+C
+        IF(I_RUN_CPLX .eq. 2)THEN
+C
+C         set new offset
+C
+C         position in file is at the end of vector ivec - 1
+C
+C         note: complex part: --> MY_VEC1_IOFF and MY_ACT_BLK1
+C
+          IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
+     &                     ( ivec - 1 )   * MY_VEC2_IOFF    +
+     &                                      MY_VEC1_IOFF
+          IOFFSET_INT_IN   = 1 + NUM_BLK  +
+     &                     ( ivec - 1 )   * MY_ACT_BLK2 + MY_ACT_BLK1
+C
+C LOOP OVER BLOCKS
+C
+         DO 601 II = 1, NBLOCK 
+C
+C           slaves first ...
+C
+           IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
+             IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN 
+C
+               IOFFSET_SCRATCH = 0
+               NUM_BLK         = 0
+C
+               GOTO 600
+             ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
+               GOTO 102
+             ENDIF
+C
+C          LUCI_MASTER follows ...
+C
+           ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
+             IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN
+               IF(par_dist_block_list(II) .eq. -2 )THEN
+C
+C                block has zero length
+C
+                 LBL = 0
+                 CALL ITODS(LBL,1,-1,LUOUT)
+                 IMZERO = 1
+                 IAMPACK = 0
+                 CALL ZERORC(LBL,LUOUT,IAMPACK)
+C
+                 IOFFSET_SCRATCH = 0
+                 NUM_BLK = 0
+C
+                 GOTO 600
+               ELSE IF( par_dist_block_list(II) .gt. 0 )THEN
+C
+C                recieve block from node sender_id
+C
+                 sender_id = par_dist_block_list(II) 
+                 GOTO 102 
+               END IF
+             ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
+C
+C              LUCI_MASTER block
+C
+               LBL = block_list(II)
+C  
+               CALL ITODS(LBL,1,-1,LUOUT)
+C
+               IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
+C
+C                read block in
+                 CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                                 MPI_REAL8,my_STATUS,IERR)
+                 IMZERO = 0
+               ELSE
+                 IMZERO = 1
+               END IF
+C
+               IF(IMZERO .eq. 0)THEN
+                 call todsc_luci(vec1,LBL,-1,LUOUT)
+               ELSE
+                 CALL ZERORC(LBL,LUOUT,0)
+               END IF
+C
+               NUM_BLK = 1
+               IOFFSET_SCRATCH = LBL
+C
+               GOTO 600
+             END IF ! par_dist_block_list eq 0 or ne 0
+           END IF
+C
+C       ... continue
+C
+ 102        CONTINUE
+C
+C           slave block
+C
+            LBL = block_list(II)
+C
+            IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
+C
+               CALL ITODS(LBL,1,-1,LUOUT)
+C  
+            END IF
+C
+            IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
+C
+              ISENDTOM = 0
+              ISENDTOM = LUINLIST( IOFFSET_INT_IN )
+C
+              CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,93,
+     &                      communicator_group,IERR)
+C
+              IF( ISENDTOM .gt. 0 ) THEN
+C
+                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                                MPI_REAL8,my_STATUS,IERR)
+                CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,94,
+     &                        communicator_group,IERR)
+C
+              END IF
+              IOFFSET_SCRATCH = LBL
+              NUM_BLK = 1
+            END IF
+C
+C
+            IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
+C
+              ISENDTOM = 0
+C
+              CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,93,
+     &                      communicator_group,my_STATUS,IERR)
+C
+              IF(ISENDTOM .gt. 0)THEN
+C
+                CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,94,
+     &                        communicator_group,my_STATUS,IERR)
+                CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
+              ELSE
+                CALL ZERORC(LBL,LUOUT,0)
+              END IF
+              IOFFSET_SCRATCH = 0
+              NUM_BLK         = 0
+            END IF
+C
+ 600        CONTINUE
+C       
+C           keep track of correct offset
+            IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
+            IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
+ 601      CONTINUE
+C
+          IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
+C           write an EOF-mark
+            CALL ITODS(-1,1,-1,LUOUT)
+          ENDIF
+C
+        END IF ! COMPLEX PART
+
+      END DO ! loop over vectors
 C
       END
 !**********************************************************************
