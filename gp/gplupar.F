@@ -49,7 +49,6 @@ C
       integer, intent(in)    :: luinlist(*)
       INTEGER(KIND=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUIN
 !-------------------------------------------------------------------------------
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
@@ -629,7 +628,6 @@ C
 !
 !               read block in core and send to CPU receiver_id if necessary
                 IMZERO = 0
-                NO_ZEROING = 1
                 CALL IFRMDS(LBL,1,-1,LUIN)
                 IF( LBL .ne. ILEN ) THEN
                   WRITE(LUWRT,*) '  Error in COP_REST_VEC_REL:'//
@@ -668,7 +666,6 @@ C
 !            skip zero block on disk
              IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
                CALL IFRMDS(LBL,1,-1,LUIN)
-               NO_ZEROING = 1
                CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
      &                      NO_ZEROING)
              END IF
