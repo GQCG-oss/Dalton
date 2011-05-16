@@ -1093,22 +1093,22 @@ C
             MAGSUS = .TRUE.
             MOLGFA = .TRUE.
          GO TO 100
-  120    CONTINUE
+  120    CONTINUE !        .SPIN-S
             SPNSPN = .TRUE.
          GO TO 100
-  121    CONTINUE
+  121    CONTINUE !        .NMR
             SPNSPN = .TRUE.
             SHIELD = .TRUE.
          GO TO 100
-  122    CONTINUE
+  122    CONTINUE !        .NACME
             NACME  = .TRUE.
             MOLGRD = .TRUE.
             MOLHES = .TRUE.
          GO TO 100
-  123    CONTINUE
+  123    CONTINUE !        .NOLONDON
             NOLOND = .TRUE.
          GO TO 100
-  124    CONTINUE
+  124    CONTINUE !        .NOHESS
             NOHESS = .TRUE.
          GO TO 100
   125    CONTINUE
@@ -1168,7 +1168,7 @@ C
   140    CONTINUE
             FCKEXP = .TRUE.
          GO TO 100
-  141    CONTINUE
+  141    CONTINUE!          .GAUGEO
             READ (LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
             GAGT = .TRUE.
          GOTO 100
@@ -3134,10 +3134,11 @@ C
      &      ' Units:  JT**(-2)/(10**(-30))   (SI) ',
      &      '         ppm cm**(3) mol**(-1)  (cgs)'
       IF (NOLOND) THEN
-         WRITE (LUPRI,'(/,1X,A)')' Calculation without London orbitals.'
+         WRITE (LUPRI,'(/A)')
+     &   '  Calculation without London orbitals (GIAOs).'
       ELSE
          IF (.NOT. (CTOCD .OR. CTOMAG))
-     &      WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
+     &      WRITE (LUPRI,'(/A)')'  London orbitals (GIAOs) used.'
       END IF
 cLig >> added a print statement
       IF (CTOCD .OR. CTOMAG) THEN

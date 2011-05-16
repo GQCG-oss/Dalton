@@ -65,23 +65,24 @@ C
      &           '" not recognized in EXPECT.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in EXPECT')
- 1          CONTINUE
+
+ 1          CONTINUE !         .SHIELD
                NST    = .TRUE.
                GOTO 100
- 2          CONTINUE
+ 2          CONTINUE !         .SPIN-S
                SST    = .TRUE.
                GOTO 100
- 3          CONTINUE
+ 3          CONTINUE !         .DIASUS
                MDIASU = .TRUE.
                GOTO 100
- 4          CONTINUE
+ 4          CONTINUE !         .SKIP
                MSKIP  = .TRUE.
                GOTO 100
- 5          CONTINUE
+ 5          CONTINUE !         .PRINT
                READ (LUCMD,*) MPRINT
                IF (MPRINT .EQ. IPRDEF) ICHANG = ICHANG - 1
                GOTO 100
- 6          CONTINUE
+ 6          CONTINUE !         .NODC
                MNODC  = .TRUE.
                GOTO 100
  7          CONTINUE
@@ -965,7 +966,7 @@ C
       DOINT(1,2) = .FALSE.
       DOINT(2,1) = .FALSE.
 C
-C     Although not obvious, this is a test of wether we are calculating
+C     Although not obvious, this is a test of whether we are calculating
 C     spin-spin couplings
 C
       IF (KPATOM .EQ. 1) THEN
@@ -986,7 +987,7 @@ C
       ELSE IF (KPATOM .EQ. 2) THEN
 C
 C     We have a loop outside over all symmetry independent nuclei (needed
-C     in order to save memory in direct and parallell calculations)
+C     in order to save memory in direct and parallel calculations)
 C     K.Ruud, nov.-94
 C
          NPATOM = 1
@@ -1243,12 +1244,12 @@ C
  9             CONTINUE
                   ANISON = .TRUE.
                GOTO 100
- 10            CONTINUE
+ 10            CONTINUE !        .ISOTOP
                   SPNISO = .TRUE.
                   READ (LUCMD, *) (ISOTPS(IS), IS = 1, NATOMS)
                   ABUND = D0
                GOTO 100
- 11            CONTINUE
+ 11            CONTINUE !        .COUPLI
                   READ (LUCMD, *)  NUCSPI
                   READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
                   IF (NUCSPI .GT. 0) THEN
@@ -2059,17 +2060,19 @@ cLig <> added the dimensions of sftpmat and sftmmat
      &          ANIS(NUCDEP), ASYM(NUCDEP), SPAR(NUCDEP), APAR(NUCDEP),
      &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP),
      &          SPAN(NUCDEP), CSTRA(*), SCTRA(*),
-     &          SFTPMAT(3,3,MXCENT),SFTMMAT(3,3,MXCENT)
-cLig >> added include abainf.h and trkoor.h
+     &          SFTPMAT(3,3,MXCENT), SFTMMAT(3,3,MXCENT)
+cLig >> added abainf.h and trkoor.h
 #include <abainf.h>
 #include <trkoor.h>
 cLig <<
 #include <symmet.h>
 #include <sigma.h>
 #include <cbisol.h>
-C
-CTOCD
+C GAGORG:
+#include <orgcom.h>
+C CTOCD
 #include <ctocdcc.h>
+
       LOGICAL PRTSHI(NUCIND)
       LOGICAL ALLATM
       DIMENSION IPATOM(MXCENT)
@@ -2115,27 +2118,24 @@ C
          CALL TITLER('ABACUS - CHEMICAL SHIELDINGS','*',124)
       END IF
 C
-cLig >> added CTOCD-DZ results title
       IF (CTOCD .AND. (.NOT. CTOMAG)) THEN
+cLig >> added CTOCD-DZ results title
         CALL HEADER('CTOCD-DZ results',1)
       ENDIF
-cLig <<
       CALL HEADER('Shielding tensors in symmetry coordinates (ppm)',-1)
+      IF (CTOCD .OR. CTOMAG) THEN
 cLig >> added call to FCPRI for shieldings
-      IF(CTOCD .OR. CTOMAG)  THEN
-        CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
+         CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
       ELSE
-cLig <<
-        CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
-cLig <> ENDIF
+         CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
       ENDIF
       NUCINS = NUCIND
       IF (SOLVNT) NUCINS = NUCINS - 1
 C
 C     Transform to non-symmetry basis
 C
-cLig >> added the call to TRADIP ... for CTOCD
       IF(CTOCD .OR. CTOMAG)  THEN
+cLig >> added the call to TRADIP ... for CTOCD
          CALL TRADIP(SIGMADZ,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          IF (DONS) THEN
@@ -2150,12 +2150,10 @@ cLig >> added the call to TRADIP ... for CTOCD
          CALL DCOPY(9*NUCDEP,DMAT,1,TMAT,1)
          CALL DAXPY(9*NUCDEP,D1,PMAT,1,TMAT,1)
       ELSE
-cLig <<
         CALL TRADIP(SIGMAT,TMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
         CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
         CALL DCOPY(9*NUCDEP,TMAT,1,DMAT,1)
         CALL DAXPY(9*NUCDEP,-D1,PMAT,1,DMAT,1)
-cLig <> closed the IF
       ENDIF
 C
 CTOCD
@@ -2191,13 +2189,19 @@ C
   100 CONTINUE
 C
       CALL AROUND('Summary of chemical shieldings')
-      WRITE (LUPRI,'(1X,A)') 'Definitions from J.Mason, Solid '//
-     &       'state Nuc.Magn.Res. 2 (1993), 285'
-      WRITE (LUPRI,'()')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@1atom   shielding       dia      para     skew '/
+      WRITE (LUPRI,'(A/)') '@1  Definitions from J. Mason, Solid '//
+     &       'state Nuc. Magn. Res. 2 (1993), 285'
+      IF (NOLOND) THEN
+         WRITE(LUPRI,'(A/A,3F20.12)')
+     &    '@1 London orbitals (GIAOs) not used.',
+     &    '@1 Gauge origin    (bohr):', (GAGORG(I),I=1,3)
+      ELSE
+         WRITE(LUPRI,'(A)') '@1 London orbitals (GIAOs) has been used.'
+      END IF 
+      WRITE (LUPRI,'(/A/A)')
+     & '@1 atom   shielding       dia      para     skew '/
      &  /'     span     (aniso     asym)',
-     & '@1----------------------------------------------'/
+     & '@1 ----------------------------------------------'/
      &  /'------------------------------'
       IATOM = 0
       DO 300 I = 1, NUCINS
@@ -2210,7 +2214,7 @@ C
                DIAPAR = 'diamagnetic '
             END IF
             IF (PRTSHI(I))          ! Selected atom if CTOMAG
-     &      WRITE (LUPRI,'(1X,2A,7F10.4)') '@1',
+     &      WRITE (LUPRI,'(2A,7F10.4)') '@1 ',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         SKEW(IATOM),SPAN(IATOM),ANIS2(IATOM),ASYM2(IATOM)
          END IF
@@ -2219,13 +2223,19 @@ C
       WRITE (LUPRI,'()')
 C
       CALL AROUND('Summary of chemical shieldings')
-      WRITE (LUPRI,'(1X,A)') 'Definitions from Smith, Palke and'//
-     &       ' Grieg, Concepts in Mag.Res. 4 (1992), 107'
-      WRITE (LUPRI,'()')
-      WRITE (LUPRI,'(1X,A,/,1X,A)')
-     & '@2atom   shielding       dia      para     aniso'/
+      WRITE (LUPRI,'(A/)') '@2  Definitions from Smith, Palke, and'//
+     &       ' Grieg, Concepts in Mag. Res. 4 (1992), 107'
+      IF (NOLOND) THEN
+         WRITE(LUPRI,'(A/A,3F20.12)')
+     &    '@2 London orbitals (GIAOs) not used.',
+     &    '@2 Gauge origin    (bohr):', (GAGORG(I),I=1,3)
+      ELSE
+         WRITE(LUPRI,'(A)') '@2 London orbitals (GIAOs) has been used.'
+      END IF 
+      WRITE (LUPRI,'(/A/A)')
+     & '@2 atom   shielding       dia      para     aniso'/
      &  /'      asym        S        A',
-     & '@2----------------------------------------------'/
+     & '@2 ----------------------------------------------'/
      &  /'------------------------------'
       IATOM = 0
       DO 310 I = 1, NUCINS
@@ -2238,7 +2248,7 @@ C
                DIAPAR = 'diamagnetic '
             END IF
             IF (PRTSHI(I))          ! Selected atom if CTOMAG
-     &      WRITE (LUPRI,'(1X,2A,7F10.4)') '@2',
+     &      WRITE (LUPRI,'(2A,7F10.4)') '@2 ',
      &         NAMDEP(IATOM),AVETOT(IATOM),AVEDIA(IATOM),AVEPAR(IATOM),
      &         ANIS(IATOM),ASYM(IATOM),SPAR(IATOM),APAR(IATOM)
          END IF
