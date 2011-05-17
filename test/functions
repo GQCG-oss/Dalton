@@ -93,10 +93,10 @@ END {exit(done ? 0 : 1)}' $log || ERRLIST="$ERRLIST; BASIS-SET"
 # $3 - max deviation
 check_scf_energy() {
 [ "$3" = "" ] &&  echo "not enough parameters to check_scf_energy."
-$AWK 'function e(v,r){#print "scf_energy: checking ",v, r;
+$AWK 'function e(v,r){ print "scf_energy: checking ",v, r;
 return(v>r||v<-r)}
-/Final *'$1' *energy:/{c=1;exit (e($4-('$2'),'$3'))} END{if(!c) exit(1)}
-' $log || ERRLIST="$ERRLIST; SCF energy"
+/Final *'$1' *energy:/{c=1;exit (e($5-('$2'),'$3'))} END{if(!c) exit(1)}
+' $log || ERRLIST="$ERRLIST; $1 energy"
 }
 
 # check_dipole:
