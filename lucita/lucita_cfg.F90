@@ -35,6 +35,8 @@ module lucita_cfg
   logical, public :: lucita_cfg_ras3_set             =  .false.
   logical, public :: lucita_cfg_analyze_cvec         =  .false.
   logical, public :: lucita_cfg_timing_par           =  .false.
+  logical, public :: lucita_cfg_natural_orb_occ_nr   =  .false.
+
 
 ! double precision block
 

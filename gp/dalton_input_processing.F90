@@ -216,6 +216,11 @@ contains
       lucita_cfg_timing_par   = .true.
     end if
 
+    if (kw_matches(word, '.NATORB')) then
+      lucita_cfg_natural_orb_occ_nr = .true.
+      if(lucita_cfg_density_calc_lvl < 2) lucita_cfg_density_calc_lvl = 1
+    end if
+
     call check_whether_kw_found(word, kw_section)
 
   end subroutine
