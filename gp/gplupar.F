@@ -442,6 +442,16 @@ C     initialize scratch offsets
       IOFFSET_SCRATCH   = 0
       IOFFSET_LUOUT     = 0
       IOFFSET_INT_LUOUT = 0
+#ifdef LUCI_DEBUG
+      if(luci_myproc .eq. luci_master)then
+        call rewino(LUIN)
+        write(6,*) 'vectors to copy'
+        do i = 1, NVEC
+          call wrtvcd(vec1,luin,0,-1)
+        end do
+        call rewino(LUIN)
+      end if
+#endif
  
 C
 C     loop over vectors
@@ -4076,19 +4086,19 @@ C       only s-blocks corresponding to distribution
  2002 CONTINUE
 *
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) 'Output from PART_CIV_PAR1'
-        WRITE(6,*) '========================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of batches ', NBATCH
+        WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
+        WRITE(luwrt,*) '========================='
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of batches ', NBATCH
         DO JBATCH = 1, NBATCH
-          WRITE(6,*)
-          WRITE(6,*) ' Info on batch ', JBATCH
-          WRITE(6,*) ' *********************** '
-          WRITE(6,*)
-          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Info on batch ', JBATCH
+          WRITE(luwrt,*) ' *********************** '
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
+          WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+            WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
         END DO
       END IF
