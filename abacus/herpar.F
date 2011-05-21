@@ -722,7 +722,12 @@ C
 #endif
       ELSE IF (ITYPE .EQ. -5) THEN
          CALL DZERO(FMAT,3*N2BASX)
-         CALL DZERO(SUS2EL,NUMSUS)
+COBL/AMT
+C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
+         IF (.NOT. DONETWOLOP)THEN
+             DONETWOLOP = .TRUE.
+             CALL DZERO(SUS2EL,NUMSUS)
+         END IF
       ELSE IF (ITYPE .EQ. 8) THEN
          CALL DZERO(FMAT,NTMPMT)
       END IF
@@ -1394,7 +1399,12 @@ C
       IF (SUSCEP) THEN
          IF (.NOT.NOPV) CALL REWSPL(LUPAO)
          IF (.NOT.NOPV) CALL REWSPL(LUPAS)
-         CALL DZERO(SUS2EL,9)
+COBL/AMT
+C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
+         IF (.NOT. DONETWOLOP)THEN
+             DONETWOLOP = .TRUE.
+             CALL DZERO(SUS2EL,9)
+         END IF
       END IF
 C
 C
