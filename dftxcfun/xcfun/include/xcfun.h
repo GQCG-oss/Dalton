@@ -66,6 +66,8 @@ extern "C" {
       XC_TPSSX,
       XC_REVTPSSC,
       XC_REVTPSSX,
+      XC_PZ81C,
+      XC_P86C,
       XC_NR_FUNCTIONALS
     };
 
