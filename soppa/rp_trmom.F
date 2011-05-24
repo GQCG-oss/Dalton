@@ -1,7 +1,11 @@
 C
 C  /* Deck rp_trmom */
-      SUBROUTINE RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN,TRVEL,TRLON,TRMAG,
-     &                    BSRLON,EXENG,WORK,LWORK)
+CSPAS:23/5-11: second and third moment sum rules
+C     SUBROUTINE RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN,TRVEL,TRLON,TRMAG,
+C    &                    BSRLON,EXENG,WORK,LWORK)
+      SUBROUTINE RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN,TRVEL,TQLEN,TQVEL,
+     &                    TTLEN,TRLON,TRMAG,BSRLON,EXENG,WORK,LWORK)
+CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -26,6 +30,10 @@ CKeinSPASmehr
 #include <nuclei.h>
 C
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+      DIMENSION TTLEN(10,NSYM,MXNEXI)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
       DIMENSION WORK(LWORK)
@@ -51,7 +59,9 @@ C-----------------------------------------------------------------
 C        Check if integrals are second moment of charge integrals.
 C-----------------------------------------------------------------
 C
-         IF ( LABEL(3:8) .EQ. 'SECMOM' ) GOTO 200
+CSPAS:23/5-11: second and third moment sum rules
+C        IF ( LABEL(3:8) .EQ. 'SECMOM' ) GOTO 200
+CKeinSPASmehr
 C
 C----------------------------------------------------------------------
 C        If KSYMOP (the operator symmetry) equals ISYMTR (the reference
@@ -164,7 +174,7 @@ C
                IF ( IPRSOP .GE. 4) THEN
 C
                   WRITE(LUPRI,'(/,1X,A,A,I3,A)')
-     &            LABEL,'transition moment for state',IEXCI,':'
+     &            LABEL,' transition moment for state',IEXCI,':'
                   WRITE(LUPRI,'(2(F10.5,A),F10.5)')
      &            WORK(KTRME+IEXCI-1),' + ',WORK(KTRMD+IEXCI-1),
      &            ' = ',WORK(KTRMOM+IEXCI-1)
@@ -177,6 +187,9 @@ C---------------------------------------------------
 C
                CALL SO_COLLECT_TM(ISYMTR,LABEL,IEXCI,
      &                            WORK(KTRMOM+IEXCI-1),TRLEN,TRVEL,
+CSPAS:23/5-11: second and third moment sum rules
+     &                            TQLEN,TQVEL,TTLEN,
+CKeinSPASmehr
      &                            TRLON,TRMAG,BSRLON,EXENG)
 C
   100       CONTINUE
@@ -195,7 +208,7 @@ C
             IF ( IPRSOP .GE. 1) THEN
 C
                WRITE(LUPRI,'(/,1X,A,A,I3)')
-     &         LABEL,'RPA transition moments for excitation symmetry',
+     &         LABEL,' RPA transition moments for excitation symmetry',
      &         ISYMTR
                WRITE(LUPRI,9001)
                WRITE(LUPRI,'(A)')

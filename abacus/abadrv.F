@@ -404,7 +404,13 @@ C         KFONAC = KEXENG + NSYM*MXNEXI
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
          KTQLEN = KTRVEL + 3*NSYM*MXNEXI*NMODEL
          KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
-         KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
+CSPAS:23/5-11: second and third moment sum rules
+C        KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI
+         KTQVEL = KTQLEN + 3*3*NSYM*MXNEXI*NMODEL
+         KTTLEN = KTQVEL + 3*3*NSYM*MXNEXI*NMODEL
+C        KTRLON = KTQVEL + 3*3*NSYM*MXNEXI
+         KTRLON = KTTLEN + 10*NSYM*MXNEXI*NMODEL
+CKeinSPASmehr
          KTRMAG = KTRLON + 3*NSYM*MXNEXI*NMODEL
          KBSRLO = KTRMAG + 3*NSYM*MXNEXI*NMODEL
          KEXENG = KBSRLO + 3*NSYM*MXNEXI*NMODEL
@@ -424,12 +430,13 @@ CKeinSPASmehr
          LWRK2  = LWORK  - KLST2 + 1
          CALL EXCITA(WORK(KTRLEN),WORK(KTRVEL),WORK(KTQLEN),
      &               WORK(KTQVEL),WORK(KTRLON),WORK(KTRMAG),
-     &               WORK(KBSRLO),WORK(KEXENG),WORK(KFONAC),
-CSPAS : 6/11-2009 AO-SOPPA included
-C     &               WORK(KFONA2),WORK(KLST2),LWRK2,PASEXC)
-     &               WORK(KFONA2),WORK(KSECMT),
-     &               WORK(KLST2),LWRK2,PASEXC)
+CSPAS:23/5-11: second and third moment sum rules
+C    &               WORK(KBSRLO),WORK(KEXENG),WORK(KFONAC),
+C    &               WORK(KFONA2),WORK(KSECMT),
+     &               WORK(KBSRLO),WORK(KTTLEN),WORK(KEXENG),
+     &               WORK(KFONAC),WORK(KFONA2),WORK(KSECMT),
 CKeinSPASmehr
+     &               WORK(KLST2),LWRK2,PASEXC)
          IF (PASEXC) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
       ELSE
@@ -437,6 +444,11 @@ CKeinSPASmehr
          KTRVEL = KTRLEN
          KTQLEN = KTRVEL
          KTQVEL = KTQLEN
+CSPAS:23/5-11: second and third moment sum rules
+C        KTRLON = KTQVEL
+         KTTLEN = KTQVEL
+         KTRLON = KTTLEN
+CKeinSPASmehr
          KTRLON = KTQVEL
          KTRMAG = KTRLON
          KBSRLO = KTRMAG
@@ -596,11 +608,12 @@ C
      &            WORK(KSCTRA),WORK(KDSO),WORK(KPSO),WORK(KSD),
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
-     &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
-     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
-CSPAS : 6/11-2009 AO-SOPPA included
-     &            WORK(KSECMT),
+CSPAS:23/5-11: second and third moment sum rules
+C    &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),
+     &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),WORK(KTTLEN),
 CKeinSPASmehr
+     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
+     &            WORK(KSECMT),
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
      &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
      &            WORK(KSLEN),WORK(KSVEL),WORK(KLAST),LWRK3)
@@ -2092,9 +2105,11 @@ C  /* Deck result */
       SUBROUTINE ABARESULT(POLDD,POLDL,POLDA,POLVL,POLVV,
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
-     &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
-CSPAS : 6/11-2009 AO-SOPPA included
-     &                  SECMAT,
+CSPAS:23/5-11: second and third moment sum rules
+C    &                  TRMAG,TRLON,BSRLON,EXENG,FONAC,FONA2,FOVIBG,
+C    &                  SECMAT,
+     &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,FONAC,FONA2,
+     &                  FOVIBG,SECMAT,
 CKeinSPASmehr
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
@@ -2119,7 +2134,10 @@ C
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
-      DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
+CSPAS:23/5-11: second and third moment sum rules
+C     DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*),
+      DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*), TTLEN(*),
+CKeinSPASmehr
      &          TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
 CSPAS : 6/11-2009 AO-SOPPA included
@@ -2478,25 +2496,25 @@ C
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
-CSPAS : 6/11-2009 AO-SOPPA included
-C      IF (DOEXCI) CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-C     &                        TRMAG,TRLON,BSRLON,EXENG,
-C     &                        FONAC,FONA2,RMLEN,RQLEN,
-C     &                        RLEN,RMVEL,RQVEL,RVEL,
-C     &                        SLEN,SVEL,WORK,LWORK)
       IF (DOEXCI) THEN
          IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-            CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
-     &                     FONAC,FONA2,SECMAT,WORK,LWORK)
+CSPAS:23/5-11: second and third moment sum rules
+C           CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
+C    &                     FONAC,FONA2,SECMAT,WORK,LWORK)
+            CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
+     &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
+CKeinSPASmehr
          ELSE
             CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
-     &                  TRMAG,TRLON,BSRLON,EXENG,
+CSPAS:23/5-11: second and third moment sum rules
+C    &                  TRMAG,TRLON,BSRLON,EXENG,
+     &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,
+CKeinSPASmehr
      &                  FONAC,FONA2,RMLEN,RQLEN,
      &                  RLEN,RMVEL,RQVEL,RVEL,
      &                  SLEN,SVEL,WORK,LWORK)
          END IF
       END IF
-CKeinSPASmehr
 C
 C     Molecular second moments
 C
@@ -3135,10 +3153,10 @@ C
      &      '         ppm cm**(3) mol**(-1)  (cgs)'
       IF (NOLOND) THEN
          WRITE (LUPRI,'(/A)')
-     &   '  Calculation without London orbitals (GIAOs).'
+     &   ' Calculation without London orbitals (GIAOs).'
       ELSE
          IF (.NOT. (CTOCD .OR. CTOMAG))
-     &      WRITE (LUPRI,'(/A)')'  London orbitals (GIAOs) used.'
+     &      WRITE (LUPRI,'(/A)')' London orbitals (GIAOs) used.'
       END IF
 cLig >> added a print statement
       IF (CTOCD .OR. CTOMAG) THEN
