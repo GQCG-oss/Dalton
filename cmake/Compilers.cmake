@@ -4,9 +4,9 @@ message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_I
 # Fortran compilers
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    set(CMAKE_Fortran_FLAGS         "-fbacktrace -DVAR_GFORTRAN -DGFORTRAN=445")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
@@ -25,9 +25,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
-    set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
+    set(CMAKE_Fortran_FLAGS         "-Wno=155 -fno-second-underscore -DVAR_G95 -fsloppy-char")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -ftrace=full")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -46,9 +46,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
+    add_definitions(-DVAR_IFORT)
+    set(CMAKE_Fortran_FLAGS         "-g -w -fpp -assume byterecl")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -105,15 +106,15 @@ endif()
 # C compilers
 
 if(CMAKE_C_COMPILER_ID MATCHES GNU)
-    set(CMAKE_C_FLAGS         " ")
-    set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
-    set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
+    set(CMAKE_C_FLAGS         "-std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1")
+    set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
-    set(CMAKE_C_FLAGS         "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
-    set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
-    set(CMAKE_C_FLAGS_RELEASE "-g -O2")
+    set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -restrict -DRESTRICT=restrict")
+    set(CMAKE_C_FLAGS_DEBUG   "-O0")
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -xW -ip")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
 endif()
 

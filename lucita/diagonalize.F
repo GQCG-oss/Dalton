@@ -154,13 +154,15 @@ C
             END IF
 *
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(LUCIWT,*) ' WARNING WARNING WARNING WARNING ! '
-              WRITE(LUCIWT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
+              WRITE(luwrt,'(/A,I5/A)')
+     &        ' INFO !  DEGENERATE INITIAL VECTORS FOR CI ROOT',IROOTSI,
+     &        ' INFO !  ONLY ONE PARTNER USED, CHECK YOUR RESULTS!'
               NDEG = 1
             END IF
 
 *. Initial guess in compressed form in SCR1
-            SCALE = 1.0D0/SQRT(DFLOAT(NDEG))
+            SCALE = NDEG
+            SCALE =1.0D0 / SQRT(SCALE)
             DO 250 II = 1,NDEG
 *. Anti symmetric combination
               IF(INIDEG.EQ.-1) THEN

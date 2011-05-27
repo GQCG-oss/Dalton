@@ -40,12 +40,12 @@ C
 !/hjaaj dec 1999 - apr 2000:
 !1) removed obsolete RNALL references
 !2) do not activate QCSCF (flag(21)) for solvent or writing interface
-!if MXDIIS.gt.0; solvent and CALL WRSIFC are now also implemented
-!in the DIIS module.
+!   if MXDIIS.gt.0; solvent and CALL WR_SIRIFC are now also implemented
+!   in the DIIS module.
 !3) removed absolete input tests on NACTEL and ISPIN
 !4) if not QCSCF then zero iteration limits, for consistent output in PRTINP
 !5) BUG FIX: hucdrv was not called for start orbitals when
-!         not automatic occupation (when HF OCC specified in input)
+!   not automatic occupation (when HF OCC specified in input)
 !6) fix: corrected output error in max # of QCSCF iteration
 !7) polishing ...
 !----------------------------
@@ -215,7 +215,7 @@ C
       PARAMETER (THR_DEFAULT=1.0D-5, THRRHF_MP2=1.0D-6)
 C
 C Used from common blocks:
-C   GNRINF : WESTA, ...
+C   GNRINF : WESTA,EMBEDDING,QM3,QMMM, ...
 C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,...
 C   INFORB : NSYM,?
 C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
@@ -225,6 +225,7 @@ C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
+C   PCMLOG : PCM
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
 C   SPINFO : MULTS; MS2
@@ -243,6 +244,7 @@ C
 #include <inftra.h>
 #include <scbrhf.h>
 #include <infmp2.h>
+#include <pcmlog.h>
 #include <siripc.h>
 #include <huckel.h>
 #include <cbihrs.h>
@@ -1600,6 +1602,11 @@ C
          LUSUPM = -1
       END IF
 C
+C  Do we use embedding ?
+C  (that is, is QM part embedded in environment)
+C
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
+C
 C ***  PRINT INPUT DATA *****
 C
       IF (IPRSIR.GT.2 .OR. IPRI4.GT.7 .OR. IPRI6.GT.2) INPPRC = .FALSE.
@@ -1684,18 +1691,18 @@ C
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A,/A,I12,2(/A,F12.6)/A,3F12.6)')
-     *      ' Input error in one or more solvent specifications:',
-     *      ' Lmax                =',LSOLMX,
-     *      ' Dielectric constant =',EPSOL,
-     *      ' Static diel. const. =',EPSTAT,
-     *      ' Cavity radius       =',RSOL(1),RSOL(2),RSOL(3)
+     &     ' Input error in one or more reaction field specifications:',
+     &     ' Lmax                =',LSOLMX,
+     &     ' Dielectric constant =',EPSOL,
+     &     ' Static diel. const. =',EPSTAT,
+     &     ' Cavity radius       =',RSOL(1),RSOL(2),RSOL(3)
          END IF
 C
 C        orbital absorption not safe
 C
          IF (FLAG(51) .OR. FLAG(52) .OR. FLAG(53)) THEN
-            WRITE (LUPRI,'(/2A/)') ' STOP because ABSORPTION is not',
-     *         ' yet implemented for SOLVENT calculations'
+            WRITE (LUPRI,'(/A/)') ' STOP because ABSORPTION is not'//
+     &         ' yet implemented for SOLVENT calculations'
             INPERR = INPERR + 1
          END IF
       END IF
@@ -2838,7 +2845,6 @@ C
 #include <dftcom.h>
 #include <dfterg.h>
 #include <dftacb.h>
-#include <qmmm.h>
 C
       LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
@@ -4979,10 +4985,6 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
-C  SUBROUTINES CALLED:NONE
-C
-C  (Based on CASSCF RELEASE 79 01 10)
-C
 #include <implicit.h>
 C
 C Used from common blocks:
@@ -4995,7 +4997,8 @@ C   INFMP2 : NFRMP2(*)
 C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   siripc : INPPRC
-C   gnrinf : NEWSYM,?
+C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   pcmlog : PCM
 C
 #include <priunit.h>
 #include <mxcent.h>
@@ -5012,11 +5015,12 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <huckel.h>
-#include <siripc.h>
-#include <gnrinf.h>
 #include <dftcom.h>
 #include <dfterg.h>
 #include <dftacb.h>
+#include <siripc.h>
+#include <gnrinf.h>
+#include <pcmlog.h>
 C
       CHARACTER*6 RDMOLB(12)
       CHARACTER*8  WFTYPE
@@ -5314,33 +5318,40 @@ C        ... if HUCKEL use JRDMO = 11 or 12 to get correct output
          WRITE (IWUNIT,'(/A/3A)')
      &   ' Initial molecular orbitals are obtained according to',
      &   ' ".MOSTART ',RDMOLB(JRDMO),'" input option.'
+      END IF
 C
-      IF (FLAG(16)) THEN
-      IF (RSOL(1) .EQ. RSOL(2) .AND. RSOL(1) .EQ. RSOL(3)) THEN
-         WRITE (IWUNIT,'(/5X,A,2(/16X,A,F12.6),/16X,A,I12)')
+      IF (EMBEDDING) THEN
+         WRITE (IWUNIT,'(/5X,A)')
+     &   'QM part is embedded in an environment :'
+       IF (FLAG(16)) THEN
+        IF (RSOL(1) .EQ. RSOL(2) .AND. RSOL(1) .EQ. RSOL(3)) THEN
+         WRITE (IWUNIT,'(/10X,A,2(/16X,A,F12.6),/16X,A,I12)')
      *      'SOLVATION MODEL: molecule is in a spherical'//
      *        ' cavity in a dielectric medium,',
      *      'dielectric constant =',EPSOL,
      *      '      cavity radius =',RSOL(1),
      *      '        max l value =',LSOLMX
-      ELSE
-         WRITE (IWUNIT,'(/5X,A,2(/16X,A,3F12.6),/16X,A,I12)')
+        ELSE
+         WRITE (IWUNIT,'(/10X,A,2(/16X,A,3F12.6),/16X,A,I12)')
      *      'SOLVATION MODEL: molecule is in a ellipsoidal'//
      *        ' cavity in a dielectric medium,',
      *      'dielectric constant =',EPSOL,
      *      '  cavity dimensions =',RSOL(1),RSOL(2),RSOL(3),
      *      '        max l value =',LSOLMX
-      END IF
-         IF (INERSI) WRITE (IWUNIT,'(2(/5X,A))')
+        END IF
+        IF (INERSI) WRITE (IWUNIT,'(2(/10X,A))')
      *      'This is the initial state in a calculation with'//
      *      ' inertial polarization.',
      *      'Converged T(lm) values are saved on the Sirius'//
      *      ' interface file.'
-         IF (INERSF) WRITE (IWUNIT,'(/5X,A/10X,A,F12.6)')
+        IF (INERSF) WRITE (IWUNIT,'(/10X,A/15X,A,F12.6)')
      *      'This is the final state in a calculation with'//
      *      ' inertial polarization.',
      *      'static dielectric constant =',EPSTAT
-      END IF
+       END IF
+       IF (PCM)  WRITE (IWUNIT,'(/10X,A)') 'SOLVATION MODEL: PCM'
+       IF (QM3)  WRITE (IWUNIT,'(/10X,A)') 'MODEL: QM3'
+       IF (QMMM) WRITE (IWUNIT,'(/10X,A)') 'MODEL: QMMM'
       END IF
 C
 C ***** Wave function specifications

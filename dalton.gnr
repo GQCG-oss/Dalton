@@ -169,7 +169,7 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   Dalton Release DALTON2011 (Mar. 2011)"
+echo "   Dalton Release DALTON2011 (May 2011)"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"

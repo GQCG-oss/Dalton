@@ -5,7 +5,7 @@
 !     NOTE: DOSYM(NSYML) is sent to slaves in a parallel calculation and
 !           should not be moved from this common block !
 !
-      INTEGER NSYML, IPRDEF, NWNABA
+      INTEGER NSYML, IPRDEF, NWNABA, IRVIBG
       PARAMETER (NSYML = 8)
       LOGICAL MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -18,8 +18,9 @@
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
-     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU
-      COMMON /ABAINF/ IPRDEF, NWNABA, 
+     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
+     &        VIBGIR
+      COMMON /ABAINF/ IPRDEF, NWNABA, IRVIBG,
      &        MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,
      &        H2MO,   DOSYM,          DOLRES, DOEXCI, SHIELD,
@@ -31,5 +32,6 @@
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
      &        ABA_ALPHA,      EXPGRD, CTOCD,  NUMHES, DOD2DQ2,
      &        OECD,   MVEOR,  QPGRAD, SECNDM, THIRDM, VIB_G,
-     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU
+     &        GSDIP,  GSQUAD, GSOCT,  GSDIDI, GSDIQU, GSQUQU,
+     &        VIBGIR
 ! -- end of abainf.h --

@@ -466,7 +466,7 @@ C
      *      'shifted with : ',MP2SHF
 
          IF (SRMP2_SRINTS) THEN
-            IF (ISRINTS_LOOP .EQ. 1) THEN
+            if (isrints_loop .eq. 1) then
                WRITE (LUPRI,'(//A,F25.10)')
      *          '   MP2 contribution from short-range integrals :',EMP2
                EMP2_SR = EMP2
@@ -1180,7 +1180,7 @@ C  SCRA; general scratch area
 C
 #include <implicit.h>
       DIMENSION CMO(*),FC(*),ORBEN(*),SCRA(*)
-      LOGICAL   FCKFRO
+      LOGICAL   FCKFRO, FOUND
 C
 C
       PARAMETER (VALCON_MAX = 1.D-4, VALCON_WARN = 1.D-5,
@@ -1188,6 +1188,7 @@ C
 #include <dummy.h>
 C
 C  Used from common blocks:
+C     GNRINF : EMBEDDING
 C     INFINP : POTNUC
 C     INFORB : NRHF(*), NRHFT, ...
 C     SCBRHF : IOPRHF,NFRRHF(*)
@@ -1196,6 +1197,7 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <scbrhf.h>
@@ -1210,25 +1212,69 @@ C
 
       IF (IOPRHF .GT. 0 .OR. NASHT .GT. 0) THEN
          WRITE (LUPRI,'(//A)')
-     *   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
-     *   ' open-shell Hartree-Fock'
+     &   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
+     &   ' open-shell Hartree-Fock'
          CALL QUIT('ERROR: MP2 is not implemented for open-shell RHF')
       END IF
 C
       IF (IPRMP2 .GE. 3) WRITE (LUPRI,'(/A//A,I5/A,8I5)')
-     *   ' Check that orbitals are canonical HARTREE-FOCK orbitals',
-     *   '    Number of electrons :',2*NRHFT,
-     *   '    Orbital occupations :',(NRHF(I),I=1,NSYM)
+     &   ' Check that orbitals are canonical HARTREE-FOCK orbitals',
+     &   '    Number of electrons :',2*NRHFT,
+     &   '    Orbital occupations :',(NRHF(I),I=1,NSYM)
 C
       IF (LSCRA .LT. N2BASX) CALL ERRWRK('MP2FCK',-N2BASX,LSCRA)
 C
       CALL READMO(CMO,9,SCRA,LSCRA)
+
 C
-C     Step 1 : Construct inactive Fock matrix
+C     Step 1 : Construct or read the inactive Fock matrix
 C
-      EMY    = D0
-      CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
-C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
+      IF ( EMBEDDING ) THEN ! read EMY and Fock matrix from SIRFC
+         WRITE (LUPRI,'(/A)')
+     &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
+         KCMO      = 1
+         KCMO_diff = KCMO  + NCMOT
+         KWRK      = KCMO_diff  + NCMOT
+         LWRK      = LSCRA - KWRK
+         CALL RD_SIRIFC('CMO',FOUND,SCRA(KCMO),SCRA(KWRK),LWRK)
+         CALL DCOPY(NCMOT,CMO,1,SCRA(KCMO_diff),1)
+         CALL DAXPY(NCMOT,-1.0D0,CMO,1,SCRA(KCMO_diff),1)
+         KCMO_diff_MAX = KCMO_diff - 1 + IDAMAX(NCMOT,SCRA(KCMO_diff),1)
+         IF ( abs(SCRA(KCMO_diff_MAX)) .GT. 1.0D-8) THEN
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             The difference matrix is :'
+            !CALL PRORB(SCRA(KCMO_diff),.FALSE.,LUPRI)
+            ! problem: PRORB only prints coefficients .gt. 0.0001, thus
+            ! call output instead
+            DO ISYM = 1,NSYM
+               WRITE(LUPRI,'(/A,I5)')
+     &         ' CMO(SIRIFC) - CMO(SIRIUS.RST), symmetry',ISYM
+               JCMO_diff = KCMO_diff + ICMO(ISYM)
+               CALL OUTPUT(SCRA(JCMO_diff),1,NBAS(ISYM),1,NORB(ISYM),
+     &            NBAS(ISYM),NORB(ISYM),-1,LUPRI)
+            END DO
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             CMO matrix from SIRIFC :'
+            CALL PRORB(SCRA(KCMO),.FALSE.,LUPRI)
+            WRITE(LUPRI,'(//A/A)')
+     &      'FATAL ERROR: CMO on SIRIFC not same as CMO from SIRIUS.RST'
+     &     ,'             CMO matrix from SIRIUS.RST :'
+            CALL PRORB(CMO       ,.FALSE.,LUPRI)
+            CALL QUIT('CMO on SIRIFC not same as CMO from SIRIUS.RST')
+         END IF
+         CALL RD_SIRIFC('FC for MP2',FOUND,FC,SCRA,LSCRA)
+         IF (.NOT. FOUND) THEN
+            CALL QUIT('Info for "FC for MP2" not found on SIRIFC')
+         END IF
+      ELSE ! construct Fock matrix
+         WRITE (LUPRI,'(/A)') 'Generating Fock matrix'
+         EMY = D0
+         CALL FCKMAT(.TRUE.,DUMMY,CMO,EMY,FC,DUMMY,SCRA,LSCRA)
+C        CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
+      END IF
+ 
       IF (IPRMP2 .GE. 3) WRITE (LUPRI,1730) EMY
       EMY = EMY + POTNUC
       IF (IPRMP2 .GE. 3) WRITE (LUPRI,1732) EMY

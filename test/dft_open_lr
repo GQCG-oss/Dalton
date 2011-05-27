@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. functions || { echo "Current dir is not the test dir" ; exit 1; }
+. ./functions || { echo "Current dir is not the test dir" ; exit 1; }
 
 info="
    dft_open_lr

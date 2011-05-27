@@ -17,13 +17,14 @@
 # radovan: this is to figure out whether TEST is called from test directory
 #          or from outside
 SCRIPT_DIR="${0%/*}"
-# if the script was started from the base directory, then the
-# expansion returns a period
-if test "$SCRIPT_DIR" == "." ; then
+# if the script was started from the base directory with ./TEST, then the
+# expansion returns a period, if it was started directly with TEST then the
+# expansion returns the script file name
+if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
   SCRIPT_DIR="$PWD"
 # if the script was not called with an absolute path, then we need to add the
 # current working directory to the relative path of the script
-elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
   SCRIPT_DIR="$PWD/$SCRIPT_DIR"
 fi
 cd $SCRIPT_DIR
@@ -446,7 +447,7 @@ while [ -n "$1" ]; do
    "qm3" )
    testcase="$testcase $QM3"; 
    shift ;;
-   *paral* )  # assume parallel test if "paral" in name
+   *paral* | par* )  # assume parallel test if "paral" in name or name starts with "par"
    if [ "$paramlist" = "" ]; then
      paramlist="-N 4"
    fi
@@ -734,10 +735,12 @@ if [ "$perl_style" -gt 0 ]; then
         perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
         problems="$problems $perl_fail"
         myprint "THERE IS A PROBLEM in perl-style tests"
+        exitcode=1
     else
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
         myprint ""
         myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+        exitcode=1
     fi
     myprint ""
     myprint "Perl-style tests finished!"

@@ -160,7 +160,7 @@ ERROR[4]="ENERGY NOT CORRECT"
 # Excitation setup
 CRIT1=`$GREP "Number of excitation energies\: * 8 * 8 * 0 * 0 * 0 * 0 * 0 * 0" $log | wc -l`
 CRIT2=`$GREP "Conventional rotational strength" $log | wc -l`
-CRIT3=`$GREP "Center of mass gauge origin *\: * (0| )\.028660 * (0| )\.000000 * (0| )\.000000" $log | wc -l`
+CRIT3=`$GREP "Center of mass gauge origin *\: * (0| )\.028660 * (\-0|0| )\.000000 * (\-0|0| )\.000000" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=3
 ERROR[5]="EXCITATION SETUP NOT CORRECT"

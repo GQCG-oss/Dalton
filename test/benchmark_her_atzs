@@ -91,7 +91,6 @@ fi
 #             Total energy CCSD(T):                -232.9727753123
 #
 CRIT1=`$GREP "Total energy CCSD\(T\):  * \-232.972775" $log | wc -l`
-               Total energy CCSD(T):                -232.9727751246
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=2
 ERROR[1]="CCSD(T) ENERGY NOT CORRECT"

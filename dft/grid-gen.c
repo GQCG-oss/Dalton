@@ -163,7 +163,7 @@ agrid_free(GridGenAtomGrid* grid)
 
 /* ===================================================================
  *             RADIAL QUADRATURES
- * the quadratore has to fill in grid->pnt with number of points
+ * the quadrature has to fill in grid->pnt with number of points
  * and set grid->rad.
  * =================================================================== */
 

@@ -123,6 +123,7 @@ contains
       call dalton_mpi_bcast(lucita_cfg_minmax_occ_gas_set,  0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_analyze_cvec,        0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_timing_par,          0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_natural_orb_occ_nr,  0, mpi_comm_world)
 !     integer
 #ifdef PRG_DIRAC
       lucita_cfg_nr_ptg_irreps = nbsym

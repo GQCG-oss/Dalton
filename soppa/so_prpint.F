@@ -35,6 +35,9 @@ C
       CHARACTER*6 LTYPE
       LOGICAL     LDIPLEN, LLONMAG, LHBDO, LDIPVEL, LANGMOM
       LOGICAL     LSECMOM, LTHETA
+CSPAS:23/5-11: second and third moment sum rules
+      LOGICAL     LTHIRDM
+CKeinSPASmehr
       LOGICAL     EXTST   , OPENED
 C
 C------------------
@@ -73,6 +76,9 @@ C
       LDIPVEL  = .FALSE.
       LANGMOM  = .FALSE.
       LSECMOM  = .FALSE.
+CSPAS:23/5-11: second and third moment sum rules
+      LTHIRDM  = .FALSE.
+CKeinSPASmehr
       LTHETA   = .FALSE.
 C
 C-----------------------------------------------
@@ -91,6 +97,14 @@ C
          ROTVEL  = .TRUE.
 C
 C
+CSPAS:23/5-11: second and third moment sum rules
+         IF (SUMRUL) THEN           ! sum rules, dip, quad, oct.
+            LDIPLEN = .TRUE.
+            LDIPVEL = .TRUE.
+            LSECMOM = .TRUE.
+            LTHIRDM = .TRUE.
+         END IF
+CKeinSPASmehr
          IF ( DIPSTR )              LDIPLEN = .TRUE.
          IF ( DIPSTR )              LDIPVEL = .TRUE.
          IF ( ROTSTR )              LDIPLEN = .TRUE.
@@ -272,6 +286,27 @@ C
          CALL LABCOP(NLAB,NLBTOT,WORK(KDLAB),WORK(KIDSYM),LABAPP,LABSYM)
 C 
       END IF
+CSPAS:23/5-11: second and third moment sum rules
+C
+C-----------------------------------------------
+C     Determine third electric moment integrals.
+C-----------------------------------------------
+C
+      IF ( LTHIRDM ) THEN
+C
+         NCOMP  = 0
+         NPATOM = 0
+C
+         CALL GET1IN(DUMMY,'THRMOM ',NCOMP,WORK(KEND1),LWORK1,
+     &               WORK(KDLAB),WORK(KIDSYM),WORK(KIDADR),
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,
+     &               DUMMY,IPRINT)
+C
+         NLAB = 10
+         CALL LABCOP(NLAB,NLBTOT,WORK(KDLAB),WORK(KIDSYM),LABAPP,LABSYM)
+C
+      END IF
+CKeinSPASmehr
 C
 C-----------------------
 C     Remove from trace.

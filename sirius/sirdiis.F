@@ -34,11 +34,11 @@ C
 !restart DIIS if DIIS is stalled ...
 !
 !Revision 1.8  2001/01/31 13:49:00  hjj
-!allocate FQ matrix for open shell before WRSIFC
+!allocate FQ matrix for open shell before WR_SIRIFC
 !
 !Revision 1.6  2000/05/24 12:28:27  hjj
 !1) fixed solvent calculations (DIFDEN must be false for solvent)
-!2) fixed WRSIFC call for open shell and solvent
+!2) fixed WR_SIRIFC call for open shell and solvent
 !   (required change in SOLFCK also)
 !=============================================================================
 !970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC and more
@@ -1318,10 +1318,10 @@ C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
       END IF
 C
-C     If (FLAG(25) .OR. INERSI) write LUSIFC
+C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)
 C                         or .RESPONS (response calculation)
-C                         or .INTERFACE (request for LUSIFC)
+C                         or .INTERFACE (request for write of SIRIFC)
 C       INERSI is true if this is initial state calculation
 C              in a solvent calculation with inertial polarization
 C
@@ -1339,28 +1339,46 @@ Chj      ... if (GEOWLK) then
             CALL SIRSTP(JWSTEP,DUMMY,DUMMY,DUMMY,DUMMY,1)
 Chj         ... WLKREJ in gnrinf.h will be true if geom. step rejected.
          END IF
-Chj      make PV(1) = D0 for open shell RHF
-         CALL MEMGET('REAL',KPV,1,WRK,KFREE,LFREE)
-         WRK(KPV) = D0
+
+         LPV = NNASHX*NNASHX
+         CALL MEMGET('REAL',KPV,LPV,WRK,KFREE,LFREE)
+         IF (NASHT .EQ. 1) THEN
+Chj         PV(1) is 0.0D0 for a single open shell RHF
+            WRK(KPV) = D0
+         ELSE IF (NASHT .GT. 1) THEN ! HSROHF
+            ! we fill PV with a very large number, to make sure it gives
+            ! problems if used later. As it is now, HSROHF is done
+            ! completely in AO basis, thus PV (and FQ below) are not
+            ! used. This filling makes it very clear that there are
+            ! problems if someone programs use of PV for HSROHF without
+            ! checking code.
+            WRK(KPV:KPV+LPV-1) = -9.87654321D123
+         END IF
+
          CALL MEMGET('REAL',KGORB,NWOPH,WRK,KFREE,LFREE)
          CALL DZERO(WRK(KGORB),NWOPH)
 Chj      ... set orbital gradient to zero (i.e. completely converged!)
-         CALL MEMGET('REAL',KFQ,NASHT*NORBT,WRK,KFREE,LFREE)
-C
+
+         LFQ = NASHT*NORBT
+         CALL MEMGET('REAL',KFQ,LFQ,WRK,KFREE,LFREE)
          IF (NASHT.GT.0) THEN
 C           put FV in DCAO
             CALL UTHUB(FAOSAV(1,INDEVC,2),DCAO,CMO,WRK(KFREE),
      &                 NSYM,NBAS,NORB)
 C           form FC = FD - FV in FCAO
             CALL DAXPY(NNORBT,DM1,DCAO,1,FCAO,1)
-            CALL DZERO(WRK(KFQ),NASHT*NORBT)
-C           make FQ matrix zero matrix for open shell RHF
+            IF (NASHT .EQ. 1) THEN
+               CALL DZERO(WRK(KFQ),NASHT*NORBT)
+C              FQ matrix is zero matrix for single open shell RHF
+            ELSE
+               WRK(KFQ:KFQ+LFQ-1) = -9.87654321D123
+               ! see notes in connection with PV above
+            END IF
          END IF
-         CALL MEMGET('REAL',KDUM,0,WRK,KFREE,LFREE)
 C
 C *** LOCALIZATION
 C
-         IF (BOYORB.OR.PIPORB) CALL SIRLOC(CMO,WRK(KFREE),LFREE)
+         IF (BOYORB .OR. PIPORB) CALL SIRLOC(CMO,WRK(KFREE),LFREE)
 C
          IF (LMULBS .OR. R12CAL) THEN
 C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).
@@ -1369,13 +1387,15 @@ C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).
             CALL TIMER('R12AUX',TIMSTR,TIMEND)
          END IF
 C
-         CALL WRSIFC(CMO,DV,WRK(KPV),FCAO,DCAO,
+C *** and now we are ready to call WR_SIRIFC to write SIRIFC
+         CALL MEMGET('REAL',KDUM,0,WRK,KFREE,LFREE)
+         CALL WR_SIRIFC(CMO,DV,WRK(KPV),FCAO,DCAO,
      &               WRK(KFQ),WRK(KDUM),WRK(KDUM),WRK(KDUM),
      &               WRK(KFREE),LFREE,WRK(KGORB),TNLM,.FALSE.,WRK(KDUM))
-C        CALL WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
-C    *               GORB,ERLM,ORBHES,XINDX)
+C        CALL WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
+C    &               GORB,ERLM,ORBHES,XINDX)
 C
-         CALL MEMREL('DIIS_CTL.WRSIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
+         CALL MEMREL('DIIS_CTL.WR_SIRIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
       END IF
 C
 C        Transform integrals for abacus or response, 

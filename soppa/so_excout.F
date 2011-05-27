@@ -1,7 +1,11 @@
 C
 C  /* Deck so_excout */
-      SUBROUTINE SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
-     &                     FONAC,FONA2,SECMAT,WORK,LWORK)
+CSPAS:23/5-11: second and third moment sum rules
+C     SUBROUTINE SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
+C    &                     FONAC,FONA2,SECMAT,WORK,LWORK)
+      SUBROUTINE SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
+     &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
+CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -26,7 +30,13 @@ CKeinSPASmehr
 #include <codata.h>
 C
       DIMENSION TRLEN(3,NSYM,MXNEXI,4), TRVEL(3,NSYM,MXNEXI,4)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI,4), TQVEL(3,3,NSYM,MXNEXI,4)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI,4), TRMAG(3,NSYM,MXNEXI,4)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TTLEN(10,NSYM,MXNEXI,4)
+CKeinSPASmehr
       DIMENSION BSRLON(3,NSYM,MXNEXI,4),EXENG(NSYM,MXNEXI,4)
       DIMENSION FONAC(*)
       DIMENSION FONA2(*)
@@ -57,9 +67,15 @@ C
          WRITE(LUPRI,'(30X,A)') ' RPA results:'
          WRITE(LUPRI,9001)
 C
-         CALL EXCOUT(TRLEN(1,1,1,1),TRVEL(1,1,1,1),DUMMY,DUMMY,
-     &               TRMAG(1,1,1,1),TRLON(1,1,1,1),BSRLON(1,1,1,1),
-     &               EXENG(1,1,1),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:23/5-11: second and third moment sum rules
+C        CALL EXCOUT(TRLEN(1,1,1,1),TRVEL(1,1,1,1),DUMMY,DUMMY,
+C    &               TRMAG(1,1,1,1),TRLON(1,1,1,1),BSRLON(1,1,1,1),
+C    &               EXENG(1,1,1),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+         CALL EXCOUT(TRLEN(1,1,1,1),TRVEL(1,1,1,1),TQLEN(1,1,1,1,1),
+     &               TQVEL(1,1,1,1,1),TRMAG(1,1,1,1),TRLON(1,1,1,1),
+     &               BSRLON(1,1,1,1),TTLEN(1,1,1,1),EXENG(1,1,1),
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
          DO 200 ISYM = 1, NSYM
@@ -137,7 +153,10 @@ C
 C
       DO 240 ISYM = 1, NSYM
 C
-         DO 230 IEXCI = 1, NEXCIT(ISYM)
+CSPAS:24/5-11: remove a lot of garbage output
+C        DO 230 IEXCI = 1, NEXCIT(ISYM)
+         DO 230 IEXCI = 1, MIN(NEXCIT(ISYM),NT1AM(ISYM))
+CKeinSPASmehr
 C
             SECSUM = SECMAT(1,IEXCI,ISYM) 
      &             + SECMAT(2,IEXCI,ISYM) + SECMAT(3,IEXCI,ISYM)
@@ -167,9 +186,15 @@ C
          WRITE(LUPRI,'(30X,A)') 'RPA(D) results:'
          WRITE(LUPRI,9001)
 C
-         CALL EXCOUT(TRLEN(1,1,1,2),TRVEL(1,1,1,2),DUMMY,DUMMY,
-     &               TRMAG(1,1,1,2),TRLON(1,1,1,2),BSRLON(1,1,1,2),
-     &               EXENG(1,1,2),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:23/5-11: second and third moment sum rules
+C        CALL EXCOUT(TRLEN(1,1,1,2),TRVEL(1,1,1,2),DUMMY,DUMMY,
+C    &               TRMAG(1,1,1,2),TRLON(1,1,1,2),BSRLON(1,1,1,2),
+C    &               EXENG(1,1,2),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+         CALL EXCOUT(TRLEN(1,1,1,2),TRVEL(1,1,1,2),TQLEN(1,1,1,1,2),
+     &               TQVEL(1,1,1,1,2),TRMAG(1,1,1,2),TRLON(1,1,1,2),
+     &               BSRLON(1,1,1,2),TTLEN(1,1,1,2),EXENG(1,1,2),
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
          DO 400 ISYM = 1, NSYM
@@ -197,9 +222,15 @@ C
          WRITE(LUPRI,'(30X,A)') 'SOPPA results:'
          WRITE(LUPRI,9001)
 C
-         CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),DUMMY,DUMMY,
-     &               TRMAG(1,1,1,3),TRLON(1,1,1,3),BSRLON(1,1,1,3),
-     &               EXENG(1,1,3),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:23/5-11: second and third moment sum rules
+C        CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),DUMMY,DUMMY,
+C    &               TRMAG(1,1,1,3),TRLON(1,1,1,3),BSRLON(1,1,1,3),
+C    &               EXENG(1,1,3),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+         CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),TQLEN(1,1,1,1,3),
+     &               TQVEL(1,1,1,1,3),TRMAG(1,1,1,3),TRLON(1,1,1,3),
+     &               BSRLON(1,1,1,3),TTLEN(1,1,1,3),EXENG(1,1,3),
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
          DO 600 ISYM = 1, NSYM
@@ -227,9 +258,15 @@ C
          WRITE(LUPRI,'(30X,A)') 'SOPPA(CCSD) results:'
          WRITE(LUPRI,9001)
 C
-         CALL EXCOUT(TRLEN(1,1,1,4),TRVEL(1,1,1,4),DUMMY,DUMMY,
-     &               TRMAG(1,1,1,4),TRLON(1,1,1,4),BSRLON(1,1,1,4),
-     &               EXENG(1,1,4),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CSPAS:23/5-11: second and third moment sum rules
+C        CALL EXCOUT(TRLEN(1,1,1,4),TRVEL(1,1,1,4),DUMMY,DUMMY,
+C    &               TRMAG(1,1,1,4),TRLON(1,1,1,4),BSRLON(1,1,1,4),
+C    &               EXENG(1,1,4),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+         CALL EXCOUT(TRLEN(1,1,1,4),TRVEL(1,1,1,4),TQLEN(1,1,1,1,4),
+     &               TQVEL(1,1,1,1,4),TRMAG(1,1,1,4),TRLON(1,1,1,4),
+     &               BSRLON(1,1,1,4),TTLEN(1,1,1,4),EXENG(1,1,4),
+     &               FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
+CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
          DO 800 ISYM = 1, NSYM

@@ -1422,9 +1422,9 @@ C Purpose:
 C  Print molecular orbital coefficients on unit IOUT.
 C
 C Input:
-C  CMO, MO orbital coefficients (symmetry blocked)
-C  PROCC, print only occupied orbitals
-C  IOUT, output file unit
+C  CMO:    MO orbital coefficients (symmetry blocked)
+C  PROCC:  print only occupied orbitals
+C  IOUT:   output file unit
 C
 #include <implicit.h>
       DIMENSION CMO(*)

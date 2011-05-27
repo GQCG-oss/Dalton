@@ -300,323 +300,6 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASDIAS_PAR(NAEL,IASTR,NBEL,IBSTR,
-     &           NORB,DIAG,NSMST,H,XA,XB,SCR,RJ,RK,
-     &           NSSOA,NSSOB,LUDIA,ECORE,
-     &           PLSIGN,PSSIGN,IPRNT,NTOOB,ICISTR,RJKAA,I12,
-     &           IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
-*
-* Calculate determinant diagonal
-* Turbo-ras version
-*
-* Driven by IBLKFO, May 97
-*
-* ========================
-* General symmetry version
-* ========================
-*
-* Jeppe Olsen, July 1995, GAS version
-*
-* I12 = 1 => only one-body part
-*     = 2 =>      one+two-body part
-*
-* Parallel adaption in January 2007, Stefan Knecht
-*
-      IMPLICIT REAL*8           (A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-C     REAL * 8  INPROD
-*.General input
-      DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*)
-      DIMENSION H(NORB)
-*. Specific input
-      DIMENSION IBLTP(*),IBLKFO(8,NBLOCK),NPARBLOCK(NBLOCK)
-*. Scratch
-      DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
-      DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
-      DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
-      DIMENSION RJKAA(*)
-*. Output
-      DIMENSION DIAG(*)
-*
-      NTEST =  00
-      NTEST = MAX(NTEST,IPRNT)
-      IF(PSSIGN.EQ.-1.0D0) THEN
-         XADD = 1000000.0
-      ELSE
-         XADD = 0.0D0
-      END IF
-*
-
-      IF( NTEST .GE. 20 ) THEN
-        WRITE(6,*) ' Diagonal one electron integrals'
-        CALL WRTMT_LU(H,1,NORB,1,NORB)
-        WRITE(6,*) ' Core energy ', ECORE
-        IF(I12.EQ.2) THEN
-          WRITE(6,*) ' Coulomb and exchange integrals '
-          CALL WRTMT_LU(RJ,NORB,NORB,NTOOB,NTOOB)
-          WRITE(6,*)
-          CALL WRTMT_LU(RK,NORB,NORB,NTOOB,NTOOB)
-        END IF
-*
-        WRITE(6,*) ' TTSS for Blocks '
-        DO IBLOCK = 1, NBLOCK
-          WRITE(6,'(10X,4I3,2I8)') (IBLKFO(II,IBLOCK),II=1,4)
-        END DO
-*
-        WRITE(6,*) ' I12 = ',I12
-      END IF
-*
-*  Diagonal elements according to Handys formulae
-*   (corrected for error)
-*
-*   DIAG(IDET) = HII*(NIA+NIB)
-*              + 0.5 * ( J(I,J)-K(I,J) ) * NIA*NJA
-*              + 0.5 * ( J(I,J)-K(I,J) ) * NIB*NJB
-*              +         J(I,J) * NIA*NJB
-*
-*. K goes to J - K
-      IF(I12.EQ.2)
-     &CALL VECSUM(RK,RK,RJ,-1.0D0,+1.0D0,NTOOB **2)
-      IDET = 0
-      ITDET = 0
-      IF(LUDIA.NE.0) CALL REWINO(LUDIA)
-*
-      DO 100 IBLK = 1, NBLOCK
-*
-*. write only blocks to disc that are necessary for this node
-        IF(NPARBLOCK(IBLK).NE.LUCI_MYPROC) GOTO 100
-*
-        IATP = IBLKFO(1,IBLK)
-        IBTP = IBLKFO(2,IBLK)
-        IASM = IBLKFO(3,IBLK)
-        IBSM = IBLKFO(4,IBLK)
-*
-        IF(IBLTP(IASM).EQ.2) THEN
-          IREST1 = 1
-        ELSE
-          IREST1 = 0
-        END IF
-*
-*. Construct array RJKAA(*) =   SUM(I) H(I)*N(I) +
-*                           0.5*SUM(I,J) ( J(I,J) - K(I,J))*N(I)*N(J)
-*
-*. Obtain alpha strings of sym IASM and type IATP
-        IDUM = 0
-        CALL GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
-     &                           NORB,0,IDUM,IDUM)
-        IOFF =  1
-        DO IA = 1, NSSOA(IASM,IATP)
-          EAA = 0.0D0
-          DO IEL = 1, NAEL
-            IAEL = IASTR(IEL,IA)
-            EAA = EAA + H(IAEL)
-            IF(I12.EQ.2) THEN
-              DO JEL = 1, NAEL
-                EAA =   EAA + 0.5D0*RK(IASTR(JEL,IA),IAEL )
-              END DO
-            END IF
-          END DO
-          RJKAA(IA-IOFF+1) = EAA
-        END DO
-*. Obtain beta strings of sym IBSM and type IBTP
-        CALL GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
-     &                         NORB,0,IDUM,IDUM)
-        IBSTRT = 1
-        IBSTOP =  NSSOB(IBSM,IBTP)
-        DO IB = IBSTRT,IBSTOP
-          IBREL = IB - IBSTRT + 1
-*
-*. Terms depending only on IB
-*
-          HB = 0.0D0
-          RJBB = 0.0D0
-          CALL SETVEC(XB,0.0D0,NORB)
-*
-          DO IEL = 1, NBEL
-            IBEL = IBSTR(IEL,IB)
-            HB = HB + H(IBEL )
-*
-            IF(I12.EQ.2) THEN
-              DO JEL = 1, NBEL
-                RJBB = RJBB + RK(IBSTR(JEL,IB),IBEL )
-              END DO
-*
-              DO IORB = 1, NORB
-                XB(IORB) = XB(IORB) + RJ(IORB,IBEL)
-              END DO
-            END IF
-          END DO
-          EB = HB + 0.5D0*RJBB + ECORE
-*
-          IF(IREST1.EQ.1.AND.IATP.EQ.IBTP) THEN
-            IASTRT =  IB
-          ELSE
-            IASTRT = 1
-          END IF
-          IASTOP = NSSOA(IASM,IATP)
-*
-          DO IA = IASTRT,IASTOP
-            IDET = IDET + 1
-            ITDET = ITDET + 1
-            X = EB + RJKAA(IA-IOFF+1)
-            DO IEL = 1, NAEL
-              X = X +XB(IASTR(IEL,IA))
-            END DO
-            DIAG(IDET) = X
-            IF(IB.EQ.IA) DIAG(IDET) = DIAG(IDET) + XADD
-          END DO
-*         ^ End of loop over alpha strings|
-        END DO
-*       ^ End of loop over betastrings
-*. Yet a RAS block of the diagonal has been constructed
-        IF(ICISTR.GE.2) THEN
-          IF(NTEST.GE.100) THEN
-            if(myproc.eq.master)then
-            write(6,*) ' number of diagonal elements to disc ',IDET
-            CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
-            endif
-          END IF
-          CALL ITODS(IDET,1,-1,LUDIA)
-          CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
-          IDET = 0
-        END IF
- 100  CONTINUE
-*        ^ End of loop over blocks
-
-      IF(NTEST.GE.5) WRITE(6,*)
-     &' Number of diagonal elements generated ',ITDET
-CSK      WRITE(6,*) ' Number of diagonal elements generated by node',ITDET,myproc
-*
-      IF(NTEST .GE.100 .AND.ICISTR.LE.1 ) THEN
-        WRITE(6,*) ' CIDIAGONAL '
-        CALL WRTMT_LU(DIAG(1),1,IDET,1,IDET)
-      END IF
-*
-      IF ( ICISTR.GE.2 ) CALL ITODS(-1,1,-1,LUDIA)
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE GASDIAT_PAR(DIAG,LUDIA,ECORE,ICISTR,I12,
-     &                      IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
-*
-* CI diagonal in SD basis for state with symmetry ISM in internal
-* space ISPC
-*
-* GAS version, Winter of 95
-*
-* Driven by table of TTS blocks, May97
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
-     &          KLBSTR, KLRJKA
-!               for addressing of WORK
-* =====
-*.Input
-* =====
-*
-*
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "cprnt.inc"
-#include "cgas.inc"
-#include "gasstr.inc"
-*
-      DIMENSION IBLTP(*)
-      DIMENSION IBLKFO(8,NBLOCK),NPARBLOCK(NBLOCK)
-*
-* ======
-*.Output
-* ======
-      DIMENSION DIAG(*)
-*
-      CALL QENTER('CIDIA')
-*
-      NTEST = 00
-      NTEST = MAX(NTEST,IPRDIA)
-*
-** Specifications of internal space
-*
-      IATP = 1
-      IBTP = 2
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-*
-*. Offsets for alpha and beta supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-      IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' ===================='
-        WRITE(6,*) ' GASDIAT_PAR speaking'
-        WRITE(6,*) ' ===================='
-        WRITE(6,*) ' IATP IBTP NAEL NBEL ',IATP,IBTP,NAEL,NBEL
-        write(6,*) ' NOCTPA NOCTPB  : ', NOCTPA,NOCTPB
-        write(6,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
-      END IF
-*
-**. Local memory
-*
-      IDUM = 0
-      CALL MEMMAN(IDUM,  IDUM,    'MARK  ',IDUM,'GASDIA')
-      CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
-      CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
-      CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
-      CALL MEMMAN(KLXA  ,NACOB,   'ADDL  ',2,'KLXA  ')
-      CALL MEMMAN(KLXB  ,NACOB,   'ADDL  ',2,'KLXB  ')
-      CALL MEMMAN(KLSCR ,2*NACOB, 'ADDL  ',2,'KLSCR ')
-      CALL MEMMAN(KLH1D ,NACOB,   'ADDL  ',2,'KLH1D ')
-*. Space for blocks of strings
-      CALL MEMMAN(KLASTR,MXNSTR*NAEL,'ADDL  ',1,'KLASTR')
-      CALL MEMMAN(KLBSTR,MXNSTR*NBEL,'ADDL  ',1,'KLBSTR')
-*
-      MAXA = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTPA,2)
-      CALL MEMMAN(KLRJKA,MAXA,'ADDL  ',2,'KLRJKA')
-*
-**. Diagonal of one-body integrals and coulomb and exchange integrals
-*
-      CALL GT1DIA(WORK(KLH1D))
-      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
-      IF( LUDIA .GT. 0 ) CALL REWINO(LUDIA)
-      CALL GASDIAS_PAR(NAEL,WORK(KLASTR),NBEL,WORK(KLBSTR),
-     &     NACOB,DIAG,NSMST,WORK(KLH1D),
-     &     WORK(KLXA),WORK(KLXB),WORK(KLSCR),WORK(KLJ),
-     &     WORK(KLK),WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-     &     LUDIA,ECORE,PLSIGN,PSSIGN,IPRDIA,NTOOB,ICISTR,
-     &     WORK(KLRJKA),I12,IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
-*.Flush local memory
-      CALL MEMMAN(IDUM,  IDUM,    'FLUSM ',IDUM,'GASDIA')
-      CALL QEXIT('CIDIA')
-*
-C?    Call Abend2( ' Stefan forced me to stop after GASDIA ' )
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
       SUBROUTINE GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
      &                          RECVARRAY,TESTARR,
      &                          IRECVARRAY,ITESTARRAY,IRANKARR,
@@ -982,9 +665,9 @@ C
         CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
 csk     WRITE(luwrt,*) 'LUCLIST for the 1st time:'
-csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
+csk     CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,luwrt)
 csk     WRITE(luwrt,*) 'LU1LIST for the 1st time:'
-csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
+csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,luwrt)
 *
         call mcci_cp_vcd_batch(ilu1,iluc,vec1,
      &                         nbatv,lbatv,lebatv,i1batv,
@@ -996,9 +679,9 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
 !    &                      LUCLIST,IBLOCKL,IVEC-1)
 *
 !       WRITE(luwrt,*) 'LUCLIST for the 2nd time:'
-!       CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUCIWT)
+!       CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,luwrt)
 !       WRITE(luwrt,*) 'LU1LIST for the 2nd time:'
-!       CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUCIWT)
+!       CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,luwrt)
 *
 *       set offset for sigma-file
 *
@@ -1657,16 +1340,11 @@ C       reset ITER_CHECKP
 C
 C       copy c-vectors from nodes and master back to the master
         CALL REWINE(61,-1)
-        DO JXROOT = 1, NROOT
-          CALL REWINE(97,-1)
-          CALL COPVCD_PAR_BDRIV_REL(ILU1,97,VEC1,NBLOCKDN,NUM_BLOCKS2,
-     &                              IBLOCKL,MPI_COMM_WORLD,-1,JXROOT,
-     &                              LU1LIST,MY_LU1_OFF,1)
-          if(luci_myproc .eq. luci_master)then
-             CALL REWINE(97,-1)
-             CALL COPVCD(97,61,VEC1,0,-1)
-          end if
-        END DO
+        call copy_vector_mpi_2_sequential_io(ILU1,61,VEC1,
+     &                                       MY_LU1_OFF,LU1LIST,
+     &                                       NBLOCKDN,IBLOCKL,
+     &                                       MPI_COMM_WORLD,
+     &                                       NUM_BLOCKS2,nroot,1)
         IF(luci_myproc .eq. luci_master) CALL REWINE(61,-1)
       END IF
 C

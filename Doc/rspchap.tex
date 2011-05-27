@@ -3,17 +3,17 @@
 
 In the preceding chapters we have shown how to calculate a number of
 properties that are associated with specific spectroscopic applications.
-%such as NMR-parameters (Chapter~\ref{ch:magnetic}). 
+%such as NMR-parameters (Chapter~\ref{ch:magnetic}).
 For HF, DFT, SOPPA, and MCSCF these properties are in part
 calculated in the \resp\ program, but given that a large number of
 standard calculations usually are carried out in a similar fashion, some
-applications have a simplified input (under {\tt **PROPERTIES}), 
-and an appealing output that meets common demands 
+applications have a simplified input (under {\tt **PROPERTIES}),
+and an appealing output that meets common demands
 ({\it e.g.\/} customary unit conversions).
 For CC calculations of properties, see Chapter~\ref{ch:CC}.
 In this chapter we
 describe how to set up the input for calculating a general property that
-can be defined in terms of electronic response functions. 
+can be defined in terms of electronic response functions.
 %A very
 %helpful document detailing various linear and nonlinear properties
 %that can be calculated with the response program, and the conversion
@@ -41,14 +41,14 @@ Jeppe Olsen and Poul J{\o}rgensen, \newblock {\em J. Chem. Phys.} {\bf 82}, \hsp
 A response function is a measure of how a property of a system changes in
 the presence of one or more perturbations. With our notation (see {\it e.g.\/}
 Ref.~\cite{jopjjcp82}),  $\langle\!\langle A;B\rangle\!\rangle_{\omega_b}$,
-$\langle\!\langle A;B,C\rangle\!\rangle_{\omega_b,\omega_c}$, and 
+$\langle\!\langle A;B,C\rangle\!\rangle_{\omega_b,\omega_c}$, and
 $\langle\!\langle A;B,C,D\rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$
 denote linear, quadratic and cubic response\index{linear response}\index{quadratic response}\index{cubic response}\index{response!linear}\index{response!quadratic}\index{response!cubic}\index{response function}
 functions, respectively, which
 provide the first, second, and third-order corrections to the
 expectation-value of $A$, due to the perturbations $B$, $C$, and $D$, each of
 which is associated with a frequency $\omega_b$, $\omega_c$, and
-$\omega_d$. Often the perturbations are considered to be 
+$\omega_d$. Often the perturbations are considered to be
 external monochromatic fields, or static ({\it e.g.\/} relativistic) perturbations,
 in which case the frequency is zero.   In general, the perturbations $B$,
 $C$, and $D$ represent Fourier components of an arbitrary time-dependent
@@ -56,7 +56,7 @@ perturbation.
 
 \section{Input description}
 \label{sec:rspex}
- 
+
 In this section we describe a few minimal input examples for calculating some
 molecular properties that can be expressed in terms of linear, quadratic, and
 cubic response functions.
@@ -64,7 +64,7 @@ Note that only one of these three different orders of response functions can be
 requested in the same calculation.
 
 For more information on keywords, see the Reference Manual, chapter~\ref{ch:response}.
- 
+
 \subsection{Linear response}
 \label{subsec:linrsp}
 %\subsection{Polarizability, $\alpha_{ij}(0;0)$ $i,j \in \{x,y,z\}$}
@@ -81,13 +81,16 @@ Poul J{\o}rgensen, Hans J{\o}rgen Aagaard Jensen, and Jeppe Olsen, \newblock {\e
 \item Triplet linear response:
 Jeppe Olsen, Danny L. Yeager, and Poul J{\o}rgensen, \newblock {\em J. Chem. Phys.} {\bf 91}, \hspace{0.25em}381, (1989)
 \item SOPPA linear response:
-Martin J. Packer, Erik K. Dalskov, Thomas Enevoldsen, Hans J{\o}rgen Aagaard Jensen and Jens Oddershede, 
+Martin J. Packer, Erik K. Dalskov, Thomas Enevoldsen, Hans J{\o}rgen Aagaard Jensen and Jens Oddershede,
 \newblock {\em J. Chem. Phys.}, {\bf 105}, \hspace{0.25em}5886, (1996)
 \item SOPPA(CCSD) linear response:
 Stephan P. A. Sauer,
 \newblock {\em J. Phys. B: At. Opt. Mol. Phys.}, {\bf 30}, \hspace{0.25em}3773, (1997)
+\item SOPPA(CC2) linear response:
+Hanna Kj{\ae}r, Stephan P.A. Sauer and Jacob Kongsted.
+\newblock {\em J.Chem.Phys.}, {\bf 133},\hspace{0.25em}144106, (2010)
 \item DFT open-shell linear response:
-Zilvinas Rinkevicius, Ingvar Tunell, Pawe{\l} Sa{\l}ek, Olav Vahtras, and Hans {\AA}gren, 
+Zilvinas Rinkevicius, Ingvar Tunell, Pawe{\l} Sa{\l}ek, Olav Vahtras, and Hans {\AA}gren,
 \newblock {\em J. Chem. Phys.}, {\bf 119}, \hspace{0.25em}34, (2003)
 \end{list}
 }}
@@ -118,9 +121,9 @@ operators as all components of the electric dipole operator.
 A Second Order Polarization Propagator Approximation
 (SOPPA)\index{SOPPA}\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp}
 calculation of linear response functions
-can be invoked if the additional keyword \Key{SOPPA} is specified in the 
-\Sec{*RESPONSE} input module and an MP2 calculation is requested by the 
-keyword \Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module.  A typical input 
+can be invoked if the additional keyword \Key{SOPPA} is specified in the
+\Sec{*RESPONSE} input module and an MP2 calculation is requested by the
+keyword \Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module.  A typical input
 for SOPPA dynamic polarizability tensors  will be:
 \begin{verbatim}
 **DALTON INPUT
@@ -137,17 +140,18 @@ for SOPPA dynamic polarizability tensors  will be:
  0.0 0.5 1.0
 **END OF DALTON INPUT
 \end{verbatim}
-The {\tt .NOITRA} keyword has the effect that the transformation of the two 
+The {\tt .NOITRA} keyword has the effect that the transformation of the two
 electron integrals necessary for a MP2 and SOPPA calculation is only performed
 once in the \Sec{*WAVE FUNCTIONS} module.
 
-A Second Order Polarization Propagator Approximation with Coupled Cluster
-Singles and Doubles Amplitudes - SOPPA(CCSD)\index{SOPPA(CCSD)}\cite{soppaccsd}
-calculation of linear response functions can be invoked if the additional 
-keyword \Key{SOPPA(CCSD)} is specified in the 
-\Sec{*RESPONSE} input module and an CCSD calculation is requested by the 
-keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS} input module.  A typical input 
-for SOPPA(CCSD) dynamic polarizability tensors  will be:
+A Second Order Polarization Propagator Approximation with Coupled
+Cluster Singles and Doubles Amplitudes -
+SOPPA(CCSD)\index{SOPPA(CCSD)}\cite{soppaccsd} calculation of linear
+response functions can be invoked if the additional keyword
+\Key{SOPPA(CCSD)} is specified in the \Sec{*RESPONSE} input module and
+an CCSD calculation is requested by the keywords \Key{CC} and
+\Key{SOPPA(CCSD)} in the \Sec{*WAVE FUNCTIONS} input module.  A typical
+input for SOPPA(CCSD) dynamic polarizability tensors  will be:
 \begin{verbatim}
 **DALTON INPUT
 .RUN RESPONSE
@@ -166,17 +170,41 @@ for SOPPA(CCSD) dynamic polarizability tensors  will be:
 **END OF DALTON INPUT
 \end{verbatim}
 
-The linear response function contains a wealth of
-information about the spectrum of a given Hamiltonian. 
-It has poles\index{pole of response function} at the excitation
-energies\index{electronic excitation}, 
-relative to the reference state (not necessarily the ground state) and the
-corresponding residues\index{residue} are transition
-moments\index{transition moment} between the reference and
-excited states. To calculate the excitation energies\index{electronic
-excitation} and dipole transition 
-moments\index{transition moment} for the three lowest excited states
-in the fourth symmetry, a small 
+A Second Order Polarization Propagator Approximation with CC2
+Amplitudes - SOPPA(CC2)\index{SOPPA(CC2)}\cite{spas097} calculation of
+linear response functions can be invoked if the additional keyword
+\Key{SOPPA(CCSD)} is specified in the \Sec{*RESPONSE} input module and
+an CC2 calculation is requested by the keywords \Key{CC} and
+\Key{SOPPA2} in the \Sec{*WAVE FUNCTIONS} input module.  A typical
+input for SOPPA(CC2) dynamic polarizability tensors  will be:
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+.CC
+*CC INPUT
+.SOPPA2
+**RESPONSE
+.SOPPA(CCSD)
+*LINEAR
+.DIPLEN
+.FREQUENCIES
+ 3
+ 0.0 0.5 1.0
+**END OF DALTON INPUT
+\end{verbatim}
+
+
+The linear response function contains a wealth of information about the
+spectrum of a given Hamiltonian. It has poles\index{pole of response
+function} at the excitation energies\index{electronic excitation},
+relative to the reference state (not necessarily the ground state) and
+the corresponding residues\index{residue} are transition
+moments\index{transition moment} between the reference and excited
+states. To calculate the excitation energies\index{electronic
+excitation} and dipole transition moments\index{transition moment} for
+the three lowest excited states in the fourth symmetry, a small
 modification of the input above will suffice;
 \begin{verbatim}
 **RESPONSE
@@ -189,7 +217,7 @@ modification of the input above will suffice;
 
 \subsection{Quadratic response}
 \label{subsec:quadrsp}
-%\subsection{First hyperpolarizability, 
+%\subsection{First hyperpolarizability,
 %$\beta_{zzz}(0;0,0)
 
 \begin{center}
@@ -199,13 +227,13 @@ modification of the input above will suffice;
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item Singlet quadratic response: 
+\item Singlet quadratic response:
 Hinne Hettema, Hans J{\o}rgen Aa. Jensen, Poul J{\o}rgensen, and Jeppe Olsen, \newblock {\em J. Chem. Phys.} {\bf 97}, \hspace{0.25em}1174, (1992)
-\item Triplet quadratic response: 
+\item Triplet quadratic response:
 Olav Vahtras, Hans {\AA}gren, Poul J{\o}rgensen, Hans J{\o}rgen Aa. Jensen, Trygve Helgaker, and Jeppe Olsen, \newblock {\em J. Chem. Phys.} {\bf 97}, \hspace{0.25em}9178, (1992)
-\item Integral direct quadratic response: 
+\item Integral direct quadratic response:
 Hans {\AA}gren, Olav Vahtras, Henrik Koch, Poul J{\o}rgensen, and Trygve Helgaker, \newblock {\em J. Chem. Phys.} {\bf 98}, \hspace{0.25em}6417, (1993)
-\item DFT singlet quadratic response: 
+\item DFT singlet quadratic response:
 Pawe{\l} Sa{\l}ek, Olav Vahtras, Trygve Helgaker, and Hans {\AA}gren, \newblock {\em J. Chem. Phys.} {\bf 117}, \hspace{0.25em}9630, (2002)
 \item DFT triplet quadratic response:
 Ingvar Tunell, Zilvinas Rinkevicius, Olav Vahtras, Pawe{\l} Sa{\l}ek, Trygve Helgaker, and Hans {\AA}gren,
@@ -215,10 +243,10 @@ Ingvar Tunell, Zilvinas Rinkevicius, Olav Vahtras, Pawe{\l} Sa{\l}ek, Trygve Hel
 \end{center}
 
 An example of a quadratic response\index{quadratic response} function
-is the first 
+is the first
 hyperpolarizability\index{first hyperpolarizability}. If we are
 interested in
-$\beta_{zzz}\equiv-\langle\!\langle z;z,z\rangle\!\rangle_{0,0}$ 
+$\beta_{zzz}\equiv-\langle\!\langle z;z,z\rangle\!\rangle_{0,0}$
 only, we may use the following input:
 \begin{verbatim}
 **DALTON INPUT
@@ -243,7 +271,7 @@ will also be printed (in this example $\alpha_{zz}$).
 
 The residue of a quadratic response function gives two-photon
 transition amplitudes\index{two-photon!amplitude}. For such a
-calculation we supply the same extra 
+calculation we supply the same extra
 keywords as in the linear case (Sec.~\ref{subsec:linrsp}):
 \begin{verbatim}
 **RESPONSE
@@ -261,7 +289,7 @@ induced transition moment of an operator $A$ due to a perturbation $B$.
 The $C$ operator is arbitrary and is not specified.  A typical example is
 the dipole matrix element between a singlet and triplet state that is
 induced by spin-orbit coupling
-(phosphorescence)\index{phosphoresence}. For this special case we 
+(phosphorescence)\index{phosphoresence}. For this special case we
 have the keyword, {\tt .PHOSPHORESCENCE} under {\tt *QUADRATIC}, which sets
 $A$ to electric dipole operators and $B$ to spin-orbit operators.
 
@@ -285,7 +313,7 @@ circularly polarized.
  3 0 0 0
 \end{verbatim}
 
-Another special case of a residue of the quadratic response function 
+Another special case of a residue of the quadratic response function
 is the ${\cal{B}}(0\to f)$ term of magnetic circular dichroism (MCD).
 \begin{verbatim}
 **RESPONSE
@@ -295,27 +323,27 @@ is the ${\cal{B}}(0\to f)$ term of magnetic circular dichroism (MCD).
  2 2 0 0
 .MCDBTERM
 \end{verbatim}
-For each dipole-allowed excited state among those specified in 
-{\tt .ROOTS}, the {\tt .MCDBTERM} keyword automatically 
-calculates all symmetry allowed products of the single residue of the 
+For each dipole-allowed excited state among those specified in
+{\tt .ROOTS}, the {\tt .MCDBTERM} keyword automatically
+calculates all symmetry allowed products of the single residue of the
 quadratic response function for $A$ corresponding to the electric dipole
-operator and $B$ to the angular momentum operator with the single residue 
+operator and $B$ to the angular momentum operator with the single residue
 of the linear response function for $C$ equal to the electric dipole operator.
 In other words, the mixed electric dipole---magnetic dipole two-photon
 transition moment\index{two-photon!transition moment}\index{transition moment!two-photon}
 for final state $f$ times the dipole one-photon moment for the same state $f$.
 Note that in the current implementation (for SCF and MCSCF), degeneracies between
-excited states may lead to numerical divergencies. 
-The final ${\cal{B}}(0\to f)$ must be obtained from a combination 
+excited states may lead to numerical divergencies.
+The final ${\cal{B}}(0\to f)$ must be obtained from a combination
 of the individual components, see the original paper~\cite{Coriani:MCDRSP}.
 %, or the document by Jaszu\'{n}ski and Rizzo on the Dalton
-%homepage. 
+%homepage.
 
 It is possible to construct double
 residues\index{residue}\index{double residue} of the quadratic
 response function, the interpretation of which is transition
 moments\index{transition moment}\index{excited state}
-between two 
+between two
 excited states. Specifying \Key{DOUBLE} in the example above thus gives
 the matrix elements of the $z$-component of the dipole moment between
 all excited states specified in {\tt .ROOTS}. Note that the diagonal contributions
@@ -363,7 +391,7 @@ $-\langle\!\langle x_i;x_j,x_k,x_l\rangle\!\rangle_{000}$,
 %$\alpha^e_{zz}(-0.01;0.01) - \alpha^0_{zz}(-0.01;0.01)$}
 %\cite{djpnylhajcp105}
 
-As  mentioned above (Sec.~\ref{subsec:quadrsp}), the "diagonal" 
+As  mentioned above (Sec.~\ref{subsec:quadrsp}), the "diagonal"
 double residue\index{residue}\index{double residue} of the quadratic
 response function is the change in the expectation value relative to the
 reference state. The analogue for cubic
@@ -387,6 +415,3 @@ input.
   1 0 0 0
 **END OF DALTON INPUT
 \end{verbatim}
-
-
-

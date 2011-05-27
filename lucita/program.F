@@ -153,14 +153,14 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
         END DO
         END DO
 *
-       END IF
+      END IF
 *
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
-      WRITE(LUWRT,'(a,i14)') 
+      WRITE(LUWRT,'(/a,i14)') 
      &     '  @@ Number of determinants/combinations: ',NDET
       IF(NDET.EQ.0) THEN
-       WRITE(LUWRT,*) 'the number of determinants/combinations is zero.'
+       WRITE(LUWRT,*) 'The number of determinants/combinations is zero.'
        WRITE(LUWRT,*) ' I am sure that fascinating discussions about '
        WRITE(LUWRT,*) ' the energy of such a wave function exists, '
        WRITE(LUWRT,*) ' but I am just a dumb program, so I will stop'
@@ -647,10 +647,12 @@ C
      &   ' to MPIs file-i/o format ...'
 C
          IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,-1)
-         CALL COP_REST_VEC_REL(WORK(KVEC1),LUC,ILU1,MY_LU1_OFF,
-     &                         WORK(KILU1LIST),
-     &                         par_dist_block_list,block_list,
-     &                         NBLOCK,NROOT,IRC_SAVE)
+         call copy_vector_sequential_2_mpi_io(LUC,ILU1,WORK(KVEC1),
+     &                                        MY_LU1_OFF,
+     &                                        WORK(KILU1LIST),
+     &                                        par_dist_block_list,
+     &                                        block_list,MPI_COMM_WORLD,
+     &                                        NBLOCK,NROOT,IRC_SAVE)
         WRITE(LUWRT,'(1X,A)') ' ... done! '
       END IF
 C
@@ -705,18 +707,11 @@ C
 C     NOTE: only C-vectors will be saved.
 C
       CALL REWINE(LUC,-1)
-      DO JROOT = 1, NROOT
-        CALL REWINE(LUSC41,-1)
-        CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
-     &                            par_dist_block_list,NUM_BLOCKS2,
-     &                            block_list,
-     &                            MPI_COMM_WORLD,-1,JROOT,
-     &                            WORK(KILU1LIST),MY_LU1_OFF,1)
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-          CALL REWINE(LUSC41,-1)
-          CALL copvcd(LUSC41,LUC,WORK(KVEC1),0,-1)
-        END IF
-      END DO
+      call copy_vector_mpi_2_sequential_io(ILU1,LUC,WORK(KVEC1),
+     &                                     MY_LU1_OFF,WORK(KILU1LIST),
+     &                                     par_dist_block_list,
+     &                                     block_list,MPI_COMM_WORLD,
+     &                                     NUM_BLOCKS2,NROOT,1)
       CALL REWINE(LUC,-1)
       NPTESTVAR = 00
       IF( NPTESTVAR .ge. 10 )THEN
@@ -731,7 +726,6 @@ C
       NPTESTVAR = 00
 C
  505    CONTINUE
-      close(unit=LUSC41,status='DELETE')
 *
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
@@ -884,6 +878,7 @@ C     -----------------------
       close(unit=LUSC38,status='DELETE')
       close(unit=LUSC39,status='DELETE')
       close(unit=LUSC40,status='DELETE')
+      close(unit=LUSC41,status='DELETE')
 C
       END
 ***********************************************************************
@@ -1059,12 +1054,10 @@ C     character line
       LUCIWT    = LUOUT
       LUWRT     = LUOUT
 
-      write(luwrt,'(/a)') 
-     & '   ------------------------------------------------'
-      write(luwrt,'(a,a12)') '   LUCITA module started with task-id = ',
-     &                           lucita_citask_id
-      write(luwrt,'(a/)') 
-     & '   ------------------------------------------------'
+      write(luwrt,'(/a/a,a12,a/a/)') 
+     & '   ---------------------------------------------------',
+     & '   LUCITA module started with task-id = "',lucita_citask_id,'"',
+     & '   ---------------------------------------------------'
 
       allocate(proclist(luci_nmproc))
       allocate(grouplist(luci_nmproc))
@@ -1142,7 +1135,7 @@ C     character line
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 C
-C     memory on common block WORK: initialization and allocation
+C     Memory on common block WORK: initialization and allocation
 C
 C     Compute offset from WRK_DALTON to WORK
       KFRSAV = 1
@@ -1188,7 +1181,7 @@ C     Compute offset from WRK_DALTON to WORK
       CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 
       WRITE(luwrt,'(10X,A,I18)')
-     &'Dimension of R*8 workspace : ', KADD
+     &  'Dimension of R*8 workspace : ', KADD
  
 C     LUCITA is used in real calculations: no complex part
       irc_save = 1
@@ -1250,18 +1243,16 @@ C
       DO JCMBSPC = 1, NCMBSPC
         ISKIPEI = 0
 *
-        WRITE(luwrt,'(/15X,A)')
-     &  '********************************'
-        WRITE(luwrt,'(15X,A)')
-     &  ' ******************************'
-        WRITE(luwrt,'(15X,A,I3)')
-     &  '   Calculations in space ', JCMBSPC
-        WRITE(luwrt,'(15X,A)')
-     &  ' ******************************'
-        WRITE(luwrt,'(15X,A/)')
-     &  '********************************'
-C       WRITE(luwrt,'(A,I3)')
-C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
+        IF (NCMBSPC .GT. 1) THEN
+          WRITE(luwrt,'(2(/15X,A)/15X,A,I3,2(/15X,A)/)')
+     &    '********************************',
+     &    ' ******************************',
+     &    '   Calculations in space ', JCMBSPC,
+     &    ' ******************************',
+     &    '********************************'
+C         WRITE(luwrt,'(A,I3)')
+C    &    ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
+        END IF
 C       Special treatment of lambda calc in first calc
         IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
           WRITE(luwrt,*) ' Remember No restart in calc 1 (Lambda calc)'
@@ -1428,8 +1419,8 @@ C
 !       WoRK(i) = i  
 !     end do
 
-      write(luwrt,'(/a,a12,a)') ' LUCITA run, task-id = ',
-     &      lucita_citask_id(1:12),' finished with no errors.'
+      write(luwrt,'(/a,a12,a)') ' LUCITA run, task-id = "',
+     &      lucita_citask_id(1:12),'" finished with no errors.'
 
       call qexit('LUCITA_MASTER')
 
@@ -1580,7 +1571,7 @@ C     UPPCAS(LINE,LENGTH)
          GOTO 1001
       ELSE IF(MOLCS.EQ.0.AND.CARD(1:1).NE.'.') THEN
 *. Line out of context
-         WRITE(luwrt,'(1X ,A)') ' Warning, card out of context : '
+         WRITE(luwrt,'(1X ,A)') ' WARNING, card out of context : '
          WRITE(luwrt,'(1X ,A)') CARD
          NWARN = NWARN + 1
       ELSE IF(MOLCS.EQ.1.OR.CARD(1:1).EQ.'.') THEN
@@ -3849,7 +3840,7 @@ C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
       IF(IDIAG.EQ.2 .AND. MXCIV.GT.2 ) THEN
         MXCIV = 2
         NWARN = NWARN + 1
-        WRITE(luwrt,*) ' Warning : You have specified TERACI '
+        WRITE(luwrt,*) ' WARNING : You have specified TERACI '
         WRITE(luwrt,*) '           I allow myself to set MXCIV = 2 '
         WRITE(luwrt,*)
         WRITE(luwrt,*) '                   Best Wishes    '
@@ -3911,7 +3902,7 @@ C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
 *. Disabling is disabled (sic) : To allow for final integraltrans
 C     IF(IDMPIN.EQ.1.AND.ENVIRO(1:5).EQ.'LUCIA') THEN
 C       IDMPIN = 0
-C       WRITE(6,*) 'Warning : Dump to LUCIA format disabled'
+C       WRITE(6,*) 'WARNING : Dump to LUCIA format disabled'
 C       WRITE(6,*) '(input format is LUCIA !              )'
 C       WRITE(6,*)
 C       WRITE(6,*) '                     /Lucia            '

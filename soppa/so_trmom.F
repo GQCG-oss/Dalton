@@ -3,8 +3,12 @@ C
 C  /* Deck so_trmom */
       SUBROUTINE SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,T2AM,LT2AM,DENSIJ,
      &                    LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &                    TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,
-     &                    WORK,LWORK)
+CSPAS:23/5-11: second and third moment sum rules
+C    &                    TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,
+C    &                    WORK,LWORK)
+     &                    TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
+     &                    BSRLON,EXENG,WORK,LWORK)
+CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -29,6 +33,10 @@ CKeinSPASmehr
 C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+      DIMENSION TTLEN(10,NSYM,MXNEXI)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI), EXENG(NSYM,MXNEXI)
       DIMENSION T2AM(LT2AM), WORK(LWORK)
@@ -55,7 +63,9 @@ C-----------------------------------------------------------------
 C        Check if integrals are second moment of charge integrals.
 C-----------------------------------------------------------------
 C
-         IF ( LABEL(3:8) .EQ. 'SECMOM' ) GOTO 200
+CSPAS:23/5-11: second and third moment sum rules
+C        IF ( LABEL(3:8) .EQ. 'SECMOM' ) GOTO 200
+CKeinSPASmehr
 C
 C---------------------------------------------------------------------
 C       If KSYMOP (the operator symmetry) equals ISYMTR (the reference
@@ -204,7 +214,7 @@ C
                IF ( IPRSOP .GE. 4) THEN
 C
                   WRITE(LUPRI,'(/,1X,A,A,I3,A)')
-     &            LABEL,'transition moment for state',IEXCI,':'
+     &            LABEL,' transition moment for state',IEXCI,':'
                   WRITE(LUPRI,'(4(F10.5,A),F10.5)')
      &            WORK(KTRM1E+IEXCI-1),' + ',WORK(KTRM2E+IEXCI-1),' + ',
      &            WORK(KTRM1D+IEXCI-1),' + ',WORK(KTRM2D+IEXCI-1),
@@ -218,6 +228,9 @@ C---------------------------------------------------
 C
                CALL SO_COLLECT_TM(ISYMTR,LABEL,IEXCI,
      &                            WORK(KTRMOM+IEXCI-1),TRLEN,TRVEL,
+CSPAS:23/5-11: second and third moment sum rules
+     &                            TQLEN,TQVEL,TTLEN,
+CKeinSPASmehr
      &                            TRLON,TRMAG,BSRLON,EXENG)
 C
   100       CONTINUE
@@ -239,16 +252,16 @@ C
 C
                IF (MODEL .EQ. 'DCRPA') THEN
                   WRITE(LUPRI,'(/,1X,A,A,A,I3)') LABEL,
-     &                  'RPA(D) transition moments for excitation',
+     &                  ' RPA(D) transition moments for excitation',
      &                  ' symmetry',ISYMTR
                ELSE IF (MODEL .EQ. 'AOSOP') THEN
                   WRITE(LUPRI,'(/,1X,A,A,A,I3)') LABEL,
-     &                  'SOPPA transition moments for excitation',
+     &                  ' SOPPA transition moments for excitation',
      &                  ' symmetry',ISYMTR
                ELSE IF (MODEL .EQ. 'AOSOC') THEN
                   WRITE(LUPRI,'(/,1X,A,A,A,I3)') LABEL,
-     &                  'SOPPA(CCSD) transition moments for excitation',
-     &                  ' symmetry',ISYMTR
+     &                 ' SOPPA(CCSD) transition moments for excitation',
+     &                 ' symmetry',ISYMTR
                ELSE
                   WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_TRMOM'
                   CALL QUIT('ERROR: Wrong model in SO_TRMOM')

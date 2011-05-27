@@ -1,6 +1,9 @@
 C
 C  /* Deck so_collect_tm */
       SUBROUTINE SO_COLLECT_TM(ISYMTR,LABEL,IEXCI,TRMOM,TRLEN,TRVEL,
+CSPAS:23/5-11: second and third moment sum rules
+     &                         TQLEN,TQVEL,TTLEN,
+CKeinSPASmehr
      &                         TRLON,TRMAG,BSRLON,EXENG)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -24,6 +27,10 @@ C
       CHARACTER*8 LABEL
 C
       DIMENSION TRLEN(3,NSYM,MXNEXI),        TRVEL(3,NSYM,MXNEXI)
+CSPAS:23/5-11: second and third moment sum rules
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI), TQVEL(3,3,NSYM,MXNEXI)
+      DIMENSION TTLEN(10,NSYM,MXNEXI)
+CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI),        TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),       EXENG(NSYM,MXNEXI)
 C
@@ -60,6 +67,48 @@ C
          IF (LABEL(1:1).EQ.'X') TRVEL(1,ISYMTR,IEXCI) = - TRMOM
          IF (LABEL(1:1).EQ.'Y') TRVEL(2,ISYMTR,IEXCI) = - TRMOM
          IF (LABEL(1:1).EQ.'Z') TRVEL(3,ISYMTR,IEXCI) = - TRMOM
+C
+CSPAS:23/5-11: second and third moment sum rules
+      ELSE IF (LABEL(3:8).EQ.'SECMOM') THEN
+         IF (LABEL(1:2) .EQ. 'XX') THEN
+                                TQLEN(1,1,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:2) .EQ. 'XY') THEN
+                                TQLEN(1,2,ISYMTR,IEXCI) = TRMOM
+                                TQLEN(2,1,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:2) .EQ. 'XZ') THEN
+                                TQLEN(1,3,ISYMTR,IEXCI) = TRMOM
+                                TQLEN(3,1,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:2) .EQ. 'YY') THEN
+                                TQLEN(2,2,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:2) .EQ. 'YZ') THEN
+                                TQLEN(2,3,ISYMTR,IEXCI) = TRMOM
+                                TQLEN(3,2,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:2) .EQ. 'ZZ') THEN
+                                TQLEN(3,3,ISYMTR,IEXCI) = TRMOM
+         END IF
+      ELSE IF (LABEL(5:8).EQ.'3MOM') THEN
+         IF (LABEL(1:3) .EQ. 'XXX') THEN
+                                TTLEN(1,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'YYY') THEN
+                                TTLEN(2,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'ZZZ') THEN
+                                TTLEN(3,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'XXY') THEN
+                                TTLEN(4,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'XXZ') THEN
+                                TTLEN(5,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'XYY') THEN
+                                TTLEN(6,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'XYZ') THEN
+                                TTLEN(7,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'XZZ') THEN
+                                TTLEN(8,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'YYZ') THEN
+                                TTLEN(9,ISYMTR,IEXCI) = TRMOM
+         ELSE IF (LABEL(1:3) .EQ. 'YZZ') THEN
+                                TTLEN(10,ISYMTR,IEXCI) = TRMOM
+         END IF
+CKeinSPASmehr
 C
       ELSE IF (LABEL(2:7).EQ.'ANGMOM') THEN
 C

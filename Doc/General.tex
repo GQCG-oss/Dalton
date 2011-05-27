@@ -45,12 +45,12 @@ first and second order molecular properties for limited models.
 In particular, it is possible to carry out Hartree-Fock
 \index{SCF}\index{HF}\index{Hartree--Fock},
 Density Functional Theory
-\index{DFT}\index{Density-Functional Theory}, 
+\index{DFT}\index{Density-Functional Theory},
 second-order M{\o}ller-Plesset perturbation theory
-(MP2)\index{M{\o}ller-Plesset!second-order}\index{MP2}, and 
+(MP2)\index{M{\o}ller-Plesset!second-order}\index{MP2}, and
 CC2 coupled cluster calculations\index{CC2}\index{Coupled-Cluster}. Note that
 the decomposition of differentiated integrals is not implemented yet and, therefore,
-gradients cannot be computed. Moreover, Cholesky CCSD(T)~\index{CCSD(T)} 
+gradients cannot be computed. Moreover, Cholesky CCSD(T)~\index{CCSD(T)}
 calculations, where the energy dominators are Cholesky decomposed,
 are carried out using standard integrals (or in a direct fashion).
 
@@ -94,8 +94,8 @@ using the \Sec{*WALK} module\index{iteration number!geometry, start}.
 Note that this will {\em not} affect which molecule
 input file that is going to be read, as this is handled by the
 job script {\tt dalton}. It only determines what number the
-output of the predicted molecular geometry will be, as well as where to start 
-writing information on the files containing information about an IRC 
+output of the predicted molecular geometry will be, as well as where to start
+writing information on the files containing information about an IRC
 calculation (\verb|DALTON.IRC|) or a dynamical trajectory walk (\verb|DALTON.TRJ|).
 
 \item[\Key{MAX IT}]\verb| |\newline
@@ -138,7 +138,7 @@ differentiation. These routines will take advantage of the full
 molecular point group in order to minimize the number of point to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
-module. 
+module.
 
 %% hjaaj Apr 2011: .PARALLEL is not needed any more, Dalton automatically perform the modules
 %% in parallel if more than one MPI node is associated.
@@ -165,7 +165,7 @@ module.
 %nodes asked for when submitting the job. However, if PVM\index{PVM} is used as
 %message passing interface, the number of nodes needs to be given in the
 %\Sec{PARALLEL} submodule input, and this number have to be equal to
-%the number of nodes asked for when submitting the job. 
+%the number of nodes asked for when submitting the job.
 %Note that in order to evaluate the parallelization efficiency\index{parallel efficiency},
 %a print level of at least 2 is needed in the \Sec{PARALLEL} submodule.
 
@@ -237,12 +237,12 @@ electric-field perturbations requested through the keyword \Key{POLARI}.
 \newline
 \verb|READ(LUCMD,*) IVECLN|
 
-Set the number of Fock matrices to be used during Fock-matrix constructions in 
+Set the number of Fock matrices to be used during Fock-matrix constructions in
 direct calculations. This function is only of interest for vector machines.
-The default is 128. The larger the number, the more memory will be required 
+The default is 128. The larger the number, the more memory will be required
 in the calculation.
 
-\item[\Key{WALK}] 
+\item[\Key{WALK}]
 Do a geometry walk\index{geometry walk}\index{geometry optimization!.WALK module}.
 If no input is given in the
 \Sec{WALK} input submodule, an optimization of the molecular
@@ -261,7 +261,7 @@ detailed description of possible options.
 Invoke the {\sir} program module for the evaluation of SCF, MP2, Coupled
 Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations.
 Necessary one-electron integrals are already evaluated and saved on files.
-See Chapter~\ref{chap:sirius-inpref}. 
+See Chapter~\ref{chap:sirius-inpref}.
 \end{description}
 
 %hjaaj Feb 2003: next is redundant, do not mention but keep in code for now
@@ -466,7 +466,7 @@ Hessian.
 
 Each time a Hessian is calculated or updated\index{Hessian update!geometry optimization},
 it's written to this file (in Cartesian coordinates). If an
-optimization is interrupted, it can be restarted with the 
+optimization is interrupted, it can be restarted with the
 last geometry and the Hessian in \verb|DALTON.HES|, minimizing the
 loss of information. Another useful possibility, is to transfer
 the Hessian from a calculation on the same molecule with another
@@ -605,7 +605,7 @@ sometimes benefit from having all dihedral angles removed (assuming no
 dihedral angles needs to be frozen).
 
 %\item[\Key{NOREIN}]
-%When first-order methods are used, the 
+%When first-order methods are used, the
 %Hessian\index{Hessian!reinitialization} is reinitialized every
 %time the Hessian index\index{Hessian!index} becomes non-zero (due to negative
 %eigenvalues). This guarantees that the Hessian describes a minimum,
@@ -991,9 +991,9 @@ appear in the \Sec{WALK} section.
 
 \begin{description}
 \item[\Key{ANHARM}]
-Requests that a determination of the cubic force field is to be determined. 
-By default this is done calculating numerical derivatives of analytical 
-Hessians in Cartesian coordinates. 
+Requests that a determination of the cubic force field is to be determined.
+By default this is done calculating numerical derivatives of analytical
+Hessians in Cartesian coordinates.
 
 \item[\Key{DISPLA}]\verb| |\newline
 \verb|READ (LUCMD, *) DISPLC|
@@ -1089,8 +1089,8 @@ associated with. See also the discussion in Sec.~\ref{sec:irc}.
 %
 %Specify the isotopic constitution\index{isotopic constitution} of the
 %molecule under investigation.
-%This is most interesting in dynamic walks\index{dynamics}, 
-%when using mass-scaled atomic coordinates\index{mass-weighted coordinates}. 
+%This is most interesting in dynamic walks\index{dynamics},
+%when using mass-scaled atomic coordinates\index{mass-weighted coordinates}.
 %Note that the internal structure of
 %\aba\ uses Cartesian coordinates, and for vibrational analysis alone
 %the keyword \Key{ISOTOP} in the \Sec{VIBANA} input section is to be
@@ -1235,7 +1235,7 @@ geometry optimization\index{restart!geometry optimization} and that
 information may therefore be available
 on the \verb|DALTON.WLK| file.
 
-\item[\Key{REUSE}] Use the property derivatives available on the file 
+\item[\Key{REUSE}] Use the property derivatives available on the file
 \verb|DALTON.WLK| in a calculation of the harmonic contribution to the
 vibrational average. In this case, only a new force field will be calculated.
 
@@ -1333,13 +1333,13 @@ contraction.  Read one more line containing number.  Default
 is~25, except for the Cray-T3D/E, where the default is 14.
 
 %\item[\Key{MOLINP}] Indicates that the molecular input comes at the
-%end of the current file. 
+%end of the current file.
 %Default is that the molecular input is to be
 %read from unit~9.
 
 \item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in {\dalton} 1.0.
 From {\dalton} 1.1, all components of spherical AO's are normalized to 1.
-This was not the case in {\dalton} 1.0, and this option is needed to read 
+This was not the case in {\dalton} 1.0, and this option is needed to read
 MO's correctly from an old file generated by {\dalton} 1.0 if spherical AO's were used.
 (Cartesian AO's are still not all normalized to 1 for $d$-orbitals and higher $l$'s.)
 
@@ -1429,7 +1429,7 @@ with respect to normal coordinates. The program will then do the
 necessary numerical differentiation to get the Hessian (and thus
 normal coordinates), before it will carry on calculating the
 higher-order force field requested with respect to the calculated normal
-coordinates. 
+coordinates.
 
 \item[\Key{PRECALCULATED HESSIAN}]\verb| |\newline
 
@@ -1469,7 +1469,7 @@ Controls the restart procedure. If a calculation crashes during a
 force constant calculation, there will be a file in the work directory
 called RSTRT.FC. This will contain all of the information necessary to
 restart the calculation. If this file is available and the keyword is
-used, \dalton\ will attempt to restart the calculation. 
+used, \dalton\ will attempt to restart the calculation.
 
 \item[\Key{REUSE HESSIAN}]\verb| |\newline
 
@@ -1495,7 +1495,7 @@ instance for water FCLASS would be equal to ``C2v''. Main rotational
 axis needs to be set to the z-axis in the .mol file. Additional
 generating elements needs to be the x-axis for a C2 rotation, and the
 xy plane for a mirror plane. The current implementation only allows
-for symmetry use, when differentiating from energies. 
+for symmetry use, when differentiating from energies.
 
 \item[\Key{TEST N}]\verb| |\newline
 
@@ -1549,7 +1549,7 @@ to the total zero-point vibrational corrections to a molecular property.
 Requests the calculation of indirect spin--spin coupling constants.
 If combined with the keywords \Key{HARM-P} and \Key{ANHA-P}, the
 zero-point vibrational corrections to these coupling constants will be
-calculated. 
+calculated.
 
 \end{description}
 
@@ -1561,4 +1561,3 @@ in Chapter~\ref{sec:abavib}, but appears in the \Sec{*NMDDRV} module
 if the Hessian has been calculated numerically using the \Key{NMDDRV}
 keyword. We refer to Chapter~\ref{sec:abavib} for a list of available
 keywords.
-

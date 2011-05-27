@@ -1,55 +1,25 @@
-C 
-C...   Copyright (c) 2004 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   Dirac, a relativistic ab initio electronic structure program,
-C...   release DIRAC04.0 (2004),
-C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
-C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
-C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
-C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
-C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
-C...   (http://dirac.chem.sdu.dk).
-C...
-C...   For a suitable BibTEX entry, see:
-C...      http://dirac.chem.sdu.dk/doc/reference.shtml
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.sdu.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk
-C 
+!dalton_copyright_start
+!
+!
+!dalton_copyright_end
+
 #ifdef VAR_MPI
-***********************************************************************
-*
-*============================================================*
-*  Common LUCITA and LUCIAREL routines for parallel purposes *
-*                                                            *
-*   collected by Stefan Knecht, Jan 18 - ???, 2007           *
-*============================================================*
-*
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PAR_BDRIV_REL(LUIN,LUOUT,SEGMNT,NDISTND,NBLOCK,
-     &                                LBLOCKL,JCOMM,LBLK,IROOT,
-     &                                LUINLIST,MY_IOFF_LUIN,I_RUN_CPLX)
+!**********************************************************************
+!
+!============================================================*
+!  Common LUCITA and LUCIAREL routines for parallel purposes *
+!                                                            *
+!   collected by Stefan Knecht, Jan 18 - ???, 2007           *
+!============================================================*
+!
+      subroutine copy_vector_mpi_2_sequential_io(luin,luout,vec1,
+     &                                           my_ioff_luin,
+     &                                           luinlist,
+     &                                           par_dist_block_list,
+     &                                           block_list,
+     &                                           communicator_group,
+     &                                           nblock,nvec,
+     &                                           i_run_cplx)
 C
 C     Written by  S. Knecht         - June 11 2007
 C
@@ -57,7 +27,7 @@ C**********************************************************************
 C
 C     copy vector from MPI file LUIN to 'normal file' LUOUT blockwise
 C
-C     NOTE: IROOT = IROOT
+C     NOTE: nvec = nvec
 C
 C     active blocks on the MPI-files are flagged by a nonzero list entry
 C
@@ -65,18 +35,26 @@ C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
-      DIMENSION LUINLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
+      real(8), intent(inout) :: vec1(*) 
+      integer, intent(in)    :: nblock, nvec, i_run_cplx
+      integer, intent(in)    :: par_dist_block_list(nblock)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: communicator_group
+      integer, intent(in)    :: luin, luout
+      integer, intent(in)    :: luinlist(*)
+      INTEGER(KIND=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUIN
+!-------------------------------------------------------------------------------
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
+      integer sender_id
+      integer ivec
+!-------------------------------------------------------------------------------
 C
 C     initialize scratch offsets
       NUM_BLK           = 0
@@ -84,666 +62,354 @@ C     initialize scratch offsets
       IOFFSET_IN_LUIN   = 0
       IOFFSET_INT_IN    = 0
 C
-C     initialize slave tag 
-C
-      MYNSLV = 0
+C     initialize co-worker tag 
+      sender_id = 0
 C
 #ifdef LUCI_DEBUG
       print *, 'I_RUN_CPLX',I_RUN_CPLX
       print *, 'NBLOCK',NBLOCK
       print *, 'par_dist list'
-      call iwrtma(NDISTND,1,NBLOCK,1,NBLOCK)
+      call iwrtma(par_dist_block_list,1,NBLOCK,1,NBLOCK)
       print *, 'lbl_dist list'
-      call iwrtma(LBLOCKL,1,NBLOCK,1,NBLOCK)
+      call iwrtma(block_list,1,NBLOCK,1,NBLOCK)
 #endif
    
 C
 C     ================
 C      COMPLEX VECTOR
 C     ================
+
+C     loop over vectors
+      DO IVEC = 1, NVEC
 C
-C     .................
-C      REAL PART FIRST 
-C     .................
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
 C
-C     set new offset
-C
-C     position in file is at the end of vector IROOT - 1
-C
-C     note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
-C
-      IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                 ( IROOT - 1 )   * MY_VEC2_IOFF
-      IOFFSET_INT_IN   = 1 + NUM_BLK  +
-     &                 ( IROOT - 1 )   * MY_ACT_BLK2
-C
-C
-C LOOP OVER BLOCKS
-C
-       DO 501 II = 1, NBLOCK 
-C
-C         slaves first ...
-C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
-C
-             IOFFSET_SCRATCH = 0
-             NUM_BLK = 0
-C
-             GOTO 500
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-             GOTO 100
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IMZERO = 1
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
-C
-               IOFFSET_SCRATCH = 0
-               NUM_BLK = 0
-C
-               GOTO 500
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
-C
-C              recieve block from node MYNSLV
-C
-               MYNSLV = NDISTND(II) 
-               GOTO 100 
-             END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-C
-C            LUCI_MASTER block
-C
-             LBL = LBLOCKL(II)
-C  
-             CALL ITODS(LBL,1,-1,LUOUT)
-C
-             IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
-C
-C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,my_STATUS,IERR)
-#ifdef LUCI_DEBUG
-               print *,'master - read-in: my vector piece'
-               call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
-#endif
-               IMZERO = 0
-             ELSE
-               IMZERO = 1
-             END IF
-C
-             IF(IMZERO.EQ.0) THEN
-                CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-             ELSE
-                CALL ZERORC(LBL,LUOUT,0)
-             END IF
-C
-             NUM_BLK = 1
-             IOFFSET_SCRATCH = LBL
-C
-             GOTO 500
-           END IF
-*         /\NDISTND eq 0 or ne 0
-        END IF
-C
-C  ... continue
-C
- 100    CONTINUE
-C
-C       slave block
-C
-        LBL = LBLOCKL(II)
-C
-        IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-C
-           CALL ITODS(LBL,1,-1,LUOUT)
-C
-        END IF
-C
-        IF(LUCI_MYPROC.NE.LUCI_MASTER) THEN
-C
-          ISENDTOM = 0
-          ISENDTOM = LUINLIST( IOFFSET_INT_IN )
-C
-          CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
-     &                  JCOMM,IERR)
-C
-          IF( ISENDTOM .gt. 0 ) THEN
-C
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                            MPI_REAL8,my_STATUS,IERR)
-            CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
-     &                    JCOMM,IERR)
-#ifdef LUCI_DEBUG
-               print *,'co-worker - read-in: my vector piece'
-               call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
-#endif
-C
-          END IF
-          IOFFSET_SCRATCH = LBL
-          NUM_BLK = 1
-        END IF
-C
-C
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
-          ISENDTOM = 0
-C
-          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,90,
-     &                  JCOMM,my_STATUS,IERR)
-C
-          IF( ISENDTOM .gt. 0 ) THEN
-C
-            CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                     JCOMM,my_STATUS,IERR)
-#ifdef LUCI_DEBUG
-            print *,'master- recieve: my vector piece'
-            call wrtmatmn(SEGMNT,1,lbl,1,lbl,lupri)
-#endif
-            CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-          ELSE
-            CALL ZERORC(LBL,LUOUT,0)
-          END IF
-          IOFFSET_SCRATCH = 0
-          NUM_BLK = 0
-        END IF
-C
- 500    CONTINUE
-C       
-C       keep track of correct offset
-        IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
-        IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
- 501  CONTINUE
-C
-      IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
-C       write an EOF-mark
-        CALL ITODS(-1,1,-1,LUOUT)
-      ENDIF
-C
-C     ..............
-C        IMAG PART 
-C     ..............
-C
-      IOFFSET_SCRATCH = 0
-      NUM_BLK = 0
-C
-      IF( I_RUN_CPLX .eq. 2 )THEN
+C       ...............
+C       REAL PART FIRST 
+C       ...............
 C
 C       set new offset
 C
-C       position in file is at the end of vector IROOT - 1
+C       position in file is at the end of vector nvec - 1
 C
-C       note: complex part: --> MY_VEC1_IOFF and MY_ACT_BLK1
+C       note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
 C
         IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                   ( IROOT - 1 )  * MY_VEC2_IOFF    +
-     &                                    MY_VEC1_IOFF
+     &                   ( ivec - 1 )   * MY_VEC2_IOFF
         IOFFSET_INT_IN   = 1 + NUM_BLK  +
-     &                   ( IROOT - 1 )  * MY_ACT_BLK2 + MY_ACT_BLK1
+     &                   ( ivec - 1 )   * MY_ACT_BLK2
 C
-C LOOP OVER BLOCKS
+        DO II = 1, NBLOCK ! loop over vector blocks
+
+          IOFFSET_SCRATCH = 0
+          NUM_BLK         = 0
+
+          IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers first ...
+
+            IF(par_dist_block_list(II) .ne. LUCI_MYPROC) GOTO 500
+
+          ELSE ! LUCI_MASTER
+
+!           receive block from co-worker sender_id
+            sender_id = par_dist_block_list(II)
+
+            if(abs(sender_id) .gt. 0)then
+
+              if(sender_id .eq. -2)then
+!               block has zero length
+                CALL ITODS(0,1,-1,LUOUT)
+                IMZERO  = 1
+                IAMPACK = 0
+                CALL ZERORC(0,LUOUT,IAMPACK)
+                GOTO 500
+              end if
+
+            else
+ 
+!             LUCI_MASTER block
+!             -----------------
+              LBL = block_list(II)
+   
+              CALL ITODS(LBL,1,-1,LUOUT)
+              IMZERO = 1
+              IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
 C
-       DO 601 II = 1, NBLOCK 
+C               read block in
+                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                                MPI_REAL8,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+                print *,'master - read-in: my vector piece'
+                call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
+                IMZERO = 0
+              END IF
 C
-C         slaves first ...
+              IF(IMZERO.EQ.0) THEN
+                 CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
+              ELSE
+                 CALL ZERORC(LBL,LUOUT,0)
+              END IF
 C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
+              IOFFSET_SCRATCH = LBL
+              NUM_BLK         = 1
 C
-             IOFFSET_SCRATCH = 0
-             NUM_BLK = 0
-C
-             GOTO 600
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-             GOTO 102
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IMZERO = 1
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
-C
-               IOFFSET_SCRATCH = 0
-               NUM_BLK = 0
-C
-               GOTO 600
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
-C
-C              recieve block from node MYNSLV
-C
-               MYNSLV = NDISTND(II) 
-               GOTO 102 
-             END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-C
-C            LUCI_MASTER block
-C
-             LBL = LBLOCKL(II)
-C  
-             CALL ITODS(LBL,1,-1,LUOUT)
-C
-             IF( LUINLIST( IOFFSET_INT_IN ) .gt. 0 ) THEN
-C
-C             read block in
-               CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                               MPI_REAL8,my_STATUS,IERR)
-               IMZERO = 0
-             ELSE
-               IMZERO = 1
-             END IF
-C
-             IF( IMZERO .eq. 0 ) THEN
-                call todsc_luci(SEGMNT,LBL,-1,LUOUT)
-             ELSE
-                CALL ZERORC(LBL,LUOUT,0)
-             END IF
-C
-             NUM_BLK = 1
-             IOFFSET_SCRATCH = LBL
-C
-             GOTO 600
-           END IF
-*          ^NDISTND eq 0 or ne 0
-          END IF
-C
-C     ... continue
-C
- 102      CONTINUE
-C
-C         slave block
-C
-          LBL = LBLOCKL(II)
-C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
-C
-             CALL ITODS(LBL,1,-1,LUOUT)
-C  
-          END IF
-C
-          IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
+              GOTO 500
+            END IF ! abs(sender_id) > 0?
+
+          END IF ! co-worker / master switch
+ 
+!         co-worker block
+!         ---------------
+          LBL = block_list(II)
+ 
+          if(luci_myproc .ne. luci_master)then
 C
             ISENDTOM = 0
-            ISENDTOM = LUINLIST( IOFFSET_INT_IN )
+            ISENDTOM = LUINLIST(IOFFSET_INT_IN)
 C
-            CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,93,
-     &                    JCOMM,IERR)
+            CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
+     &                    communicator_group,IERR)
 C
-            IF( ISENDTOM .gt. 0 ) THEN
+            IF(ISENDTOM .gt. 0)THEN
 C
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
      &                              MPI_REAL8,my_STATUS,IERR)
-              CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,94,
-     &                      JCOMM,IERR)
+              CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,91,
+     &                      communicator_group,IERR)
+#ifdef LUCI_DEBUG
+                 print *,'co-worker - read-in: my vector piece'
+                 call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
 C
             END IF
             IOFFSET_SCRATCH = LBL
-            NUM_BLK = 1
-          END IF
-C
-C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
-C
+            NUM_BLK         = 1
+
+          else ! LUCI_MASTER
+ 
+            CALL ITODS(LBL,1,-1,LUOUT)
+
             ISENDTOM = 0
+            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,90,
+     &                    communicator_group,my_STATUS,IERR)
 C
-            CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,MYNSLV,93,
-     &                    JCOMM,my_STATUS,IERR)
+            IF(ISENDTOM .gt. 0)THEN
 C
-            IF( ISENDTOM .gt. 0 ) THEN
-C
-              CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
-     &                       JCOMM,my_STATUS,IERR)
-              CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+              CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,91,
+     &                       communicator_group,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+              print *,'master- recieve: my vector piece'
+              call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
+              CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
             ELSE
               CALL ZERORC(LBL,LUOUT,0)
             END IF
             IOFFSET_SCRATCH = 0
-            NUM_BLK = 0
-          END IF
-C
- 600      CONTINUE
-C       
-C         keep track of correct offset
+            NUM_BLK         = 0
+
+          end if ! co-worker / master switch
+
+ 500      CONTINUE
+        
+!         keep track of correct offset
           IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
           IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
- 601    CONTINUE
+
+        end do ! loop over vector blocks
 C
-        IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
+        IF(LUCI_MYPROC. eq. LUCI_MASTER)THEN
 C         write an EOF-mark
           CALL ITODS(-1,1,-1,LUOUT)
         ENDIF
 C
-      END IF
-C     ^ COMPLEX PART NEEDED?
+C       ..............
+C          IMAG PART 
+C       ..............
 C
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PAR_BDRIV_DIA_REL1(LUIN,LUOUT,SEGMNT,NDISTND,
-     &                                     NBLOCK,LBLOCKL,JCOMM,LBLK,
-     &                                     IROOT,MY_IOFF_LUIN,
-     &                                     I_RUN_CPLX)
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
 C
-C     Written by  S. Knecht         - June 22 2007
+        IF(I_RUN_CPLX .eq. 2)THEN
 C
-C**********************************************************************
+C         set new offset
 C
-C     copy H diagonal from MPI file LUIN to 'normal file' LUOUT blockwise
+C         position in file is at the end of vector ivec - 1
 C
-C     NOTE: IROOT = IROOT
+C         note: complex part: --> MY_VEC1_IOFF and MY_ACT_BLK1
 C
-C     Last revision:     S. Knecht       - June  2007
-C
-************************************************************************
-#include "implicit.h"
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER NUM_BLK
-C
-C     initialize scratch offsets
-      IOFFSET_SCRATCH   = 0
-      IOFFSET_IN_LUIN   = 0
-C
-C     initialize slave tag 
-C
-      MYNSLV = 0
-C
-C
-C     ================
-C      COMPLEX VECTOR
-C     ================
-C
-C     .................
-C      REAL PART FIRST 
-C     .................
-C
-C     set new offset
-C
-C     position in file is at the end of vector IROOT - 1
-C
-C     note: real part: --> MY_VEC2_IOFF
-C
-      IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                 ( IROOT - 1 )   * MY_VEC2_IOFF
+          IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
+     &                     ( ivec - 1 )   * MY_VEC2_IOFF    +
+     &                                      MY_VEC1_IOFF
+          IOFFSET_INT_IN   = 1 + NUM_BLK  +
+     &                     ( ivec - 1 )   * MY_ACT_BLK2 + MY_ACT_BLK1
 C
 C LOOP OVER BLOCKS
 C
-       DO 501 II = 1, NBLOCK 
+         DO 601 II = 1, NBLOCK 
 C
-C         slaves first ...
+C           slaves first ...
 C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
-C
-             IOFFSET_SCRATCH = 0
-             NUM_BLK = 0
-C
-             GOTO 500
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-             GOTO 100
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
+           IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
+             IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN 
 C
                IOFFSET_SCRATCH = 0
-C
-               GOTO 500
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
-C
-C              recieve block from node MYNSLV
-C
-               MYNSLV = NDISTND(II) 
-               GOTO 100 
-             END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-C
-C            LUCI_MASTER block
-C
-             LBL = LBLOCKL(II)
-C  
-             CALL ITODS(LBL,1,-1,LUOUT)
-C
-C            read block in
-             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,my_STATUS,IERR)
-C
-             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-C
-             IOFFSET_SCRATCH = LBL
-C
-             GOTO 500
-           END IF
-*         /\NDISTND eq 0 or ne 0
-        END IF
-C
-C  ... continue
-C
- 100    CONTINUE
-C
-C       slave block
-C
-        LBL = LBLOCKL(II)
-C
-        IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-C
-           CALL ITODS(LBL,1,-1,LUOUT)
-C
-        END IF
-C
-        IF(LUCI_MYPROC.NE.LUCI_MASTER) THEN
-C
-          CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                          MPI_REAL8,my_STATUS,IERR)
-          CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
-     &                  JCOMM,IERR)
-C
-          IOFFSET_SCRATCH = LBL
-        END IF
-C
-C
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
-          CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                  JCOMM,my_STATUS,IERR)
-          CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-C
-          IOFFSET_SCRATCH = 0
-        END IF
-C
- 500    CONTINUE
-C       
-C       keep track of correct offset
-        IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
- 501  CONTINUE
-C
-      IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
-C       write an EOF-mark
-        CALL ITODS(-1,1,-1,LUOUT)
-      ENDIF
-C
-C     ..............
-C      COMPLEX PART 
-C     ..............
-C
-      IOFFSET_SCRATCH = 0
-C
-      IF( I_RUN_CPLX .eq. 2 )THEN
-C
-C       set new offset
-C
-C       position in file is at the end of vector IROOT - 1
-C
-C       note: complex part: --> MY_VEC1_IOFF and MY_ACT_BLK1
-C
-        IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                   ( IROOT - 1 )   * MY_VEC2_IOFF + 
-     &                                     MY_VEC1_IOFF
-C
-C LOOP OVER BLOCKS
-C
-       DO 601 II = 1, NBLOCK 
-C
-C         slaves first ...
-C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
-C
-             IOFFSET_SCRATCH = 0
-C
-             GOTO 600
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-             GOTO 102
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
-C
-               IOFFSET_SCRATCH = 0
+               NUM_BLK         = 0
 C
                GOTO 600
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
+             ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
+               GOTO 102
+             ENDIF
 C
-C              recieve block from node MYNSLV
+C          LUCI_MASTER follows ...
 C
-               MYNSLV = NDISTND(II) 
-               GOTO 102 
-             END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
+           ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
+             IF( par_dist_block_list(II) .ne. LUCI_MYPROC )THEN
+               IF(par_dist_block_list(II) .eq. -2 )THEN
 C
-C            LUCI_MASTER block
+C                block has zero length
 C
-             LBL = LBLOCKL(II)
+                 LBL = 0
+                 CALL ITODS(LBL,1,-1,LUOUT)
+                 IMZERO = 1
+                 IAMPACK = 0
+                 CALL ZERORC(LBL,LUOUT,IAMPACK)
+C
+                 IOFFSET_SCRATCH = 0
+                 NUM_BLK = 0
+C
+                 GOTO 600
+               ELSE IF( par_dist_block_list(II) .gt. 0 )THEN
+C
+C                recieve block from node sender_id
+C
+                 sender_id = par_dist_block_list(II) 
+                 GOTO 102 
+               END IF
+             ELSE IF( par_dist_block_list(II) .eq. LUCI_MYPROC )THEN
+C
+C              LUCI_MASTER block
+C
+               LBL = block_list(II)
 C  
-             CALL ITODS(LBL,1,-1,LUOUT)
+               CALL ITODS(LBL,1,-1,LUOUT)
 C
-C            read block in
-             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,my_STATUS,IERR)
-             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+               IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
 C
-             IOFFSET_SCRATCH = LBL
+C                read block in
+                 CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                                 MPI_REAL8,my_STATUS,IERR)
+                 IMZERO = 0
+               ELSE
+                 IMZERO = 1
+               END IF
 C
-             GOTO 600
+               IF(IMZERO .eq. 0)THEN
+                 call todsc_luci(vec1,LBL,-1,LUOUT)
+               ELSE
+                 CALL ZERORC(LBL,LUOUT,0)
+               END IF
+C
+               NUM_BLK = 1
+               IOFFSET_SCRATCH = LBL
+C
+               GOTO 600
+             END IF ! par_dist_block_list eq 0 or ne 0
            END IF
-*          ^NDISTND eq 0 or ne 0
-          END IF
 C
-C     ... continue
+C       ... continue
 C
- 102      CONTINUE
+ 102        CONTINUE
 C
-C         slave block
+C           slave block
 C
-          LBL = LBLOCKL(II)
+            LBL = block_list(II)
 C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
+            IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
 C
-             CALL ITODS(LBL,1,-1,LUOUT)
+               CALL ITODS(LBL,1,-1,LUOUT)
 C  
-          END IF
+            END IF
 C
-          IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
+            IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
 C
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                            MPI_REAL8,my_STATUS,IERR)
-            CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,94,
-     &                    JCOMM,IERR)
+              ISENDTOM = 0
+              ISENDTOM = LUINLIST( IOFFSET_INT_IN )
 C
-            IOFFSET_SCRATCH = LBL
-          END IF
+              CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,93,
+     &                      communicator_group,IERR)
+C
+              IF( ISENDTOM .gt. 0 ) THEN
+C
+                CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                                MPI_REAL8,my_STATUS,IERR)
+                CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,94,
+     &                        communicator_group,IERR)
+C
+              END IF
+              IOFFSET_SCRATCH = LBL
+              NUM_BLK = 1
+            END IF
 C
 C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
+            IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
 C
-            CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,94,
-     &                    JCOMM,my_STATUS,IERR)
-            CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
+              ISENDTOM = 0
 C
-            IOFFSET_SCRATCH = 0
-          END IF
+              CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,93,
+     &                      communicator_group,my_STATUS,IERR)
 C
- 600      CONTINUE
+              IF(ISENDTOM .gt. 0)THEN
+C
+                CALL MPI_RECV(vec1,LBL,MPI_REAL8,sender_id,94,
+     &                        communicator_group,my_STATUS,IERR)
+                CALL TODSC_LUCI(vec1,LBL,-1,LUOUT)
+              ELSE
+                CALL ZERORC(LBL,LUOUT,0)
+              END IF
+              IOFFSET_SCRATCH = 0
+              NUM_BLK         = 0
+            END IF
+C
+ 600        CONTINUE
 C       
-C         keep track of correct offset
-          IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
- 601    CONTINUE
+C           keep track of correct offset
+            IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
+            IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
+ 601      CONTINUE
 C
-        IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
-C         write an EOF-mark
-          CALL ITODS(-1,1,-1,LUOUT)
-        ENDIF
+          IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
+C           write an EOF-mark
+            CALL ITODS(-1,1,-1,LUOUT)
+          ENDIF
 C
-      END IF
-C     ^ COMPLEX PART NEEDED?
+        END IF ! COMPLEX PART
+
+      END DO ! loop over vectors
 C
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PAR_BDRIV_DIA_REL2(LUIN,LUOUT,SEGMNT,NDISTND,
-     &                                     NBLOCK,LBLOCKL,JCOMM,LBLK,
-     &                                     IROOT,MY_IOFF_LUIN)
+!**********************************************************************
+
+      subroutine copy_vector_sequential_2_mpi_io(LUIN,LUOUT,VEC1,
+     &                                           MY_IOFF_LUOUT,
+     &                                           LUOUTLIST,
+     &                                           par_dist_block_list,
+     &                                           block_list,
+     &                                           communicator_group,
+     &                                           nblocks,NVEC,
+     &                                           I_RUN_CPLX)
 C
-C     Written by  S. Knecht         - June 22 2007
+C     Written by  S. Knecht         - June 19 2007
 C
 C**********************************************************************
 C
-C     copy H diagonal from MPI file LUIN to 'normal file' LUOUT blockwise
+C     copy vector from sequential file LUIN to MPI-file LUOUT.
+C     master sends a block to a co-worker according to par_dist_block_list.
 C
-C     NOTE: IROOT = IROOT
+C     NOTE: NVEC = NVEC
+C
+C     active blocks on the MPI-file are flagged by a nonzero list entry
 C
 C     Last revision:     S. Knecht       - June  2007
 C
@@ -754,583 +420,289 @@ C
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER NUM_BLK
-C
-C     initialize scratch offsets
-      IOFFSET_SCRATCH   = 0
-      IOFFSET_IN_LUIN   = 0
-C
-C     initialize slave tag 
-C
-      MYNSLV = 0
-C
-C     set new offset
-C
-C     position in file is at the end of vector IROOT - 1
-C
-      IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
-     &                 ( IROOT - 1 )   * MY_VEC2_IOFF
-C
-C LOOP OVER BLOCKS
-C
-       DO 501 II = 1, NBLOCK 
-C
-C         slaves first ...
-C
-         IF( LUCI_MYPROC .ne. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN 
-C
-             IOFFSET_SCRATCH = 0
-             NUM_BLK = 0
-C
-             GOTO 500
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-             GOTO 100
-           ENDIF
-C
-C        LUCI_MASTER follows ...
-C
-         ELSE IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-           IF( NDISTND(II) .ne. LUCI_MYPROC )THEN
-             IF(NDISTND(II) .eq. -2 )THEN
-C
-C              block has zero length
-C
-               LBL = 0
-               CALL ITODS(LBL,1,-1,LUOUT)
-               IAMPACK = 0
-               CALL ZERORC(LBL,LUOUT,IAMPACK)
-C
-               IOFFSET_SCRATCH = 0
-C
-               GOTO 500
-             ELSE IF( NDISTND(II) .gt. 0 )THEN
-C
-C              recieve block from node MYNSLV
-C
-               MYNSLV = NDISTND(II) 
-               GOTO 100 
-             END IF
-           ELSE IF( NDISTND(II) .eq. LUCI_MYPROC )THEN
-C
-C            LUCI_MASTER block
-C
-             LBL = LBLOCKL(II)
-C  
-             CALL ITODS(LBL,1,-1,LUOUT)
-C
-C            read block in
-             CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                             MPI_REAL8,my_STATUS,IERR)
-C
-             CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-C
-             IOFFSET_SCRATCH = LBL
-C
-             GOTO 500
-           END IF
-*         /\NDISTND eq 0 or ne 0
-        END IF
-C
-C  ... continue
-C
- 100    CONTINUE
-C
-C       slave block
-C
-        LBL = LBLOCKL(II)
-C
-        IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-C
-           CALL ITODS(LBL,1,-1,LUOUT)
-C
-        END IF
-C
-        IF(LUCI_MYPROC.NE.LUCI_MASTER) THEN
-C
-          CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,SEGMNT,LBL,
-     &                          MPI_REAL8,my_STATUS,IERR)
-          CALL MPI_SEND(SEGMNT,LBL,MPI_REAL8,LUCI_MASTER,91,
-     &                  JCOMM,IERR)
-C
-          IOFFSET_SCRATCH = LBL
-        END IF
-C
-C
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-C
-          CALL MPI_RECV(SEGMNT,LBL,MPI_REAL8,MYNSLV,91,
-     &                  JCOMM,my_STATUS,IERR)
-          CALL TODSC_LUCI(SEGMNT,LBL,-1,LUOUT)
-C
-          IOFFSET_SCRATCH = 0
-        END IF
-C
- 500    CONTINUE
-C       
-C       keep track of correct offset
-        IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
- 501  CONTINUE
-C
-      IF( LUCI_MYPROC. eq. LUCI_MASTER )THEN
-C       write an EOF-mark
-        CALL ITODS(-1,1,-1,LUOUT)
-      ENDIF
-C
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,
-     &                          LUOUTLIST,LUINLIST,
-     &                          NBATCH,LBATCH,LEBATCH,I1BATCH,
-     &                          IBATCH,MY_IOFF_LUOUT,MY_IOFF_LUDIA,
-     &                          MY_IOFF_LUIN,INV)
-C
-C     calculate inverted general preconditioner matrix times vector
-C
-C     original written by Jeppe Olsen - September 1993
-C
-C     adaption of sequential routine for parallel purposes  
-C                      by S. Knecht   -  March 13 2008
-C
-C     MPI file I/O version
-C
-C     vecout=  (H0 + shift )-1 * vecin
-C
-C      LUOUT       LUDIA        LUIN
-C
-C**********************************************************************
-#include "implicit.h"
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-*
-* =====
-* Input
-* =====
-*
-* LUOUT : File to contain output vector
-* LUDIA : File containing diagonal of H0
-* LUIN  : File containing input vector
-* SHIFT : constant ADDED to diagonal
-*
-* ======
-* Output
-* ======
-*
-* LUOUT : contains output vector, not rewinded
-*
-* =======
-* Scratch
-* =======
-*
-* VEC1,VEC2 : Must each be able to hold largest segment of vector
-C
-      DIMENSION VEC1(*),VEC2(*)
-      DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
-      DIMENSION LUINLIST(*), LUOUTLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUDIA
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUDIA
+!------------------------------------------------------------------------------
+      real(8), intent(inout) :: vec1(*)
+      integer, intent(in)    :: nblocks, nvec, i_run_cplx, luin, luout
+      integer, intent(out)   :: luoutlist(*)
+      integer, intent(in)    :: par_dist_block_list(nblocks) 
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: communicator_group
+      integer(kind=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUOUT
+!------------------------------------------------------------------------------
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER NUM_BLK
+      INTEGER                :: NUM_BLK     = 0 
+      integer                :: receiver_id = 0
+      integer                :: ilen        = 0
+      integer, parameter     :: no_zeroing  = 1
+!------------------------------------------------------------------------------
+
 C
 C     initialize scratch offsets
-      NUM_BLK           = 0
       IOFFSET_SCRATCH   = 0
-      IOFFSET_IN_LUIN   = 0
-      IOFFSET_IN_LUDIA  = 0
       IOFFSET_LUOUT     = 0
-      IOFFSET_INT_IN    = 0
       IOFFSET_INT_LUOUT = 0
+#ifdef LUCI_DEBUG
+      if(luci_myproc .eq. luci_master)then
+        call rewino(LUIN)
+        write(6,*) 'vectors to copy'
+        do i = 1, NVEC
+          call wrtvcd(vec1,luin,0,-1)
+        end do
+        call rewino(LUIN)
+      end if
+#endif
+ 
 C
-      DO ISBATCH = 1, NBATCH
+C     loop over vectors
+      DO IVEC = 1, NVEC
 C
-C       offset for batch ISBATCH w.r.t JOFF
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
 C
-        CALL DZERO(VEC2,LEBATCH(ISBATCH))
+C       ================
+C        COMPLEX VECTOR
+C       ================
 C
-        CALL DZERO(VEC1,LEBATCH(ISBATCH))
+C       .................
+C        REAL PART FIRST
+C       .................
 C
 C       set new offset
 C
-        IOFFSET_IN_LUIN = MY_IOFF_LUIN + IOFFSET_SCRATCH
-        IOFFSET_INT_IN  = 1 + NUM_BLK 
+C       position in file is at the end of vector IVEC - 1
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN',
-CSK  &                  IOFFSET_IN_LUIN
+C       note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
 C
-        CALL RDVEC_BATCH_DRV4(LUIN,VEC2,LBATCH(ISBATCH),
-     &                        IBATCH(1,I1BATCH(ISBATCH)),
-     &                        IOFFSET_IN_LUIN,IOFFSET_INT_IN,
-     &                        LUINLIST,NUM_ACTIVE_BATCH)
+        IOFFSET_LUOUT      = MY_IOFF_LUOUT + IOFFSET_SCRATCH +
+     &                       ( IVEC - 1 )  * MY_VEC2_IOFF
 C
-CSK     WRITE(LUWRT,*) 'initial VEC2 on LUIN'
-CSK     CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK  &                LUWRT)
+        IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
+     &                       ( IVEC - 1 ) * MY_ACT_BLK2
 C
-        IOFFSET_IN_LUDIA = MY_IOFF_LUDIA + IOFFSET_SCRATCH
+C       loop over blocks
 C
-CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUDIA',
-CSK  &                  IOFFSET_IN_LUDIA
+        DO IBLK = 1, NBLOCKS
 C
-C       read in batch ISBATCH from LUDIA to VEC1
+          ILEN = block_list(IBLK)
+
+          IF(ILEN .GT. 0)THEN
 C
-        CALL RDVEC_BATCH_DRV5(LUDIA,VEC1,LBATCH(ISBATCH),
-     &                        IBATCH(1,I1BATCH(ISBATCH)),
-     &                        IOFFSET_IN_LUDIA)
+C           get CPU id that will receive the block
+            receiver_id = par_dist_block_list(IBLK)
 C
-CSK     WRITE(LUWRT,*) 'initial VEC1 on LUDIA'
-CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK  &                LUWRT)
+            IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-worker part...
 C
-C       calculate inverse diagonal on VEC1
+              if(LUCI_MYPROC .ne. receiver_id) GOTO 500
+
+              NUM_BLK                                    = NUM_BLK + 1
+              LUOUTLIST(IOFFSET_INT_LUOUT + NUM_BLK - 1) = 0
+              IMZERO                                     = 0
+
+              CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,90,
+     &                      communicator_group,my_STATUS,IERR)
+
+              IF(IMZERO .eq. 0)THEN
+C               recieve block and transfer to file
+                CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,91,
+     &                        communicator_group,my_STATUS,IERR)
+csk             WRITE(6,*) ' S will write this to disk for block',
+csk     &       IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk             CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
+                CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
+     &                                 MPI_REAL8,my_STATUS,IERR)
+
+                LUOUTLIST(IOFFSET_INT_LUOUT + NUM_BLK - 1) = 1
+              END IF
 C
-        ILEN_BATCH =  0
-        ILEN_BATCH =  LEBATCH(ISBATCH)
+C             keep track of correct offset
+              IOFFSET_SCRATCH = ILEN
+              IOFFSET_LUOUT   = IOFFSET_LUOUT + IOFFSET_SCRATCH
+
+            ELSE ! LUCI_MASTER part...
 C
-        IF( ILEN_BATCH .gt. 0 )THEN
-           IF( CSCREEN) THEN
-C             set proper truncation factor
-              THR_TRUNC  = TRUNC_FAC * RNORM_FAC
-!             THR_ETRUNC = 1.0D-7 * THRES_E
-! THRES_E is not defined
-Chj           14-jun-07:   disable THR_ETRUNC
-              THR_ETRUNC = -1.0D0
-!testprint    WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
-              CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
-     &                          THR_TRUNC,THR_ETRUNC)
+C             read block in core and send to CPU receiver_id if necessary
+              IMZERO = 0
+              CALL IFRMDS(LBL,1,-1,LUIN)
+              IF(LBL .ne. ILEN)THEN
+                WRITE(LUWRT,*) ' Error in COP_REST_VEC_REL:'//
+     &                         ' block sizes do not match. '
+                call quit('Error in COP_REST_VEC_REL detected!')
+              END IF
+              CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,NO_ZEROING)
+
+              IF(LUCI_MYPROC .ne. receiver_id)THEN ! co-workers block
+                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,receiver_id,90,
+     &                        communicator_group,IERR)
+                IF(IMZERO .eq. 0)THEN
+                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,receiver_id,91,
+     &                          communicator_group,IERR)
+                END IF
+              ELSE ! master block
+
+C               count active blocks
+                NUM_BLK                                    = NUM_BLK + 1
+                LUOUTLIST(IOFFSET_INT_LUOUT + NUM_BLK - 1) = 0
+C
+                IF(IMZERO .eq. 0)THEN
+csk               WRITE(LUWRT,*) ' M will write this to disk for block',
+csk  &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
+csk               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
+                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
+     &                                 MPI_REAL8,my_STATUS,IERR)
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+                END IF 
+
+!               keep track of correct offset
+                IOFFSET_SCRATCH = ILEN
+                IOFFSET_LUOUT   = IOFFSET_LUOUT + IOFFSET_SCRATCH
+              END IF ! send id /= master?
+            END IF ! co-workers / master switch
+          ELSE
+C           skip zero block on disk
+            IF(LUCI_MYPROC .EQ. LUCI_MASTER)THEN
+              CALL IFRMDS(LBL,1,-1,LUIN)
+              CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,NO_ZEROING)
+            END IF
+          END IF ! length of block > 0
+
+ 500     CONTINUE
+C
+        END DO ! loop over vector blocks
+C
+C       ..............
+C        COMPLEX PART
+C       ..............
+C
+        IOFFSET_SCRATCH = 0
+        NUM_BLK = 0
+C
+        IF( I_RUN_CPLX .eq. 2 ) THEN
+C
+          IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
+C           skip marker on file 
+            CALL IFRMDS(LBL,1,-1,LUIN)
+C
+          END IF
+C
+          IOFFSET_SCRATCH = 0
+          NUM_BLK = 0
+C
+C         new offset for writing on LUOUT - complex part
+C
+          IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH +
+     &                          ( IVEC - 1 )  * MY_VEC2_IOFF +
+     &                                          MY_VEC1_IOFF
+C
+          IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
+     &                         ( IVEC - 1 ) * MY_ACT_BLK2 + MY_ACT_BLK1
+C
+C         loop over blocks
+C
+          DO IBLK = 1, NBLOCKS
+C
+            ILEN = block_list( IBLK )
+CSK            WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
+            IF( ILEN .GT. 0 ) THEN
+C
+C             get number of CPU that will recieve the block
+              receiver_id = par_dist_block_list( IBLK )
+CSK              WRITE(LUWRT,*) ' receiver_id of IBLK',receiver_id,IBLK
+C
+              IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
+     &            LUCI_MYPROC .NE. receiver_id ) 
+     &           GOTO 600
+!
+              IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers
+!
+                NUM_BLK = NUM_BLK + 1
+                IMZERO = 0
+!
+                CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,93,
+     &                        communicator_group,my_STATUS,IERR)
+!
+                IF( IMZERO .eq. 0 ) THEN
+!
+!                 recieve block and transfer to file
+                  CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,94,
+     &                          communicator_group,my_STATUS,IERR)
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
+     &                                   MPI_REAL8,my_STATUS,IERR)
+!
+                ELSE
+!
+!                 mark block as zero block
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
+!
+                END IF
+!
+!               keep track of correct offset
+                IOFFSET_SCRATCH = ILEN
+                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+!
+              ELSE ! LUCI_MASTER
+!
+!               read block in core and send to CPU receiver_id if necessary
+                IMZERO = 0
+                CALL IFRMDS(LBL,1,-1,LUIN)
+                IF( LBL .ne. ILEN ) THEN
+                  WRITE(LUWRT,*) '  Error in COP_REST_VEC_REL:'//
+     &                           ' block sizes do not match! '
+                  call quit('Error in COP_REST_VEC_REL detected!')
+                END IF
+                CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
+     &                       NO_ZEROING)
+                IF( LUCI_MYPROC .ne. receiver_id )THEN
+                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,receiver_id,93,
+     &                          communicator_group,IERR)
+                  IF(IMZERO .eq. 0)THEN
+                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,receiver_id,94,
+     &                            communicator_group,IERR)
+                  END IF
+                ELSE
+!                 count active blocks
+                  NUM_BLK = NUM_BLK + 1
+!
+                  IF( IMZERO .eq. 0 ) THEN
+!
+                    CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
+     &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
+                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
+                  ELSE
+                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
+                  END IF 
+!                 keep track of correct offset
+                  IOFFSET_SCRATCH = ILEN
+                  IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
+!
+                END IF ! needs send?
+!
+              END IF ! co-worker or master
            ELSE
-             CALL DIAVC2(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH))
-           END IF
+!            skip zero block on disk
+             IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
+               CALL IFRMDS(LBL,1,-1,LUIN)
+               CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
+     &                      NO_ZEROING)
+             END IF
+           END IF ! ILEN > 0?
+ 600       CONTINUE
+!
+          END DO ! loop over blocks
+!
+        END IF ! COMPLEX PART NEEDED? 
+!
+        IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
+!         skip end-of-vector marker on file LUIN
+          CALL IFRMDS(LBL,1,-1,LUIN)
         END IF
-CSK          WRITE(LUWRT,*) 'final VEC1'
-CSK          WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
-CSK          WRITE(LUWRT,*) 'final VEC2'
-CSK          CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
-CSK     &                  LUWRT)
-C
-C       write VEC1 to LUOUT
-C
-        IOFFSET_LUOUT     = MY_IOFF_LUOUT  + IOFFSET_SCRATCH
-        IOFFSET_INT_LUOUT = 1 + NUM_BLK
-C
-        CALL WTVEC_BATCH_DRV4(LUOUT,VEC1,LBATCH(ISBATCH),
-     &                       IBATCH(1,I1BATCH(ISBATCH)),
-     &                       IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
-     &                       LUOUTLIST,NUM_ACTIVE_BATCH)
-C
-C       keep track of correct offset
-        IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
-        NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
-C
-      END DO
-C
+!
+      END DO ! loop over vectors
+!
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COPVCD_PP_CC_B(LUIN,LUOUT,SCR,NBATCH,LBATCH,LEBATCH,
-     &                         I1BATCH,IBATCH,MY_IOFF_LUIN,
-     &                         MY_IOFF_LUOUT,
-     &                         LUINLIST,LUOUTLIST,IBLOCKL,JOFF)
-C
-C     Written by  S. Knecht         - May 18 2007
-C
-C**********************************************************************
-C
-C     copy c-vector from file LUIN to LUOUT batchwise
-C     update the file lists.
-C
-C     NOTE: JOFF = (IVEC resp. IROOT) - 1
-C
-C
-C     copy vector from file LUIN to file LUOUT --> (hint LUIN, LUOUT)
-C
-C     active blocks on the MPI-files are flagged by a nonzero length
-C
-C     Last revision:     S. Knecht       - June  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 ( A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
-      DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
-      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) ISCRATCH_SP
-      INTEGER(KIND=MPI_OFFSET_KIND) ILEN_COMB
-      INTEGER NUM_BLK
-C
-      I_RUN_CPLX = 1
-C     some constants
-      IONE = 1
-      ITWO = 2
-C     initialize scratch offsets
-      NUM_BLK = 0
-      MY_NUM_BLK = 0
-      IOFFSET_SCRATCH = 0
-      IOFFSET_IN  = 0
-      IOFFSET_OUT  = 0
-      IOFFSET_INT_IN  = 0
-      IOFFSET_INT_OUT  = 0
-      ILEN_COMB = 0
-      ILEN_COMB = L_COMBI
-      MY_IOFFSET_SCRATCH = 0
-      ISCRATCH_SP = 0
-      NUM_BLK_SP = 0
-C
-C
-C     ================
-C       REAL VECTOR
-C     ================
-C
-C     position in file is at the end of vector JOFF
-C
-C     note: real part: --> MY_VEC2_IOFF, MY_ACT_BLK2
-C
-C
-      DO ISBATCH = 1, NBATCH
-C
-C       offset for batch ISBATCH w.r.t JOFF
-C
-        CALL DZERO(SCR,LEBATCH(ISBATCH))
-C
-        IOFFSET_IN = MY_IOFF_LUIN + ( MY_VEC2_IOFF * JOFF ) +
-     &               MY_IOFFSET_SCRATCH
-        IOFFSET_INT_IN = ( MY_ACT_BLK2 * JOFF ) + MY_NUM_BLK + 1
-C
-C       write active block array for LUOUT 
-C
-        IOFFSET_INT_OUT = NUM_BLK + 1
-C
-        NUM_BLK_SP  = 0
-        ISCRATCH_SP = 0
-C
-csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_IN',IOFFSET_IN
-csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_INT_IN',IOFFSET_INT_IN
-csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_INT_OUT',IOFFSET_INT_OUT
-C
-        CALL RDVEC_BATCH_DRV3(LUIN,SCR,LBATCH(ISBATCH),
-     &                       IBATCH(1,I1BATCH(ISBATCH)),
-     &                       IOFFSET_IN,IOFFSET_INT_IN,
-     &                       IOFFSET_INT_OUT,LUINLIST,
-     &                       LUOUTLIST,NUM_BLK_SP)
-C
-        IOFFSET_OUT = MY_IOFF_LUOUT + IOFFSET_SCRATCH
-     
-csk     WRITE(LUWRT,*) ' SCR content is'
-csk     CALL WRTMATMN(SCR,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
-csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT',IOFFSET_OUT
-        
-        IOFFSET_INT_OUT = NUM_BLK + 1
-C
-        CALL WTVEC_BATCH_DRV3(SCR,LBATCH(ISBATCH),
-     &                        IBATCH(1,I1BATCH(ISBATCH)),
-     &                        LUOUT,IOFFSET_OUT,IOFFSET_INT_OUT,
-     &                        LUOUTLIST,1,ISCRATCH_SP,
-     &                        IBLOCKL)
-C
-C
-C       count the length of the last copy
-C
-C       LUOUT
-        IOFFSET_SCRATCH = IOFFSET_SCRATCH + ISCRATCH_SP
-        NUM_BLK         = NUM_BLK + LBATCH(ISBATCH)
-C       LUIN
-        MY_NUM_BLK         = MY_NUM_BLK + NUM_BLK_SP
-        MY_IOFFSET_SCRATCH = MY_IOFFSET_SCRATCH + LEBATCH(ISBATCH)
-C
-      END DO
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE RDVEC_BATCH_DRV3(LUIN,SCR,NBATCH_BLK,NBATCH_INF,
-     &                            IOFFSET,
-     &                            IOFFSET_INT_IN,IOFFSET_INT_OUT,
-     &                            IVCOFF_IN,IVCOFF_OUT,
-     &                            ICOUNT_ACT)
-C
-C     Written by  S. Knecht         -      May 21 2007
-C
-C**********************************************************************
-C
-C     read in a batch from a MPI-file LUIN to SCR - C-vector routine
-C
-C     active blocks on the MPI-file are flagged by a nonzero length
-C
-C     Last revision:     S. Knecht       - May  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 ( A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SCR(*), NBATCH_INF(8,*) 
-      DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-      INTEGER JOFF
-      JOFF = 0
-C
-        DO IBLK = 1, NBATCH_BLK
-C
-C         check for need
-C
-          ILEN2 = NBATCH_INF(8,IBLK) 
-C
-          IF( ILEN2 .gt. 0 ) THEN
-C
-C           count the active blocks for this batch
-C
-            ICOUNT_ACT = ICOUNT_ACT + 1
-C
-            IF( IVCOFF_IN( IOFFSET_INT_IN + ICOUNT_ACT - 1 ) .gt.0)THEN
-C
-C             write ILEN2 into file array for LUOUT
-C
-              IVCOFF_OUT( IOFFSET_INT_OUT + IBLK - 1 ) = ILEN2
-C
-C             memory offset
-C
-              JOFF = NBATCH_INF(6,IBLK)
-C
-CSK          WRITE(LUWRT,*) ' JOFF for read in IBLK at offset',JOFF, IBLK,
-CSK     &                 IOFFSET
-C
-C           read vector
-C
-              CALL MPI_FILE_READ_AT(LUIN,IOFFSET,SCR(JOFF),
-     &                              ILEN2,MPI_REAL8,my_STATUS,IERR)
-C
-CSK              WRITE(LUWRT,'(2X,A,1X,I12,1X,A,1X,I6,1X,I6)') 
-CSK     & 'Read-in from ILU1 at',IOFFSET,'for block',IOFFSET_INT_OUT +
-CSK     &  IBLK - 1, JOFF
-CSK              CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
-C
-            END IF 
-C           ^ IVCOFF_IN .gt. 0 ?
-          END IF
-C         ^ ILEN2 .gt. 0 ?
-C
-          IOFFSET = IOFFSET + ILEN2
-C
-C
-        ENDDO
-C       ^ loop over blocks in batch
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE WTVEC_BATCH_DRV3(SCR,NBATCH_BLK,NBATCH_INF,
-     &                            LUOUT,IOFFSET,IOFFSET_INT,
-     &                            IVCOFF_OUT,NO_CHECK,ISCRATCH_SP,
-     &                            IBLOCKL)
-C
-C     Written by  S. Knecht         -      May 21 2007
-C
-C**********************************************************************
-C
-C
-C     write batch from SCR to MPI-file LUOUT - C-vector routine
-C
-C     active blocks on the MPI-file are flagged by a nonzero length
-C
-C     Last revision:     S. Knecht       - May  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 ( A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
-      DIMENSION IBLOCKL(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, ISCRATCH_SP
-      INTEGER JOFF, LENGTH
-C
-      JOFF   = 0
-      LENGTH = 0
-CSK      WRITE(LUWRT,*) 'calculating length start block is', IOFFSET_INT
-C
-C     loop over all blocks in that batch, do a norm check
-C
-      DO IBLK = 1, NBATCH_BLK
-C
-        JOFF = NBATCH_INF(6,IBLK)
-csk     WRITE(LUWRT,*) 'calculating length for block',
-csk  &                  IOFFSET_INT + IBLK - 1
-        LENGTH = IBLOCKL( IOFFSET_INT + IBLK - 1 )
-C       check norm of vector
-        IF( NO_CHECK .eq. 0 ) THEN
-          XXX = 0.0D0
-          XXX = DDOT(LENGTH,SCR(JOFF),1,SCR(JOFF),1)
-C
-          IF( XXX .eq. 0.0D0 ) THEN
-            IVCOFF_OUT( IOFFSET_INT + IBLK - 1 ) = 0
-            GOTO 100
-          END IF
-        ELSE
-C
-          IF( IVCOFF_OUT( IOFFSET_INT + IBLK - 1 ) .eq. 0 ) GOTO 100
-C
-        END IF
-C
-csk     WRITE(LUWRT,'(2X,A,1X,I6,1X,A,1X,I14,1X,I6)') 'THIS IS block',
-csk  &       IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
-csk       CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
-C
-          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
-     &                           LENGTH,MPI_REAL8,my_STATUS,IERR)
-C
-C
- 100    CONTINUE  ! skip zero blocks on file
-        IOFFSET = IOFFSET + LENGTH
-        ISCRATCH_SP = ISCRATCH_SP + LENGTH
-C
-      END DO
-C     ^ loop over blocks in a batch
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
      &                                 ISCALFAC,ISCALFAC_GROUP,
      &                                 IBLOCKL,NBLOCK,JCOMM,
@@ -1629,39 +1001,63 @@ C
       END IF
 C
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE COP_REST_VEC_REL(VEC1,LUIN,LUOUT,MY_IOFF_LUOUT,
-     &                            LUOUTLIST,NPARBLOCK,IBLOCKL,NBLOCKS,
-     &                            NVEC,I_RUN_CPLX)
+!**********************************************************************
+
+      SUBROUTINE H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,
+     &                          LUOUTLIST,LUINLIST,
+     &                          NBATCH,LBATCH,LEBATCH,I1BATCH,
+     &                          IBATCH,MY_IOFF_LUOUT,MY_IOFF_LUDIA,
+     &                          MY_IOFF_LUIN,INV)
 C
-C     Written by  S. Knecht         - June 19 2007
+C     calculate inverted general preconditioner matrix times vector
+C
+C     original written by Jeppe Olsen - September 1993
+C
+C     adaption of sequential routine for parallel purposes  
+C                      by S. Knecht   -  March 13 2008
+C
+C     MPI file I/O version
+C
+C     vecout=  (H0 + shift )-1 * vecin
+C
+C      LUOUT       LUDIA        LUIN
 C
 C**********************************************************************
-C
-C     copy vector from sequential file LUIN to MPI-file LUOUT.
-C     Master sends blocks to Node according to NPARBLOCK.
-C
-C     NOTE: NVEC = NVEC
-C
-C     active blocks on the MPI-file are flagged by a nonzero list entry
-C
-C     Last revision:     S. Knecht       - June  2007
-C
-************************************************************************
 #include "implicit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION VEC1(*)
-      DIMENSION LUOUTLIST(*), NPARBLOCK(*), IBLOCKL(*)
+*
+* =====
+* Input
+* =====
+*
+* LUOUT : File to contain output vector
+* LUDIA : File containing diagonal of H0
+* LUIN  : File containing input vector
+* SHIFT : constant ADDED to diagonal
+*
+* ======
+* Output
+* ======
+*
+* LUOUT : contains output vector, not rewinded
+*
+* =======
+* Scratch
+* =======
+*
+* VEC1,VEC2 : Must each be able to hold largest segment of vector
+C
+      DIMENSION VEC1(*),VEC2(*)
+      DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
+      DIMENSION LUINLIST(*), LUOUTLIST(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUDIA
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN, IOFFSET_IN_LUDIA
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
@@ -1669,473 +1065,371 @@ C
 C     initialize scratch offsets
       NUM_BLK           = 0
       IOFFSET_SCRATCH   = 0
+      IOFFSET_IN_LUIN   = 0
+      IOFFSET_IN_LUDIA  = 0
       IOFFSET_LUOUT     = 0
+      IOFFSET_INT_IN    = 0
       IOFFSET_INT_LUOUT = 0
-C     some constants
-      NNULL = 0
-      IONE  = 1
 C
-      ILEN = 0
+      DO ISBATCH = 1, NBATCH
 C
-C     loop over vectors
+C       offset for batch ISBATCH w.r.t JOFF
 C
-      DO IVEC = 1, NVEC
+        CALL DZERO(VEC2,LEBATCH(ISBATCH))
 C
-        IOFFSET_SCRATCH = 0
-        NUM_BLK = 0
-C
-C       ================
-C        COMPLEX VECTOR
-C       ================
-C
-C       .................
-C        REAL PART FIRST
-C       .................
+        CALL DZERO(VEC1,LEBATCH(ISBATCH))
 C
 C       set new offset
 C
-C       position in file is at the end of vector IVEC - 1
+        IOFFSET_IN_LUIN = MY_IOFF_LUIN + IOFFSET_SCRATCH
+        IOFFSET_INT_IN  = 1 + NUM_BLK 
 C
-C       note: real part: --> MY_VEC2_IOFF and MY_ACT_BLK2
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUIN',
+CSK  &                  IOFFSET_IN_LUIN
 C
-        IOFFSET_LUOUT      = MY_IOFF_LUOUT + IOFFSET_SCRATCH +
-     &                       ( IVEC - 1 )  * MY_VEC2_IOFF
+        CALL RDVEC_BATCH_DRV4(LUIN,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_IN_LUIN,IOFFSET_INT_IN,
+     &                        LUINLIST,NUM_ACTIVE_BATCH)
 C
-        IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
-     &                       ( IVEC - 1 ) * MY_ACT_BLK2
+CSK     WRITE(LUWRT,*) 'initial VEC2 on LUIN'
+CSK     CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+CSK  &                LUWRT)
 C
-C       loop over blocks
+        IOFFSET_IN_LUDIA = MY_IOFF_LUDIA + IOFFSET_SCRATCH
 C
-        DO IBLK = 1, NBLOCKS
+CSK     WRITE(LUWRT,*) 'This is my OFFSET for LUDIA',
+CSK  &                  IOFFSET_IN_LUDIA
 C
-          ILEN = IBLOCKL( IBLK )
-csk          WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
-          IF( ILEN .GT. 0 ) THEN
+C       read in batch ISBATCH from LUDIA to VEC1
 C
-C           get number of CPU that will recieve the block
-            I_NEED_BLK = NPARBLOCK( IBLK )
-csk            WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
+        CALL RDVEC_BATCH_DRV5(LUDIA,VEC1,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_IN_LUDIA)
 C
-            IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
-     &          LUCI_MYPROC .NE. I_NEED_BLK ) GOTO 500
+CSK     WRITE(LUWRT,*) 'initial VEC1 on LUDIA'
+CSK     CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+CSK  &                LUWRT)
 C
-C           slaves first...
+C       calculate inverse diagonal on VEC1
 C
-            IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
+        ILEN_BATCH =  0
+        ILEN_BATCH =  LEBATCH(ISBATCH)
 C
-              NUM_BLK = NUM_BLK + 1
-              IMZERO = 0
-C
-              CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,90,
-     &                      MPI_COMM_WORLD,my_STATUS,IERR)
-C
-              IF( IMZERO .eq. 0 ) THEN
-C
-C               recieve block and transfer to file
-                CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,91,
-     &                        MPI_COMM_WORLD,my_STATUS,IERR)
-                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-csk                WRITE(6,*) ' S will write this to disk for block',
-csk     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
-                CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,my_STATUS,IERR)
-C
-              ELSE
-C
-C               mark block as zero block
-                LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-C
-              END IF
-C
-C             keep track of correct offset
-              IOFFSET_SCRATCH = ILEN
-              IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-C           LUCI_MASTER follows...
-C
-            ELSE
-C
-C             read block in core and send to CPU I_NEED_BLK if necessary
-              IMZERO = 0
-              NO_ZEROING = 1
-              CALL IFRMDS(LBL,1,-1,LUIN)
-              IF( LBL .ne. ILEN ) THEN
-                WRITE(LUWRT,*) '  Error in restart routine detected, I
-     & quit'
-                WRITE(LUWRT,*) '  Different blocksizes!!! '
-                CALL Abend2('Error in COP_REST_VEC_REL detected!')
-              END IF
-              CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
-     &                     NO_ZEROING)
-              IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
-                CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,90,
-     &                        MPI_COMM_WORLD,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        MPI_COMM_WORLD,IERR)
-                IF( IMZERO .eq. 0 ) THEN
-                  CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,91,
-     &                          MPI_COMM_WORLD,IERR)
-                END IF
-              ELSE
-C               count active blocks
-                NUM_BLK = NUM_BLK + 1
-C
-                IF( IMZERO .eq. 0 ) THEN
-C
-csk                  WRITE(LUWRT,*) ' M will write this to disk for block',
-csk     &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                  CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
-C
-                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                 MPI_REAL8,my_STATUS,IERR)
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                ELSE
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-                END IF 
-C               keep track of correct offset
-                IOFFSET_SCRATCH = ILEN
-                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-              END IF
-C             ^ needs send?
-C
-            END IF
-C           ^ slave or master
-         ELSE
-C          skip zero block on disk
-           IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-             CALL IFRMDS(LBL,1,-1,LUIN)
-             NO_ZEROING = 1
-             CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
-     &                    NO_ZEROING)
-           END IF
-         END IF
-C        ^ ILEN > 0?
- 500     CONTINUE
-C
-        END DO
-C       ^ loop over blocks
-C
-C       ..............
-C        COMPLEX PART
-C       ..............
-C
-        IOFFSET_SCRATCH = 0
-        NUM_BLK = 0
-C
-        IF( I_RUN_CPLX .eq. 2 ) THEN
-C
-          IF( LUCI_MYPROC .eq. LUCI_MASTER )THEN
-C           skip marker on file 
-            CALL IFRMDS(LBL,1,-1,LUIN)
-C
-          END IF
-C
-          IOFFSET_SCRATCH = 0
-          NUM_BLK = 0
-C
-C         new offset for writing on LUOUT - complex part
-C
-          IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH +
-     &                          ( IVEC - 1 )  * MY_VEC2_IOFF +
-     &                                          MY_VEC1_IOFF
-C
-          IOFFSET_INT_LUOUT  = 1 + NUM_BLK  +
-     &                         ( IVEC - 1 ) * MY_ACT_BLK2 + MY_ACT_BLK1
-C
-C         loop over blocks
-C
-          DO IBLK = 1, NBLOCKS
-C
-            ILEN = IBLOCKL( IBLK )
-CSK            WRITE(LUWRT,*) ' ILEN of IBLK',ILEN,IBLK
-            IF( ILEN .GT. 0 ) THEN
-C
-C             get number of CPU that will recieve the block
-              I_NEED_BLK = NPARBLOCK( IBLK )
-CSK              WRITE(LUWRT,*) ' I_NEED_BLK of IBLK',I_NEED_BLK,IBLK
-C
-              IF( LUCI_MYPROC .ne. LUCI_MASTER .AND.
-     &            LUCI_MYPROC .NE. I_NEED_BLK ) 
-     &           GOTO 600
-C
-C           slaves first...
-C
-              IF( LUCI_MYPROC .ne. LUCI_MASTER ) THEN
-C
-                NUM_BLK = NUM_BLK + 1
-                IMZERO = 0
-C
-                CALL MPI_RECV(IMZERO,1,my_MPI_INTEGER,LUCI_MASTER,93,
-     &                        MPI_COMM_WORLD,my_STATUS,IERR)
-C
-                IF( IMZERO .eq. 0 ) THEN
-C
-C                 recieve block and transfer to file
-                  CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,LUCI_MASTER,94,
-     &                          MPI_COMM_WORLD,my_STATUS,IERR)
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                  CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
-     &                                   MPI_REAL8,my_STATUS,IERR)
-C
-                ELSE
-C
-C                 mark block as zero block
-                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-C
-                END IF
-C
-C               keep track of correct offset
-                IOFFSET_SCRATCH = ILEN
-                IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-C             LUCI_MASTER follows...
-C
-              ELSE
-C
-C               read block in core and send to CPU I_NEED_BLK if necessary
-                IMZERO = 0
-                NO_ZEROING = 1
-                CALL IFRMDS(LBL,1,-1,LUIN)
-                IF( LBL .ne. ILEN ) THEN
-                  WRITE(LUWRT,*) '  Error in restart routine detected, I
-     & quit'
-                  WRITE(LUWRT,*) '  Different blocksizes!!! '
-                  CALL Abend2('Error in COP_REST_VEC_REL detected!')
-                END IF
-                CALL FRMDSC2(VEC1,ILEN,-1,LUIN,IMZERO,IAMPACK,
-     &                       NO_ZEROING)
-                IF( LUCI_MYPROC .ne. I_NEED_BLK )THEN
-                  CALL MPI_SEND(IMZERO,1,my_MPI_INTEGER,I_NEED_BLK,93,
-     &                          MPI_COMM_WORLD,IERR)
-CSK                CALL MPI_SEND(IAMPACK,1,my_MPI_INTEGER,I_NEED_BLK,92,
-CSK     &                        MPI_COMM_WORLD,IERR)
-                  IF( IMZERO .eq. 0 ) THEN
-                    CALL MPI_SEND(VEC1,ILEN,MPI_REAL8,I_NEED_BLK,94,
-     &                            MPI_COMM_WORLD,IERR)
-                  END IF
-                ELSE
-C                 count active blocks
-                  NUM_BLK = NUM_BLK + 1
-C
-                  IF( IMZERO .eq. 0 ) THEN
-C
-                    CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
-     &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
-                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-                  ELSE
-                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = NNULL
-                  END IF 
-C                 keep track of correct offset
-                  IOFFSET_SCRATCH = ILEN
-                  IOFFSET_LUOUT = IOFFSET_LUOUT + IOFFSET_SCRATCH
-C
-                END IF
-C               ^ needs send?
-C
-              END IF
-C             ^ slave or master
+        IF( ILEN_BATCH .gt. 0 )THEN
+           IF( CSCREEN) THEN
+C             set proper truncation factor
+              THR_TRUNC  = TRUNC_FAC * RNORM_FAC
+!             THR_ETRUNC = 1.0D-7 * THRES_E
+! THRES_E is not defined
+Chj           14-jun-07:   disable THR_ETRUNC
+              THR_ETRUNC = -1.0D0
+!testprint    WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
+              CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
+     &                          THR_TRUNC,THR_ETRUNC)
            ELSE
-C            skip zero block on disk
-             IF( LUCI_MYPROC .EQ. LUCI_MASTER ) THEN
-               CALL IFRMDS(LBL,1,-1,LUIN)
-               NO_ZEROING = 1
-               CALL FRMDSC2(VEC1,LBL,-1,LUIN,IMZERO,IAMPACK,
-     &                      NO_ZEROING)
-             END IF
+             CALL DIAVC2(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH))
            END IF
-C          ^ ILEN > 0?
- 600       CONTINUE
-C
-          END DO
-C         ^ loop over blocks
-C
         END IF
-C       ^ COMPLEX PART NEEDED? 
+CSK          WRITE(LUWRT,*) 'final VEC1'
+CSK          WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
+CSK          WRITE(LUWRT,*) 'final VEC2'
+CSK          CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+CSK     &                  LUWRT)
 C
-        IF( LUCI_MYPROC .eq. LUCI_MASTER ) THEN
-C         skip end-of-vector marker on file LUIN
-          CALL IFRMDS(LBL,1,-1,LUIN)
-        END IF
+C       write VEC1 to LUOUT
+C
+        IOFFSET_LUOUT     = MY_IOFF_LUOUT  + IOFFSET_SCRATCH
+        IOFFSET_INT_LUOUT = 1 + NUM_BLK
+C
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC1,LBATCH(ISBATCH),
+     &                       IBATCH(1,I1BATCH(ISBATCH)),
+     &                       IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                       LUOUTLIST,NUM_ACTIVE_BATCH)
+C
+C       keep track of correct offset
+        IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
+        NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
 C
       END DO
-C     ^ loop over vectors
-csk      WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',LUCI_MYPROC
-csk      CALL IWRTMAMN(LUOUTLIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DISTBLKND(NDIM,NBLOCKL,NPARBLOCK,NPARBLKWT)
-*
-*. Find distribution for (nonvanishing blocks) among the nodes
-*. Non vanishing block has a nonzero blocklength
-*
-      IMPLICIT REAL*8(A-H,O-Z)
+
+      SUBROUTINE COPVCD_PP_CC_B(LUIN,LUOUT,SCR,NBATCH,LBATCH,LEBATCH,
+     &                         I1BATCH,IBATCH,MY_IOFF_LUIN,
+     &                         MY_IOFF_LUOUT,
+     &                         LUINLIST,LUOUTLIST,IBLOCKL,JOFF)
+C
+C     Written by  S. Knecht         - May 18 2007
+C
+C**********************************************************************
+C
+C     copy c-vector from file LUIN to LUOUT batchwise
+C     update the file lists.
+C
+C     NOTE: JOFF = (IVEC resp. IROOT) - 1
+C
+C
+C     copy vector from file LUIN to file LUOUT --> (hint LUIN, LUOUT)
+C
+C     active blocks on the MPI-files are flagged by a nonzero length
+C
+C     Last revision:     S. Knecht       - June  2007
+C
+************************************************************************
+      IMPLICIT REAL*8 ( A-H,O-Z)
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-*
-      DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,LUCI_NMPROC)
-*. Scratch
-      INTEGER INONVAN,MAXLBL,LBL,IWEIGHT,LABEL,IBLOCKN,IMINNP
-      INTEGER MXSZTMP,MXNUMB,ITEMPL,ITEMPD
-      INTEGER*8 ITOTBLL 
-*. ======
-*. Output
-*. ======
-*. array NPARBLOCK that contains the final block distribution
-      DIMENSION NPARBLOCK(NDIM)
-*. 
-      MXSIZE = 1000000000
-      MXSZTMP = 0
-      MXNUMB = 0
-      IRUN = 0
-      ITEMPW1 = 1000000000
-      ITEMPW2 = 0
-      ITEMPN = 0
-      ITEMPL = 0
-      IAMGPROC = 0
-      IAMTPROC = 0
-      INONVAN = 0
-      ITOTBLL = 0
-      IMINNP = 0
-      MAXLBL = 0 
-      LABEL = 0
-      MIN2 = -2
-      NZERO = 0
-      NTEST = 0
-      CALL ISETVC(NPARBLOCK,MIN2,NDIM)
-      DO 100 II = 1, NDIM
-        LBL = NBLOCKL(II)
-        IF(LBL.GT.0) THEN
-          INONVAN = INONVAN + 1
-          NPARBLOCK(II) = -1
-          ITOTBLL = ITOTBLL + LBL
-        ENDIF
-        IF(LBL.GT.MAXLBL) THEN
-          MAXLBL = LBL
-          LABEL = II
-        END IF
- 100  CONTINUE
-*
-*
-CSK      NTEST = 10
-      IF(NTEST.GT.0) THEN
-       IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-         WRITE(6,*) '  total number of processes to distribute on:',
-     &                 LUCI_NMPROC
-         WRITE(6,*) '  total number of active blocks:', INONVAN
-         WRITE(6,*) '  overall active block length:  ', ITOTBLL 
-         WRITE(6,*) '  largest active block:         ', LABEL
-         WRITE(6,*) '  size of largest active block: ', MAXLBL
-       END IF
-      END IF
-*
-      IF(INONVAN.LT.LUCI_NMPROC) THEN
-        IMINNP = MIN(INONVAN,LUCI_NMPROC)
-        write(luwrt,'(/a)') '  INFO from distblknd:'
-        write(luwrt,'( a)')
-     &    '  INFO: # of active blocks < total # of processes.' 
-        write(luwrt,'(a,i6)') '  INFO: consider to decrease the'//
-     &    ' # of processes to:',IMINNP
-        write(luwrt,'(a)') '  INFO: alternatively change the GAS'//
-     &    ' specification (more GA spaces).'
-        write(luwrt,'(a/)') '  INFO: this ensures an increase'//
-     &    ' in the number of active TTSS blocks.'
-        IF(LUCI_MYPROC.GE.INONVAN) GOTO 1001
-      ELSE
-        IMINNP = LUCI_NMPROC
-      END IF
-*
-*. starting the treausure quest for the ?optimal? c-block distribution
-*
- 200  CONTINUE
-*
-      IRUN = IRUN + 1
-      IF(IRUN.LE.INONVAN) THEN
-*
-        MXSZTMP = 0
-*
-        DO 300 II = 1, NDIM
-*
-          ITEMPL = NBLOCKL(II)
-          ITEMPD = NPARBLOCK(II)
-          ITEMPN = II
-          IF(ITEMPL.GT.0)THEN
-            IF(ITEMPD.EQ.-1) THEN
-              IF(ITEMPL.LE.MXSIZE)THEN
-                IF(ITEMPL.GE.MXSZTMP) THEN
-                  MXSZTMP = ITEMPL
-                  MXNUMB = II
-                END IF
-              END IF
-            END IF
-          END IF
-*
-300     CONTINUE
-*
-        DO 400 IPR = 1, IMINNP
-*
-          ITEMPW2 = NPARBLKWT(2,IPR)
-* attention: IAMTPROC = 1 <--> LUCI_MYPROC = 0 !
-          IAMTPROC = IPR
-*
-          IF(IPR.EQ.1) ITEMPW1 = ITEMPW2
-*
-          IF(ITEMPW2.LE.ITEMPW1) THEN
-            ITEMPW1 = ITEMPW2
-            IAMGPROC = IAMTPROC
-          END IF
-*
- 400    CONTINUE
-*. now we should have found a proc and a block --> put both together !
-*
-*. calculation of block MXNUMB by proc IAMGPROC
-        IF(NTEST.GT.0) THEN
-          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-            WRITE(luwrt,*)'calculation of block MXNUMB by proc',MXNUMB,
-     &      IAMGPROC-1
-          END IF
-        ENDIF
-*. raising NPARBLKWT(1,proc) by 1
-*. adding on NPARBLKWT(2,proc) the weight of the new block
-        MXSIZE = MXSZTMP
-        NPARBLKWT(1,IAMGPROC) = NPARBLKWT(1,IAMGPROC) + 1
-        NPARBLKWT(2,IAMGPROC) = NPARBLKWT(2,IAMGPROC) + MXSZTMP 
-        NPARBLOCK(MXNUMB) = IAMGPROC - 1
-      ELSE
-        GOTO 500
-      END IF
-*     /\ IRUN !!!
-      GOTO 200
-*
-500   CONTINUE
-CSK   IF(NTEST.GT.0) THEN
-      WRITE(luwrt,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
-     &LUCI_MYPROC:',LUCI_MYPROC
-      DO ISTI = 1, IMINNP
-         WRITE(luwrt,'(3X,A,I17,A,I17,A,1X,I17)')
-     &  'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
-     &  ' blocks with a total length of',NPARBLKWT(2,ISTI)
+      DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
+      DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN, IOFFSET_OUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=MPI_OFFSET_KIND) ISCRATCH_SP
+      INTEGER(KIND=MPI_OFFSET_KIND) ILEN_COMB
+      INTEGER NUM_BLK
+C
+      I_RUN_CPLX = 1
+C     some constants
+      IONE = 1
+      ITWO = 2
+C     initialize scratch offsets
+      NUM_BLK = 0
+      MY_NUM_BLK = 0
+      IOFFSET_SCRATCH = 0
+      IOFFSET_IN  = 0
+      IOFFSET_OUT  = 0
+      IOFFSET_INT_IN  = 0
+      IOFFSET_INT_OUT  = 0
+      ILEN_COMB = 0
+      ILEN_COMB = L_COMBI
+      MY_IOFFSET_SCRATCH = 0
+      ISCRATCH_SP = 0
+      NUM_BLK_SP = 0
+C
+C
+C     ================
+C       REAL VECTOR
+C     ================
+C
+C     position in file is at the end of vector JOFF
+C
+C     note: real part: --> MY_VEC2_IOFF, MY_ACT_BLK2
+C
+C
+      DO ISBATCH = 1, NBATCH
+C
+C       offset for batch ISBATCH w.r.t JOFF
+C
+        CALL DZERO(SCR,LEBATCH(ISBATCH))
+C
+        IOFFSET_IN = MY_IOFF_LUIN + ( MY_VEC2_IOFF * JOFF ) +
+     &               MY_IOFFSET_SCRATCH
+        IOFFSET_INT_IN = ( MY_ACT_BLK2 * JOFF ) + MY_NUM_BLK + 1
+C
+C       write active block array for LUOUT 
+C
+        IOFFSET_INT_OUT = NUM_BLK + 1
+C
+        NUM_BLK_SP  = 0
+        ISCRATCH_SP = 0
+C
+csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_IN',IOFFSET_IN
+csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_INT_IN',IOFFSET_INT_IN
+csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_INT_OUT',IOFFSET_INT_OUT
+C
+        CALL RDVEC_BATCH_DRV3(LUIN,SCR,LBATCH(ISBATCH),
+     &                       IBATCH(1,I1BATCH(ISBATCH)),
+     &                       IOFFSET_IN,IOFFSET_INT_IN,
+     &                       IOFFSET_INT_OUT,LUINLIST,
+     &                       LUOUTLIST,NUM_BLK_SP)
+C
+        IOFFSET_OUT = MY_IOFF_LUOUT + IOFFSET_SCRATCH
+     
+csk     WRITE(LUWRT,*) ' SCR content is'
+csk     CALL WRTMATMN(SCR,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+csk     WRITE(LUWRT,*) ' THIS IS MY IOFFSET_OUT',IOFFSET_OUT
+        
+        IOFFSET_INT_OUT = NUM_BLK + 1
+C
+        CALL WTVEC_BATCH_DRV3(SCR,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        LUOUT,IOFFSET_OUT,IOFFSET_INT_OUT,
+     &                        LUOUTLIST,1,ISCRATCH_SP,
+     &                        IBLOCKL)
+C
+C
+C       count the length of the last copy
+C
+C       LUOUT
+        IOFFSET_SCRATCH = IOFFSET_SCRATCH + ISCRATCH_SP
+        NUM_BLK         = NUM_BLK + LBATCH(ISBATCH)
+C       LUIN
+        MY_NUM_BLK         = MY_NUM_BLK + NUM_BLK_SP
+        MY_IOFFSET_SCRATCH = MY_IOFFSET_SCRATCH + LEBATCH(ISBATCH)
+C
       END DO
-CSK   END IF
-1001  CONTINUE
-*      
-      END 
+C
+      END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
+
+      SUBROUTINE RDVEC_BATCH_DRV3(LUIN,SCR,NBATCH_BLK,NBATCH_INF,
+     &                            IOFFSET,
+     &                            IOFFSET_INT_IN,IOFFSET_INT_OUT,
+     &                            IVCOFF_IN,IVCOFF_OUT,
+     &                            ICOUNT_ACT)
+C
+C     Written by  S. Knecht         -      May 21 2007
+C
+C**********************************************************************
+C
+C     read in a batch from a MPI-file LUIN to SCR - C-vector routine
+C
+C     active blocks on the MPI-file are flagged by a nonzero length
+C
+C     Last revision:     S. Knecht       - May  2007
+C
+************************************************************************
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#include "parluci.h"
+      DIMENSION SCR(*), NBATCH_INF(8,*) 
+      DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      INTEGER JOFF
+      JOFF = 0
+C
+        DO IBLK = 1, NBATCH_BLK
+C
+C         check for need
+C
+          ILEN2 = NBATCH_INF(8,IBLK) 
+C
+          IF( ILEN2 .gt. 0 ) THEN
+C
+C           count the active blocks for this batch
+C
+            ICOUNT_ACT = ICOUNT_ACT + 1
+C
+            IF( IVCOFF_IN( IOFFSET_INT_IN + ICOUNT_ACT - 1 ) .gt.0)THEN
+C
+C             write ILEN2 into file array for LUOUT
+C
+              IVCOFF_OUT( IOFFSET_INT_OUT + IBLK - 1 ) = ILEN2
+C
+C             memory offset
+C
+              JOFF = NBATCH_INF(6,IBLK)
+C
+CSK          WRITE(LUWRT,*) ' JOFF for read in IBLK at offset',JOFF, IBLK,
+CSK     &                 IOFFSET
+C
+C           read vector
+C
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET,SCR(JOFF),
+     &                              ILEN2,MPI_REAL8,my_STATUS,IERR)
+C
+CSK              WRITE(LUWRT,'(2X,A,1X,I12,1X,A,1X,I6,1X,I6)') 
+CSK     & 'Read-in from ILU1 at',IOFFSET,'for block',IOFFSET_INT_OUT +
+CSK     &  IBLK - 1, JOFF
+CSK              CALL WRTMATMN(SCR(JOFF),1,ILEN2,1,ILEN2,LUWRT)
+C
+            END IF 
+C           ^ IVCOFF_IN .gt. 0 ?
+          END IF
+C         ^ ILEN2 .gt. 0 ?
+C
+          IOFFSET = IOFFSET + ILEN2
+C
+C
+        ENDDO
+C       ^ loop over blocks in batch
+C
+      END
 ***********************************************************************
+
+      SUBROUTINE WTVEC_BATCH_DRV3(SCR,NBATCH_BLK,NBATCH_INF,
+     &                            LUOUT,IOFFSET,IOFFSET_INT,
+     &                            IVCOFF_OUT,NO_CHECK,ISCRATCH_SP,
+     &                            IBLOCKL)
+C
+C     Written by  S. Knecht         -      May 21 2007
+C
+C**********************************************************************
+C
+C
+C     write batch from SCR to MPI-file LUOUT - C-vector routine
+C
+C     active blocks on the MPI-file are flagged by a nonzero length
+C
+C     Last revision:     S. Knecht       - May  2007
+C
+************************************************************************
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#include "parluci.h"
+      DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
+      DIMENSION IBLOCKL(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET, ISCRATCH_SP
+      INTEGER JOFF, LENGTH
+C
+      JOFF   = 0
+      LENGTH = 0
+CSK      WRITE(LUWRT,*) 'calculating length start block is', IOFFSET_INT
+C
+C     loop over all blocks in that batch, do a norm check
+C
+      DO IBLK = 1, NBATCH_BLK
+C
+        JOFF = NBATCH_INF(6,IBLK)
+csk     WRITE(LUWRT,*) 'calculating length for block',
+csk  &                  IOFFSET_INT + IBLK - 1
+        LENGTH = IBLOCKL( IOFFSET_INT + IBLK - 1 )
+C       check norm of vector
+        IF( NO_CHECK .eq. 0 ) THEN
+          XXX = 0.0D0
+          XXX = DDOT(LENGTH,SCR(JOFF),1,SCR(JOFF),1)
+C
+          IF( XXX .eq. 0.0D0 ) THEN
+            IVCOFF_OUT( IOFFSET_INT + IBLK - 1 ) = 0
+            GOTO 100
+          END IF
+        ELSE
+C
+          IF( IVCOFF_OUT( IOFFSET_INT + IBLK - 1 ) .eq. 0 ) GOTO 100
+C
+        END IF
+C
+csk     WRITE(LUWRT,'(2X,A,1X,I6,1X,A,1X,I14,1X,I6)') 'THIS IS block',
+csk  &       IOFFSET_INT + IBLK - 1,'to go on pos (JOFF)',IOFFSET,JOFF
+csk       CALL WRTMATMN(SCR(JOFF),1,LENGTH,1,LENGTH,LUWRT)
+C
+          CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET,SCR(JOFF),
+     &                           LENGTH,MPI_REAL8,my_STATUS,IERR)
+C
+C
+ 100    CONTINUE  ! skip zero blocks on file
+        IOFFSET = IOFFSET + LENGTH
+        ISCRATCH_SP = ISCRATCH_SP + LENGTH
+C
+      END DO
+C     ^ loop over blocks in a batch
+C
+      END
+
+***********************************************************************
+
       SUBROUTINE DISTBLKND_1(NDIM,ICWEIGHTF,NPARBLOCK,NBLKWT,NPARBLKWT,
      &                       NVAR,ICCTOS,IBLOCKL,IPROCLIST,ICWEIGHT,
      &                       IABSOLUTE_WEIGHT)
@@ -2536,11 +1830,7 @@ CSK   END IF
 
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE DISTBLKND_2(NDIM,ICWEIGHTF,NPARBLOCK,IBLOCKL,
      &                       JSYM_DISTBLK)
 *
@@ -2798,430 +2088,7 @@ C
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DISTBLKND_3(NDIM,NBLOCKL,NPARBLOCK,NPARBLKWT,
-     &                       NBATCH,LBATCH,LEBATCH,I1BATCH)
-*
-*. Find distribution for (nonvanishing blocks) among the nodes
-*. Non vanishing block has a nonzero blocklength
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-*
-      DIMENSION NBLOCKL(NDIM), NPARBLKWT(2,LUCI_NMPROC)
-      DIMENSION LBATCH(*),LEBATCH(*),I1BATCH(*)
-*. Scratch
-      INTEGER INONVAN,MAXLBL,LBL,IWEIGHT,LABEL,IBLOCKN
-      INTEGER MXSZTMP,MXNUMB,ITEMPL,ITEMPD
-      INTEGER*8 ITOTBLL 
-*. ======
-*. Output
-*. ======
-*. array NPARBLOCK that contains the final block distribution
-      DIMENSION NPARBLOCK(NDIM)
-*. 
-      MXSZTMP = 0
-      MXNUMB = 0
-      IRUN = 0
-      ITEMPW1 = 1000000000
-      ITEMPW2 = 0
-      ITEMPN = 0
-      ITEMPL = 0
-      IAMGPROC = 0
-      IAMTPROC = 0
-      INONVAN = 0
-      ITOTBLL = 0
-      MAXLBL = 0 
-      LABEL = 0
-      MIN2 = -2
-      NTEST = 0
-      CALL ISETVC(NPARBLOCK,MIN2,NDIM)
-      DO 100 II = 1, NDIM
-        LBL = NBLOCKL(II)
-        IF(LBL.GT.0) THEN
-          NPARBLOCK(II) = -1
-          ITOTBLL = ITOTBLL + LBL
-        ENDIF
-        IF(LBL.GT.MAXLBL) THEN
-          MAXLBL = LBL
-          LABEL = II
-        END IF
- 100  CONTINUE
-*
-*
-CSK      NTEST = 10
-      IF(NTEST.GT.0) THEN
-       IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-         WRITE(6,*) '  total number of processes to distribute on:',
-     &                 LUCI_NMPROC
-         WRITE(6,*) '  overall active block length:  ', ITOTBLL 
-         WRITE(6,*) '  largest active block:         ', LABEL
-         WRITE(6,*) '  size of largest active block: ', MAXLBL
-       END IF
-      END IF
-*
-*. gather batch information for distribution of batches to cpu's (nodes)
-*
-         if(luci_myproc.eq.luci_master) then
-         write(luwrt,*)'NUMBER OF BATCHES:', NBATCH
-         do II = 1, NBATCH
-         write(luwrt,*)'TOTAL LENGTH OF BATCH:', II,LEBATCH(II)
-         write(luwrt,*)'FIRST BLOCK OF THIS BATCH:', I1BATCH(II)
-         write(luwrt,*)'TOTAL NUMBER OF BLOCKS FOR THIS BATCH:',
-     &                  LBATCH(II)
-         end do
-         endif
-CSK      LEBATCHTOT = DASUM(NBATCH,LEBATCH,1)
-CSK      LEBATCHAVE = LEBATCHTOT / LUCI_NMPROC
-*
-*. starting the treausure quest for the ?optimal? c-block distribution
-*
- 200  CONTINUE
-*
-      IRUN = IRUN + 1
-      IF(IRUN.LE.NBATCH) THEN
-*
-*       Find biggest batch not assigned to a CPU yet:
-*       
-        MXSZTMP = 0
-*
-        DO II = 1, NBATCH
-*
-*         Has this batch already been assigned to a CPU ?
-          IBLK1 = I1BATCH(II)
-          DO IBLK = IBLK1, IBLK1-1+LBATCH(II)
-             ITEMPD = NPARBLOCK(IBLK)
-             IF (ITEMPD .GE. 0) GO TO 300
-*            .. Yes! by CPU no. ITEMPD
-          END DO
-*
-          ITEMPL = LEBATCH(II)
-          IF(ITEMPL.GE.MXSZTMP) THEN
-            MXSZTMP = ITEMPL
-            JBATCH = II
-          END IF
-*
-  300   CONTINUE
-        END DO
-*
-*       Find least loaded CPU:
-*
-        ITEMPW1 = NPARBLKWT(2,1)
-        IAMGPROC = 1
-*       Is anyone less loaded than the master (IPR = 1) ?
-        DO 400 IPR = 2, LUCI_NMPROC
-*
-          ITEMPW2 = NPARBLKWT(2,IPR)
-*
-          IF(ITEMPW2.LE.ITEMPW1) THEN
-            ITEMPW1 = ITEMPW2
-            IAMGPROC = IPR
-          END IF
-*
- 400    CONTINUE
-*. now we should have found a proc and a batch --> put both together !
-*
-*. calculation of batch JBATCH by proc IAMGPROC
-        IF(NTEST.GT.0) THEN
-          IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-            WRITE(luwrt,*)'calculation of batch by proc',JBATCH,
-     &      IAMGPROC-1
-          END IF
-        ENDIF
-*. raising NPARBLKWT(1,proc) by 1
-*. adding on NPARBLKWT(2,proc) the weight of the new block
-        NPARBLKWT(1,IAMGPROC) = NPARBLKWT(1,IAMGPROC) + LBATCH(JBATCH)
-        NPARBLKWT(2,IAMGPROC) = NPARBLKWT(2,IAMGPROC) + MXSZTMP 
-        IBLK1 = I1BATCH(JBATCH)
-        DO IBLK = IBLK1, IBLK1-1+LBATCH(JBATCH)
-          IF (NBLOCKL(IBLK) .GT. 0) THEN
-*           .. assign this block to the selected cpu
-            NPARBLOCK(IBLK) = IAMGPROC - 1
-          ELSE
-*           .. insert code -2 for zero length block
-            NPARBLOCK(IBLK) = -2
-          END IF
-        END DO
-*
-      ELSE
-        GOTO 500
-      END IF
-*     /\ IRUN !!!
-      GOTO 200
-*
-500   CONTINUE
-CSK      IF(NTEST.GT.0) THEN
-      WRITE(luwrt,'(3X,A,I4)')'SUMMATION OF EVEN DISTRIBUTION OF 
-     &LUCI_MYPROC:',LUCI_MYPROC
-      DO ISTI = 1, LUCI_NMPROC
-        WRITE(luwrt,'(3X,A,I17,A,I17,A,1X,I17)')
-     &  'process',ISTI -1,' calculates',NPARBLKWT(1,ISTI),
-     &  ' blocks with a total length of',NPARBLKWT(2,ISTI)
-      END DO
-CSK   END IF
-1001  CONTINUE
-*      
-      END 
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DMTVDS_PAR(VEC1,VEC2,LU1,LU2,LU3,FAC,IREW,INV,
-     &                     ISCAT,XSCAT,NSCAT,LBLK,XINOUT)
-*
-* Multiply/divide elements of two vectors residing on disc
-* Elements corresponding to absolute adresses in ISCAT
-* are set to the elements of XSCAT
-*
-* For elements not in ISCAT the operation is thus :
-*
-* For INV.NE. 0 :
-*
-*    V3(I) = (V1(I)+FAC)-1 * V2(I)
-*    LU3      LU1            LU2
-*
-* For INV.EQ. 0 :
-*
-*    V3(I) = (V1(I)+FAC) * V2(I)
-*    LU3         LU1        LU2
-*
-* LBLK defines structure of files
-*
-* Overlap between input and output vector is also calculated
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION  VEC1(*),VEC2(*)
-      DIMENSION  XSCAT(NSCAT),ISCAT(NSCAT)
-*
-      REAL*8 INPROD
-*
-      XINOUT = 0.0D0
-*
-      IF ( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LU1
-          REWIND LU2
-          REWIND LU3
-        ELSE
-          CALL REWINE( LU1,LBLK)
-          CALL REWINE( LU2,LBLK)
-          CALL REWINE( LU3,LBLK)
-         END IF
-      END IF
-*
-* Loop over blocks
-*
-        IOFF = 1
- 1000 CONTINUE
-        IF (LBLK .GT. 0 ) THEN
-          LBL1 = LBLK
-          LBL2 = LBLK
-        ELSE IF( LBLK .EQ. 0 ) THEN
-          READ(LU1) LBL1
-          READ(LU2) LBL2
-          WRITE(LU3) LBL1
-        ELSE IF (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL1,1,-1,LU1)
-          CALL IFRMDS(LBL2,1,-1,LU2)
-          CALL ITODS (LBL1,1,-1,LU3)
-        END IF
-        IF(LBL1 .NE. LBL2 ) THEN
-          WRITE(6,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVSD_PAR : '
-     &                     , LBL1,LBL2
-          Call Abend2( ' DIFFERENT BLOCKSIZES IN DMTVSD_PAR ' )
-        END IF
-        IF(LBL1 .GE. 0 ) THEN
-          IF(      LBLK .GE.0 ) THEN
-            KBLK = LBL1
-          ELSE
-            KBLK = -1
-          END IF
-          LENGTH = LBL1
-          CALL FRMDSC_LUCI(VEC1,LENGTH,KBLK,LU1,IMZERO,IAMPACK)
-          CALL FRMDSC_LUCI(VEC2,LENGTH,KBLK,LU2,IMZERO,IAMPACK)
-          IF( LBL1 .GT. 0 )THEN
-            IF(INV .NE. 0 ) THEN
-*             nothing needs to be done here
-              CALL DIAVC2(VEC1,VEC2,VEC1,FAC,LENGTH)
-            ELSE
-*             nothing needs to be done here
-              CALL VVTOV(VEC1,VEC2,VEC1,LBL1)
-*             nothing needs to be done here
-              CALL DAXPY(LENGTH, FAC, VEC2, 1, VEC1, 1 )
-            END IF
-          END IF
-*
-          IF(NSCAT.NE.0) THEN
-            IFIRST = IOFF
-            ILAST = IOFF + LENGTH - 1
-            DO 100 I = 1, NSCAT
-              IF(IFIRST .LE. ISCAT(I) .AND. ISCAT(I) .LE. ILAST )
-     &        VEC1(ISCAT(I)-IOFF+1) = XSCAT(I)
-  100       CONTINUE
-          END IF
-*
-          XINOUT = XINOUT + DDOT(LENGTH,VEC1,1,VEC2,1)
-          CALL TODSC_LUCI(VEC1,LENGTH,KBLK,LU3)
-          IOFF = IOFF + LENGTH
-        END IF
-*
-      IF( LBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DMTVDS_PAR2(VEC1,VEC2,LUDIA,LUIN,LUOUT,FAC,IREW,INV,
-     &                       ISCAT,XSCAT,NSCAT,LBLK,XINOUT)
-*
-* Multiply/divide elements of two vectors residing on disc
-* Elements corresponding to absolute adresses in ISCAT
-* are set to the elements of XSCAT
-*
-* For elements not in ISCAT the operation is thus :
-*
-* For INV.NE. 0 :
-*
-*    V3(I) = (V1(I)+FAC)-1 * V2(I)
-*    LUOUT      LUDIA            LUIN
-*
-* For INV.EQ. 0 :
-*
-*    V3(I) = (V1(I)+FAC) * V2(I)
-*    LUOUT         LUDIA        LUIN
-*
-* LBLK defines structure of files
-*
-* Overlap between input and output vector is also calculated
-*
-#include "implicit.h"
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-#include "../lucita/mxpdim.inc"
-#include "../lucita/crun.inc"
 
-      DIMENSION  VEC1(*),VEC2(*)
-      DIMENSION  XSCAT(NSCAT),ISCAT(NSCAT)
-*
-      REAL*8 INPROD
-*
-      XINOUT = 0.0D0
-C     set proper truncation factor
-      THR_TRUNC  = TRUNC_FAC * RNORM_FAC
-Csk      WRITE(6,*) 'TRUNCATION FACTOR:',THR_TRUNC
-Chj 14-jun-07:   disable THR_ETRUNC
-Chj   THR_ETRUNC = 1.0D-6 * THRES_E
-      THR_ETRUNC = -1.0D0
-*
-      IF ( IREW .NE. 0 ) THEN
-        IF( LBLK .GE. 0 ) THEN
-          REWIND LUDIA
-          REWIND LUIN
-          REWIND LUOUT
-        ELSE
-          CALL REWINE( LUDIA,LBLK)
-          CALL REWINE( LUIN,LBLK)
-          CALL REWINE( LUOUT,LBLK)
-         END IF
-      END IF
-*
-* Loop over blocks
-*
-        IOFF = 1
- 1000 CONTINUE
-        IF (LBLK .GT. 0 ) THEN
-          LBL1 = LBLK
-          LBL2 = LBLK
-        ELSE IF( LBLK .EQ. 0 ) THEN
-          READ(LUDIA)  LBL1
-          READ(LUIN)   LBL2
-          WRITE(LUOUT) LBL1
-        ELSE IF (LBLK .LT. 0 ) THEN
-          CALL IFRMDS(LBL1,1,-1,LUDIA)
-          CALL IFRMDS(LBL2,1,-1,LUIN)
-          CALL ITODS (LBL1,1,-1,LUOUT)
-        END IF
-        IF(LBL1 .NE. LBL2 ) THEN
-          WRITE(6,'(A,2I3)') ' DIFFERENT BLOCKSIZES IN DMTVSD_PAR : '
-     &                     , LBL1,LBL2
-          Call Abend2( ' DIFFERENT BLOCKSIZES IN DMTVSD_PAR ' )
-        END IF
-        IF(LBL1 .GE. 0 ) THEN
-          IF(      LBLK .GE.0 ) THEN
-            KBLK = LBL1
-          ELSE
-            KBLK = -1
-          END IF
-          LENGTH = LBL1
-          CALL FRMDSC_LUCI(VEC1,LENGTH,KBLK,LUDIA,IMZERO,IAMPACK)
-          CALL FRMDSC_LUCI(VEC2,LENGTH,KBLK,LUIN,IMZERO,IAMPACK)
-          IF( LBL1 .GT. 0 )THEN
-CSK            IOFFMAX = idamax(LENGTH, VEC2, 1 )
-CSK            IF( ABS(VEC2(IOFFMAX)) .LT. THR_TRUNC ) THEN
-CSK              CALL DZERO(VEC2,LENGTH)
-CSK            ELSE
-CSK              DO II = 1, LENGTH
-CSK                IF( ABS(VEC2(II)) .LT. THR_TRUNC ) 
-CSK     &              VEC2(II) = 0.0D0
-CSK              END DO
-CSK            END IF
-            IF(INV .NE. 0 ) THEN
-*             nothing needs to be done here
-              
-              CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,FAC,LENGTH,THR_TRUNC,
-     &                          THR_ETRUNC)
-            ELSE
-*             nothing needs to be done here
-              CALL VVTOV(VEC1,VEC2,VEC1,LBL1)
-*             nothing needs to be done here
-              CALL DAXPY(LENGTH, FAC, VEC2, 1, VEC1, 1 )
-            END IF
-          END IF
-*
-          IF(NSCAT.NE.0) THEN
-            IFIRST = IOFF
-            ILAST = IOFF + LENGTH - 1
-            DO 100 I = 1, NSCAT
-              IF(IFIRST .LE. ISCAT(I) .AND. ISCAT(I) .LE. ILAST )
-     &        VEC1(ISCAT(I)-IOFF+1) = XSCAT(I)
-  100       CONTINUE
-          END IF
-*
-          XINOUT = XINOUT + DDOT(LENGTH,VEC1,1,VEC2,1)
-          CALL TODSC_LUCI(VEC1,LENGTH,KBLK,LUOUT)
-          IOFF = IOFF + LENGTH
-        END IF
-*
-      IF( LBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
       SUBROUTINE FIND_CCTOS(ISCALFAC_LOCAL,IBLOCKD,ICCTOS,NBLOCK)
 *
 *. Find all c-blocks connecting to a given sigma-block for each cpu
@@ -3264,182 +2131,7 @@ CSK            END IF
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE FIND_GROUP_OF_PROCS(MYOWNNAME,MYNAMELENGTH,
-     &                               IPROCLIST,NAMELENGTHLIST)
-C
-      IMPLICIT REAL*8 (A-H,O-Z)
-C
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-C
-      DIMENSION IPROCLIST(LUCI_NMPROC),NAMELENGTHLIST(LUCI_NMPROC)
-      CHARACTER*72 PNAMELIST(LUCI_NMPROC),MYOWNNAME,MYSCRNAME
-      CHARACTER*72 OLD_NAME
-      INTEGER INUMBER, IFINI, NTEST,ICOUNT_GROUPS
-C
-      NTEST =  0
-C     NTEST = 10
-      INUMBER = 0
-      IFINI = 0
-      ICOUNT_GROUPS = 0
-C
-C     start with an all_gather of all name length
-C
-      CALL MPI_ALLGATHER(MYNAMELENGTH,1,my_MPI_INTEGER,
-     &                   NAMELENGTHLIST,1,my_MPI_INTEGER,
-     &                   MPI_COMM_WORLD,IERR)
-C
-C     ... all name length are stored now!
-C     ... save own name in scratch array!
-C
-      PNAMELIST(LUCI_MYPROC+1) = MYOWNNAME
-C
-C     ... we start to gather the names ... 
-      DO IPROC = 1, LUCI_NMPROC
-C
-         MYSCRNAME = MYOWNNAME
-         CALL MPI_BCAST(MYSCRNAME,NAMELENGTHLIST(IPROC),MPI_CHARACTER,
-     &                 IPROC-1,MPI_COMM_WORLD,IERR)
-         IF( LUCI_MYPROC .NE. IPROC -1 ) THEN
-           PNAMELIST(IPROC) = MYSCRNAME(1:NAMELENGTHLIST(IPROC))
-         END IF
-C
-      END DO
-C
-C     test writing if needed
-C
-      IF( LUCI_MYPROC .EQ. LUCI_MASTER .AND. NTEST .GE. 10 ) THEN
-       DO IPROC = 1, LUCI_NMPROC
-        MYSCRNAME = PNAMELIST(IPROC)(1:NAMELENGTHLIST(IPROC))
-        WRITE(LUWRT,'(1X,A,1X,I4,1X,A7,1X,A)')'Processor ',IPROC -1,
-     & ' alias ',MYSCRNAME(1:NAMELENGTHLIST(IPROC))
-C    & MYSCRNAME
-       END DO
-      END IF
-C
-C     find all processors on the same deck and reorder (if necessary) 
-C     to get the processors as close as possible, starting with the
-C     master 
-C     reordering is currently NOT done
-C
-      INUMBER = LUCI_MASTER + 1
- 100  CONTINUE
-      IFINI = 0
-      ICOUNT_GROUPS = ICOUNT_GROUPS + 1
-      OLD_NAME = PNAMELIST( INUMBER)(1:NAMELENGTHLIST( INUMBER))
-C
-      DO IPROC = 1, LUCI_NMPROC
-C
-        MYSCRNAME(1:NAMELENGTHLIST(IPROC)) = 
-     &  PNAMELIST(IPROC)(1:NAMELENGTHLIST(IPROC))
-C
-        IF(MYSCRNAME(1:NAMELENGTHLIST(IPROC)) .eq. 
-     &     OLD_NAME(1:NAMELENGTHLIST(INUMBER)))
-     &     IPROCLIST(IPROC) = INUMBER
-C
-      END DO
-C
-C     if finished: IFINI = 1, else 0
-C     search for the next lowest cpu building the 'local group master'
-C
-      IFINI = 1
-      DO IPRC = 1, LUCI_NMPROC
-        IF(IFINI .ne. 0 .and. IPROCLIST(IPRC) .eq. -1) THEN
-          IFINI = 0
-          INUMBER = IPRC
-        END IF
-      END DO
-      IF(IFINI .eq. 0 ) GOTO 100
-C
-C     write the count of 'groups' formed by processes
-C
-      IF( LUCI_MYPROC .eq. LUCI_MASTER .and. NTEST .ge. 10) THEN
-        WRITE(6,'(1X,A,I4,1X,A)') 'There are ',ICOUNT_GROUPS,
-     & 'different groups of processes'
-        CALL IWRTMA(IPROCLIST,1,LUCI_NMPROC,1,LUCI_NMPROC)
-      END IF
-C
-C     Transfer information to common block
-C
-      NFLGRPS = ICOUNT_GROUPS
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-*
-      SUBROUTINE GATVCD_PAR(LU,LBLK,NGAT,IGAT,XGAT,SEGMNT,IPRT)
-*
-* Gather elements from a file LU
-*
-* XGAT(I) = Vector(IGAT(I))
-*
-* Jeppe Olsen, September 1993
-*
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-*. Input
-      INTEGER IGAT(NGAT)
-*. Output
-      DIMENSION XGAT(NGAT)
-*. Scratch
-      DIMENSION SEGMNT(*)
-*
-      CALL REWINE(LU,-1)
-*
-      IBASE = 1
-      IBLOCK = 0
-*
-*. Loop over blocks of file
-*
- 1000 CONTINUE
-        IBLOCK = IBLOCK + 1
-        CALL NEXREC(LU,LBLK,SEGMNT,IEND,LENGTH)
-        IF(IPRT.GE.10)
-     &  WRITE(6,*) LENGTH, ' elements in block ',IBLOCK
-        IF(IEND.EQ.0) THEN
-          IFIRST = IBASE
-          ILAST = IBASE + LENGTH - 1
-          DO 100 I = 1, NGAT
-            IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST )
-     &      XGAT(I) = SEGMNT(IGAT(I)-IFIRST+1)
-C?          IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST )
-C?   &      write(6,*) ' Catch I IGAT(I) XGAT(I) ',
-C?   &                         I,IGAT(I),XGAT(I)
-  100     CONTINUE
-          IBASE = IBASE + LENGTH
-      IF(LBLK.LT.0) GOTO 1000
-        END IF
-*
-      NTEST = 0
-      NTEST = MAX(IPRT,NTEST)
-      IF(NTEST.GE.5) THEN
-       WRITE(6,*) ' Gathered vector from GATVCD_PAR'
-       CALL WRTMT_LU(XGAT,1,NGAT,1,NGAT)
-      END IF
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ISET_ARRAY_ACT_BLK(IAM_BLK_ACT,IBLOCKL,NDIM)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -3456,11 +2148,7 @@ C
 C
       END 
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE INFO_PRINT_BATCH_REL(LBATCH, LEBATCH,
      &                                I1BATCH,IBATCH,JBATCH,LUPRINT)
       IMPLICIT REAL*8(A-H,O-Z)
@@ -3486,94 +2174,7 @@ C
       END DO
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      REAL*8 FUNCTION INPRODB_PAR(VEC1,VEC2,NBLK,LBLK,I0BLK)
-C
-C     inner products between blocked vectors with check of zero blocks.
-C     Zero blocks are flagged by a 0 entry in I0BLK.
-C
-C     adaption for parallel version from original routine written by 
-C                        J. Olsen        -   May  1997
-C     Last revision:     S. Knecht       - March  2007
-C
-************************************************************************
-      IMPLICIT REAL*8(A-H,O-Z)
-C     Input
-      DIMENSION VEC1(*),VEC2(*), LBLK(NBLK),I0BLK(NBLK)
-*
-      X = 0.0D0
-      IOFF = 1
-      DO IBLK = 1, NBLK
-        LLBLK = LBLK(IBLK)
-C?      WRITE(6,*) ' INPRODB IBLK LLBLK IOFF ',IBLK,LLBLK,IOFF
-        IF(I0BLK(IBLK).EQ.0.AND.LLBLK.GT.0) THEN
-          X = X + DDOT(VEC1(IOFF),VEC2(IOFF),LLBLK)
-C?        WRITE(6,*) ' Vec1 and Vec2 blocks '
-C?        CALL WRTMT_LU(VEC1(IOFF),1,LLBLK,1,LLBLK)
-C?        CALL WRTMT_LU(VEC2(IOFF),1,LLBLK,1,LLBLK)
-C?        write(6,*) ' Updated x', X
-        END IF
-        IF(LLBLK.GT.0) IOFF = IOFF + LLBLK
-      END DO
-C
-      INPRODB_PAR = X
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MVCSMD_PAR(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,
-     &                      NVEC,IREW,LBLK)
-C
-C ADD VECTORS ON FILE LUIN TIMES FACTOR AND STORE ON LUOUT
-C
-C LUOUT AND LUSCR ARE INITIALLY REWOUND
-C NVEC = NROOT resp. NVEC - NROOT
-C
-      IMPLICIT REAL*8 ( A-H,O-Z)
-      DIMENSION VEC1(1),VEC2(1)
-      DIMENSION FAC(NVEC)
-C
-      IF( MOD(NVEC,2) .EQ. 0 ) THEN
-        LLUOUT = LUSCR
-        LLUSCR = LUOUT
-      ELSE
-        LLUOUT = LUOUT
-        LLUSCR = LUSCR
-      END IF
-C
-      IF(IREW .NE. 0 ) CALL REWINE(LUIN,LBLK)
-C
-      DO 100 IVEC = 1, NVEC
-CSK        WRITE(6,*) 'FAC(IVEC) 1 = ',FAC(IVEC)
-        CALL REWINE(LLUSCR,LBLK)
-        CALL REWINE(LLUOUT,LBLK)
-        IF( IVEC .EQ. 1 ) THEN
-          CALL SCLVCD(LUIN,LLUOUT,FAC(IVEC),VEC1,0,LBLK)
-        ELSE
-          CALL VECSMD(VEC1,VEC2,FAC(IVEC),1.0D0,LUIN,LLUSCR,LLUOUT,
-     &                0,LBLK)
-        END IF
-C
-        LBUF = LLUOUT
-        LLUOUT = LLUSCR
-        LLUSCR = LBUF
-  100 CONTINUE
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPVCD_PP_CC_B_C(LUIN,LUOUT,SCR,NBATCH,LBATCH,LEBATCH,
      &                            I1BATCH,IBATCH,MY_IOFF_LUIN,
      &                            MY_IOFF_LUOUT,
@@ -3774,11 +2375,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPVCD_PP_B_RL(VEC1,LUINLIST,LUOUTLIST,
      &                          NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
      &                          MY_IOFF_LUIN,MY_IOFF_LUOUT,
@@ -3870,11 +2467,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE COPVCD_PP_B_CPX(VEC1,LUINLIST,LUOUTLIST,
      &                           NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
      &                           MY_IOFF_LUIN,MY_IOFF_LUOUT,
@@ -4033,11 +2626,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WTVEC_BATCH_DRV3_C(SCR,NBATCH_BLK,NBATCH_INF,
      &                              LUOUT,IOFFSET,IOFFSET_INT,
      &                              IVCOFF_OUT,NO_CHECK,ISCRATCH_SP,
@@ -4109,11 +2698,7 @@ C     ^ loop over blocks in a batch
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE RDVEC_BATCH_DRV4(MY_LUIN,SCR,NBATCH_BLK,NBATCH_INF,
      &                            IOFFSET,IOFFSET_INT,IVCOFF_IN1,
      &                            NUM_A_B)
@@ -4170,11 +2755,7 @@ C       ^ loop over blocks in batch
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WTVEC_BATCH_DRV4(MY_LUOUT,SCR,NBATCH_BLK,NBATCH_INF,
      &                            IOFFSET,IOFFSET_INT,IVCOFF_IN1,
      &                            NUM_A_B)
@@ -4237,11 +2818,7 @@ C       ^ loop over blocks in batch
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WTVEC_BATCH_DRV4SP(MY_LUOUT,SCR,NBATCH_BLK,NBATCH_INF,
      &                              IOFFSET,IOFFSET_INT,IVCOFF_IN1,
      &                              NUM_A_B,IDEBUGPRNT)
@@ -4308,11 +2885,7 @@ C       ^ loop over blocks in batch
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE RDVEC_BATCH_DRV5(MY_LUIN,SCR,NBATCH_BLK,NBATCH_INF,
      &                            IOFFSET)
 C
@@ -4356,11 +2929,7 @@ C       ^ loop over blocks in batch
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE TRAVC_B_RL_DRV(VEC1,VEC2,XMAT,LUIN1LIST,
      &                          LUOUTLIST,NBATCH,LBATCH,LEBATCH,I1BATCH,
      &                          IBATCH,MY_IOFF_LUIN1,MY_IOFF_LUOUT,
@@ -4392,7 +2961,6 @@ C
       DIMENSION LUIN1LIST(*), LUOUTLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
-      NZERO = 0
 C
 C     transform: LUIN1 --> LUOUT
 C
@@ -4405,7 +2973,7 @@ C
 C
 C     copy back: LUOUT --> LUIN1
 C
-      CALL ISETVC(LUIN1LIST,NZERO,IALL_LUIN)
+      CALL IZERO(LUIN1LIST,IALL_LUIN)
 C
       DO IROOT = 1, NVEC2
          CALL COPVCD_PP_B_RL(VEC1,LUOUTLIST,LUIN1LIST,
@@ -4415,11 +2983,7 @@ C
       END DO
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE TRAVC_B_RL(VEC1,VEC2,FAC,LUIN1LIST,
      &                      LUOUTLIST,NBATCH,LBATCH,LEBATCH,I1BATCH,
      &                      IBATCH,MY_IOFF_LUIN1,MY_IOFF_LUOUT,
@@ -4547,47 +3111,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE BLK_DSCAL(FAC,SCR,NBATCH_BLK,NBATCH_INF,
-     &                     IOFFSET,IVCOFF)
-C
-C     scaling of vector SCR with factor FAC using a blocked vector 
-C
-C     Last revision:     S. Knecht       - April  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 ( A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION NBATCH_INF(8,*), IVCOFF(*), SCR(*) 
-      INTEGER JOFF,ILEN
-C
-      JOFF = 0
-      ILEN = 0
-      DO ISBLK = 1, NBATCH_BLK
-C
-        ILEN = IVCOFF( IOFFSET + ISBLK - 1 )
-        IF( ILEN .gt. 0 ) THEN
-          JOFF = NBATCH_INF(6,ISBLK)
-          CALL DSCAL( ILEN, FAC, SCR(JOFF), 1 )
-        END IF
-C
-      END DO
-C
-      END 
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ORTHG_VEC_BATCH_LUCI1(VEC1,VEC2,SUBSPH,SCRRED,
      &                                 SCRRED2,NROOT,JOFF,JOFF2,
      &                                 NBATCH,LBATCH,LEBATCH,
@@ -4790,11 +3314,7 @@ csk   CALL WRTMATMN(SUBSPH(ISTRED2),1,JOFF-1,1,JOFF-1,LUWRT)
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ORTHG_VEC_BATCH_LUCI2(VEC1,VEC2,FACIN1,FACIN2,NINVEC1,
      &                                 NINVEC2,NBATCH,LBATCH,LEBATCH,
      &                                 I1BATCH,IBATCH,MY_IOFF_LUIN,
@@ -5059,11 +3579,7 @@ C
 C     ^ loop over batches 2
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ORTHG_VEC_BATCH_LUCI3(VEC1,VEC2,FACIN1,FACIN3,FACIN2,
      &                                 NROOT,JOFF,NBATCH,LBATCH,LEBATCH,
      &                                 I1BATCH,IBATCH,MY_IOFF_LUIN,
@@ -5241,11 +3757,7 @@ C     ^ loop over batches
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE CALC_SUBSPACE_H_LUCI(VEC1,VEC2,SCRRED,IMUSTRED,IVEC,
      &                                NROOT,ISTRED,NBATCH,LBATCH,
      &                                LEBATCH,I1BATCH,IBATCH,ILOOP,
@@ -5419,11 +3931,7 @@ C     ^ loop over batches
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PART_CIV_PAR1(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         NSMST,MXLNG,IOCOC,ISMOST,
      &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
@@ -5578,30 +4086,26 @@ C       only s-blocks corresponding to distribution
  2002 CONTINUE
 *
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) 'Output from PART_CIV_PAR1'
-        WRITE(6,*) '========================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of batches ', NBATCH
+        WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
+        WRITE(luwrt,*) '========================='
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of batches ', NBATCH
         DO JBATCH = 1, NBATCH
-          WRITE(6,*)
-          WRITE(6,*) ' Info on batch ', JBATCH
-          WRITE(6,*) ' *********************** '
-          WRITE(6,*)
-          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Info on batch ', JBATCH
+          WRITE(luwrt,*) ' *********************** '
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
+          WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+            WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
         END DO
       END IF
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PART_CIV_PAR2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         NSMST,MXLNG,IOCOC,ISMOST,
      &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
@@ -5805,11 +4309,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PRINT_BATCH_INFO(NCBATCH,LBATC,LEBATC,
      &           I1BATC,IBATC,ICCTOS,ICWEIGHT,NBLOCK,IBTOTW,ICWEIGHTF,
      &           IABSOLUTE_WEIGHT)
@@ -5878,11 +4378,7 @@ CSK        CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PRSYMMN(A,MATDIM,LUWRT)
 C PRINT LOWER HALF OF A SYMMETRIC MATRIX OF DIMENSION MATDIM.
 C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
@@ -5899,11 +4395,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
  1010 FORMAT(/I6,5E14.7,/,(6X,1P,5E14.7) )
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REDVEC(VECIN,VECOUT,NDIM,NTYPE,NOP,NCOMM,NTARGET)
 *
 *. Reduce an array VECIN of dimension NDIM that is distributed over 
@@ -5934,7 +4426,7 @@ CSK        DATATYPE = MPI_REAL8
         DATATYPE  =  MPI_CHARACTER 
       ELSE
         WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
-        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
+        CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
       IF(NTARGET.GE.0)THEN
@@ -5948,11 +4440,7 @@ CSK        DATATYPE = MPI_REAL8
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REDVEC_REL(VECIN,VECOUT,NDIM,NTYPE,NOP,NCOMM,NTARGET)
 *
 *. Reduce an array VECIN of dimension NDIM that is distributed over 
@@ -5982,7 +4470,7 @@ CSK        DATATYPE = MPI_REAL8
         DATATYPE  =  MPI_CHARACTER 
       ELSE
         WRITE(6,*)' REDVEC: TYPE "',NTYPE,'" does not exist!'
-        CALL Abend2('ERROR in REDVEC: Nonexisting DATATYPE')
+        CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
       IF(NTARGET.GE.0)THEN
@@ -5996,165 +4484,7 @@ CSK        DATATYPE = MPI_REAL8
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SCLVCSUM(FAC,VEC1,VEC2,NBATCH_BLK,NBATCH_INF,
-     &                    IOFF_INT,IVCOFF)
- 
-C
-C     OUTPUT
-C     ======
-C
-C     VEC2 == VEC1 * FAC + VEC2
-C
-C     Last revision:     S. Knecht       - April  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
-      INTEGER JOFF,ILEN
-C
-      DO ISBLK = 1, NBATCH_BLK
-C
-        ILEN = IVCOFF( IOFF_INT + ISBLK - 1 )
-C
-        IF ( ILEN .gt. 0 ) THEN
-          JOFF = NBATCH_INF(6,ISBLK)
-          CALL DAXPY( ILEN, FAC, VEC1(JOFF), 1, VEC2(JOFF), 1 )
-        END IF
 
-      END DO
-C     
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      REAL*8 FUNCTION BLK_DDOT(VEC1,VEC2,NBATCH_BLK,NBATCH_INF,
-     &                         IOFF_INT,IVCOFF)
- 
-C
-C     OUTPUT
-C     ======
-C
-C     BLK_DDOT == SUM( VEC1 * VEC2)
-C
-C     Last revision:     S. Knecht       - April  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION VEC1(*), VEC2(*),IVCOFF(*),NBATCH_INF(8,*)
-      INTEGER JOFF,ILEN
-C
-      XXX = 0.0D0
-C
-      DO ISBLK = 1, NBATCH_BLK
-C
-        ILEN = IVCOFF( IOFF_INT + ISBLK - 1 )
-C
-        IF ( ILEN .gt. 0 ) THEN
-          JOFF = NBATCH_INF(6,ISBLK)
-          XXX = XXX + DDOT( ILEN, VEC1(JOFF), 1, VEC2(JOFF), 1 )
-        END IF
-
-      END DO
-C     
-      BLK_DDOT = XXX
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SET_ACTIVE(VEC,IAMACTIVE,FAC,NDIM)
-C
-C     OUTPUT
-C     ======
-C
-C     active blocks in VEC flagged with a factor FAC
-C
-C     Last revision:     S. Knecht       - March  2007
-C
-************************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-      DIMENSION VEC(NDIM), IAMACTIVE(NDIM)
-C
-      DO IBLK = 1, NDIM
-        IF( IAMACTIVE(IBLK) .eq. LUCI_MYPROC ) VEC(IBLK) = FAC
-      END DO
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TRAVCD_PAR(VEC1,VEC2,X,NVECIN,NVECOUT,LUIN,LUOUT,
-     &                      ICOPY,LBLK,LUSCR1,LUSCR2)
-*
-* NVECIN vectors reside on LU1, Transform these vectors,
-*  using LUSCR1 and  LUSCR2  as
-* scratch files,  with matrix X to produce output file LUOUT.
-*
-* Since LUIN is accessed several times it is always
-* REWOUND. LUOUT is written to from current start.
-*
-* I ICOPY .ne. 0 the transformed vectors are written back to LUIN
-*
-* Jeppe Olsen, April 1997
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION X(NVECIN,NVECOUT)
-*. Scratch
-      DIMENSION VEC1(*),VEC2(*)
-*
-C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
-      DO IVECOUT = 1, NVECOUT
-         CALL MVCSMD_PAR(LUIN,X(1,IVECOUT),LUSCR1,LUSCR2,VEC1,VEC2,
-     &               NVECIN,1,LBLK)
-         CALL REWINO(LUSCR1)
-         CALL COPVCD(LUSCR1,LUOUT,VEC1,0,LBLK)
-      END DO
-*
-      IF(ICOPY.EQ.1) THEN
-        CALL REWINO(LUIN)
-        CALL REWINO(LUOUT)
-        DO IVECOUT = 1, NVECOUT
-          CALL COPVCD(LUOUT,LUIN,VEC1,0,LBLK)
-        END DO
-      END IF
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
       SUBROUTINE UPDATE_GEN_LIST(ISLIST1,ISLIST2,NDIM)
 C
 C     OUTPUT
@@ -6183,11 +4513,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE IFACTOSFAC(ISLIST1,SLIST2,NDIM)
 C
 C     OUTPUT
@@ -6215,11 +4541,7 @@ C
 C
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaption by Timo Fleig                *
-* parallelization by Stefan Knecht                                    *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRSVCD_PAR(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,
      &                      IBLOCKL,IBLOCKD,NBLOCK,JPACK,IXROOT,
      &                      LU1LIST)

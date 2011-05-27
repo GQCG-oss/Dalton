@@ -387,6 +387,7 @@ C
 
          LABEL1 = 'ALL_DONE'
          STHELP = 'THE_END   '
+         ZERO   = 0.0D0
          CALL WRIPRO(0.0D0,STHELP,666,
      *               LABEL1,LABEL1,LABEL1,LABEL1,
      *               ZERO,ZERO,ZERO,1,0,0,0)
@@ -429,6 +430,7 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
+            ZERO   = 0.0D0
             CALL WRIPRO(0.0D0,STHELP,666,
      *                  LABEL1,LABEL1,LABEL1,LABEL1,
      *                  ZERO,ZERO,ZERO,1,0,0,0)
@@ -489,6 +491,7 @@ C
 
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '
+      ZERO   = 0.0D0
       CALL WRIPRO(0.0D0,STHELP,666,
      *            LABEL1,LABEL1,LABEL1,LABEL1,
      *            ZERO,ZERO,ZERO,1,0,0,0)

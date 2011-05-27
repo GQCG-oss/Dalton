@@ -24,7 +24,7 @@ of a molecule, all that is is needed is the input:
 \end{verbatim}
 
 This keyword will, in addition to calculating the molecular
-frequencies, also calculate the zero-point vibrational 
+frequencies, also calculate the zero-point vibrational
 energy corrections\index{zero-point vibrational energy} and vibrational
 and rotational partition functions\index{partition functions}
 at selected temperatures.
@@ -258,7 +258,7 @@ depolarization ratios\index{depolarization ratio}. Note
 that these parameters are also obtainable by using the keyword
 \Key{VROA}. In this calculation we calculate the Raman intensities for two
 frequencies, the static case and a frequency of the incident light
-corresponding to a laser of wavelength 488.8 nm. 
+corresponding to a laser of wavelength 488.8 nm.
 
 Due to the numerical differentiation\index{numerical differentiation}
 that is done, the threshold for
@@ -281,7 +281,7 @@ program will
 step plus and minus one displacement unit along each Cartesian coordinate
 of all nuclei, as well as calculating the property at the reference
 geometry. Thus, for a molecule with $N$ atoms the properties will need
-to be calculated in a total of 2*3*$N$ + 1 points, which for a 
+to be calculated in a total of 2*3*$N$ + 1 points, which for a
 molecule with five atoms will amount to 31 points. The default maximum number of
 steps in \dalton\ is 20. However, in numerical differentiation
 calculations, the number of iterations will always be reset (if there
@@ -301,3 +301,92 @@ of a large number of isotopically substituted molecules at once. This
 is done in the \Sec{*PROPERTIES} input section, where we
 have requested one isotopically substituted species in addition to the
 isotopic species containing the most abundant isotope of each element.
+
+
+\section{Vibrational g factor}
+
+
+
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small \noindent {\bf Reference literature:}
+\begin{list}{}{}
+\item K.L.Bak, S.P.A.Sauer, J.Oddershede and J.F.Ogilvie.
+\newblock {\em Phys.Chem.Chem.Phys.},
+{\bf 7},\hspace{0.25em}1747, (2005).
+\item H.Kj{\ae}r and S.P.A.Sauer.
+\newblock {\em Theor.Chem.Acc.}, {\bf 122},\hspace{0.25em}137, (2009).
+\end{list}
+}}
+\end{center}
+
+Non-adiabatic corrections to the moment of inertia tensor for molecular
+vibrations can be calculated with the \dalton\ program with the keyword
+\Key{VIB\_G}.\index{non-adiabatic corrections}\index{moment of inertia
+tensor!non-adiabatic corrections} For diatomic molecules this is known
+as the vibrational g factor \cite{rv66ha,jfo98ho,spas063}.
+\index{vibrational g factor} The response functions necessary for the
+electronic contribution to the vibrational g factor can be obtained
+from an input like
+
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.VIB_G
+*TROINV
+.SKIP
+**END OF DALTON INPUT
+\end{verbatim}
+
+SCF and MCSCF wavefunctions or DFT can be employed in such a
+calculation. The nuclear contribution, on the other hand, can trivially
+be calculated from the nuclear charges and coordinates
+\cite{spas063,spas084}. The program generates thus a series of linear
+response functions for components of the nuclear linear momentum
+operators, i.e. derivatives with respect to the nuclear (symmetry)
+coordinates. The user has then to select the pair of coordinates
+relevant for the vibrational mode of interest and multiply the
+corresponding response function with the appropriate masses and natural
+constants \cite{spas063,spas084}. In the case, that the calculation has
+made use of the molecular point group symmetry, one has to remove the
+symmetry adaptation of then nuclear coordinates and thus derivative
+operators as well.
+
+Mass-independent contributions to the vibrational g factor of diatomic
+molecules can analogously be obtained by combining the linear response
+function of two nuclear momentum operators with response functions
+involving one nuclear momentum operator and components of the total
+electronic moment operator according to Eq. (11) in Ref.
+\cite{spas084}. These response functions are also printed in the
+output.
+
+The convergence thresholds for the calculation of the molecular gradient as
+well as the linear response functions of the nuclear linear momentum operators
+can be controlled with the \Key{THRESH} keyword in the \Sec{RESPON} and
+\Sec{ABALNR} sections, respectively. The input file for a calculation with
+significantly smaller thresholds than the default values would like like the
+following
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.VIB_G
+*TROINV
+.SKIP
+*RESPON
+.THRESH
+ 1.0D-07
+*ABALNR
+.THRESH
+1.0D-7
+**END OF DALTON INPUT
+\end{verbatim}

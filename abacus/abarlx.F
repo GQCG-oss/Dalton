@@ -143,6 +143,34 @@ C
 C
       LOGICAL PASS, OLDDX, DOREAL, DOIMAG, DOSEL, DOTRPL, SELLER
       DIMENSION SPNPSO(*),SPNSD(*), SPNFC(*), SPSDFC(*), WORK(LWORK)
+
+#ifdef VAR_G95
+      real(8), allocatable :: fc_contribution(:, :)
+!bugfix for the G95 compiler May 2011,
+!should be removed again when G95 compiler fixed.
+!  from the Dalton svn log:
+!=========================================================
+!r10285 | bast | 2011-05-14 16:28:15 +0200 (Sat, 14 May 2011) | 15 lines
+
+!bugfix: spin-spin coupling using g95 with optimization
+
+!runs crashed in the FC contribution
+!reason: mystery
+!more specifically due to invalid access to WORK array segment
+!which looked correctly "allocated" but g95 optimized it into a crash
+
+!changing a WORK "allocation" into a dynamic allocation solved
+!the issue
+
+!restores tests: prop_spinspin prop_spinspin2 prop_spinspin4
+!prop_newtrasoppa
+!prop_newtrasoppacc dft_properties_sym dft_properties_nosym
+!vibave_spinspin
+!hfreqfromg prop_spinspin5 prop_newtramcscf shield_spin
+!=========================================================
+
+#endif
+
 C
 C      Used from common blocks:
 C       /ENERGY/: HESREL(*,*)
@@ -252,7 +280,13 @@ C
          CALL HESZER(SPNFC)
          CALL HESZER(SPSDFC)
          CALL DZERO(WORK(KWRKSD),9*9*NUCDEP*NUCDEP)
+#ifdef VAR_G95
+!bugfix for the G95 compiler May 2011
+         allocate(fc_contribution(nucdep, nucdep))
+         fc_contribution = 0.0d0
+#else
          CALL DZERO(WORK(KWRKFC),NUCDEP*NUCDEP)
+#endif
          CALL DZERO(WORK(KWRKSF),9*NUCDEP*NUCDEP)
       ELSE
          IF (POLAR)  CALL DZERO(POLARS,9)
@@ -335,8 +369,14 @@ C
      &                      LURD,ITYPE,IPRINT)
                END IF
                IF (DOTRPL) THEN
+#ifdef VAR_G95
+!bugfix for the G95 compiler May 2011
+                  CALL ADDTRP(WORK(KREL),NVEC,IPRINT,WORK(KWRKSD),
+     &                        fc_contribution,WORK(KWRKSF))
+#else
                   CALL ADDTRP(WORK(KREL),NVEC,IPRINT,WORK(KWRKSD),
      &                        WORK(KWRKFC),WORK(KWRKSF))
+#endif
                ELSE
                   CALL ADDREL(WORK(KREL),WORK(KHESRL),SPNPSO,NVEC,
      &                        ITYPE,IPRINT)
@@ -390,8 +430,17 @@ C     ******************************************
 C     ***** Add up SD and FC contributions *****
 C     ******************************************
 C
-      IF (DOTRPL) CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
-     &                        WORK(KWRKFC),WORK(KWRKSF))
+      IF (DOTRPL) THEN
+#ifdef VAR_G95
+!bugfix for the G95 compiler May 2011
+          CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
+     &                fc_contribution,WORK(KWRKSF))
+         deallocate(fc_contribution)
+#else
+         CALL TRPMOV(SPNSD,SPNFC,SPSDFC,WORK(KWRKSD),
+     &               WORK(KWRKFC),WORK(KWRKSF))
+#endif
+      END IF
       IF (MOLHES .AND. .NOT. DOTRPL) CALL ADDHES(WORK(KHESRL))
 C
 C     ************************************

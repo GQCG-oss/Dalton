@@ -25,26 +25,24 @@
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
-!Revision 1.2  2001/01/17 10:41:34  vebjornb
-!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 !
 !Revision 1.5  2000/05/24 12:43:25  hjj
-!1) attempted to get WLKREJ true working again (not tested)
-!2) new parameter lists to SOLFCK and WRSIFC
-!3) write CREF in determinants on SIRIFC in WRSIFC
+! 1) attempted to get WLKREJ true working again (not tested)
+! 2) new parameter lists to SOLFCK and WR_SIRIFC
+! 3) write CREF in determinants on SIRIFC in WR_SIRIFC
 !
 !Revision 1.4  2000/05/01 14:07:33  hjj
-!removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
+! removed obsolete KAVER,KSYM(4) in WRITE (LUSIFC)
 !
 !revision 1.3 2000/05/01 07:21:48 hjj
-!polishing of warnings so that 'grep WARNING' gets more relevant information.
+! polishing of warnings so that 'grep WARNING' gets more relevant information.
 !----------------------------
 !revision 1.2 2000/04/14 10:10:52 hjj
 !\hjaaj jan 2000:
-!also screening for SIRCNO in OPTST
+! also screening for SIRCNO in OPTST
 !\hjaaj dec 1999:
-!1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
-!2) polishing
+! 1) implemented dynamic Fock matrix screening for QCHF and DIRFCK
+! 2) polishing
 !===========================================================================
 #endif
 C  /* Deck siropt */
@@ -241,7 +239,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
       KCREF  = KFCAC  + NNASHX
       KH2AC  = KCREF  + NCONF
       KWRK12 = KH2AC  + NNASHX*NNASHX
-C.. 1.2.1 .. (GRAD,SOLGRD,WRSIFC)
+C.. 1.2.1 .. (GRAD,SOLGRD,WR_SIRIFC)
       KERLM  = KWRK12
       IF (SOLVNT) THEN
          KWRKG  = KERLM + 2*NLMSOL
@@ -278,7 +276,7 @@ C
 C     Get CI information if active orbitals
 C
       IF (.NOT.RHFCLC)
-     *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
+     &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
 C
 C ****************************
 C *** GET STARTING VECTORS ***
@@ -410,7 +408,7 @@ C        CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
       END IF
       TIMITR = SECOND() - TIMITR
       IF (NWOPT.EQ.0 .OR. FLAG(34)) THEN
-C        ... We don't need the integrals for optimization.
+C        ... We do not need the integrals for optimization.
 C        ... flag(34) = (int.transf. not needed in optimization)
          FLAG(14) = .TRUE.
       ELSE
@@ -583,22 +581,22 @@ chj   END IF
          IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
- 1005 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T54,
+ 1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
      *        '(after absorp',I4,')' )
- 1010 FORMAT(/' Total MCSCF energy       :',1P,G25.15,T60,
+ 1010 FORMAT(/' Total MCSCF energy       :',F30.15,T60,
      *        '(MACRO ',I4,')' )
- 1011 FORMAT(/' Total MC-SRDFT energy    :',1P,G25.15,T60,
+ 1011 FORMAT(/' Total MC-SRDFT energy    :',F30.15,T60,
      *        '(MACRO ',I4,')' )
- 1015 FORMAT(/' - Nuclear repulsion      :',1P,G25.15,
-     *       /' - Inactive energy        :',1P,G25.15,
-     *       /' - Active energy          :',1P,G25.15)
- 1016 FORMAT( ' - Dielec. solvation ener.:',1P,G25.15)
- 1017 FORMAT( ' - QM/MM solvation ener.  :',1P,G25.15)
- 1018 FORMAT( ' - SRDFT effective energy :',1P,G25.15)
- 1019 FORMAT( ' - PCM solvation energy   :',1P,G25.15)
- 1020 FORMAT(/' Norm of total gradient   :',F22.12,
-     *       /' -    of CI gradient      :',F22.12,
-     *       /' -    of orbital gradient :',F22.12)
+ 1015 FORMAT(/' - Nuclear repulsion      :',F30.15,
+     *       /' - Inactive energy        :',F30.15,
+     *       /' - Active energy          :',F30.15)
+ 1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
+ 1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
+ 1018 FORMAT( ' - SRDFT effective energy :',F30.15)
+ 1019 FORMAT( ' - PCM solvation energy   :',F30.15)
+ 1020 FORMAT(/' Norm of total gradient   :',F27.12,
+     *       /' -    of CI gradient      :',F27.12,
+     *       /' -    of orbital gradient :',F27.12)
 
       IF (lim_poppri .gt. 0) THEN
          call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
@@ -984,9 +982,9 @@ C
          IF (LUPRI.NE.LUW4)
      *   WRITE (LUPRI,7011) DEPRED,(EMCSCF+DEPRED-POTNUC),EMCSCF+DEPRED
       END IF
- 7011 FORMAT(/' (SIROPT) CI energy lowering:  ',F25.15,
-     *       /T11,'CI electronic energy:',F25.15,
-     *       /T11,'CI total energy:     ',F25.15)
+ 7011 FORMAT(/' (SIROPT) CI energy lowering:  ',F30.15,
+     *       /T11,'CI electronic energy:',F30.15,
+     *       /T11,'CI total energy:     ',F30.15)
 C
       IF (ICONV .GT. 0) GO TO 800
       IF (FLAG(20))     GO TO 890
@@ -1116,9 +1114,8 @@ C
 C     ... this is RHF which will be followed by MCSCF
       IF (LSTLVL .EQ. 1 .AND. (FLAG(25) .OR. INERSI)) THEN
          IF (GEOWLK) THEN
-            IF (.NOT. OPTNEW)
-     *         WRITE (LUW4,'(//A/)')
-     *            ' Check ratio for geometry walk with converged MC :'
+            IF (.NOT. OPTNEW) WRITE (LUW4,'(//A/)')
+     &         ' Check ratio for geometry walk with converged MC :'
             JWSTEP = 1
             EMCOLD = EMCGEO
             DEPRED = DEPGEO
@@ -1129,12 +1126,13 @@ C     ... this is RHF which will be followed by MCSCF
 C
 Chj      if walk is rejected: do not update information on SIRIFC
          IF (.NOT.WLKREJ)
-     *   CALL WRSIFC(WRK(KCMO),WRK(KDV),WRK(KPV),WRK(KFCSOL),WRK(KFV),
-     *               WRK(KFQ),WRK(KCREF),WRK(KFCAC),WRK(KH2AC),
-     *               WRK(KWRKG),LWRKG,WRK(KGTOT+NCONF),WRK(KERLM),
-     *              .TRUE.,WRK(KCINDX))
-C        CALL WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
-C    *               GORB,ERLM,ORBHES,XINDX)
+     &   CALL WR_SIRIFC(WRK(KCMO),WRK(KDV),WRK(KPV),
+     &               WRK(KFCSOL),WRK(KFV),WRK(KFQ),
+     &               WRK(KCREF),WRK(KFCAC),WRK(KH2AC),
+     &               WRK(KWRKG),LWRKG,WRK(KGTOT+NCONF),WRK(KERLM),
+     &              .TRUE.,WRK(KCINDX))
+C        CALL WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
+C    &               GORB,ERLM,ORBHES,XINDX)
 C        ... note: GORB will in a normal macro iteration be
 C                  overwritten in SIRNEO or SIRNR, but none of
 C                  these routines have been called after GRAD
@@ -1365,8 +1363,8 @@ C     take care of 1-electron case and no virtuals case
  9999 CALL QEXIT('RHFENR')
       RETURN
 C
-C1730 FORMAT(//' Hartree-Fock electronic energy:',F25.12)
-C1732 FORMAT( /' Hartree-Fock total      energy:',F25.12)
+C1730 FORMAT(//' Hartree-Fock electronic energy:',F30.15)
+C1732 FORMAT( /' Hartree-Fock total      energy:',F30.15)
  1740 FORMAT( /' Sym       Hartree-Fock orbital energies')
  1741 FORMAT( /' Sym       Hartree-Fock orbital energies',
      &         ' (supersymmetry in parenthesis)')
@@ -1848,15 +1846,15 @@ C        "UPDSAVE" restart
       END IF
       REWIND LUIT1
       GO TO 9000
- 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,1P,G25.15,
+ 5000 FORMAT(/' (OPTST) RESTART, Old MCSCF energy:',T50,F30.15,
      *       /T18,'for macro iteration no.',T49,I10
      *       /T23,'BETA value:',T49,F10.2,
      *       /T23,'Trust radius:',T44,F15.5,
-     *       /T18,'Predicted new MCSCF energy:',T50,1P,G25.15)
+     *       /T18,'Predicted new MCSCF energy:',T50,F30.15)
  6000 FORMAT(//' (OPTST) Geometry walk',
-     *       /T16,'Old MCSCF energy:       ',F25.15,
-     *       /T16,'Predicted energy change:',F25.15,
-     *       /T16,'Predicted new energy:   ',F25.15,
+     *       /T16,'Old MCSCF energy:       ',F30.15,
+     *       /T16,'Predicted energy change:',F30.15,
+     *       /T16,'Predicted new energy:   ',F30.15,
      *      //T16,'Ratios for rejecting walk,',
      *       /T16,'  Minimum :',F14.5,
      *       /T16,'  Maximum :',F14.5)
@@ -2374,8 +2372,8 @@ C
    25 FORMAT(/1X,A8,' has not been called in this calculation.')
    30 FORMAT(/1X,A8,10X,4F15.2)
       END
-C  /* Deck wrsifc */
-      SUBROUTINE WRSIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
+C  /* Deck wr_sifc */
+      SUBROUTINE WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
      *                  GORB,ERLM,ORBHES,XINDX)
 C
 C MOTECC: this routine writes interface file for post-programs.
@@ -2400,13 +2398,13 @@ C                orbitals or natural orbitals or ?
 C
 C  The following records are written:
 C
-C    0) label
+C    0) label LBSIFC ("SIR IPH ")
 C    1) POTNUC,EMY,EACTIV,EMCSCF
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
 C    5) DV
-C    6) F
+C    6) FOCK
 C    7) PV
 C    8) FC
 C    9) FV
@@ -2445,6 +2443,10 @@ C   If (CSF's) then
 C    *) label "CREFDETS"
 C    *) CREF in dets
 C   end if
+C    *) label 'TRCCINT"
+C    *) NSYM, NORBT, ...
+C    *) FCDIA, ISMO
+C    *) CMO
 C
 #include <implicit.h>
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
@@ -2497,39 +2499,24 @@ C
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
      *            'PCMINFO ','PCMJXMAT'/
-      DATA LABEOD, LABCC /'EODATA  ', 'TRCCINT '/
+      DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
-      CALL QENTER('WRSIFC')
+      CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
       CALL GETDAT(LAB123(2),LAB123(3))
 C     ... place date in LAB123(2) and time in LAB123(3)
-C
+
 C
 C *** Now create LUSIFC and write ...
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,
      &            'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSIFC)
-C     If (INERSI but not the interface flag flag(25)) go to solvent part
-      IF (INERSI .AND. .NOT. FLAG(25)) THEN
-         IF (IPRI6 .GE. 1) WRITE (LUPRI,'(/A)')
-     *   ' >>> Writing Sirius interface file for'//
-     *   ' inertial solvent polarization in WRSIFC. <<<'
-C
-C VB mar 2001:
-C     KWRK1, KFCDIA and MMORBT have to initialized before we jump
-C     further down in the subroutine.
-C
-         KWRK1 = 1
-         KFCDIA = 1
-         MMORBT = MAX(4,NNORBT)
-         NCMOT4 = MAX(4,NCMOT)
-         GO TO 700
-      END IF
+
       IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/A)')
      *   ' >>> Writing Sirius interface file for'//
-     *   ' post-programs in WRSIFC. <<<'
+     *   ' post-programs in WR_SIRIFC. <<<'
 C
 C     Calculate Fock matrix
 C
@@ -2541,7 +2528,7 @@ C
       KFCFV  = KUDV   + N2ASHX
       KEND   = KFCFV  + NNORBT
       KEND   = MAX(KEND,KWRK1+NCONF,KWRK1+NWOPT)
-      IF (KEND .GT. LFREE) CALL ERRWRK('WRSIFC',KEND,LFREE)
+      IF (KEND .GT. LFREE) CALL ERRWRK('WR_SIRIFC',KEND,LFREE)
 C
       IF (NASHT .EQ. 0) THEN
          DO I = 1,NNORBT
@@ -2610,9 +2597,9 @@ C
   500 CONTINUE
 C
       IF (P6FLAG(14)) THEN
-         WRITE (LUPRI,'(/A)') ' Full Fock matrix from WRSIFC :'
+         WRITE (LUPRI,'(/A)') ' Full Fock matrix from WR_SIRIFC :'
          CALL OUTPTB(WRK(KFOCK),NORB,NSYM,1,LUPRI)
-         WRITE (LUPRI,'(/A)') ' FC diagonal elememts from WRSIFC :'
+         WRITE (LUPRI,'(/A)') ' FC diagonal elememts from WR_SIRIFC :'
          WRITE (LUPRI,'(/,(1X,5F15.8))') (WRK(KFCDIA-1+I),I=1,NORBT)
       END IF
 C
@@ -2620,13 +2607,13 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     *               ISTATE,ISPIN,NACTEL,LSYM
+     &               ISTATE,ISPIN,NACTEL,LSYM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
-     *               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
-     *               NSYM,MULD2H, NRHF,NFRO,
-     *               NISH,NASH,NORB,NBAS,
-     *               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
-     *               NAS1, NAS2, NAS3
+     &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
+     &               NSYM,MULD2H, NRHF,NFRO,
+     &               NISH,NASH,NORB,NBAS,
+     &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+     &               NAS1, NAS2, NAS3
 C
 C 880920-hjaaj: later write label here for orbitals
 C
@@ -2640,21 +2627,21 @@ C
       MMASHY = MAX(4,NNASHY)
       M2ASHY = MAX(4,NNASHX*NNASHX)
 C
-      CALL WRITT (LUSIFC,NCMOT4,CMO)
-      CALL WRITT (LUSIFC,NC4,CREF)
-      CALL WRITT (LUSIFC,MMASHX,DV)
+      CALL WRITT (LUSIFC,NCMOT4,CMO) ! rec no. 3
+      CALL WRITT (LUSIFC,NC4,CREF)   ! rec no. 4
+      CALL WRITT (LUSIFC,MMASHX,DV)  ! rec no. 5
 C Write Fock matrix.
-      CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK))
-      CALL WRITT (LUSIFC,M2ASHY,PV)
-      CALL WRITT (LUSIFC,MMORBT,FC)
+      CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK)) ! rec no. 6
+      CALL WRITT (LUSIFC,M2ASHY,PV)  ! rec no. 7
+      CALL WRITT (LUSIFC,MMORBT,FC)  ! rec no. 8
       IF (NASHT .EQ. 0) THEN
          CALL DZERO(WRK(KFOCK),NNORBT)
          CALL WRITT (LUSIFC,MMORBT,WRK(KFOCK))
       ELSE
-         CALL WRITT (LUSIFC,MMORBT,FV)
+         CALL WRITT (LUSIFC,MMORBT,FV) ! rec. no. 9
       END IF
 C
-      CALL WRITT (LUSIFC,MMASHX,FCAC)
+      CALL WRITT (LUSIFC,MMASHX,FCAC) ! rec. no. 10
       IF (IADH2 .GE. 0) THEN
 #if defined (VAR_NEWCODE)
 ... 27-Jun-1987/hjaaj -- noget lignende : MAERKE
@@ -2665,14 +2652,14 @@ C
 ... men der mangler en label som fortaeller response at H2AC on disk.
 #else
          WRITE (LUPRI,*)
-     &      'SIRCI.WRSIFC: ".DISKH2" not implemented here yet.'
+     &      'SIRCI.WR_SIRIFC: ".DISKH2" not implemented here yet.'
          CALL QTRACE(LUPRI)
-         CALL QUIT('SIRCI.WRSIFC: ".DISKH2" not implemented here yet.')
+         CALL QUIT('SIRCI.WR_SIRIFC: ".DISKH2" not implemented here.')
 #endif
       ELSE
-         CALL WRITT (LUSIFC,(MMASHX*MMASHX),H2AC)
+         CALL WRITT (LUSIFC,(MMASHX*MMASHX),H2AC) ! rec no. 11
       END IF
-      CALL WRITT (LUSIFC,NWH4,GORB)
+      CALL WRITT (LUSIFC,NWH4,GORB) ! rec no. 12
 C
 C *** now write diagonals of L-matrix needed for LINTRN
 C     and for conjugate gradient "next" algorithm
@@ -2712,12 +2699,14 @@ C     Write External fields, if any
          WRITE (LUSIFC) (EFIELD(I),I=1,NFIEL4)
          WRITE (LUSIFC) (LFIELD(I),I=1,NFIEL4)
       END IF
+
 C     Write Solvent information, if Solvent calculation.
-  700 IF (FLAG(16)) THEN
+      IF (FLAG(16)) THEN
          KTMAT = KWRK1
          KWRK2 = KTMAT + NNORBT
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-SOLVENT',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE)
+     &      CALL ERRWRK('WR_SIRIFC-SOLVENT',KWRK2,LFREE)
          WRITE (LUSIFC) LAB123,TABLE(6)
          WRITE (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
          WRITE (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
@@ -2726,7 +2715,7 @@ C     Write Solvent information, if Solvent calculation.
          CALL WRITT (LUSIFC,NLMSO4,ERLM(1,2))
          WRITE (LUSIFC) NSYM, NBAS
          CALL SOLFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,ERLM(1,1),.TRUE.,
-     *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
+     &               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
          WRITE (LUSIFC) LAB123,TABLE(7)
          CALL WRITT (LUSIFC,MMORBT,WRK(KTMAT))
       END IF
@@ -2738,7 +2727,7 @@ C     Write PCM solvent info if PCM calculation
          KPOT  = KDVAO + N2BASX
          KWRK2 = KPOT  + NTS
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-PCM',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-PCM',KWRK2,LFREE)
 C
          CALL PCMFCK(DUMMY,DUMMY,WRK(KTMAT),CMO,.TRUE.,
      *               DUMSOL,WRK(KWRK2),LWRK2,IPRSOL)
@@ -2790,7 +2779,7 @@ C Write qm3 solvent part of the Fock matrix to interface file
          KUCMO = KFSOLAO + NNBASX
          KWRK2 = KUCMO + NORBT*NBAST
          LWRK2 = LFREE - KWRK2 + 1
-         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WRSIFC-QM3',KWRK2,LFREE)
+         IF (KWRK2 .GT. LFREE) CALL ERRWRK('WR_SIRIFC-QM3',KWRK2,LFREE)
          CALL QM3_FMO(WRK(KFSOLAO),WRK(KWRK2),LWRK2,IPRSOL)
          CALL UPKCMO(CMO,WRK(KUCMO))
          CALL UTHU(WRK(KFSOLAO),WRK(KTMAT),WRK(KUCMO),WRK(KWRK2),
@@ -2807,11 +2796,11 @@ C
       IF (NCDETS .GT. NCONF) THEN
          IF (FLAG(27)) THEN
             WRITE (LUPRI,*)
-     &      'WRSIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
+     &      'WR_SIRIFC ERROR, .DETERMINANTS but NCDETS.gt.NCONF:',
      &      NCDETS, NCONF
-            CALL QUIT('WRSIFC: NCDETS.gt. NCONF for .DETERMINANTS')
+            CALL QUIT('WR_SIRIFC: NCDETS.gt. NCONF for .DETERMINANTS')
          END IF
-         WRITE (LUSIFC) LAB123,TABLE(8)
+         WRITE (LUSIFC) LAB123,TABLE(8) ! label "CREFDETS"
          KWRK1 = 1 + NCDETS
          LWRK1 = LFREE - KWRK1
          CALL GETDETS(LSYM,NCONF,NCDETS,XINDX,CREF,WRK,WRK(KWRK1),LWRK1)
@@ -2836,7 +2825,7 @@ C
             ENDDO
          ENDDO
          NCMOTX = MAX(4,NCMOT1)
-         WRITE (LUSIFC) LAB123, LABCC
+         WRITE (LUSIFC) LAB123, LABCC ! label "TRCCINT "
          WRITE (LUSIFC) NSYM,NORBT,NBAST1,NCMOT1,(NOCC(I),I=1,NSYM),
      *        (NORB(I),I=1,NSYM),(MBAS1(I),I=1,NSYM),POTNUC,EMCSCF
          WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
@@ -2899,7 +2888,7 @@ C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
             END DO
          END DO
          CALL GPCLOSE(LUMULB,'KEEP')
-         WRITE (LUSIFC) LAB123, LABAUX
+         WRITE (LUSIFC) LAB123, LABAUX ! label "AUXILBAS"
          WRITE (LUSIFC) NSYM,NAUXT,NBAST,MOAUX,
      *                  (0,I=1,NSYM),
      *                  (NORB2(I),I=1,NSYM),
@@ -2970,10 +2959,10 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
          END IF
       END IF
 C
-C *** end of subroutine WRSIFC
+C *** end of subroutine WR_SIRIFC
 C
       WRITE (LUSIFC) LAB123,LABEOD
       CALL GPCLOSE(LUSIFC,'KEEP')
-      CALL QEXIT('WRSIFC')
+      CALL QEXIT('WR_SIRIFC')
       RETURN
       END

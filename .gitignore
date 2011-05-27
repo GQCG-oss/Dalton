@@ -1,1 +1,8 @@
 test/*pid*
+*.o
+*.a
+Makefile.depend
+configure_conftest.log
+Makefile.config
+bin/
+modules/

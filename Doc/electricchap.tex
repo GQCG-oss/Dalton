@@ -104,7 +104,7 @@ response\index{linear response}\index{response!linear} functions as
 described in Ref.~\cite{jopjjcp82}. In {\aba} the
 calculation of frequency-dependent linear response functions is
 requested through the keyword \Key{ALPHA} in the general input
-module to the property section. An input file requesting the calculation of the frequency 
+module to the property section. An input file requesting the calculation of the frequency
 dependent polarizability of a molecule may then be calculated using
 the following input:
 
@@ -123,18 +123,20 @@ the following input:
 **END OF DALTON INPUT
 \end{verbatim}
 
-For a Second Order Polarization Propagator Approximation (SOPPA)\index{SOPPA}\index{polarization propagator}
-\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp,ekdspasjpca102} calculation 
-of frequency-dependent polarizabilities the additional keyword
-\Key{SOPPA} has to be  
-specified in the \Sec{*PROPERTIES} input module and an MP2 calculation has to 
-be requested by the keyword \Key{MP2} in the \Sec{*WAVE FUNCTIONS} input 
-module. Similarly, for a SOPPA(CCSD)\index{SOPPA(CCSD)}
-\cite{soppaccsd,ekdspasjpca102} calculation of frequency
-dependent polarizabilities the additional keyword \Key{SOPPA(CCSD)} has to be 
-specified in the \Sec{*PROPERTIES} input module and an CCSD calculation has to 
-be requested by the keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS} input 
-module with the option \Key{SOPPA(CCSD)} in the \Sec{CC INPUT} section.
+For a Second Order Polarization Propagator Approximation
+(SOPPA)\index{SOPPA}\index{polarization propagator}
+\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp,ekdspasjpca102}
+calculation of frequency-dependent polarizabilities the additional
+keyword \Key{SOPPA} has to be specified in the \Sec{*PROPERTIES} input
+module and an MP2 calculation has to be requested by the keyword
+\Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module. Similarly, for a
+SOPPA(CC2) \index{SOPPA(CC2)} \cite{spas097}
+ or SOPPA(CCSD)\index{SOPPA(CCSD)} \cite{soppaccsd,ekdspasjpca102}
+calculation of frequency dependent polarizabilities the additional
+keyword \Key{SOPPA(CCSD)} has to be specified in the \Sec{*PROPERTIES}
+input module and an CC2 or CCSD calculation has to be requested by the
+keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS} input module with the
+option \Key{SOPPA2} or \Key{SOPPA(CCSD)} in the \Sec{CC INPUT} section.
 
 The \Sec{ABALNR} input section controls the calculation of the
 frequency-dependent linear response
@@ -156,7 +158,7 @@ achieved by the following input:
 **DALTON INPUT
 .RUN PROPERTIES
 **WAVE FUNCTIONS
-.HF 
+.HF
 **PROPERTIES
 .POLARI
 **END OF DALTON INPUT

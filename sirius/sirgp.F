@@ -761,7 +761,7 @@ C
 C-- IRDMO = 10:
 C
  1000 CONTINUE
-      CALL RDSIFC('CMO',FOUND,CMO,WRK,LFREE)
+      CALL RD_SIRIFC('CMO',FOUND,CMO,WRK,LFREE)
       IF (.NOT.FOUND) THEN
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -1717,7 +1717,7 @@ C              FMAT( IPQ , ISIM ) = FPQ
      &         '   dump of ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS:',
      &         ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
             CALL QTRACE(LUPRI)
-            CALL QUIT('RDSUPP ERROR, unrecognized type on LUSUPM')
+            CALL QUIT('RDSUPP ERROR, unrecognized type on AOSUPINT')
          END IF
       GO TO 100
 C
@@ -1866,23 +1866,24 @@ C
       CALL QEXIT('RDPROP')
       RETURN
       END
-C  /* Deck rdsifc */
-      SUBROUTINE RDSIFC(KEY,FOUND,AMAT,WRK,LWRK)
+C  /* Deck rd_sirifc */
+      SUBROUTINE RD_SIRIFC(KEY,FOUND,AMAT,WRK,LWRK)
 C
 C Read specific information from Sirius interface file
 C
 C 10-Dec-1992 HJAaJ
-C Revision 2000/05/24 hjj:  new options (read CMO and others)
+C Revision 2000/05/24 HJAaJ: new options (read CMO and others)
+C Revision 2011/05/02 HJAaJ: new keys FC, FCDIAG
 C
-C The following records have been written by WRSIFC:
+C The following records have been written by WR_SIRIFC:
 C
-C    0) label
+C    0) label LBSIFC ("SIR IPH ")
 C    1) POTNUC,EMY,EACTIV,EMCSCF
 C    2) NISHT,NASHT,...
 C    3) CMO
 C    4) CREF
 C    5) DV
-C    6) F
+C    6) FOCK
 C    7) PV
 C    8) FC
 C    9) FV
@@ -1921,7 +1922,10 @@ C   If (CSF's) then
 C    *) label "CREFDETS"
 C    *) CREF in dets
 C   end if
-
+C    *) label 'TRCCINT"
+C    *) NSYM, NORBT, ...
+C    *) FCDIA, ISMO
+C    *) CMO
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1932,7 +1936,8 @@ C
 C
 C Used from common blocks:
 C   INFINP : NLMSOL
-C   INFORB : NCMOT,NNORBT,NNASHX
+C   INFORB : NSYM,NCMOT,NNORBT,NNASHX
+C   INFOPT : POTNUC, EMY
 C   INFTAP : LUSIFC,FNSIFC,LBSIFC
 C
 #include <maxorb.h>
@@ -1942,7 +1947,7 @@ C
 C
       LOGICAL CLSIFC, FNDLAB
 C
-      CALL QENTER('RDSIFC')
+      CALL QENTER('RD_SIRIFC')
       IF (LUSIFC .GT. 0) THEN
          CLSIFC = .FALSE.
       ELSE
@@ -1983,6 +1988,32 @@ C
          READ (LUSIFC)
          READ (LUSIFC)
          CALL READT(LUSIFC,N2ORBT,AMAT)
+      ELSE IF (KEY .EQ. 'FC for MP2') THEN ! 3-May-2011 hjaaj, specifically for use in MP2FCK
+         IF (.NOT. FNDLAB(LBSIFC,LUSIFC)) GO TO 8888
+         ! rec no. 1
+!        WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+!    &               ISTATE,ISPIN,NACTEL,LSYM
+         READ (LUSIFC) POTNUC_IFC, EMY ! we need EMY for SIRMP2
+         IF (POTNUC .NE. POTNUC_IFC)
+     &      CALL QUIT('POTNUC on SIRIFC and input are different')
+         ! rec no. 2
+!        WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
+!    &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
+!    &               NSYM,MULD2H, NRHF,NFRO,
+!    &               NISH,NASH,NORB,NBAS,
+!    &               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
+!    &               NAS1, NAS2, NAS3
+         READ (LUSIFC) NISHT_IFC,NASHT_IFC,idum,NORBT_IFC,NBAST_IFC,
+     &               (idum,i=1,9),NSYM_IFC
+         IF (NISHT .ne. NISHT_IFC .or. NASHT .ne. NASHT_IFC .or.
+     &       NORBT .ne. NORBT_IFC .or. NBAST .ne. NBAST_IFC .or.
+     &       NSYM  .ne. NSYM_IFC ) CALL
+     &      QUIT('SIRIFC info not consistent with this calculation.')
+
+         DO IREC = 3,7 ! skip records 3:7
+            READ (LUSIFC)
+         END DO
+         CALL READT(LUSIFC,NNORBT,AMAT) ! FC matrix is in rec. no. 8
       ELSE IF (KEY .EQ. 'SOLTLM') THEN
          IF (.NOT. FNDLAB('SOLVINFO',LUSIFC)) GO TO 8888
          READ (LUSIFC)
@@ -1992,16 +2023,23 @@ C
       ELSE IF (KEY .EQ. 'SOLVTMAT') THEN
          IF (.NOT. FNDLAB('SOLVTMAT',LUSIFC)) GO TO 8888
          CALL READT(LUSIFC,NNORBT,AMAT)
+      ELSE IF (KEY .EQ. 'FCDIAG') THEN
+         IF (.NOT. FNDLAB('TRCCINT ',LUSIFC)) GO TO 8888
+         READ (LUSIFC) NSYM_SIRIFC
+         IF (NSYM .NE. NSYM_SIRIFC) THEN
+            CALL QUIT('RD_SIRIFC - key FCDIAG : NSYM inconsistent')
+         END IF
+         CALL READT(LUSIFC,NORBT,AMAT)
       ELSE
-         WRITE(LUPRI,*) 'RDSIFC error, invalid key word ',KEY
-         CALL QUIT('RDSIFC error, invalid key word ')
+         WRITE(LUPRI,*) 'RD_SIRIFC error, invalid key word ',KEY
+         CALL QUIT('RD_SIRIFC error, invalid key word ')
       END IF
       FOUND = .TRUE.
       GO TO 9999
 C
  8888 FOUND = .FALSE.
  9999 IF (CLSIFC) CALL GPCLOSE (LUSIFC,'KEEP')
-      CALL QEXIT('RDSIFC')
+      CALL QEXIT('RD_SIRIFC')
       RETURN
       END
 C  /* Deck rdcref */

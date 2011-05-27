@@ -395,7 +395,7 @@ C
 C              Solution vector
 C
                   IF (ZERNRM(I)) THEN
-                     CALL DZERO(WORK,NVARPT)
+                     CALL DZERO(WORK,2*NVARPT)
                   ELSE
                      CALL READT(LUSOVE,NVARPT,WORK)
                      CALL READT(LUREVE,NVARPT,WORK(NVARPT + 1))
@@ -414,7 +414,7 @@ ckr                  IDORCI(IREC,2) = 2
                   CALL ABAWRITRS
                   IF (IPRCLC .GT. 5) THEN
                      CALL HEADER('Response and residuum vectors in '//
-     &                   'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)
+     &                   'GETMRH for symmetry '//CHRNOS(ISYM)//':',-1)
                      WRITE (LUPRI,'(A,I5)') ' Coordinate:',ICOOR
                      WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
                      DN1 = DNRM2(NVARPT,WORK,1)

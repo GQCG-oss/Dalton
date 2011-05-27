@@ -10,7 +10,7 @@
 \begin{enumerate}
 
 \item{\bf Cholesky decomposition of integrals and CC equations:} \\
-Main authors: Alfredo S{\'a}nchez {de Mer{\'a}s}, Henrik Koch, 
+Main authors: Alfredo S{\'a}nchez {de Mer{\'a}s}, Henrik Koch,
 Thomas Bondo Pedersen.
 \begin{enumerate}
   \item{\bf Decomposition of orbital energy denominators:}  \\
@@ -25,8 +25,8 @@ Thomas Bondo Pedersen.
 Main authors: Christof H\"{a}ttig, Poul J\o rgensen, Filip Pawlowski \\
 Dalton2011 is the only published program which can make cubic response
 and residues of quadratic response functions on the CC3 level.
-\begin{enumerate}
-\end{enumerate}
+%\begin{enumerate}
+%\end{enumerate}
 
 Check if CCSDR3 was in Dalton 2.0 , if not then mention with Ove
 
@@ -42,8 +42,8 @@ Reference: \nobibentry{knecht08}
 \begin{enumerate}
   \item{\bf TD-DFT Diagnostic for excitation energies:}  \\
    Main authors: Trygve Helgaker \\
-   Reference: "Excitation energies in density functional theory: An evaluation and a diagnostic test", 
-     M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer, 
+   Reference: "Excitation energies in density functional theory: An evaluation and a diagnostic test",
+     M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer,
      J. Chem. Phys. 128, 044118 (2008).
   \item{\bf Coulomb-Attenuating Method:} The new hybrid
     exchange-correlation functional named CAM-B3LYP is
@@ -51,6 +51,35 @@ Reference: \nobibentry{knecht08}
     hybrid qualities of B3LYP and the long-range correction presented by
     Tawada {\it et al.\/}~\cite{ytttsytykhjcp120}.
   \item{\bf More functionals:}
+\end{enumerate}
+
+\item{\bf Extensions to the SOPPA modules:} \\
+Main authors: Stephan P. A. Sauer, Keld L. Bak, Ove Christiansen, Jacob
+Kongsted, ...
+\begin{enumerate}
+  \item{\bf An atomic integral direct implementation of SOPPA and SOPPA(CCSD) for singlet excitation energies:}  \\
+   Main authors: Stephan P. A. Sauer, Keld L. Bak \\
+   References: "Atomic integral driven second order polarization propagator
+     calculations of the excitation spectra of naphthalene and anthracene",
+     K. L. Bak, H. Koch, J. Oddershede, O. Christiansen and S. P. A. Sauer,
+     J. Chem. Phys. 112, 4173-4185 (2000); "Benchmarking second order methods for the calculation of vertical
+     electronic excitation energies: Valence and Rydberg states in
+     polycyclic aromatic hydrocarbons", H. H. Falden, K. R. Falster-Hansen,
+     K. L. Bak, S. Rettrup and S. P. A. Sauer, J. Phys. Chem. A 113,
+     11995-12012 (2009)
+  \item{\bf RPA(D) Method:}\index{RPA(D)}
+  A non-iterative doubles correction to RPA\\
+   Main authors: Ove Christiansen, Keld L. Bak, Stephan P. A. Sauer \\
+   References: "A Second-Order Doubles Correction to Excitation Energies in the Random
+     Phase Approximation", O. Christiansen, K. L. Bak, H. Koch and S. P. A.
+     Sauer,  Chem. Phys. Lett. 284, 47-62 (1998)
+  \item{\bf SOPPA(CC2) Method:}
+   Second-Order Polarization Propagator Approximation with CC2 Singles and Doubles
+   Amplitudes\\
+   Main authors: Jacob Kongsted, Stephan P. A. Sauer \\
+   References: "Benchmarking NMR indirect nuclear spin-spin coupling constants:
+   SOPPA, SOPPA(CC2) and SOPPA(CCSD) versus CCSD", H. Kj{\ae}r, S. P. A. Sauer and J. Kongsted,
+   J. Chem. Phys. 133, 144106 (2010)
 \end{enumerate}
 
 \item{\bf PCM model for solvation effects} \\
@@ -64,10 +93,16 @@ Main authors: Hans J\o rgen Aagaard Jensen, Patrick Norman
 and a better implementation for QM/MM is planned for next Dalton release.  \\
 Main authors: Kurt V. Mikkelsen, Anders Osted, Jacob Kongsted
 
-\item{\bf Code for vibrational and rotational g-factors, interface to WESTA for adiabatic corrections.}  \\
-Main authors: Stephan P. A. Sauer, Hans J\o rgen Aa.\ Jensen. The WESTA
-program can be obtained from Hans J\o rgen Aa.\ Jensen (contact e-mail
-for this: westa@dirac.chem.sdu.dk).
+\item{\bf Interface to WESTA for adiabatic corrections.}  \\
+Main authors: Hans J\o rgen Aa.\ Jensen.\\
+ The WESTA program can be obtained from Hans J\o rgen Aa.\
+Jensen (contact e-mail for this: westa@dirac.chem.sdu.dk).
+
+\item{\bf Code for vibrational g-factors.}  \\
+Main authors: Keld L. Bak, Stephan P. A. Sauer\\
+   References: "The vibrational g factor of dihydrogen from theoretical calculation
+   and analysis of vibration-rotational spectra", K. L. Bak, S. P. A. Sauer, J. Oddershede and J. F. Ogilvie ,
+   Phys. Chem. Chem. Phys. 7, 1747-1758 (2005)
 
 \item{\bf Interface to the general GEN1INT property integral generator:} see http://sss.sss.sss \\
 Main author: Bin Gao
@@ -75,6 +110,7 @@ Main author: Bin Gao
 \item{\bf More basis sets and extended basis sets:}
 \begin{enumerate}
   \item{pc-n} The polarization consistent basis sets by Frank Jensen.
+  \item{The aug-cc-pVTZ-J} basis sets for NMR spin-spin coupling constants by Stephan P. A. Sauer and co-workers.
 \end{enumerate}
 
 \item{\bf Code improvements:}
@@ -108,8 +144,8 @@ e.g. ref. \cite{xxx} for a recent example of use. \\
 Main author: Hans J\o rgen Aagaard Jensen. The WESTA program may be
 obtained from the author (hjj@ifk.sdu.dk).
 
-\item{\bf .CTOSHI} and {\bf .CTOSUS options} to compute CTOCD-DZ magnetic 
-shieldings and magnetizabilities at the coupled cluster level 
+\item{\bf .CTOSHI} and {\bf .CTOSUS options} to compute CTOCD-DZ magnetic
+shieldings and magnetizabilities at the coupled cluster level
 
 % \item{} Interface to the MIDAS program.
 
@@ -174,7 +210,7 @@ MP2 energies are available in a couple of  approximations~\cite{wkccmsjcp116,ccm
 
 \item{\bf Orbital exponent gradients:} Gradients of the orbital
 exponents can now be calculated for closed-shell molecular
-species~\cite{fjthjcp121}. 
+species~\cite{fjthjcp121}.
 
 \item{\bf Spin--spin coupling constants:} Allows for the calculation
   of coupling constants to one single nucleus.
@@ -239,9 +275,9 @@ either a directory specified by the user
 or the \dalton\ basis set library.
 
 \item{\bf Changes to basis set names:} The following basis sets
-have been renamed from \dalton\ 1.2, largely for consistency with the 
+have been renamed from \dalton\ 1.2, largely for consistency with the
 EMSL basis set order form. Note that spaces are not
-permitted in basis set names. 
+permitted in basis set names.
 \begin{center}
 \begin{tabular}{|l|l|}\hline
 Old Label & New Label \\\hline
@@ -336,17 +372,17 @@ estimating Franck-Condon factors.
 
 \item  {\bf Vibrational averaging} A new approach for calculating
 zero-point~\cite{poakrprtjcp112,krpoaprtjcp112} or
-tem\-pera\-ture-dependent~\cite{krjljv} vibrational averaged molecular 
+tem\-pera\-ture-dependent~\cite{krjljv} vibrational averaged molecular
 properties. For general properties, this have to be in a two-step
 procedure in which the first step determines the vibrational averaged
 geometry, and the second calculates the average of the molecular
 property over a harmonic oscillator approximation for the different
-vibrational modes. 
+vibrational modes.
 
-\item {\bf Magnetic Circular Dichroism} The ${\cal{B}}(0\rightarrow f)$ term 
+\item {\bf Magnetic Circular Dichroism} The ${\cal{B}}(0\rightarrow f)$ term
 contributing to
 magnetic circular dichroism (MCD) has been
-implemented~\cite{Coriani:MCDRSP}. 
+implemented~\cite{Coriani:MCDRSP}.
 
 \item {\bf Two-photon absorption} Although possible to calculate with
 Dalton~1.1, the input required for calculating two-photon absorption

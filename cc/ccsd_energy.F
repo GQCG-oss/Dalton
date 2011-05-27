@@ -597,6 +597,10 @@ C
       EN1R12 = 0.0d0
       EN2R12 = 0.0d0
       LCONVG=.FALSE.
+
+!radovan: otherwise er12 and en1r12 and en2r12 become undefined if lr12 = .false.
+      er12 = 0.0d0
+
       ITER=1
 C
 C
