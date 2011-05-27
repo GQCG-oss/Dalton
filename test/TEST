@@ -735,10 +735,12 @@ if [ "$perl_style" -gt 0 ]; then
         perl_fail="`grep -A1 'tests have failed' $perl_log | tail -1`"
         problems="$problems $perl_fail"
         myprint "THERE IS A PROBLEM in perl-style tests"
+        exitcode=1
     else
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
         myprint ""
         myprint "WARNING WARNING: Perl-style tests died unexpectedly!"
+        exitcode=1
     fi
     myprint ""
     myprint "Perl-style tests finished!"
