@@ -28,10 +28,11 @@ C  /* Deck excinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
       PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <inforb.h>
 #include <cbiexc.h>
 C
 #include <gnrinf.h>
@@ -39,6 +40,7 @@ C
 #include <anrinf.h>
 #include <dorps.h>
 #include <nuclei.h>
+#include <symmet.h>
       DATA TABLE /'.SKIP  ', '.INTPRI','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
@@ -47,6 +49,7 @@ C
       NEWDEF = (WORD .EQ. '*EXCITA')
       ICHANG = 0
       IF (NEWDEF) THEN
+         NSYM = MAXREP + 1 ! NSYM in inforb.h is not always defined when EXCINP is called
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -104,7 +107,6 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
    10          CONTINUE
-C                 NSYM is set to 8 since NSYM has not yet been set !!
                   READ (LUCMD,*) (NEXCIT(I),I=1,NSYM)
                   ICHANG = ICHANG + 1
                GO TO 100
@@ -152,16 +154,10 @@ CKeinSPASmehr
          THREXC = THREXC*THR_REDFAC
       END IF
 C
-C     NSYM is set to 8 since NSYM has not yet been set !!
-C     NTOT = ISUM(NSYM,NEXCIT,1)
-      NTOT = ISUM(8,NEXCIT,1)
+      NTOT = ISUM(NSYM,NEXCIT,1)
 C
       IF (NTOT.EQ.0) THEN
-C        NSYM is set to 8 since NSYM has not yet been set !!
-C        DO I = 1, NSYM
-         DO I = 1, 8
-            NEXCIT(I) = 1
-         END DO
+         NEXCIT(:) = 1
       END IF
 C
 CSPAS : let's try whether we cannot calculate all excitation energies
@@ -169,16 +165,15 @@ C
 C     maximum number of excitation energies
 C
       MXNEXI = 1
-C     NSYM is set to 8 since NSYM has not yet been set !!
       DO ISYM = 1,8
          MXNEXI = MAX(MXNEXI,NEXCIT(ISYM))
       END DO
 CKeinSPASmehr
 C
       CALL HEADER('Changes of defaults for .EXCITA:',0)
+      IF (EXCTRP) WRITE (LUPRI,'(A)') ' Triplet excitation energies'
       WRITE (LUPRI,'(A,8I5)')
      &   ' Number of excitation energies:',(NEXCIT(I),I=1,8)
-      IF (EXCTRP) WRITE (LUPRI,'(A)') ' Triplet excitation energies'
 C
       IF (ICHANG .GT. 0) THEN
          IF (SKIP) THEN
@@ -1415,15 +1410,15 @@ C
             DO IEXVAL = 1,NEXCIT(ISYM)
 
                DO K = 1,3
-                  DO J = 1,3
+                  DO M = 1,3
                      DO L = 1,3
-                        DO M = 1,3
+                        DO J = 1,3
                            RQVEL(J,K,ISYM,IEXVAL) =
      &                     RQVEL(J,K,ISYM,IEXVAL) + XLEVICI(J,L,M)*
-     &                     TRVEL(L,ISYM,IEXVAL)*TQVEL(M,K,ISYM,IEXVAL)
+     &                       TRVEL(L,ISYM,IEXVAL)*TQVEL(M,K,ISYM,IEXVAL)
                            RQLEN(J,K,ISYM,IEXVAL) =
      &                     RQLEN(J,K,ISYM,IEXVAL) + XLEVICI(J,L,M)*
-     &                     TRLEN(L,ISYM,IEXVAL)*TQLEN(M,K,ISYM,IEXVAL)
+     &                       TRLEN(L,ISYM,IEXVAL)*TQLEN(M,K,ISYM,IEXVAL)
                         END DO
                      END DO
                   END DO
