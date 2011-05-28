@@ -25,21 +25,10 @@
 C
 #ifdef OLD_LOG
 !===========================================================================
-!Revision 1.4  2000/05/01 12:02:22  hjj
-!removed obsolete KAVER,KSYM(4) from READ(LUSIFC)
 !
-!revision 1.3 2000/05/01 09:38:59 hjj
-!added (work,lfree) to CALL SETWOP (work space for new "local" KLWOP)
-!----------------------------
-!revision 1.2
-!11:47:09 hjj
-!now no parameters to CALL SIRINI
 !=============================================================================
-!891108-hjaaj: do not open LUONEL (done in RDONEL)
 !900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
 !900216-hjaaj: call sir_intopen to open luintm, revised check if luintm ok.
-!900221-hjaaj: removed *CALL CBESPN from NSETUP -- was not used.
-!900229-hjaaj: NSETUP: +,NUMRUN in CALL PRTINP(IWUNIT,NUMRUN)
 !900402-tuh:   H2MO defined according to info from LUSIFC
 !900418-hjaaj: NSETUP: call sirini
 !901203-hjaaj: SETSIR: FLAG now read from SIRIUS
@@ -50,11 +39,6 @@ C
 !920226-hjaaj: NSETUP: check if NCONF from SETCI same as NCONF from LUSIFC
 !921014-hjaaj: SETSIR: CBISOL added, get SOLVNT information
 !921216-hjaaj: SETSIR: read solvent information; check SUPSYM
-!931126-hjaaj: SETSIR: use IPRINT instead of IPRNTR for local print.
-!931209-hjaaj: NSETUP: IPRNTR in param.list; define /INFTRA/ for abarsp
-!  moved all set /INFDIM/ to NSETUP from SETSIR
-!950824-hjaaj: SETSIR: removed initialization of obsolete ORICAV(3)
-!  s/H1VORB/FCVORB/
 !===========================================================================
 #endif
 C  /* Deck setsir */
@@ -420,7 +404,7 @@ C   INFVAR : NCONF,NWOPT,NVAR,JWOPSY,JWOP(2,*)
 C   INFDIM : NCONMA,NWOPMA,NVARMA,NWOPDI,MAXRL
 C   INFOPT : ?
 C   INFTRA : ITRLVL,THRP,THRQ
-C   INFTAP : LUINP,LUINDX,...
+C   INFTAP : LUSIFC
 C   priunit.h : LUERR,...
 C
 #include <abainf.h>
@@ -431,9 +415,12 @@ C
 #include <infdim.h>
 #include <infopt.h>
 #include <inftra.h>
+#include <inftap.h>
 #include <infpri.h>
 #include <inflin.h>
 #include <linaba.h>
+C
+      CHARACTER*8 RTNLBL(2)
 C
 C PART 1 : ******* I/O buffer sizes, initialize IROW()
 C
@@ -513,7 +500,7 @@ C     USEDRC must be set to false, kr-nov.95
 C
       USEDRC = .FALSE.
       IPRTRA = IPRNTR
-      IF (NASHT.GT.1 .OR. H2MO) THEN
+      IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
          IF (NEWTRA) THEN
@@ -547,6 +534,21 @@ C        does exist. /980529-hjaaj
          FLAG(34) = .TRUE.
          CALL SIR_INTOPEN
       END IF
+
+      IF (.NOT. FLAG(14)) THEN
+      ! ... needed integrals not available
+         WRITE (LUPRI,1020)
+         KCMO  = 1
+         KWTRA = KCMO + NCMOT
+         LWTRA = LFREE - KWTRA
+         REWIND (LUSIFC)
+         CALL MOLLAB(LBSIFC,LUSIFC,LUERR)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         CALL READT (LUSIFC,NCMOT,WORK(KCMO))
+         CALL TRACTL(KTRLVL,WORK(KCMO),WORK(KWTRA),LWTRA)
+         FLAG(14) = .TRUE.
+      END IF
 C
 C
 C PART 5 : **** MISCELLANEOUS ******************************************
@@ -554,12 +556,6 @@ C
 C     Test for inconsistencies:
 C
       NUMERR = 0
-      IF (((NASHT.GT.1 .OR. H2MO) .AND. .NOT.FLAG(14)) 
-     &      .AND. .NOT. HSROHF) THEN
-         WRITE (LUPRI,1020)
-         WRITE (LUERR,1020)
-         NUMERR = NUMERR + 1
-      END IF
       IF (NCONF.LE.0 .AND. IORTO.NE.1) THEN
          WRITE (LUPRI,1610) NCONF
          WRITE (LUERR,1610) NCONF
@@ -580,8 +576,9 @@ C
          WRITE (LUERR,1731)
          NUMERR = NUMERR + 1
       END IF
- 1020 FORMAT(/,' NSETUP-ERROR, mo transformation level too low',
-     *       /,' or no mo integral file found.')
+ 1020 FORMAT(/,' NSETUP: MO transformation level too low'
+     &        ,' or no MO integral file found.',
+     &       /,' NSETUP: generating MO 2-el. integral file.'/)
  1610 FORMAT(/,' NSETUP-ERROR, NCONF =',I10)
  1620 FORMAT(/,' NSETUP-ERROR, NCONF from interface file',I12,
      *       /,'               NCONF from SETCI         ',I12)
