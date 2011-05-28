@@ -166,6 +166,7 @@ C--- Cele  Debug
       END IF
       write (lupri,'(A///)')' ***************************************'//
      * '*******************************'
+      call flshfo(lupri)
 
        do i=1,8
         do j=1,8
@@ -232,8 +233,12 @@ C Manu April 2009: now it is used in the NEVPT2-srDFT :-)
 
       
       do i=1,norbt
-      zgel(i)=.false.
+       zgel(i)=.false. ! is this orbital frozen ?
       enddo
+C
+C     in2d(jorb_nevpt2) = jorb_dalton : from nevpt2 to dalton orbital order
+C     nevpt2: loop type, symmetry; dalton: loop symmetry, type
+C
       indom=0
 C     Core
       do is=1,nsym
@@ -289,8 +294,6 @@ C
       do i=1,norbt
        id2n(in2d(i))=i
       enddo
-c      do i=1,nasht
-c      enddo
 
 
       thr=thrnevpt
@@ -355,7 +358,7 @@ c      call nwadd(nwall,2*(nbel*ncf)*4)
 c      allocate (istr(nael*ncf))
 c      allocate (jstr(nbel*ncf))
       call dalcip(nael,nbel,ncf,cvec,ne,trou,part,nd,norbt,
-     *           nish,nash,nasht,lfermi,nisht,nsym,LUN98,ispin)
+     *            nish,nash,nasht,lfermi,nisht,nsym,LUN98,ispin)
       tdal=second()
       write(lupri,'(a,f8.2,a)')
      &   ' Elapsed time after dalcip ',tdal-t,' sec.'
