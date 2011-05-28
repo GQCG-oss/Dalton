@@ -427,7 +427,12 @@ C
       END IF
 C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
+C
       CALL READIN(WORK(1),LMWORK,.TRUE.)
+C
+C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
+C
+      CALL HERINI
 C
 C     ***************************************************************
 C     Setup of MM information.
