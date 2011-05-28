@@ -237,7 +237,7 @@ C     ***** Last call to empty buffer *****
 C     *************************************
 C
       IF (LAST) THEN
-         WRITE (LUPRI,'(A,1P,D10.2)') ' Threshold for neglecting '//
+         WRITE (LUPRI,'(/A,1P,D10.2)') ' Threshold for neglecting '//
      &      'two-electron integrals:',THRESH
          CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,IPRINT)
       END IF
@@ -405,7 +405,7 @@ Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
             FNALL  = (FNALL*(FNALL + 1.0D0))*0.5D0
             PERCNT = N2WRIT
             PERCNT = 100.0D0*PERCNT / FNALL
-            WRITE (LUPRI,'(/A,I12,A,F5.1,A,/A,F12.3/)')
+            WRITE (LUPRI,'(A,I12,A,F5.1,A,/A,F12.3/)')
      &         ' Number of two-electron integrals written:',N2WRIT,
      &         ' (',PERCNT,'% )',
      &         ' Megabytes written:                       ',FBYTES

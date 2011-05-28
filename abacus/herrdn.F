@@ -4412,8 +4412,8 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12)')
-     &   '@  Nuclear repulsion energy :',POTNUC
+      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+     &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
       RETURN
       END
