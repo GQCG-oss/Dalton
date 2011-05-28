@@ -61,14 +61,12 @@ C
 !TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
 !        use NOCOUL in LTUPQ calculation
 !-- version m02 --
-!901024-hjaaj: renamed LUAINT to LUORDA
 !901016-hjaaj: TRA2: a) return immediately if DOTUPQ,DORUPQ,DOUSPQ all
 !   false; b) changed DORUPQ and DOUSPQ definitions so now always false
 !   if the corresponding integrals not needed for exchange.
 !-- TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
 !900924-hjaaj: define LUAINT as LUORD = LUDA = 14
 !-- changed IBM names from ORDINT,MOLINT to AORDINT,MTWOINT
-!900912-hjaaj: call flshfo(lupri) at end of tractl
 !900619-hjaaj: new routine TRALVL for translating from Sirius to
 !              newtra transformation levels.
 !900320-hjaaj: implemented ICDTRA in TRA2E1
@@ -156,6 +154,7 @@ C
       NOEXCH = .NOT.USEDRC
       MCOPT  = .FALSE.
 C
+
       IPRFIO = IPRTRA
 C
       IF (IPRFIO .GE. 20) THEN
@@ -325,8 +324,8 @@ C
             IF (ierr.ge.10) THEN
                write(lupri,*)
      &            'SIR_INTOPEN_NEWTRA: NBAS_AOTWOINT .ne. NBAS:'
-               write(lupri,'(8I5)') (NBAS_x(i), i=1,NSYM_x)
-               write(lupri,'(8I5)') (NBAS  (i), i=1,NSYM  )
+               write(lupri,'(8I6)') (NBAS_x(i), i=1,NSYM_x)
+               write(lupri,'(8I6)') (NBAS  (i), i=1,NSYM  )
             END IF
             IF (LBUF .ne. 600) THEN
                write(lupri,*) 'LBUF .ne. 600 not implemented yet',LBUF
@@ -652,7 +651,7 @@ C
      &     'needed integral distribution has not been calculated'
          WRITE(LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
          WRITE(LUPRI,*) 'IYPC  ,ITYPD  : ',COBTYP(ITYPC),
-     &                                 '  ',COBTYP(ITYPD)
+     &                                '  ',COBTYP(ITYPD)
          WRITE (LUPRI,'(/A)') 'ICDTRA matrix:'
          DO I = 1,NORBT
             IR = IROW(I)
@@ -1139,9 +1138,6 @@ C* Comdeck notes and ideas*
 !900313-hjaaj: - implemented JMO[PQRS]2 and ICDTRA in TR2CTL and TRA2
 !  - major overhaul of TRALIM (modify MFRO,MISH,MASH,
 !  define ITRTYP, define ICDTRA)
-!900307-hjaaj: - use QENTER/QEXIT/QTRACE;; use INFTRA for LUPRI,IPRTRA
-!  - TRRDAO : stop if illegal IRDAO
-!  - TRALIM : corrected code
 !900124-hjaaj: - ITUSYM in TRINP cdk; define ITUSYM in TRASET;
 !  s/SQUARE/TRASQ/; added IASYM parameter to TRASQ and calls of TRASQ
 !900102-hjaaj: - TRAINI: added CMO to param. and LUMINT
@@ -1295,10 +1291,10 @@ C             to absolute addressing of a given quadruplet.
 C
       IF (IPRTRA .GE. 2 .AND. IPRTRA .LT. 5) WRITE(LUPRI,2000)
 #if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
- 2000 FORMAT(/' SYMMETRY BASIS FUNCTION  ORBITALS',3X,
+ 2000 FORMAT(/' SYMMETRY       BASIS FUNCTION        ORBITALS',3X,
      &       ' MEMLFT     LTUPQ   USER(SEC) SYS(SEC)')
 #else
- 2000 FORMAT(/' SYMMETRY BASIS FUNCTION  ORBITALS',3X,
+ 2000 FORMAT(/' SYMMETRY       BASIS FUNCTION        ORBITALS',3X,
      &       ' MEMLFT     LTUPQ    CPU(SEC) I/O(SEC)')
 #endif
 C
@@ -1507,7 +1503,7 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
              IF (IPRTRA .GE. 5) WRITE(LUPRI,2000)
              WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
      &                          NOP,NOQ,NOR,NOS,MEMLFT,LTUPQ,CPE,TIOE
- 2100        FORMAT(1X,4I2,1X,4I3,1X,4I3,2I10,2F9.3)
+ 2100        FORMAT(1X,4I2,1X,4I5,1X,4I5,2I12,2F9.3)
           END IF
   101    CONTINUE
   102   CONTINUE
@@ -1571,11 +1567,11 @@ C
   902 WRITE(LUPRI,9020) MEMLFT,LRUPQ,NBR*NOCS,LUSPQ,NBS*NOCR,
      &                   LTUPQ,LTUPQM,LRUPQ+LTUPQ,L2M
  9020 FORMAT(/' NOT ENOUGH CORE SPACE FOR SORTING IN TRA2'
-     &       /' TOTAL SORTING SPACE IS',I8,
-     &       /' STEP1: AVAILABLE IS',I8,'  NEEDED IS',I8,
-     &       /' STEP2:     "       ',I8,'    "      ',I8,
-     &       /' STEP3:     "       ',I8,'    "      ',I8,
-     &       /' STEP4:     "       ',I8,'    "      ',I8)
+     &       /' TOTAL SORTING SPACE IS',I12,
+     &       /' STEP1: AVAILABLE IS',I12,',  NEEDED IS',I12,
+     &       /' STEP2:     "       ',I12,',    "      ',I12,
+     &       /' STEP3:     "       ',I12,',    "      ',I12,
+     &       /' STEP4:     "       ',I12,',    "      ',I12)
       CALL QTRACE(LUPRI)
       CALL QUIT('TR2CTL, not enough core space for sorting.')
       END
@@ -1668,10 +1664,10 @@ C           case 2b: (PQ/RS) -> (TA/UB) IF ISQ.GE.ISS AND ISP.NE.ISQ
          WRITE (LUPRI,'(/A/A,4I3/)')
      &      ' <<<<<< Test output from TRA2 >>>>>>',
      &      ' ISP,ISQ,ISR,ISS =',ISP,ISQ,ISR,ISS
-         WRITE (LUPRI,'(A,L10)')
-     &      ' Do TUPQ :',DOTUPQ,
-     &      ' Do RUPQ :',DORUPQ,
-     &      ' Do USPQ :',DOUSPQ
+         WRITE (LUPRI,'(3(5X,A,L10))')
+     &      'Do TUPQ :',DOTUPQ,
+     &      'Do RUPQ :',DORUPQ,
+     &      'Do USPQ :',DOUSPQ
       END IF
       IF (.NOT.DOTUPQ .AND. .NOT.DORUPQ .AND. .NOT.DOUSPQ) GO TO 9999
       NORU =NBR*NOCS
@@ -1775,7 +1771,7 @@ C
         IF (IPRTRA .GT. 50) THEN
          IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &   WRITE(LUPRI,6000) NP,NQ,(X2(I),I=1,NBR*NBS)
- 6000    FORMAT(' AO INTEGRALS FOR P,Q =',2I3/(1X,10F10.6))
+ 6000    FORMAT(' AO INTEGRALS FOR P,Q =',2I5/(10F10.6))
         END IF
 C
 C       INTEGRALS (PQ/US)
@@ -1789,7 +1785,7 @@ C        ... exchange integrals case 2*
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6001) NP,NQ,(X3(I),I=1,NBS*NOCR)
- 6001     FORMAT(' PQUS FOR P,Q =',2I3/(1X,10F10.6))
+ 6001     FORMAT(' PQUS FOR P,Q =',2I5/(10F10.6))
          END IF
 C
 C        SORT THESE INTEGRALS AS (US/PQ)
@@ -1815,7 +1811,7 @@ C
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6002) NP,NQ,(X3(I),I=1,NBR*NOCS)
- 6002     FORMAT(' PQRU FOR P,Q =',2I3/(1X,10F10.6))
+ 6002     FORMAT(' PQRU FOR P,Q =',2I5/(10F10.6))
          END IF
         END IF
 C
@@ -1851,7 +1847,7 @@ C
          IF (IPRTRA .GT. 50) THEN
           IF(IPRTRA .GT. 100 .OR. NP.EQ.1.AND.NQ.EQ.1)
      &    WRITE(LUPRI,6100) NP,NQ,(X2(I),I=1,NOCR*NOCS)
- 6100     FORMAT(' INTEGRALS PQTU FOR P,Q =',2I3/(1X,10F10.6))
+ 6100     FORMAT(' INTEGRALS PQTU FOR P,Q =',2I5/(10F10.6))
          END IF
 C
 C        SORT INTEGRALS (PQ/TU) INTO TUPQ (SORT AFTER PQ INSTEAD OF TU)
@@ -1898,9 +1894,9 @@ C
          WRITE(LUPRI,'(A)') ' TUPQ sorted to LUHLF3'
         END IF
        END IF
- 6003  FORMAT(' RUPQ SORTED'/(1X,10F10.6))
- 6013  FORMAT(' USPQ SORTED'/(1X,10F10.6))
- 6200  FORMAT(' TUPQ SORTED'/(1X,10F10.6))
+ 6003  FORMAT(' RUPQ SORTED'/(10F10.6))
+ 6013  FORMAT(' USPQ SORTED'/(10F10.6))
+ 6200  FORMAT(' TUPQ SORTED'/(10F10.6))
       END IF
 C
 C     EMPTY LAST BUFFERS
@@ -1942,7 +1938,7 @@ C
       IADOUT(1,ISPQRS)=IDISKM
       IF (IPRTRA .GT. 50) THEN
        WRITE(LUPRI,7001) ISP,ISQ,ISR,ISS,ISPQRS
- 7001  FORMAT(' ADDRESS FOR ABTU',4I2,5X,I6)
+ 7001  FORMAT(' ADDRESS FOR ABTU',4I2,I11)
       END IF
       ITU=0
       DO 20 NT=1,NOCR
@@ -1995,7 +1991,7 @@ C
        ENDIF
        IF (IPRTRA .GT. 50) THEN
         WRITE(LUPRI,6010) NT,NU,(X2(I),I=1,IX2)
- 6010   FORMAT(' ABTU INTEGRALS FOR NT,NU =',2I3/(1X,10F10.6))
+ 6010   FORMAT(' ABTU INTEGRALS FOR NT,NU =',2I5/(10F10.6))
        END IF
 C
 C      WRITE INTEGRALS (AB/TU) ON OUTPUT UNIT LUMINT
@@ -2157,7 +2153,7 @@ C
         IF(ISQ.EQ.ISS) THEN
          IF (IPRTRA .GT. 50) THEN
           WRITE(LUPRI,6004) NR,NU,(X2(I),I=1,NBP*NBQ)
- 6004     FORMAT(' X2=RUPQ FOR R AND U =',2I4/(1X,10F10.6))
+ 6004     FORMAT(' X2=RUPQ FOR R AND U =',2I5/(10F10.6))
          END IF
          CALL MXMA(X2,                   NBQ,1,
      &             CMO(LMOQ2+NBQ*(NU-1)),1,NBQ,
@@ -2169,7 +2165,7 @@ C
      &             NOCQ-NU+1,NBP,NOP)
          IF (IPRTRA .GT. 50) THEN
           WRITE(LUPRI,6005) NR,NU,(X2(I),I=1,NOP*(NOCQ-NU+1))
- 6005     FORMAT(' RUAT FOR R AND U =',2I4/(1X,10F10.6))
+ 6005     FORMAT(' RUAT FOR R AND U =',2I5/(10F10.6))
          END IF
         ELSE
          CALL MXMA(X2,        NBQ,1,
@@ -2236,7 +2232,7 @@ C
         JMOU2=JMOQ2
         IF (IPRTRA .GT. 50) THEN
          WRITE(LUPRI,7002) ISS,ISQ,ISP,ISR,ISPQRS
- 7002    FORMAT(' ADDRESS FOR ATBU',4I2,5X,I6)
+ 7002    FORMAT(' ADDRESS FOR ATBU',4I2,I11)
         END IF
        ENDIF
        NTU=0
@@ -2274,7 +2270,7 @@ C       Write this block of exchange integrals on LUMINT
 C
         IF (IPRTRA .GT. 50) THEN
          WRITE(LUPRI,6008) (X2(I),I=1,NOP*NOR)
- 6008    FORMAT(' ATBU INTEGRALS'/(1X,10F10.6))
+ 6008    FORMAT(' ATBU INTEGRALS'/(10F10.6))
         END IF
         CALL DAWRITE(LUMINT,X2,IRAT*NOP*NOR,IDISKM)
    39  CONTINUE
@@ -2365,7 +2361,7 @@ C
        IADOUT(2,ISPQRS)=IDISKM
        IF (IPRTRA .GT. 50) THEN
         WRITE(LUPRI,7003) ISP,ISS,ISQ,ISR,ISPQRS
- 7003   FORMAT(' ADDRESS FOR TABU',4I2,5X,I6)
+ 7003   FORMAT(' ADDRESS FOR TABU',4I2,I11)
        END IF
        NTU=0
        IST=1-NOQ*NBR
@@ -2506,7 +2502,7 @@ C
         JMOU2=JMOQ2
         IF (IPRTRA .GT. 50) WRITE(LUPRI,7004) ISR,ISQ,ISP,ISS,ISPQRS
        ENDIF
- 7004  FORMAT(' ADDRESS FOR ATUB',4I2,5X,I6)
+ 7004  FORMAT(' ADDRESS FOR ATUB',4I2,I11)
        NTU=0
        IST=1-NBS*NOP
        DO 80 NT=1,NTMAX
@@ -2652,7 +2648,7 @@ C
         JMOU2=JMOP2
         IF (IPRTRA .GT. 50) WRITE(LUPRI,7005) ISR,ISP,ISQ,ISS,ISPQRS
        ENDIF
- 7005  FORMAT(' ADDRESS FOR TAUB',4I2,5X,I6)
+ 7005  FORMAT(' ADDRESS FOR TAUB',4I2,I11)
        NTU=0
        IST=1-NOQ*NBS
        DO 100 NT=1,NTMAX
@@ -2991,10 +2987,10 @@ C
          WRITE (LUPRI,'(3(/A))')
      *      ' Non-zero IDATA information from AOORDINT :',
      *      ' ========================================',
-     *      '     NCHAIN      LADX       NPQ'
+     *      '     NCHAIN        LADX         NPQ'
          DO 20 I = 1,LIDATA
             IF (IDATA(I,1) .GE. -1 .OR. IDATA(I,2) .GE. 0)
-     *         WRITE(LUPRI,'(3I10)') I,IDATA(I,1),IDATA(I,2)
+     *         WRITE(LUPRI,'(3I12)') I,IDATA(I,1),IDATA(I,2)
    20    CONTINUE
       END IF
 C
@@ -3004,7 +3000,7 @@ C
      *   ' Symmetry of integrals from AOORDINT :',INTSYM
       ELSE
          INTSYM = 1
-         IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
+         IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A)')
      *   ' Integrals assumed to be totally symmetric.'
       END IF
       CALL QEXIT('TRASET_0')
@@ -3331,7 +3327,12 @@ C
      &      ' ICDTRA: list of distributions included on LUMINT:'
          DO 810 I = 1,MORBT
             IR = (I*I-I)/2
-            WRITE(LUPRI,'(I5,A,(T8,10I7))') I,' :',(ICDTRA(IR+J),J=1,I)
+            IMAX = MAXVAL(ICDTRA(IR+1:IR+I))
+            IF (IMAX .GT. 0) THEN
+             WRITE(LUPRI,'(I5,A,(T8,10I7))') I,' :',(ICDTRA(IR+J),J=1,I)
+            ELSE
+             WRITE(LUPRI,'(I5,A)') I,' : all zero'
+            END IF
   810    CONTINUE
       END IF
       CALL QEXIT ('TRALIM')
@@ -3427,7 +3428,7 @@ C
       ELSE IF (IRDAO .EQ. 3) THEN
          CALL RDAO2(LUORDA,WRK,WRK(600*(1+IRAT) + 1),X1,IDA)
       ELSE
-         WRITE (LUPRI,'(/A,I5)')
+         WRITE (LUPRI,'(/A,I10)')
      &      ' TRDDAO ERROR, illegal code: IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
          CALL QUIT('ILLEGAL IRDAO CODE IN TRRDAO')
