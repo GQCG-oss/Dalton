@@ -1051,9 +1051,9 @@ case "$WHICH" in
           pgf90|pgf95)
              cpp="-DVAR_PGF90 $cpp"
              # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
-             copt="-fast -m32 -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
-              opt="-mcmodel=medium -fast -Munroll -m32"
-             safe_opt="-mcmodel=medium -m32 -Mframe"
+             copt="-fast -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict"
+              opt="-mcmodel=medium -fast -Munroll"
+             safe_opt="-mcmodel=medium -Mframe"
              F90mod='-module ../modules'
              ;;
           g95)
