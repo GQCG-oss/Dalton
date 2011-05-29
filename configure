@@ -327,13 +327,13 @@ if [ "$answer" = "y" ]; then
 #
         if [ "$WHICH" = "rs6000" -o "$WHICH" = "darwin" ]; then
             complist="mpxlf mpxlf_r mpif90 $complist"
-            ccmplist="mpcc  mpcc_r mpicc  $ccmplist"
+            ccmplist="mpcc  mpcc_r  mpicc  $ccmplist"
             parlib='no'
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
         else
             complist="mpif90 mpiifort $complist"
-            ccmplist="mpicc  mpiicc $ccmplist"
+            ccmplist="mpicc  mpiicc   $ccmplist"
             parlib='yes'
         fi
 #
@@ -420,6 +420,7 @@ for comp in $complist; do
     F90="$ac_cv_prog_F90"
     if [ -n "$F90" ]; then
         $ECHO "\n-->Compiler $F90 found and accepted."
+        F90_be="$F90" # make sure F90_be (be for back-end) always set
         break
     fi
 done
@@ -445,6 +446,35 @@ if [ ! -r F90test.x ]; then
     F90mod='F90mod_has_not_been_defined_for_this_compiler_in_configure_yet'
 fi
 rm -f F90test.x F90test.o F90test.f
+
+# if we have mpif90, we need to find backend compiler to set the right options
+if [ "$F90" = mpif90 ]; then
+   if mpif90 -V 2>&1 | grep -q Intel 2> /dev/null; then
+      F90_be=ifort
+   elif mpif90 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
+      F90_be=gfortran
+   else
+      # wild guess.
+      F90_be=pgf95
+   fi
+   get_yes_or_no "Is backend compiler $F90_be ?" y
+   if [ "$answer" = "n" ]; then
+      $ECHO 'Then please specify correct backend compiler : \c'
+      read F90_be
+      $ECHO "Continuing with backend compiler $F90_be"
+   fi
+elif [ "$F90" = mpiifort ]; then
+   F90_be=ifort
+   get_yes_or_no "Is backend compiler $F90_be ?" y
+   if [ "$answer" = "n" ]; then
+      $ECHO 'Then please specify correct backend compiler : \c'
+      read F90_be
+      $ECHO "Continuing with backend compiler $F90_be"
+   fi
+else
+   F90_be=$F90
+fi
+
 #
 $ECHO "\n   Checking for C compiler ..."
 $ECHO   "   from this list: $ccmplist \n"
@@ -829,7 +859,7 @@ case "$WHICH" in
 #         stefan dec 2010: in DIRAC this seems to be required for f90 mods 
 #radovan: the following fails on AIX (njord)
 #         F90mod="-qmoddir=../modules -qfree=f90 -I../modules"
-#radovan:                                     i changed it to:
+#radovan:                                     I changed it to:
 #stefan :          hopefully adding -qsuffix=cpp=F90 helps to solve Sonias compilation issues on Sleipner in Aarhus.
           F90mod="-qmoddir=../modules -qsuffix=cpp=F90 -I../modules"
           if [ $bit = '32' ]; then
@@ -978,33 +1008,6 @@ case "$WHICH" in
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
              set_parallel_def $mesp
-          fi
-          # if we have mpif90, we need to find backend compiler to set the right options
-          if [ "$F90" = mpif90 ]; then
-             if mpif90 -V 2>&1 | grep -q Intel 2> /dev/null; then
-                F90_be=ifort
-             elif mpif90 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
-                F90_be=gfortran
-             else
-                # wild guess.
-                F90_be=pgf95
-             fi
-             get_yes_or_no "Is backend compiler $F90_be ?" y
-             if [ "$answer" = "n" ]; then
-                $ECHO 'Then please specify correct backend compiler : \c'
-                read F90_be
-                $ECHO "Continuing with backend compiler $F90_be"
-             fi
-          elif [ "$F90" = mpiifort ]; then
-             F90_be=ifort
-             get_yes_or_no "Is backend compiler $F90_be ?" y
-             if [ "$answer" = "n" ]; then
-                $ECHO 'Then please specify correct backend compiler : \c'
-                read F90_be
-                $ECHO "Continuing with backend compiler $F90_be"
-             fi
-          else
-             F90_be=$F90
           fi
           case $F90_be in
           ifort)
@@ -1244,10 +1247,10 @@ EOF
 # PS: Which version? Are they assumed to be ethernally buggy? And
 # don't even THINK about modifying source files, including
 # Makefiles.
-if [ $F90 = 'ifort' ]; then
-echo 'SAFE2_FFLAGS = $(SAFEFFLAGS)' >> Makefile.config
+if [ $F90_be = 'ifort' ]; then
+   echo 'SAFE_FFLAGS_for_ifort = $(SAFEFFLAGS)' >> Makefile.config
 else
-echo 'SAFE2_FFLAGS = $(FFLAGS)' >> Makefile.config
+   echo 'SAFE_FFLAGS_for_ifort = $(FFLAGS)' >> Makefile.config
 fi
 
 #
@@ -1365,7 +1368,7 @@ $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F
 $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F > \$*.i
 
 .F.g:
-$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(SAFEFFLAGS) -g -c \$*.F 
 
 .F.s:
 $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F 
@@ -1377,7 +1380,7 @@ $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F90
 $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) -E \$*.F90 > \$*.i
 
 .F90.g:
-$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F90 
+$tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(SAFEFFLAGS) -g -c \$*.F90 
 
 .F90.s:
 $tab\$(F90) \$(INCLUDES) \$(MODULES) \$(CPPFLAGS) \$(FFLAGS) -S -g -c \$*.F90 
@@ -1419,17 +1422,15 @@ fi
 mpirun=`which mpirun 2>/dev/null` || mpirun=mpirun
 
 cat <<EOF > $INSTALL_DIR/dalton.setup
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #                                                                              #
 # Shell-script for running DALTON                                              #
 #                                                                              #
 # Version 1.0 Feb. 1997 by T. Enevoldsen, Odense University                    #
-# Converted to sh on February 23, 1997 by K.Ruud                               #
-#                                                                              #
 # Version 1.1 spring 2000 by K.Ruud and H.J.Aa.Jensen                          #
-#                                                                              #
 # Version 2.1 Feb. 2005 by K.Ruud, H.J.Aa.Jensen, and P. Salek                 #
+# Version 2011 May 2011 by H.J.Aa.Jensen, with help from others                #
 #                                                                              #
 ################################################################################
 #
