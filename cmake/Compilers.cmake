@@ -64,11 +64,15 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -mcmodel=medium -fast -Munroll")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} "
+            "${CMAKE_Fortran_FLAGS} -m64 -i8"
+            )
+    else()
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -m32"
             )
     endif()
     if(ENABLE_BOUNDS_CHECK)
@@ -114,14 +118,14 @@ endif()
 if(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -restrict -DRESTRICT=restrict")
     set(CMAKE_C_FLAGS_DEBUG   "-O0")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 -xW -ip")
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -ip")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES PGI)
     set(CMAKE_C_FLAGS         " ")
     set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
-    set(CMAKE_C_FLAGS_RELEASE "-O3")
+    set(CMAKE_C_FLAGS_RELEASE "-O3 -fast -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES XL)
