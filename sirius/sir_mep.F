@@ -169,14 +169,11 @@ C     Calculate also the electric field at these points
         DIPORG(2) = WRK(KYMEP+J-1)
         DIPORG(3) = WRK(KZMEP+J-1)
 
-        QMMM = LSAVE
-        IF (.NOT. LSAVE) QMMM = .TRUE.
         RUNQM3=.TRUE.
         CALL GET1IN(WRK(KMATEF),'NEFIELD',NOSIM,WRK(KFREE),
      &              LFREE,LABINT,INTREP,INTADR,J,TOFILE,
      &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRINT)
         RUNQM3=.FALSE.
-        QMMM = LSAVE
 
         IF (LOCDEB)  THEN
            WRITE (LUPRI,'(/A)') ' Ex matrix:'
