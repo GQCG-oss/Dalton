@@ -209,8 +209,8 @@ c
       SUBROUTINE FORT_WRT(str, len)
 #include <implicit.h>
 #include <priunit.h>
-      CHARACTER str(len)
-      WRITE(LUPRI,*) str
+      CHARACTER*(len) str
+      WRITE(LUPRI,'(1X,A)') str
       END
       FUNCTION ISETKSYMOP(IKSYM)
 #include <implicit.h>
