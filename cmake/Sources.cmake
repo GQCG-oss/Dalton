@@ -589,6 +589,7 @@ sirius/sirntra.F
 sirius/siropt.F
 sirius/sirorb.F
 sirius/sirout.F
+sirius/sir_mep.F
 sirius/sirpcm.F
 sirius/sirpcmder.F
 sirius/sirpop.F
