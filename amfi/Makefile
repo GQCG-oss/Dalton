@@ -17,9 +17,12 @@ libamfi.a: $(F_OBJS)
 clean :	
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
+# ifort has (had?) problems compiling amfi.F
+amfi.o: amfi.F
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE_FFLAGS_for_ifort) -c $*.F 
+
 Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
-amfi.o: amfi.F
-	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 
+# -- end of Makefile for amfi/
