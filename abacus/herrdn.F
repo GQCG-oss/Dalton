@@ -917,6 +917,11 @@ C
          WRITE (LUPRI,'(80A1/)') ('-',I = 1, 80)
       END IF
 C
+CPFP
+      CALL MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &    NOINT,WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+     &    CPRIMU,NRMPRI)
+Cend-PFP
       THRCLS = THRS
 C
 C     ****************************************

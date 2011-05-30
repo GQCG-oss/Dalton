@@ -302,6 +302,8 @@ C
      &  '(SOPPA)',
      *'Thomas B. Pedersen,','University of Oslo,','Norway',
      &  '(Cholesky decomposition)',
+     *'Patricio F. Provasi,','University of Northeastern,','Argentina',
+     &  '(Analysis of coupling constants in localized orbitals)',
      *'Zilvinas Rinkevicius,','KTH Stockholm,','Sweden',
      &  '(open-shell DFT, ESR)',
      *'Elias Rudberg,','KTH Stockholm,','Sweden',
