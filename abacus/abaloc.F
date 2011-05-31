@@ -67,7 +67,10 @@ C
 #include <locinf.h>
 #include <inforb.h>
 C
-       DATA TABLE /'.FOSBOY','.FBOVIR','.FBSETV','.FBSTVO','.MULLOC',
+CSPAS:31.05.11: MULLOC is not yet working correctly
+C      DATA TABLE /'.FOSBOY','.FBOVIR','.FBSETV','.FBSTVO','.MULLOC',
+       DATA TABLE /'.FOSBOY','.FBOVIR','.FBSETV','.FBSTVO','.XXXXXX',
+CKeinSPASmehr
      &             '.FBOCIN','.FBOOCC','.LABOCC','.LABVIR','.XXXXXX'/
 C
        CALL QENTER('LOCINP')
@@ -245,7 +248,9 @@ C
                GOTO 100
 C
  5             CONTINUE
-                  MULLOC = .TRUE.
+CSPAS:31.05.11: MULLOC is not yet working correctly
+C                 MULLOC = .TRUE.
+CKeinSPASmehr
                GOTO 100
  6             CONTINUE
                   FBOCIN = .TRUE.
@@ -515,105 +520,107 @@ C---------------------------------------------------------
 C       MULLIKEN LOCALIZATION METHOD (According to ec. 31)
 C---------------------------------------------------------
 C
-         IF(MULLOC) THEN
-C
-            MATCMO = 0
-            DO  ISYM = 1,NSYM
-               MATCMO = MATCMO + NBAS(ISYM)*NOCC(ISYM)
-            END DO   
-C
-C---------------------
-C           Allocation
-C---------------------
-C
-            KCMOC  = KEND1
-            KIAMN  = KCMOC+MATCMO
-            KIPR   = KIAMN+NBAST
-            KOVLP  = KIPR+NBAST
-            KJTRAN = KOVLP+NNBAST
-            KITRAN = KJTRAN+NBAST
-            KCTRAN = KITRAN+NBAST*MXCGTO/IRAT
-            KMOG   = KCTRAN+NBAST*MXCGTO
-C
-C----------------------------------
-C           kss1 is for the overlap
-C----------------------------------
-C
-            KSS1   = KMOG+NBAST*NOCCT
-            KNUMB  = KSS1+NBAST*(NBAST+1)/2
-            KLCMO  = KNUMB+NBAST
-	    KPAST  = KLCMO+NBAST*NOCCT
-            KAIJ   = KPAST+NOCCT*NOCCT*NUCDEP
-            KBIJ   = KAIJ+NOCCT*NOCCT
-C
-C-------------------------------------------------------------
-C           kss2 is for the localization transformation matrix
-C-------------------------------------------------------------
-C
-            KSS2   = KBIJ+NOCCT*NOCCT
-            KEND6  = KSS2+NOCCT*NOCCT
-	    LWORK6 = LWORK  - KEND6
-            IF (LWORK6 .LT. 0) CALL STOPIT('GETLOC.6',' ',KEND6,LWORK)
-C
-C---------------------------------------------------------
-C           End of allocation and copy MO's to WORK(KCMOC)
-C---------------------------------------------------------
-C
-            JCMO  =  KCMOC
-C
-            DO 47 ISYM=1,NSYM
-               NOCCI=NOCC(ISYM)
-               NBASI=NBAS(ISYM)
-               IF(NOCCI.EQ.0) GOTO 47
-            CALL DCOPY(NOCCI*NBASI,WORK(KCMO+ICMO(ISYM)),1,WORK(JCMO),1)
-               JCMO = JCMO + NOCCI*NBASI
-   47       CONTINUE
-C
-C----------------------------------------------------------
-C           Necessary information for poptra transformation
-C----------------------------------------------------------
-C
-            CALL READSYM(IPRSOS,WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
-     &                   WORK(KIAMN),WORK(KIPR))
-C
-C--------------------------------------------------------
-C           Here we make the transformation from symmetry 
-C           orbitals to cgto's orbitals (POPTRA)
-C--------------------------------------------------------
-C
-            CALL POPTRA (NNBAST,MXCGTO,MATCMO,WORK(KCMOC),WORK(KOVLP),
-     &                   WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
-     &                   WORK(KMOG),WORK(KSS1))
-C
-C--------------------------------------------------- 
-C           Here we calculated the matrix population 
-C           PAST betwen two molecular orbitals
-C---------------------------------------------------
-C
-            CALL POPMAT (IPRSOS,WORK(KPAST),WORK(KIAMN),WORK(KIPR),
-     &                   WORK(KNUMB),WORK(KMOG),WORK(KSS1))
-C
-C-----------------------------------------------
-C           Finally we proceed with localization 
-C           method and we obtain SS -> CLOCO
-C-----------------------------------------------
-C
-            CALL MULLLOC(IPRSOS,CLOCO,THRLOC,WORK(KPAST),WORK(KSS2),
-     &                   WORK(KBIJ),WORK(KAIJ),NLOCC)
-C
-C---------------------------------------
-C           Print the localized orbitals
-C---------------------------------------
-C            
-            CALL DZERO(WORK(KLCMO),NORBT*NOCCT)
-C     
-            CALL DGEMM('N','N',NORBT,NLOCC,NOCCT,D1,WORK(KCMOC),NORBT,
-     &                 CLOCO,NOCCT,D0,WORK(KLCMO),NORBT)
-C
-            CALL HEADER('Localized Mulliken population Orbitals',-1)
-            CALL PLOCORB(WORK(KLCMO),.TRUE.,NLOCC,LUW4)
-C
-         END IF
+CSPAS:31.05.11: MULLOC is not yet working correctly
+C         IF(MULLOC) THEN
+CC
+C            MATCMO = 0
+C            DO  ISYM = 1,NSYM
+C               MATCMO = MATCMO + NBAS(ISYM)*NOCC(ISYM)
+C            END DO   
+CC
+CC---------------------
+CC           Allocation
+CC---------------------
+CC
+C            KCMOC  = KEND1
+C            KIAMN  = KCMOC+MATCMO
+C            KIPR   = KIAMN+NBAST
+C            KOVLP  = KIPR+NBAST
+C            KJTRAN = KOVLP+NNBAST
+C            KITRAN = KJTRAN+NBAST
+C            KCTRAN = KITRAN+NBAST*MXCGTO/IRAT
+C            KMOG   = KCTRAN+NBAST*MXCGTO
+CC
+CC----------------------------------
+CC           kss1 is for the overlap
+CC----------------------------------
+CC
+C            KSS1   = KMOG+NBAST*NOCCT
+C            KNUMB  = KSS1+NBAST*(NBAST+1)/2
+C            KLCMO  = KNUMB+NBAST
+C	     KPAST  = KLCMO+NBAST*NOCCT
+C            KAIJ   = KPAST+NOCCT*NOCCT*NUCDEP
+C            KBIJ   = KAIJ+NOCCT*NOCCT
+CC
+CC-------------------------------------------------------------
+CC           kss2 is for the localization transformation matrix
+CC-------------------------------------------------------------
+CC
+C            KSS2   = KBIJ+NOCCT*NOCCT
+C            KEND6  = KSS2+NOCCT*NOCCT
+C	     LWORK6 = LWORK  - KEND6
+C            IF (LWORK6 .LT. 0) CALL STOPIT('GETLOC.6',' ',KEND6,LWORK)
+CC
+CC---------------------------------------------------------
+CC           End of allocation and copy MO's to WORK(KCMOC)
+CC---------------------------------------------------------
+CC
+C            JCMO  =  KCMOC
+CC
+C            DO 47 ISYM=1,NSYM
+C               NOCCI=NOCC(ISYM)
+C               NBASI=NBAS(ISYM)
+C               IF(NOCCI.EQ.0) GOTO 47
+C            CALL DCOPY(NOCCI*NBASI,WORK(KCMO+ICMO(ISYM)),1,WORK(JCMO),1)
+C               JCMO = JCMO + NOCCI*NBASI
+C   47       CONTINUE
+CC
+CC----------------------------------------------------------
+CC           Necessary information for poptra transformation
+CC----------------------------------------------------------
+CC
+C            CALL READSYM(IPRSOS,WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
+C     &                   WORK(KIAMN),WORK(KIPR))
+CC
+CC--------------------------------------------------------
+CC           Here we make the transformation from symmetry 
+CC           orbitals to cgto's orbitals (POPTRA)
+CC--------------------------------------------------------
+CC
+C            CALL POPTRA (NNBAST,MXCGTO,MATCMO,WORK(KCMOC),WORK(KOVLP),
+C     &                   WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
+C     &                   WORK(KMOG),WORK(KSS1))
+CC
+CC--------------------------------------------------- 
+CC           Here we calculated the matrix population 
+CC           PAST betwen two molecular orbitals
+CC---------------------------------------------------
+CC
+C            CALL POPMAT (IPRSOS,WORK(KPAST),WORK(KIAMN),WORK(KIPR),
+C     &                   WORK(KNUMB),WORK(KMOG),WORK(KSS1))
+CC
+CC-----------------------------------------------
+CC           Finally we proceed with localization 
+CC           method and we obtain SS -> CLOCO
+CC-----------------------------------------------
+CC
+C            CALL MULLLOC(IPRSOS,CLOCO,THRLOC,WORK(KPAST),WORK(KSS2),
+C     &                   WORK(KBIJ),WORK(KAIJ),NLOCC)
+CC
+CC---------------------------------------
+CC           Print the localized orbitals
+CC---------------------------------------
+CC            
+C            CALL DZERO(WORK(KLCMO),NORBT*NOCCT)
+CC     
+C            CALL DGEMM('N','N',NORBT,NLOCC,NOCCT,D1,WORK(KCMOC),NORBT,
+C     &                 CLOCO,NOCCT,D0,WORK(KLCMO),NORBT)
+CC
+C            CALL HEADER('Localized Mulliken population Orbitals',-1)
+C            CALL PLOCORB(WORK(KLCMO),.TRUE.,NLOCC,LUW4)
+CC
+C         END IF
+CKeinSPASmehr
 C
 CPFP Nov/21/04
 C        IF ( FOSOCC .OR. FBOVIR .OR. FBSETV ) THEN
@@ -2313,249 +2320,6 @@ C
       CALL GENERA_IJ(PAST,AIJ,BIJ)
 C
       CALL QEXIT('LOC_ROT')
-C
-      RETURN
-      END
-
-C***********************************************************************
-C  /* Deck popmat */
-      SUBROUTINE POPMAT (IPRSOS,PAST,IAMN,IPR,NUMBER,CMOCGT,SS)
-C
-C  Purpose:
-C         Given the mo coefficients and overlap integrals in cgto basis,
-C         to compute de matrix elements of the population operator betwen 
-C         molecular orbitals 
-C         
-C
-#include <implicit.h>
-#include <priunit.h>
-C
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
-C
-C Used from common blocks:
-C   INFPOP ? MAXTYP, ...
-C   INFORB ? NBAST,
-C   INFTAP : LUTEMP
-C   INFPRI ? LUW4,
-C   NUCDEP --->  nuclei
-#include <mxcent.h>
-#include <infpop.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <nuclei.h>
-C
-      DIMENSION IAMN(NBAST),IPR(NBAST),NUMBER(NBAST),
-     & PAST(NOCCT,NOCCT,nucdep),CMOCGT(*),SS(*),miss(NBAST,NBAST)
-C
-      DIMENSION   POPTSM(MXCENT)
-      CHARACTER*4 LTOT(3)
-      CHARACTER*4 LQN(MAXTYP)
-      INTEGER*4 RHO,MU
-      real*8 miss
-      DATA LTOT/'   P','   D','   F'/
-      DATA  LQN/'   S', '   X', '   Y', '   Z', '  XX',
-     &          '  XY', '  XZ', '  YY', '  YZ', '  ZZ',
-     &          ' XXX', ' XXY', ' XXZ', ' XYY', ' XYZ',
-     &          ' XZZ', ' YYY', ' YYZ', ' YZZ', ' ZZZ'/
-C
-      CALL QENTER('POPMAT')
-C
-CMAERKE-hj-910708:
-C-------------------------------------------------------------
-C     This information should be read from integral program
-C     (HERMIT, MOLECULE, or whatever), because this only works
-C     for old MOLECULE order, not e.g. spherical Gaussians.
-C     Various matrices in INFPOP should then be allocated acc.
-C     to actual dimensions.
-C
-C     *****     Number of the centres
-C
-C     given the label of the centre to which the cgto belongs, 
-C     assign the centre a number. also collect the different 
-C     labels to a separate list
-C-------------------------------------------------------------
-C
-      NNUC = 1
-      NAME(1) = IAMN(1)
-      NUMBER(1) = 1
-      NTYP = IPR(1)
-      DO 20 IA = 2,NBAST
-         ITYP = IPR(IA)
-         NTYP = MAX(NTYP, ITYP)
-         DO 10 NUC = 1,NNUC
-            IF (IAMN(IA).EQ.NAME(NUC)) THEN
-C
-C------------------------------------------------
-C              This centre is already known to us
-C------------------------------------------------
-C
-               NUMBER(IA) = NUC
-               GO TO 20
-            END IF
-   10    CONTINUE
-C
-C--------------------------------------------------------
-C        A new label is encountered. Enter it to the list
-C--------------------------------------------------------
-C
-         NNUC = NNUC + 1
-         NAME(NNUC) = IAMN(IA)
-         NUMBER(IA) = NNUC
-   20 CONTINUE
-      IF ( NNUC .GT. MXCENT)   GO TO 910
-      IF ( NTYP .GT. MAXTYP)   GO TO 920
-      IF ( NNUC .GT. NUCDEP ) WRITE(LUPRI,'(/A)')
-     &                    'error in number of nucleus'
-C
-C-----------------------------------------------
-C    Here we'll put the elements of PAST on zero       
-C-----------------------------------------------  
-C
-      DO IATOM = 1, NUCDEP
-         DO  IS = 1, NOCCT
-            DO  IT = 1, NOCCT
-               PAST(IS,IT,IATOM) = D0
-            END DO 
-         END DO
-      END DO
-C
-C------------------------------------
-C    Here is the calculation of PAST.
-C    Loop over mo's
-C------------------------------------
-C
-	  
-      DO IATO = 1, NUCDEP
-         DO IS = 1, NOCCT 
-            DO IT = 1, IS
-               ISSTRT = (IS - 1)*NBAST
-               ITSTRT = (IT - 1)*NBAST
-C
-C------------------------------
-C     Loop over atomic orbitals
-C------------------------------   
-C
-               DO RHO = 1, NBAST
-                  DO MU = 1, NBAST
-                     IRHOMU = MAX(RHO,MU)*(MAX(RHO,MU)-3)/2 + RHO + MU
-                     IF (NUMBER(MU) .EQ. IATO) THEN
-                        PAST(IS,IT,iato) = PAST(IS,IT,IATO) + 
-     &                   DP5*SS(IRHOMU)*(CMOCGT(ISSTRT + RHO)*
-     &                   CMOCGT(ITSTRT + MU) + CMOCGT(ISSTRT + MU)*
-     &                   CMOCGT(ITSTRT + RHO))   
-                     END IF
-                  END DO
-               END DO
-C
-C-------------------------------------
-C     End of loop over atomic orbitals
-C-------------------------------------
-C
-               PAST(IT,IS,IATO) = PAST(IS,IT,IATO)
-C
-            END DO
-         END DO   
-C
-C----------------------------------------
-C     End of loop over molecular orbitals
-C----------------------------------------
-C
-      END DO
-C
-C---------------------------
-C     End of loop over atoms
-C---------------------------
-C
-
-      GO TO 9999
-C
-C-------------------------
-C     Print error messages
-C-------------------------
-C
-  910 WRITE (LUPRI,9001) NNUC,MXCENT
- 9001 FORMAT (/,10X,'YOU REALLY MADE IT. THE NUMBER OF NUCLEI,',I8,',',
-     &        /,10X,'EXCEEDS THE PRESENT DIMENSION,',I8,/)
-      IF (NTYP.LE.MAXTYP)   GO TO 9999
-C
-  920 WRITE (LUPRI,9002) NTYP,MAXTYP
- 9002 FORMAT (/,10X,'YOU REALLY MADE IT. THE HIGHEST ORBITAL TYPE,',
-     &        I8,',',/,10X,'EXCEEDS THE PRESENT DIMENSION,',I8,/)
-C     GO TO 9999
-C
- 9999 CONTINUE
-C
-      CALL QEXIT('POPMAT')
-C
-      RETURN
-      END
-
-C***********************************************************************
-C  /* Deck readsym */
-      SUBROUTINE READSYM(IPRSOS,JTRAN,ITRAN,CTRAN,IAMN,IPR)
-C
-C-----------------------------------------------------------------
-C     Read all the information for symmetry -> cgto transformation 
-C-----------------------------------------------------------------
-C
-#include <implicit.h>
-#include <priunit.h>
-C
-C
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
-      PARAMETER (MXCGTO=8)
-C
-C Used from common blocks:
-C   INFPOP ? MAXTYP, ...
-C   INFORB ? NBAST,
-C   INFTAP : LUTEMP
-C   INFPRI ? LUW4,
-C
-#include <mxcent.h>
-#include <infpop.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-C      
-      DIMENSION IAMN(NBAST),IPR(NBAST),JTRAN(NBAST),
-     *    ITRAN(NBAST,MXCGTO),CTRAN(NBAST,MXCGTO)
-      DIMENSION NB(8)
-      LOGICAL FOUND,FNDLAB
-C
-      CALL QENTER('READSYM')
-C
-CSPAS: 27/5-11: adjusting to changes in the GPOPEN routine
-C     LUONEL = 0
-CKeinSPASmehr
-C
-      CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
-C
-      REWIND LUONEL
-C
-      IF ( .NOT. FNDLAB('SCFINP  ',LUONEL)) THEN
-
-         WRITE (LUPRI,'(//A/2A/)')
-     &     ' *** Label "SCFINP" not found on unit LUONEL,',
-     &     '   basic information for POPTRA and LOCALIZATION routines',
-     &     ' is missing.'
-C
-         CALL QEXIT('READSYM')
-C
-         RETURN
-      END IF
-C
-      READ (LUONEL) TITLEM, NS,(NB(I),I=1,NS), DUMM,
-     &              KMA,(MNUC,I=1,KMA), NBRO,(JTRAN(I),I=1,NBRO),
-     &              ((ITRAN(I,J),J=1,MXCGTO),I=1,NBRO),
-     &              ((CTRAN(I,J),J=1,MXCGTO),I=1,NBRO),
-     &              IABAS,(IAMN(I),I=1,IABAS),(IPR(I),I=1,IABAS),
-     &              DIPOL,NNUC,((COOO,J=1,3),I=1,NNUC),IFXYZ,TPROP,
-     &              QPOL,QQFAC,JFXYZ 
-C
-      CALL GPCLOSE(LUONEL,'KEEP')
-C
-      CALL QENTER('READSYM')
 C
       RETURN
       END
