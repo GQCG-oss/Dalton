@@ -1,27 +1,34 @@
-C  gen1int: compute one-electron integrals using rotational London atomic-orbitals
-C  Copyright 2009, 2010 Bin Gao, and Andreas Thorvaldsen
-C
-C  gen1int is free software: you can redistribute it and/or modify
-C  it under the terms of the GNU Lesser General Public License as published by
-C  the Free Software Foundation, either version 3 of the License, or
-C  (at your option) any later version.
-C
-C  gen1int is distributed in the hope that it will be useful,
-C  but WITHOUT ANY WARRANTY; without even the implied warranty of
-C  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-C  GNU Lesser General Public License for more details.
-C
-C  You should have received a copy of the GNU Lesser General Public License
-C  along with gen1int. If not, see <http://www.gnu.org/licenses/>.
-C
-C  This file provides the interface of calling Gen1Int from Dalton.
-C
-C  2011-02-13, Bin Gao
-C  * this file does not read information from input anymore, it will only
-C    be called by other subroutines
-C
-C  2010-07-28, Bin Gao
-C  * first version
+!
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
+!...   All Rights Reserved.
+!...
+!...   The source code in this file is part of
+!...   "Dalton, a molecular electronic structure program,
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
+!...
+!...   This source code is provided under a written licence and may be
+!...   used, copied, transmitted, or stored only in accord with that
+!...   written licence.
+!...
+!...   In particular, no part of the source code or compiled modules may
+!...   be distributed outside the research group of the licence holder.
+!...   This means also that persons (e.g. post-docs) leaving the research
+!...   group of the licence holder may not take any part of Dalton,
+!...   including modified files, with him/her, unless that person has
+!...   obtained his/her own licence.
+!...
+!...   For further information, including how to get a licence, see:
+!...      http://daltonprogram.org
+!
+!
+!...  This file provides the interface of calling Gen1Int from Dalton.
+!...
+!...  2011-02-13, Bin Gao
+!...  * this file does not read information from input anymore, it will only
+!...    be called by other subroutines
+!...
+!...  2010-07-28, Bin Gao
+!...  * first version
 
 C>    \brief main driver of calling Gen1Int by Dalton
 C>    \detail modified files include
@@ -326,10 +333,14 @@ C     number of magnetic derivatives
       integer num_dmag
 C     number of derivatives
       integer num_deriv
+C     number of operators
+      integer num_ops
 C     number of AO integrals
       integer num_ao_ints
 C     number of contracted integrals
       integer num_cints
+C     Cartesian powers
+      integer power_bra(MXAQN,3), power_ket(MXAQN,3)
 C     computes the number of geometric derivatives
       if (num_cents==0) then
         num_dgeo = 1
@@ -356,6 +367,9 @@ C     loops over blocks of bra
         SPHRA = SPHR(ishell)        !if spherical Gaussians
 C       generates the Cartesian powers
         call LMNVAL(NHKTA, KCKTA, LVALUA, MVALUA, NVALUA)
+        power_bra(MXAQN,1) = LVALUA
+        power_bra(MXAQN,2) = MVALUA
+        power_bra(MXAQN,3) = NVALUA
         NCENTA = NCENT(ishell)      !index of symmetry independent center
         ICENTA = IPTNUC(NCENTA,0)   !index of this atomic center(FIXME)
         MULA   = ISTBAO(ishell)     !stabiliser: basic sym. op. that do not move center
@@ -431,6 +445,9 @@ C       loops over shells of ket
           SPHRB = SPHR(jshell)            !if spherical Gaussians
 C         generates the Cartesian powers
           CALL LMNVAL(NHKTB,KCKTB,LVALUB,MVALUB,NVALUB)
+          power_ket(MXAQN,1) = LVALUB
+          power_ket(MXAQN,2) = MVALUB
+          power_ket(MXAQN,3) = NVALUB
           NCENTB = NCENT(jshell)          !index of symmetry independent center
           MULB   = ISTBAO(jshell)         !stabiliser: basic sym. op. that do not move center
           MULTB  = MULT(MULB)             !multiplicity of center
@@ -470,8 +487,6 @@ C         number of the contracted Gaussians
           nket_cgto = KCKTB*NRCB
 C         number of AO integrals
           num_ao_ints = nbra_ao*nket_ao*num_deriv
-C         number of contracted integrals
-          num_cints = nbra_cgto*nket_cgto*num_deriv
 C         loops over irreducible representations(FIXME)
           IDENB = IDENB0-KHKTB
           do irep = 0, MAXREP
@@ -538,6 +553,9 @@ C             normal Gaussians
 C               computes the contracted integrals
                 select case(trim(prop_name))
                 case('.OVERLAP')
+                  num_ops = 1
+C                 number of contracted integrals
+                  num_cints = nbra_cgto*nket_cgto*num_deriv
                   call contr_cgto_carmom(ICENTA, (/CORAX,CORAY,CORAZ/),
      &              NHKTA-1, NUCA, PRIEXP(JSTA+1:JSTA+NUCA),
      &              NRCA, PRICCF(JSTA+1:JSTA+NUCA,NUMCFA:NUMCFA+NRCA-1),
@@ -567,21 +585,34 @@ C                          call PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
                       end do
                     end do
                   end do
+                  num_ops = 1
                 case default
                   call QUIT("Property"//trim(prop_name)//
      &                      " is not implemented")
                 end select
               end if
 C             transforms to spherical Gaussian integrals
-              if (SPHRB) then
+              if (SPHRA.and.SPHRB) then
                 call cgto_to_sgto(NHKTB-1, (/nbra_cgto,KCKTB,
-     &                            NRCB*num_deriv/), dal_work)
-              end if
-              if (SPHRA) then
+     &                            NRCB*num_deriv*num_ops/), dal_work)
                 call cgto_to_sgto(NHKTA-1, (/1,KCKTA,
-     &                            NRCA*nket_cgto*num_deriv/),
+     &                            NRCA*nket_cgto*num_deriv*num_ops/),
      &                            dal_work)
-              endif
+C             reorders the Cartesian Gaussian integrals
+              else
+                call reorder_cgto(NHKTB, power_ket,
+     &                            (/nbra_cgto,KCKTB,
+     &                              NRCB*num_deriv*num_ops/),
+     &                            dal_work(1:num_cints),
+     &                            dal_wokr(num_cints+1:
+     &                                     num_cints+num_cints))
+                call reorder_cgto(NHKTA, power_bra,
+     &                            (/1,KCKTA,
+     &                              NRCA*nbra_cgto*num_deriv*num_ops/),
+     &                            dal_work(num_cints+1:
+     &                                     num_cints+num_cints),
+     &                            dal_wokr(1:num_cints))
+              end if
 C             post-processes the integrals or computes the expectation values
               do icontr = 1, NRCA
                 INDFA = BLOCK_INDFA(:,:,icontr)
@@ -695,6 +726,7 @@ C>    \return vals_expect contains the calculated expectation values
 #include "orgcom.h"
 #include "ibtfun.h"
 #include "dummy.h"
+C-   abacus/her1car.F
 C     collects density elements(FIXME)
 C-      do iden = 1, ndens
 C-        MAXCMP = 0
@@ -717,6 +749,14 @@ C-      end do
       call QUIT("Gen1Int is not installed")
 #endif
       end subroutine gen1int_expect
+
+C      subroutine gen1int_fwrite
+C        GETONE
+C      end subroutine gen1int_fwrite
+
+C      subroutine gen1int_fread
+C        GETONE
+C      end subroutine gen1int_fread
 
 C>    \brief sets up AO-blocks used for Gen1Int
 C>    \author Bin Gao
