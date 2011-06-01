@@ -367,9 +367,9 @@ C     loops over blocks of bra
         SPHRA = SPHR(ishell)        !if spherical Gaussians
 C       generates the Cartesian powers
         call LMNVAL(NHKTA, KCKTA, LVALUA, MVALUA, NVALUA)
-        power_bra(MXAQN,1) = LVALUA
-        power_bra(MXAQN,2) = MVALUA
-        power_bra(MXAQN,3) = NVALUA
+        power_bra(:,1) = LVALUA
+        power_bra(:,2) = MVALUA
+        power_bra(:,3) = NVALUA
         NCENTA = NCENT(ishell)      !index of symmetry independent center
         ICENTA = IPTNUC(NCENTA,0)   !index of this atomic center(FIXME)
         MULA   = ISTBAO(ishell)     !stabiliser: basic sym. op. that do not move center
@@ -445,9 +445,9 @@ C       loops over shells of ket
           SPHRB = SPHR(jshell)            !if spherical Gaussians
 C         generates the Cartesian powers
           CALL LMNVAL(NHKTB,KCKTB,LVALUB,MVALUB,NVALUB)
-          power_ket(MXAQN,1) = LVALUB
-          power_ket(MXAQN,2) = MVALUB
-          power_ket(MXAQN,3) = NVALUB
+          power_ket(:,1) = LVALUB
+          power_ket(:,2) = MVALUB
+          power_ket(:,3) = NVALUB
           NCENTB = NCENT(jshell)          !index of symmetry independent center
           MULB   = ISTBAO(jshell)         !stabiliser: basic sym. op. that do not move center
           MULTB  = MULT(MULB)             !multiplicity of center
@@ -604,14 +604,14 @@ C             reorders the Cartesian Gaussian integrals
      &                            (/nbra_cgto,KCKTB,
      &                              NRCB*num_deriv*num_ops/),
      &                            dal_work(1:num_cints),
-     &                            dal_wokr(num_cints+1:
+     &                            dal_work(num_cints+1:
      &                                     num_cints+num_cints))
                 call reorder_cgto(NHKTA, power_bra,
      &                            (/1,KCKTA,
      &                              NRCA*nbra_cgto*num_deriv*num_ops/),
      &                            dal_work(num_cints+1:
      &                                     num_cints+num_cints),
-     &                            dal_wokr(1:num_cints))
+     &                            dal_work(1:num_cints))
               end if
 C             post-processes the integrals or computes the expectation values
               do icontr = 1, NRCA
