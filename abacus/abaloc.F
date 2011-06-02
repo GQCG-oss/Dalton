@@ -520,107 +520,109 @@ C---------------------------------------------------------
 C       MULLIKEN LOCALIZATION METHOD (According to ec. 31)
 C---------------------------------------------------------
 C
+#ifdef NOT_FINISHED_YET
 CSPAS:31.05.11: MULLOC is not yet working correctly
-C         IF(MULLOC) THEN
-CC
-C            MATCMO = 0
-C            DO  ISYM = 1,NSYM
-C               MATCMO = MATCMO + NBAS(ISYM)*NOCC(ISYM)
-C            END DO   
-CC
-CC---------------------
-CC           Allocation
-CC---------------------
-CC
-C            KCMOC  = KEND1
-C            KIAMN  = KCMOC+MATCMO
-C            KIPR   = KIAMN+NBAST
-C            KOVLP  = KIPR+NBAST
-C            KJTRAN = KOVLP+NNBAST
-C            KITRAN = KJTRAN+NBAST
-C            KCTRAN = KITRAN+NBAST*MXCGTO/IRAT
-C            KMOG   = KCTRAN+NBAST*MXCGTO
-CC
-CC----------------------------------
-CC           kss1 is for the overlap
-CC----------------------------------
-CC
-C            KSS1   = KMOG+NBAST*NOCCT
-C            KNUMB  = KSS1+NBAST*(NBAST+1)/2
-C            KLCMO  = KNUMB+NBAST
-C	     KPAST  = KLCMO+NBAST*NOCCT
-C            KAIJ   = KPAST+NOCCT*NOCCT*NUCDEP
-C            KBIJ   = KAIJ+NOCCT*NOCCT
-CC
-CC-------------------------------------------------------------
-CC           kss2 is for the localization transformation matrix
-CC-------------------------------------------------------------
-CC
-C            KSS2   = KBIJ+NOCCT*NOCCT
-C            KEND6  = KSS2+NOCCT*NOCCT
-C	     LWORK6 = LWORK  - KEND6
-C            IF (LWORK6 .LT. 0) CALL STOPIT('GETLOC.6',' ',KEND6,LWORK)
-CC
-CC---------------------------------------------------------
-CC           End of allocation and copy MO's to WORK(KCMOC)
-CC---------------------------------------------------------
-CC
-C            JCMO  =  KCMOC
-CC
-C            DO 47 ISYM=1,NSYM
-C               NOCCI=NOCC(ISYM)
-C               NBASI=NBAS(ISYM)
-C               IF(NOCCI.EQ.0) GOTO 47
-C            CALL DCOPY(NOCCI*NBASI,WORK(KCMO+ICMO(ISYM)),1,WORK(JCMO),1)
-C               JCMO = JCMO + NOCCI*NBASI
-C   47       CONTINUE
-CC
-CC----------------------------------------------------------
-CC           Necessary information for poptra transformation
-CC----------------------------------------------------------
-CC
-C            CALL READSYM(IPRSOS,WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
-C     &                   WORK(KIAMN),WORK(KIPR))
-CC
-CC--------------------------------------------------------
-CC           Here we make the transformation from symmetry 
-CC           orbitals to cgto's orbitals (POPTRA)
-CC--------------------------------------------------------
-CC
-C            CALL POPTRA (NNBAST,MXCGTO,MATCMO,WORK(KCMOC),WORK(KOVLP),
-C     &                   WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
-C     &                   WORK(KMOG),WORK(KSS1))
-CC
-CC--------------------------------------------------- 
-CC           Here we calculated the matrix population 
-CC           PAST betwen two molecular orbitals
-CC---------------------------------------------------
-CC
-C            CALL POPMAT (IPRSOS,WORK(KPAST),WORK(KIAMN),WORK(KIPR),
-C     &                   WORK(KNUMB),WORK(KMOG),WORK(KSS1))
-CC
-CC-----------------------------------------------
-CC           Finally we proceed with localization 
-CC           method and we obtain SS -> CLOCO
-CC-----------------------------------------------
-CC
-C            CALL MULLLOC(IPRSOS,CLOCO,THRLOC,WORK(KPAST),WORK(KSS2),
-C     &                   WORK(KBIJ),WORK(KAIJ),NLOCC)
-CC
-CC---------------------------------------
-CC           Print the localized orbitals
-CC---------------------------------------
-CC            
-C            CALL DZERO(WORK(KLCMO),NORBT*NOCCT)
-CC     
-C            CALL DGEMM('N','N',NORBT,NLOCC,NOCCT,D1,WORK(KCMOC),NORBT,
-C     &                 CLOCO,NOCCT,D0,WORK(KLCMO),NORBT)
-CC
-C            CALL HEADER('Localized Mulliken population Orbitals',-1)
-C            CALL PLOCORB(WORK(KLCMO),.TRUE.,NLOCC,LUW4)
-CC
-C         END IF
+         IF(MULLOC) THEN
+C
+            MATCMO = 0
+            DO  ISYM = 1,NSYM
+               MATCMO = MATCMO + NBAS(ISYM)*NOCC(ISYM)
+            END DO   
+C
+C---------------------
+C           Allocation
+C---------------------
+C
+            KCMOC  = KEND1
+            KIAMN  = KCMOC+MATCMO
+            KIPR   = KIAMN+NBAST
+            KOVLP  = KIPR+NBAST
+            KJTRAN = KOVLP+NNBAST
+            KITRAN = KJTRAN+NBAST
+            KCTRAN = KITRAN+NBAST*MXCGTO/IRAT
+            KMOG   = KCTRAN+NBAST*MXCGTO
+C
+C----------------------------------
+C           kss1 is for the overlap
+C----------------------------------
+C
+            KSS1   = KMOG+NBAST*NOCCT
+            KNUMB  = KSS1+NBAST*(NBAST+1)/2
+            KLCMO  = KNUMB+NBAST
+            KPAST  = KLCMO+NBAST*NOCCT
+            KAIJ   = KPAST+NOCCT*NOCCT*NUCDEP
+            KBIJ   = KAIJ+NOCCT*NOCCT
+C
+C-------------------------------------------------------------
+C           kss2 is for the localization transformation matrix
+C-------------------------------------------------------------
+C
+            KSS2   = KBIJ+NOCCT*NOCCT
+            KEND6  = KSS2+NOCCT*NOCCT
+            LWORK6 = LWORK  - KEND6
+            IF (LWORK6 .LT. 0) CALL STOPIT('GETLOC.6',' ',KEND6,LWORK)
+C
+C---------------------------------------------------------
+C           End of allocation and copy MO's to WORK(KCMOC)
+C---------------------------------------------------------
+C
+            JCMO  =  KCMOC
+C
+            DO 47 ISYM=1,NSYM
+               NOCCI=NOCC(ISYM)
+               NBASI=NBAS(ISYM)
+               IF(NOCCI.EQ.0) GOTO 47
+            CALL DCOPY(NOCCI*NBASI,WORK(KCMO+ICMO(ISYM)),1,WORK(JCMO),1)
+               JCMO = JCMO + NOCCI*NBASI
+   47       CONTINUE
+C
+C----------------------------------------------------------
+C           Necessary information for poptra transformation
+C----------------------------------------------------------
+C
+            CALL READSYM(IPRSOS,WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
+     &                   WORK(KIAMN),WORK(KIPR))
+C
+C--------------------------------------------------------
+C           Here we make the transformation from symmetry 
+C           orbitals to cgto's orbitals (POPTRA)
+C--------------------------------------------------------
+C
+            CALL POPTRA (NNBAST,MXCGTO,MATCMO,WORK(KCMOC),WORK(KOVLP),
+     &                   WORK(KJTRAN),WORK(KITRAN),WORK(KCTRAN),
+     &                   WORK(KMOG),WORK(KSS1))
+C
+C--------------------------------------------------- 
+C           Here we calculated the matrix population 
+C           PAST betwen two molecular orbitals
+C---------------------------------------------------
+C
+            CALL POPMAT (IPRSOS,WORK(KPAST),WORK(KIAMN),WORK(KIPR),
+     &                   WORK(KNUMB),WORK(KMOG),WORK(KSS1))
+C
+C-----------------------------------------------
+C           Finally we proceed with localization 
+C           method and we obtain SS -> CLOCO
+C-----------------------------------------------
+C
+            CALL MULLLOC(IPRSOS,CLOCO,THRLOC,WORK(KPAST),WORK(KSS2),
+     &                   WORK(KBIJ),WORK(KAIJ),NLOCC)
+C
+C---------------------------------------
+C           Print the localized orbitals
+C---------------------------------------
+C            
+            CALL DZERO(WORK(KLCMO),NORBT*NOCCT)
+C     
+            CALL DGEMM('N','N',NORBT,NLOCC,NOCCT,D1,WORK(KCMOC),NORBT,
+     &                 CLOCO,NOCCT,D0,WORK(KLCMO),NORBT)
+C
+            CALL HEADER('Localized Mulliken population Orbitals',-1)
+            CALL PLOCORB(WORK(KLCMO),.TRUE.,NLOCC,LUW4)
+C
+         END IF
 CKeinSPASmehr
+#endif
 C
 CPFP Nov/21/04
 C        IF ( FOSOCC .OR. FBOVIR .OR. FBSETV ) THEN
@@ -877,7 +879,10 @@ C
 C     
          END IF
 C
+#ifdef NOT_FINISHED_YET
+CSPAS:2.6.2011: this breaks the parallel code
          CALL NEWMOLDE(IPRSOS,WORK(KLCMO),OCCUP)
+#endif
 C
       END IF
 C
@@ -2326,6 +2331,7 @@ C
 
 C***********************************************************************
 C  /* Deck newmolde */
+#ifdef NOT_FINISHED_YET
         SUBROUTINE NEWMOLDE(IPRSOS,CLMO,OCCUP)
 C
 C
@@ -2425,7 +2431,7 @@ C
 C
        RETURN
        END
-
+#endif
 C***********************************************************************
 C  /* Deck equally */
        SUBROUTINE EQUALLY(lee,word1,n1,match1)

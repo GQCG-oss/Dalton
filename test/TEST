@@ -115,7 +115,7 @@ LONG_CHOLESKY="choles_ccsdpt_energy"
 LONG="$LONG $LONGCC $LONG_CHOLESKY"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
-dft_parallell_properties parallel_lucita_gasci"
+dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
