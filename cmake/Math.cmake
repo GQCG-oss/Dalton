@@ -1,5 +1,7 @@
-set(MATH_FOUND  FALSE)
-set(MATH_LANG   "Fortran")
+set(MATH_LANG "Fortran")
+
+set(BLAS_FOUND   FALSE)
+set(LAPACK_FOUND FALSE)
 
 if(ENABLE_EXTERNAL_MATH)
 
@@ -18,33 +20,39 @@ if(ENABLE_EXTERNAL_MATH)
             FORCE
             )
         message("-- User set math libraries: ${MATH_LIBS}")
-        set(MATH_FOUND TRUE)
-    endif()
-
-    # try to find the best library using environment variables
-    if(NOT MATH_FOUND)
-        find_package(BLAS)
-        find_package(LAPACK)
-        if(BLAS_FOUND AND LAPACK_FOUND)
-            set(MATH_LIBS
-                ${BLAS_LIBRARIES}
-                ${LAPACK_LIBRARIES}
-                )
-            set(MATH_FOUND TRUE)
-        endif()
-    endif()
-
-    if(MATH_FOUND)
+        set(BLAS_FOUND   TRUE)
+        set(LAPACK_FOUND TRUE)
         set(LIBS
             ${LIBS}
             ${MATH_LIBS}
             )
-    else()
-        message("-- No external math libraries found")
     endif()
 
-    if(ENABLE_CUDA)
-        find_package(CUDA)
+    # try to find the best libraries using environment variables
+    if(NOT BLAS_FOUND)
+        find_package(BLAS)
+        if(BLAS_FOUND)
+            set(LIBS
+                ${LIBS}
+                ${BLAS_LIBRARIES}
+                )
+        endif()
+    endif()
+    if(NOT LAPACK_FOUND)
+        find_package(LAPACK)
+        if(LAPACK_FOUND)
+            set(LIBS
+                ${LIBS}
+                ${LAPACK_LIBRARIES}
+                )
+        endif()
+    endif()
+
+    if(NOT BLAS_FOUND)
+        message("-- No external BLAS library found")
+    endif()
+    if(NOT LAPACK_FOUND)
+        message("-- No external LAPACK library found")
     endif()
 
 endif()

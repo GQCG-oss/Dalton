@@ -485,8 +485,6 @@ lucita/utils.F
 lucita/vecmat.F
 pdpack/arhpack.F
 pdpack/eispack.F
-pdpack/gp_dlapack.F
-pdpack/gp_zlapack.F
 pdpack/jacobi.F
 pdpack/linextra.F
 pdpack/linpack.F
@@ -726,4 +724,14 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+    )
+set(OWN_BLAS_SOURCES
+    pdpack/gp_dblas1.F
+    pdpack/gp_dblas2.F
+    pdpack/gp_dblas3.F
+    pdpack/gp_zblas.F
+    )
+set(OWN_LAPACK_SOURCES
+    pdpack/gp_dlapack.F
+    pdpack/gp_zlapack.F
     )
