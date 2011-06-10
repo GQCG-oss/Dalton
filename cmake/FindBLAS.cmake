@@ -72,7 +72,17 @@ function(find_blas)
 endfunction()
 
 function(find_default)
-	set(path_suffixes lib)
+	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+	    if(LINUX_UBUNTU)
+                # apparently ubuntu throws everything into lib
+	        set(path_suffixes lib)
+	    else()
+	        set(path_suffixes lib64)
+	    endif()
+	else()
+	    set(path_suffixes lib)
+	endif()
+
 	find_math_header(blas)
 	find_math_libs(blas)
 	cache_math_result(default blas)
