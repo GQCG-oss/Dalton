@@ -51,8 +51,6 @@ usage (){
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
         echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
         echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
-# Oct. 09: AHS and JMO
-#   added qmmm option to be used with QM/MM calculations
         echo ' -mmsv file copy relay matrix from $TMPDIR to $WRKDIR/$file'
         echo ' -mmcp file copy relay matrix from $WRKDIR/$file to $TMPDIR'
 	  echo
@@ -96,8 +94,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) optt=1; TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
-# Oct. 09: AHS and JMO
-#   added qmmm option to be used with QM/MM calculations
       -mmcp ) optqmmm=copy; relay=$2; shift;;
       -mmsv ) optqmmm=save; relay=$2; shift;;
        * ) usage; exit 1;;
@@ -219,8 +215,9 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
         ierr=1
      fi
    fi
-# Oct. 09: AHS and JMO
-#   Copying the relay matrix to scratch directory to be used when restarting QM/MM calculations
+   if [ -s $WRKDIR/mep.inp ] ; then
+     cp $WRKDIR/mep.inp MEP.INP
+   fi
    if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
      if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
        echo "Copying the relay matrix to scratch directory..."
@@ -329,8 +326,11 @@ else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
 fi
 
-# Oct. 09: AHS and JMO
-#   Saving the relay matrix to so it can be used in subsequent restarted QM/MM calculations
+if [ -s MEP.OUT ] ; then
+  tar -zcf mep.tar.gz MEP.OUT
+  cp mep.tar.gz $WRKDIR
+fi
+
 if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
   if [ -s QMMMIM -a -r QMMMIM ]; then
     echo "Saving the relay matrix in $WRKDIR/$relay"
