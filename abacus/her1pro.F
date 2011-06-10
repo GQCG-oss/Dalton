@@ -3947,8 +3947,7 @@ C  /* Deck efntyp */
       CALL QENTER('EFNTYP')
 
       NOPTYP = 3*NATOM
-      IF (INTDIR .AND. FORQM3 .AND. RUNQM3) NOPTYP = 3
-      IF (QMMM .AND. RUNQM3) NOPTYP = 3
+      IF (RUNQM3) NOPTYP = 3
       CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
@@ -4029,7 +4028,7 @@ C  /* Deck efgtyp */
 #endif
 C
       NOPTYP = 6*NATOM
-      IF (QMMM .AND. RUNQM3) NOPTYP = 6
+      IF (RUNQM3) NOPTYP = 6
       CALL NTYPTS(NOPTYP)
       CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
 C

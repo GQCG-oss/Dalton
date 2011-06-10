@@ -982,10 +982,9 @@ cLig <> added JMAX = JMAX+2 for INTTYP = 82
 C
          IF (      INTTYP .EQ. 75 .OR. INTTYP .EQ. 66
      &        .OR. INTTYP .EQ. 67 .OR. INTTYP .EQ. 99
-     &        .OR. INTTYP .EQ. 100 
-     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 .AND. INTDIR) 
-     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 .AND. QMMM) 
-     &        .OR. ( (INTTYP .EQ. 30) .AND. RUNQM3 .AND. QMMM) ) THEN
+     &        .OR. INTTYP .EQ. 100
+     &        .OR. ( (INTTYP .EQ. 29) .AND. RUNQM3 )
+     &        .OR. ( (INTTYP .EQ. 30) .AND. RUNQM3 ) ) THEN
             NATOMC = 0
 C
             DO 301 IATOMC = 1, NPOINT
@@ -1965,14 +1964,14 @@ C
 C        First electric derivative of overlap integrals. Type A
 C        ------------------------------------------------------
 C
-	 ELSE IF (INTTYP .EQ. 49) THEN
-	    CALL SE1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
+         ELSE IF (INTTYP .EQ. 49) THEN
+            CALL SE1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C        First electric derivative of overlap integrals. Type B
 C        ------------------------------------------------------
 C
-	 ELSE IF (INTTYP .EQ. 50) THEN
-	    CALL SE1INB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
+         ELSE IF (INTTYP .EQ. 50) THEN
+            CALL SE1INB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT, EXPA, EXPB)
 C
 C        First electric deriv. of 1-electron Ham. integrals
@@ -6888,6 +6887,19 @@ C
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
+C
+C        Correct Fermi contact contribution:
+C        SDINT uses grad**2 (1/r) which gives -0.5 times
+C        the Fermi contact contribution. This is removed
+C        with DFAC11. IF SD+FC we add the Fermi contact
+C        contribution to this correction, which gives DFAC13.
+C
+      IF (INTTYP .EQ. 11) THEN
+         FACTOR = DFAC11
+      ELSE
+         FACTOR = DFAC13
+      END IF
+C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -6901,18 +6913,6 @@ C
          MAXU = MVALA + MVALB
          MAXV = NVALA + NVALB
          INT = INT + 1
-C
-C        Correct Fermi contact contribution:
-C        SDINT uses grad**2 (1/r) which gives -0.5 times
-C        the Fermi contact contribution. This is removed
-C        with DFAC11. IF SD+FC we add the Fermi contact
-C        contribution to this correction, which gives DFAC13.
-C
-         IF (INTTYP .EQ. 11) THEN
-            FACTOR = DFAC11
-         ELSE
-            FACTOR = DFAC13
-         END IF
          DO 150 IATOM = 1,NATOMC
             I0 = 6*(IATOM - 1)
             XC = CORCX(IATOM)
@@ -8325,7 +8325,7 @@ C  /* Deck se1inb */
       SUBROUTINE SE1INB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT, EXPA, EXPB)
 C
-C	H. Heiberg, -95
+C        H. Heiberg, -95
 C
 #include "implicit.h"
 #include "priunit.h"

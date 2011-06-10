@@ -429,7 +429,10 @@ C
 C
 C     *** Initialize ***
 C
-      CALL HERINI
+      ! CALL HERINI - Apr. 20011: HERINI now called in EXEHER /hjaaj
+      !               so Hermit variables are also initialized if only
+      !               ABACUS
+
       !Initialize defaults for density fitting
       CALL DENSFIT_INI
 C
@@ -3799,6 +3802,12 @@ C
 Cholesky
 #include <ccdeco.h>
 Cholesky
+      LOGICAL FIRST_CALL
+      SAVE    FIRST_CALL
+      DATA    FIRST_CALL /.TRUE./
+C
+      IF (.NOT. FIRST_CALL) RETURN
+      FIRST_CALL = .FALSE.
 C
 C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
 C

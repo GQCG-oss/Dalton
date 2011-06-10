@@ -382,6 +382,23 @@ CKeinSPASmehr
       CALL GETTIM(TIMLNR,TIMDUM)
       TIMLNR = TIMLNR - TIMSTR
 C
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C     ***************************************
+C     ***** Sum Over States Calculation *****
+C     ***************************************
+C
+       CALL GETTIM(TIMSTR,TMDUM)
+       IF (SOSSPN) THEN
+           KLST2   = KFONA2S +  3*NATOMS*NSYM*MXNEXI
+           LWRK2   = LWORK - KLST2 + 1
+C
+           CALL SOSDRV(WORK(KLST1),LWRK1,PASSOS)
+C
+       END IF
+C
+       CALL  GETTIM(TIMSOS,TIMDUM)
+       TIMSOS = TIMSOS - TIMSTR
+Cend-PFP
 C     ******************************************
 C     ***** Electronic excitation energies *****
 C     ******************************************
@@ -693,7 +710,10 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <priunit.h>
-      PARAMETER (NDIR = 28, NTABLE = 58, D0 = 0.D0)
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C     PARAMETER (NDIR = 28, NTABLE = 58, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 59, D0 = 0.D0)
+Cend-PFP
       LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
       LOGICAL   GRDINP
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -733,6 +753,9 @@ C     Aug. 97/spas+hjaaj
 CSPAS : 6/11-2009 AO-SOPPA included
 #include <soppinf.h>
 CKeinSPASmehr
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+#include <locinf.h>
+Cend-PFP
 C
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
@@ -740,7 +763,10 @@ C
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
      &             '*FLOAT ', 'xxxxxxx', '*QPGCTL',
-     &             'xXXXXXX', 'xXXXXXX', '*SOPPA ',
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C    &             'xXXXXXX', 'xXXXXXX', '*SOPPA ',
+     &             'xXXXXXX', '*LOCALI', '*SOPPA ',
+Cend-PFP
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
@@ -785,7 +811,10 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G '/ 
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C    &             '.VIB_G '/ 
+     &             '.VIB_G ', '.LOCALI'/ 
+Cend-PFP
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -908,6 +937,9 @@ C
       ABASOP = .FALSE.
       CCPPA  = .FALSE.
       DOD2DQ2 = .FALSE.
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+      ABALOC = .FALSE.
+Cend-PFP
 C
 C     Initialize /NUCLEI/
 C
@@ -982,7 +1014,10 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152,153,154,155,156,157,158),I
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C    &                151,152,153,154,155,156,157,158),I
+     &                151,152,153,154,155,156,157,158,159),I
+Cend-PFP
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1255,6 +1290,12 @@ C .D2DQ2
             MOLHES = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+
+ 159     CONTINUE
+            ABALOC = .TRUE.
+         GOTO 100
+Cend-PFP
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1534,6 +1575,10 @@ cLig <<
       IF (DODRCT) WRITE (LUPRI,'(5X,A)')
      &   ' Direct calculation - no two-electron integrals '//
      &   'written or read.'
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+      IF (ABALOC) WRITE(LUPRI,'(5X,A)')
+     &      ' Localized orbitals are used in the analysis'
+Cend-PFP
       IF (EXPFCK .AND. DODRCT) WRITE (LUPRI,'(5X,A)')
      &   ' Two-electron expectation values and derivative Fock ',
      &   ' matrices are calculated simultaneously (for direct SCF).'
@@ -1912,6 +1957,9 @@ cs
    19   CONTINUE
       GO TO 200
    20   CONTINUE
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+      CALL LOCINP(WORD)
+Cend-PFP
       GO TO 200
    21   CALL SOPINP(WORD)
       GO TO 200
@@ -3530,5 +3578,8 @@ C
       CALL TRPINI
       CALL LNRINI
       CALL AQRINI
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+      CALL LOCINI
+Cend-PFP
       RETURN
       END

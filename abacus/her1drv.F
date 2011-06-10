@@ -551,23 +551,6 @@ C
       CALL IZERO(ISOFRA, 8)
 
 #ifdef BUILD_GEN1INT
-
-#ifdef GEN1INT_DEBUG
-C...   see abacus/gen1int_wrapper.F for details
-C...   call gen1int_driver(prop_name, order_geo, order_mag,
-C...  &                    is_lao, get_int, wrt_int, vals_int,
-C...  &                    do_exp, ndens, ao_dens,
-C...  &                    get_exp, wrt_exp, vals_expect,
-C...  &                    len_work, dal_work, level_print)
-       call gen1int_driver('.OVERLAP', 5, 3,
-     &                     .false., .false., .true., (/DUMMY/),
-     &                     .true., 1, DENMAT,
-     &                     .false., .true., (/DUMMY/),
-     &                     LWRK, WORK(KLAST), 20)
-C...   FIXME: adds test suites for Gen1Int
-       call QUIT("Gen1Int test")
-#endif
-
 C...  added by Bin Gao, Feb. 15, 2011
       if (ECP) then
 C...    computes expectation values
@@ -1040,7 +1023,7 @@ C
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC)
       READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
-     *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+     *              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
       NSSHT  = NORBT - NOCCT
       CALL READI(LUSIFC,IRAT*NCMOT,CMO)
       READ (LUSIFC)

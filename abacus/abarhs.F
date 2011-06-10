@@ -23,28 +23,12 @@
 !
 #include <single.h>
 C
-#ifdef UNDEF
-========================================================================
-/* Comdeck log */
-970819-hjaaj
-RHSINP: removed CALL SETSIR, has for some time been in ABAINP in
-  abadrv.F; added IPRTRA, IPRIN4 and IPRIN6 to parameter list 
-  and removed WORK,LWORK from parameter list (was used in CALL SETSIR).
-941114-hjaaj
-RHSIDE: IFCTYP(MXDMAT) and ISYMDM(MXDMAT)
-MAKEGD: NODIFC in parameter list to ABARHS
-930210-hjaaj
-  MAKEGD: skip ISYM if DOSYM(ISYM) false (DOSYM should also be used
-          in determination of DCORGD in abatro.u)
-930205-hjaaj
-  defined parameter D1 in SOLRH1
-891108-hjaaj
-  use CALL RDONEL to read ONEHAMIL in CHKRES and TR1TST
-  removed open and close of LUONEL in MAKEGD
-  removed COP and ICOP in parameterlist to CHKRES and TR1TST
-  disabled TR1TST because not used in present version
-===========================================================================
-#endif
+!===========================================================================
+!  FILE : abarhs.F
+!
+!  rhs = "Right Hand Side" of linear response equations for molecular
+!        Hessian and more.
+!===========================================================================
 C  /* Deck rhsinp */
       SUBROUTINE RHSINP(WORD)
 #include <implicit.h>
@@ -4510,3 +4494,4 @@ C
 C
       RETURN
       END
+! -- end of abarhs.F --

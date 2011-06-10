@@ -327,6 +327,7 @@ add_test(rsp_sresqr                    ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${C
 add_test(rsp_twophot                   ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null rsp_twophot                   )
 add_test(rsp_zfs                       ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null rsp_zfs                       )
 add_test(rsp_zfs_mc                    ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null rsp_zfs_mc                    )
+add_test(spin_local                    ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null spin_local                    )
 add_test(vibave_spinspin               ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null vibave_spinspin               )
 add_test(walk_gradex                   ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null walk_gradex                   )
 add_test(walk_image                    ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null walk_image                    )

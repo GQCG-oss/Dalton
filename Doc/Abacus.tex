@@ -158,6 +158,17 @@ constants. Requires that the DALTON.HES for the ground electronic
 state is available, and that the keyword \verb|.VIBANA| also is
 activated.
 
+\item[\Key{LOCALI}] Invokes the generation of localized molecular
+orbitals, which are then used in the analysis of second order
+properties / linear response functions in terms of localized occupied
+and virtual molecular orbitals. Currently only Mulliken localized
+occupied orbitals or Foster-Boys~\cite{Boyloc} localized occupied and
+virtual orbitals can be generated. Naturally, the generation of
+localized molecular orbitals requires that the use of point group
+symmetry is turned off.
+
+
+
 \item[\Key{MAGNET}] Invokes the calculation of the molecular
 magnetizability\index{magnetizability} (commonly known as magnetic
 susceptibility) as
@@ -1324,6 +1335,89 @@ property~\cite{hsijqc30}, and $2.0\cdot10^{-3}$ for those calculations
 that can.
 \end{description}
 
+\subsection{Localization of molecular orbitals: \Sec{LOCALI}}\label{sec:locali}
+
+Directives to control the generation of localized orbitals for the use
+in the analysis of second order / linear response properties in
+localized molecular orbitals. At present these directives only affect
+the calculation of spin-spin coupling constants. Naturally, the
+generation of localized molecular orbitals requires that the use of
+point group symmetry is turned off.
+
+\begin{description}
+\item [\Key{FOSBOY}] The occupied molecular orbitals are localized with
+the Foster-Boys localization procedure~\cite{Boyloc}. It requires the
+\Key{SOSOCC} keyword in the \Sec{SPIN-S} section.
+
+\item [\Key{FBOCIN}]\verb| |\newline
+ \verb|READ (LUCMD, * ) NO2LOC|\newline
+ \verb|READ (LUCMD, * ) ( NTOC2L(I), I = 1, NO2LOC)|\newline
+All occupied molecular orbitals are localized with the Foster-Boys
+localization procedure~\cite{Boyloc}. Afterwards \verb|NO2LOC| occupied
+orbitals are delocalized again. \verb|NTOC2L|  are the indices of the
+occupied orbitals which are delocalized again.
+
+\item [\Key{FBOOCC}]\verb| |\newline
+ \verb|READ (LUCMD, * )NO2LOC|\newline
+ \verb|READ (LUCMD, * ) ( NTOC2L(I), I = 1, NO2LOC )|\newline
+A subset of occupied molecular orbitals are localized with the
+Foster-Boys localization procedure~\cite{Boyloc}. \verb|NO2LOC|
+occupied molecular orbitals are not localized. \verb|NTOC2L|  are the
+indices of the occupied orbitals which are not localized, but remain in
+canonical form.
+
+\item [\Key{FBOVIR}] The whole set of virtual molecular orbitals is localized with
+the Foster-Boys localization procedure~\cite{Boyloc}. The virtual
+orbitals are paired with occupied orbitals. First one virtual orbital
+is paired with each occupied orbital. Afterwards additional sets of
+localized virtual orbitals are generated which are again paired with
+one occupied orbital each and which are orthogonalized to the already
+existing localized virtual orbitals. This is repeated until all virtual
+orbital are localized and paired to occupied orbitals. It requires the
+\Key{SOSOCC} keyword in the \Sec{SPIN-S} section and the \Key{FOSBOY},
+\Key{FBOCIN} or \Key{FBOOCC} keyword in the \Sec{LOCALI} section.
+
+
+\item [\Key{FBSETV}]\verb| |\newline
+ \verb|READ (LUCMD, *) NFBSET|\newline
+\verb|NFBSET| sets of virtual orbitals are localized with the
+Foster-Boys localization procedure~\cite{Boyloc}. A set of virtual
+orbitals consists of as many virtual orbitals as there are occupied
+orbitals. It requires the \Key{SOSOCC} keyword in the \Sec{SPIN-S}
+section and the \Key{FOSBOY}, \Key{FBOCIN} or \Key{FBOOCC} keyword in
+the \Sec{LOCALI} section.
+
+\item [\Key{FBSTVO}]\verb| |\newline
+ \verb|READ(LUCMD, * ) NFBSET, NV2LOC|\newline
+ \verb|READ(LUCMD, * ) ( NOCVI(I), I = 1, NV2LOC ) |\newline
+Similar to \Key{FBSETV}, but localizes only \verb|NFBSET| sets of
+virtual orbitals for a subset of \verb|NV2LOC| occupied orbitals. In
+total \verb|NFBSET*NV2LOC| localized virtual orbitals will be
+generated. \verb|NOCVI| are the indices of the occupied orbitals with
+which the virtual orbitals are paired. It requires the \Key{SOSOCC}
+keyword in the \Sec{SPIN-S} section and the \Key{FOSBOY}, \Key{FBOCIN}
+or \Key{FBOOCC} keyword in the \Sec{LOCALI} section.
+
+\item [\Key{LABOCC}]\verb| |\newline
+ \verb|READ (LUCMD, * ) NOCLAB|\newline
+ \verb|READ (LUCMD, * ) (TABOCL(I), I = 1, NOCLAB )|\newline
+Allows one to add some labels to the occupied orbitals which are
+localized. Up to 20 labels of up to 8 characters can be added. It
+requires the \Key{FOSBOY}, \Key{FBOCIN} or \Key{FBOOCC} 
+keyword in the \Sec{LOCALI} section.
+
+\item [\Key{LABVIR}]\verb| |\newline
+ \verb|READ (LUCMD, * ) NVILAB|\newline
+ \verb|READ (LUCMD, * ) ( TABVIL(I), I = 1, NVILAB )|\newline
+Allows one to add some labels to the virtual orbitals which are
+localized. Up to 20 labels of up to 8 characters can be added. It
+requires the \Key{FBOVIR}, \Key{FBSETV} or \Key{FBSTVO} keyword in the
+\Sec{LOCALI} section.
+
+\end{description}
+
+
+
 \subsection{Nuclear contributions: \Sec{NUCREP}}
 
 Directives affecting the nuclear contribution to the molecular
@@ -1721,6 +1815,48 @@ the input order). By default, all nuclei with an isotope with non-zero spin
 and with a natural abundance larger than the threshold will be included in
 the list of nuclei for which indirect spin-spin couplings will be
 calculated.
+
+\item [\Key{SOS}]
+Analysis of the spin-spin coupling constants in terms of pairs of
+occupied and virtual orbitals \cite{spas079,spas086}. This implies that
+the coupling constants are calculated as sum over all excited states,
+which means that it is only possible in combination with Hartree-Fock
+wavefunctions (RPA) or with density functional theory. The occupied and
+virtual orbitals can be canonical Hartree-Fock or Kohn-Sham orbitals or
+can be localized with the \Key{LOCALI} keyword in the \Sec{*PROPERTIES}
+section.
+
+\item [\Key{SOSOCC}]
+Analysis of the spin-spin coupling constants in terms of pairs of
+occupied orbitals \cite{spas079,spas086}. This implies that the
+coupling constants are calculated as sum over all excited states, which
+means that it is only possible in combination with Hartree-Fock
+wavefunctions (RPA) or with density functional theory. The occupied
+orbitals can be canonical Hartree-Fock or Kohn-Sham orbitals or can be
+localized with the \Key{LOCALI} keyword in the \Sec{*PROPERTIES}
+section.
+
+\item [\Key{SOSOCS}]\verb| |\newline
+  \verb|READ (LUCMD,*) NSTATI, NSTATF, NITRST|\newline
+Similar to \Key{SOSOCC} but here only a window of states is included in
+the sum over all excited states. The first and last state to be
+included are specified by \verb|NSTATI| and \verb|NSTATF|, while one
+can specifies with \verb|NITRST| for how many states at a time the
+accumulated coupling constants will be printed. The occupied orbitals
+can be canonical Hartree-Fock or Kohn-Sham orbitals or can be localized
+with the \Key{LOCALI} keyword in the \Sec{*PROPERTIES} section.
+
+\item [\Key{SINGST}]\verb| |\newline
+ \verb|READ (LUCMD, *) NSTATS|\newline
+Only the contributions from the \verb|NSTATS| lowest singlet states are
+included in the analysis of spin-spin coupling constants in terms of
+pairs of occupied orbitals \cite{spas079,spas086}.
+
+\item [\Key{TRIPST}]\verb| |\newline
+ \verb|READ (LUCMD, *) NSTATT|\newline
+ Only the contributions from the \verb|NSTATT| lowest triplet states are
+ included in the analysis of spin-spin coupling constants in terms of
+pairs of occupied orbitals \cite{spas079,spas086}.
 \end{description}
 
 \subsection{Translational and rotational invariance:

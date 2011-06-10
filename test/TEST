@@ -46,7 +46,7 @@ ESSENTIAL=""
 SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
 energy_lucita_gasci"
-SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp"
+SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
 geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml"
@@ -65,10 +65,10 @@ rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
 rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
-SHORTREST="r12_sym dpt_h2s dft_qr_sym"
-AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa \
-prop_exci_aosoppcc"
-SHORTNOCC="$SHORT_ENERGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA"
+SHORTREST="r12_sym dpt_h2s"
+LOCAL="spin_local"
+AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa prop_exci_aosoppcc"
+SHORTNOCC="$SHORT_ENERGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
@@ -115,7 +115,7 @@ LONG_CHOLESKY="choles_ccsdpt_energy"
 LONG="$LONG $LONGCC $LONG_CHOLESKY"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
-dft_parallell_properties parallel_lucita_gasci"
+dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
@@ -228,6 +228,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           shortccr12           -- run all short CC-R12 testcases
           longccr12            -- run all long CC-R12 testcases
           aosoppa              -- run all AOSOPPA testcases
+          local                -- run all LOCAL testcases
           cholesky             -- run all Cholesky testcases
           dpt                  -- run all DPT testcases
           geoopt               -- run all OPTIMIZE testcases
@@ -440,6 +441,9 @@ while [ -n "$1" ]; do
    shift ;;
    "aosoppa" )
    testcase="$testcase $AOSOPPA"; 
+   shift ;;
+   "local" )
+   testcase="$testcase $LOCAL"; 
    shift ;;
    "cholesky" )
    testcase="$testcase $CHOLESKY"; 

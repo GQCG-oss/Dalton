@@ -340,11 +340,13 @@ c        but currently, it is implemented only without symmetry.
 c        In case of no symmetry present, both methods should give
 c        identical results.
          IF(NSYM.GT.1) THEN
-            WRITE(LUPRI,*)"Symmetry -> DSO by analytical integration."
+            WRITE(LUPRI,'(/A)')
+     &         "Symmetry -> DSO by analytical integration."
             CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),
      &           WORK(KLAST),LWRK,MPRINT,MNODC,MNODV,WORD,NCOMP)
          ELSE
-            WRITE(LUPRI,*)"No symmetry -> DSO by numerical integration."
+            WRITE(LUPRI,'(/A)')
+     &         "No symmetry -> DSO by numerical integration."
             CALL DZERO(SPNDSO,MXCOOR*MXCOOR)
             CALL NUMDSO(SPNDSO,NUCIND,WORK(KLAST),LWRK)
          ENDIF
@@ -1165,7 +1167,10 @@ C  /* Deck spninp */
 #include <mxcent.h>
 #include <nuclei.h>
 #include <abainf.h>
-      PARAMETER (NTABLE = 11, D0 = 0.0D0)
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C     PARAMETER (NTABLE = 11, D0 = 0.0D0)
+      PARAMETER (NTABLE = 16, D0 = 0.0D0)
+Cend-PFP
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
@@ -1174,7 +1179,11 @@ C  /* Deck spninp */
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
      &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDXFC ','.ISOTOP',
-     &            '.COUPLI'/
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C    &            '.COUPLI'/
+     &            '.COUPLI','.SOS   ','.SOSOCC','.SINGST','.TRIPST',
+     &            '.SOSOCS'/
+Cend-PFP
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
       ICHANG = 0
@@ -1190,7 +1199,10 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GOTO (1,2,3,4,5,6,7,8,9,10,11), I
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+C                    GOTO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16),I
+Cend-PFP
                   END IF
  200           CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1270,6 +1282,26 @@ C
                      END IF
                   END DO
                GOTO 100
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+ 12            CONTINUE
+                  SOSSPN = .TRUE.
+               GOTO 100
+ 13            CONTINUE
+                  SOSSPN = .TRUE.
+                  SOSOCC = .TRUE.
+               GOTO 100
+ 14            CONTINUE
+                  READ (LUCMD,*) NSTATS
+               GOTO 100
+ 15            CONTINUE
+                  READ (LUCMD,*) NSTATT
+               GOTO 100
+ 16            CONTINUE
+                  SOSSPN = .TRUE.
+                  SOSOCS = .TRUE.
+                  READ (LUCMD,*) NSTATI,NSTATF,NITRST
+               GOTO 100
+Cend-PFP
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -1304,6 +1336,19 @@ C
          IF (NUCSPI .GT. 0) 
      &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
      &           'nuclei with all the others will be calculated'
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+         IF (SOSSPN) WRITE (LUPRI,'(A)')
+     &      ' Orbital analysis of spin-spin couplings'
+         IF (SOSOCC) WRITE (LUPRI,'(A,A)')
+     &      ' Only contributions from pairs of occupied ',
+     &      ' orbitals are printed'
+         IF (NSTATS .GT. 0) 
+     &      WRITE (LUPRI,'(A,I6,A)')' Only the contributions from the ',
+     &           NSTATS,' lowest singlet states are included'
+         IF (NSTATT .GT. 0) 
+     &      WRITE (LUPRI,'(A,I6,A)')' Only the contributions from the ',
+     &           NSTATT,' lowest triplet states are included'
+Cend-PFP
       END IF
       RETURN
       END
@@ -1331,6 +1376,16 @@ C
       DO IS = 1, MXCENT
          NCSPNI(IS) = .TRUE.
       END DO
+CPFP: 27/03-2006: SOS for spin-spin coupling included
+      SOSSPN= .FALSE.
+      SOSOCC= .FALSE.
+      NSTATS= 0
+      NSTATT= 0
+      SOSOCS= .FALSE.
+      NSTATI= 0
+      NSTATF= 0
+      NITRST= 0
+Cend-PFP
       RETURN
       END
 C  /* Deck trpinp */

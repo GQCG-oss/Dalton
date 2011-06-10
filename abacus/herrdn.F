@@ -917,6 +917,14 @@ C
          WRITE (LUPRI,'(80A1/)') ('-',I = 1, 80)
       END IF
 C
+!     activating this call breaks the parallel functionality of Dalton. 
+!     please re-consider this call when activating this part of the
+!     code. Stephan P. A. Sauer and Stefan Knecht - June 2011.
+CPFP
+!     CALL MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+!    &    NOINT,WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+!    &    CPRIMU,NRMPRI)
+Cend-PFP
       THRCLS = THRS
 C
 C     ****************************************
@@ -4412,8 +4420,8 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12)')
-     &   '@  Nuclear repulsion energy :',POTNUC
+      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+     &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
       RETURN
       END

@@ -88,6 +88,7 @@ abacus/abaflt.F
 abacus/abafmm.F
 abacus/abafsd.F
 abacus/abalnr.F
+abacus/abaloc.F
 abacus/abalrs.F
 abacus/abaltra.F
 abacus/abamag.F
@@ -112,6 +113,7 @@ abacus/abarlx.F
 abacus/abarspn.F
 abacus/abaset.F
 abacus/abasop.F
+abacus/abasos.F
 abacus/abatro.F
 abacus/abavib.F
 abacus/abavrml.F
@@ -589,6 +591,7 @@ sirius/sirntra.F
 sirius/siropt.F
 sirius/sirorb.F
 sirius/sirout.F
+sirius/sir_mep.F
 sirius/sirpcm.F
 sirius/sirpcmder.F
 sirius/sirpop.F

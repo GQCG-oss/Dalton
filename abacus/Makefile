@@ -22,7 +22,7 @@ F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abasop.o     abamolden.o  eckart.o     ecp.o\
 	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o\
 	abactocd.o   abaqpg.o     abapcm.o     abaqm3.o\
-	abaqmmm.o    gen1int_wrapper.o
+	abaqmmm.o    gen1int_wrapper.o         abaloc.o    abasos.o
 
 F_CPPS = $(F_OBJS:.o=.i) dalton.i 
 
@@ -48,8 +48,15 @@ Makefile.depend depend: ../include/*.h
 
 include Makefile.depend
 
+# ifort seems to have more problems than other compilers
 her2el2.o: her2el2.F
-	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE_FFLAGS_for_ifort) -c $*.F 
 
 hersym.o: hersym.F
-	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE2_FFLAGS) -c $*.F 
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE_FFLAGS_for_ifort) -c $*.F 
+
+# her1int.F : problem with SDINT for ifort versions 12 /hjaaj
+her1int.o: her1int.F
+	$(F90) $(INCLUDES) $(CPPFLAGS) $(SAFE_FFLAGS_for_ifort) -c $*.F 
+
+# end of Makefile for abacus/
