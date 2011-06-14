@@ -30,7 +30,7 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
-      PROGRAM DALTON2011
+      PROGRAM DALTON2011_DALTON
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -204,7 +204,7 @@ C
      &               '*',115)
 
          WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON Release 2011 (Rev. 0, May 2011)'
+     &'This is output from DALTON Release 2011 (Rev. 0, June 2011)'
 
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
