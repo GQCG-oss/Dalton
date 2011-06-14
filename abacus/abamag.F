@@ -1167,10 +1167,7 @@ C  /* Deck spninp */
 #include <mxcent.h>
 #include <nuclei.h>
 #include <abainf.h>
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C     PARAMETER (NTABLE = 11, D0 = 0.0D0)
       PARAMETER (NTABLE = 16, D0 = 0.0D0)
-Cend-PFP
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
@@ -1179,11 +1176,8 @@ Cend-PFP
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
      &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDXFC ','.ISOTOP',
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C    &            '.COUPLI'/
      &            '.COUPLI','.SOS   ','.SOSOCC','.SINGST','.TRIPST',
      &            '.SOSOCS'/
-Cend-PFP
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
       ICHANG = 0
@@ -1199,10 +1193,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C                    GOTO (1,2,3,4,5,6,7,8,9,10,11), I
                      GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16),I
-Cend-PFP
                   END IF
  200           CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
