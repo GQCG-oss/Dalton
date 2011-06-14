@@ -545,7 +545,7 @@ C---------- Last line of EONE ----------
       END
 
 *===================================================================== *
-      subroutine CUTFLD (
+      subroutine CUT_INTO_FIELDS (
      .                   string,     !. input
      .                   charac,     !. input
      .                   maxfld,     !. input
@@ -592,7 +592,7 @@ C---------- Last line of EONE ----------
       if(charac.eq.' ') pad ='.'
 
       if(lenstr.eq.0) then
-*        write(6,'(a)')' warning_CUTFLD> string zero length '
+*        write(6,'(a)')' warning_CUT_INTO_FIELDS> string zero length '
          NF = 0
          return
       end if
@@ -671,7 +671,7 @@ C---------- Last line of EONE ----------
 *          write(6,'(a,i3,3a)')' field #',fld,' "',fields(fld),'"'
 *        end do
 
-* end of routine CUTFLD
+* end of routine CUT_INTO_FIELDS
       return
       end
 

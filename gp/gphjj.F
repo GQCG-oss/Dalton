@@ -91,15 +91,15 @@ C
       RETURN
       END
 C  /* Deck gettim */
-      SUBROUTINE GETTIM(TIMCPU,TIMWAL)
+      SUBROUTINE GETTIM(TIME_CPU,TIME_WALL)
 C
 C Written 18-Dec-1984 Hans Joergen Aa. Jensen
 C
 C Return elapsed CPU time and elapsed real time.
 C
-#include "implicit.h"
 C
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
+#include "implicit.h"
 C...  Cray unicos timing code
       REAL    TCPU0, TWALL0
       LOGICAL FIRST
@@ -113,15 +113,16 @@ C
          TCPU0  = SECOND()
          TWALL0 = TIMEF()
       ENDIF
-      TIMCPU = SECOND() - TCPU0
+      TIME_CPU = SECOND() - TCPU0
 #else
          TCPU0  = TSECND()
          TWALL0 = TIMEF()
       ENDIF
-      TIMCPU = TSECND() - TCPU0
+      TIME_CPU = TSECND() - TCPU0
 #endif
-      TIMWAL = DP001 * ( TIMEF() - TWALL0 )
+      TIME_WALL = DP001 * ( TIMEF() - TWALL0 )
 #elif defined (SYS_NEC)
+#include "implicit.h"
 C...  NEC SX4     timing code
       REAL*8  TCPU0, TWALL0
       REAL*8  SECOND1,SECOND2
@@ -140,26 +141,39 @@ C
 
       call clock(second1)
       call etime(second2)
-      TIMCPU = second1 - TCPU0
-      TIMWAL = second2 - TWALL0
+      TIME_CPU = second1 - TCPU0
+      TIME_WALL = second2 - TWALL0
 #else
-      real*8    TIMCPU, TIMWAL, clock_factor
+      real*8    TIME_CPU, TIME_WALL, clock_factor, clock_add
       real*4    tcpu, tcpu0
-      integer*4 iwall0, iwall, irate
+      integer*4 i4_wall0, i4_wall, i4_rate, i4_maxcount
+      integer*8 i8_wall0, i8_wall
       logical   first
-      save      first,iwall0,tcpu0, clock_factor
+      save      first,i8_wall0,tcpu0, clock_factor, clock_add
       data      first /.true./
 C
       if (first) then
          first  = .false.
          CALL CPU_TIME(tcpu0)
-         CALL SYSTEM_CLOCK(iwall0,irate)
-         clock_factor = 1.0d0 / irate
+         CALL SYSTEM_CLOCK(i4_wall0,i4_rate,i4_maxcount)
+         clock_factor = 1.0d0 / i4_rate
+         clock_add    = i4_maxcount
+         clock_add    = clock_add / i4_maxcount
       end if
       CALL CPU_TIME(tcpu)
-      TIMCPU = tcpu - tcpu0
-      CALL SYSTEM_CLOCK(iwall)
-      TIMWAL = (iwall - iwall0) * clock_factor
+      TIME_CPU = tcpu - tcpu0
+      CALL SYSTEM_CLOCK(i4_wall)
+      TIME_WALL = (i4_wall - i4_wall0) * clock_factor
+      IF (clock_add .gt. 0.0d0) THEN
+         DO WHILE (TIME_WALL .LT. 0.0D0) ! date may have changed, and for some
+                                         ! compilers system_clock is reset to zero each midnight
+            TIME_WALL = TIME_WALL + clock_add
+         END DO
+         DO WHILE (TIME_WALL .LT. TIME_CPU) ! date may have changed more than once but
+                                            ! wall time should always be greater than CPU time
+            TIME_WALL = TIME_WALL + clock_add
+         END DO
+      END IF
 #endif  /* if SYS_CRAY etc. elif SYS_NEC else */
 C
       RETURN
