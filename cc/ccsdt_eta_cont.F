@@ -2248,9 +2248,9 @@ C     files have not been deleted up there. Do it now!
 C---------------------------------------------------------------------
 C     
       IF (LCAUCHY) THEN
-         CALL DELETE_FILE('CC3_CAUINT_V*')
+         CALL DELETE_FILES('CC3_CAUINT_V*')
       ELSE
-         CALL DELETE_FILE('CCSDT_____ETAFD4')
+         CALL DELETE_FILES('CCSDT_____ETAFD4')
       END IF
 
 C
