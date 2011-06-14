@@ -656,7 +656,7 @@ C
                   IF (ISYM .NE. JSYM) THEN
                      WRITE(LUPRI,'(/A,I5,A)')
      &                     ' MO. COEFFICIENTS FOR SYMMETRY',JSYM
-                     CALL OUTPUT(WORK(CMO+ICMO(JSYM)),1,NBAS(JSYM),1,
+                     CALL OUTPUT(WORK(KCMO+ICMO(JSYM)),1,NBAS(JSYM),1,
      &                           NORB(JSYM),NBAS(JSYM),NORB(JSYM),1,
      &                           LUPRI)
                   END IF
