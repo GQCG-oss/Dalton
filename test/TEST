@@ -29,8 +29,6 @@ elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
 fi
 cd $SCRIPT_DIR
 
-exitcode=0
-
 if [ -x '/usr/bin/time' ]; then
  TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
 else
@@ -197,19 +195,18 @@ run_new=0;
 usage() {
 # hjaaj: removed essential from usage because essential p.t. is empty
 #         essential            -- run a minimal set of essential testcases
- cat <<'%EOF%'
-usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
+ cat <<%EOF%
+Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
 
        -h | -help | --help  : show this help description
        -keep                : keep *.mol, *.dal, *.check and *.log files
        -reftest             : test reference file(s); do not run any calculations
-       -bell                : sound bell each time a test fails
        -benchmark           : print CPU time for each testcase as part of the summary
        -param "option list" : pass "option list" to dalton-script
        -dalton script       : use script instead of the default
                               dalton-script "`pwd`/../dalton" (absolute path) 
-       -log logfile         : write output into logfile instead of the "TESTLOG"
+       -log logfile         : write output into logfile instead of to "TESTLOG"
 
        and where testcase might be one of the following:
           short                -- run all short testcases
@@ -265,7 +262,6 @@ help=""
 keep="false"
 paramlist=""
 reftest=""
-bell=""
 benchmark=""
 listing="TESTLOG"
 perl_log="test.log"
@@ -292,7 +288,6 @@ while echo $1 | egrep -q '^-'; do
      "-keep" ) keep="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
-     "-bell" ) bell="true"; shift;;
      "-y") answer_yes=true; shift;;
      "-q") keep_quiet=true; shift;;
      "-benchmark" ) benchmark="true"; shift;;
@@ -482,7 +477,6 @@ mkdir $testdir
 cp functions $testdir
 cd $testdir || exit 1
 
-
 #########################################################################
 # check files for test listing:
 #########################################################################
@@ -524,6 +518,7 @@ myprint "test cases            : $testcase"
 #########################################################################
 passedall="ALL TESTS ENDED PROPERLY!"
 problems=""
+exitcode=0
 numresult=0
 num_reftests_not_found=0
 for item in ${testcase}
@@ -668,9 +663,6 @@ do
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
       if [ -z "$passed" ]; then
         trouble=`expr $trouble \+ 1`
-        if [ "$bell" = "true" ]; then
-          echo "\a"
-        fi
         passedall="THERE IS A PROBLEM IN TEST CASE(S)"
         if [ "$trouble" -eq 1 ]; then
             problems="$problems $item"
@@ -780,6 +772,7 @@ if [ "$reftest" = "true" ]; then
    myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
    myprint ""
 fi
+
 myprint "$passedall"
 myprint "$problems"
 if [ "$num_reftests_not_found" -gt 0  ]; then
