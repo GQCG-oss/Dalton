@@ -414,14 +414,12 @@ C
          END IF
       END IF
       IF (DOIMAG) THEN
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C        CALL GPCLOSE(LUGDI,'DELETE')
          IF (SOSSPN) THEN
+CPFP: 27/03-2006: SOS for spin-spin coupling included
             CALL GPCLOSE(LUGDI,'KEEP')
          ELSE
             CALL GPCLOSE(LUGDI,'DELETE')
          END IF
-Cend-PFP
          IF (VCD) THEN
             CALL GPCLOSE(LURDI,'KEEP')
          ELSE
