@@ -761,10 +761,7 @@ C
      &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
      &             '*FLOAT ', 'xxxxxxx', '*QPGCTL',
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C    &             'xXXXXXX', 'xXXXXXX', '*SOPPA ',
-     &             'xXXXXXX', '*LOCALI', '*SOPPA ',
-Cend-PFP
+     &             'xXXXXXX', '*LOCALI', '*SOPPA ', ! *LOCALI: PFP 27/03-2006 - SOS for spin-spin coupling included
      &             '*LINRES', '*EXPECT', '*SPIN-S',
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
@@ -1012,10 +1009,7 @@ C
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C    &                151,152,153,154,155,156,157,158),I
      &                151,152,153,154,155,156,157,158,159),I
-Cend-PFP
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN

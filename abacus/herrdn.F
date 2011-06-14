@@ -917,14 +917,6 @@ C
          WRITE (LUPRI,'(80A1/)') ('-',I = 1, 80)
       END IF
 C
-!     activating this call breaks the parallel functionality of Dalton. 
-!     please re-consider this call when activating this part of the
-!     code. Stephan P. A. Sauer and Stefan Knecht - June 2011.
-CPFP
-!     CALL MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-!    &    NOINT,WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-!    &    CPRIMU,NRMPRI)
-Cend-PFP
       THRCLS = THRS
 C
 C     ****************************************
