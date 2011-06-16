@@ -220,7 +220,7 @@ C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
 C     INFINP: FLAG(25)
 C     INFIND: ISX, ISMO
-C     INFTRA: USEDRC, AO2INTFILE_LABEL
+C     INFTRA: NEWTRA, USEDRC, AO2INTFILE_LABEL
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -328,8 +328,10 @@ cmjp If response calculation then make space for the correlation coefficients.
          USEDRC = .TRUE.
       ELSE
          CALL MEMGET('REAL',KKAPPA,0,WRK,KFREE,LFREE)
-         IF (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) THEN
+         IF (.NOT.NEWTRA .AND. (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) ) THEN
 C           2. order integral transformation (ir/js)
+C           (but not for NEWTRA which uses Dirac format and that is
+C            not implemented in sirmp2.F module)
             JTRLVL = 4
          ELSE
 C           3. order integral transformation (ir/st)
