@@ -92,24 +92,12 @@ Cfunctions
       INTEGER ILRCAMP
 
 C
-#if defined (SYS_CRAY)
-      REAL XI1(*), XI2(*), XI1EFF(*), XI2EFF(*) 
-      REAL FOCKY(*), FOCK0(*), XLAMDP(*), XLAMDH(*)
-      REAL WORK(LWORK)
-      REAL XINT, XTROC0, XTRVI0, XTRVI2, XDIA, XSMAT, XT2TP
-      REAL XTROC02, XUMAT, FREQY, DDOT, XIAJB
-      REAL XXI1EFF, XXI2EFF 
-      REAL FREQB, TWO
-#else
-      DOUBLE PRECISION XI1(*), XI2(*), XI1EFF(*), XI2EFF(*) 
-      DOUBLE PRECISION FOCKY(*), FOCK0(*), XLAMDP(*), XLAMDH(*)
-      DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION XINT, XTROC0, XTRVI0, XTRVI2, XDIA, XSMAT
-      DOUBLE PRECISION XT2TP
-      DOUBLE PRECISION XTROC02, XUMAT, FREQY, DDOT, XIAJB
-      DOUBLE PRECISION XXI1EFF, XXI2EFF 
-      DOUBLE PRECISION FREQB, TWO
-#endif
+      REAL*8  XI1(*), XI2(*), XI1EFF(*), XI2EFF(*) 
+      REAL*8  FOCKY(*), FOCK0(*), XLAMDP(*), XLAMDH(*)
+      REAL*8  XINT, XTROC0, XTRVI0, XTRVI2, XDIA, XSMAT, XT2TP
+      REAL*8  XTROC02, XUMAT, FREQY, DDOT, XIAJB
+      REAL*8  XXI1EFF, XXI2EFF, FREQB, TWO
+      REAL*8  WORK(LWORK)
       CHARACTER*10 MODEL
       CHARACTER FNCKJD*8, FNDKBC*8, FNDELD*8
       CHARACTER FNTOC*8, FN3VI2*8, LABELB*8
@@ -1328,7 +1316,7 @@ C     deleted up there. Do it now!
 C---------------------------------------------------------------------
 C
       IF (LCAUCHY .AND. ICAU.GE.0) THEN
-         CALL DELETE_FILE('CC3_CAUINT_V*')
+         CALL DELETE_FILES('CC3_CAUINT_V*')
       END IF
 C
 C-------------
@@ -1361,20 +1349,10 @@ C
 C
 #include <ccsdsym.h>
 C
-      INTEGER ISSMAT
-      INTEGER LENGTH
-      INTEGER LENSQ
-      INTEGER INDSQ(LENSQ,6)
+      INTEGER ISSMAT, LENGTH, LENSQ, INDSQ(LENSQ,6)
 C
-#if defined (SYS_CRAY)
-      REAL SMAT(*), SMAT2(*)
-      REAL UMAT(*), UMAT2(*)
-      REAL TMAT(*)
-#else
-      DOUBLE PRECISION SMAT(*), SMAT2(*)
-      DOUBLE PRECISION UMAT(*), UMAT2(*)
-      DOUBLE PRECISION TMAT(*)
-#endif
+      REAL*8  SMAT(*), SMAT2(*)
+      REAL*8  UMAT(*), UMAT2(*), TMAT(*)
 C
       CALL QENTER('CC3_T3BD')
 C
@@ -1431,11 +1409,7 @@ C
       INTEGER KH, ISYIJK, ISYMJK, ISYMAI, ISYAIK
       INTEGER IOPT
 C
-#if defined (SYS_CRAY)
-      REAL tmat(*)
-#else
-      DOUBLE PRECISION tmat(*)
-#endif
+      REAL*8  tmat(*)
 C
       CALL QENTER('print_t3bd')
 C
@@ -1540,13 +1514,8 @@ C
       INTEGER ISYMA, ISYAI, ISYAIK, NA
       INTEGER ISYMF, ISYMJ, ISYMK, ISYMI, ISYFI
 C
-#if defined (SYS_CRAY)
-      REAL TMAT(*), FOCKY(*), WMAT(*), WRK(*)
-      REAL HALF, ONE
-#else
-      DOUBLE PRECISION TMAT(*), FOCKY(*), WMAT(*), WRK(*)
-      DOUBLE PRECISION HALF, ONE
-#endif
+      REAL*8  TMAT(*), FOCKY(*), WMAT(*), WRK(*)
+      REAL*8  HALF, ONE
 C
 #include <priunit.h>
 #include <dummy.h>
@@ -1649,13 +1618,8 @@ C
       INTEGER ISYMA, ISYAI, ISYAIK, ISYALK, ISYAL, NA
       INTEGER ISYMJ, ISYMK, ISYMI, ISYML, ISYFI
 C
-#if defined (SYS_CRAY)
-      REAL TMAT(*), FOCKY(*), WMAT(*), WRK(*)
-      REAL MHALF, ONE 
-#else
-      DOUBLE PRECISION TMAT(*), FOCKY(*), WMAT(*), WRK(*)
-      DOUBLE PRECISION MHALF, ONE
-#endif
+      REAL*8  TMAT(*), FOCKY(*), WMAT(*), WRK(*)
+      REAL*8  MHALF, ONE 
 C
 #include <priunit.h>
 #include <dummy.h>
@@ -1787,13 +1751,8 @@ C
       INTEGER LENSQ, INDSQ(LENSQ,6), LWRK
       INTEGER ISYMB, ISYMD, ISYMT2X, ISYFKY, ISWMAT, ISYMT2Z
 C
-#if defined (SYS_CRAY)
-      REAL T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
-      REAL FAC,HALF,ONE
-#else
-      DOUBLE PRECISION T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
-      DOUBLE PRECISION FAC,HALF,ONE
-#endif
+      REAL*8  T2TPX(*), FOCKY(*), WMAT(*), WRK(*), T2TPZ(*)
+      REAL*8  FAC,HALF,ONE
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0 )
 C
@@ -1859,17 +1818,9 @@ C
       INTEGER ISYFJK, ISYTD, ISYLJ, ISYFJ, ISYAIJ 
       INTEGER ISYMT2Z
 C
-#if defined (SYS_CRAY)
-      REAL T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
-      REAL HALF, ONE, ZERO
-      REAL T2TPZ(*)
-      REAL FAC 
-#else
-      DOUBLE PRECISION T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
-      DOUBLE PRECISION HALF, ONE, ZERO
-      DOUBLE PRECISION T2TPZ(*)
-      DOUBLE PRECISION FAC 
-#endif
+      REAL*8  T2TPX(*), FOCKY(*), WMAT(*), WRK(*)
+      REAL*8  HALF, ONE, ZERO, FAC 
+      REAL*8  T2TPZ(*)
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
 C
@@ -2097,13 +2048,8 @@ C
       INTEGER ISYMA, ISYMJK, ISYMI, ISYCK, NBJCK, NTOTA, NTOBJK
       INTEGER KOFF2, ISYCKJ, NCKJ, NTOCKJ, KSTART, KEND, LEND 
       INTEGER INDSQ(LENSQ,6)
-#if defined (SYS_CRAY)
-      REAL OMEGA1(*), WMAT(*), TMAT(*), XIAJB(*), WORK(*)
-      REAL ONE, ZERO, TWO
-#else
-      DOUBLE PRECISION OMEGA1(*), WMAT(*), TMAT(*), XIAJB(*), WORK(*)
-      DOUBLE PRECISION ONE, ZERO, TWO
-#endif
+      REAL*8  OMEGA1(*), WMAT(*), TMAT(*), XIAJB(*), WORK(*)
+      REAL*8  ONE, ZERO, TWO
 
 C
 #include <priunit.h>
@@ -2328,13 +2274,8 @@ C
 C
       INTEGER ISYMB,ISYMC,ISWMAT,NB,NC 
 C
-#if defined (SYS_CRAY)
-      REAL WSMAT,DDOT,FREQY,EPSIBC 
-      REAL WMAT(*), DIAG(*), FOCKD(*) 
-#else
-      DOUBLE PRECISION WSMAT, DDOT, FREQY,EPSIBC
-      DOUBLE PRECISION WMAT(*), DIAG(*), FOCKD(*) 
-#endif
+      REAL*8  WSMAT,DDOT,FREQY,EPSIBC 
+      REAL*8  WMAT(*), DIAG(*), FOCKD(*) 
 C
       CALL QENTER('WBD_DIA')
 C
@@ -2385,11 +2326,7 @@ C
       INTEGER iopt,lwrk,ai,nck,nbj,kckbj,kaikj,kbjki,index,ib,ic
       integer kckji
 C
-#if defined (SYS_CRAY)
-      REAL tMAT(*), xiajb(*), work(*), omega1(*) 
-#else
-      DOUBLE PRECISION TMAT(*), xiajb(*), work(*),omega1(*) 
-#endif
+      REAL*8  tMAT(*), xiajb(*), work(*), omega1(*) 
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2554,13 +2491,8 @@ C
       INTEGER ISYMB, ISYMC, ISYMK, ISYAIJ, KOFFT, KOFFF, NTOAIJ
       INTEGER ISYMA, ISYBJI, NTOBJI, ISYAB, ISYIJ 
       INTEGER KOFF1, KOFF2, ISYCK, NTOCK 
-#if defined (SYS_CRAY)
-      REAL XI2(*), WMAT(*), TMAT(*), FOCK0(*), WORK(*)
-      REAL ZERO, ONE, TWO
-#else
-      DOUBLE PRECISION XI2(*), WMAT(*), TMAT(*), FOCK0(*), WORK(*)
-      DOUBLE PRECISION ZERO, ONE, TWO
-#endif
+      REAL*8  XI2(*), WMAT(*), TMAT(*), FOCK0(*), WORK(*)
+      REAL*8  ZERO, ONE, TWO
 
 C
 #include <priunit.h>
@@ -2754,13 +2686,8 @@ C
       INTEGER ISYMA, ISYMB, ISYRES, INDEX
       INTEGER ISYAB, ISYIJ, ISYMJ, ISYMI, ISYMBJ, ISYMAI
       INTEGER NBJ, NIJ, NAI, NAIBJ 
-#if defined (SYS_CRAY) 
-      REAL XI2(*), ABIJ(*)
-      REAL TWO
-#else
-      DOUBLE PRECISION XI2(*), ABIJ(*)
-      DOUBLE PRECISION TWO
-#endif
+      REAL*8  XI2(*), ABIJ(*)
+      REAL*8  TWO
 C
 #include <priunit.h>
 #include <ccsdsym.h>
@@ -2859,16 +2786,9 @@ C
       INTEGER ISYAIJ, ISYBJI, ISYIJ 
       INTEGER KTMATX
 C
-#if defined (SYS_CRAY) 
-      REAL XI2(*), WMAT(*), TMAT(*), TROCC(*), TROCC1(*)
-      REAL WORK(*) 
-      REAL TWO, ONE, ZERO, XTMAT, XRMAT, DDOT
-#else
-      DOUBLE PRECISION XI2(*), WMAT(*), TMAT(*)
-      DOUBLE PRECISION TROCC(*), TROCC1(*) 
-      DOUBLE PRECISION WORK(*) 
-      DOUBLE PRECISION TWO, ONE, ZERO, XTMAT, XRMAT, DDOT
-#endif
+      REAL*8  XI2(*), WMAT(*), TMAT(*), TROCC(*), TROCC1(*)
+      REAL*8  WORK(*) 
+      REAL*8  TWO, ONE, ZERO, XTMAT, XRMAT, DDOT
 C
 #include <priunit.h>
 #include <ccsdsym.h>
@@ -3201,11 +3121,7 @@ C
       INTEGER ISYMB,ISYRES
       INTEGER ISYAJI, ISYMI, ISYAJ, ISYMJ, ISYMA, ISYAI
       INTEGER KOFF1, KOFF2, KMAT, KEND0, LWRK0
-#if defined (SYS_CRAY)
-      REAL RMAT1(*), RMAT2(*)
-#else
-      DOUBLE PRECISION RMAT1(*), RMAT2(*)
-#endif
+      REAL*8  RMAT1(*), RMAT2(*)
 C
 #include <priunit.h>
 #include <ccsdsym.h>
@@ -3278,15 +3194,9 @@ C
       INTEGER ISYDK, NTOTDK, ISBJIK, ISYCKA
       INTEGER ISYKA, KINT, ISYBJI, KOFFT, KOFFM, KOFFR
       INTEGER NTOK, NTOBJI, ISYMK, ISYMC, ISYMI
-#if defined (SYS_CRAY)
-      REAL XI2(*), RBJIA(*), WMAT(*), TMAT(*), TRVIR(*), TRVIR1(*) 
-      REAL WORK(*)
-      REAL ZERO, ONE, TWO
-#else
-      DOUBLE PRECISION XI2(*), RBJIA(*), WMAT(*), TMAT(*) 
-      DOUBLE PRECISION TRVIR(*), TRVIR1(*), WORK(*)
-      DOUBLE PRECISION ZERO, ONE, TWO
-#endif
+      REAL*8  XI2(*), RBJIA(*), WMAT(*), TMAT(*), TRVIR(*), TRVIR1(*) 
+      REAL*8  WORK(*)
+      REAL*8  ZERO, ONE, TWO
 
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -3526,11 +3436,7 @@ C
 C
       INTEGER ISYMA,ISYRES,ISYBJI,KOFFR
 C
-#if defined (SYS_CRAY)
-      REAL XI2(*), RBJIA(*)
-#else
-      DOUBLE PRECISION XI2(*), RBJIA(*)
-#endif
+      REAL*8  XI2(*), RBJIA(*)
 C
 #include <priunit.h>
 #include <ccsdsym.h>
@@ -3620,13 +3526,16 @@ C
       RETURN
       END
 C  /* Deck delete_file */
-      SUBROUTINE DELETE_FILE(FILENAME)
+      SUBROUTINE DELETE_FILES(FILENAME)
 *
-************************************************
-*     Delete file with name FILENAME
+*********************************************************************
+*     Delete file(s) with name FILENAME
+*
+*     NOTE: the file name FILENAME can contain wildcard
+*     characters, for example CALL DELETE_FILES('CC3_CAUINT_V*')
 *
 *     Filip Pawlowski, Aarhus, 16-Apr-2004
-************************************************
+*********************************************************************
 *
       IMPLICIT NONE
 C

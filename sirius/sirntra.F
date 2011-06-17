@@ -1252,7 +1252,11 @@ C
 C
 C     SET TIME AT START OF TRANSFORMATION
 C
-      IF (IPRTRA .GT. 0) CALL SETTIM
+      IF (IPRTRA .GT. 0) THEN
+         CALL GETTIM(TCPU0,TWALL0)
+         TCPU1  = TCPU0
+         TWALL1 = TWALL0
+      END IF
 C
       IF (IPRTRA .GE. 2) THEN
          IF (NOCOUL) THEN
@@ -1290,13 +1294,8 @@ C     890826: This is not neccessary now because we have switched
 C             to absolute addressing of a given quadruplet.
 C
       IF (IPRTRA .GE. 2 .AND. IPRTRA .LT. 5) WRITE(LUPRI,2000)
-#if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
  2000 FORMAT(/' SYMMETRY       BASIS FUNCTION        ORBITALS',3X,
-     &       ' MEMLFT     LTUPQ   USER(SEC) SYS(SEC)')
-#else
- 2000 FORMAT(/' SYMMETRY       BASIS FUNCTION        ORBITALS',3X,
-     &       ' MEMLFT     LTUPQ    CPU(SEC) I/O(SEC)')
-#endif
+     &       ' MEMLFT     LTUPQ   USER(SEC) WALL(SEC)')
 C
       ITP    = 0
       LMOP1  = 1
@@ -1499,11 +1498,15 @@ C
 C         CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
 C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
           IF (IPRTRA .GE. 2) THEN
-             CALL TIMING(CPT,CPE,TIOT,TIOE)
+             CALL GETTIM(TCPU,TWALL)
+             TCPU1  = TCPU -TCPU1
+             TWALL1 = TWALL-TWALL1
              IF (IPRTRA .GE. 5) WRITE(LUPRI,2000)
              WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
-     &                          NOP,NOQ,NOR,NOS,MEMLFT,LTUPQ,CPE,TIOE
+     &          NOP,NOQ,NOR,NOS,MEMLFT,LTUPQ,TCPU1,TWALL1
  2100        FORMAT(1X,4I2,1X,4I5,1X,4I5,2I12,2F9.3)
+             TCPU1  = TCPU
+             TWALL1 = TWALL
           END IF
   101    CONTINUE
   102   CONTINUE
@@ -1511,15 +1514,13 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
   104 CONTINUE
 C
       IF (IPRTRA .GT. 0) THEN
-         CALL TIMING(CPT,CPE,TIOT,TIOE)
-         WRITE(LUPRI,2200) CPT,TIOT
+         CALL GETTIM(TCPU,TWALL)
+         TCPU  = TCPU -TCPU0
+         TWALL = TWALL-TWALL0
+         WRITE(LUPRI,2200) TCPU, TWALL
       END IF
-#if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
- 2200 FORMAT(/' TOTAL USER TIME(SEC)',F9.3,
-     &        ' TOTAL SYSTEM TIME(SEC)',F9.3)
-#else
- 2200 FORMAT(/' TOTAL CPU TIME(SEC)',F9.3,' TOTAL I/O TIME(SEC)',F9.3)
-#endif
+ 2200 FORMAT(/' TOTAL CPU  TIME (SEC)',F9.3,
+     &        ' TOTAL WALL TIME (SEC)',F9.3)
 C
 C     FINALLY save first free address on LUMINT in IADOUT(1,LIADUT) and
 C     WRITE OUT THE DAFILE ADDRESS LIST ON UNIT 13

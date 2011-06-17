@@ -5420,6 +5420,7 @@ C
 !     LUCITA version by Stefan Knecht, Feb. 06
 !
 !***********************************************************************
+      use lucita_cfg
       use sync_coworkers
       use lucita_mcscf_ci_task
       use lucita_orbital_spaces, only: define_lucita_orb_spaces

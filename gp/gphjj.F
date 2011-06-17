@@ -90,134 +90,101 @@ C
 #endif
       RETURN
       END
-C  /* Deck gettim */
-      SUBROUTINE GETTIM(TIMCPU,TIMWAL)
-C
-C Written 18-Dec-1984 Hans Joergen Aa. Jensen
-C
-C Return elapsed CPU time and elapsed real time.
-C
-#include "implicit.h"
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-C...  Cray unicos timing code
-      REAL    TCPU0, TWALL0
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-#if defined (SYS_CRAY) || defined (SYS_T90)
-         TCPU0  = SECOND()
-         TWALL0 = TIMEF()
-      ENDIF
-      TIMCPU = SECOND() - TCPU0
-#else
-         TCPU0  = TSECND()
-         TWALL0 = TIMEF()
-      ENDIF
-      TIMCPU = TSECND() - TCPU0
-#endif
-      TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#elif defined (SYS_NEC)
-C...  NEC SX4     timing code
-      REAL*8  TCPU0, TWALL0
-      REAL*8  SECOND1,SECOND2
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-         call clock(second1)
-         TCPU0  = SECOND1
-         call etime(second2)
-         TWALL0 = second2
-      ENDIF
 
-      call clock(second1)
-      call etime(second2)
-      TIMCPU = second1 - TCPU0
-      TIMWAL = second2 - TWALL0
-#else
-      real*8    TIMCPU, TIMWAL, clock_factor
-      real*4    tcpu, tcpu0
-      integer*4 iwall0, iwall, irate
-      logical   first
-      save      first,iwall0,tcpu0, clock_factor
-      data      first /.true./
-C
+      subroutine gettim(cputime,walltime)
+      implicit none
+      real*8      cputime, walltime
+
+      logical     first
+      data        first /.true./
+
+      real*8      TCPU0, TWALL0, tcpu1, twall1
+      save        TCPU0, TWALL0
+      integer*4   dateandtime0(8), dateandtime1(8)
+
       if (first) then
-         first  = .false.
-         CALL CPU_TIME(tcpu0)
-         CALL SYSTEM_CLOCK(iwall0,irate)
-         clock_factor = 1.0d0 / irate
+         first = .false.
+         call cpu_time(TCPU0)
+         call date_and_time(values=dateandtime0)
+         call get_walltime(dateandtime0,TWALL0)
       end if
-      CALL CPU_TIME(tcpu)
-      TIMCPU = tcpu - tcpu0
-      CALL SYSTEM_CLOCK(iwall)
-      TIMWAL = (iwall - iwall0) * clock_factor
-#endif  /* if SYS_CRAY etc. elif SYS_NEC else */
-C
-      RETURN
-      END
-C  /* Deck settim */
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_LINUX) || defined (SYS_AIX)
-      SUBROUTINE SETTIM
-C
-C  Unix timing routines emulating Lund IBM timing routines
-C  5-Dec-1988 hjaaj
-C
-      REAL*4 ECPU, ESYST, ETCPU
-      REAL*4 SCPU, SSYST, STCPU
-      REAL*4 PCPU, PSYST, PTCPU
-      REAL*4 ETIME,TARRAY(2)
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      SAVE   SCPU, SSYST, STCPU
-      SAVE   PCPU, PSYST, PTCPU
-C
-      STCPU  = ETIME(TARRAY)
-      SCPU   = TARRAY(1)
-      SSYST  = TARRAY(2)
-      PCPU   = SCPU
-      PSYST  = SSYST
-      PTCPU  = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      ETCPU  = ETIME(TARRAY)
-      ECPU   = TARRAY(1)
-      ESYST  = TARRAY(2)
-      CPUA   = ECPU - SCPU
-      CPUE   = ECPU - PCPU
-      PCPU   = ECPU
-      TIOA   = ESYST - SSYST
-      TIOE   = ESYST - PSYST
-      PSYST  = ESYST
-C
-      RETURN
-      END
-#else
-      SUBROUTINE SETTIM()
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER ( D0 = 0.0D0 )
-c     WRITE (LUPRI,*) 'DUMMY SETTIM called'
-      RETURN
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CPUA = D0
-      CPUE = D0
-      TIOA = D0
-      TIOE = D0
-      WRITE (LUPRI,*) 'Dummy TIMING routine called'
-      RETURN
-      END
-#endif
+      call cpu_time(tcpu1)
+      call date_and_time(values=dateandtime1)
+      call get_walltime(dateandtime1,twall1)
+
+      cputime  = tcpu1  - TCPU0
+      walltime = twall1 - TWALL0
+
+      end subroutine gettim
+
+!> \brief Get elapsed walltime in seconds since 1/1-2010 00:00:00
+!> \author S. Host
+!> \date October 2010
+!>
+!> Years that are evenly divisible by 4 are leap years. 
+!> Exception: Years that are evenly divisible by 100 are not leap years, 
+!> unless they are also evenly divisible by 400. Source: Wikipedia
+!>
+      subroutine get_walltime(dateandtime,walltime)
+      implicit none
+      integer*4  dateandtime(8) ! "values" output from fortran intrinsic subroutine date_and_time
+      real*8     walltime       ! Elapsed wall time in seconds
+      integer*4  month, year
+   
+! The output from the fortran intrinsic date_and_time
+! gives the following values:
+! 1. Year
+! 2. Month
+! 3. Day of the month
+! 4. Time difference in minutes from Greenwich Mean Time (GMT)
+! 5. Hour
+! 6. Minute
+! 7. Second
+! 8. Millisecond
+
+! Count seconds, minutes, hours, days, months and years and sum up seconds:
+
+      walltime = 1.0d-3*dateandtime(8)                     !Milliseconds
+      walltime = walltime + dateandtime(7)*1.0d0           !Seconds counted
+      walltime = walltime + 60d0*dateandtime(6)            !Minutes counted
+      walltime = walltime + 3600d0*dateandtime(5)          !Hours counted
+      walltime = walltime + 24d0*3600d0*(dateandtime(3)-1) !Days counted (substract 1 to count only whole days)
+
+      !Months are special, since they are not equally long:
+
+      do month = 1, dateandtime(2)-1 !substract 1 to count only whole months
+         if (month == 1 .or. month == 3 .or. month == 5 .or.
+     &       month == 7 .or. month == 8 .or. month == 10) then  !Since we subtract 1, month can never be 12
+            walltime = walltime + 31d0*24d0*3600d0
+         else if (month == 2) then
+            if (.false.) then !insert exception for if current year is a leap year
+               walltime = walltime + 29d0*24d0*3600d0
+            else
+               walltime = walltime + 28d0*24d0*3600d0
+            endif
+         else if (month == 4 .or. month == 6 .or. month == 9 .or.
+     &           month == 11) then
+            walltime = walltime + 30d0*24d0*3600d0
+         else
+            call quit('Unknown month (get_walltime)')
+         endif
+      enddo
+
+      !Years are special, since leap years are one day longer:
+
+      do year = 2010, dateandtime(1) 
+         if (mod(year,400)==0) then
+            walltime = walltime + 366*24*3600 !Leap year
+         else if (mod(year,100)==0) then
+            walltime = walltime + 365*24*3600 !Not leap year
+         else if (mod(year,4)==0) then
+            walltime = walltime + 366*24*3600 !Leap year
+         else
+            walltime = walltime + 365*24*3600 !Not leap year
+         endif
+      enddo
+
+      end subroutine get_walltime
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
 C

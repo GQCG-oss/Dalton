@@ -121,8 +121,8 @@ fi
 
 if [ -z "$1" ]; then
     case $opsys in
-        AIX )     ARCH="-aix";;
-        CYGWIN* ) ARCH="-cygwin";;
+        AIX )     ARCH="-aix"    ;;
+        CYGWIN* ) ARCH="-cygwin" ;;
         Darwin )  ARCH="-darwin" ;;
         IRIX|IRIX64 ) ARCH="-sgi";;
         Linux|FreeBSD ) if [ "`uname -m`" = alpha ]; then
@@ -134,7 +134,6 @@ if [ -z "$1" ]; then
         OSF1 )    ARCH="-dec-alpha";;
         HP-UX )   ARCH="-hp";;
         SunOS )   ARCH="-sun";;
-        Darwin )  ARCH="-darwin";;
         * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nOnly the following architectures are defined:\n    $arclist"
         exit 1;;
     esac
@@ -557,9 +556,10 @@ for testlib in $liblist; do
         get_yes_or_no "Found $testdir/$testlib, use it?" y
         if [ $answer = 'y' ]; then
           LIBDIR=$testdir
+
           case $testlib in
             libacml.a) LIB='-lacml'; blas3=true;lapack=true;;
-            libatlas.a) LIB='-llapack -lf77blas -latlas'; blas3='true'
+           libatlas.a) LIB='-llapack -lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o gp_dlapack.o";;
             libessl.a) LIB='-lessl'
                        blas3="true" # - but not complete...
@@ -669,7 +669,7 @@ fi
 # Observe, that the minimal value is not 0, it is 1 because
 # some compilers do not like arrays with no elements.
 
-$ECHO '\nDALTON uses almost 7 million *8 words (56 Megabytes) of static'
+$ECHO '\nDALTON uses almost 100 Megabytes of static'
 $ECHO 'allocations, in addition to the dynamic allocation.'
 $ECHO '\nDALTON has the possibility to reserve an amount of static memory'
 $ECHO 'for storing two-electron integrals in direct and parallel calculations'
@@ -697,13 +697,13 @@ else
     incoresiz=1
 fi
 
-#
-$ECHO '\nMaximum amount of work memory for dynamic allocations can be'
-$ECHO 'changed at run time with the environment variable WRKMEM'
-$ECHO 'or by using the -M option to the run script: "dalton -M mb ...".'
-$ECHO 'We recommend at least 20 million *8 words work memory,'
+$ECHO '\nMaximum amount of work memory for dynamic allocations can be changed'
+$ECHO 'at run time with the environment variable WRKMEM (in REAL*8 words = megabytes/8)'
+$ECHO 'or by using the -M option to the run script: "dalton -M mb ..." (in megabytes).'
+$ECHO 'We recommend at least 200 MB work memory,'
 $ECHO 'larger for correlated calculations, but it should for maximum'
-$ECHO 'efficiency NOT exceed available physical memory.\n'
+$ECHO 'efficiency NOT exceed available physical memory per CPU in parallel calculations.\n'
+
 memsiz=0
 # only accept positive numbers
 while [ $memsiz -le 0 ]
