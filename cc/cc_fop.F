@@ -3748,6 +3748,7 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), WORK(LWORK)
+      CHARACTER MODEL*(10)
 #include <ccorb.h>
 #include <ccisao.h>
 #include <r12int.h>
