@@ -1130,6 +1130,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *. Scratch
       DIMENSION SCR(*)
 *. Scratch should atleaest be of length  **
+      CHARACTER*(*) LABEL
 *
       NTEST = 000
 *. Integrals in AO basis, neglect symmetry
