@@ -411,8 +411,9 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxmom.h>
-      LOGICAL TOFILE, TRIMAT, DOINT(2,2)
-      DIMENSION SPHINT(NNBASX,*), WORK(LWORK)
+      LOGICAL      TOFILE, TRIMAT, DOINT(2,2)
+      DIMENSION    SPHINT(NNBASX,*), WORK(LWORK)
+      CHARACTER*10 LABINT(2*LMAX+1)
 #include <inforb.h>
 #include <nuclei.h>
 #include <cbiher.h>
@@ -422,8 +423,7 @@ C
 C
       NCMPS = (LMAX + 1)**2
 C
-      KLABL = 1
-      KINTR = KLABL + NCMPS
+      KINTR = 1
       KINTA = KINTR + (NCMPS + IRAT - 1)/IRAT
       KLAST = KINTA + (NCMPS + IRAT - 1)/IRAT
       IF (KLAST .GT. LWORK) CALL STOPIT('FMMINT',' ',KLAST,LWORK)
@@ -444,11 +444,11 @@ C
       DO IORDER = 0, LMAX
          NCOMPS = 2*IORDER + 1
          CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTR),WORK(KINTA),
-     &               WORK(KLABL),'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
+     &               LABINT,'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
      &               IPRINT,SPHINT(1,IOFF+1),NCOMP,TOFILE,'TRIANG',
      &               DOINT,DUMMY,.FALSE.,DUMMY)
-         IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+1),
-     &                                  WORK(KLABL),WORK(KINTR),NCOMPS)
+         IF (IPRINT .GT. 5)
+     &      CALL FMMSPR(SPHINT(1,IOFF+1),LABINT,WORK(KINTR),NCOMPS)
          IOFF = IOFF + NCOMPS
       END DO
       RETURN
