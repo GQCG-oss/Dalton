@@ -80,7 +80,7 @@ C  /* Deck timer */
       CHARACTER TEXT*(*), OUT_TEXT*51, BLANK*10
       PARAMETER ( BLANK = '          ')
 C
-      IF (TEXT(1:6) .EQ. 'START ') THEN
+      IF (TEXT(1:5) .EQ. 'START') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
