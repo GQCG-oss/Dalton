@@ -67,7 +67,6 @@ dft/prop-eval.c
 dft/quad-fast.c
 dft/quad-faster.c
 dft/quad-strict.c
-gp/mpi_dummyc.c
 pdpack/scatter-io.c
     )
 set(FIXED_FORTRAN_SOURCES
@@ -461,7 +460,6 @@ gp/gptrygve.F
 gp/graphic.F
 gp/intf7790.F
 gp/mempkg.F
-gp/mpi_dummy.F
 gp/mpimacro.F
 gp/pvmmacro.F
 gp/qpack.F
@@ -735,3 +733,13 @@ set(OWN_LAPACK_SOURCES
     pdpack/gp_dlapack.F
     pdpack/gp_zlapack.F
     )
+if(NOT ENABLE_MPI)
+    set(C_SOURCES
+        ${C_SOURCES}
+        gp/mpi_dummyc.c
+        )
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        gp/mpi_dummy.F
+        )
+endif()
