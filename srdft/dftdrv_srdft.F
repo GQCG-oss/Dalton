@@ -247,7 +247,7 @@ C
          DO 300 IPNT = 1, NPOINT
 #endif
             IF (IPRINT .GT. 100) THEN
-               WRITE (LUPRI,'(2X,I6,4F12.6)') 
+               WRITE (LUPRI,'(2X,I6,4F15.6)') 
      &            IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
             END IF
 C
@@ -451,7 +451,7 @@ C
 C     Print section
 C
       IF (IPRINT .GT. 2) THEN 
-         WRITE (LUPRI,'(/2X,A,F14.7,6X,D8.2,I14)')
+         WRITE (LUPRI,'(/2X,A,F14.7,1P,D14.2,I14)')
      &      ' Number of electrons/abscissas:  ', 
      &        ELCTRN,ELCTRN-ELCTRX,NPNTS
          IF (DOERG) THEN
