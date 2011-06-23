@@ -1807,7 +1807,7 @@ C=====================================================================*
       DATA TABLE /'.DIPOLE','.ECDLEN','.DIPLEN','.NO2N+1','.OPERAT',
      *            '.SELEXC','.DIPVEL','.DIPMIX','.ECDVEL','.OECDLE',
      *            '.OECDVE','.OLD_LR','.BOTHLR','.NEW_LR','.ECD   ',
-     *            '.OECD  ','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.OECD  ','.SUMRUL','.XXXXXX','.XXXXXX','.XXXXXX'/
 
 *--------------------------------------------------------------------*
 * begin:
@@ -1830,6 +1830,7 @@ C
       SELLRS = .FALSE.
       OLDLRS = .FALSE.
       BOTHLRS = .FALSE.
+      SUMRULES = .false.
 C
       NSELRS = 0
       NLRSOP = 0
@@ -2325,10 +2326,18 @@ C
             GO TO 100
 C
 C------------------------------------
-C           .XXXXXX: unused keywords.
+C           .SUMRULES (stopping power)
 C------------------------------------
 C
 17          CONTINUE
+            !oscstr   = .true.
+            sumrules = .true.
+            GO TO 100
+C
+C------------------------------------
+C           .XXXXXX: unused keywords.
+C------------------------------------
+C
 18          CONTINUE
 19          CONTINUE
 20          CONTINUE
