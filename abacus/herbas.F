@@ -367,7 +367,7 @@ C
 C Finds the right element in the file. 
 C
       IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,I4,A)')
-     &   '  Used basis set file for basis set for elements with Z =',
+     &   '  Basis set file used for this atomic type with Z =',
      &   INTQ,' :'
       IF (NQVD) THEN
          CALL FINNQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,SEG,
@@ -1037,7 +1037,7 @@ C
       CHARACTER*88 STRING
       CHARACTER SIGN
 C
-      CALL  FIND_BASFIL(BASNAM,LUBAS,IPRINT)
+      CALL FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C Searching the file for the element.
 C
@@ -1115,7 +1115,7 @@ C     ... force uncontracted irrespective of .mol file
          END IF
       END IF
 C
-      CALL  FIND_BASFIL('NQvD',LUBAS,IPRINT)
+      CALL FIND_BASFIL('NQvD',LUBAS,IPRINT)
 C
 C Searching the file for the element.
 C
