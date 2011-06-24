@@ -2707,13 +2707,13 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "units.inc"
 #include "parluci.h"
 *
-      logical MSCOMB
-      character*2 TYPELUC(MXSEQ)
-      character*3 CALSIZ
+      logical      MSCOMB
+      character*2  TYPELUC(MXSEQ)
+      character*3  CALSIZ
       character*72 HESTR
-      CHARACTER LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
-      INTEGER LUCIAIN_MPIL
-      dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
+      CHARACTER    LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
+      INTEGER      LUCIAIN_MPIL
+      dimension    NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
 *
 *-----------------------------------------------------------------*
 *  Print input for LUCITA input file           
@@ -2789,7 +2789,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
          if (MSCOMB) then
             write(lupri,'(A6)') 'MSCOMB'
-            write(lupri,'(1X,F3.1)') SCOMB
+            write(lupri,'(F4.1)') SCOMB
          end if
 *
          write(lupri,'(A5)') 'ROOTS'
@@ -2926,7 +2926,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
          if (MSCOMB) then
             write(LUINP,'(A6)') 'MSCOMB'
-            write(LUINP,'(1X,F3.1)') SCOMB
+            write(LUINP,'(F4.1)') SCOMB
          end if
 *
          write(LUINP,'(A5)') 'ROOTS'
