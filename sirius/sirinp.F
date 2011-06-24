@@ -900,8 +900,8 @@ C
       END IF
       IF (DONEVPT) THEN
          IF (.NOT.DOMC .AND. .NOT.DOCI) THEN
-            WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requires,'//
-     &      ' also CI or MCSCF.'
+            WRITE (LUPRI,'(/A)') 'INPUT ERROR: .NEVPT2 requires,'//
+     &      ' also .CI or .MCSCF.'
             INPERR = INPERR + 1
          ELSE IF (MCTYPE .NE. 1) THEN
             WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requested,'//
@@ -1230,20 +1230,22 @@ C
       IF (CORHOL) THEN
          IF (DOSCF .AND. AUTOCC .AND. NSYM .GT. 1) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'Input error for core-hole calculation:'
-            WRITE (LUPRI,*)
-     &         'automatic occupation of SCF orbitals not allowed.'
+            WRITE (LUPRI,'(/A/A)')
+     &         'Input error for core-hole calculation:',
+     &         ' - automatic occupation of SCF orbitals not allowed.'
          END IF
          IF (IRDMO .EQ. 8) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'Input error for core-hole calculation:'
-            WRITE (LUPRI,*) 'no initial molecular orbitals from'//
-     &         ' previous calculation specified'
+            WRITE (LUPRI,'(/A/A)')
+     &         'Input error for core-hole calculation:',
+     &         ' - no initial molecular orbitals from'//
+     &         ' previous calculation specified.'
          END IF
          IF (DOSCF .AND. DOMC) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'Input error for core-hole calculation:'
-            WRITE (LUPRI,*) 'both Hartree-Fock and MCSCF specified.'
+            WRITE (LUPRI,'(/A/A)')
+     &       'Input error for core-hole calculation:',
+     &       ' - both Hartree-Fock and MCSCF specified.'
          END IF
          IF (NASHT .GT. 1) THEN
           IF (NELMN1 .LE. 0 .AND. NELMX1 .LE. 0) THEN
@@ -1253,8 +1255,9 @@ C
           IF (NELMN1 .NE. NELMX1 .OR. MCTYPE .NE. 2 .OR.
      &        NAS1(JCHSYM) .NE. 1 .OR. NAS1T .NE. 1) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'Input error(s) for core-hole calculation:'
-            WRITE (LUPRI,*) '-----------------------------------------'
+            WRITE (LUPRI,'(/A/A)')
+     &       ' Input error(s) for core-hole calculation:',
+     &       ' -----------------------------------------'
            IF (MCTYPE .NE. 2)
      &      WRITE (LUPRI,*) 'Wave function type is not RAS'
            IF (NELMN1 .NE. NELMX1) THEN
@@ -1294,13 +1297,13 @@ C           ... NO ABSORPTION :
             IF (JCHORB .GT. NISH(JCHSYM)+1) THEN
                INPERR = INPERR + 1
                   WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation',
-     &               ' Core hole orbital is not inactive'
+     &               ' Input error for core-hole calculation:',
+     &               ' Core hole orbital is not inactive.'
             ELSE IF (JCHORB .LE. NISH(JCHSYM)) THEN
                IF (LMOORD) THEN
                   INPERR = INPERR + 1
                   WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation',
+     &               ' Input error for core-hole calculation:',
      &               ' .COREHOLE and .REORDER are not compatible'//
      &               ' if core hole orbital is inactive.'
                END IF
