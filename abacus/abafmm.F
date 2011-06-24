@@ -743,10 +743,10 @@ C
       CALL HEADER('Electronic information',-1)
       READ (LUINTM) NBAST, LMAX, THRCLS, ERFAC
 C
-      WRITE (LUPRI,'(2X,A,I12)')    ' NBAST  ', NBAST
-      WRITE (LUPRI,'(2X,A,I12)')    ' LMAX   ', LMAX
-      WRITE (LUPRI,'(2X,A,E12.6)') ' THRCLS ', THRCLS
-      WRITE (LUPRI,'(2X,A,F12.6)') ' ERFAC  ', ERFAC
+      WRITE (LUPRI,'(2X,A,I12)')      ' NBAST  ', NBAST
+      WRITE (LUPRI,'(2X,A,I12)')      ' LMAX   ', LMAX
+      WRITE (LUPRI,'(2X,A,1P,E13.6)') ' THRCLS', THRCLS
+      WRITE (LUPRI,'(2X,A,1P,F13.6)') ' ERFAC ', ERFAC
 C
       DO L =  0, LMAX
       DO M = -L, L
@@ -803,7 +803,7 @@ C
       END DO
       ERG0 = DP5*ERG0
       ERG1 = DP5*ERGP + DP5*ERGQ
-      WRITE (LUPRI,'(/2X,A,3F13.8)')
+      WRITE (LUPRI,'(/2X,A,3F15.8)')
      &      ' First-order classical interaction:',ERG0,ERG1,ERG0+ERG1
       RETURN
       END
