@@ -1,16 +1,14 @@
 
 
- **************************************************************************************
- ******************** DALTON2011 - An electronic structure program ********************
- **************************************************************************************
+   ****************************************************************************
+   *************** DALTON2011 - An electronic structure program ***************
+   ****************************************************************************
 
-    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
-
- --------------------------------------------------------------------------------
-
+    This is output from DALTON Release Dalton2011 (Rev. 0, June 2011)
+   ----------------------------------------------------------------------------
     NOTE:
      
-    This is an experimental code for the evaluation of molecular
+    DALTON is an experimental code for the evaluation of molecular
     properties using (MC)SCF, DFT, CI, and CC wave functions.
     The authors accept no responsibility for the performance of
     the code or for the correctness of the results.
@@ -25,9 +23,8 @@
     an appropriate citation would be:
      
     "Dalton, a molecular electronic structure program,
-    Release DALTON2011 (2011), see http://daltonprogram.org"
-
- --------------------------------------------------------------------------------
+    Release Dalton2011 (2011), see http://daltonprogram.org"
+   ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
 
@@ -42,6 +39,7 @@
   Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Helsinki,       Finland     (CCSD(R12))
   Luca Frediani,            University of Tromsoe,        Norway      (PCM)
   Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
@@ -62,6 +60,7 @@
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian Neiss,          Univ. Erlangen-Nürnberg,     Germany     (CCSD(R12))
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
   Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
@@ -81,22 +80,20 @@
   Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
-
  --------------------------------------------------------------------------------
 
-
-     Date and time (Linux)  : Wed Mar 16 17:41:07 2011 
+     Date and time (Linux)  : Sat Jun 25 00:34:03 2011 
      Host name              : fe6                                     
 
  * Work memory size             :   100000000 =  762.94 megabytes.
- + memory for in-core integrals :    50000000
 
  * Directories for basis set searches:
-   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
-   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+   1) /people/disk2/hjj/prog/Dalton2011_release/test/2011-06-25T00_34-testjob-pid-5351
+   2) /people/disk2/hjj/prog/Dalton2011_release/basis/
 
 
        *******************************************************************
@@ -105,7 +102,7 @@
 
  --------------------------------------------------------------------------------
    Overall default print level:    0
-   Print level for DALTON.ERR :    1
+   Print level for DALTON.STAT:    1
 
     HERMIT 1- and 2-electron integral sections will be executed
     "Old" integral transformation used (limited to max 255 basis functions)
@@ -134,16 +131,16 @@
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   8 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   8 :
+     "/people/disk2/hjj/prog/Dalton2011_release/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
   Nuclear charge:   1.00000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
-  Used basis set file for basis set for elements with Z =   1 :
-     "/people/disk2/hjj/prog/svnDalton_trunk/basis/cc-pVDZ"
+  Basis set file used for this atomic type with Z =   1 :
+     "/people/disk2/hjj/prog/Dalton2011_release/basis/cc-pVDZ"
 
 
                       SYMADD: Requested addition of symmetry
@@ -321,7 +318,7 @@ Represented as:      C2v
            26.593976           14.159129            9.239726 cm-1
 
 
-@  Nuclear repulsion energy :    9.055004525638
+@  Nuclear repulsion energy :    9.055004525638 Hartree
 
 
   Symmetry Orbitals
@@ -390,13 +387,13 @@ Represented as:      C2v
      ************************** Output from HERINT **************************
      ************************************************************************
 
- Threshold for neglecting two-electron integrals:  1.00D-15
 
+ Threshold for neglecting two-electron integrals:  1.00D-15
  Number of two-electron integrals written:       11412 ( 25.3% )
  Megabytes written:                              0.137
 
  >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.05 seconds
 
 
                         .----------------------------------.
@@ -432,7 +429,7 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:07 2011 
+     Date and time (Linux)  : Sat Jun 25 00:34:04 2011 
      Host name              : fe6                                     
 
  Title lines from ".mol" input file:
@@ -476,7 +473,9 @@ Represented as:      C2v
      Total number of orbitals           24 |   11    4    7    2
      Number of basis functions          24 |   11    4    7    2
 
-      -- Initial occupation of symmetries is determined from user input.                      
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
       -- Initial occupation of symmetries is :
      Occupied SCF orbitals               5 |    3    1    1    0
 
@@ -504,48 +503,52 @@ Represented as:      C2v
 
  C1-DIIS algorithm; max error vectors =   10
 
- Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-15 )
-   1    -75.8080240525        2.25629D+00   -7.58D+01    1
+   1  -75.8080240525       2.26D+00  -7.58D+01    3  1  1  0
       Virial theorem: -V/T =      1.999834
       MULPOP  O      -0.43; H_a _1  0.22; H_a _2  0.22; 
  -----------------------------------------------------------------------------
-   2    -76.0179559355        3.49570D-01   -2.10D-01    2
+   2  -76.0179559355       3.50D-01  -2.10D-01    3  1  1  0
       Virial theorem: -V/T =      2.000516
       MULPOP  O      -0.28; H_a _1  0.14; H_a _2  0.14; 
  -----------------------------------------------------------------------------
-   3    -76.0250798476        8.42400D-02   -7.12D-03    3
+   3  -76.0250798476       8.42D-02  -7.12D-03    3  1  1  0
       Virial theorem: -V/T =      2.002196
       MULPOP  O      -0.30; H_a _1  0.15; H_a _2  0.15; 
  -----------------------------------------------------------------------------
-   4    -76.0256316151        2.93548D-02   -5.52D-04    4
+   4  -76.0256316151       2.94D-02  -5.52D-04    3  1  1  0
       Virial theorem: -V/T =      2.000742
       MULPOP  O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-   5    -76.0256787149        7.26002D-03   -4.71D-05    5
+   5  -76.0256787149       7.26D-03  -4.71D-05    3  1  1  0
       Virial theorem: -V/T =      2.001331
       MULPOP  O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-   6    -76.0256814298        7.07044D-04   -2.71D-06    6
+   6  -76.0256814298       7.07D-04  -2.71D-06    3  1  1  0
       Virial theorem: -V/T =      2.001210
       MULPOP  O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-   7    -76.0256814818        1.29948D-04   -5.20D-08    7
+   7  -76.0256814818       1.30D-04  -5.20D-08    3  1  1  0
       Virial theorem: -V/T =      2.001216
       MULPOP  O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-   8    -76.0256814839        1.07270D-05   -2.11D-09    8
+   8  -76.0256814839       1.07D-05  -2.11D-09    3  1  1  0
       Virial theorem: -V/T =      2.001217
       MULPOP  O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-   9    -76.0256814839        6.63348D-07   -1.19D-11    9
+   9  -76.0256814839       6.63D-07  -1.20D-11    3  1  1  0
 
  *** DIIS converged in   9 iterations !
    - total time used in SIRFCK :              0.00 seconds
 
  >>> Writing SIRIFC interface file <<<
+
+ >>>> CPU and wall time for SCF :       0.011       0.067
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -558,7 +561,9 @@ Represented as:      C2v
     Number of electrons :   10
     Orbital occupations :    3    1    1    0
 
- Hartree-Fock electronic energy:         -85.080686009582
+Generating Fock matrix
+
+ Hartree-Fock electronic energy:         -85.080686009581
  Hartree-Fock total      energy:         -76.025681483944
 
 Symmetry  1 MAX 2-norm of a row of off-diagonal Fock matrix elements is  1.19D-07
@@ -628,6 +633,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
          0.00417704     0.00068995
 
  Time used for MP2 natural orbitals :       0.006 CPU seconds.
+
+ >>>> CPU and wall time for MP2 :       0.006       0.037
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -719,10 +726,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  CI energies and residuals:
-    1      -76.145026675971138       4.98D-02
+    1      -76.145026675970797       4.98D-02
 
 
- Final CI energy:      -76.145026675971138
+ Final CI energy:      -76.145026675970797
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -745,15 +752,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :    -76.1450266759710           (MACRO    1)
+ Total MCSCF energy       :           -76.145026675970655  (MACRO    1)
 
- - Nuclear repulsion      :     9.05500452563789    
- - Inactive energy        :    -61.2778960879843    
- - Active energy          :    -23.9221351136246    
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.277896087984267
+ - Active energy          :           -23.922135113624275
 
- Norm of total gradient   :        0.106665317706
- -    of CI gradient      :        0.099587489883
- -    of orbital gradient :        0.038207615213
+ Norm of total gradient   :             0.106665317706
+ -    of CI gradient      :             0.099587489883
+ -    of orbital gradient :             0.038207615213
       Virial theorem: -V/T =      2.000933
       MULPOP  O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -803,9 +810,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4
        1      1.00000000   -0.00000000    0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000
-       4      0.00000000   -0.00000000    0.00000000    1.00000000
+       4      0.00000000    0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -830,10 +837,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000    0.00000000   -0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4      0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
-       5     -0.00000000    0.00000000    0.00000000   -0.00000000    1.00000000
+       4      0.00000000    0.00000000    0.00000000    1.00000000   -0.00000000
+       5     -0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -859,10 +866,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000    0.00000000   -0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4      0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
-       5     -0.00000000    0.00000000    0.00000000   -0.00000000    1.00000000
+       4      0.00000000    0.00000000    0.00000000    1.00000000   -0.00000000
+       5     -0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6
        6      1.00000000
@@ -900,10 +907,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000    0.00000000   -0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4      0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
-       5     -0.00000000    0.00000000    0.00000000   -0.00000000    1.00000000
+       4      0.00000000    0.00000000    0.00000000    1.00000000   -0.00000000
+       5     -0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7
        6      1.00000000    0.00000000
@@ -944,10 +951,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000    0.00000000   -0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4      0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
-       5     -0.00000000    0.00000000    0.00000000   -0.00000000    1.00000000
+       4      0.00000000    0.00000000    0.00000000    1.00000000   -0.00000000
+       5     -0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7    Column   8
        6      1.00000000    0.00000000   -0.00000000
@@ -981,15 +988,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :    -76.1475119543685           (MACRO    2)
+ Total MCSCF energy       :           -76.147511954368241  (MACRO    2)
 
- - Nuclear repulsion      :     9.05500452563789    
- - Inactive energy        :    -61.2816038324086    
- - Active energy          :    -23.9209126475978    
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.281603832408635
+ - Active energy          :           -23.920912647597500
 
- Norm of total gradient   :        0.031231382602
- -    of CI gradient      :        0.030404740720
- -    of orbital gradient :        0.007137996983
+ Norm of total gradient   :             0.031231382601
+ -    of CI gradient      :             0.030404740720
+ -    of orbital gradient :             0.007137996983
       Virial theorem: -V/T =      2.000924
       MULPOP  O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -1039,9 +1046,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4
        1      1.00000000   -0.00000000    0.00000000   -0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1066,10 +1073,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1095,10 +1102,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6
        6      1.00000000
@@ -1136,10 +1143,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7
        6      1.00000000    0.00000000
@@ -1180,15 +1187,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7    Column   8
        6      1.00000000    0.00000000    0.00000000
-       7      0.00000000    1.00000000   -0.00000000
-       8      0.00000000   -0.00000000    1.00000000
+       7      0.00000000    1.00000000    0.00000000
+       8      0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1227,15 +1234,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9
        6      1.00000000    0.00000000    0.00000000    0.00000000
-       7      0.00000000    1.00000000   -0.00000000    0.00000000
-       8      0.00000000   -0.00000000    1.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000    1.00000000    0.00000000
        9      0.00000000    0.00000000    0.00000000    1.00000000
 
 
@@ -1277,17 +1284,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
        6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
-       7      0.00000000    1.00000000   -0.00000000    0.00000000   -0.00000000
-       8      0.00000000   -0.00000000    1.00000000    0.00000000   -0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
        9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000   -0.00000000    0.00000000    1.00000000
+      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1330,17 +1337,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
        6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
-       7      0.00000000    1.00000000   -0.00000000    0.00000000   -0.00000000
-       8      0.00000000   -0.00000000    1.00000000    0.00000000   -0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
        9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000   -0.00000000    0.00000000    1.00000000
+      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
 
               Column  11
       11      1.00000000
@@ -1401,17 +1408,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000   -0.00000000   -0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-       5      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
+       4     -0.00000000   -0.00000000    0.00000000    1.00000000   -0.00000000
+       5      0.00000000   -0.00000000    0.00000000   -0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
        6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
-       7      0.00000000    1.00000000   -0.00000000    0.00000000   -0.00000000
-       8      0.00000000   -0.00000000    1.00000000    0.00000000   -0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
        9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000   -0.00000000    0.00000000    1.00000000
+      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
 
               Column  11    Column  12
       11      1.00000000    0.00000000
@@ -1444,15 +1451,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :    -76.1476140420999           (MACRO    3)
+ Total MCSCF energy       :           -76.147614042099633  (MACRO    3)
 
- - Nuclear repulsion      :     9.05500452563789    
- - Inactive energy        :    -61.2831991362229    
- - Active energy          :    -23.9194194315149    
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.283199136222947
+ - Active energy          :           -23.919419431514587
 
- Norm of total gradient   :        0.000756277584
- -    of CI gradient      :        0.000682625142
- -    of orbital gradient :        0.000325543699
+ Norm of total gradient   :             0.000756277584
+ -    of CI gradient      :             0.000682625142
+ -    of orbital gradient :             0.000325543699
       Virial theorem: -V/T =      2.000969
       MULPOP  O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -1502,9 +1509,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4
        1      1.00000000   -0.00000000    0.00000000   -0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1529,9 +1536,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
 
@@ -1558,9 +1565,9 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6
@@ -1599,14 +1606,14 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7
-       6      1.00000000   -0.00000000
-       7     -0.00000000    1.00000000
+       6      1.00000000    0.00000000
+       7      0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1643,14 +1650,14 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8
-       6      1.00000000   -0.00000000    0.00000000
-       7     -0.00000000    1.00000000    0.00000000
+       6      1.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000
 
 
@@ -1690,16 +1697,16 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9
-       6      1.00000000   -0.00000000    0.00000000   -0.00000000
-       7     -0.00000000    1.00000000    0.00000000    0.00000000
+       6      1.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000    0.00000000
-       9     -0.00000000    0.00000000    0.00000000    1.00000000
+       9      0.00000000    0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1740,17 +1747,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
-       6      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       7     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       9     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
+       9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
+      10      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -1793,17 +1800,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
-       6      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       7     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       9     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
+       9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
+      10      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
 
               Column  11
       11      1.00000000
@@ -1864,17 +1871,17 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
-       6      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       7     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       9     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
+       9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
+      10      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
 
               Column  11    Column  12
       11      1.00000000    0.00000000
@@ -1939,22 +1946,22 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
-       6      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       7     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       9     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
+       9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
+      10      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
 
               Column  11    Column  12    Column  13
-      11      1.00000000    0.00000000   -0.00000000
+      11      1.00000000    0.00000000    0.00000000
       12      0.00000000    1.00000000    0.00000000
-      13     -0.00000000    0.00000000    1.00000000
+      13      0.00000000    0.00000000    1.00000000
 
 
  %%% Non-symmetric elements in redH
@@ -2018,23 +2025,23 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
               Column   1    Column   2    Column   3    Column   4    Column   5
        1      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       2     -0.00000000    1.00000000    0.00000000   -0.00000000    0.00000000
+       2     -0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        3      0.00000000    0.00000000    1.00000000    0.00000000   -0.00000000
-       4     -0.00000000   -0.00000000    0.00000000    1.00000000    0.00000000
+       4     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
        5      0.00000000    0.00000000   -0.00000000    0.00000000    1.00000000
 
               Column   6    Column   7    Column   8    Column   9    Column  10
-       6      1.00000000   -0.00000000    0.00000000   -0.00000000    0.00000000
-       7     -0.00000000    1.00000000    0.00000000    0.00000000   -0.00000000
+       6      1.00000000    0.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000    1.00000000    0.00000000    0.00000000    0.00000000
        8      0.00000000    0.00000000    1.00000000    0.00000000    0.00000000
-       9     -0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
-      10      0.00000000   -0.00000000    0.00000000    0.00000000    1.00000000
+       9      0.00000000    0.00000000    0.00000000    1.00000000    0.00000000
+      10      0.00000000    0.00000000    0.00000000    0.00000000    1.00000000
 
               Column  11    Column  12    Column  13    Column  14
-      11      1.00000000    0.00000000   -0.00000000   -0.00000000
+      11      1.00000000    0.00000000    0.00000000    0.00000000
       12      0.00000000    1.00000000    0.00000000    0.00000000
-      13     -0.00000000    0.00000000    1.00000000    0.00000000
-      14     -0.00000000    0.00000000    0.00000000    1.00000000
+      13      0.00000000    0.00000000    1.00000000   -0.00000000
+      14      0.00000000    0.00000000   -0.00000000    1.00000000
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -2063,15 +2070,15 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :    -76.1476141590026           (MACRO    4)
+ Total MCSCF energy       :           -76.147614159002259  (MACRO    4)
 
- - Nuclear repulsion      :     9.05500452563789    
- - Inactive energy        :    -61.2832884188810    
- - Active energy          :    -23.9193302657595    
+ - Nuclear repulsion      :             9.055004525637894
+ - Inactive energy        :           -61.283288418881000
+ - Active energy          :           -23.919330265759157
 
- Norm of total gradient   :        0.000009157701
- -    of CI gradient      :        0.000005247887
- -    of orbital gradient :        0.000007504877
+ Norm of total gradient   :             0.000009157701
+ -    of CI gradient      :             0.000005247887
+ -    of orbital gradient :             0.000007504877
       Virial theorem: -V/T =      2.000973
       MULPOP  O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -2080,6 +2087,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
      Number of micro iterations used           28
      Total number of CPU seconds used         0.18
 
+ >>>> CPU and wall time for MCSCF :       0.177       0.323
+
 
                      .----------------------------------------.
                      | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
@@ -2087,16 +2096,16 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:08 2011 
+     Date and time (Linux)  : Sat Jun 25 00:34:04 2011 
      Host name              : fe6                                     
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
     1    6    -76.145026675971   0.1066653177  0.000000   0.2472193992
-    2   10    -76.147511954369   0.0312313826  0.900232   0.0273536170
+    2   10    -76.147511954368   0.0312313826  0.900232   0.0273536170
     3   12    -76.147614042100   0.0007562776  1.012374   0.0013188861
-    4    0    -76.147614159003   0.0000091577  1.000480   0.0000000000
+    4    0    -76.147614159002   0.0000091577  1.000479   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -2112,24 +2121,24 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
     1     6     4     3      0.04      0.00      0.03      0.02      0.00
     2    10     7     4      0.06      0.00      0.05      0.04      0.00
-    3    12     9     4      0.06      0.00      0.05      0.04      0.00
+    3    12     9     4      0.07      0.00      0.06      0.05      0.00
     4     0     0     0      0.01      0.00      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1    -61.277896087984    -23.922135113625    -76.145026675971
-    2    -61.281603832409    -23.920912647598    -76.147511954369
+    1    -61.277896087984    -23.922135113624    -76.145026675971
+    2    -61.281603832409    -23.920912647598    -76.147511954368
     3    -61.283199136223    -23.919419431515    -76.147614042100
-    4    -61.283288418881    -23.919330265759    -76.147614159003
+    4    -61.283288418881    -23.919330265759    -76.147614159002
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.002760708696     -0.002485278397      0.900232031525
-    3     -0.000100839901     -0.000102087731      1.012374370812
-    4     -0.000000116847     -0.000000116903      1.000479686920
+    2     -0.002760708696     -0.002485278398      0.900232031567
+    3     -0.000100839901     -0.000102087731      1.012374370392
+    4     -0.000000116847     -0.000000116903      1.000479322092
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -2154,19 +2163,19 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
                        `-----------------------------------'
 
 
-     Spin multiplicity:           1
-     Spatial symmetry:            1
-     Total charge of molecule:    0
-     State number:                1
+   @ Spin multiplicity:           1
+   @ Spatial symmetry:            1
+   @ Total charge of molecule:    0
+   @ State number:                1
 
-     Final MCSCF energy:          -76.147614159003                 
-     Nuclear repulsion:             9.055004525638
-     Electronic energy:           -85.202618684641
+   @ Final MCSCF energy:          -76.147614159002                 
+   @ Nuclear repulsion:             9.055004525638
+   @ Electronic energy:           -85.202618684640
 
-     Final gradient norm:           0.000009157701
+   @ Final gradient norm:           0.000009157701
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:08 2011 
+     Date and time (Linux)  : Sat Jun 25 00:34:04 2011 
      Host name              : fe6                                     
 
 
@@ -2292,10 +2301,10 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
 
 
  >>>> Total CPU  time used in SIRIUS :      0.20 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total wall time used in SIRIUS :      0.44 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:08 2011 
+     Date and time (Linux)  : Sat Jun 25 00:34:04 2011 
      Host name              : fe6                                     
 
 
@@ -2304,8 +2313,8 @@ Symmetry  4 MAX 2-norm of a row of off-diagonal Fock matrix elements is  0.00D+0
                      `---------------------------------------'
 
  >>>> Total CPU  time used in DALTON:   0.23 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total wall time used in DALTON:   0.70 seconds
 
  
-     Date and time (Linux)  : Wed Mar 16 17:41:08 2011 
+     Date and time (Linux)  : Sat Jun 25 00:34:04 2011 
      Host name              : fe6                                     
