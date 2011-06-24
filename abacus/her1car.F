@@ -34,7 +34,7 @@ C
 #include <priunit.h>
 #include <maxorb.h>
 C
-      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
+      LOGICAL   PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), SINT0(KCKTAB), SINT1(KCKTAB,3),
@@ -59,17 +59,18 @@ C
       JMAXT = JMAXA + JMAXB + JMAXD
       JMAXM = 0
 C
-      KAHGTF = 1
-      KODC   = KAHGTF + (NATOMC + 1)*NAHGTF
+      KFRWRK = 1
+      KFREE  = KFRWRK
+      LFREE  = LWORK
+      CALL MEMGET('REAL',KAHGTF,NAHGTF*(NATOMC + 1),WORK,KFREE,LFREE)
+      LODC   = 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
+      CALL MEMGET('REAL',KODC,  LODC,WORK,KFREE,LFREE)
       IF (PCM) THEN
-         KTSGTF = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
-         KLAST = KTSGTF + (NTS + 1) * NAHGTF
+         LTSGTF = (NTS + 1) * NAHGTF
       ELSE
-         KLAST  = KODC   + 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)
-         KTSGTF = KLAST
+         LTSGTF = 0
       ENDIF
-      LWRK   = LWORK  - KLAST + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('ONEPRM',' ',KLAST,LWORK)
+      CALL MEMGET('REAL',KTSGTF,LTSGTF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KAHGTF),(NATOMC + 1)*NAHGTF)
       IF (PCM) CALL DZERO(WORK(KTSGTF),(NTS + 1)*NAHGTF)
       CALL ONEPR1(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,QINT1,
@@ -77,7 +78,8 @@ C
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
      &            DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
-     &            NCLONE,PCM,WORK(KTSGTF),EXPDER,WORK(KLAST),LWRK)
+     &            NCLONE,PCM,WORK(KTSGTF),EXPDER,WORK(KFREE),LFREE)
+      CALL MEMREL('ONEPRM',WORK,1,KFRWRK,KFREE,LFREE)
       RETURN
       END
 C  /* Deck onepr1 */
@@ -457,7 +459,7 @@ C
       CALL GAMFUN
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('FJW after GAMFUN',-1)
-         WRITE (LUPRI,'(6F12.6)') (FJW(I), I = 1, JMAX)
+         WRITE (LUPRI,'(10F12.6)') (FJW(I), I = 0, JMAX)
       END IF
 C
 C     **********************************
@@ -488,7 +490,7 @@ C
   100 CONTINUE
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('FJW after multiplication by FACTOR',-1)
-         WRITE (LUPRI,'(6F12.6)') (FJW(I), I = 1, JMAX)
+         WRITE (LUPRI,'(5F24.6)') (FJW(I), I = 0, JMAX)
       END IF
 C
 C     ***** JVAL = 0 *****
@@ -595,7 +597,7 @@ C
       END IF
       IF (IPRINT .GT. 20) THEN
          CALL HEADER ('Hermite integrals in HERNAI',-1)
-         WRITE (LUPRI,'(6F12.6)') (AHGTF(IADR + I - 1), I = 1, NRTUV)
+         WRITE (LUPRI,'(10F12.6)') (AHGTF(IADR + I - 1), I = 1, NRTUV)
       END IF
       RETURN
       END
