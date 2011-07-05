@@ -4305,7 +4305,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
-            IF (IPREAD .GT. IPTEST) THEN
+            IF ( (IPREAD .GT. IPTEST) .OR. QMMM ) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
      *              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
      *                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
@@ -4332,7 +4332,7 @@ C
      *                        *CORD(2,ICENT)
                   WORK(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
-                  IF (IPREAD .GT. IPTEST)
+                  IF ( (IPREAD .GT. IPTEST) .OR. QMMM )
      &            WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
      &               NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
      &                        ICRX+1,CHRXYZ(-2),WORK(ICRX+1),
