@@ -708,11 +708,9 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <priunit.h>
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C     PARAMETER (NDIR = 28, NTABLE = 58, D0 = 0.D0)
       PARAMETER (NDIR = 28, NTABLE = 59, D0 = 0.D0)
-Cend-PFP
-      LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
+      LOGICAL   POPULA, NOHESS, FCKEXP
+      LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(10)*6, WORD1*7, WRDSRC*7,
@@ -806,10 +804,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-C    &             '.VIB_G '/ 
-     &             '.VIB_G ', '.LOCALI'/ 
-Cend-PFP
+     &             '.VIB_G ', '.LOCALI'/
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -897,7 +892,9 @@ C
       NQCC   = .FALSE.
       QUADRU = .FALSE.
       SECNDM = .FALSE.
-      GAGT   = .FALSE.
+      DIPORG_SET = .FALSE.
+      GAGORG_SET = .FALSE.
+      CAVORG_SET = .FALSE.
       HYPER  = .FALSE.
       VERDET = .FALSE.
       MCD    = .FALSE.
@@ -932,7 +929,7 @@ C
       ABASOP = .FALSE.
       CCPPA  = .FALSE.
       DOD2DQ2 = .FALSE.
-CPFP: 27/03-2006: SOS for spin-spin coupling included
+CPFP: 27/03-2006: SOS for spin-spin coupling included; .LOCALI keyword
       ABALOC = .FALSE.
 Cend-PFP
 C
@@ -1212,10 +1209,11 @@ C
          GO TO 100
   141    CONTINUE!          .GAUGEO
             READ (LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-            GAGT = .TRUE.
+            GAGORG_SET = .TRUE.
          GOTO 100
  142     CONTINUE
             READ (LUCMD,*) (DIPORG(ICOOR), ICOOR = 1, 3)
+            DIPORG_SET = .TRUE.
          GOTO 100
  143     CONTINUE
             RAMAN  = .TRUE.
@@ -1229,6 +1227,7 @@ C
          GOTO 100
  146     CONTINUE
             READ (LUCMD,*) (CAVORG(ICOOR), ICOOR = 1, 3)
+            CAVORG_SET = .TRUE.
          GOTO 100
 cs
 cs
@@ -1283,7 +1282,7 @@ C .D2DQ2
             ABALNR = .TRUE.
          GOTO 100
 CPFP: 27/03-2006: SOS for spin-spin coupling included
-
+C        .LOCALI
  159     CONTINUE
             ABALOC = .TRUE.
          GOTO 100
@@ -1567,10 +1566,8 @@ cLig <<
       IF (DODRCT) WRITE (LUPRI,'(5X,A)')
      &   ' Direct calculation - no two-electron integrals '//
      &   'written or read.'
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-      IF (ABALOC) WRITE(LUPRI,'(5X,A)')
+      IF (ABALOC) WRITE(LUPRI,'(5X,A)') !PFP: 27/03-2006: SOS for spin-spin coupling included
      &      ' Localized orbitals are used in the analysis'
-Cend-PFP
       IF (EXPFCK .AND. DODRCT) WRITE (LUPRI,'(5X,A)')
      &   ' Two-electron expectation values and derivative Fock ',
      &   ' matrices are calculated simultaneously (for direct SCF).'
@@ -1625,7 +1622,7 @@ Cend-PFP
      &   'Natural orbital connection is used',
      &   'for perturbation dependent basis sets.'
       END IF
-      IF (GAGT) THEN
+      IF (GAGORG_SET) THEN
          WRITE (LUPRI,'(A,3F15.10)')
      &        ' User defined gauge origin       :',
      &        (GAGORG(I), I = 1, 3)
@@ -1639,12 +1636,12 @@ Cend-PFP
      &      WRITE(LUPRI,'(1X,2A)') ' WARNING! User defined gauge '//
      &           'may give wrong results when using symmetry'
       END IF
-      IF (DNRM2(3,CAVORG,1) .GT. D0) THEN
+      IF (CAVORG_SET) THEN
          WRITE (LUPRI,'(A,3F15.10)')
      &        ' User defined cavity origin      :',
      &        (CAVORG(I), I = 1, 3)
       END IF
-      IF (DNRM2(3,DIPORG,1) .GT. D0) THEN
+      IF (DIPORG_SET) THEN
          WRITE (LUPRI,'(A,3F15.10/A)')
      &        ' User defined dipole origin      :',
      &        (DIPORG(I), I = 1, 3),
@@ -1949,9 +1946,7 @@ cs
    19   CONTINUE
       GO TO 200
    20   CONTINUE
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-      CALL LOCINP(WORD)
-Cend-PFP
+      CALL LOCINP(WORD) !PFP: 27/03-2006: SOS for spin-spin coupling included
       GO TO 200
    21   CALL SOPINP(WORD)
       GO TO 200
@@ -2092,32 +2087,29 @@ C
          IPRGAG = 0
       END IF
       IF (.NOT.NOCMC) THEN
-         IF (DNRM2(3,DIPORG,1) .EQ. D0) THEN
+         IF (.NOT. DIPORG_SET) THEN
 C           ... i.e. user hasn't changed DIPORG with .DIPORG
             CALL DCOPY(3,CMXYZ,1,DIPORG,1)
             WRITE(LUPRI,'(/A,3F12.6)')
      &         ' Center of mass dipole origin  :',(DIPORG(I), I = 1, 3)
          END IF
-         IF (GAGT) THEN
-            IF (IPRGAG .GT. 0) WRITE(LUPRI,'(/A,3F12.6)') 
-     &         ' User defined gauge origin used:',(GAGORG(I), I = 1, 3)
-         ELSE
+         IF (.NOT. GAGORG_SET) THEN
             CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-            IF (IPRGAG .GT. 0)
-     &         WRITE(LUPRI,'(/A,3F12.6)')
+            WRITE(LUPRI,'(/A,3F12.6)')
      &         ' Center of mass gauge origin   :',(GAGORG(I), I = 1, 3)
          END IF
-         IF (SOLVNT) THEN
+         IF (SOLVNT .AND. .NOT.CAVORG_SET) THEN
             CALL DCOPY(3,CMXYZ,1,CAVORG,1)
             WRITE(LUPRI,'(/,A,3F12.6)')
      &         ' Center of mass cavity origin  :',(CAVORG(I), I = 1, 3)
          END IF
       ELSE
-         CALL DZERO(GAGORG,3)
-         IF (IPRGAG .GT. 0)
-     &   WRITE(LUPRI,'(/,A,3F12.6)') ' Gauge  origin              :',
+         IF (.NOT. GAGORG_SET) THEN
+            CALL DZERO(GAGORG,3)
+            WRITE(LUPRI,'(/,A,3F12.6)') ' Gauge  origin              :',
      &        (GAGORG(I), I = 1, 3)
-         IF (SOLVNT) THEN
+         END IF
+         IF (SOLVNT .AND. .NOT.CAVORG_SET) THEN
             CALL DZERO(CAVORG,3)
             WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity origin              :',
      &           (CAVORG(I), I = 1, 3)
@@ -3570,8 +3562,6 @@ C
       CALL TRPINI
       CALL LNRINI
       CALL AQRINI
-CPFP: 27/03-2006: SOS for spin-spin coupling included
-      CALL LOCINI
-Cend-PFP
+      CALL LOCINI !PFP: 27/03-2006: SOS for spin-spin coupling included
       RETURN
       END
