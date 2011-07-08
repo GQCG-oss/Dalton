@@ -360,15 +360,16 @@ C...           ECP will be computed through gen1int_wrapper()
             ELSE
                CALL CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
      &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
-C...           modified by Bin Gao, Jan. 18, 2011
-C...           ECP will be computed through gen1int_wrapper()
-#ifndef BUILD_GEN1INT
+C...           modified by Bin Gao, Jul. 8, 2011
+C...           also needs ECPINT to debug the results from Gen1Int
+C...           ECP in gen1int_wrapper() is not efficient, backs to ECPINT temporarily
+C...#ifndef BUILD_GEN1INT
                IF (ECP) THEN
                   CALL ECPINT(CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,
      &                 EXPA,EXPB,JMAXA,JMAXB,CONTA,CONTB,ADER,
      &                 WORK,LWORK,IPRINT)
                END IF
-#endif
+C...#endif
             END IF
             IF (SOLVNT) THEN
                CALL SOLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,

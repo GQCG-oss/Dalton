@@ -581,12 +581,14 @@ C...      expectation values of second-order geometric derivatives
      &                          .true., .false., HESSNA,
      &                          LWRK, WORK(KLAST), IPRINT)
           end if
+C...    ECP in gen1int_wrapper() is not efficient, backs to ECPINT temporarily,
+C...    also needs ECPINT to debug the results from Gen1Int
 C...    ECP integrals, do not write the integrals (FIXME)?
-        else
-          call gen1int_driver('.ECP', MAXDIF, 0, .false., .true.,
-     &                        .false., STHMAT(:,2), .false., 1, DENMAT,
-     &                        .false., .false., (/DUMMY/),
-     &                        LWRK, WORK(KLAST), IPRINT)
+C...        else
+C...          call gen1int_driver('.ECP', MAXDIF, 0, .false., .true.,
+C...     &                        .false., STHMAT(:,2), .false., 1, DENMAT,
+C...     &                        .false., .false., (/DUMMY/),
+C...     &                        LWRK, WORK(KLAST), IPRINT)
         end if
       end if
 #endif

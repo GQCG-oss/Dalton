@@ -562,7 +562,7 @@ C                 number of contracted integrals
      &              ICENTB, (/CORBX,CORBY,CORBZ/), NHKTB-1,
      &              NUCB, PRIEXP(JSTB+1:JSTB+NUCB), NRCB,
      &              PRICCF(JSTB+1:JSTB+NUCB,NUMCFB:NUMCFB+NRCB-1),
-     &              DIPORG, 0, 0, num_cents,
+     &              0, DIPORG, 0, num_cents,
      &              idx_cent(1:2), order_cent(1:2), num_cints, dal_work)
                 case('.ECP')
 C                 loops over number of all ECP centers
