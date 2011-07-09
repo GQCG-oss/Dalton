@@ -94,7 +94,7 @@ C
 C
               IF (LWRK1 .LT. 0) THEN
                  CALL QUIT(
-     &              '1-Insufficient work space area in CC_INT3O1')
+     &              '1-Insufficient work space area in CC_INT3O2')
               ENDIF
 C
               KOFF1 = IDSRHF(ISALBE,ISYMJ) + NNBST(ISALBE)*(J-1)+1
