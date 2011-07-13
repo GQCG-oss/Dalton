@@ -186,14 +186,14 @@ ERROR[9]="CI CONVERGENCE NOT CORRECT"
 
 CRIT1=`$GREP "Sum =  * 4.007398" $log | wc -l`
 CRIT2=`$GREP "Sum =  * 1.989598" $log | wc -l`
-CRIT3=`$GREP "Sum =  * 0.013405" $log | wc -l`
+CRIT3=`$GREP "Sum =  * 0*.013405" $log | wc -l`
 TEST[10]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=4
 ERROR[10]="NATORB OCCUPATIONS ROOT 1 NOT CORRECT"
 
 CRIT1=`$GREP "Sum =  * 4.010582" $log | wc -l`
 CRIT2=`$GREP "Sum =  * 1.987829" $log | wc -l`
-CRIT3=`$GREP "Sum =  * 0.013758" $log | wc -l`
+CRIT3=`$GREP "Sum =  * 0*.013758" $log | wc -l`
 TEST[11]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=4
 ERROR[11]="NATORB OCCUPATIONS ROOT 2 NOT CORRECT"
