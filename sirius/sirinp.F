@@ -478,6 +478,7 @@ C
       MP2_NO_OCCVIR= .FALSE.
       SRMP2_SELFCONSISTENT = .FALSE.
       SRMP2_SRINTS = .FALSE.
+      DCPT2        = .FALSE.
 C
 C
 C********** Default values section OPTINP *****
