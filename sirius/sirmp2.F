@@ -177,9 +177,9 @@ C ==========================================================================
          MP2_SCALEFAC(1) = P_S + P_T
          MP2_SCALEFAC(2) =     - P_T
          IF (MP2_SCS) THEN
-            WRITE(LUPRI,'(/A)') ' S. Grimme's SCS MP2 requested.'
+            WRITE(LUPRI,'(/A)') " S. Grimme's SCS MP2 requested."
          ELSE IF (MP2_SOS) THEN
-            WRITE(LUPRI,'(/A)') ' M. Head-Gordon's SOS MP2 requested.'
+            WRITE(LUPRI,'(/A)') " M. Head-Gordon's SOS MP2 requested."
          ELSE
             WRITE(LUPRI,'(/A)') ' User-scaled MP2 requested.'
             IF (P_T .EQ. D0) MP2_SOS = .TRUE.
