@@ -197,7 +197,7 @@ C
          WRITE(LUPRI,'(/A/A)')
      &   ' WORK-IN-PROGRESS: Degeneracy corrected PT2 requested.',
      &   ' WORK-IN-PROGRESS: NB! results may not be correct !!!!'
-         IF (MP2_SCALED .OR. MP2_LSHIFT) THEN
+         IF (MP2_SCALED .OR. (MP2_LSHIFT /= 0.0d0)) THEN
             WRITE(LUPRI,'(/A)') ' FATAL ERROR: .DCPT2 cannot be'//
      &      'combined with scaled MP2 and level-shfit in MP2'
             CALL QUIT(
