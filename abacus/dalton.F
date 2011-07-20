@@ -210,7 +210,7 @@ C
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
-     &'This is an experimental code for the evaluation of molecular',
+     &'DALTON is an experimental code for the evaluation of molecular',
      &'properties using (MC)SCF, DFT, CI, and CC wave functions.',
      &'The authors accept no responsibility for the performance of',
      &'the code or for the correctness of the results.',
@@ -238,6 +238,8 @@ C
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
+     *'Gao Bin,','University of Tromsoe,','Norway',
+     &  '(ECP with Gen1Int)',
      *'Ove Christiansen,','Aarhus University,','Denmark',
      &  '(CC module)',
      *'Renzo Cimiraglia,','University of Ferrara,','Italy','(NEVPT2)',
