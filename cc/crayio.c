@@ -66,7 +66,7 @@
 
 /* define here the integer type, which has the same lengths
    as the integers used under fortran */
-#if defined (VAR_INT64) || defined (SYS_AIX)
+#if defined (VAR_INT64)
 #include <stdint.h>
 typedef int64_t INTEGER;
 #else
@@ -263,6 +263,10 @@ void FSYM(wopen)(const INTEGER *unit, const char *name, const INTEGER *lennam,
 
   if ( (*unit < 0) || (*unit >= max_file) ) {
     *ierr = -1;
+    fprintf(stderr,
+            "WOPEN fatal error: unit %d \n"
+            "WOPEN fatal error: MAX_FILE %d \n",
+            *unit, max_file);
     return;
   }
     
