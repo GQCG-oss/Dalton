@@ -194,9 +194,9 @@ if not options.auto:
 command += ' cmake'
 
 if options.nomath:
-    command += ' -DENABLE_EXTERNAL_MATH=0'
+    command += ' -DENABLE_INTERNAL_MATH=1'
 if options.math:
-    command += ' -DUSERDEFINED_LIBS="%s"' % options.math
+    command += ' -DUSERDEFINED_MATH="%s"' % options.math
 if options.mpi:
     command += ' -DENABLE_MPI=1'
 if options.omp:
