@@ -52,6 +52,11 @@ Cef end
       CHARACTER LABEL1*8, STHELP*10
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 
+!     this is to echo input files to the output
+      character(100)     :: line
+      integer, parameter :: file_unit = 137
+      logical            :: file_exists
+
 !     this is the "static" work array
       real(8), allocatable :: WORK(:)
 
@@ -384,7 +389,55 @@ C
 C        Read general input for Dalton
 C
          CALL DALTON_GNRLINP
-C
+
+!        print contents of input file to output
+         inquire(file = 'DALTON.INP', exist = file_exists)
+         if (file_exists) then
+            open(file_unit,
+     &           file   = 'DALTON.INP',
+     &           status = 'unknown',
+     &           form   = 'formatted',
+     &           access = 'sequential')
+            rewind(file_unit)
+         else
+            call quit('*.inp file not found')
+         end if
+         write(lupri, *)
+         write(lupri, *)
+         write(lupri, '(a)') 'Contents of the input file'
+         write(lupri, '(a)') '--------------------------'
+         write(lupri, *)
+         do while (.true.)
+            read(file_unit, '(a100)', end=31) line
+            write(lupri, '(a)') line
+         end do
+ 31      continue
+         close(file_unit, status = 'keep')
+
+!        print contents of molecule file to output
+         inquire(file = 'MOLECULE.INP', exist = file_exists)
+         if (file_exists) then
+            open(file_unit,
+     &           file   = 'MOLECULE.INP',
+     &           status = 'unknown',
+     &           form   = 'formatted',
+     &           access = 'sequential')
+            rewind(file_unit)
+         else
+            call quit('*.inp file not found')
+         end if
+         write(lupri, *)
+         write(lupri, *)
+         write(lupri, '(a)') 'Contents of the molecule file'
+         write(lupri, '(a)') '-----------------------------'
+         write(lupri, *)
+         do while (.true.)
+            read(file_unit, '(a100)', end=32) line
+            write(lupri, '(a)') line
+         end do
+ 32      continue
+         close(file_unit, status = 'keep')
+
 #if !defined (VAR_MPI)
       END IF
 #else /* VAR_MPI */
