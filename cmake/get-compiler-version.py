@@ -37,21 +37,24 @@ parser.add_option('--compiler',
 
 command_d = {}
 
+command_d['mpif90']   = 'mpif90   --version'
 command_d['gfortran'] = 'gfortran --version'
+command_d['f95']      = 'f95      --version'
 command_d['g95']      = 'g95      --version'
 command_d['ifort']    = 'ifort    --version'
 command_d['pgf90']    = 'pgf90    -V'
-command_d['xlf']      = 'xlf      -V'
+command_d['xlf']      = 'xlf      -qversion'
 
+command_d['mpicc']    = 'mpicc    --version'
 command_d['gcc']      = 'gcc      --version'
 command_d['icc']      = 'icc      --version'
 command_d['pgcc']     = 'pgcc     -V'
-command_d['xlc']      = 'xlc      -V'
+command_d['xlc']      = 'xlc      -qversion'
 
 command_d['g++']      = 'g++      --version'
 command_d['iCC']      = 'iCC      --version'
 command_d['pgCC']     = 'pgCC     -V'
-command_d['xlCC']     = 'xlCC     -V'
+command_d['xlCC']     = 'xlCC     -qversion'
 
 def main():
         if len(sys.argv) == 1:
