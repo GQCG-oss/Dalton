@@ -11,6 +11,8 @@ if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
 endif()
 
+add_definitions(-DTHIS_IS_CMAKE_BUILD)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -92,6 +94,16 @@ set(BASIS_DIR
 if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
 endif()
+
+# get svn revision number
+set(SVN_REVISION "")
+execute_process(
+    COMMAND ./get-svn-revision.py
+    TIMEOUT 1
+    OUTPUT_VARIABLE SVN_REVISION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(Archs)
 include(Sources)
@@ -175,6 +187,12 @@ configure_file(${CMAKE_SOURCE_DIR}/dalton.in
 	${CMAKE_BINARY_DIR}/dalton)
 execute_process(COMMAND
 	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
+
+# configure compinfo.h
+configure_file(
+    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in
+    ${CMAKE_SOURCE_DIR}/include/compinfo.h
+    )
 
 add_executable(
     dalton.x
