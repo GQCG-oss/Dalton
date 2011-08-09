@@ -70,7 +70,6 @@ dft/quad-strict.c
 pdpack/scatter-io.c
     )
 set(FIXED_FORTRAN_SOURCES
-abacus/dalton.F
 abacus/aba2eth.F
 abacus/aba2r12.F
 abacus/aba2tex.F

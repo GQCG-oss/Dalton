@@ -194,14 +194,19 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/include/compinfo.h
     )
 
-add_executable(
-    dalton.x
+add_library(
+    dalton 
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
     )
 
+add_executable(
+    dalton.x
+    ${CMAKE_SOURCE_DIR}/abacus/dalton.F
+)
 target_link_libraries(
     dalton.x
+    dalton
     ${LIBS}
     ) 
