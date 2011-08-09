@@ -56,7 +56,7 @@ usage (){
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -get "file1 file2"  get files back from TMPDIR after calculation stops'
 	  echo ' -put "file1 file2"  put files to TMPDIR before calculation starts'
-	  echo ' -o file   redirect output from program to this file in WRKDIR (default: -o dalinp_molinp.out)'
+	  echo ' -o file   redirect output from program to this file in WRKDIR'
         echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
 	  echo ' -M mb     set scratch memory to mb Megabytes'
 	  echo ' -m mem    set scratch memory to mem double precision words'
