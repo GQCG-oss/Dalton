@@ -282,10 +282,6 @@ if [ $ierr = 1 ]; then
    exit 1
 fi
 
-if [ $opto -ne 1 ] ; then
-   export OUTFIL=$dalfil\_$molfil.out
-fi
-
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
@@ -377,14 +373,30 @@ if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
   fi
 fi
 
-if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
-   echo "Output is in $WRKDIR/$OUTFIL as requested in input."
-else
-   echo "$WRKDIR/$OUTFIL has not been created from the present run"
-   if [ $optD -eq 1 ] ; then
-      echo "$SCRATCHDIR is therefore not deleted by this script."
+if [ $opto -eq 1 ] ; then
+   if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
+      echo "Output is in $WRKDIR/$OUTFIL as requested in input."
+   else
+      echo "$WRKDIR/$OUTFIL has not been created from the present run"
+      if [ $optD -eq 1 ] ; then
+         echo "$SCRATCHDIR is therefore not deleted by this script."
+      fi
+      exit 2
    fi
-   exit 2
+else
+   if [ -s DALTON.OUT -a -r DALTON.OUT ]; then
+      OUTFIL=$outnam.$OUTEXT
+      backup -v $WRKDIR/$OUTFIL
+      cp DALTON.OUT $WRKDIR/$OUTFIL
+   else
+      echo "DALTON.OUT has not been created from the present run."
+      if [ $optD -eq 1 ] ; then
+         echo "$SCRATCHDIR is therefore not deleted by this script."
+      fi
+      echo "List of created files in $SCRATCHDIR :"
+      ls -sltr
+      exit 2
+   fi
 fi
 
 cd $WRKDIR
