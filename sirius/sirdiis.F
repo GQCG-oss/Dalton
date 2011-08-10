@@ -315,6 +315,7 @@ C
 #include <qm3.h>
 #include "incore.h"
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <infpar.h>
 C
 Cholesky
@@ -486,8 +487,7 @@ Chj      ... if (GEOWLK) then
          EMCGEO = EMCOLD
          DEPGEO = DEPRED
       END IF
-C ahs parallel QMMM initialization (send QMMM data to nodes)
-C      IF (QMMM .AND. NODTOT .GE. 1) CALL PARQMMM_INIT()
+C
   100 CONTINUE
          ITDIIS = ITDIIS + 1
          JTDIIS = JTDIIS + 1
@@ -686,7 +686,7 @@ C
          END IF
 
          IF (QMMM) THEN
-            IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+            IF (MMTIME) DTIME = SECOND()
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL DZERO(WRK(KFCSOL),NNBAST)
             CALL QMMMFCK(DAOSAV(1,1),DAOSAV(1,2),
@@ -695,7 +695,10 @@ C
             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DIIS_CTL.QMMMFCK',WRK,KFRSAV,
      &                  KFCSOL,KFREE,LFREE)
-            IF (IPQMMM .GT. 1) CALL TIMER('QMMM  ',TIMSTR,TIMEND)
+            IF (MMTIME) THEN
+              DTIME = SECOND() - DTIME
+              TMMFCK = TMMFCK + DTIME
+            ENDIF
          ENDIF
 
          IF (FLAG(16)) THEN
@@ -847,6 +850,7 @@ Cholesky
                  WRITE(LUPRI,4116) 'MO sorting ',SSIRF
               ENDIF
               WRITE(LUPRI,4115) TSIRF
+              IF (QMMM) CALL QMMMTIMES('SIRIUS')
               IF (LUW4 .NE. LUPRI) THEN
                  IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
                     WRITE(LUPRI,4116) 'Coulomb part',CSIRF

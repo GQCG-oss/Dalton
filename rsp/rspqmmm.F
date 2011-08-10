@@ -43,6 +43,7 @@ C
 #include <mxcent.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <priunit.h>
 #include <dummy.h>
 #include <inftap.h>
@@ -75,6 +76,11 @@ C
 
       CALL QENTER('QMMMLNO')
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND()
+        BTIME = SECOND()
+      ENDIF
+
       IF (NNZAL .EQ. 0) THEN ! no pol. and nothing to do here
         CALL QEXIT('QMMMLNO')
         RETURN
@@ -94,19 +100,13 @@ C                                                   can arrise in that case
 
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
-      KFSOLMO = KUBO    + NOSIM*N2ORBX
-      KUFSOL  = KFSOLMO + NNORBX
-      KRXYO   = KUFSOL  + N2ORBX
+      KRXYO   = KUBO    + NOSIM*N2ORBX
       IF (TRPLET) THEN
         KRXYOT  = KRXYO   + NOSIM*N2ORBX
-        KURXAC  = KRXYOT  + NOSIM*N2ORBX
+        KEFIELD = KRXYOT  + NOSIM*N2ORBX
       ELSE
-        KURXAC  = KRXYO   + NOSIM*N2ORBX
+        KEFIELD = KRXYO   + NOSIM*N2ORBX
       ENDIF
-      KTRMO   = KURXAC  + N2ASHX
-      KUTR    = KTRMO   + NNORBX
-      KUTRX   = KUTR    + N2ORBX
-      KEFIELD = KUTRX   + N2ORBX
       KINDMOM = KEFIELD + 3*NNZAL
       IF (MMMAT) THEN
         KINVMAT = KINDMOM + 3*NNZAL
@@ -120,14 +120,8 @@ C                                                   can arrise in that case
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KUBO),NOSIM*N2ORBX)
-      CALL DZERO(WRK(KFSOLMO),NNORBX)
-      CALL DZERO(WRK(KUFSOL),N2ORBX)
       CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
-      CALL DZERO(WRK(KURXAC),N2ASHX)
-      CALL DZERO(WRK(KTRMO),NNORBX)
-      CALL DZERO(WRK(KUTR),N2ORBX)
-      CALL DZERO(WRK(KUTRX),N2ORBX)
       CALL DZERO(WRK(KEFIELD),3*NNZAL)
       CALL DZERO(WRK(KINDMOM),3*NNZAL)
       IF (MMMAT) CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
@@ -168,6 +162,10 @@ C     Read the relay matrix from file
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
       END IF
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND() - DTIME
+        TMMLNO0 = TMMLNO0 + DTIME
+      ENDIF
 C     In contrast to the old code, the zero-order contribution, i.e.
 C     - sum_a mu_ind_a t_a_pq has been included since we in 
 C     sirius do not subtract this from the fock/ks-operator. We here only 
@@ -177,6 +175,7 @@ C     response/change in the density due to the applied perturbation.
 C
       DO 200 IOSIM = 1,NOSIM
 
+         IF (MMTIME) DTIME = SECOND()
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX
          IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
          JUBO  = KUBO  + (IOSIM-1)*N2ORBX
@@ -215,9 +214,13 @@ C-------------------------------------------------------
            CALL OUTPUT(WRK(KEFIELD),1,NDIM,1,1,NDIM,1,1,LUPRI)
            WRITE(LUPRI,*)
          ENDIF
-
+         IF (MMTIME) THEN
+           DTIME = SECOND() - DTIME
+           TMMLNO1 = TMMLNO1 + DTIME
+         ENDIF
 C        Calculate the induced dipoles corresponding to this field
 
+        IF (MMTIME) DTIME = SECOND()
          IF (MMMAT) THEN
            CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEFIELD), 1,
      &                ZERO, WRK(KINDMOM), 1)
@@ -236,6 +239,12 @@ C        Calculate the induced dipoles corresponding to this field
 C        Now we need the integrals again transformed to the MO basis. 
 C        These could have been stored
 C        before, but we choose to do all of this integral-direct.
+         IF (MMTIME) THEN
+           DTIME = SECOND() - DTIME
+           TMMLNO2 = TMMLNO2 + DTIME
+         ENDIF
+
+         IF (MMTIME) DTIME = SECOND()
          
          IF (TRPLET) THEN
             LRXYO = JRXYOT
@@ -257,18 +266,31 @@ C        before, but we choose to do all of this integral-direct.
                LRI = LRI + 3
  202        CONTINUE 
          ENDIF
+         IF (MMTIME) THEN
+           DTIME = SECOND() - DTIME
+           TMMLNO3 = TMMLNO3 + DTIME
+         ENDIF
  200  CONTINUE
 
 C--------------------------------------------
 C 3.  Add effective operators to response
 C--------------------------------------------
 
+      IF (MMTIME) DTIME = SECOND()
 
       IF (TRPLET) THEN
          CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,EVECS(1,1),WRK(KRXYO))
          CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYOT))
       ELSE
          CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYO))
+      ENDIF
+
+      IF (MMTIME) THEN
+        DTIME   = SECOND() - DTIME
+        TMMLNO3 = TMMLNO3  + DTIME
+        BTIME   = SECOND() - BTIME
+        TMMLNO  = TMMLNO   + BTIME
+        TMMRSP  = TMMRSP   + BTIME
       ENDIF
 
       CALL QEXIT('QMMMLNO')
@@ -304,6 +326,7 @@ C
 #include <mxcent.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <orgcom.h>
@@ -330,7 +353,8 @@ C
 
       CALL QENTER('QMMMQRO')
 
-      IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+      IF (MMTIME) DTIME = SECOND()
+      IF (MMTIME) BTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -437,6 +461,13 @@ C     Unpack symmetry blocked CMO
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMQRO',-KLAST,LWRK2)
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND() - DTIME
+        TMMQRO0 = TMMQRO0 + DTIME
+      ENDIF
+
+      IF (MMTIME) DTIME = SECOND()
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK(KLAST),LWRK2)
@@ -451,8 +482,13 @@ C     Unpack symmetry blocked CMO
   100   CONTINUE
       ENDIF
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND() - DTIME
+        TMMQRO1 = TMMQRO1 + DTIME
+      ENDIF
 C     Calculate the induced dipoles corresponding to the 
 C     (transformed) fields 1 and 2
+      IF (MMTIME) DTIME = SECOND()
 
       NDIM = 3*NNZAL
       NTOTI = MAX(NDIM,1)
@@ -499,10 +535,15 @@ C     (transformed) fields 1 and 2
         WRITE(LUPRI,*)
       ENDIF
 
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMQRO2 = TMMQRO2 + DTIME
+      ENDIF
 C     Now we need the integrals again transformed to the MO basis 
 C     and also one-index transformed integrals. 
 C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
+      IF (MMTIME) DTIME = SECOND()
 
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M2(WRK(KIND1),WRK(KIND2),WRK(KUCMO),
@@ -519,6 +560,12 @@ C     before, but we choose to do all of this integral-direct.
  101    CONTINUE
       ENDIF
 
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMQRO3 = TMMQRO3 + DTIME
+      ENDIF
+
+      IF (MMTIME) DTIME = SECOND()
 C       Make the gradient
 C
 C     / <0| [qj ,TRES] |0> \
@@ -545,7 +592,13 @@ C
      *            WRK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,WRK(KTRES),
      *            XINDX,MJWOP,WRK(KWRK),LWRK1,LORB,LCON,LREF)
 C
-      IF (IPQMMM .GT. 1) CALL TIMER('QMMMQRO',TIMSTR,TIMEND)
+      IF (MMTIME) THEN
+        DTIME   = SECOND() - DTIME
+        TMMQRO4 = TMMQRO4  + DTIME
+        BTIME   = SECOND() - BTIME
+        TMMQRO  = TMMQRO   + BTIME
+        TMMRSP  = TMMRSP   + BTIME
+      ENDIF
       CALL QEXIT('QMMMQRO')
       RETURN
       END
@@ -578,6 +631,7 @@ C
 #include <mxcent.h>
 #include <qm3.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <orgcom.h>
@@ -599,7 +653,8 @@ C
 
       CALL QENTER('QMMMCRO')
 
-      IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
+      IF (MMTIME) DTIME = SECOND()
+      IF (MMTIME) BTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -708,6 +763,13 @@ C     Unpack symmetry blocked CMO
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMCRO',-KLAST,LWRK2)
 
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMCRO0 = TMMCRO0 + DTIME
+      ENDIF
+
+      IF (MMTIME) DTIME = SECOND()
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
@@ -724,6 +786,12 @@ C     Unpack symmetry blocked CMO
  100    CONTINUE
       ENDIF
 
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMCRO1 = TMMCRO1 + DTIME
+      ENDIF
+
+      IF (MMTIME) DTIME = SECOND()
 C     Calculate the induced dipoles corresponding to the 
 C     (transformed) fields 1, 2 and 3 either by matrix inversion or 
 C     iteratively.
@@ -799,6 +867,13 @@ C     and also one-index transformed integrals.
 C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND() - DTIME
+        TMMCRO2 = TMMCRO2 + DTIME
+      ENDIF
+
+      IF (MMTIME) DTIME = SECOND()
+
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M2(WRK(KIND1),WRK(KIND2),WRK(KIND3),WRK(KUCMO),
      &        WRK(KTRES),ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
@@ -814,6 +889,13 @@ C     before, but we choose to do all of this integral-direct.
             LRI = LRI + 3
  101     CONTINUE
       ENDIF
+
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMCRO3 = TMMCRO3 + DTIME
+      ENDIF
+
+      IF (MMTIME) DTIME = SECOND()
 
 C       Make the gradient
 C
@@ -841,7 +923,13 @@ C
      *            WRK(KCREF),NZYVEC,NZCVEC,OVLAP,ISYMDN,UDV,WRK(KTRES),
      *            XINDX,MJWOP,WRK(KLAST),LWRK2,LORB,LCON,LREF)
 
-      IF (IPQMMM .GT. 1) CALL TIMER('QMMMCRO',TIMSTR,TIMEND)
+      IF (MMTIME) THEN
+        DTIME   = SECOND() - DTIME
+        TMMCRO4 = TMMCRO4  + DTIME
+        BTIME   = SECOND() - BTIME
+        TMMCRO  = TMMCRO   + BTIME
+        TMMRSP  = TMMRSP   + BTIME
+      ENDIF
 
       CALL QEXIT('QMMMCRO')
       RETURN
@@ -2188,7 +2276,6 @@ C     Damping
 
       CALL MPIXBCAST(UCMO,NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(UBO,N2ORBX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
 C     Do the work
       LRI = 1
@@ -2292,7 +2379,6 @@ C
       CALL MPIXBCAST(WRK(KUDV),NFACTOR,'DOUBLE',MASTER)      
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(JUBO),N2ORBX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
@@ -2370,7 +2456,6 @@ C     Wake up slaves
       CALL MPIXBCAST(IPRRSP,1,'INTEGER',MASTER)
       CALL MPIXBCAST(UCMO,NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(XINDMOM,3*NNZAL,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
 C     Do the work
       LRI = 1
@@ -2451,7 +2536,6 @@ C
 
       CALL MPIXBCAST(WRK(KUCMO),NORBT*NBAST,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KINDMOM),3*NNZAL,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL DZERO(WRK(JRXYO),N2ORBX)
 
@@ -2551,7 +2635,6 @@ C     QRO
       CALL MPIXBCAST(ISYMV2,1,'INTEGER',MASTER)
       CALL MPIXBCAST(ZYM1,NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZYM2,NORBT*NORBT,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
 C     Do the work
       LRI = 1
@@ -2659,7 +2742,6 @@ C     QRO
       CALL MPIXBCAST(ISYMV2,1,'INTEGER',MASTER)
       CALL MPIXBCAST(WRK(KZYM1),NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KZYM2),NORBT*NORBT,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL DZERO(WRK(KEF1),3*NNZAL)
       CALL DZERO(WRK(KEF2),3*NNZAL)
@@ -2746,7 +2828,6 @@ C     QRO
 
       CALL MPIXBCAST(ZIND1,3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZIND2,3*NNZAL,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
 C     Do the work
       LRI = 1
@@ -2836,7 +2917,6 @@ C     QRO
 
       CALL MPIXBCAST(WRK(KIND1),3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KIND2),3*NNZAL,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL DZERO(WRK(KTRES),N2ORBX)
 
@@ -2940,7 +3020,6 @@ C     CRO
       CALL MPIXBCAST(ZYM1,NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZYM2,NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZYM3,NORBT*NORBT,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
 C     Do the work
       LRI = 1
@@ -3055,7 +3134,6 @@ C     CRO
       CALL MPIXBCAST(WRK(KZYM1),NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KZYM2),NORBT*NORBT,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KZYM3),NORBT*NORBT,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL DZERO(WRK(KEF1),3*NNZAL)
       CALL DZERO(WRK(KEF2),3*NNZAL)
@@ -3168,7 +3246,6 @@ C     CRO
       CALL MPIXBCAST(ZIND1,3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZIND2,3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZIND3,3*NNZAL,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
 C     Do the work
       LRI = 1
@@ -3276,7 +3353,6 @@ C     CRO
       CALL MPIXBCAST(WRK(KIND1),3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KIND2),3*NNZAL,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KIND3),3*NNZAL,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL DZERO(WRK(KTRES),N2ORBX)
 

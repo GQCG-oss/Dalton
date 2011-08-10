@@ -85,7 +85,7 @@ C     QMMM contribution to the energy returned in EQMMM.
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_fck_ao */
       SUBROUTINE QMMM_FCK_AO(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
 
@@ -98,6 +98,7 @@ C  /* Deck qmmm_fck_ao */
 #include <maxorb.h>
 
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -150,9 +151,10 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
+      IF (MMTIME) DTIME = SECOND()
+      IF (NODTOT.GE.1) THEN
 C     All the corrections to the Fock/KS operator due to the static
 C     multipoles when the calculation is done in parallel
-      IF (NODTOT.GE.1) THEN
         CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,LOCDEB,
      &                  WRK(KWRK1),LWRK1,IPRINT)
       ELSE
@@ -175,6 +177,10 @@ C     integrals numerically here.
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       
       ENDIF ! nodtot .ge. 1
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMMULPOL = TMMMULPOL + DTIME
+      ENDIF
 
       IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         write(lupri,*)
@@ -185,9 +191,14 @@ C     integrals numerically here.
       ENDIF 
 
 C     5) The polarization correction to the Fock/KS operator
-
+      
+      IF (MMTIME) DTIME = SECOND()
       IF (IPOLTP .GT. 0) CALL QMMM_POLARI(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMPOL = TMMPOL + DTIME
+      ENDIF
 
 C     Finally, put back the dipole origin
 
@@ -204,7 +215,7 @@ C     Finally, put back the dipole origin
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_charge */
       SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -312,7 +323,7 @@ C     Write integrals to file
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_dipole */
       SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -419,7 +430,7 @@ C     Write integrals to file
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_quadpole */
       SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -526,7 +537,7 @@ C     Write integrals to file
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_octupole */
       SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
@@ -634,7 +645,7 @@ C     Write integrals to file
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmm_polari */
       SUBROUTINE QMMM_POLARI(DCAO,ESOLT,TAO,LOCDEB,
      &                       WRK,LWRK,IPRINT)
@@ -646,8 +657,8 @@ C
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
-
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -670,7 +681,6 @@ C
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       CALL QENTER('QMMM_POLARI')
-
 
 C     Zero out a list of centers having zero polarizability. We don't
 C     know yet the number of zero polarizabilities so we take the
@@ -759,8 +769,8 @@ C       of atoms in previous and current run.
         ENDIF
       ELSE IF (MMITER) THEN
 
-        KINDMOM = 1                               ! List for induced dipoles
-        KMAT    = KINDMOM + 3*NNZAL
+        KINDMOM = 1                 
+        KMAT    = KINDMOM + 3*NNZAL      ! List for induced dipoles
         KTAO    = KMAT    + 3*NNBASX
         KWRK2   = KTAO    + NNBASX
         LWRK2   = LWRK    - KWRK2 + 1
@@ -776,8 +786,13 @@ C       Mainly due to debugging. Assumes identical molecules and order
 C       of atoms in previous and current run.
 
         IF (.NOT. FIXDIP) THEN
-          CALL GET_IND_DIPOLES_2(DCAO,NNZAL,WRK(KINDMOM),WRK(KWRK2),
-     &                             LWRK2,IPRINT)
+          IF (MMTIME) DTIME = SECOND()
+          CALL GET_IND_DIPOLES_2(DCAO,NNZAL,WRK(KINDMOM),
+     &                           WRK(KWRK2),LWRK2,IPRINT)
+          IF (MMTIME) THEN
+            DTIME = SECOND() - DTIME
+            TMMGID2 = TMMGID2 + DTIME
+          ENDIF
         ELSE
           WRITE(LUPRI,*) 'Ind. dips. from a prev. calc. read from file'
           CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WRK(KINDMOM))
@@ -803,7 +818,7 @@ C     total solvation energy
       CALL DZERO(WRK(KTAO),NNBASX)
 
       IF (NODTOT .GE. 1) THEN
-        CALL QMMM_POLARI_M3(DCAO,WRK(KTAO),WRK(KINDMOM),
+        CALL MM_POLAR_CONTR_M(DCAO,WRK(KTAO),WRK(KINDMOM),
      &                      WRK(KWRK2),LWRK2,IPRINT)
       ELSE
 
@@ -815,7 +830,7 @@ C     total solvation energy
 
           IF (ZEROAL(I) .EQ. -1) GOTO 500
 
-          CALL MMPOLARI_ITER3(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
+          CALL GET_POL_CONTR(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
      &                        DCAO,WRK(KTAO),WRK(KWRK3),LWRK3)
 
           EDELD  = EDELD  + WRK(KEDALL)
@@ -866,7 +881,7 @@ C      IF (MMPROP) CALL MM_PROPS(WRK(KWRK2),LWRK2,IPRINT)
       RETURN
       END
 C
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck qmmmfckmo */
       SUBROUTINE QMMMFCKMO(CMO,FSOL,WRK,LWRK,IPRINT)
 C
@@ -919,7 +934,7 @@ C
       CALL QEXIT('QMMMFCKMO')
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_IND_DIPOLES_1 */
       SUBROUTINE GET_IND_DIPOLES_1(DCAO,POLDIM,INVMAT,INDMOM,WRK,IPVT,
      &                             WRKV,LWRK,IPRINT)
@@ -942,16 +957,15 @@ C
 C   ZEROAL  - a vector containing +1 for polarizable MM centers and -1
 C             for non-polarizable
 C
-C Oct. 2009: JMO
-C   Changed the routines used to construct the classical response matrix to more
-C   efficient ones that use the fact that it is symmetric.
+C Oct. 2009: JMO 
+C   Changed the routines used to construct the classical response matrix
+C   to more efficient ones that use the fact that it is symmetric.
 C Sep 2010: JMO & KS
 C   Starting sharing of DFT/MM and CC/MM field routines
-C Oct 2010: AES
+C Oct 2010: AHS 
 C   Sharing of parallel and serial routines
 C Jan 2011: JMO
 C   Construct the classical response matrix using packed storage.
-C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -959,7 +973,6 @@ C
 #include <iratdef.h>
 #include <maxash.h>
 #include <maxorb.h>
-
 #include <qmmm.h>
 #include <qm3.h>
 #include <inforb.h>
@@ -1030,7 +1043,7 @@ C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M1! AH
 
 C     Form F vector due to permanent MM moments
       IF (NODTOT .GE. 1) THEN
-        CALL QMMM_POLARI_M1(DCAO,WRK(KELF),POLDIM,
+        CALL MM_FIELD_M1(DCAO,WRK(KELF),POLDIM,
      &                      WRK(KEND),LWRK1,IPRINT)
       ELSE
 
@@ -1040,7 +1053,7 @@ C     Form F vector due to permanent MM moments
 
           IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-          CALL MMPOLARI_ITER1(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
+          CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
      &                          DCAO,LOCDEB,WRK(KEND),LWRK1)
           LRI = LRI + 3
  200    CONTINUE
@@ -1323,8 +1336,7 @@ C     Finally, write the nonzero induced dipoles to file
       CALL QEXIT('GET_IND_DIPOLES_1')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_CHARGE_ELFLD */
       SUBROUTINE GET_CHARGE_ELFLD(Q,XORI,YORI,ZORI,
      &                            XTAR,YTAR,ZTAR,
@@ -1391,7 +1403,7 @@ C
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_DIPOLE_ELFLD */
       SUBROUTINE GET_DIPOLE_ELFLD(MJUX,MJUY,MJUZ,
      &                            XORI,YORI,ZORI,
@@ -1473,7 +1485,7 @@ C
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_QUADRUPOLE_ELFLD */
       SUBROUTINE GET_QUADRUPOLE_ELFLD(QXX,QXY,QXZ,
      &                                QYY,QYZ,QZZ,
@@ -1598,10 +1610,9 @@ C
 
       RETURN
       END
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck Put_To_File_1 */
       SUBROUTINE PUT_TO_FILE_1(FLNAME,NULOOP,DDATA)
-C**************************************************************
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -1624,6 +1635,7 @@ C
 C
       END
 C
+C******************************************************************************
 C**************************************************************
 C  /* Deck Get_From_File_1 */
       SUBROUTINE GET_FROM_FILE_1(FLNAME,NULOOP,DDATA)
@@ -1654,7 +1666,7 @@ C
 C
       END
 C
-C**************************************************************
+C******************************************************************************
 C  /* Deck MM_PROPS */
       SUBROUTINE MM_PROPS(WRK,LWRK,IPRINT)
 C
@@ -1715,8 +1727,7 @@ C
       CALL QEXIT('MM_PROPS')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck MM_POLARIZABILITY */
       SUBROUTINE MM_POLARIZABILITY(INVMAT,FULLMAT,BMATS,POLMAT,IPRINT)
 C
@@ -1855,8 +1866,7 @@ C     Contract to molecular polarizability
       CALL QEXIT('MM_POLARIZABILITY')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck MM_DIPANDCHARGE */
       SUBROUTINE MM_DIPANDCHARGE(WRK,LWRK,IPRINT)
 C
@@ -1985,8 +1995,7 @@ C     Add all contributions to the dipule moment
       CALL QEXIT('MM_DIPANDCHARGE')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck MM_OPTROT */
       SUBROUTINE MM_OPTROT(INVMAT,FULLMAT,POLCORD,IPRINT)
 C
@@ -2106,10 +2115,10 @@ c
       CALL QEXIT('MM_OPTROT')
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck GET_IND_DIPOLES_2 */
-      SUBROUTINE GET_IND_DIPOLES_2(DCAO,POLDIM,INDMOM,WRK,LWRK,IPRINT)
+      SUBROUTINE GET_IND_DIPOLES_2(DCAO,POLDIM,INDMOM,
+     &                             WRK,LWRK,IPRINT)
 C
 C A subroutine to calculate induced dipole moments by simple Jacobi iteration
 C
@@ -2140,6 +2149,7 @@ C
 #include <maxorb.h>
 
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <inforb.h>
 #include <inftap.h>
@@ -2159,10 +2169,9 @@ C
       DOUBLE PRECISION INDMOM
       DIMENSION INDMOM(3*POLDIM),WRK(LWRK), DCAO(*)
 
-      DOUBLE PRECISION AMAT,EVEC,MY0,TTENS,ATMAT,DIP
-      DOUBLE PRECISION MY
-      DIMENSION AMAT(3,3),EVEC(3),MY0(3),TTENS(3,3)
-      DIMENSION ATMAT(3,3),DIP(3),MY(3)
+      DOUBLE PRECISION EVEC,TTENS,ATMAT,DIP
+      DIMENSION EVEC(3),TTENS(3,3)
+      DIMENSION ATMAT(3,3),DIP(3)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2195,8 +2204,9 @@ C     Allocate memory for electric field integrals and electric fields
 
 C     1. Form F vector due to permanent MM moments
 
+      IF (MMTIME) DTIME = SECOND()
       IF (NODTOT .GE. 1) THEN
-        CALL QMMM_POLARI_M2(DCAO,WRK(KELF),POLDIM,
+        CALL MM_FIELD_M2(DCAO,WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
       ELSE
 
@@ -2206,12 +2216,16 @@ C     1. Form F vector due to permanent MM moments
 
           IF (ZEROAL(I) .EQ. -1) GOTO 200
 
-          CALL MMPOLARI_ITER2(I,LRI,WRK(KELF),DCAO,LOCDEB,
-     *                        WRK(KEND),LWRK1)
+          CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KEND),WRK(KEND),
+     *                   DCAO,LOCDEB,WRK(KEND),LWRK1)
           LRI = LRI + 3
 
  200    CONTINUE
 
+      ENDIF
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMPOL2 = TMMPOL2 + DTIME
       ENDIF
 
       NDIM = 3*POLDIM
@@ -2226,9 +2240,14 @@ C     1. Form F vector due to permanent MM moments
 C     Convert the F-vector into induced dipole moments 
 
       IOPT = 1 ! read file with ind. momens from previous SCF iteration.
+      IF (MMTIME) DTIME = SECOND()
       CALL F2QMMM(WRK(KELF),POLDIM,INDMOM,WRK(KEND),LWRK1,
      *            IOPT,IPRINT)
 
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMF2 = TMMF2 + DTIME
+      ENDIF
       IF (IPRINT .GT. 1) THEN
 C       Write induced moments at each MM site to the DAL.OUT file
         WRITE(LUPRI,*)
@@ -2275,7 +2294,7 @@ C     Write the nonzero induced dipoles to file
       CALL QEXIT('GET_IND_DIPOLES_2')
       RETURN
       END
-C********************************************************************************************
+C******************************************************************************
 C  /* Deck F2QMMM */
       SUBROUTINE F2QMMM(ELF,POLDIM,INDMOM,WRK,LWRK,IOPT,IPRINT)
 C
@@ -2285,8 +2304,8 @@ C     Input: ELF
 C     Output: INDMOM
 C
 C     INDMOM is the induced dipole moments
-C     INDDIA is the diagonal part of the induced dipole moments, i.e. the part corresponding 
-C            directly to the F ELF vector. 
+C     INDDIA is the diagonal part of the induced dipole moments,
+C            i.e. the part corresponding directly to the F ELF vector.
 C JK
 
 #include <implicit.h>
@@ -2294,6 +2313,7 @@ C JK
 #include <dummy.h>
 #include <mxcent.h>
 #include <qmmm.h>
+#include <mmtimes.h>
 #include <qm3.h>
 #include <iratdef.h>
 #include <maxash.h>
@@ -2301,6 +2321,7 @@ C JK
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <infpar.h>
 #include <scbrhf.h>
 #include <maxaqn.h>
 #include <symmet.h>
@@ -2330,6 +2351,8 @@ C JK
 
       CALL QENTER('F2QMMM')
 
+      BTIME = SECOND()
+
       LOCDEB = .FALSE.
 
 c      IF (IOPT .EQ. 1) THRESL = THMMIT
@@ -2350,11 +2373,11 @@ c      IF (IOPT .EQ. 2) THRESL = SQRT(THMMIT)/10.0D0
       CALL DZERO(WRK(KINDP),3*POLDIM)
       CALL DZERO(WRK(KINDDIA),3*POLDIM)
 
+      KVEC  = KEND
       IF (MMDIIS) THEN
-        KVEC  = KEND
-        KEND2 = KVEC + (MXMMIT+1)*NDIM
-        LWRK2 = LWRK - KEND2 + 1
-        IF (LWRK2 .LT. 0) CALL ERRWRK('F2QMMM 2',-KEND2,LWRK)
+        KEND = KVEC + (MXMMIT+1)*NDIM
+        LWRK1 = LWRK - KEND + 1
+        IF (LWRK1 .LT. 0) CALL ERRWRK('F2QMMM 2',-KEND,LWRK)
 
         CALL DZERO(WRK(KVEC),(MXMMIT+1)*NDIM)
       ENDIF
@@ -2436,159 +2459,88 @@ C       Calculate the induced dipole moment
 
 C     Now iterate...  !
 
-      DIPCON = .FALSE.
+      IF (MMTIME) DTIME = SECOND()
+
       LM = 0
-      DO 999 ITER = 1, MXMMIT
-      LM = LM + 1
+      DIPCON = .FALSE.
+      IF (NODTOT .GE. 1) THEN
+        CALL MMITER_INDDIP_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
+     *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB,DIPCON,LM)
+      ELSE
 
-      LRI = 1
-      DO 405 I=1,MMCENT
-        IF (ZEROAL(I) .EQ. -1) GOTO 405
+        DO 999 ITER = 1, MXMMIT
+          LM = LM + 1
 
-        LCI = 1
-        DO 409 J=1,MMCENT
+          LRI = 1
+          DO 405 I=1,MMCENT
+            IF (ZEROAL(I) .EQ. -1) GOTO 405
 
-          IF (ZEROAL(J) .EQ. -1) GOTO 409 
+            LCI = 1
+            DO 409 J=1,MMCENT
 
-            IF (J .NE. I) THEN
+              IF (ZEROAL(J) .EQ. -1) GOTO 409 
 
-            EXCENT = .FALSE.
-            DO 921 L=1,NEXLST
-              IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
- 921        CONTINUE
-
-            IF (.NOT. EXCENT) THEN
-C             Get the polarizability tensor for this site
-              DO 406 K=1,3
-                DO 407 L=1,3
-                  AMAT(K,L)  = 0.0D0
- 407            CONTINUE
- 406          CONTINUE
-
-              IF (IPOLTP .EQ. 1)  THEN
-                DO 408 L=1,3
-                  AMAT(L,L) = POLIMM(I)
- 408            CONTINUE
-              ELSE IF (IPOLTP .EQ. 2)  THEN
-                AMAT(1,1) = POLMM(1,I)
-                AMAT(1,2) = POLMM(2,I)
-                AMAT(1,3) = POLMM(3,I)
-                AMAT(2,1) = POLMM(2,I)
-                AMAT(2,2) = POLMM(4,I)
-                AMAT(2,3) = POLMM(5,I)
-                AMAT(3,1) = POLMM(3,I)
-                AMAT(3,2) = POLMM(5,I)
-                AMAT(3,3) = POLMM(6,I)
-              ENDIF
-
-C             Now calculate the T tensor for these sites
-              DIST2 = 0.0D0
-              DO 410 K=1,3
-                DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
- 410          CONTINUE
-              DIST  = SQRT(DIST2)
-              DIST3 = DIST**3
-              DIST5 = DIST**5
-
-              DO 411 K=1,3
-                DO 412 L=1,3
-
-C               Include damping in the exponential form
-C               JPC A 102 (1998) 2399
-                  IF (MMDAMP) THEN
-                    IF (IPOLTP .EQ. 1) THEN
-                      TEMPI = POLIMM(I)
-                      TEMPJ = POLIMM(J)
-                    ELSE IF (IPOLTP .EQ. 2) THEN
-                      TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
-                      TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
-                    ENDIF
-                    TEMP = (TEMPI*TEMPJ)**(D6I)
-                    SCREEN = 2.1304*DIST/TEMP
-                    FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
-     &                     *EXP(-SCREEN)
-                    FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
-     &                     *EXP(-SCREEN)
-                  ELSE
-                    FEIJ = D1
-                    FTIJ = D1
-                  ENDIF
-
-                  ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
-     &                          (MMCORD(L,I) - MMCORD(L,J))
-                  ELEM = ELEM/DIST5
-                  IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
-                  TTENS(K,L) = ELEM
- 412            CONTINUE
- 411          CONTINUE
-
-C             calculate alpha*T
-              CALL DGEMM('N','N',3,3,3,1.D0,AMAT,3,
-     &                   TTENS,3,0.D0,ATMAT,3)
-
-              DIP(1) = WRK(KINDP+LCI-1+0)
-              DIP(2) = WRK(KINDP+LCI-1+1)
-              DIP(3) = WRK(KINDP+LCI-1+2)
-
-              NLDIM = 3
-              NTOTI = MAX(NLDIM,1)
-              CALL DGEMV('N',NLDIM,NLDIM,D1,ATMAT,NTOTI,DIP,1,D0,MY,1)
-
+              CALL GET_MY(I,J,WRK(KINDP+LCI-1),MY)
               INDMOM(LRI+0) = INDMOM(LRI+0) + MY(1)
               INDMOM(LRI+1) = INDMOM(LRI+1) + MY(2)
               INDMOM(LRI+2) = INDMOM(LRI+2) + MY(3)
+              LCI = LCI + 3
+ 409        CONTINUE
 
-            ENDIF
-          ENDIF
+            LRI = LRI + 3
+ 405      CONTINUE
 
-          LCI = LCI + 3
- 409    CONTINUE
-
-        LRI = LRI + 3
- 405  CONTINUE
-
-      TERROR=0.0D0
-      DO 414 I=1,NDIM
-        TERROR = TERROR + (INDMOM(I)-WRK(KINDP+I-1))*
+          TERROR=0.0D0
+          DO 414 I=1,NDIM
+            TERROR = TERROR + (INDMOM(I)-WRK(KINDP+I-1))*
      &                    (INDMOM(I)-WRK(KINDP+I-1)) 
- 414  CONTINUE
+ 414      CONTINUE
 
-      IF ( (LOCDEB) .OR. (IPRINT .GE. 15) ) THEN
-        LMAX = 0
-        TMAX = 0.0D0
-        DO 413 I=1,NDIM
-          TDIFF = ABS(INDMOM(I) - WRK(KINDP-1+I))
-          IF (TDIFF .GT. TMAX) THEN
-            TMAX = TDIFF
-            LMAX = I 
+          IF ( (LOCDEB) .OR. (IPRINT .GE. 15) ) THEN
+            LMAX = 0
+            TMAX = 0.0D0
+            DO 413 I=1,NDIM
+              TDIFF = ABS(INDMOM(I) - WRK(KINDP-1+I))
+              IF (TDIFF .GT. TMAX) THEN
+                TMAX = TDIFF
+                LMAX = I 
+              ENDIF
+ 413        CONTINUE
+            IF (LMAX .NE. 0) THEN
+              WRITE(LUPRI,*) 'Maximum deviation (element) is ',
+     *                        TMAX, LMAX
+            ENDIF 
           ENDIF
- 413    CONTINUE
-        IF (LMAX .NE. 0) THEN
-          WRITE(LUPRI,*) 'Maximum deviation (element) is ',TMAX, LMAX
-        ENDIF 
+
+          IF (ABS(TERROR) .LT. THRESL) THEN
+            DIPCON = .TRUE.
+            GOTO 9000
+          ELSE
+            DIPCON = .FALSE. 
+            IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
+            IF (MMDIIS) THEN
+              CALL DCOPY(NDIM,INDMOM,1,WRK(KVEC+ITER*NDIM),1)
+              CALL MM_DIIS_EXTRAPOLATION(WRK(KVEC),ITER,NDIM,WRK(KINDP),
+     *                               WRK(KEND),LWRK1,IPRINT)
+            ELSE 
+              CALL DCOPY(NDIM,INDMOM,1,WRK(KINDP),1)
+            ENDIF
+C       If no convergence in last iteration keep the values for the
+C       induced dipoles, i.e. not only the diagonal part
+            IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,WRK(KINDDIA),1,
+     *                                       INDMOM,1)
+          ENDIF
+
+ 999    CONTINUE
+
+ 9000   CONTINUE !Done
+
+      ENDIF !parallel mmiter
+
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMITER = TMMITER + DTIME
       ENDIF
-
-      IF (ABS(TERROR) .LT. THRESL) THEN
-        DIPCON = .TRUE.
-        GOTO 9000
-      ELSE
-        DIPCON = .FALSE. 
-        IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
-        IF (MMDIIS) THEN
-          CALL DCOPY(NDIM,INDMOM,1,WRK(KVEC+ITER*NDIM),1)
-          CALL MM_DIIS_EXTRAPOLATION(WRK(KVEC),ITER,NDIM,WRK(KINDP),
-     *                               WRK(KEND2),LWRK2,IPRINT)
-        ELSE 
-          CALL DCOPY(NDIM,INDMOM,1,WRK(KINDP),1)
-        ENDIF
-C       If no convergence in last iteration keep the values for the induced dipoles, 
-C       i.e. not only the diagonal part 
-        IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,WRK(KINDDIA),1,INDMOM,1)
-      ENDIF
-
-  999 CONTINUE
-
- 9000 CONTINUE !Done
 
       LM = LM - 1
       IF (DIPCON) THEN
@@ -2608,14 +2560,15 @@ C       i.e. not only the diagonal part
         WRITE(LUPRI,*) 'Acc. iterations:', NMMAC
       ENDIF
 
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-      END IF
+      IF (FIRST) FIRST = .FALSE.
+
+      BTIME = SECOND() - BTIME
+      TF2QMMM = TF2QMMM + BTIME
 
       CALL QEXIT('F2QMMM')
       RETURN
       END
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck MM_DIIS_EXTRAPOLATION */
       SUBROUTINE MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,RESVEC,WRK,LWRK,
      *                                 IPRINT)
@@ -2780,7 +2733,7 @@ C JK
       CALL QEXIT('MM_DIIS_EXTRAPOLATION')
       RETURN
       END
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck GET_OCTUPOLE_ELFLD */
       SUBROUTINE GET_OCTUPOLE_ELFLD(QXXX,QXXY,QXXZ,QXYY,QXYZ,
      &                              QXZZ,QYYY,QYYZ,QYZZ,QZZZ,
@@ -2956,7 +2909,7 @@ C
       RETURN
       END
 
-C*********************************************************************************************************
+C******************************************************************************
 C  /* Deck MAKE_QMMM_INVERSE_RESPONSE_MATRIX */
       SUBROUTINE MAKE_QMMM_INVERSE_RESPONSE_MATRIX(INVMAT,POLDIM) ! Construct inverse response matrix
 C
@@ -3071,6 +3024,14 @@ C         Inversion
               END IF
               M = M + L
             ELSE
+              IF (NOMB) THEN
+                DO K = 1, 3
+                  INVMAT(M+K) = 0.0D0
+                END DO
+                M = M + 3
+                CYCLE
+              END IF
+
               R = 0.0D0; R2 = 0.0D0
               R2 = (MMCORD(1,I)-MMCORD(1,J))**2 +
      &             (MMCORD(2,I)-MMCORD(2,J))**2 +
@@ -3090,12 +3051,10 @@ C         Inversion
               END DO
 
               IF (EXCENT) THEN
-
                 DO K = 1, 3
                   INVMAT(M+K) = 0.0D0
                 END DO
                 M = M + 3
-
               ELSE
 
 C               Include damping in the exponential form
@@ -3158,7 +3117,7 @@ C               JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
 
       RETURN
       END
-C*******************************************************************************
+C******************************************************************************
 C 'Inside loops' routines (can be used both by parallel and sequential code) 
 C Arnfinn Oct. 2010
 C******************************************************************************
@@ -3295,7 +3254,7 @@ C     Now the QM nuclear contribution
       RETURN
       END
 C
-C********************************************************************
+C******************************************************************************
 C  /* Deck dipole_iter */
       SUBROUTINE DIPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      *                       TAO,WRK,LWRK,IPRTMP)
@@ -3480,8 +3439,7 @@ C     by writing CORD(1,J) - MMCORD(1,I)
 
       RETURN
       END
-
-C***************************************************************
+C******************************************************************************
 C  /* Deck quadpole_iter */
       SUBROUTINE QUADPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
@@ -3634,7 +3592,7 @@ C     Remember the factor of 1/2 from the Taylor expansion
       RETURN
       END
 
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck octupole_iter */
       SUBROUTINE OCTUPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
@@ -3936,12 +3894,12 @@ C     Remember the factor of 1/6 from the Taylor expansion
 
       RETURN
       END
-C***********************************************************
-C  /* Deck mmpolari_iter1 */
-      SUBROUTINE MMPOLARI_ITER1(I,LRI,ELF,ELFEL,ELFNU,DCAO,
+C******************************************************************************
+C  /* Deck get_field */
+      SUBROUTINE GET_FIELD(I,LRI,ELF,ELFEL,ELFNU,DCAO,
      &                         LOCDEB,WRK,LWRK)
 
-#include <implicit.h>
+      IMPLICIT NONE
 #include <mxcent.h>
 #include <inforb.h>
 #include <nuclei.h>
@@ -3951,11 +3909,16 @@ C  /* Deck mmpolari_iter1 */
 #include <orgcom.h>
 #include <priunit.h>
 
+      INTEGER LWRK, I, LRI
+      DOUBLE PRECISION WRK, DCAO, ELF, ELFEL, ELFNU
       DIMENSION WRK(LWRK), DCAO(NNBASX)
       DIMENSION ELF(*), ELFEL(*), ELFNU(*)
       LOGICAL LSKIP, LOCDEB
 
-      CALL QENTER('MMPOLARI_ITER1')
+      INTEGER KMAT, KEND, LWRK1
+      DOUBLE PRECISION EXELCO, EYELCO, EZELCO, DDOT
+
+      CALL QENTER('GET_FIELD')
 
       KMAT  = 1
       KEND  = KMAT + 3*NNBASX
@@ -3975,7 +3938,7 @@ C     A) electronic contribution
       CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KEND),LWRK1)
 
       IF (LSKIP) THEN
-         CALL QEXIT('MMPOLARI_ITER1')
+         CALL QEXIT('GET_FIELD')
          RETURN
       END IF
 
@@ -4004,73 +3967,13 @@ C     B) nuclear contribution
          CALL CCMM_FNUC(ELF,LRI,I)
       END IF
 
-      CALL QEXIT('MMPOLARI_ITER1')
+      CALL QEXIT('GET_FIELD')
 
       RETURN
       END
-
-
-C***********************************************************
-C  /* Deck mmpolari_iter2 */
-      SUBROUTINE MMPOLARI_ITER2(I,LRI,ELF,DCAO,
-     &                         LOCDEB,WRK,LWRK)
-
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
-
-      DIMENSION WRK(LWRK), DCAO(NNBASX), ELF(*)
-      LOGICAL LSKIP, LOCDEB
-
-      CALL QENTER('MMPOLARI_ITER2')
-
-      KMAT  = 1
-      KEND  = KMAT + 3*NNBASX
-      LWRK1 = LWRK - KEND + 1
-
-      CALL CCMM_FMUL(ELF,LRI,I)
-
-C     Add QM region contribution to the F vector
-C     A) electronic contribution
-
-      CALL DZERO(WRK(KMAT),3*NNBASX)
-      LSKIP = .FALSE.
-
-      CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KEND),LWRK1)
-
-      IF (LSKIP) THEN
-         CALL QEXIT('MMPOLARI_ITER2')
-         RETURN
-      END IF
-
-      EXELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-      EYELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT+NNBASX),1)
-      EZELCO = DDOT(NNBASX,DCAO,1,WRK(KMAT+2*NNBASX),1)
-
-      ELF(LRI+0) = ELF(LRI+0) + EXELCO
-      ELF(LRI+1) = ELF(LRI+1) + EYELCO
-      ELF(LRI+2) = ELF(LRI+2) + EZELCO
-
-      IF (LOCDEB) THEN
-         WRITE(LUPRI,*) 'electronic field:',EXELCO,EYELCO,EZELCO
-      ENDIF
-
-C     B) nuclear contribution
-      CALL CCMM_FNUC(ELF,LRI,I)
-
-      CALL QEXIT('MMPOLARI_ITER2')
-
-      RETURN
-      END
-C***********************************************************
-C  /* Deck mmpolari_iter3 */
-      SUBROUTINE MMPOLARI_ITER3(I,DINDMOM,EDALL,DCAO,TAO,
+C******************************************************************************
+C  /* Deck get_pol_contr */
+      SUBROUTINE GET_POL_CONTR(I,DINDMOM,EDALL,DCAO,TAO,
      &                         WRK,LWRK)
 
 #include <implicit.h>
@@ -4089,7 +3992,7 @@ C  /* Deck mmpolari_iter3 */
       PARAMETER ( DMINV2 = -0.50D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0 )
 
-      CALL QENTER('MMPOLARI_ITER3')
+      CALL QENTER('GET_POL_CONTR')
 
       FACM1 = -1.0D0
 
@@ -4102,7 +4005,7 @@ C  /* Deck mmpolari_iter3 */
       CALL CCMM_EPSAO(WRK(KMAT),I,LSKIP,WRK(KLAST),LWRK2)
 
       IF (LSKIP) THEN
-         CALL QEXIT('MMPOLARI_ITER3')
+         CALL QEXIT('GET_POL_CONTR')
          RETURN
       ENDIF
 
@@ -4348,7 +4251,184 @@ C     Octupole contribution
 
       ENDIF
 
-      CALL QEXIT('MMPOLARI_ITER3')
+      CALL QEXIT('GET_POL_CONTR')
+
+      RETURN
+      END
+C******************************************************************************
+C  /* Deck get_my */
+      SUBROUTINE GET_MY(I,J,DIP,MY)
+
+C Input: I,J,DIP
+C Output: MY
+C Get the polarizability tensor MY at site I due to polarizability
+C tensor DIP at site J.
+      IMPLICIT NONE
+#include <mxcent.h>
+#include <qmmm.h>
+
+      LOGICAL EXCENT
+      INTEGER I, J, K, L, NLDIM, NTOTI
+      DOUBLE PRECISION AMAT,TTENS,ATMAT,DIP,MY
+      DOUBLE PRECISION TEMPJ, TEMP, SCREEN, TEMPI,DIST,DIST2,DIST3,DIST5
+      DOUBLE PRECISION ELEM,FEIJ,FTIJ, D0, D1, D3I, D6I
+      DIMENSION AMAT(3,3),TTENS(3,3),ATMAT(3,3),DIP(3),MY(3)
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+
+      CALL QENTER('GET_MY')
+
+      CALL DZERO(MY,3)
+      IF (J .NE. I) THEN
+        EXCENT = .FALSE.
+        DO L=1,NEXLST
+          IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+        ENDDO
+
+        IF (.NOT. EXCENT) THEN
+C     Get the polarizability tensor for this site
+          DO K=1,3
+            DO L=1,3
+              AMAT(K,L)  = 0.0D0
+            ENDDO
+          ENDDO
+
+          IF (IPOLTP .EQ. 1)  THEN
+            DO L=1,3
+              AMAT(L,L) = POLIMM(I)
+            ENDDO
+          ELSE IF (IPOLTP .EQ. 2)  THEN
+            AMAT(1,1) = POLMM(1,I)
+            AMAT(1,2) = POLMM(2,I)
+            AMAT(1,3) = POLMM(3,I)
+            AMAT(2,1) = POLMM(2,I)
+            AMAT(2,2) = POLMM(4,I)
+            AMAT(2,3) = POLMM(5,I)
+            AMAT(3,1) = POLMM(3,I)
+            AMAT(3,2) = POLMM(5,I)
+            AMAT(3,3) = POLMM(6,I)
+          ENDIF
+
+C     Now calculate the T tensor for these sites
+          DIST2 = 0.0D0
+          DO K=1,3
+            DIST2 = DIST2 + (MMCORD(K,I) - MMCORD(K,J))**2
+          ENDDO
+          DIST  = SQRT(DIST2)
+          DIST3 = DIST**3
+          DIST5 = DIST**5
+
+          DO K=1,3
+            DO L=1,3
+
+C     Include damping in the exponential form
+C     JPC A 102 (1998) 2399
+              IF (MMDAMP) THEN
+                IF (IPOLTP .EQ. 1) THEN
+                  TEMPI = POLIMM(I)
+                  TEMPJ = POLIMM(J)
+                ELSE IF (IPOLTP .EQ. 2) THEN
+                  TEMPI =  D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
+                  TEMPJ =  D3I*(POLMM(1,J)+POLMM(4,J)+POLMM(6,J))
+                ENDIF
+                TEMP = (TEMPI*TEMPJ)**(D6I)
+                SCREEN = 2.1304*DIST/TEMP
+                FEIJ = 1.0D0-(1.0D0+SCREEN+0.5D0*SCREEN**2)
+     &                     *EXP(-SCREEN)
+                FTIJ = FEIJ - (1.0D0/6.0D0*SCREEN**3)
+     &                     *EXP(-SCREEN)
+              ELSE
+                FEIJ = D1
+                FTIJ = D1
+              ENDIF
+
+              ELEM = FTIJ*3*(MMCORD(K,I) - MMCORD(K,J))*
+     &                          (MMCORD(L,I) - MMCORD(L,J))
+              ELEM = ELEM/DIST5
+              IF (K .EQ. L) ELEM = ELEM - (FEIJ*1.0/DIST3)
+              TTENS(K,L) = ELEM
+            ENDDO
+          ENDDO
+
+C     calculate alpha*T
+          CALL DGEMM('N','N',3,3,3,1.D0,AMAT,3,
+     &                   TTENS,3,0.D0,ATMAT,3)
+
+          NLDIM = 3
+          NTOTI = MAX(NLDIM,1)
+          CALL DGEMV('N',NLDIM,NLDIM,D1,ATMAT,NTOTI,DIP,1,D0,MY,1)
+        ENDIF
+      ENDIF
+
+      CALL QEXIT('GET_MY')
+
+      RETURN
+      END
+C******************************************************************************
+C  /* Deck qmmmtimes */
+      SUBROUTINE QMMMTIMES(WORD)
+
+      IMPLICIT NONE
+
+#include <priunit.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <mmtimes.h>
+      CHARACTER*(*) WORD
+      DOUBLE PRECISION ZERO
+      PARAMETER(ZERO = 0.0D0)
+      CALL QENTER('QMMMTIMES')
+
+      IF (.NOT. MMTIME) THEN
+        CALL QEXIT('QMMMTIMES')
+        RETURN
+      ENDIF
+
+      WRITE(LUPRI,*) '  - QM/MM times:'
+      IF (WORD .EQ. 'SIRIUS') THEN
+        WRITE(LUPRI,1) 'QMMMFCK      ',TMMFCK
+        WRITE(LUPRI,1) 'QMMM MULPOLES',TMMMULPOL
+        WRITE(LUPRI,1) 'QMMM_POLARI  ',TMMPOL
+        IF (MMITER) THEN
+          WRITE(LUPRI,*) '    - MMITER times:'
+          WRITE(LUPRI,2) 'GET_IND_DIPOLES_2',TMMGID2
+          WRITE(LUPRI,2) 'GET_FIELD        ',TMMPOL2
+          WRITE(LUPRI,2) 'F2QMMM           ',TF2QMMM
+          WRITE(LUPRI,2) 'the iteration    ',TMMITER
+          TMMGID2 = ZERO
+          TMMPOL2 = ZERO
+          TF2QMMM = ZERO
+          TMMITER = ZERO
+        ENDIF
+      ELSEIF (WORD .EQ. 'RESPONSE') THEN
+        WRITE(LUPRI,1) 'QMMMRSP',TMMRSP
+        WRITE(LUPRI,2) 'QMMMLNO      ',TMMLNO
+        WRITE(LUPRI,3) 'QMMMLNO0     ',TMMLNO0
+        WRITE(LUPRI,3) 'QMMMLNO1     ',TMMLNO1
+        WRITE(LUPRI,3) 'QMMMLNO2     ',TMMLNO2
+        WRITE(LUPRI,3) 'QMMMLNO3     ',TMMLNO3
+        WRITE(LUPRI,3) 'QMMMLNO4     ',TMMLNO4
+        WRITE(LUPRI,2) 'QMMMQRO      ',TMMQRO
+        WRITE(LUPRI,3) 'QMMMQRO0     ',TMMQRO0
+        WRITE(LUPRI,3) 'QMMMQRO1     ',TMMQRO1
+        WRITE(LUPRI,3) 'QMMMQRO2     ',TMMQRO2
+        WRITE(LUPRI,3) 'QMMMQRO3     ',TMMQRO3
+        WRITE(LUPRI,3) 'QMMMQRO4     ',TMMQRO4
+        WRITE(LUPRI,2) 'QMMMCRO      ',TMMCRO
+        IF (MMITER) THEN
+          WRITE(LUPRI,2) 'F2QMMM       ',TF2QMMM
+          WRITE(LUPRI,2) 'the iteration',TMMITER
+        ENDIF
+      ELSEIF (WORD .EQ. 'ABACUS') THEN
+        WRITE(LUPRI,1) 'QMMMFIRST',TMMFIRST
+        WRITE(LUPRI,1) 'QMMMB2   ',TMMB2
+      ENDIF
+
+ 1    FORMAT( '     - total time used in ',A,': ',F10.2,' seconds')
+ 2    FORMAT( '       - total time used in ',A,': ',F10.2,' seconds')
+ 3    FORMAT( '         - total time used in ',A,': ',F10.2,' seconds')
+
+      CALL QEXIT('QMMMTIMES')
 
       RETURN
       END
@@ -4451,12 +4531,12 @@ C     Send data to slaves (Lick it up)
 
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(MMITER,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMDIIS,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(LOCDEB,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMDAMP,1,'LOGICAL',MASTER)
 
 C     The loop (Shock me)
       LNUM = 0
@@ -4510,14 +4590,14 @@ C     Collect data from all slaves (Great expectations)
          EXPNST = EXPNST + WRK(KNSEL  + I - 1)
       END DO
 
+      ENUMUL = ECHCH
       ESOLT = ECHART + EDIPT + EQUADT + EOCTUP
 
       CALL QEXIT('PARQMMM_M')
 
       RETURN
       END
-
-C**************************************************************************************
+C******************************************************************************
 C  /* Deck parqmmm_s */
       SUBROUTINE PARQMMM_S(WRK,LWRK,IPRTMP)
 
@@ -4571,6 +4651,8 @@ C     Receiving data from master (I was made for lovin' you)
          CALL MPIXBCAST(MUL3MM,10*MMCENT,'DOUBLE',MASTER)
       ENDIF
 
+
+
       KNSNUC = 1
       KNSEL  = KNSNUC + MMCENT
       KTAO   = KNSEL  + MMCENT
@@ -4597,12 +4679,12 @@ C     Receiving data from master (I was made for lovin' you)
 
       CALL MPIXBCAST(NUCIND,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NUCDEP,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(MMITER,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMPROP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(MMDIIS,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(LOCDEB,1,'LOGICAL',MASTER)
+      CALL MPIXBCAST(MMDAMP,1,'LOGICAL',MASTER)
 
 C     Do the work (I love it load)
 
@@ -4703,8 +4785,9 @@ C     Send data to master (Do you love me?)
       CALL QEXIT('PARQMMM_S')
       RETURN
       END
-C  /* Deck qmmm_polari_m1 */
-      SUBROUTINE QMMM_POLARI_M1(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mm_field_m1 */
+      SUBROUTINE MM_FIELD_M1(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -4738,7 +4821,7 @@ C ----
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
 
-      CALL QENTER('QMMM_POLARI_M1')
+      CALL QENTER('MM_FIELD_M1')
 
       KELF  = 1
       KEND  = KELF + 3*POLDIM
@@ -4748,7 +4831,7 @@ C ----
          KEND    = KELFNU + 3*POLDIM
       ENDIF
       LWRK1 = LWRK - KEND
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_POLARI_M1',-KEND,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('MM_FIELD_M1',-KEND,LWRK)
 
 C     Beginning of parallel section
 
@@ -4789,8 +4872,6 @@ C      CALL MPIXBCAST(RCUTMM,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Start parallelized loop
       LRI = 1
@@ -4832,14 +4913,13 @@ C     Collect data from all slaves
      &                   IERR)
       ENDIF
 
-      CALL QEXIT('QMMM_POLARI_M1')
+      CALL QEXIT('MM_FIELD_M1')
 
       RETURN
       END
-
-C*******************************************************
-C  /* Deck qmmm_polari_s1 */
-      SUBROUTINE QMMM_POLARI_S1(WRK,LWRK,IPRTMP)
+C******************************************************************************
+C  /* Deck mm_field_s1 */
+      SUBROUTINE MM_FIELD_S1(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -4873,7 +4953,7 @@ C ----
       DIMENSION WRK(LWRK)
       INTEGER POLDIM
 
-      CALL QENTER('QMMM_POLARI_S1')
+      CALL QENTER('MM_FIELD_S1')
 
       QMMM = .TRUE.
       IPQMMM = IPRTMP
@@ -4897,7 +4977,7 @@ C     Receiving data from master
       KLAST   = KMAT    + 3*NNBASX
       LWRK2   = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S1',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MM_FIELD_S1',-KLAST,LWRK)
 
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
@@ -4923,8 +5003,6 @@ C     Damping
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
       CALL MPIXBCAST(ZEROAL,MMCENT,'INTEGER',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -4941,7 +5019,7 @@ C     Do the work
       CALL MPIXRECV(LRI,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-         CALL MMPOLARI_ITER1(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
+         CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KELFEL),WRK(KELFNU),
      &                       WRK(KDCAO),.FALSE.,WRK(KLAST),LWRK2)
          GO TO 200
       ENDIF
@@ -4963,14 +5041,14 @@ C     Do the work
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 
-      CALL QEXIT('QMMM_POLARI_S1')
+      CALL QEXIT('MM_FIELD_S1')
 
       RETURN
       END
 C
-C****************************************************************
-C  /* Deck qmmm_polari_m2 */
-      SUBROUTINE QMMM_POLARI_M2(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mm_field_m2 */
+      SUBROUTINE MM_FIELD_M2(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5004,12 +5082,12 @@ C ----
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
 
-      CALL QENTER('QMMM_POLARI_M2')
+      CALL QENTER('MM_FIELD_M2')
 
       KELF  = 1
       KEND  = KELF + 3*POLDIM
       LWRK1 = LWRK - KEND
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMM_POLARI_M2',-KEND,LWRK)
+      IF (LWRK1 .LT. 0) CALL ERRWRK('MM_FIELD_M2',-KEND,LWRK)
 
 C     Beginning of parallel section
 
@@ -5027,7 +5105,9 @@ C     Send data to slaves
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
 
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
+      DO N=1, NEXLST
+         CALL MPIXBCAST(EXLIST(N,1:MMCENT),MMCENT,'INTEGER',MASTER)
+      ENDDO
 
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
@@ -5043,10 +5123,8 @@ C     <-
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
-      LRI = 1   ! important should be zero due to the indexing used !
+      LRI = 1   ! important should be one due to the indexing used !
 
 C     Start parallelized loop
       DO 100 L = 1,MMCENT
@@ -5075,14 +5153,13 @@ C     Collect data from all slaves
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-      CALL QEXIT('QMMM_POLARI_M2')
+      CALL QEXIT('MM_FIELD_M2')
 
       RETURN
       END
-
-C***************************************************
-C  /* Deck qmmm_polari_s2 */
-      SUBROUTINE QMMM_POLARI_S2(WRK,LWRK,IPRTMP)
+C******************************************************************************
+C  /* Deck mm_field_s2 */
+      SUBROUTINE MM_FIELD_S2(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5116,9 +5193,10 @@ C ----
       DIMENSION WRK(LWRK)
       INTEGER POLDIM
 
-      CALL QENTER('QMMM_POLARI_S2')
+      CALL QENTER('MM_FIELD_S2')
 
       QMMM = .TRUE.
+      SPLDIP = .FALSE.          ! Not implemented for iterative QMMM
       IPQMMM = IPRTMP
 
 C     Receiving data from master
@@ -5132,7 +5210,7 @@ C     Receiving data from master
       KLAST   = KMAT    + 3*NNBASX
       LWRK2   = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S2',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MM_FIELD_S2',-KLAST,LWRK)
 
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
@@ -5140,7 +5218,9 @@ C     Receiving data from master
 C
       CALL MPIXBCAST(NMULT,1,'INTEGER',MASTER)
       CALL MPIXBCAST(NEXLST,1,'INTEGER',MASTER)
-      CALL MPIXBCAST(EXLIST,NEXLST*MMCENT,'INTEGER',MASTER)
+      DO N=1, NEXLST
+         CALL MPIXBCAST(EXLIST(N,1:MMCENT),MMCENT,'INTEGER',MASTER)
+      ENDDO
 
 C     Damping
       CALL MPIXBCAST(QMDAMP,1,'LOGICAL',MASTER)
@@ -5156,8 +5236,6 @@ C     <-
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Do the work
 
@@ -5170,8 +5248,8 @@ C     Do the work
       CALL MPIXRECV(LRI,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-         CALL MMPOLARI_ITER2(I,LRI,WRK(KELF),WRK(KDCAO),.FALSE.,
-     *                       WRK(KLAST),LWRK2)
+         CALL GET_FIELD(I,LRI,WRK(KELF),WRK(KLAST),WRK(KLAST),
+     *                  WRK(KDCAO),.FALSE.,WRK(KLAST),LWRK2)
          GOTO 200
       ENDIF
 
@@ -5183,14 +5261,13 @@ C     Do the work
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 
-      CALL QEXIT('QMMM_POLARI_S2')
+      CALL QEXIT('MM_FIELD_S2')
 
       RETURN
       END
-
-*******************************************************************
-C  /* Deck qmmm_polari_m3 */
-      SUBROUTINE QMMM_POLARI_M3(DCAO,TAO,CINDMOM,WRK,LWRK,IPRINT)
+C******************************************************************************
+C  /* Deck mm_polar_contr_m */
+      SUBROUTINE MM_POLAR_CONTR_M(DCAO,TAO,CINDMOM,WRK,LWRK,IPRINT)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5223,7 +5300,7 @@ C ----
 
       DIMENSION WRK(LWRK), TAO(NNBASX), CINDMOM(*)
 
-      CALL QENTER('QMMM_POLARI_M3')
+      CALL QENTER('MM_POLAR_CONTR_M')
 
       KTAO    = 1
       KTAO2   = KTAO   + NNBASX
@@ -5232,7 +5309,7 @@ C ----
       LWRK2   = LWRK    - KWRK2 + 1
 
       IF (LWRK2 .LT. 0) THEN
-         CALL ERRWRK('QMMM_POLARI_M3',-KWRK2,LWRK)
+         CALL ERRWRK('MM_POLAR_CONTR_M',-KWRK2,LWRK)
       ENDIF
 
       EDELD  = 0.0D0            ! For interaction with electronic density
@@ -5277,8 +5354,6 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(DCAO,NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
       IINIM = 0   ! important should be zero due to the indexing used !
 
@@ -5334,14 +5409,13 @@ C     Collect data from all slaves
 
       EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
 
-      CALL QEXIT('QMMM_POLARI_M3')
+      CALL QEXIT('MM_POLAR_CONTR_M')
 
       RETURN
       END
-
-C*************************************************
-C  /* Deck qmmm_polari_s3 */
-      SUBROUTINE QMMM_POLARI_S3(WRK,LWRK,IPRTMP)
+C******************************************************************************
+C  /* Deck mm_polar_contr_s */
+      SUBROUTINE MM_POLAR_CONTR_S(WRK,LWRK,IPRTMP)
 
 #include <implicit.h>
 #include <priunit.h>
@@ -5374,7 +5448,7 @@ C ----
 
       DIMENSION WRK(LWRK)
 
-      CALL QENTER('QMMM_POLARI_S3')
+      CALL QENTER('MM_POLAR_CONTR_S')
 
       QMMM = .TRUE.
       IPQMMM = IPRTMP
@@ -5391,7 +5465,7 @@ C     Receiving data from master
       KLAST   = KEDALL + 6
       LWRK2   = LWRK - KLAST + 1
 
-      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMM_POLARI_S3',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MM_POLAR_CONTR_S',-KLAST,LWRK)
 
       OBKPX = DIPORG(1)
       OBKPY = DIPORG(2)
@@ -5418,8 +5492,6 @@ C     Damping
 
       CALL MPIXBCAST(DELFLD,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(WRK(KDCAO),NNBASX,'DOUBLE',MASTER)
-      CALL MPIXBCAST(LUPROP,1,'INTEGER',MASTER) ! hjaaj: why? unit
-      ! numbes are not relevant to transfer as they are local TODO
 
 C     Compute polarization contributions to the Fock/KS matrix and
 C     total solvation energy
@@ -5443,7 +5515,7 @@ C     total solvation energy
       CALL MPIXRECV(IINIM,1,'INTEGER',MASTER,MPTAG2)
 
       IF (I.GT.0) THEN
-         CALL MMPOLARI_ITER3(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
+         CALL GET_POL_CONTR(I,WRK(KINDMOM+IINIM),WRK(KEDALL),
      &                      WRK(KDCAO),WRK(KTAO),WRK(KLAST),LWRK2)
          EDELD  = EDELD  + WRK(KEDALL)
          EDNUC  = EDNUC  + WRK(KEDALL + 1)
@@ -5482,7 +5554,251 @@ C     total solvation energy
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 
-      CALL QEXIT('QMMM_POLARI_S3')
+      CALL QEXIT('MM_POLAR_CONTR_S')
 
       RETURN
       END
+C******************************************************************************
+C  /* Deck mmiter_inddip_m */
+      SUBROUTINE MMITER_INDDIP_M(POLDIM,INDP1,INDMOM,VEC,INDDIA,
+     *                    WRK,LWRK,LOCDEB,DIPCON,LM)
+
+#include <implicit.h>
+C      IMPLICIT NONE
+
+#include <mxcent.h>
+#include <qmmm.h>
+#include <maxorb.h>
+#include <infpar.h>
+#include <mtags.h>
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+
+
+      INTEGER POLDIM, POLARRAY
+      DIMENSION POLARRAY(POLDIM)
+
+      LOGICAL LOCDEB,DIPCON
+
+      DOUBLE PRECISION INDMOM,INDDIA,INDP1
+      DIMENSION INDMOM(3*POLDIM),VEC(MXMMIT+3*POLDIM), INDDIA(3*POLDIM)
+      DIMENSION WRK(LWRK),INDP1(3*POLDIM)
+
+      DOUBLE PRECISION TERROR,TDIFF,TMAX
+      DOUBLE PRECISION DIP,MY
+      DIMENSION DIP(3),MY(3)
+
+      CALL QENTER('MMITER_INDDIP_M')
+
+      DIPCON = .FALSE.
+
+      THRESL = THMMIT
+      NDIM = 3*POLDIM
+
+C     Make a vector of pol sites
+      L = 0
+      DO 1 I=1,MMCENT
+        IF (ZEROAL(I) .EQ. -1) GOTO 1
+        L = L + 1
+        POLARRAY(L) = I
+ 1    CONTINUE
+
+C     Beginning of parallel section 
+
+      IPRTYP = 25
+
+C     Wake up slaves
+
+      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPQMMM,1,'INTEGER',MASTER)
+
+      CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NODTOT,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(POLARRAY,POLDIM,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+      IF (IPOLTP .EQ. 1) THEN
+        CALL MPIXBCAST(POLIMM,MMCENT,'DOUBLE',MASTER)
+      ELSE IF (IPOLTP .EQ. 2) THEN
+        CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
+      ENDIF
+
+      KINDP1  = 1
+      KINDP2  = KINDP1  + NDIM
+      KLAST   = KINDP2  + NDIM
+      LWRK2   = LWRK - KLAST + 1
+
+      DO 100 ITER = 1, MXMMIT
+        LM = LM + 1
+        DO ISLAVE = 1, NODTOT
+          IWHO = -1
+          NRUN = 1
+          CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
+          CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
+        ENDDO
+
+        CALL MPIXBCAST(INDP1,NDIM,'DOUBLE',MASTER)
+        CALL DZERO(WRK(KINDP1),NDIM)
+        CALL DZERO(WRK(KINDP2),NDIM)
+
+        CALL MPI_REDUCE(WRK(KINDP1),WRK(KINDP2),NDIM, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+        CALL DAXPY(NDIM,1.0D0,WRK(KINDP2),1,INDMOM,1)
+
+        TERROR=0.0D0
+        DO I=1,NDIM
+          TERROR = TERROR + (INDMOM(I)-INDP1(I))*
+     &                      (INDMOM(I)-INDP1(I))
+        ENDDO
+
+        IF ( (LOCDEB) .OR. (IPRINT .GE. 15) ) THEN
+          LMAX = 0
+          TMAX = 0.0D0
+          DO I=1,NDIM
+            TDIFF = ABS(INDMOM(I)-INDP1(I))
+            IF (TDIFF .GT. TMAX) THEN
+              TMAX = TDIFF
+              LMAX = I 
+            ENDIF
+          ENDDO
+          IF (LMAX .NE. 0) THEN
+            WRITE(LUPRI,*) 'Maximum deviation (element) is ',TMAX, LMAX
+          ENDIF 
+        ENDIF
+
+
+        IF (ABS(TERROR) .LT. THRESL) THEN
+          DIPCON = .TRUE.
+          GOTO 200
+        ELSE
+          DIPCON = .FALSE. 
+          IF (LOCDEB )WRITE(LUPRI,*) 'TERROR ',TERROR
+          IF ( MMDIIS ) THEN
+            CALL DCOPY(NDIM,INDMOM,1,VEC(ITER*NDIM+1),1)
+            CALL MM_DIIS_EXTRAPOLATION(VEC,ITER,NDIM,INDP1,
+     *                                 WRK(KLAST),LWRK2,IPRINT)
+          ELSE 
+            CALL DCOPY(NDIM,INDMOM,1,INDP1,1)
+          ENDIF
+C     If no convergence in last iteration keep the values for the
+C     induced dipoles, i.e. not only the diagonal part
+          IF (ITER .NE. MXMMIT) CALL DCOPY(NDIM,INDDIA,1,
+     *                                       INDMOM,1)
+        ENDIF
+
+ 100  CONTINUE
+
+ 200  CONTINUE                  !Done
+
+C     End message to slaves
+      NRUN = -1
+      DO ISLAVE = 1, NODTOT
+        IWHO = -1
+        CALL MPIXRECV(NWHO, 1, 'INTEGER', IWHO, MPTAG1)
+        CALL MPIXSEND(NRUN, 1, 'INTEGER', NWHO, MPTAG2)
+      ENDDO
+
+      CALL QEXIT('MMITER_INDDIP_M')
+
+      RETURN
+      END
+C******************************************************************************
+C  /* Deck mmiter_inddip_s */
+      SUBROUTINE MMITER_INDDIP_S(WRK,LWRK,IPRINT)
+
+#include <implicit.h>
+#include <maxorb.h>
+#include <infpar.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include "mtags.h"
+#if defined(VAR_MPI)
+#include <mpif.h>
+#endif
+
+      INTEGER POLDIM, POLARRAY
+      DIMENSION WRK(LWRK), POLARRAY(:)
+      ALLOCATABLE POLARRAY
+      DOUBLE PRECISION DIP,MY 
+      DIMENSION DIP(3),MY(3)
+      LOGICAL RUN
+      
+      CALL QENTER('MMITER_INDDIP_S')
+
+      CALL MPIXBCAST(POLDIM,1,'INTEGER',MASTER)
+      CALL MPIXBCAST(NODTOT,1,'INTEGER',MASTER)
+
+      ALLOCATE(POLARRAY(POLDIM))
+      CALL MPIXBCAST(POLARRAY,POLDIM,'INTEGER',MASTER)
+      CALL MPIXBCAST(IPOLTP,1,'INTEGER',MASTER)
+      IF (IPOLTP .EQ. 1) THEN
+        CALL MPIXBCAST(POLIMM,MMCENT,'DOUBLE',MASTER)
+      ELSE IF (IPOLTP .EQ. 2) THEN
+        CALL MPIXBCAST(POLMM,6*MMCENT,'DOUBLE',MASTER)
+      ENDIF
+
+      NSLICE = POLDIM/NODTOT
+      ISTART = (MYNUM-1)*NSLICE + 1
+      IEND   = ISTART + NSLICE - 1
+C     check if there is leftovers
+      IF ( (NODTOT*NSLICE) .LT. POLDIM) THEN
+        LEFT = POLDIM - NODTOT*NSLICE
+        IF (MYNUM .LE. LEFT) THEN
+          ISTART = ISTART + MYNUM - 1
+          IEND   = IEND + MYNUM
+        ELSE
+          ISTART = ISTART + LEFT
+          IEND   = IEND + LEFT
+        ENDIF
+      END IF
+
+      NDIM = 3*POLDIM
+
+      KINDP1  = 1
+      KINDP2  = KINDP1  + NDIM
+      KLAST   = KINDP2  + NDIM
+
+      LWRK2 = LWRK - KLAST + 1
+      IF (LWRK2 .LT. 0) CALL ERRWRK('MMITER_INDDIP_S',-KLAST,LWRK)
+
+      CALL DZERO(WRK(KINDP2),NDIM)
+
+ 20   CONTINUE
+
+      CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MPTAG1)
+      CALL MPIXRECV(IRUN,1,'INTEGER',MASTER,MPTAG2)
+
+      IF (IRUN .EQ. 1) THEN
+        CALL DZERO(WRK(KINDP2),NDIM)
+        CALL MPIXBCAST(WRK(KINDP1),NDIM,'DOUBLE',MASTER)
+        LRI = 1 + 3*(ISTART-1)
+        DO L = ISTART, IEND
+          I = POLARRAY(L)
+          LCI = 1
+          DO K = 1, POLDIM
+            J = POLARRAY(K)
+            CALL GET_MY(I,J,WRK(KINDP1+LCI-1),MY)
+            WRK(KINDP2+LRI-1+0) = WRK(KINDP2+LRI-1+0) + MY(1)
+            WRK(KINDP2+LRI-1+1) = WRK(KINDP2+LRI-1+1) + MY(2)
+            WRK(KINDP2+LRI-1+2) = WRK(KINDP2+LRI-1+2) + MY(3)
+            LCI = LCI + 3
+          ENDDO
+          LRI = LRI + 3
+        ENDDO
+
+        CALL MPI_REDUCE(WRK(KINDP2),WRK(KINDP2),NDIM, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
+     &                   IERR)
+
+        GOTO 20
+      ENDIF
+
+      DEALLOCATE(POLARRAY)
+
+      CALL QEXIT('MMITER_INDDIP_S')
+
+      RETURN
+      END
+

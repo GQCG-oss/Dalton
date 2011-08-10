@@ -178,6 +178,68 @@
 }
 ## qm3energy end  #######################################################
 
+## qmmmq start #######################################################
+{$params={
+  name         => "qmmmq", 
+  type         => 0, 
+  string => "Charge contribution:", 
+  pos    => 1};
+}
+## qmmmq end  #######################################################
+
+## qmmmdip start #######################################################
+{$params={
+  name         => "qmmmdip", 
+  type         => 0, 
+  string => "Dipole contribution:", 
+  pos    => 1};
+}
+## qmmmdip end  #######################################################
+
+## qmmmquad start #######################################################
+{$params={
+  name         => "qmmmquad", 
+  type         => 0, 
+  string => "Quadrupole contribution:", 
+  pos    => 1};
+}
+## qmmmquad end  #######################################################
+
+## qmmmoct start #######################################################
+{$params={
+  name         => "qmmmoct", 
+  type         => 0, 
+  string => "Octuple contribution:", 
+  pos    => 1};
+}
+## qmmmoct end  #######################################################
+
+## qmmmelpol start #######################################################
+{$params={
+  name         => "qmmmelpol", 
+  type         => 0, 
+  string => "Electronic Pol. energy:", 
+  pos    => 1};
+}
+## qmmmelpol end  #######################################################
+
+## qmmmnucpol start #######################################################
+{$params={
+  name         => "qmmmnucpol", 
+  type         => 0, 
+  string => "Nuclear pol. energy:", 
+  pos    => 1};
+}
+## qmmmnucpol end  #######################################################
+
+## qmmmmulpol start #######################################################
+{$params={
+  name         => "qmmmmulpol", 
+  type         => 0, 
+  string => "Multipole Pol. energy:", 
+  pos    => 1};
+}
+## qmmmmulpol end  #######################################################
 
 #
 # test type 1
@@ -220,6 +282,19 @@
   thr      => 1.0e-4};
 }
 ## beta end  #####################################################
+
+## gamma start #######################################################
+{$params ={
+  name     => "gamma",
+  type     => 1,
+  string   => "@ gamma",
+  maxout   => -1,
+  maxget   => -1,
+  pos      => 3,
+  thr      => 1.0e-4};
+}
+## gamma end  #####################################################
+
 
 ## HFenergies start #######################################################
 {$params ={
@@ -331,6 +406,55 @@
   thr      => 1.0e-4};
 }
 ## Icoupl end  #####################################################
+
+## DSO start #######################################################
+{$params ={
+  name     => "DSO",
+  type     => 1,
+  string   => "Isotropic DSO contribution:",
+  maxout   => -1,
+  maxget   => -1,
+  pos      => 4,
+  thr      => 1.0e-4};
+}
+## DSO end  #####################################################
+
+## FC start #######################################################
+{$params ={
+  name     => "FC",
+  type     => 1,
+  string   => "Isotropic FC contribution :",
+  maxout   => -1,
+  maxget   => -1,
+  pos      => 5,
+  thr      => 1.0e-4};
+}
+## FC end  #####################################################
+
+## SD start #######################################################
+{$params ={
+  name     => "SD",
+  type     => 1,
+  string   => "Isotropic SD contribution :",
+  maxout   => -1,
+  maxget   => -1,
+  pos      => 5,
+  thr      => 1.0e-4};
+}
+## SD end  #####################################################
+
+## PSO start #######################################################
+{$params ={
+  name     => "PSO",
+  type     => 1,
+  string   => "Isotropic PSO contribution:",
+  maxout   => -1,
+  maxget   => -1,
+  pos      => 4,
+  thr      => 1.0e-4};
+}
+## PSO end  #####################################################
+
 
 ## Acoupl start #######################################################
 {$params ={
@@ -489,6 +613,63 @@
   thr          => 1.0e-6};
 }
 ## excita end  #######################################################
+
+## chemshield1 start #######################################################
+{$params={
+  name         => "chemshield1",
+  type         => 2,
+  start_string => "Summary of chemical shieldings",
+  end_string   => "Total CPU  time used in DALTON:",
+  start_offset => 0,
+  end_offset   => 50,
+  line         => 8,
+  pos          => 2,
+  thr          => 1.0e-4};
+}
+## chemshield1 end  #######################################################
+
+## chemshield2 start #######################################################
+{$params={
+  name         => "chemshield2",
+  type         => 2,
+  start_string => "Summary of chemical shieldings",
+  end_string   => "Total CPU  time used in DALTON:",
+  start_offset => 0,
+  end_offset   => 50,
+  line         => 9,
+  pos          => 2,
+  thr          => 1.0e-4};
+}
+## chemshield2 end  #######################################################
+
+## chemshield3 start #######################################################
+{$params={
+  name         => "chemshield3",
+  type         => 2,
+  start_string => "Summary of chemical shieldings",
+  end_string   => "Total CPU  time used in DALTON:",
+  start_offset => 0,
+  end_offset   => 50,
+  line         => 10,
+  pos          => 2,
+  thr          => 1.0e-4};
+}
+## chemshield3 end  #######################################################
+
+## chemshield4 start #######################################################
+{$params={
+  name         => "chemshield4",
+  type         => 2,
+  start_string => "Summary of chemical shieldings",
+  end_string   => "Total CPU  time used in DALTON:",
+  start_offset => 0,
+  end_offset   => 50,
+  line         => 11,
+  pos          => 2,
+  thr          => 1.0e-4};
+}
+## chemshield4 end  #######################################################
+
 #
 #
 # test type 3
@@ -668,13 +849,26 @@
 {$params = {
   name   => "qm3convergence",
   type   => 4,
-  string => "QM/MM calculation converged :",
+  string => "QM/MM calculation converged",
   maxout => -1,
   post   => 0,
   rembeg => 0,
   remend => 0};
 }
 ## qm3convergence end  #######################################################
+
+
+## qmmmaniso start #######################################################
+{$params = {
+  name   => "qmmmaniso",
+  type   => 4,
+  string => "Anisotropic polarization",
+  maxout => -1,
+  post   => 0,
+  rembeg => 0,
+  remend => 0};
+}
+## qmmmaniso end  #######################################################
 
 #
 # test type 5 (this test type is discontinued!)

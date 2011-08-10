@@ -4367,7 +4367,7 @@ C
 #include <qmmm.h>
 #include <codata.h>
 C
-      PARAMETER ( NTABLE = 24, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 26, D1 = 1.0D0)
       LOGICAL NEWDEF,RCUT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -4387,7 +4387,9 @@ C
 !                  17         18         19         20
      *            '.ISOPOL', '.PRINT ', '.MMREST', '.RELMAT',
 !                  21         22         23         24
-     *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL '/
+     *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL ',
+!                  25         26
+     *            '.NOMB  ', 'MMTIME'/
  
       CALL QENTER('QMMMIN')
  
@@ -4426,6 +4428,8 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       IPQMMM   = 1         ! QMMM print level
       MMREST   = .FALSE.   ! Restart QM/MM calculation (only useful for reusing relay matrix atm.)
       RELMAT   = .FALSE.   ! Construct relay matrix, save to QMMMIM and quit
+      NOMB     = .FALSE.   ! Remove many-body effects, i.e. no induced dipole - induced dipole interactions
+      MMTIME   = .FALSE.   ! Print wall times used in different parts of the QMMM module
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4446,7 +4450,7 @@ C
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &               19,20,21,22,23,24), I
+     &               19,20,21,22,23,24,25,26), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -4621,6 +4625,14 @@ C           See if further input is provided for this option
             NOPOL = .TRUE.
           GO TO 100
 
+   25     CONTINUE
+            NOMB = .TRUE.
+          GO TO 100
+
+   26     CONTINUE
+            MMTIME = .TRUE.
+          GO TO 100
+
         ELSE IF (PROMPT .EQ. '*') THEN
           GO TO 300
         ELSE
@@ -4672,6 +4684,10 @@ C
      *         '| ','RCUT',' | ',RCUT,' |'
         IF (MMREST) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','MMREST',' | ',MMREST,' |'
+        IF (NOMB) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','NOMB',' | ',NOMB,' |'
+        IF (MMTIME) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
+     *         '| ','MMTIME',' | ',MMTIME,' |'
   400   WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
         WRITE(LUPRI,*)
       END IF
@@ -4680,7 +4696,7 @@ C
         WRITE(LUPRI,*)
         WRITE(LUPRI,*) 'Induced MM dipoles are solved iteratively'
         WRITE(LUPRI,*) 'Max. number of iterations: ',MXMMIT
-        WRITE(LUPRI,*) 'Thresshold: ',THMMIT
+        WRITE(LUPRI,*) 'Threshold: ',THMMIT
         IF (MMDIIS) THEN
           WRITE(LUPRI,*) 'DIIS is invoked for induced dipoles'
           WRITE(LUPRI,*) 'Maximum number of DIIS vectors: ',MXMMDI
@@ -4723,7 +4739,11 @@ C
 
       IF (NOPOL) THEN
         WRITE(LUPRI,*) 'Static polarizabilites are reset to zero'
-      ENDIF 
+      ENDIF
+
+      IF (NOMB) THEN
+        WRITE(LUPRI,*) 'No induced dipole - induced dipole interactions'
+      ENDIF
 
       CALL QEXIT('QMMMIN')
       RETURN
@@ -5847,11 +5867,11 @@ C     Output information
   205   CONTINUE
       ENDIF
 
-3999    FORMAT(I4,I4,3(2X,F12.6))
-4000    FORMAT(I4,3(2X,F12.6))
-4001    FORMAT(I4,2X,F12.6)
-4002    FORMAT(I4,6(2X,F12.6))
-4003    FORMAT(I4,10(2X,F12.6))
+3999    FORMAT(I6,I4,3(2X,F12.6))
+4000    FORMAT(I6,3(2X,F12.6))
+4001    FORMAT(I6,2X,F12.6)
+4002    FORMAT(I6,6(2X,F12.6))
+4003    FORMAT(I6,10(2X,F12.6))
 4004    FORMAT(A80)
 
       CALL QEXIT('OUTMM')
