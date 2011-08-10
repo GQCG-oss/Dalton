@@ -129,8 +129,6 @@ C---------------------
 #include <infpar.h>
 #include <mxcent.h>
 #include <qmmm.h>
-#include <mmtimes.h>
-C gnrinf.h for QM3 by CBN+JK 03.01.06
 C---------------------
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -319,15 +317,11 @@ C
      &               WRK(KFREE),LFREE)
          END IF
       ELSE IF (QMMM) THEN
-         DTIME = SECOND()
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-         DTIME = SECOND() - DTIME
-         TMMLNO = TMMLNO + DTIME
-         TMMRSP = TMMRSP + DTIME
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'

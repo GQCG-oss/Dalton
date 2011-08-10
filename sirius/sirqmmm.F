@@ -151,7 +151,7 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
       OBKPY = DIPORG(2)
       OBKPZ = DIPORG(3)
 
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
       IF (NODTOT.GE.1) THEN
 C     All the corrections to the Fock/KS operator due to the static
 C     multipoles when the calculation is done in parallel
@@ -177,8 +177,10 @@ C     integrals numerically here.
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       
       ENDIF ! nodtot .ge. 1
-      DTIME = SECOND() - DTIME
-      TMMMULPOL = TMMMULPOL + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMMULPOL = TMMMULPOL + DTIME
+      ENDIF
 
       IF ( (IPRINT.GT.1) .OR. (LOCDEB) ) THEN
         write(lupri,*)
@@ -190,11 +192,13 @@ C     integrals numerically here.
 
 C     5) The polarization correction to the Fock/KS operator
       
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
       IF (IPOLTP .GT. 0) CALL QMMM_POLARI(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,WRK(KWRK1),LWRK1,IPRINT)
-      DTIME = SECOND() - DTIME
-      TMMPOL = TMMPOL + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMPOL = TMMPOL + DTIME
+      ENDIF
 
 C     Finally, put back the dipole origin
 
@@ -782,11 +786,13 @@ C       Mainly due to debugging. Assumes identical molecules and order
 C       of atoms in previous and current run.
 
         IF (.NOT. FIXDIP) THEN
-          DTIME = SECOND()
+          IF (MMTIME) DTIME = SECOND()
           CALL GET_IND_DIPOLES_2(DCAO,NNZAL,WRK(KINDMOM),
      &                           WRK(KWRK2),LWRK2,IPRINT)
-          DTIME = SECOND() - DTIME
-          TMMGID2 = TMMGID2 + DTIME
+          IF (MMTIME) THEN
+            DTIME = SECOND() - DTIME
+            TMMGID2 = TMMGID2 + DTIME
+          ENDIF
         ELSE
           WRITE(LUPRI,*) 'Ind. dips. from a prev. calc. read from file'
           CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WRK(KINDMOM))
@@ -2198,7 +2204,7 @@ C     Allocate memory for electric field integrals and electric fields
 
 C     1. Form F vector due to permanent MM moments
 
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
       IF (NODTOT .GE. 1) THEN
         CALL MM_FIELD_M2(DCAO,WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
@@ -2217,8 +2223,10 @@ C     1. Form F vector due to permanent MM moments
  200    CONTINUE
 
       ENDIF
-      DTIME = SECOND() - DTIME
-      TMMPOL2 = TMMPOL2 + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMPOL2 = TMMPOL2 + DTIME
+      ENDIF
 
       NDIM = 3*POLDIM
 
@@ -2232,12 +2240,14 @@ C     1. Form F vector due to permanent MM moments
 C     Convert the F-vector into induced dipole moments 
 
       IOPT = 1 ! read file with ind. momens from previous SCF iteration.
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
       CALL F2QMMM(WRK(KELF),POLDIM,INDMOM,WRK(KEND),LWRK1,
      *            IOPT,IPRINT)
 
-      DTIME = SECOND() - DTIME
-      TMMF2 = TMMF2 + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMF2 = TMMF2 + DTIME
+      ENDIF
       IF (IPRINT .GT. 1) THEN
 C       Write induced moments at each MM site to the DAL.OUT file
         WRITE(LUPRI,*)
@@ -2449,7 +2459,7 @@ C       Calculate the induced dipole moment
 
 C     Now iterate...  !
 
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
 
       LM = 0
       DIPCON = .FALSE.
@@ -2527,8 +2537,10 @@ C       induced dipoles, i.e. not only the diagonal part
 
       ENDIF !parallel mmiter
 
-      DTIME = SECOND() - DTIME
-      TMMITER = TMMITER + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMITER = TMMITER + DTIME
+      ENDIF
 
       LM = LM - 1
       IF (DIPCON) THEN
@@ -4366,6 +4378,11 @@ C  /* Deck qmmmtimes */
       DOUBLE PRECISION ZERO
       PARAMETER(ZERO = 0.0D0)
       CALL QENTER('QMMMTIMES')
+
+      IF (.NOT. MMTIME) THEN
+        CALL QEXIT('QMMMTIMES')
+        RETURN
+      ENDIF
 
       WRITE(LUPRI,*) '  - QM/MM times:'
       IF (WORD .EQ. 'SIRIUS') THEN

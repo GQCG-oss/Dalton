@@ -179,7 +179,6 @@ C
 #include <infpri.h>
 #include <dftcom.h>
 #include <gnrinf.h>
-#include <mmtimes.h>
 C
       DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -250,7 +249,6 @@ C
 C
       IF (QMMM) THEN
          IF (TDHF) THEN
-             DTIME = SECOND()
              CALL QMMMCRO(VECB, VECC, VECD,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
      *                 UDV,WRK(KFREE),LFREE,
@@ -281,9 +279,6 @@ C
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVD,KZYVB,KZYVC,
      *                 ISYMA,ISYMD,ISYMB,ISYMC,CMO,MJWOP)
-            DTIME = SECOND() - DTIME
-            TMMCRO = TMMCRO + DTIME
-            TMMRSP = TMMRSP + DTIME
          ELSE
             CALL QUIT('CR-QM/MM only implemented for TDHF/TDDFT')
          END IF

@@ -58,7 +58,6 @@ C
 #include <ccinftap.h>
 CSPAS : 6/11-2009 AO-SOPPA included
 #include <soppinf.h>
-Carnfinn: 23/3-2011 due to qmmm timer
 #include <gnrinf.h>
 C
 C

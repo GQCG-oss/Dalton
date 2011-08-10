@@ -62,7 +62,6 @@ cat > qmmm_debug2.dal <<'%EOF%'
 .RUN RESPONSE
 *QMMM
 .QMMM
-.MMITER
 .PRINT
  1 
 **WAVE FUNCTIONS

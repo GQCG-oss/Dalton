@@ -55,7 +55,7 @@ C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       CALL QENTER('QMMMFIRST')
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -506,8 +506,10 @@ C
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 C
-      DTIME = SECOND() - DTIME
-      TMMFIRST = TMMFIRST + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMFIRST = TMMFIRST + DTIME
+      ENDIF
 C
       CALL QEXIT('QMMMFIRST')
       RETURN
@@ -544,7 +546,7 @@ C
 C
 
       CALL QENTER('QMMMB2')
-      DTIME = SECOND()
+      IF (MMTIME) DTIME = SECOND()
 
       LOCDEB = .FALSE.
 
@@ -876,8 +878,10 @@ C     Put back the dipole origin
       DIPORG(2) = OBKPY
       DIPORG(3) = OBKPZ
 C
-      DTIME = SECOND() - DTIME
-      TMMB2 = TMMB2 + DTIME
+      IF (MMTIME) THEN
+        DTIME = SECOND() - DTIME
+        TMMB2 = TMMB2 + DTIME
+      ENDIF
 C
       CALL QEXIT('QMMMB2')
       RETURN

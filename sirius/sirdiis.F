@@ -686,7 +686,7 @@ C
          END IF
 
          IF (QMMM) THEN
-            DTIME = SECOND()
+            IF (MMTIME) DTIME = SECOND()
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL DZERO(WRK(KFCSOL),NNBAST)
             CALL QMMMFCK(DAOSAV(1,1),DAOSAV(1,2),
@@ -695,8 +695,10 @@ C
             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
             CALL MEMREL('DIIS_CTL.QMMMFCK',WRK,KFRSAV,
      &                  KFCSOL,KFREE,LFREE)
-            DTIME = SECOND() - DTIME
-            TMMFCK = TMMFCK + DTIME
+            IF (MMTIME) THEN
+              DTIME = SECOND() - DTIME
+              TMMFCK = TMMFCK + DTIME
+            ENDIF
          ENDIF
 
          IF (FLAG(16)) THEN
