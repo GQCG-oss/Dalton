@@ -67,11 +67,9 @@ dft/prop-eval.c
 dft/quad-fast.c
 dft/quad-faster.c
 dft/quad-strict.c
-gp/mpi_dummyc.c
 pdpack/scatter-io.c
     )
 set(FIXED_FORTRAN_SOURCES
-abacus/dalton.F
 abacus/aba2eth.F
 abacus/aba2r12.F
 abacus/aba2tex.F
@@ -461,7 +459,6 @@ gp/gptrygve.F
 gp/graphic.F
 gp/intf7790.F
 gp/mempkg.F
-gp/mpi_dummy.F
 gp/mpimacro.F
 gp/pvmmacro.F
 gp/qpack.F
@@ -712,6 +709,7 @@ soppa/so_writeset.F
 soppa/so_wrtve.F
     )
 set(FREE_FORTRAN_SOURCES
+gp/compilation_info.F90
 gp/character_processing.F90
 gp/dalton_input_processing.F90
 gp/input_reader.F90
@@ -735,3 +733,13 @@ set(OWN_LAPACK_SOURCES
     pdpack/gp_dlapack.F
     pdpack/gp_zlapack.F
     )
+if(NOT ENABLE_MPI)
+    set(C_SOURCES
+        ${C_SOURCES}
+        gp/mpi_dummyc.c
+        )
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        gp/mpi_dummy.F
+        )
+endif()

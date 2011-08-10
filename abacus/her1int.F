@@ -1313,11 +1313,13 @@ C
       LFREE  = LWORK
       LODC   = 3*(JMAXA+1)*(JMAXB+1)*(JMAXT+1)*(JMAXD+1)*(JMAXM+1)
       CALL MEMGET('REAL',KODC,  LODC,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAHGTF,NAHGTF*(NATOMC + 1),WORK,KFREE,LFREE)
+      N_AHGTF_VECS = MAX(3,NATOMC+1)
+      ! PR1PRA needs 3 vectors if NATOMC.eq.1 and ADDNAI becomes true
+      CALL MEMGET('REAL',KAHGTF,NAHGTF*N_AHGTF_VECS,WORK,KFREE,LFREE)
 C
       IF (INTTYP .NE. 12 .AND. INTTYP .NE. 58 .AND. INTTYP .NE. 96) THEN
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &               WORK(KAHGTF),SHLINT,WORK(KFREE),LFREE,
+     &               WORK(KAHGTF),SHLINT,WORK,KFREE,LFREE,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
@@ -1336,7 +1338,7 @@ C
       END
 C  /* Deck pr1pra */
       SUBROUTINE PR1PRA(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  WORK,LWORK,LABINT,INTTYP,NOPTYP,
+     &                  WORK,KFREE,LFREE,LABINT,INTTYP,NOPTYP,
      &                  NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
      &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
@@ -1352,7 +1354,7 @@ C
       LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI, HUCORB, ONCN
       LOGICAL KINODC
       CHARACTER LABINT(NOPTYP)*8
-      DIMENSION WORK(LWORK), TEMP(3),
+      DIMENSION WORK(*), TEMP(3),
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*), GEXP(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -1498,8 +1500,8 @@ Clf
 Clf
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  KINODC,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
          END IF
 C
 C        **********************************************
@@ -1552,12 +1554,13 @@ cLig <> added the call to DZERO also for INTTYP = 82
      &                       .OR. (INTTYP .EQ. 99)
      &                       .OR. (INTTYP .EQ. 100)
      &    ) THEN
-               CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
-            IF (ADDNAI) THEN
-               CALL DZERO(AHGTF,NAHGTF)
+            IF (ADDNAI) THEN !  ADD Nuclear Attraction Integrals
                IADR = 1 + NAHGTF
+               CALL DZERO(AHGTF,3*NAHGTF)
+!              1: added values, 2 and 3: (IADR pointer) for HERNAI
             ELSE
                IADR = 1
+               CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             END IF
             FACTOR = D1
             DO 300 IATOMC = 1, NATOMC
@@ -1660,8 +1663,8 @@ C
                DIPORG(3) = CORPZ
             END IF
             CALL MOMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  CORPX,CORPY,CORPZ,EXPPI,DIPORG,IORDER,WORK,
-     &                  LWORK)
+     &                  CORPX,CORPY,CORPZ,EXPPI,DIPORG,IORDER,
+     &                  WORK(KFREE),LFREE)
 C
 C        Fermi contact integrals
 C        -----------------------
@@ -1723,8 +1726,8 @@ C
             DOMOM1 = .FALSE.
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
             CALL AMDINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      &                  SHLINT(1,10),EXPA)
             DONUC1 = .FALSE.
@@ -1745,8 +1748,8 @@ C
      &                  D2INV)
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  ORIGIN,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,ORIGIN,INTTYP)
             CALL MM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
@@ -1790,8 +1793,8 @@ C
             TEMP(3) = CORBZ
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
             CALL QDPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,EXPPI,INTTYP)
 C
@@ -1820,8 +1823,8 @@ C
             TEMP(3) = CORBZ
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
             CALL NSNLIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 C
@@ -1951,7 +1954,7 @@ C
          ELSE IF (INTTYP .EQ. 46) THEN
             CALL SL1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ,EXPPI,
-     &                  IORDER,WORK,LWORK)
+     &                  IORDER,WORK(KFREE),LFREE)
 C
 C        Second magnetic derivative of solvent integrals
 C        -----------------------------------------------
@@ -1959,7 +1962,7 @@ C
          ELSE IF (INTTYP .EQ. 47) THEN
             CALL SL2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ,EXPPI,
-     &                  IORDER,WORK,LWORK)
+     &                  IORDER,WORK(KFREE),LFREE)
 C
 C        First electric derivative of overlap integrals. Type A
 C        ------------------------------------------------------
@@ -1991,8 +1994,8 @@ C
             DOMOM1 = .TRUE.
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
             DONUC1 = .TRUE.
             DOMOM1 = .FALSE.
             CALL DPGINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -2008,8 +2011,8 @@ C
             DOMOM1 = .TRUE.
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
             DONUC1 = .TRUE.
             DOMOM1 = .FALSE.
             CALL QUGINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -2026,8 +2029,8 @@ C
             DOMOM1 = .TRUE.
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                  TEMP,INTTYP)
+     &                  WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
             DONUC1 = .TRUE.
             DOMOM1 = .FALSE.
             CALL OCGINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -2218,8 +2221,8 @@ C
                DOMOM1 = .TRUE.
                CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                     .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
-     &                     WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
-     &                     TEMP,INTTYP)
+     &                     WORK(KFREE),LFREE,CORPX,CORPY,CORPZ,
+     &                     DONUC1,DOMOM1,TEMP,INTTYP)
                DONUC1 = .TRUE.
                DOMOM1 = .FALSE.
                CALL DPHINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,

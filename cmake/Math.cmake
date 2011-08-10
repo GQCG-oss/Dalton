@@ -3,18 +3,18 @@ set(MATH_LANG "Fortran")
 set(BLAS_FOUND   FALSE)
 set(LAPACK_FOUND FALSE)
 
-if(ENABLE_EXTERNAL_MATH)
+if(NOT ENABLE_INTERNAL_MATH)
 
     # user sets
-    set(USERDEFINED_LIBS
-        "${USERDEFINED_LIBS}"
+    set(USERDEFINED_MATH
+        "${USERDEFINED_MATH}"
         CACHE STRING
         "User set math libraries"
         FORCE
         )
-    if(NOT "${USERDEFINED_LIBS}" STREQUAL "")
+    if(NOT "${USERDEFINED_MATH}" STREQUAL "")
         set(MATH_LIBS
-            "${USERDEFINED_LIBS}"
+            "${USERDEFINED_MATH}"
             CACHE STRING
             "User set math libraries"
             FORCE

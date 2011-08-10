@@ -15,7 +15,8 @@
 # Revised 970401 hjaaj
 # Linux support added 970414 by Konrad Hinsen.
 # HP revisions 970505-ekd/Konrad Hinsen. Combined by kr 080597
-# Fixed strange echo behaviour for linux 990830-pawel salek
+#
+#
 # Check specific processor for optimization flags for linux machines 
 # (uname -m) -mpentiumpro for i686, -mpentium for i586, and -m486 otherwise
 # 990831-ekd
@@ -387,7 +388,7 @@ if [ "$answer" = "y" ]; then
 #        parlibp='-L$(PVM_ROOT)/lib/$(PVM_ARCH)'
 #        parlib='-lfpvm3 -lpvm3'
 #        parnodp='$(HOME)/pvm3/bin/$(PVM_ARCH)'
-#        parnod='node.x'
+#        parnod='dalton_pvmnode.x'
     fi
 fi
 #
@@ -490,7 +491,7 @@ for comp in $ccmplist; do
             ac_cv_prog_C=$ac_word
             break
           fi
-        fi  
+        fi
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_C" && ac_cv_prog_C=""
@@ -679,22 +680,28 @@ $ECHO 'NOTE: This will increase the static memory allocation used by DALTON'
 
 get_yes_or_no "\nWould you like to activate the possibility of storing 2-el.int. in memory?" n
 if [ "$answer" = "y" ]; then
-    incoresiz=0
+    incore_memory_words=0
 #   only accept positive numbers
-    while [ $incoresiz -le 0 ]
+    while [ $incore_memory_words -le 0 ]
     do
-       $ECHO 'How many millions of *8 words to use for storing 2-el.integrals? \c'
-       read incoresiz
+       $ECHO 'How many MB to use for storing 2-el. integrals? \c'
+
+       read incore_memory_mb
+
+       # convert
+       incore_memory_mw=`echo "$incore_memory_mb*1048576/8000000" | bc`
+       incore_memory_words=`expr $incore_memory_mw \* 1000000`
+
 #      check that user hasn't just hit return (giving an empty string)
-       if [ "$incoresiz" = "" ]; then incoresiz=0; fi
-       incoresiz=`expr $incoresiz \* 1000000`
-#      in case $incoresize was not a number it will now be an empty string, if so reset to zero.
-       if [ "$incoresiz" = "" ]; then incoresiz=0; fi
+       if [ "$incore_memory_words" = "" ]; then incore_memory_words=0; fi
+
+#      in case $incore_memory_wordse was not a number it will now be an empty string, if so reset to zero.
+       if [ "$incore_memory_words" = "" ]; then incore_memory_words=0; fi
     done
-    $ECHO '\n-->Program will be installed with '$incoresiz' words used for storing 2-el.integrals'
+    $ECHO '\n-->Program will be installed with '$incore_memory_mb' MB ('$incore_memory_words' words) used for storing 2-el. integrals'
     
 else
-    incoresiz=1
+    incore_memory_words=1
 fi
 
 $ECHO '\nMaximum amount of work memory for dynamic allocations can be changed'
@@ -704,23 +711,29 @@ $ECHO 'We recommend at least 200 MB work memory,'
 $ECHO 'larger for correlated calculations, but it should for maximum'
 $ECHO 'efficiency NOT exceed available physical memory per CPU in parallel calculations.\n'
 
-memsiz=0
+work_memory_words=0
 # only accept positive numbers
-while [ $memsiz -le 0 ]
+while [ $work_memory_words -le 0 ]
 do
-    $ECHO 'How many millions of *8 words to use as default for work memory? \c'
+    $ECHO 'How many MB to use as default for work memory (hit return for default of 1000 MB)? \c'
+
     if test "$do_quick_config" = y; then
-       memsiz=50
+       work_memory_mb=1000
     else 
-       read memsiz
+       read work_memory_mb
     fi
-#   check that user hasn't just hit return (giving an empty string)
-    if [ "$memsiz" = "" ]; then memsiz=0; fi
-    memsiz=`expr $memsiz \* 1000000`
-#   in case $memsiz was not a number it will now be an empty string, if so reset to zero.
-    if [ "$memsiz" = "" ]; then memsiz=0; fi
+
+    # if user hit return, use default
+    if [ "$work_memory_mb" = "" ]; then work_memory_mb=1000; fi
+
+    # convert
+    work_memory_mw=`echo "$work_memory_mb*1048576/8000000" | bc`
+    work_memory_words=`expr $work_memory_mw \* 1000000`
+
+    # in case $work_memory_mb was not a number, $work_memory_words is now an empty string, if so reset to zero.
+    if [ "$work_memory_words" = "" ]; then work_memory_words=0; fi
 done
-$ECHO '\n-->Program will be installed with a default work memory of '$memsiz' words'
+$ECHO '\n-->Program will be installed with a default work memory of '$work_memory_mb' MB ('$work_memory_words' words)'
 
 #
 # Determine location for executable and run script
@@ -729,14 +742,13 @@ $ECHO '\n-->Program will be installed with a default work memory of '$memsiz' wo
 curr=`pwd`
 $ECHO '\n-->Current directory is '$curr'\n'
 
-INSTALL_DIR=$curr/bin
-get_yes_or_no 'Use ./bin as installation directory for binaries and scripts?' y
+INSTALL_DIR=./bin
+get_yes_or_no 'Use default $INSTALL_DIR as installation directory for DALTON binaries and scripts?' y
 
 while [ "$answer" = "n" ]
 do
     $ECHO 'Please enter another installation directory: \c'
     read INSTALL_DIR
-    $ECHO '\n-->DALTON executable and script will be placed in '$INSTALL_DIR' directory\n'
     if [ ! -d "$INSTALL_DIR" ]; then
         $ECHO "ERROR: $INSTALL_DIR does not exist, will be created now."
         mkdir "$INSTALL_DIR"; mkdir_ok=$?
@@ -745,18 +757,26 @@ do
     else
         answer="ok"
     fi
+
 done
+
+# make sure INSTALL_DIR exists, also if default value
 if [ ! -d "$INSTALL_DIR" ]; then
    mkdir "$INSTALL_DIR"
 fi
+
+#   Make sure  pathname to INSTALL_DIR is absolute path and not relative path
+cd $INSTALL_DIR; INSTALL_DIR=`pwd`; cd $OLDPWD
+
+$ECHO '\n-->DALTON executable and script will be placed in '$INSTALL_DIR' directory\n'
 
 #
 # Determine default basis set library location
 #
 
-basdir=$curr'/basis/'
-$ECHO '\n-->Default basis set directory will be '$basdir''
-if [ -d "$basdir" ]; then 
+INSTALL_BASDIR=$curr'/basis/'
+$ECHO '\n-->Default basis set directory will be '$INSTALL_BASDIR''
+if [ -d "$INSTALL_BASDIR" ]; then 
   get_yes_or_no '\nUse this directory as default basis set directory?' y
 else
   $ECHO "Sorry, this directory does not exist."
@@ -766,11 +786,14 @@ fi
 while [ "$answer" = "n" ]
 do
     $ECHO '\nPlease choose another default basis set directory (must end with /) \c'
-    read basdir
-    $ECHO '\n-->Default basis set directory will be '$basdir'\n'
-    if [ ! -d "$basdir" ]; then $ECHO "Sorry, this directory does not exist"
+    read INSTALL_BASDIR
+    $ECHO '\n-->Default basis set directory will be '$INSTALL_BASDIR'\n'
+    if [ ! -d "$INSTALL_BASDIR" ]; then $ECHO "Sorry, this directory does not exist"
     else answer="ok"; fi
 done
+
+#   Make sure  pathname to INSTALL_BASDIR is absolute path and not relative path
+cd $INSTALL_BASDIR; INSTALL_BASDIR=`pwd`; cd $OLDPWD
 
 #
 # Determine default scratch disk space for calculations
@@ -827,7 +850,7 @@ case "$WHICH" in
     rs6000)
           case $opsys in
           2)
-             cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+             cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
              if [ $splitfiles = 'true' ] ; then
                 cpp="$cpp -DVAR_SPLITFILES"
              fi
@@ -842,7 +865,7 @@ case "$WHICH" in
              inc='-I../include'
              cpp=${cpp}" -DIMPLICIT_NONE";;
           *)
-             cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_MMWORK=$incoresiz'"
+             cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$work_memory_words',-D'INSTALL_MMWORK=$incore_memory_words'"
              if [ $splitfiles = 'true' ] ; then
                 cpp="$cpp,-DVAR_SPLITFILES"
              fi
@@ -870,7 +893,7 @@ case "$WHICH" in
              cpp=${cpp}",-DVAR_INT64"
           fi;;
     iris4d)
-          cpp="-DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_IRIX -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           case $opsys in
                IRIX64)  opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0 -woff 2290'
                        copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0'
@@ -894,7 +917,7 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     cray)
-          cpp="-DSYS_CRAY -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
+          cpp="-DSYS_CRAY -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp $parop"
           fi
@@ -903,7 +926,7 @@ case "$WHICH" in
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
-          cpp="-DSYS_T90 -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz' -DVAR_VECTOR"
+          cpp="-DSYS_T90 -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' -DVAR_VECTOR"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp $parop"
           fi
@@ -912,7 +935,7 @@ case "$WHICH" in
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
-          cpp="-DSYS_T3D -DVAR_INT64 -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_T3D -DVAR_INT64 -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
           fi
@@ -922,7 +945,7 @@ case "$WHICH" in
           def='t3d.x'
           LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
     nec)
-          cpp="-DSYS_NEC DVAR_INT64 D'INSTALL_WRKMEM=$memsiz' D'INSTALL_MMWORK=$incoresiz' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
+          cpp="-DSYS_NEC DVAR_INT64 D'INSTALL_WRKMEM=$work_memory_words' D'INSTALL_MMWORK=$incore_memory_words' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
           if [ "$mesp" = "dummy" ]; then
              cpp="-cpp $cpp"
           else
@@ -932,7 +955,7 @@ case "$WHICH" in
           cpp=${cpp}" DIMPLICIT_NONE"
           opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
     alpha)
-          cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
              set_parallel_def $mesp
@@ -941,7 +964,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           opt='-fast -fpe3 -warn nouncalled';;
     sun4)
-          cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ $splitfiles = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
@@ -953,7 +976,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           opt='-fast';;
     hp)
-          cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
@@ -986,7 +1009,7 @@ case "$WHICH" in
           copt=${copt}" -AC99"
           cpp=${cpp}$;;
     linux-alpha)
-          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_def $mesp
@@ -999,7 +1022,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           copt='-fast';;
     linux|cygwin) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ $splitfiles = 'true' ] ; then
              cpp="$cpp -DVAR_SPLITFILES"
           else
@@ -1113,7 +1136,7 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     darwin) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_MMWORK=$incoresiz'"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
@@ -1184,12 +1207,14 @@ rm configure_conftest.c configure_conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in DALTON
 # 1) Gen1Int
-$ECHO "\nGen1Int is a tool package for computing the one-electron integrals as well as"
+$ECHO "\nGen1Int is a tool package for computing many different one-electron integrals as well as"
 $ECHO "their high-order magnetic and geometric derivatives using London atomic-orbitals."
 $ECHO "Please see http://sourceforge.net/projects/gen1int for more details and"
 $ECHO "the instruction of installation. Before enabling this feature, make sure you have"
 $ECHO "successfully compiled the library of Gen1Int (libgen1int.a)."
-get_yes_or_no "\nDo you want to install Gen1Int?" n
+$ECHO "\n--> In DALTON release Dalton2011 Gen1Int is only used for ECPs; activating Gen1Int"
+$ECHO   "--> makes it possible to calculate many more types of ECPs than in Dalton 2.0"
+get_yes_or_no "\nDo you want to activate Gen1Int package for ECPs in DALTON?" n
 if [ "$answer" = "y" ]; then
   $ECHO "\n-->Trying to find Gen1Int (libgen1int.a) ..."
   lib_genint=`locate libgen1int.a`
@@ -1208,7 +1233,10 @@ if [ "$answer" = "y" ]; then
     cpp="-DBUILD_GEN1INT $cpp"
     LIB="$LIB $lib_genint"
   else
-    $ECHO "\n-->Gen1Int will not be installed!"
+    $ECHO "\n-->Gen1Int libary was not found and Gen1Int code will not be activated!"
+    $ECHO "\n-->You can still activate Gen1Int manually by modifying Makefile.config as follows:"
+    $ECHO   "-- -->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
+    $ECHO   "-- -->(2) Appending libgen1int.a to LIBS"
   fi
 fi
 
@@ -1417,11 +1445,11 @@ backup -v $INSTALL_DIR/dalton
 #
 DALEXE="dalton.x"
 if [ $mesp = 'pvm' ]; then
-    DALEXE="dalpvm.x"
+    DALEXE="dalton_pvm.x"
 fi
 mpirun=`which mpirun 2>/dev/null` || mpirun=mpirun
 
-cat <<EOF > $INSTALL_DIR/dalton.setup
+cat <<EOF > ./dalton.setup
 #!/bin/bash
 ################################################################################
 #                                                                              #
@@ -1436,15 +1464,15 @@ cat <<EOF > $INSTALL_DIR/dalton.setup
 #
 # location of executeables
 DALTON="$INSTALL_DIR/$DALEXE"
-DALMPI="$INSTALL_DIR/dalpar.x"
+DALMPI="$INSTALL_DIR/dalton_mpi.x"
 
 MPIRUN="$mpirun"
 # set TMPDIR (if not defined by e.g. NQS) and WRKDIR
 [ -z "\$TMPDIR" ] && TMPDIR="$worksp"
 
-INSTALL_BASDIR="$basdir"
+INSTALL_BASDIR="$INSTALL_BASDIR"
 EOF
-cat $INSTALL_DIR/dalton.setup dalton.gnr > $INSTALL_DIR/dalton
+cat dalton.setup dalton.gnr > $INSTALL_DIR/dalton
 
 chmod 755 $INSTALL_DIR/dalton
 

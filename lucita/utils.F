@@ -49,7 +49,7 @@
       WRITE (*,*) ' THE LAST LINE PROCESSED WAS:'
       WRITE (*,*) CHAR_X
       WRITE (*,*)
-      CALL QUIT(16)
+      CALL QUIT('Input error in CHAR_TO_INTEGER')
 
 200   WRITE (*,*)
       WRITE (*,*) ' *** ERROR IN INPUT ***'
@@ -58,7 +58,7 @@
       WRITE (*,*)
       WRITE (*,*) ' FORTRAN I/O STATUS = ',IOS
       WRITE (*,*)
-      CALL QUIT(16)
+      CALL QUIT('Input error in CHAR_TO_INTEGER')
 
       END
 ***********************************************************************
@@ -148,7 +148,7 @@
       WRITE (*,*) ' THE LAST LINE PROCESSED WAS:'
       WRITE (*,*) CHAR_X
       WRITE (*,*)
-      CALL QUIT(16)
+      CALL QUIT('Input error in CHAR_TO_REAL')
 
 200   WRITE (*,*)
       WRITE (*,*) ' *** ERROR IN INPUT ***'
@@ -157,7 +157,7 @@
       WRITE (*,*)
       WRITE (*,*) ' FORTRAN I/O STATUS = ',IOS
       WRITE (*,*)
-      CALL QUIT(16)
+      CALL QUIT('Input error in CHAR_TO_REAL')
 
       END
 ***********************************************************************

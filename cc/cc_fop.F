@@ -885,7 +885,7 @@ C
               CALL DZERO(WORK(KRHO1),NT1AMX)
               IF (.NOT.CCS) CALL DZERO(WORK(KRHO2),NT2AMX)
               LR = '0'
-              DTIME = SECOND()
+              CALL TIMER('START ',TIMSTR,TIMEND)
               IF (.NOT. NYQMMM) THEN            
                  CALL CCMM_LTRB(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2,
      *                       ISYMOP,LR,WORK(KWRK4),LWRK4)
@@ -894,10 +894,6 @@ C
      *                DUM2,MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
 C                 CALL CCMM_TGTBAR(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2, 
 C     *                           MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
-              END IF
-              IF (IPRINT .GT. 5) THEN
-                WRITE(LUPRI,*)'Time used in CCMM_LTRB (CC_FOP):',
-     *                         SECOND() - DTIME
               END IF
               CALL TIMER('LR=R',TIMSTR,TIMEND)
               CALL FLSHFO(LUPRI)
@@ -3752,6 +3748,7 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), WORK(LWORK)
+      CHARACTER MODEL*(10)
 #include <ccorb.h>
 #include <ccisao.h>
 #include <r12int.h>

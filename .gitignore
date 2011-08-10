@@ -6,3 +6,4 @@ configure_conftest.log
 Makefile.config
 bin/
 modules/
+include/compinfo.h

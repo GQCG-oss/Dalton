@@ -47,7 +47,7 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     add_definitions(-DVAR_IFORT)
-    set(CMAKE_Fortran_FLAGS         "-g -w -fpp -assume byterecl")
+    set(CMAKE_Fortran_FLAGS         "-g -w -fpp -assume byterecl -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
     if(ENABLE_64BIT_INTEGERS)
@@ -57,7 +57,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback"
+            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
             )
     endif()
 endif()
@@ -133,3 +133,18 @@ if(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_DEBUG   " ")
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
+
+execute_process(
+    COMMAND ./get-compiler-version.py --compiler=${CMAKE_Fortran_COMPILER}
+    TIMEOUT 1
+    OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND ./get-compiler-version.py --compiler=${CMAKE_C_COMPILER}
+    TIMEOUT 1
+    OUTPUT_VARIABLE C_COMPILER_VERSION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)

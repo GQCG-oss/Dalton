@@ -53,7 +53,7 @@ prop_spinspin3 prop_spinspin4 prop_vibvcd prop_ctocd prop_soppactocd \
 prop_newtrasoppa prop_newtrasoppacc prop_newtramcscf aba_prop_file \
 prop_vibg1 prop_vibg2"
 SHORTRSP="rsp_2ndharm rsp_3rdharm \
-rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci rsp_excipolar2 rsp_hyperpolar \
+rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci_cmfun rsp_excipolar2 rsp_hyperpolar \
 rsp_lrso rsp_lrso2 rsp_mcdbterm rsp_mnf rsp_phosph rsp_polar rsp_propave \
 rsp_socorr rsp_socorr2 rsp_socorr3 rsp_socorr_dir rsp_socorr2_dir \
 rsp_socorr3_dir rsp_solvhyper rsp_soppa1excinosymm rsp_soppa1excisymm \

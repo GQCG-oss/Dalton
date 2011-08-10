@@ -453,6 +453,14 @@ C
                                        EIJ = D1 / 
      *                                      (EV(KOFFI) + EV(KOFFJ) -
      *                                       EV(KOFFA) - EV(KOFFB)) 
+!
+!                                      hjaaj: sometimes EIJ = Infinity or -Infinity
+!                                             apparently W11 with these values are not used
+!                                             However, ifort and -i8 stops with "invalid float from "-Infinity + Infinity"
+!                                             My solution: reset value to 1.D100, then it will be obvious if the value is used.
+                                       IF (abs(eij) .gt. 1.D100)
+     &                                      eij = 1.D100
+!
 C
                                        W11(KOFFI,KOFFJ,KOFFK,KOFFL) = 
      *                                 W11(KOFFI,KOFFJ,KOFFK,KOFFL) -

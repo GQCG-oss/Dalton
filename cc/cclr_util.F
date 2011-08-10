@@ -2844,7 +2844,7 @@ Chol  IF (.NOT. CCS) C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
      &   C2NOSQ = DDOT(NT2AM(ISYMTR),CAM(KC2),1,CAM(KC2),1)
       CNOSQ  = C1NOSQ + C2NOSQ
 C
-      IF (.NOT. (CCSEFF.OR.CCP2)) THEN
+      IF (.NOT. (CCSEFF.OR.CCP2) .AND. CNOSQ.NE.0.0D0) THEN
 C
          WRITE(LUPRI,'(//10X,A)')
      *     'CC_PRAM:Overall Contribution of the Different Components'
@@ -3042,10 +3042,10 @@ C
 C
       WRITE(LUPRI,'(//10X,A,8X,F10.4)')
      *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
-      WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+      WRITE(LUPRI,'(/10X,A43,F9.6)')
      *     'Printed all single excitations greater than',THR1
       IF (.NOT. (CCSEFF.OR.CCP2)) THEN
-         WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+         WRITE(LUPRI,'(/10X,A43,F9.6)')
      *     'Printed all double excitations greater than',THR2
       ENDIF
 C

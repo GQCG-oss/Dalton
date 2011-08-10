@@ -5125,8 +5125,8 @@ C Manu b
 !        call outpak(dv,nasht,1,lupri)
 C Manu e
 
-C        Backtransform the inactive and active MCSCF-srDFT density matrix to the AO
-C        basis       
+C        Backtransform the inactive and active MCSCF-srDFT density matrix
+C        to the AO basis       
 
          CALL FCKDEN(.TRUE.,.TRUE.,WRK(KDAO),WRK(KDVAO),CMO,DV,
      &               WRK(KFREE),LFREE)
@@ -5147,15 +5147,17 @@ C
 C        Release memory allocated for DVAO 
 C
          CALL MEMREL('Releasing mem. used for DVAO',
-     &             WRK,KFRSAV,KDVAO,KFREE,LFREE)  
+     &               WRK,KFRSAV,KDVAO,KFREE,LFREE)  
 
 C        calculate the srH potential (for the MCSCF-srDFT density) 
 
          CALL DZERO(WRK(KVSRAO),N2BASX)
 
-         IFCTMP = 11 ! sr Hartree term only
+         IFCTMP = 13 ! sr Hartree + sr exact exchange
+                     ! (exchange term is removed for inside SIRFCK2 if
+                     ! HFXFAC = 0.0D0)
          NSRDMAT = 1 ! only one density matrix (the MCSCF-srDFT one)
-         ISYMDM = 1  ! DMAT of symmetry 1 
+         ISYMDM  = 1 ! DMAT of symmetry 1 
 
          CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KVSRAO),
      &                WRK(KDAO),NSRDMAT,ISYMDM,IFCTMP,WRK(KFREE),LFREE)

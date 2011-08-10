@@ -1030,10 +1030,13 @@ C
 #include <inforb.h>
 #include <infpri.h>
 C
-C
+C for HFXFAC:
 #include <dftcom.h>
-#include <memint.h>
+#include <ibtfun.h>
+
       CALL QENTER('SIRFCK2')
+
+#include <memint.h>
 #ifdef SIRFCK_DEBUG
       write(lupri,*)'SIRFCK2: NDMAT=', NDMAT
       write(lupri,*)'SIRFCK2: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
@@ -1047,6 +1050,11 @@ C     IFCTYP 11,13: factor  2 (see note in FCKD11/FCKD13)
 C     IFCTYP 12,22: factor  0.5 from exchange integral
 C     IFCTYP 02   : factor -0.5 from exchange integral
       DO I = 1,NDMAT
+         IF (HFXFAC .EQ. D0) THEN
+C           remove any "do exchange" bits
+            J = MOD(IFCTYP(I),10)
+            IF (IBTAND(J,2) .ne. 0) IFCTYP(I) = IFCTYP(I) - 2
+         END IF
          IF (IFCTYP(I) .EQ. 11 .OR. IFCTYP(I) .EQ. 13) THEN
             CALL DSCAL(N2BASX,D4,DMAT(1,I),1)
          ELSE IF (IFCTYP(I) .EQ. 2) THEN

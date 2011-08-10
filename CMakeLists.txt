@@ -11,6 +11,8 @@ if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
 endif()
 
+add_definitions(-DTHIS_IS_CMAKE_BUILD)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -41,7 +43,7 @@ option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_EXTERNAL_MATH  "Enable external math library"  ON)
+option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
@@ -92,6 +94,16 @@ set(BASIS_DIR
 if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
 endif()
+
+# get svn revision number
+set(SVN_REVISION "")
+execute_process(
+    COMMAND ./get-svn-revision.py
+    TIMEOUT 1
+    OUTPUT_VARIABLE SVN_REVISION
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(Archs)
 include(Sources)
@@ -176,14 +188,25 @@ configure_file(${CMAKE_SOURCE_DIR}/dalton.in
 execute_process(COMMAND
 	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
 
-add_executable(
-    dalton.x
+# configure compinfo.h
+configure_file(
+    ${CMAKE_SOURCE_DIR}/gp/compinfo.h.in
+    ${CMAKE_SOURCE_DIR}/include/compinfo.h
+    )
+
+add_library(
+    dalton 
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
     )
 
+add_executable(
+    dalton.x
+    ${CMAKE_SOURCE_DIR}/abacus/dalton.F
+)
 target_link_libraries(
     dalton.x
+    dalton
     ${LIBS}
     ) 

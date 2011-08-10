@@ -417,19 +417,16 @@ C     Determine Hartree-Fock occupation if requested
 C
       IF (AUTOCC) THEN
          CALL ORDER (EIGVLS,EIGVAL,NHUCT,1)
-         CALL IZERO(NISH,8)
+         CALL IZERO(NRHF,8)
          MOCC = NRHFEL/2
          DO 98 IK = 1, MOCC
             ISYM = NINT(EIGVLS(IK))
-            NISH(ISYM) = NISH(ISYM) + 1
+            NRHF(ISYM) = NRHF(ISYM) + 1
  98      CONTINUE
-         CALL ICOPY(8,NISH,1,NOCC,1)
-         CALL ICOPY(8,NISH,1,NRHF,1)
+         CALL ICOPY(8,NRHF,1,NOCC,1)
          IF (2*MOCC .NE. NRHFEL) THEN
             IOPRHF = NINT(EIGVLS(MOCC + 1))
             LSYM   = IOPRHF
-            CALL IZERO(NASH,8)
-            NASH(IOPRHF) = 1
             NOCC(IOPRHF) = NOCC(IOPRHF) + 1
          END IF
       END IF

@@ -166,31 +166,38 @@ C
      *            '" not recognized for *MOLBAS.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword for *MOLBAS.')
+C                 '.PRINT '
     1          CONTINUE
                   IPREAD_ini = IPREAD
                   READ (LUCMD, *) IPREAD
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
+C                 'xXXXXXX'
     2          CONTINUE
                GO TO 100
+C                 '.MAXPRI'
     3          CONTINUE
                   READ (LUCMD, *,IOSTAT=IOS) MAXPRI
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .MAXPRI')
                   ENDIF
                GO TO 100
+C                 '.BIGVEC'
     4          CONTINUE
                   BIGVC = .TRUE.
                GO TO 100
+C                 '.ONLYOV'
     5          CONTINUE
                   ONLYOV= .TRUE.
                GO TO 100
+C                 '.SYMTHR'
     6          CONTINUE
                   READ (LUCMD, *,IOSTAT=IOS) TOL_SYMADD
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error in reading .SYMTHR')
                   ENDIF
                GO TO 100
+C              '.CM FUN'
     7          CONTINUE 
                   READ (LUCMD,*,IOSTAT=IOS) LCMMAX, CMSTR, CMEND
                   IF (IOS.NE.0) THEN
@@ -199,25 +206,29 @@ C
                   NCMSTR = NINT(2*CMSTR + 0.01D0)
                   NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
+C              '.ZCMVAL'
     8          CONTINUE 
                   READ (LUCMD,*,IOSTAT=IOS) ZCMVAL
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .ZCMVAL')
                   ENDIF
                GO TO 100
+C              '.WRTLIN'  (ach easier to debug intgral input)
     9          CONTINUE
-C ach easier to debug intgrl input. 
                   WRTLIN= .TRUE.
                GO TO 100
+C              '.UNCONT'
    10          CONTINUE
                   UNCONT = .TRUE.
                GO TO 100
+C              '.ANGSTR'
    11          CONTINUE
                   ANGS = .TRUE.
                GO TO 100
-C  .R12AUX (moved here June 09, because LMULBS used in READIN
-C          (renamed from .AUXBAS) /hjaaj
    12          CONTINUE
+C              '.R12AUX'
+C              (moved here June 09, because LMULBS used in READIN
+C              (renamed from .AUXBAS) /hjaaj
                   LMULBS = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -266,13 +277,21 @@ C          (renamed from .AUXBAS) /hjaaj
      &           ' Center of mass basis functions used with l(max) =',
      &           LCMMAX
             WRITE (LUPRI,'(2(A,F4.1))')
-     &           ' Sequence starts at ',CMSTR,' and ends at ', CMEND
+     &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
      &           WRITE (LUPRI,'(A,F3.1)') ' Net charge of ionic core  ',
      &           ZCMVAL
+            WRITE(LUPRI,'(/A/A/A/A/A)')
+     &         ' Proper reference for these basis functions:'
+     &        ,' K. Kaufmann, W. Baumeister, and M. Jungen'
+     &        ,' "Universal Gaussian basis sets for an optimum'
+     &        ,' representation of Rydberg and continuum wavefunctions"'
+     &        ,' J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 2223-2240'
+
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
-     &           ' Center of mass bf. not defined for l(max) .gt. 4'
+     &           ' FATAL ERROR: Center of mass basis functions is'//
+     &           ' not defined for l(max) .gt. 4'
                CALL QUIT('Error in *MOLBAS input processing')
             END IF
          END IF
@@ -1310,8 +1329,8 @@ C
      &               .OR. (J.EQ.2 .AND. DIRAC) 
      &               .OR. (J.EQ.3 .AND. ATOMDF) ) THEN
 C
-C         Construct basis set for center of mass centers if requested
-C         ===========================================================
+C         Construct Rydberg/continuum basis set for X center, if requested
+C         ================================================================
 C         Center of mass centers are designated with 'x' or 'X'
 C
             IF ((LCMMAX .GT. -1) .AND. (NONT(I) .EQ. 1) .AND.
@@ -2784,6 +2803,13 @@ C
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                 CPRIMU,NBLOCK,KAOVEC,KPRIM)
+C
+C     Basis functions according to
+C     K. Kaufmann, W. Baumeister, and M. Jungen
+C     "Universal Gaussian basis sets for an optimum representation
+C     of Rydberg and continuum wavefunctions"
+C     J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 2223-2240
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2842,17 +2868,17 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> CMBAS  error, number of AO-blocks            ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
-        CALL QUIT('Too many AO-blocks')
+        CALL QUIT('CMBAS: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> CMBAS  error, number of primitives per block      ',NUCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
-        CALL QUIT('Too many primitives')
+        CALL QUIT('CMBAS: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> CMBAS  error, number of contracted functions      ',NRCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
-        CALL QUIT('Too many contracted functions')
+        CALL QUIT('CMBAS: Too many contracted functions')
       END
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,
@@ -3240,7 +3266,7 @@ C
      *   'no. of contracted functions in an AO-block',NCONT,
      *   '                   '//
      *   'current maximum number           MXCONT = ',MXCONT
-      CALL QUIT('Too many contracted functions per AO-block')
+      CALL QUIT('ORBPRO: Too many contracted functions per AO-block')
       END
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -3601,14 +3627,14 @@ C
      &     ' X_A, X_B :',CORD(1,N),CORD(1,M)*PT(IBTAND(ISYMAX(1,1),KB)),
      &     ' Y_A, Y_B :',CORD(2,N),CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)),
      &     ' Z_A, Z_B :',CORD(3,N),CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB))
-      CALL QUIT('Nuclei too close.')
+      CALL QUIT('NUCPRO: Nuclei too close.')
  5010 CONTINUE
       WRITE (LUPRI,'(///A/2(A,I5/)/A,I5,A)')
      &      ' Allowed number of atoms exceeded.',
      &      ' - Number of atoms in input:',NUCDEP,
      &      ' - Number of atoms allowed: ',MXCENT,
      &      ' Increase MXCENT to at least',NUCDEP,' and recompile.'
-      CALL QUIT('Too many atoms in READIN.')
+      CALL QUIT('NUCPRO: Too many atoms for current value of MXCENT.')
 C
  1000 FORMAT(2X,A4,5X,3F10.5,F20.8/,
      &       16X, 'Stabilizer',I3,', with',I2,
@@ -3740,7 +3766,7 @@ C
      &                   '  Components belonging to different irreps '
      &                   //'have been combined.',
      &                   '  Angular quantum number and component:',I-1,K
-                         CALL QUIT('Error in molecule input')
+                         CALL QUIT('Error in Cartesian->own bf input')
                       END IF
                    END IF
   220       CONTINUE
@@ -5219,7 +5245,7 @@ C
      &        '*** ERROR ***: NMLINE < NMLN_LASTREAD in RDLINE',
      &        'NMLINE = ',NMLINE,
      &        'NMLN_LASTREAD = ',NMLN_LASTREAD
-         CALL QUIT('*** ERROR reading basis')
+         CALL QUIT('*** ERROR reading .mol file')
       ENDIF
 C
 C     Only the master in a parallel calc. reads the input file.
@@ -5234,7 +5260,7 @@ C
          WRITE (LUPRI,'(//A,/A,I5)')
      &      ' READIN ERROR: Too many lines in input -,',
      &      ' Increase dimension in /MOLINP/ to at least',NMLINE
-         CALL QUIT('*** ERROR *** Too many input lines for READIN')
+         CALL QUIT('*** ERROR *** Too many input lines in .mol file')
       END IF
 
 #ifdef VAR_DEBUG
@@ -5555,7 +5581,7 @@ C
 
       READ (MLINE(NMLINE),'(A4)',IOSTAT=IOS) NAMN(NUCIND)
       IF (IOS.NE.0) THEN
-        CALL QUIT('Error in reading NAMN(NUCIND)')
+        CALL QUIT('ZMAT: Error in reading NAMN(NUCIND)')
       ENDIF
 C
       IOS = 0
@@ -6314,7 +6340,7 @@ C
         L = I - 1
         NEXTMB = .FALSE.
         N = N + 1
-        IF (N .GT. MXMULB) CALL QUIT('Too many basis sets')
+        IF (N .GT. MXMULB) CALL QUIT('Too many multiple basis sets')
         MULNAM(N)(1:I-K) = INPUT_LINE(K:L)
         IF (IPREAD .GT. 1) THEN
           WRITE (LUPRI,'(/A,I2,A)') ' Basis set',N,' is  "'//
@@ -6394,8 +6420,8 @@ C
             DOCART = .FALSE.
          END IF
          IF (I .GT. 1) THEN
-            WRITE (LUPRI,*) '.mol input error: mixed basis types'
-            WRITE (LUPRI,*) LINE
+            WRITE (LUPRI,'(//A/A)')
+     &      ' .mol input error: mixed basis types in this line:',LINE
             CALL QUIT('.mol input ERROR: mixed basis types')
          END IF
 C

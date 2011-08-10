@@ -11,6 +11,9 @@ DALEXT="dal"
 MOLEXT="mol"
 POTEXT="pot"
 
+GET_FILES=''
+PUT_FILES=''
+
 #default values for options
 optd=0
 optD=1
@@ -22,6 +25,12 @@ opto=0
 optt=0
 potfil=
 frl=rel
+opt_nobackup=0
+opt_noarch=0
+
+
+
+
 #
 # Define usage message
 #
@@ -36,7 +45,11 @@ usage (){
 	  echo '           Current directory and dalton basis library are included automatically.'
 	  echo ' -d        delete job scratch directory before calculation starts'
 	  echo ' -D        do not delete job scratch directory after calculation stops'
+	  echo ' -nobackup do not backup files, simply overwrite outputs'
+	  echo ' -noarch   do not create tar.gz archive'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
+	  echo ' -get "file1 file2"  get files back from TMPDIR after calculation stops'
+	  echo ' -put "file1 file2"  put files to TMPDIR before calculation starts'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
         echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
 	  echo ' -M mb     set scratch memory to mb Megabytes'
@@ -53,22 +66,24 @@ usage (){
 # Define backup function
 #
 backup () {
-  if [ "$1" = "-v" ]; then ekko=1; shift
-  else ekko=0;
+  if [ $opt_nobackup -eq 0 ]; then
+      if [ "$1" = "-v" ]; then ekko=1; shift
+      else ekko=0;
+      fi
+      for i in $* ; do
+         if [ -f "$i" ]; then
+            for j in 6 5 4 3 2 1 0 ; do
+               jp=`expr $j + 1`
+               if [ -f "$i.$j" ]; then 
+                  [ $ekko -eq 1 ] && echo "Backup: renaming $i.$j to $i.$jp"
+                  mv -f "$i.$j" "$i.$jp"
+               fi
+            done
+            if [ $ekko -eq 1 ]; then echo "Backup: renaming $i to $i.0"; fi
+            mv -f "$i" "$i.0"
+         fi
+      done
   fi
-  for i in $* ; do
-     if [ -f "${i}" ]; then
-        for j in 6 5 4 3 2 1 0 ; do
-           jp=`expr $j + 1`
-           if [ -f "${i}.${j}" ]; then 
-              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
-              mv -f "${i}.${j}" "${i}.${jp}"
-           fi
-        done
-        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
-        mv -f "${i}" "${i}.0"
-     fi
-  done
 }
 #
 # Interpret input
@@ -78,7 +93,11 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
+      -nobackup ) opt_nobackup=1;;
+      -noarch ) opt_noarch=1;;
       -ext ) OUTEXT=$2; shift;;
+      -get ) GET_FILES=$2; shift;;
+      -put ) PUT_FILES=$2; shift;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -lam* ) optlam=$2; shift;;
@@ -114,9 +133,9 @@ fi
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
 #  only one input file, check if molfil exist with same base name;
-   if [ -r ${dalfil}.mol ]; then
+   if [ -r $dalfil.mol ]; then
       molfil=$dalfil
-    if [ -s ${dalfil}.pot ]; then
+    if [ -s $dalfil.pot ]; then
       potfil=$dalfil
       input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
     else
@@ -134,7 +153,7 @@ else
    if [ "$molfil" = "$dalfil" ]; then
       outnam=$molfil
    else
-      outnam=${dalfil}_${molfil}
+      outnam=$dalfil\_$molfil
    fi
    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
@@ -145,7 +164,7 @@ if [ -n "$3" ]; then
    if [ "$potfil" = "$molfil" ] && [ "$potfil" = "$dalfil" ]; then
       outnam=$potfil
    else
-      outnam=${dalfil}_${molfil}_${potfil}
+      outnam=$dalfil\_$molfil\_$potfil
    fi
    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
@@ -165,7 +184,7 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   Dalton Release DALTON2011 (June 2011)"
+echo "   Dalton Release DALTON2011 (DEVELOPMENT VERSION)"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
@@ -209,9 +228,19 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
         ierr=1
      fi
    fi
+
    if [ -s $WRKDIR/mep.inp ] ; then
      cp $WRKDIR/mep.inp MEP.INP
    fi
+
+   # put files listed under -put to scratch directory
+   if [ "$PUT_FILES" != "" ]; then
+      for file in $PUT_FILES; do
+          echo copying $file to scratch directory
+          cp $WRKDIR/$file $file
+      done
+   fi
+
    if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
      if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
        echo "Copying the relay matrix to scratch directory..."
@@ -250,7 +279,7 @@ fi
 if [ $ierr = 1 ]; then
    exit 1
 fi
-#
+
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
@@ -305,11 +334,14 @@ for i in $filelist ; do
    fi
 done
 
-if [ -s "first.wrl" -a -r "first.wrl" ] ; then
-#  include ALL *.wrl files if first.wrl exists
-   tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
-else
-   tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+
+if [ $opt_noarch -eq 0 ]; then
+    if [ -s "first.wrl" -a -r "first.wrl" ] ; then
+    #  include ALL *.wrl files if first.wrl exists
+       tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
+    else
+       tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+    fi
 fi
 
 if [ -s $outnam.tar.gz ] ; then
@@ -322,6 +354,14 @@ fi
 if [ -s MEP.OUT ] ; then
   tar -zcf mep.tar.gz MEP.OUT
   cp mep.tar.gz $WRKDIR
+fi
+
+# copy files listed under -get back from scratch directory
+if [ "$GET_FILES" != "" ]; then
+   for file in $GET_FILES; do
+       echo copying $file back from scratch directory
+       cp $file $WRKDIR/$outnam.$file
+   done
 fi
 
 if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then

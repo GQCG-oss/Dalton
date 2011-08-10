@@ -411,8 +411,9 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxmom.h>
-      LOGICAL TOFILE, TRIMAT, DOINT(2,2)
-      DIMENSION SPHINT(NNBASX,*), WORK(LWORK)
+      LOGICAL      TOFILE, TRIMAT, DOINT(2,2)
+      DIMENSION    SPHINT(NNBASX,*), WORK(LWORK)
+      CHARACTER*10 LABINT(2*LMAX+1)
 #include <inforb.h>
 #include <nuclei.h>
 #include <cbiher.h>
@@ -422,8 +423,7 @@ C
 C
       NCMPS = (LMAX + 1)**2
 C
-      KLABL = 1
-      KINTR = KLABL + NCMPS
+      KINTR = 1
       KINTA = KINTR + (NCMPS + IRAT - 1)/IRAT
       KLAST = KINTA + (NCMPS + IRAT - 1)/IRAT
       IF (KLAST .GT. LWORK) CALL STOPIT('FMMINT',' ',KLAST,LWORK)
@@ -444,11 +444,11 @@ C
       DO IORDER = 0, LMAX
          NCOMPS = 2*IORDER + 1
          CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTR),WORK(KINTA),
-     &               WORK(KLABL),'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
+     &               LABINT,'SPHMOML',IORDER,MPQUAD,TRIANG,PROPRI,
      &               IPRINT,SPHINT(1,IOFF+1),NCOMP,TOFILE,'TRIANG',
      &               DOINT,DUMMY,.FALSE.,DUMMY)
-         IF (IPRINT .GT. 5) CALL FMMSPR(SPHINT(1,IOFF+1),
-     &                                  WORK(KLABL),WORK(KINTR),NCOMPS)
+         IF (IPRINT .GT. 5)
+     &      CALL FMMSPR(SPHINT(1,IOFF+1),LABINT,WORK(KINTR),NCOMPS)
          IOFF = IOFF + NCOMPS
       END DO
       RETURN
@@ -743,10 +743,10 @@ C
       CALL HEADER('Electronic information',-1)
       READ (LUINTM) NBAST, LMAX, THRCLS, ERFAC
 C
-      WRITE (LUPRI,'(2X,A,I12)')    ' NBAST  ', NBAST
-      WRITE (LUPRI,'(2X,A,I12)')    ' LMAX   ', LMAX
-      WRITE (LUPRI,'(2X,A,E12.6)') ' THRCLS ', THRCLS
-      WRITE (LUPRI,'(2X,A,F12.6)') ' ERFAC  ', ERFAC
+      WRITE (LUPRI,'(2X,A,I12)')      ' NBAST  ', NBAST
+      WRITE (LUPRI,'(2X,A,I12)')      ' LMAX   ', LMAX
+      WRITE (LUPRI,'(2X,A,1P,E13.6)') ' THRCLS', THRCLS
+      WRITE (LUPRI,'(2X,A,1P,F13.6)') ' ERFAC ', ERFAC
 C
       DO L =  0, LMAX
       DO M = -L, L
@@ -803,7 +803,7 @@ C
       END DO
       ERG0 = DP5*ERG0
       ERG1 = DP5*ERGP + DP5*ERGQ
-      WRITE (LUPRI,'(/2X,A,3F13.8)')
+      WRITE (LUPRI,'(/2X,A,3F15.8)')
      &      ' First-order classical interaction:',ERG0,ERG1,ERG0+ERG1
       RETURN
       END
