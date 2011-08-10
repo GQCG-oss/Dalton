@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 # primitive frontend to cmake
-# radovan bast <radovan.bast@uit.no> 
-# jonas juselius <jonas.juselius@uit.no>
+# (c) Jonas Juselius <jonas.juselius@uit.no> and Radovan Bast <radovan.bast@uit.no>
+# licensed under the GNU Lesser General Public License
 
 import os
 import sys
