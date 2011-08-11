@@ -21,9 +21,7 @@ C
       INTEGER ISIGEPS, NSIGEPS
 C
       PARAMETER(NMMBA1 = 5000)
-
-!     radovan: same info in two places will not end well!
-      PARAMETER(MXQM3  = 200) ! should be equal to MXCENT_QM in include/mxcent.h
+      PARAMETER(MXQM3  = 120) ! should be equal to MXCENT_QM in include/mxcent.h
       PARAMETER(MXTYPE = 20)
 C
       CHARACTER MDLWRD*7
