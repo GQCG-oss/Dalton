@@ -8,4 +8,5 @@ bin/
 modules/
 include/compinfo.h
 gp/compilation_info.F90
+gp/git_revision_info.F90
 dalton.setup

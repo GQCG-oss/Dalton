@@ -44,33 +44,6 @@ def return_compiler_version(compiler):
 fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
 c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
 
-# this is for git:
-# p = subprocess.Popen('git show', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-# stdout, stderr = p.communicate()
-# if stderr:
-#     last_commit_rev    = 'unknown'
-#     last_commit_author = 'unknown'
-#     last_commit_time   = 'unknown'
-# else:
-#     last_commit_rev    = string.replace(stdout.splitlines()[0], 'commit ', '')
-#     last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[1]), 'Author: ', '')
-#     last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
-
-p = subprocess.Popen('svn info @CMAKE_SOURCE_DIR@', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-stdout, stderr = p.communicate()
-if stderr:
-    last_commit_rev    = 'unknown'
-    last_commit_author = 'unknown'
-    last_commit_time   = 'unknown'
-else:
-    for line in stdout.splitlines():
-        if 'Revision:' in line:
-            last_commit_rev = line.split()[-1]
-        if 'Last Changed Author:' in line:
-            last_commit_author = line.split(':')[-1][1:]
-        if 'Last Changed Date:' in line:
-            last_commit_time = line.split('Last Changed Date:')[-1][1:]
-
 s = []
 s.append(['System'                  , r'@CMAKE_SYSTEM_NAME@'          ])
 s.append(['Internal math'           , r'@ENABLE_INTERNAL_MATH@'       ])
@@ -90,14 +63,10 @@ s.append(['C flags (debug)'         , r'@CMAKE_C_FLAGS_DEBUG@'        ])
 s.append(['C flags (release)'       , r'@CMAKE_C_FLAGS_RELEASE@'      ])
 s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
+s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
 print 'subroutine print_compilation_info()'
 print '#include "priunit.h"'
-print "    write(lupri, '(a)')                   "
-print "    write(lupri, '(a)')                   "
-print "    write(lupri, '(a)') 'Compilation info'"
-print "    write(lupri, '(a)') '----------------'"
-print "    write(lupri, '(a)')                   "
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
@@ -112,9 +81,6 @@ for line in s:
             print_line(line[0], chunk_l[i])
         else:
             print_line(' ', chunk_l[i])
-print_line('Last commit rev',    last_commit_rev)
-print_line('Last commit author', last_commit_author)
-print_line('Last commit time',   last_commit_time)
 print_line('Configuration time', datetime.datetime.now())
 
 print 'end subroutine'

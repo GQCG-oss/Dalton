@@ -387,7 +387,13 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          END IF
 
 #ifdef THIS_IS_CMAKE_BUILD
+         write(lupri, *)
+         write(lupri, *)
+         write(lupri, '(a)') 'Compilation info'
+         write(lupri, '(a)') '----------------'
+         write(lupri, *)
          call print_compilation_info()
+         call print_git_revision_info()
 #endif
 
 C        Read general input for Dalton
