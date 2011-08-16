@@ -4389,7 +4389,7 @@ C
 !                  21         22         23         24
      *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL ',
 !                  25         26
-     *            '.NOMB  ', 'MMTIME'/
+     *            '.NOMB  ', '.MMTIME'/
  
       CALL QENTER('QMMMIN')
  
