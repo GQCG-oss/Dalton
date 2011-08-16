@@ -100,7 +100,7 @@ macro(find_acml)
 endmacro()
 
 macro(find_atlas)
-	set(lapack_libs lapack_atlas)
+	set(lapack_libs lapack_atlas lapack)
 
 	set(path_suffixes include/atlas include)
 	find_math_header(lapack)
