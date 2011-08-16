@@ -11,12 +11,13 @@ import datetime
 p = subprocess.Popen('svn info @CMAKE_SOURCE_DIR@', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 stdout, stderr = p.communicate()
 if stderr:
-    if (os.path.isfile('@CMAKE_SOURCE_DIR@/gp/git_revision_info.F90')):
-        # this is not a git repo but @CMAKE_SOURCE_DIR@/gp/git_revision_info.F90
-        # exists - then this is a release or an exported source code
-        # in this case do not regenerate the file but exit
-        sys.exit()
-    else:
+# radovan: this is for releases, will reintroduce it later
+#   if (os.path.isfile('@CMAKE_SOURCE_DIR@/gp/git_revision_info.F90')):
+#       # this is not a git repo but @CMAKE_SOURCE_DIR@/gp/git_revision_info.F90
+#       # exists - then this is a release or an exported source code
+#       # in this case do not regenerate the file but exit
+#       sys.exit()
+#   else:
         last_commit_rev    = 'unknown'
         last_commit_author = 'unknown'
         last_commit_time   = 'unknown'
