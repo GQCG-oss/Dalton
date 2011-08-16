@@ -7,7 +7,8 @@ import string
 import subprocess
 import datetime
 
-p = subprocess.Popen('cd @CMAKE_SOURCE_DIR@; git show', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#p = subprocess.Popen('cd @CMAKE_SOURCE_DIR@; git show', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+p = subprocess.Popen('svn info @CMAKE_SOURCE_DIR@', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 stdout, stderr = p.communicate()
 if stderr:
     if (os.path.isfile('@CMAKE_SOURCE_DIR@/gp/git_revision_info.F90')):
@@ -20,9 +21,16 @@ if stderr:
         last_commit_author = 'unknown'
         last_commit_time   = 'unknown'
 else:
-    last_commit_rev    = string.replace(stdout.splitlines()[0], 'commit ', '')
-    last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[1]), 'Author: ', '')
-    last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
+#   last_commit_rev    = string.replace(stdout.splitlines()[0], 'commit ', '')
+#   last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[1]), 'Author: ', '')
+#   last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
+    for line in stdout.splitlines():
+        if 'Revision:' in line:
+            last_commit_rev = line.split()[-1]
+        if 'Last Changed Author:' in line:
+            last_commit_author = line.split(':')[-1][1:]
+        if 'Last Changed Date:' in line:
+            last_commit_time = line.split('Last Changed Date:')[-1][1:]
 
 print 'subroutine print_git_revision_info()'
 print '#include "priunit.h"'
