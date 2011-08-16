@@ -1,7 +1,20 @@
-DALTON=@PROJECT_BINARY_DIR@/dalton.x
-DALMPI=@PROJECT_BINARY_DIR@/dalton.x
+# figure out whether the script is called from "." directory or from outside
+BUILD_DIR="${0%/*}"
+# if the script was started from the base directory with ./script, then the
+# expansion returns a period, if it was started directly with script then the
+# expansion returns the script file name
+if [ "$BUILD_DIR" == "." -o "$BUILD_DIR" == "$0" ]; then
+    BUILD_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif [ "${BUILD_DIR:0:1}" != "/" ]; then
+    BUILD_DIR="$PWD/$BUILD_DIR"
+fi
+
+DALTON=$BUILD_DIR/dalton.x
+DALMPI=$BUILD_DIR/dalton.x
 MPIRUN=@MPIEXEC@
-INSTALL_BASDIR=@BASIS_DIR@
+INSTALL_BASDIR=$BUILD_DIR/basis
 [ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
 
 WRKDIR=`pwd` ; export WRKDIR

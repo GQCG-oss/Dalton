@@ -186,8 +186,6 @@ configure_file(
 execute_process(COMMAND
 	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
 
-include(CompilationInfo)
-
 add_library(
     dalton 
     ${C_SOURCES}
@@ -204,3 +202,7 @@ target_link_libraries(
     dalton
     ${LIBS}
     ) 
+
+include(CompilationInfo)
+include(Install)
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
