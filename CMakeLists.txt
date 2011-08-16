@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.6)
 
 project(DALTON Fortran C)
 
+# set version
+set(VERSION_MAJOR 2011)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 0)
+
 # do not rebuild if rules (compiler flags) change
 # this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
