@@ -622,8 +622,8 @@
   end_string   => "Total CPU  time used in DALTON:",
   start_offset => 0,
   end_offset   => 50,
-  line         => 8,
-  pos          => 2,
+  line         => 10,
+  pos          => 3,
   thr          => 1.0e-4};
 }
 ## chemshield1 end  #######################################################
@@ -636,8 +636,8 @@
   end_string   => "Total CPU  time used in DALTON:",
   start_offset => 0,
   end_offset   => 50,
-  line         => 9,
-  pos          => 2,
+  line         => 11,
+  pos          => 3,
   thr          => 1.0e-4};
 }
 ## chemshield2 end  #######################################################
@@ -650,8 +650,8 @@
   end_string   => "Total CPU  time used in DALTON:",
   start_offset => 0,
   end_offset   => 50,
-  line         => 10,
-  pos          => 2,
+  line         => 12,
+  pos          => 3,
   thr          => 1.0e-4};
 }
 ## chemshield3 end  #######################################################
@@ -664,8 +664,8 @@
   end_string   => "Total CPU  time used in DALTON:",
   start_offset => 0,
   end_offset   => 50,
-  line         => 11,
-  pos          => 2,
+  line         => 13,
+  pos          => 3,
   thr          => 1.0e-4};
 }
 ## chemshield4 end  #######################################################
