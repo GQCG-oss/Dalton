@@ -173,8 +173,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
     )
 
-configure_file(${CMAKE_SOURCE_DIR}/dalton.in
-	${CMAKE_BINARY_DIR}/dalton)
+configure_file(
+    ${CMAKE_SOURCE_DIR}/dalton.in
+    ${CMAKE_BINARY_DIR}/dalton
+    @ONLY
+    )
 execute_process(COMMAND
 	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
 

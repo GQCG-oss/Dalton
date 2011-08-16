@@ -351,6 +351,7 @@ if [ -s $outnam.tar.gz ] ; then
 else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
 fi
+
 if [ -s MEP.OUT ] ; then
   tar -zcf mep.tar.gz MEP.OUT
   cp mep.tar.gz $WRKDIR

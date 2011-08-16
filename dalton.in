@@ -139,9 +139,9 @@ fi
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
 #  only one input file, check if molfil exist with same base name;
-   if [ -r $dalfil.mol ]; then
+   if [ -r ${dalfil}.mol ]; then
       molfil=$dalfil
-    if [ -s $dalfil.pot ]; then
+    if [ -s ${dalfil}.pot ]; then
       potfil=$dalfil
       input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
     else
@@ -159,7 +159,7 @@ else
    if [ "$molfil" = "$dalfil" ]; then
       outnam=$molfil
    else
-      outnam=$dalfil\_$molfil
+      outnam=${dalfil}_${molfil}
    fi
    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
@@ -170,7 +170,7 @@ if [ -n "$3" ]; then
    if [ "$potfil" = "$molfil" ] && [ "$potfil" = "$dalfil" ]; then
       outnam=$potfil
    else
-      outnam=$dalfil\_$molfil\_$potfil
+      outnam=${dalfil}_${molfil}_${potfil}
    fi
    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
@@ -357,7 +357,6 @@ if [ -s $outnam.tar.gz ] ; then
 else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
 fi
-
 
 if [ -s MEP.OUT ] ; then
   tar -zcf mep.tar.gz MEP.OUT
