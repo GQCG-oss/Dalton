@@ -4,7 +4,7 @@ project(DALTON Fortran C)
 
 # do not rebuild if rules (compiler flags) change
 # this has advantages and disadvantages
-# set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 set(THIS_CODE "trunk")
 if(THIS_CODE STREQUAL "linsca")
