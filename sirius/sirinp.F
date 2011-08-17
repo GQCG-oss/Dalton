@@ -1240,7 +1240,7 @@ C
             WRITE (LUPRI,'(/A/A)')
      &         'Input error for core-hole calculation:',
      &         ' - no initial molecular orbitals from'//
-     &         ' previous calculation specified.'
+     &         ' a previous calculation specified.'
          END IF
          IF (DOSCF .AND. DOMC) THEN
             INPERR = INPERR + 1
@@ -1297,9 +1297,10 @@ C           ... NO ABSORPTION :
          ELSE
             IF (JCHORB .GT. NISH(JCHSYM)+1) THEN
                INPERR = INPERR + 1
-                  WRITE (LUPRI,'(/A/A)')
-     &               ' Input error for core-hole calculation:',
-     &               ' Core hole orbital is not inactive.'
+               WRITE (LUPRI,'(/A,I4,A,I2,A)')
+     &               ' Input error for core-hole calculation:'//
+     &               ' Core hole orbital',JCHORB,' in symmetry',
+     &               JCHSYM,' is neither inactive nor in RAS1.'
             ELSE IF (JCHORB .LE. NISH(JCHSYM)) THEN
                IF (LMOORD) THEN
                   INPERR = INPERR + 1
@@ -1338,13 +1339,6 @@ C        JRDMO positive : abort in READMO if error
          END IF
       END IF
   200 CONTINUE
-C
-C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
-C
-      IF (LMOORD .AND. INPERR .EQ. 0) THEN
-         K1 = 1 + NCMOT
-         CALL REORD(CMO,CMO(K1),IMOORD)
-      END IF
 C
 C *** AUTOCC : find initial occupation (hjaaj-aug95)
 C              and Huckel start orbitals if DOHUCKEL
@@ -1399,6 +1393,15 @@ C               of initial occupation guess
       END IF
       IF (NSYM .EQ. 1) AUTOCC = .FALSE.
 C     ... occupation cannot change if only one symmetry
+C
+C *** If requested, reorder mo:s, using reorder array in IMOORD(*).
+C
+      IF (LMOORD .AND. INPERR .EQ. 0) THEN
+         K1 = 1 + NCMOT
+         CALL REORD(CMO,CMO(K1),IMOORD)
+         WRITE (LUPRI,'(/A)')
+     &   ' INFO: Molecular orbitals have been reordered, as requested.'
+      END IF
 C
 C     Check for input errors of initial occupation
 C
@@ -5189,6 +5192,9 @@ C     formulation of NEVPT.
             ELSE IF (CORHOL) THEN
                WRITE(IWUNIT,1051)
      *         'Type: Frozen single core hole calculation using RAS'
+               WRITE(IWUNIT,'(T16,A,I4,A,I2,A)')
+     &         '      (The core hole orbital, no.',JCHORB,
+     &         ', in symmetry',JCHSYM,' has been moved to RAS1)'
             ELSE
                WRITE(IWUNIT,1051)
      *         'Type: restricted active space calculation (RAS)'
@@ -5332,7 +5338,11 @@ C        ... if HUCKEL use JRDMO = 11 or 12 to get correct output
          END IF
          WRITE (IWUNIT,'(/A/3A)')
      &   ' Initial molecular orbitals are obtained according to',
-     &   ' ".MOSTART ',RDMOLB(JRDMO),'" input option.'
+     &   ' ".MOSTART ',RDMOLB(JRDMO),'" input option'
+      END IF
+      IF (LMOORD) THEN
+         WRITE (IWUNI,'(A)') ' and reordered as requested '//
+     &   'with .REORDER or indirectly with .CORHOL'
       END IF
 C
       IF (EMBEDDING) THEN
