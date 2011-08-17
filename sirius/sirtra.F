@@ -2273,9 +2273,9 @@ C           and subtract from input CMO matrix
                J = J + ABS(MISH_TEST(ISYM)) + ABS(MASH_TEST(ISYM))
             END DO
             IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
-               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/T12,A)')
      *            ' TRACTL_1: Integral transformation abandoned,',
-     *            ' the required MO integrals are already available.'
+     *            'the required MO integrals are already available.'
                LBINTM = LBINT1
                GO TO 9999
             END IF
