@@ -27,6 +27,7 @@ potfil=
 frl=rel
 opt_nobackup=0
 opt_noarch=0
+opt_valgrind=0
 
 
 
@@ -47,6 +48,7 @@ usage (){
 	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -nobackup do not backup files, simply overwrite outputs'
 	  echo ' -noarch   do not create tar.gz archive'
+	  echo ' -valgrind run with valgrind'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -get "file1 file2"  get files back from TMPDIR after calculation stops'
 	  echo ' -put "file1 file2"  put files to TMPDIR before calculation starts'
@@ -95,6 +97,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -D ) optD=0;;
       -nobackup ) opt_nobackup=1;;
       -noarch ) opt_noarch=1;;
+      -valgrind ) opt_valgrind=1;;
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
@@ -308,7 +311,11 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $DALTON -a -x $DALTON ]; then
-      $DALTON
+      if [ $opt_valgrind -eq 1 ]; then
+          valgrind $DALTON
+      else
+          $DALTON
+      fi
       ierr=$?
       if [ $ierr -ne 0 ];then
          echo "Error in $DALTON, exit code $ierr"
