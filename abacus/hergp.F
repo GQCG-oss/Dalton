@@ -1652,6 +1652,8 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
          DISOTP = D0
       ELSE IF (TYPE .EQ. 'MASS') THEN
          DISOTP = DATNUC(1,ISOTOP,IATOM)
+      ELSE IF (TYPE .EQ. 'MASS_in_AU') THEN
+         DISOTP = DATNUC(1,ISOTOP,IATOM) * XFAMU
       ELSE IF (TYPE .EQ. 'A') THEN
          DISOTP = NINT(DATNUC(1,ISOTOP,IATOM))
       ELSE IF (TYPE .EQ. 'ABUNDANCE') THEN
@@ -1677,7 +1679,8 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
       ELSE IF (TYPE .EQ. 'QMOM') THEN
          DISOTP = DATNUC(5,ISOTOP,IATOM)
       ELSE IF (TYPE .EQ. 'NEUTRONS') THEN
-         DISOTP = FLOAT(NINT(DATNUC(1,ISOTOP,IATOM)-IATOM))
+         No_of_NEUTRONS = NINT(DATNUC(1,ISOTOP,IATOM)) - IATOM
+         DISOTP = No_of_NEUTRONS
       ELSE
          WRITE (LUPRI,'(//,3A,/,A)')
      &         ' Keyword ',TYPE,' unknown in DISOTP.',
