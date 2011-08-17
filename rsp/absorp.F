@@ -2228,6 +2228,7 @@ C
 C
       DIMENSION HYPVAL(2),TMPVAL(2),VAL(4)
       CHARACTER*8 ALAB,BLAB,CLAB
+      LOGICAL DOCAL
 C
       KFREE = 1
       LFREE = LWRK
@@ -2242,6 +2243,9 @@ C
       CALL MEMGET('REAL',KVECC,2*MZYVMX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KGRAD,2*MZYVMX,WRK,KFREE,LFREE)
 C
+      LURSPRES = -1
+      CALL GPOPEN(LURSPRES,'RESULTS.RSP','UNKNOWN','SEQUENTIAL',
+     &            'FORMATTED',0,.FALSE.)
       DO IQRF=1,NQRF
 C
          HYPVAL(1) = D0
@@ -2256,6 +2260,13 @@ C
          FREQA = QRFFRQ(IQRF,1)
          FREQB = QRFFRQ(IQRF,2)
          FREQC = QRFFRQ(IQRF,3)
+C
+C     Check if we perhaps have this result on file already
+C     K.Ruud, back programming again in august 2011
+C
+         CALL ABCCHK(DOCAL,LURSPRES,ISYMA,ISYMB,ISYMC,FREQA,FREQB,FREQC,
+     &               ALAB,BLAB,CLAB,HYPVAL)
+         IF (DOCAL) THEN
 C
          WRITE(LUPRI,'(/,2(A,I4),A,3(/A,A10,I4,F10.6))')
      &        ' Quadratic response function no',IQRF,' of',NQRF,'.',
@@ -2459,14 +2470,25 @@ C
      &        ' Na T[3] NbNc  ',
      &        TMPVAL(1),TMPVAL(2),HYPVAL(1),HYPVAL(2)
 C
+C     End of conditional for having to actually calculate the response function
+C
+         END IF
+C
 C     Save value for beta, which equals minus the value of the QRF.
 C
          RES_BETA(IQRF,1) = -HYPVAL(1)
          RES_BETA(IQRF,2) = -HYPVAL(2)
 C
+C     For restart purposes, we write the response function to file
+C
+         WRITE(LURSPRES,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+     &        (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
+     &         RES_BETA(IQRF,1),RES_BETA(IQRF,2)
+C
 C     End loop over QRFs
 C
       END DO
+      CALL GPCLOSE(LURSPRES,'KEEP')
 C
       RETURN
       END
@@ -2846,6 +2868,59 @@ C
       KFREE=1
       LFREE=LWRK
       CALL QUIT('TWOMOM: to be implemented....')
+C
+      RETURN
+      END
+      SUBROUTINE ABCCHK(DOCAL,LURSPRES,ISYMA,ISYMB,ISYMC,FREQA,FREQB,
+     &                  FREQC,ALAB,BLAB,CLAB,HYPVAL)
+C
+#include <implicit.h>
+#include <iratdef.h>
+#include "absorp.h"
+C
+C PURPOSE:
+C Check if this quadratic response calculation with absorption may
+C already exist. To allow for flexible restart of long MCD jobs
+C K.Ruud, August 2011. Based on BCCHK
+C
+      PARAMETER (THD = 1.0D-8)
+C 
+      LOGICAL DOCAL
+      CHARACTER*8 LABEL(3), ALAB, BLAB, CLAB
+      DIMENSION FREQ(3),VALUE(2), HYPVAL(2)
+#include <priunit.h>
+C
+      DOCAL = .TRUE.
+      REWIND (LURSPRES)
+ 346  READ (LURSPRES,'(I3,3A10,3F10.6,2F16.6)',END=347) 
+     &     IQRF, (LABEL(I),I=1,3), (FREQ(I),I=1,3),VALUE(1),
+     &     VALUE(2)
+      IF ((LABEL(1) .EQ. ALAB) .AND. (LABEL(2) .EQ. BLAB) .AND.
+     &     (LABEL(3) .EQ. CLAB) .AND.
+     &     ABS(FREQB-FREQ(2)).LT.THD
+     &     .AND. ABS(FREQC-FREQ(3)).LT.THD) THEN
+         WRITE(LUPRI,'(/A)') ' The following quadratic '//
+     &           'response function has already been calculated'
+         WRITE (LUPRI,'(3A10,3F10.6)') 
+     &        (LABEL(I),I=1,3), (FREQ(I),I=1,3)
+         DOCAL = .FALSE.
+         HYPVAL(1) = -VALUE(1)
+         HYPVAL(2) = -VALUE(2)
+      END IF
+      CALL FLSHFO(LUPRI)
+      GOTO 346
+ 347  CONTINUE
+#if defined (VAR_MFDS)
+      BACKSPACE (LURSPRES)
+#endif
+      IF (DOCAL) THEN
+         N = N + 1
+         IF (N .GT. MXQRF) THEN
+            WRITE (LUPRI,'(/A,I3)')
+     &           'ABCCHK: # unique calculations .gt. MXCALC =',MXQRF
+               CALL QUIT('ABCCHK: # unique calculations .gt. MXQRF')
+            END IF
+         END IF
 C
       RETURN
       END
