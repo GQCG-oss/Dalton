@@ -2300,15 +2300,16 @@ C
                ICHRG = IZATOM(ICNT)
                IF (JCNT .NE. ICNT) WRITE (LUPRI,'()')
                JCNT = ICNT
-               GRAD = ALPGRD(I)/FLOAT(MLT)
+               GRAD = MLT
+               GRAD = ALPGRD(I)/GRAD
                GRDL = GRAD*PRIEXP(I)
 C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
                WRITE (LUPRI,
      &              '(A,I3,3X,A,I2,I5,2X,A,F23.10,2F17.10,1P,D17.8)')
      &              ' ##',I,NAMDEP(ICNT)(1:4),ICHRG,
      &               MLT,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL,GRDL
-               ALPNRM = ALPNRM + FLOAT(MLT)*GRAD*GRAD 
-               ALPNRL = ALPNRL + FLOAT(MLT)*GRDL*GRDL 
+               ALPNRM = ALPNRM + MLT*GRAD*GRAD 
+               ALPNRL = ALPNRL + MLT*GRDL*GRDL 
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
