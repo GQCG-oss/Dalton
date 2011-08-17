@@ -19,7 +19,7 @@ F_OBJS = \
 	sirtra.o          sirupd.o\
 	sirsol.o          symchk.o\
 	newtrahso.o       sirntra.o         intsort.o \
-	r12aux.o          sirloc.o\
+	r12aux.o          sirloc.o		sirlocsel.o \
 	koopro4.o         dalcip.o          dypc.o \
 	sirpcm.o          sirsolpcm.o       sirpcmder.o \
 	sirief.o          sircav.o          sirqm3.o    sir_mep.o \
