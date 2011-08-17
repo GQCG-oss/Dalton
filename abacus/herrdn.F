@@ -4333,11 +4333,12 @@ C
             IPCMN = IPCMN + 1
             IF ( (IPREAD .GT. IPTEST) .OR. QMMM ) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
-     *              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
-     *                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
-     *                    ICRX+2, CHRXYZ(-3), CORD(3,ICENT)
+     &              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
+     &                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
+     &                    ICRX+2, CHRXYZ(-3), CORD(3,ICENT)
             END IF
-            WORK(KMASS + NCENTS) = DISOTP(IZATOM(ICENT),1,'MASS')
+            WORK(KMASS + NCENTS) =
+     &           DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
             NCENTS = NCENTS + 1
             WORK(ICRX  ) = CORD(1,ICENT)
             WORK(ICRX+1) = CORD(2,ICENT)
@@ -4350,14 +4351,14 @@ C
                   IPCMN = IPCMN + 1
                   JATOM  = JATOM + 1
                   WORK(KMASS + NCENTS) = 
-     *                 DISOTP(IZATOM(ICENT),1,'MASS')
+     &                 DISOTP(IZATOM(ICENT),ISOTOP(ICENT),'MASS')
                   NCENTS = NCENTS + 1
                   WORK(ICRX  ) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-     *                        *CORD(1,ICENT)
+     &                        *CORD(1,ICENT)
                   WORK(ICRX+1) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-     *                        *CORD(2,ICENT)
+     &                        *CORD(2,ICENT)
                   WORK(ICRX+2) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
-     *                        *CORD(3,ICENT)
+     &                        *CORD(3,ICENT)
                   IF ( (IPREAD .GT. IPTEST) .OR. QMMM )
      &            WRITE (LUPRI,'(2X,A,"/",I2," : ",3(I5,2X,A,F15.10))')
      &               NAME,JATOM,ICRX,CHRXYZ(-1),WORK(ICRX),
@@ -4382,8 +4383,8 @@ C
          IF (IPREAD .GT. 0) THEN
             CALL HEADER('Symmetry Coordinates',1)
             WRITE (LUPRI,'(A,8I5)')
-     *            '  Number of coordinates in each symmetry: ',
-     *            (NCRREP(I,1),I=0,MAXREP)
+     &            '  Number of coordinates in each symmetry: ',
+     &            (NCRREP(I,1),I=0,MAXREP)
          END IF
          DO 300 ISYM = 0, MAXREP
          IF (NCRREP(ISYM,1) .GT. 0) THEN
@@ -6291,13 +6292,13 @@ C
       CALL QENTER('ISOMAS')
       IORD = 0
       DO I = 1, 5
-         QMASS = DISOTP(ICHARG,I,'MASS')
-         IF (ANINT(QMASS) .EQ. MASSNM) IORD = I
+         MASS_I = NINT( DISOTP(ICHARG,I,'MASS') )
+         IF (MASS_I .EQ. MASSNM) IORD = I
       END DO
       IF (IORD .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I4,A,I4)') 'ERROR: unknown mass',MASSNM,
-     &        ' for atom with charge',ICHARG
-         CALL QUIT('Unknown mass for chosen atomic charge')
+         WRITE (LUPRI,'(/A,I4,A,I4)') 'ERROR: unknown isotope mass',
+     &        MASSNM,' for atom with charge',ICHARG
+         CALL QUIT('Unknown isotope mass for chosen atomic charge')
       ELSE
          ISOMAS = IORD
       END IF
