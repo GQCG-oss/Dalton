@@ -207,6 +207,7 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
        -dalton script       : use script instead of the default
                               dalton-script "`pwd`/../dalton" (absolute path) 
        -log logfile         : write output into logfile instead of to "TESTLOG"
+       -cmake               : create cmake/Tests.cmake and exit (except perl tests!)
 
        and where testcase might be one of the following:
           short                -- run all short testcases
@@ -260,6 +261,7 @@ errprint(){
 TESTparams="$0 $*"
 help=""
 keep="false"
+cmake="false"
 paramlist=""
 reftest=""
 benchmark=""
@@ -286,6 +288,7 @@ while echo $1 | egrep -q '^-'; do
      "-dalton" )  shift; DALTON=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
      "-keep" ) keep="true"; shift;;
+     "-cmake" ) cmake="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
      "-y") answer_yes=true; shift;;
@@ -298,19 +301,21 @@ if [ $help ]; then
   usage
 fi
 
-if [ ! -x $DALTON ]; then
-   echo ' '
-   echo '----> ERROR, the "dalton" job script '
-   echo    '"'$DALTON'"'
-   echo '  does not exist or is not executable.'
-   echo 'The person who installed dalton has probably selected'
-   echo '  another place for the "dalton" job script.'
-   echo 'Please modify the DALTON variable in this script (i.e. '$0')'
-   echo '  to point to that place.    Alternatively, you may'
-   echo '  specify where the dalton script is with the -dalton option'
-   echo ' '
-#  usage
-   exit 1
+if [ "$cmake" = "false" ]; then
+    if [ ! -x $DALTON ]; then
+       echo ' '
+       echo '----> ERROR, the "dalton" job script '
+       echo    '"'$DALTON'"'
+       echo '  does not exist or is not executable.'
+       echo 'The person who installed dalton has probably selected'
+       echo '  another place for the "dalton" job script.'
+       echo 'Please modify the DALTON variable in this script (i.e. '$0')'
+       echo '  to point to that place.    Alternatively, you may'
+       echo '  specify where the dalton script is with the -dalton option'
+       echo ' '
+    #  usage
+       exit 1
+    fi
 fi
 
 #########################################################################
@@ -521,6 +526,19 @@ problems=""
 exitcode=0
 numresult=0
 num_reftests_not_found=0
+
+# create cmake/Tests.cmake
+if [ "$cmake" = "true" ]; then
+   for item in ${testcase}; do
+       echo "add_test($item \${CMAKE_SOURCE_DIR}/test/TEST -dalton \${CMAKE_BINARY_DIR}/dalton -log /dev/null $item)"
+   done
+   cd $SCRIPT_DIR
+   for item in *.tst; do
+       echo "add_test($item \${CMAKE_SOURCE_DIR}/test/TEST -dalton \${CMAKE_BINARY_DIR}/dalton -log /dev/null $item)"
+   done
+   exit 0
+fi
+
 for item in ${testcase}
 do
   trouble=0
