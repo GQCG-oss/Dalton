@@ -3628,7 +3628,7 @@ C           / hjaaj June 2010
                END IF
             END DO
             IF (MWOPT .NE. NWOPT) THEN
-               WRITE (LUPRI,*) 'INFO:',NWOPT-MWOPT,
+               WRITE (LUPRI,'(/A,I5,A)') 'INFO:',NWOPT-MWOPT,
      &         ' redundant orbital rotations pruned.'
                NWOPT = MWOPT
             END IF
@@ -4054,11 +4054,25 @@ C     with NCONF,NWOPT not of symmetry 1 /25-Nov-1992 PJ+HJAaJ
 C     30-Nov-93 hjaaj: test reactivated with JWOPSY = 1 check
 C                      (this should also catch SUPSYM inconsistencies)
       IF ( JWOPSY .EQ. 1 .AND. NWOPT .NE. MWOPT ) THEN
-         NUMERR = NUMERR + 1
-         WRITE(LUPRI,'(A/A,I5,/A,I5)')
-     *   '@ *** FATAL ERROR IN RSPMC ***',
-     *   '@ TOTAL NUMBER OF sym 1 orb. rot. FROM SIRINP:',NWOPT,
-     *   '@ FROM SIRIFC ',MWOPT
+         IF ( NWOPT .LT. MWOPT) THEN
+            ! some rotations may have been proned in RSPVAR
+            LUINDX = -1
+            CALL GPOPEN(LUINDX,'LUINDF','UNKNOWN',' ','UNFORMATTED',
+     &                  IDUMMY,.FALSE.)
+            REWIND LUINDX
+            CALL MOLLAB('EXOPSYM1',LUINDX,LUPRI)
+            READ (LUINDX) NWOPT_orig
+            CALL GPCLOSE(LUINDX,'KEEP')
+         ELSE
+            NWOPT_orig = NWOPT
+         END IF
+         IF (NWOPT_orig .NE. MWOPT) THEN
+            NUMERR = NUMERR + 1
+            WRITE(LUPRI,'(A/A,I5,/A,I5)')
+     *      '@ *** FATAL ERROR IN RSPMC ***',
+     *      '@ TOTAL NUMBER OF sym 1 orb. rot. FROM SIRINP:',NWOPT,
+     *      '@ FROM SIRIFC ',MWOPT
+         END IF
       END IF
       IF (NUMERR .GT. 0)
      *   CALL QUIT('RSPMC ERROR, SIRIFC file inconsistent '//
