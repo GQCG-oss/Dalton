@@ -1637,12 +1637,28 @@ reordering and punching of orbitals.
   \kw{READ (LUINP,*) REWORD} \\
   Specify that the doubly occupied (inactive) orbitals should be localized after SCF 
   or MCSCF is converged.
-  One option for localization of the orbitals is currently available:
+  Two options for localization of the orbitals is currently available:
   %Two options for localization of the orbitals are available:
   \begin{description}
   \item[{\tt BOYLOC\ }] Use the Boys localization scheme~\cite{Boyloc}.
   %\item[{\tt PIPLOC\ }] Use the Pipek-Mezey localization scheme~\cite{}.
   % aug 04: PIPLOC is not implemented yet.
+  \item[{\tt SELECT\ }] Select a subset of orbitals to be localized. The first
+  line following this option contains the number orbitals per symmetry 
+  and the following lines, the orbital numbers within easy symmetry, one line per symmetry. This option is typically used for localizing degenerate 
+  core orbitals, leaving all others intact.
+  \begin{verbatim}
+         READ(LUCMD,*)(NBOYS(I),I=1,NSYM)
+         DO I=1,NSYM
+            IF (NBOYS(I).GT.0) THEN
+               READ(LUCMD,*)(BOYSORB(J,I),J=1,NBOYS(I))
+            END IF
+         END DO
+   \end{verbatim}
+
+
+
+
   \end{description}
 
 \item[\Key{MOSTART}]

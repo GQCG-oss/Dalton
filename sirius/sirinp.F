@@ -3663,6 +3663,7 @@ C
 #include <inforb.h>
 #include <huckel.h>
 #include <r12int.h>
+#include <infloc.h>
 C
       DATA TABLE /'XXXXXXX','.5D7F9G','.DELETE','.MOSTAR','.FREEZE',
      *            '.GRAM-S','.SYMMET','.PUNCHI','.PUNCHO','.REORDE',
@@ -3933,6 +3934,16 @@ C
       CALL UPCASE(REWORD)
       IF (INDEX(REWORD,'BOYLOC') .GT. 0) THEN
          BOYORB = .TRUE.
+      ELSE IF (INDEX(REWORD,'SELECT') .GT. 0) THEN
+         BOYSEL = .TRUE.
+         CALL IZERO(NBOYS,8)
+         CALL IZERO(BOYSORB,MXBOYS*8)
+         READ(LUCMD,*)(NBOYS(I),I=1,NSYM)
+         DO I=1,NSYM
+            IF (NBOYS(I).GT.0) THEN
+               READ(LUCMD,*)(BOYSORB(J,I),J=1,NBOYS(I))
+            END IF
+         END DO
       ELSE IF (INDEX(REWORD,'PIPLOC') .GT. 0) THEN
          PIPORB = .TRUE.
          CALL QUIT('Pipek-Mezey localization not yet implemented')
@@ -3950,7 +3961,7 @@ C
 C ---
 C
  9000 CONTINUE
-      IF (BOYORB .OR. PIPORB) THEN
+      IF (BOYORB .OR. PIPORB .OR. BOYSEL) THEN
          IF (SUPSYM) THEN
             WRITE(LUPRI,'(/A)')
      &      'WARNING: .SUPSYM ignored because incompatible with .LOCALI'

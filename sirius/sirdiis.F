@@ -315,6 +315,7 @@ C
 #include <qm3.h>
 #include "incore.h"
 #include <qmmm.h>
+#include <infloc.h>
 #include <mmtimes.h>
 #include <infpar.h>
 C
@@ -1381,6 +1382,7 @@ C
 C *** LOCALIZATION
 C
          IF (BOYORB .OR. PIPORB) CALL SIRLOC(CMO,WRK(KFREE),LFREE)
+         IF (BOYSEL) CALL LOCCTL(CMO,WRK(KFREE),LFREE)
 C
          IF (LMULBS .OR. R12CAL) THEN
 C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).
