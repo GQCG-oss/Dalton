@@ -54,8 +54,7 @@ Cef end
 
 !     this is to echo input files to the output
       character(100)     :: line
-      integer, parameter :: file_unit = 137
-      logical            :: file_exists
+      logical            :: file_exists, file_open
 
 !     this is the "static" work array
       real(8), allocatable :: WORK(:)
@@ -395,58 +394,55 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          call print_compilation_info()
          call print_git_revision_info()
 #endif
-
-C        Read general input for Dalton
-C
-         CALL DALTON_GNRLINP
-
 !        print contents of input file to output
-         inquire(file = 'DALTON.INP', exist = file_exists)
+         inquire(file = 'DALTON.INP', exist = file_exists,
+     &           opened = file_open)
          if (file_exists) then
-            open(file_unit,
-     &           file   = 'DALTON.INP',
-     &           status = 'unknown',
-     &           form   = 'formatted',
-     &           access = 'sequential')
-            rewind(file_unit)
+            if (.not. file_open) then
+               LUCMD = -1
+               CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+            end if
+            rewind(LUCMD)
          else
-            call quit('*.inp file not found')
+            call quit('DALTON.INP file not found')
          end if
-         write(lupri, *)
-         write(lupri, *)
-         write(lupri, '(a)') 'Contents of the input file'
-         write(lupri, '(a)') '--------------------------'
-         write(lupri, *)
+         write(lupri, '(//A/A/)')
+     &      '   Content of the .dal input file',
+     &      ' ----------------------------------'
          do while (.true.)
-            read(file_unit, '(a100)', end=31) line
+            read(LUCMD, '(a100)', end=31) line
             write(lupri, '(a)') line
          end do
  31      continue
-         close(file_unit, status = 'keep')
+         if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
 
 !        print contents of molecule file to output
          inquire(file = 'MOLECULE.INP', exist = file_exists)
          if (file_exists) then
-            open(file_unit,
-     &           file   = 'MOLECULE.INP',
-     &           status = 'unknown',
-     &           form   = 'formatted',
-     &           access = 'sequential')
-            rewind(file_unit)
+            LUMOL = -1
+            CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
+     &                  IDUMMY,.FALSE.)
+            write(lupri, '(//a/a/)')
+     &         '   Contents of the .mol file',
+     &         ' -----------------------------'
+            rewind(LUMOL)
+            do while (.true.)
+               read(LUMOL, '(a100)', end=32) line
+               write(lupri, '(a)') line
+            end do
+ 32         continue
+            CALL GPCLOSE(LUMOL,'KEEP')
          else
-            call quit('*.inp file not found')
+!           call quit('MOLECUL.INP file not found')
+! somebody forgot with this 'call quit' that it is OK
+! to have the "MOLECULE.INP" input inside the "DALTON.INP" file,
+! thus the *nevpt2* tests fail with this 'call quit' uncommented.
          end if
-         write(lupri, *)
-         write(lupri, *)
-         write(lupri, '(a)') 'Contents of the molecule file'
-         write(lupri, '(a)') '-----------------------------'
-         write(lupri, *)
-         do while (.true.)
-            read(file_unit, '(a100)', end=32) line
-            write(lupri, '(a)') line
-         end do
- 32      continue
-         close(file_unit, status = 'keep')
+
+C        Read general input for Dalton
+C
+         CALL DALTON_GNRLINP
 
 #if !defined (VAR_MPI)
       END IF
