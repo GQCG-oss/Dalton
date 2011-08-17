@@ -381,7 +381,8 @@ C...#endif
                   SIGNX = PT(IBTAND(ISYMAX(1,1),ISYM))
                   SIGNY = PT(IBTAND(ISYMAX(2,1),ISYM))
                   SIGNZ = PT(IBTAND(ISYMAX(3,1),ISYM))
-CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammenheng med loop i PCMGRI
+Ckr Parallelizable PCM loop, but not optimal, must considered simultaneously with loop
+Ckr in PCMGRI
                   DO 310 ITS = 1,NTSIRR
                      FACTOR = 1.0D0
                      DIFCPX = SIGNX * XTSCOR(ITS) - CORPX
@@ -1291,7 +1292,8 @@ C
                   IADR0U = IADR00 + ISTEPU
                   IADR0V = IADR00 + ISTEPV
                   IADD = - NAHGTF
-CkrParalliserbar PCM-lokke, men ikke optimal, må sees i sammheng med tidliger loop.
+Ckr Parallelizable PCM loop, but not optimal, has to be considered together with 
+Ckr previous loop
                   DO 500 ITS = 1, NTS
                      IADD = IADD + NAHGTF
                      AH00 = TSHGTF(IADR00 + IADD)
