@@ -179,12 +179,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     )
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/dalton.in
-    ${CMAKE_BINARY_DIR}/dalton
+    ${CMAKE_SOURCE_DIR}/cmake/dalton.setup.in
+    ${CMAKE_BINARY_DIR}/dalton.setup
     @ONLY
     )
-execute_process(COMMAND
-	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
+execute_process(COMMAND	cat ${CMAKE_BINARY_DIR}/dalton.setup ${CMAKE_SOURCE_DIR}/dalton.gnr OUTPUT_FILE ${CMAKE_BINARY_DIR}/dalton)
+execute_process(COMMAND	chmod 755 ${CMAKE_BINARY_DIR}/dalton OUTPUT_QUIET)
 
 add_library(
     dalton 
