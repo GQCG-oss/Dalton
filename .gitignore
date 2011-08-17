@@ -11,3 +11,10 @@ gp/compilation_info.F90
 gp/git_revision_info.F90
 dalton.setup
 build
+Doc/*.aux
+Doc/Master.bbl
+Doc/Master.blg
+Doc/Master.idx
+Doc/Master.out
+Doc/Master.pdf
+Doc/Master.toc
