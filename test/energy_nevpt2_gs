@@ -44,7 +44,7 @@ EOF
 
 **DALTON INPUT
 .RUN WAVE FUNCTION
-.PRESORT   ! test if NEVPT2 works with "new" integral transf.
+.NEWTRA    ! test if NEVPT2 works with "new" integral transf.
 **WAVE FUNCTIONS
 .HF
 .MP2

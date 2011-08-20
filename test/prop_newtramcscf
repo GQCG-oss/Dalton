@@ -78,7 +78,7 @@ H1    1.4523499293        0.0  .8996235720
 #######################################################################
 cat > prop_newtramcscf.dal <<'%EOF%'
 **DALTON INPUT
-.PRESORT
+.NEWTRA
 .RUN PROPERTIES
 **WAVE FUNCTIONS
 .HF

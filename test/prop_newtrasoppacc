@@ -87,7 +87,7 @@ F  1    1
 #######################################################################
 cat > prop_newtrasoppacc.dal <<%EOF%
 **DALTON INPUT
-.PRESORT
+.NEWTRA
 .RUN PROPERTIES
 **WAVE FUNCTIONS
 .HF
