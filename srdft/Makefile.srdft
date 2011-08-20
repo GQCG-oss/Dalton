@@ -52,14 +52,14 @@ OBJS_MPI_DUMMY = gp/mpi_dummy.o gp/mpi_dummyc.o
 #
 dalton: $(INSTALLDIR)/dalton Makefile.config
 
-$(INSTALLDIR)/dalton: ./dalton.gnr $(INSTALLDIR)/dalton.setup
+$(INSTALLDIR)/dalton: ./dalton.gnr ./dalton.setup
 	@echo "---------------> Updating dalton script because dalton.setup or dalton.gnr changed ..."
-	cat $(INSTALLDIR)/dalton.setup ./dalton.gnr > $(INSTALLDIR)/dalton
+	cat ./dalton.setup ./dalton.gnr > $(INSTALLDIR)/dalton
 	chmod 755 $(INSTALLDIR)/dalton
 
-$(INSTALLDIR)/dalton.setup: configure
+./dalton.setup: configure
 	$(warning "---------------> dalton.setup non-existent or older than configure")
-	$(error "-----------> Please rerun configure (or touch $(INSTALLDIR)/dalton.setup)")
+	$(error "-----------> Please rerun configure (or touch dalton.setup)")
 
 # running make revealed that Makefile.config is automatically a target
 # because it enters in an include statement.
