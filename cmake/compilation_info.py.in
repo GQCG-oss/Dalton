@@ -42,7 +42,8 @@ fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
 c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
 
 s = []
-s.append(['System'                  , r'@CMAKE_SYSTEM_NAME@'          ])
+s.append(['System'                  , r'@CMAKE_SYSTEM@'               ])
+s.append(['Processor'               , r'@CMAKE_SYSTEM_PROCESSOR@'     ])
 s.append(['Internal math'           , r'@ENABLE_INTERNAL_MATH@'       ])
 s.append(['64-bit integers'         , r'@ENABLE_64BIT_INTEGERS@'      ])
 s.append(['MPI'                     , r'@ENABLE_MPI@'                 ])
