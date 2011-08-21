@@ -102,7 +102,8 @@ endif()
 
 include(Archs)
 include(Sources)
-include(Compilers)
+include(FCompilers)
+include(CCompilers)
 
 set(LIBS)
 

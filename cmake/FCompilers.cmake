@@ -1,8 +1,3 @@
-message("-- Fortran compiler is  \"${CMAKE_Fortran_COMPILER}\" (\"${CMAKE_Fortran_COMPILER_ID}\") ")
-message("--       C compiler is  \"${CMAKE_C_COMPILER}\" (\"${CMAKE_C_COMPILER_ID}\") ")
-
-# Fortran compilers
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace")
@@ -106,45 +101,3 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         "-qfixed"
         )
 endif()
-
-# C compilers
-
-if(CMAKE_C_COMPILER_ID MATCHES GNU)
-    set(CMAKE_C_FLAGS         "-std=c99 -DRESTRICT=restrict -DFUNDERSCORE=1")
-    set(CMAKE_C_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused")
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES Intel)
-    set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177 -restrict -DRESTRICT=restrict")
-    set(CMAKE_C_FLAGS_DEBUG   "-O0")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 -ip")
-    set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES PGI)
-    set(CMAKE_C_FLAGS         " ")
-    set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 -fast -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict")
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES XL)
-    set(CMAKE_C_FLAGS         " ")
-    set(CMAKE_C_FLAGS_DEBUG   " ")
-    set(CMAKE_C_FLAGS_RELEASE " ")
-endif()
-
-execute_process(
-    COMMAND ./get-compiler-version.py --compiler=${CMAKE_Fortran_COMPILER}
-    TIMEOUT 1
-    OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-execute_process(
-    COMMAND ./get-compiler-version.py --compiler=${CMAKE_C_COMPILER}
-    TIMEOUT 1
-    OUTPUT_VARIABLE C_COMPILER_VERSION
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/cmake
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
