@@ -21,12 +21,12 @@
      &        DFT_SPINDNS,  DFT_LOCALSPIN
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,                            &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
-     &        ! integer:                                                &
+! integer:
      &        IPRDFT, ANGINT, ANGMIN, LEBMIN, IWINT,                    &
-     &        ! logical:                                                &
+! logical:
      &        DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,   &
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG, HFXSET,   &
-     &        ! srDFT (logical):                                        &
+! srDFT (logical):
      &        DOSRX_LDA, DOSRX_GGA, DOSRBCK, DOHFEXCH, DOSRX_WIB,       &
      &        DOSRC_LDA, DOSRC_GGA, DOSRMULO, DOSRGGA2, DOSRLYPT,       &
      &        DOSRC_WIB, ISJT, DOSRX_PBEHSE, DOSRX_PBETCS, DOSRC_PBETCS,&
