@@ -47,17 +47,21 @@ s.append(['Internal math'           , r'@ENABLE_INTERNAL_MATH@'       ])
 s.append(['64-bit integers'         , r'@ENABLE_64BIT_INTEGERS@'      ])
 s.append(['MPI'                     , r'@ENABLE_MPI@'                 ])
 s.append(['XCFun'                   , r'@ENABLE_XCFUN@'               ])
-s.append(['Build type'              , r'@CMAKE_BUILD_TYPE@'           ])
+
 s.append(['Fortran compiler'        , r'@CMAKE_Fortran_COMPILER@'     ])
 s.append(['Fortran compiler version', fortran_compiler_version        ])
-s.append(['Fortran flags'           , r'@CMAKE_Fortran_FLAGS@'        ])
-s.append(['Fortran flags (debug)'   , r'@CMAKE_Fortran_FLAGS_DEBUG@'  ])
-s.append(['Fortran flags (release)' , r'@CMAKE_Fortran_FLAGS_RELEASE@'])
+if '@CMAKE_BUILD_TYPE@' == 'Debug':
+    s.append(['Fortran flags' , r'@CMAKE_Fortran_FLAGS@ @CMAKE_Fortran_FLAGS_DEBUG@' ])
+elif '@CMAKE_BUILD_TYPE@' == 'Release':
+    s.append(['Fortran flags' , r'@CMAKE_Fortran_FLAGS@ @CMAKE_Fortran_FLAGS_RELEASE@' ])
+
 s.append(['C compiler'              , r'@CMAKE_C_COMPILER@'           ])
 s.append(['C compiler version'      , c_compiler_version              ])
-s.append(['C flags'                 , r'@CMAKE_C_FLAGS@'              ])
-s.append(['C flags (debug)'         , r'@CMAKE_C_FLAGS_DEBUG@'        ])
-s.append(['C flags (release)'       , r'@CMAKE_C_FLAGS_RELEASE@'      ])
+if '@CMAKE_BUILD_TYPE@' == 'Debug':
+    s.append(['C flags' , r'@CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_DEBUG@' ])
+elif '@CMAKE_BUILD_TYPE@' == 'Release':
+    s.append(['C flags' , r'@CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_RELEASE@' ])
+
 s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
 s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
