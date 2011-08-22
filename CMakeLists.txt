@@ -7,10 +7,6 @@ set(VERSION_MAJOR 2011)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-# do not rebuild if rules (compiler flags) change
-# this has advantages and disadvantages
-set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
-
 set(THIS_CODE "trunk")
 if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
