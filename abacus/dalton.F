@@ -411,8 +411,8 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
      &      '   Content of the .dal input file',
      &      ' ----------------------------------'
          do while (.true.)
-            read(LUCMD, '(a100)', end=31) line
-            write(lupri, '(a)') line
+            read(LUCMD, '(a50)', end=31) line
+            write(lupri, '(a50)') line
          end do
  31      continue
          if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
@@ -428,8 +428,8 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
      &         ' -----------------------------'
             rewind(LUMOL)
             do while (.true.)
-               read(LUMOL, '(a100)', end=32) line
-               write(lupri, '(a)') line
+               read(LUMOL, '(a79)', end=32) line
+               write(lupri, '(a79)') line
             end do
  32         continue
             CALL GPCLOSE(LUMOL,'KEEP')
