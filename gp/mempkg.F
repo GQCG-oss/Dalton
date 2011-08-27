@@ -201,12 +201,16 @@ C        error branch for invalid MEMID for WORK(KFREE)
 C
  8002    CALL QENTER('MEMGET2 ')
          WRITE (LUWMEM,'(/A/A,I12,2(/A,I25))')
-     *      ' MEMGET ERROR, not a valid memget id in work(kfree)',
-     *      ' KFREE =',KFREE,
-     *      ' found memory checks:',MEMCK,
-     *      ' expected           :',MEMID
-         CALL MEMCHK('MEMGET call of MEMCHK:',WORK,1)
-         CALL QUIT('MEMGET ERROR, not a valid memget '//
+     &      ' MEMGET2 ERROR, not a valid memget id in work(kfree)',
+     &      ' KFREE =',KFREE,
+     &      ' found memory checks:',MEMCK,
+     &      ' expected           :',MEMID
+         WRITE (LUWMEM,'(/2A/2A/A,I10)')
+     &      ' MEMGET2 INFO, type  : ',TYPE,
+     &      ' MEMGET2 INFO, ident : ',IDENT,
+     &      ' MEMGET2 INFO, length: ',LENGTH
+         CALL MEMCHK('MEMGET2 call of MEMCHK:',WORK,1)
+         CALL QUIT('MEMGET2 ERROR, not a valid memget '//
      &             'id in work(kfree)')
 C
 C        warning branch for non-zero length for WORK(KFREE):
