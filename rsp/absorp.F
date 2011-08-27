@@ -2888,6 +2888,8 @@ C
       LOGICAL DOCAL
       CHARACTER*8 LABEL(3), ALAB, BLAB, CLAB
       DIMENSION FREQ(3),VALUE(2), HYPVAL(2)
+      SAVE N
+      DATA N/0/
 #include <priunit.h>
 C
       DOCAL = .TRUE.
