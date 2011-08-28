@@ -394,7 +394,7 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          call print_compilation_info()
          call print_git_revision_info()
 #endif
-!        print contents of input file to output
+!        print content of input file to output
          inquire(file = 'DALTON.INP', exist = file_exists,
      &           opened = file_open)
          if (file_exists) then
@@ -417,15 +417,15 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
  31      continue
          if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
 
-!        print contents of molecule file to output
+!        print content of molecule file to output
          inquire(file = 'MOLECULE.INP', exist = file_exists)
          if (file_exists) then
             LUMOL = -1
             CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
      &                  IDUMMY,.FALSE.)
             write(lupri, '(//a/a/)')
-     &         '   Contents of the .mol file',
-     &         ' -----------------------------'
+     &         '   Content of the .mol file',
+     &         ' ----------------------------'
             rewind(LUMOL)
             do while (.true.)
                read(LUMOL, '(a79)', end=32) line
