@@ -4036,7 +4036,7 @@ C        CALL UTHV(U,PRPAO,V,ISYM,JSYM,NBASI,NBASJ,PRPMO,WRK)
 C
       RETURN
       END
-      SUBROUTINE QRGP(WORD,GP,CMO,XINDX,ANTSYM,WORK,LWORK)
+      SUBROUTINE QRGP(WORD,GP,CMO,XINDX,ANTSYM_GP,WORK,LWORK)
 #include <implicit.h>
       CHARACTER*8 WORD
       DIMENSION GP(*), CMO(*), XINDX(*), WORK(LWORK)
@@ -4066,6 +4066,12 @@ C
       CALL PRPGET(WORD,CMO,WORK(KOP),KSYMP,ANTSYM,WORK(KFREE),LFREE,IPR)
       IOPSYM=KSYMOP
       IOPSPI=LRRANK(INDPRP(WORD))
+C
+C     Whereas ANTSYM from PRPGET refers to matrix symmetry, ANTSYM_GP will
+C     from here on refer to the antisymmetry of the response property vector,
+C     thus we change sign on it.
+C
+      ANTSYM_GP = -ANTSYM
 C
 C Density 
 C

@@ -21,8 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
-C
 #ifdef OLD_REVISIONLOG
 !===========================================================================
 !/* Comdeck revision_log */
@@ -65,6 +63,8 @@ C
 !RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
 !===========================================================================
 #endif
+C
+#include "single.h"
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
 C
@@ -111,8 +111,9 @@ C
 #include "esg.h"
 #include "numder.h"
 #include "gtensor.h"
+#include "infave.h"
 C
-      LOGICAL SAVLR, DORESP, FLAGSV, EX
+      LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
       CALL QENTER('RSPDRV')
 C
@@ -255,6 +256,7 @@ C
 C     ALLOCATE WORK SPACE FOR MATRICES THAT WILL BE KEPT DURING THE
 C     WHOLE RESPONSE CALCULATION AND READ IN THE MATRICES
 C
+      NEED_PVX = DORESP .OR. N2AVTOT .GT. 0
       KFREE  = 1
       LFREE  = LWRK
       CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
@@ -267,8 +269,8 @@ C
          CALL MEMGET('REAL',KFC  ,0     ,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFV  ,0     ,WRK,KFREE,LFREE)
       ELSE
-         IF (.NOT.DORESP) THEN
-C        two-elec. dens.mat. not needed for one-el. exp.val.s
+         IF ( .NOT. NEED_PVX ) THEN
+!        two-elec. dens.mat. not needed for one-el. exp.val.s
             LPVX = 0
          ELSE IF (TRPFLG) THEN
 C NEED BOTH TRIPLET AND SINGLET TWO ELECTRON DENSITY MATRICES
@@ -331,11 +333,13 @@ C
 C
 C
 C
+      IF ( NEED_PVX ) THEN
+C
       IF ( .NOT.TDHF ) THEN
          CALL GETCIX(WRK(KINDX),IREFSY,IREFSY,WRK(KFREE),LFREE,0)
       END IF
 C
-      IF ( DORESP .AND. (.NOT.TDHF) .AND. (.NOT.RSPCI) ) THEN
+      IF ((.NOT.TDHF) .AND. (.NOT.RSPCI) ) THEN
 C
 C     ... CALCULATE ONE- AND TWO- BODY DENSITY MATRICES
 C         ( THE SYMMETRIC MC TWO BODY DENSITY MATRIX CANNOT BE USED IN
@@ -345,7 +349,7 @@ C
          KTOT   = KCREF + NCREF
          LFREE  = LWRK  - KTOT
          IF (LFREE.LT.0) CALL ERRWRK('RSPDRV 4',KTOT-1,LWRK)
-         KFREE  = 1
+         KFREE_KTOT  = 1
 C
          CALL GETREF(WRK(KCREF),NCREF)
          IF ( IPRRSP.GT.110 ) THEN
@@ -358,7 +362,7 @@ C
          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      *              WRK(KUDV),WRK(KPVX),
      *              ISPIN1,ISPIN2,.FALSE.,.FALSE.,
-     *              WRK(KINDX),WRK(KTOT),KFREE,LFREE)
+     *              WRK(KINDX),WRK(KTOT),KFREE_KTOT,LFREE)
 C        CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
 C    *              ISPIN1,ISPIN2,TDM,NORHO2,XNDXCI,WORK,
 C    *              KFREE,LFREE)
@@ -369,21 +373,22 @@ C
             CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      *                 WRK(KUDV),WRK(KPVX+LPVMAT),
      *                 ISPIN1,ISPIN2,.FALSE.,.FALSE.,
-     *                 WRK(KINDX),WRK(KTOT),KFREE,LFREE)
+     *                 WRK(KINDX),WRK(KTOT),KFREE_KTOT,LFREE)
 C
          END IF
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
-      ELSE IF (DORESP .AND. TDHF .AND. NASHT .EQ. 1) THEN
+      ELSE IF ( TDHF .AND. NASHT .EQ. 1 ) THEN
          WRK(KUDV) = D1
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
-      ELSE IF (DORESP .AND. TDHF .AND. HSROHF) THEN
+      ELSE IF ( TDHF .AND. HSROHF ) THEN
          CALL DUNIT(WRK(KUDV),NASHT)
          CALL DZERO(WRK(KPVX),LPVMAT)
       END IF
+      END IF ! for IF ( NEED_PVX ) 
 C
 C     Calculate expectation value properties (first order)
 C     ====================================================
@@ -584,6 +589,8 @@ C
 C
 C     *******************************************
 C
+      CALL MEMREL('End of RSPDRV',WRK,1,1,KFREE,LFREE)
+
       CALL QEXIT('RSPDRV')
       RETURN
       END
@@ -803,7 +810,7 @@ C
     6          CONTINUE
                   READ (LUCMD,*) ORBSFT
                GO TO 100
-    7          CONTINUE
+    7          CONTINUE ! .ORBSPC
                   ORBSPC = .TRUE.
                GO TO 100
     8          CONTINUE
@@ -813,7 +820,7 @@ C
     9          CONTINUE
                   NOS0MX = .FALSE.
                GO TO 100
-   10          CONTINUE
+   10          CONTINUE ! .OPTORB
                   OPTORB = .TRUE.
                GO TO 100
    11          CONTINUE
@@ -828,7 +835,7 @@ C
    14          CONTINUE
                   QRREST = .TRUE.
                GO TO 100
-   15          CONTINUE
+   15          CONTINUE ! .PROPAV
                   N1AVTOT = N1AVTOT + 1
                   IF ( N1AVTOT .GT. MAX1AV ) THEN
                      WRITE(LUPRI,'(/,2A,I5)')
@@ -864,9 +871,9 @@ C              .PROP2Average
                    WRITE(LUPRI,'(//A,I5)')
      &               '@RSPINP: Number of operators for .PROP2AV '//
      &               'calculation exceeds the allowed number :',MAX2AV
-                   CALL QUIT('RSPINP, TOO MANY 2AV OPERATORS SPECIFIED')
+                   CALL QUIT('TOO MANY .PROP2AV OPERATORS SPECIFIED')
                   END IF
-                  READ(LUCMD,'(A/A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
+                  READ(LUCMD,'(A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -906,23 +913,26 @@ C              .PROP2Average
      *      ' ** CALCULATION OF TRIPLET RESPONSE PROPERTY  **'
      *      ,'  TRPFLG = ',TRPFLG
      *      ,'  TRPLET = ',TRPLET
-         IF (AVDIA) WRITE(LUPRI,'(/2A/2A/A,L1)')
-     *      ' USE FOCK TYPE DECOUPLING OF THE TWO-ELECTRON',
+         IF (AVDIA) THEN
+            WRITE(LUPRI,'(/2A/2A/A,L1)')
+     *      ' Default : USING FOCK TYPE DECOUPLING OF THE TWO-ELECTRON',
      *      ' DENSITY MATRIX :',
-     *      ' ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE',
+     *      '    ADD DV*(FC+FV) INSTEAD OF DV*FC TO E[2] APPROXIMATE',
      *      ' ORBITAL DIAGONAL'
-     *      ,'  AVDIA = ',AVDIA
+         ELSE
+            WRITE(LUPRI,'(/A)')
+     *      ' .NOAVDIA : Using exact E[2] orbital diagonal. '
+         END IF
          IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D10.6)')
-     *      ' DIAGONAL ORBITAL E[2] SHIFTED WITH, ORBSFT =',ORBSFT
-         IF (ORBSPC) WRITE(LUPRI,'(/2A,L1)')
-     *      ' CALCULATION WITH ONLY ORBITAL OPERATORS ARE INCLUDED.',
-     *      ' ORBSPC = ',ORBSPC
+     *      ' DIAGONAL ORBITAL E[2] SHIFTED WITH ORBSFT =',ORBSFT
+         IF (ORBSPC) WRITE(LUPRI,'(/A)') ' .ORBSPC:'//
+     *      ' CALCULATION WITH ONLY ORBITAL OPERATORS INCLUDED.'
          IF (.NOT.NOS0MX) WRITE(LUPRI,'(/2A,L1)')
      *      ' S(0) SUM RULE CALCULATED IN MIXED REPRESENTATION',
      *      ' NOS0MX = ',NOS0MX
          IF (OPTORB) WRITE(LUPRI,'(/2A,/A,L1)')
-     *      ' ORBITAL TRIAL VECTORS CALCULATED WITH OPTIMAL ORBITAL',
-     *      ' TRIAL VECTOR ALGORITHM',' OPTORB = ',OPTORB
+     *      ' .OPTORB: ORBITAL TRIAL VECTORS CALCULATED WITH OPTIMAL',
+     *      ' ORBITAL TRIAL VECTOR ALGORITHM.'
          IF (MAXPHP.NE.100) WRITE(LUPRI,'(/A,I6)')
      *      ' DIMENSION OF H(0) SUBSPACE. MAXPHP =',MAXPHP
          IF (PHPRES) WRITE(LUPRI,'(/2A,L1)')
@@ -937,7 +947,7 @@ C              .PROP2Average
      *      ' Direct linear transformations NOT used in RESPONSE',
      *      ' calculation, DIROIT=',DIROIT
          IF (DFT_SO) WRITE (LUPRI,'(/A)')
-     &      ' DFT_SO integrals calculated.'
+     &      ' .DFT-SO: DFT spin-orbit integrals calculated.'
       END IF
       IF (CCPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
@@ -1120,6 +1130,8 @@ C
       INTEGER NUMBER_ORBS(8)
 C
 #include "priunit.h"
+#include "gnrinf.h"
+C
 #include "inforb.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -1136,7 +1148,6 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 #include "channel.h"
-#include <gnrinf.h>
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ','.DIPVEL',
      *            '.DIPVLX', '.DIPVLY', '.DIPVLZ', '.DIPMAG','.DIPMGX',
@@ -3373,7 +3384,7 @@ C
      *   ' SINGLET LINEAR EQUATIONS FOR CUBIC RESPONSE'
          WRITE(LUPRI,'(/A)')'   I  CRLBL(I)  CRFREQ(I)  ISYMCR(I) '
          DO 890 I = 1,NLRLBL
-            WRITE(LUPRI,'(I5,5X,A,2X,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,1P,D14.6,I12)')
      *      I,CRLBL(I),CRFREQ(I),ISYMCR(I)
   890    CONTINUE
        END IF
@@ -3385,7 +3396,7 @@ C
      *   ' SINGLET LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
          WRITE(LUPRI,'(/A)')'   I  QRLBL(I)  QRFREQ(I)  ISYMQR(I) '
          DO 990 I = 1,NLRLBL
-            WRITE(LUPRI,'(I5,5X,A,2X,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,1P,D14.6,I12)')
      *      I,QRLBL(I),QRFREQ(I),ISYMQR(I)
   990    CONTINUE
          IF ( TRPFLG .AND. NTRLBL.GT.0 ) THEN
@@ -3394,7 +3405,7 @@ C
      *      ' TRIPLET LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
             WRITE(LUPRI,'(/A)')'   I  TRLBL(I)  TRFREQ(I)  ISYMTR(I) '
             DO 991 I = 1,NTRLBL
-               WRITE(LUPRI,'(I5,5X,A,2X,D12.6,I12)')
+               WRITE(LUPRI,'(I5,5X,A,1P,D14.6,I12)')
      *         I,TRLBL(I),TRFREQ(I),ISYMTR(I)
   991       CONTINUE
          END IF

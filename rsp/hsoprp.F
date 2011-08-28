@@ -24,7 +24,7 @@
 #include <single.h>
 C
 C  /* Deck hsoctl */
-      SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+      SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
 C
 C Olav Vahtras
 C Jun 20, 1990
@@ -88,7 +88,7 @@ C
       CALL DZERO(GP,KZYVAR)
       HSOFAC = ALPHAC**2 / 4
       IF (WORD(2:2).EQ.'1') THEN
-         CALL PRPCTL(WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+         CALL PRPCTL(WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
          CALL DSCAL(KZYVAR,HSOFAC,GP,1)
          GO TO 9999
       ELSE IF (WORD(2:2).EQ.'2') THEN
@@ -101,7 +101,7 @@ C
          WRITE(LUPRI,*) 'Programming error: WORD is not valid: ',WORD
          CALL QUIT('Programming error: WORD is not valid')
       END IF
-      ANTSYM = 1.0D0
+      ANTSYM_GP = 1.0D0 ! imaginary operator GP_Z = ANTSYM_GP * GP_Y
 C
       IF (IPRHSO.GT.0) THEN
          CALL TIMER('START ',HSOSTA,HSOTIM)
@@ -206,7 +206,7 @@ C
       IF (DO1) THEN
          LABEL = WORD
          LABEL(2:2) = '1'
-         CALL PRPGET (LABEL,CMO,WRK(KH1),ANTSYM,WRK(KWRK1),LWRK1)
+         CALL PRPGET (LABEL,CMO,WRK(KH1),ANTSYM_GP,WRK(KWRK1),LWRK1)
       END IF
 C
 C Print atomic and molecular property integrals, if desired

@@ -462,7 +462,7 @@ C
       RETURN
       END
 C  /* Deck getgpv */
-      SUBROUTINE GETGPV(WORD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+      SUBROUTINE GETGPV(WORD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
 C
 C PURPOSE
 C  CALCULATE GP VECTOR AND RETURN AS FIRST ELEMENTS IN WRK
@@ -483,24 +483,24 @@ C
          KWRK1 = KGP + KZYVAR
          LWRK1 = LWRK + 1 - KWRK1
          CALL HSOCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,
-     &               ANTSYM,WRK(KWRK1),LWRK1)
+     &               ANTSYM_GP,WRK(KWRK1),LWRK1)
       ELSE IF (WORD(5:8).EQ.'LAGR') THEN
          CALL LAGRAN(WORD,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)
-         ANTSYM = -1.0D0
+         ANTSYM_GP = -1.0D0 ! real operator, GP_Z = ANTSYM_GP * GP_Y
       ELSE IF (WORD(2:7).EQ.'LONMAG') THEN
          CALL PRPABA(WORD,WRK,LWRK)
       ELSE
          KGP   = 1
          KWRK1 = KGP + KZYVAR
          LWRK1 = LWRK + 1 - KWRK1
-         CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM,
+         CALL PRPCTL(WORD,WRK(KGP),CMO,UDV,PV,XINDX,ANTSYM_GP,
      &               WRK(KWRK1),LWRK1)
       ENDIF
       CALL QEXIT('GETGPV')
       RETURN
       END
 C  /* Deck prpctl */
-      SUBROUTINE PRPCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+      SUBROUTINE PRPCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM_GP,WRK,LWRK)
 C
 C 18-Feb-1987
 C
@@ -542,12 +542,18 @@ C
       CALL PRPGET (WORD,CMO,WRK(KPRPMO),KSYMP,ANTSYM,
      &             WRK(KFREE),LFREE,IPRRSP)
 C     CALL PRPGET (WORD,CMO,PRPMO,KSYMP,ANTSYM,WRK,LWRK,IPRINT)
+C
+C     Whereas ANTSYM from PRPGET refers to matrix symmetry, ANTSYM_GP will
+C     from here on refer to the antisymmetry of the response vector, thus we
+C     change sign on it. K.Ruud, July 10 2000, moved and revised hjaaj Aug 2011.
+C
+      ANTSYM_GP = -ANTSYM
       IF (KSYMP.NE.KSYMOP) THEN
          WRITE (LUPRI,'(/A/2A/A,2I5/A,F10.2)')
      &      'FATAL ERROR: KSYMOP .ne. KSYMP from PRPGET',
      &      '   Property label  : ',WORD,
      &      '   KSYMOP and KSYMP:',KSYMOP,KSYMP,
-     &      '   ANTSYM          :',ANTSYM
+     &      '   ANTSYM_GP       :',ANTSYM_GP
          CALL QUIT('KSYMOP .ne. KSYMP from PRPGET')
       END IF
 C
@@ -623,6 +629,10 @@ C
 C Revised Sep. 2003 hjaaj:  IPRINT in param.list,
 C  if KSYMP .le. 0 then return symmetry in KSYMP, otherwise use
 C  user-specified KSYMP
+C
+C KSYMP  : point group symmetry of PRPMO matrix
+C ANTSYM : matrix symmetry of PRPMO matrix
+C          (1: symmetric, -1: antisymmetric, 0: unknown)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -750,11 +760,6 @@ C
          CALL OUTPUT(PRPMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
-C     Whereas ANTSYM above has referred matrix symmetry, it will from here on
-C     refer to the antisymmetry of the response vector, thus we change sign
-C     on it. K.Ruud, July 10 2000.
-C
-      ANTSYM = -ANTSYM
       CALL MEMREL('PRPGET',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPGET')
       RETURN
