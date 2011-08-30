@@ -515,6 +515,7 @@ rsp/rspesg_gp.F
 rsp/rspesg_lag.F
 rsp/rspfxd.F
 rsp/rspg.F
+rsp/rsphfc.F
 rsp/rsphso.F
 rsp/rspief.F
 rsp/rspief1.F
