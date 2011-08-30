@@ -112,6 +112,8 @@ C
 #include "numder.h"
 #include "gtensor.h"
 #include "infave.h"
+#include "mxcent.h"
+#include "esrhfc.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
@@ -210,6 +212,8 @@ C
          END IF
       END IF
       DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. GCALC .OR. I.GT.0
+      DORESP = DORESP .OR. ESRHFC
+      TRPFLG = TRPFLG .OR. ESRHFC
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C
@@ -438,6 +442,15 @@ C
          CALL GDRV(WRK,LWRK)
       END IF
 C
+C     Hyperfine coupling constants driver for RESPONSE 
+C     ====================================================
+C 
+      IF (ESRHFC) THEN
+         CALL HFCDRV(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),WRK(KFC),
+     *               WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),
+     *               WRK(KWRK1),LWRK1)  
+      END IF
+C
 C     Calculate response properties with absorption
 C     =============================================
 C
@@ -601,7 +614,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 10 )
+      PARAMETER ( NTABLE = 11 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -620,12 +633,14 @@ C
 #include "maxorb.h"
 #include "infinp.h"
 #include "absorp.h"
+#include "mxcent.h"
+#include "esrhfc.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
-     *            '*SPIN-O', '*ESG   '/
+     *            '*SPIN-O', '*ESG   ', '*HFC   '/
 C
 C     Include block data RSPINF which initializes /INFRSP/
 C
@@ -669,7 +684,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
 C
@@ -701,6 +716,8 @@ C
  9    CALL HSOINP(WORD)
       GO TO 200
  10   CALL ESGINP(WORD)
+      GO TO 200
+ 11   CALL HFCINP(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -999,6 +1016,7 @@ C
 #include "absorp.h"
 #include "esg.h"
 #include "channel.h"
+#include "esrhfc.h"
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -1109,6 +1127,12 @@ C  Initializing ESG
       DATA ESG/.FALSE./
       DATA IESG/1/
       DATA ISYME/1/
+C  Initializing ESRHFC 
+      DATA ESRHFC/.FALSE./
+      DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
+      DATA UNGAUSS/.TRUE./
+      DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
+      DATA IPRHFC/5/     
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)

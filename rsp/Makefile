@@ -62,6 +62,7 @@ F_OBJS = \
 	rspief2.o       \
         rspief.o        \
         mcdrsp.o        \
+	rsphfc.o	\
         rspqm3.o        \
 	rspqmmm.o
 
