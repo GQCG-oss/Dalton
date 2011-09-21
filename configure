@@ -178,7 +178,7 @@ esac
 # thus define only two for each computer type.
 # Check first local libraries (hoping they were installed there for a
 # reason), then system-provided libraries.
-dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS /lib64 /usr/lib64 /usr/local/lib64'
+libdirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS /lib64 /usr/lib64 /usr/local/lib64'
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
@@ -211,7 +211,11 @@ case $WHICH in
     paragon)  liblist='libmath.a libblas.a'
               complist='if90 f90'
               ccmplist='cc';;
-    linux|darwin|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
+    darwin)   libdirlist="/opt/local/lib /sw/lib $libdirlist" # also find libraries installed with MacPorts or fink
+              liblist='libacml.a libmkl.dylib libmkl_p3.a libatlas.a libblas.a'
+              complist='ifort pgf95 pgf90 gfortran g95'
+              ccmplist='icc ecc pgcc gcc';;
+    linux|cygwin)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
               complist='ifort pgf95 pgf90 gfortran g95'
               ccmplist='icc ecc pgcc gcc';;
     hp)       liblist='libblas.a libveclib.a'
@@ -337,7 +341,7 @@ if [ "$answer" = "y" ]; then
             parlib='yes'
         fi
 #
-        pardir=$dirlist
+        pardir=$libdirlist
         incdir='/usr/include /usr/local/include /local/include'
 
 #
@@ -345,9 +349,9 @@ if [ "$answer" = "y" ]; then
 #
         if [ $WHICH = 'iris4d' ]; then
             if [ $opsys = 'IRIX64' ]; then
-                pardir="/usr/lib64 /usr/lib64/mips4/ $dirlist"
+                pardir="/usr/lib64 /usr/lib64/mips4/ $libdirlist"
             else
-                pardir="/usr/lib32 $dirlist"
+                pardir="/usr/lib32 $libdirlist"
             fi
         fi
 #
@@ -399,6 +403,13 @@ fi
 #
 $ECHO "\n   Checking for Fortran compiler ..."
 $ECHO   "   from this list: $complist \n"
+
+get_yes_or_no "Do you want to replace this with your own Fortran compiler search list?" n
+if [ $answer = 'y' ]; then
+   $ECHO   "OK, please enter it : \c "
+   read complist
+   $ECHO   "Revised Fortran compiler search list: $complist \n"
+fi
 
 for comp in $complist; do
     set dummy $comp; ac_word=$2
@@ -478,6 +489,14 @@ fi
 #
 $ECHO "\n   Checking for C compiler ..."
 $ECHO   "   from this list: $ccmplist \n"
+
+get_yes_or_no "Do you want to replace this with your own C compiler search list?" n
+if [ $answer = 'y' ]; then
+   $ECHO   "OK, please enter it : \c "
+   read ccmplist
+   $ECHO   "Revised C compiler search list: $ccmplist \n"
+fi
+
 for comp in $ccmplist; do
     set dummy $comp; ac_word=$2
 #   Add ":" to IFS, the list of internal field separators
@@ -521,37 +540,37 @@ fi
 if [ $WHICH = "linux" ]; then
         testdir=`locate libmkl.so libmkl_p3.a`
         for i in $testdir; do
-          dn=`dirname $i`; dirlist="$dn $dirlist"
+          dn=`dirname $i`; libdirlist="$dn $libdirlist"
         done
         testdir=`locate libatlas.a`
         for i in $testdir; do
-          dn=`dirname $i`; dirlist="$dn $dirlist"
+          dn=`dirname $i`; libdirlist="$dn $libdirlist"
         done
         if [ ! -z $PGI ]; then
         if [ $PGI != "" ]; then
-          dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
+          libdirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $libdirlist"
         fi
         fi
 fi
 # prepend LIBDIRS environment variable to add user library dirs.
-dirlist="$LIBDIRS $dirlist"
+libdirlist="$LIBDIRS $libdirlist"
 LIB=''
 LIBDIR=''
 $ECHO "\nTesting existence of libraries in this order:"
 $ECHO   " $liblist"
 $ECHO   "Directory search list for libraries:"
-$ECHO   " $dirlist \n"
+$ECHO   " $libdirlist \n"
 get_yes_or_no "Do you want to replace this with your own directory search list?" n
 if [ $answer = 'y' ]; then
    $ECHO   "OK, please enter it : \c "
-   read dirlist
+   read libdirlist
    $ECHO   "Revised directory search list for libraries:"
-   $ECHO   " $dirlist \n"
+   $ECHO   " $libdirlist \n"
 fi
 
 if [ -n "$liblist" ]; then
 for testlib in $liblist; do
-   for testdir in $dirlist; do
+   for testdir in $libdirlist; do
 #     echo "testing existence of $testdir/$testlib"
       if [ -f $testdir/$testlib ]; then
         get_yes_or_no "Found $testdir/$testlib, use it?" y
@@ -617,7 +636,7 @@ if [ -n "$LIBDIR" -a $lapack != true ]; then
       lapack=true; LIB="-L$LIBDIR -llapack $LIB"
    else
       LIB="-L$LIBDIR $LIB"
-      for testdir in $dirlist; do
+      for testdir in $libdirlist; do
          if [ -f $testdir/liblapack.a -o -f $testdir/liblapack.so ]; then
             lapack=true; LIB="-L$testdir -llapack $LIB"
             break
@@ -1097,7 +1116,7 @@ case "$WHICH" in
           *)
 #            assume gfortran also if not gfortran (but write a WARNING)
              if [ $F90_be = "gfortran" ]; then
-               gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+               gfver=`$F90 -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                $ECHO "gfortran version $gfver prc=$prc"
              else
                gfver=450
@@ -1143,8 +1162,8 @@ case "$WHICH" in
           fi
 #
 # gfortran: Bin Gao, Mar. 9, 2009
-          if [ "$F90" = gfortran -o "$F90" = mpif90 ]; then
-               gfver=`gfortran -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
+          if [ "${F90:0:8}" = gfortran -o "$F90" = mpif90 ]; then
+               gfver=`$F90 -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
                echo "gfortran version $gfver prc=$prc"
                cpp="-DVAR_GFORTRAN -DGFORTRAN=$gfver $cpp"
                case $prc in
