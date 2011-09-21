@@ -301,6 +301,10 @@ if [ $help ]; then
   usage
 fi
 
+if [ "${DALTON:0:1}" != "/" ]; then
+  DALTON="$PWD/$DALTON"   # we need absolute path, not relative path
+fi
+
 if [ "$cmake" = "false" ]; then
     if [ ! -x $DALTON ]; then
        echo ' '
