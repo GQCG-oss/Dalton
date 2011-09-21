@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 # test function definitions for dalton
 # Originally by Pawel Salek (2003)
+
+export LANG=C  # tests do not work if e.g. LANG=Da_DK, because of the decimal comma vs. decimal point issue !!!! /hjaaj Sep 2011
 
 # check_gen_input:
 # generate several input and description files.
