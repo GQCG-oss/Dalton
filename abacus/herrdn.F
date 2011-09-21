@@ -5228,14 +5228,13 @@ C
       CHARACTER*(120) NEXT_INPUT_LINE
       INTEGER NMLN_LASTREAD
       DATA NMLN_LASTREAD /0/
-      SAVE NMLN_LASTREAD, LEN_MLINE
+      SAVE NMLN_LASTREAD
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
       IF ( NMLINE .EQ. 0) THEN
          NMLN_LASTREAD = 0
-         LEN_MLINE = LEN( MLINE(1) )
       END IF
 C
    10 CONTINUE
@@ -5274,11 +5273,15 @@ C
      &   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
      &   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
 
-      IF (LNBLNK(NEXT_INPUT_LINE) .GT. LEN_MLINE) THEN
-         WRITE(LUPRI,'(//A,I5/2A/2A)')
-     &   ' WARNING -- line in ".mol" file truncated, line',NMLINE,
+      IF (LNBLNK(NEXT_INPUT_LINE) .GT. max_len_MLINE) THEN
+         WRITE(LUPRI,'(//A,I5/2A/2A//A,I5/A)')
+     &   ' FATAL ERROR -- line in ".mol" file truncated, line',NMLINE,
      &   ' Line from file: ',NEXT_INPUT_LINE,
-     &   ' Truncated line: ',MLINE(NMLINE)
+     &   ' Truncated line: ',MLINE(NMLINE),
+     &   ' NOTE: maximum length of an input line in ".mol" file is',
+     &     max_len_MLINE,
+     &   ' Rewrite the offending input line and be welcome back!'
+         CALL QUIT('Too long input line in ".mol" file')
       END IF
 
       NMLN_LASTREAD = NMLINE
