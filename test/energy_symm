@@ -173,13 +173,13 @@ ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
 
 # Check for WARNING for .mol line longer than 80 char
 #  WARNING -- line in ".mol" file truncated, line     5
-CRIT1=`$GREP "WARNING .* file truncated, line * 5" $log | wc -l`
-TEST[10]=`expr $CRIT1`
-CTRL[10]=1
-ERROR[10]="WARNING FOR LONG .MOL LINE NOT CORRECT"
+#CRIT1=`$GREP "WARNING .* file truncated, line * 5" $log | wc -l`
+#TEST[10]=`expr $CRIT1`
+#CTRL[10]=1
+#ERROR[10]="WARNING FOR LONG .MOL LINE NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7 8 9 10
+for i in 1 2 3 4 5 6 7 8 9
 do
    if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
