@@ -49,6 +49,9 @@ Cef end
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
+#ifdef VAR_OMP
+      INTEGER omp_get_num_procs
+#endif
       CHARACTER LABEL1*8, STHELP*10
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 
@@ -295,7 +298,7 @@ C
      *'Ola B. Lutnaes,','University of Oslo,','Norway','(DFT Hessian)',
      *'Kurt V. Mikkelsen,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF and QM/MM code)',
-     *'Christian Neiss,','Univ. Erlangen-Nürnberg,','Germany',
+     *'Christian Neiss,','Univ. Erlangen-Nuernberg,','Germany',
      &  '(CCSD(R12))',
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
      &  '(QM/MM code)',
@@ -306,6 +309,8 @@ C
      *'Anders Osted,','Copenhagen University,','Denmark','(QM/MM code)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
+     *'Filip Pawlowski,','Kazimierz Wielki University','Poland',
+     &  '(CC3)',
      *'Thomas B. Pedersen,','University of Oslo,','Norway',
      &  '(Cholesky decomposition)',
      *'Patricio F. Provasi,','University of Northeastern,','Argentina',
@@ -393,6 +398,12 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          write(lupri, *)
          call print_compilation_info()
          call print_git_revision_info()
+#endif
+
+#ifdef VAR_OMP
+         write(lupri,'(//A,I5)')
+     &   ' * openMP activated, number of threads:',
+     &   omp_get_num_procs()
 #endif
 !        print content of input file to output
          inquire(file = 'DALTON.INP', exist = file_exists,
