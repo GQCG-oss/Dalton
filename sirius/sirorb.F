@@ -74,7 +74,7 @@ C
 C
 C
       CALL QENTER('SIRORB')
-      WRITE (LUW4,'(//A/)')
+      WRITE (LUPRI,'(//A/)')
      *    ' <<<< OUTPUT FROM ORBITAL ABSORPTION (SIRORB) >>>>'
       ACTROT   = FLAG(23)
       FLAG(23) = .TRUE.
@@ -102,8 +102,8 @@ C
 !                     the integrals. There is no transparent way of
 !                     transferring this information to TR1H2M, and as
 !                     the CPU time saved will be a small fraction of
-!                     the total CPU time, it is not worth doing more
-!                     about. With this change, all levels of absorption
+!                     the total CPU time, it is not worth doing more.
+!                     With this change, all levels of absorption
 !                     should work again. /hjaaj
          JTRLVL = ITRLVL
       ELSE IF (FLAG(52)) THEN
@@ -114,17 +114,12 @@ C
          LVLABS = 3
          JTRLVL = ITRLVL
       ELSE
-         WRITE (LUW4,'(//A/)') '*** ERROR, SIRORB called but no'//
+         WRITE (LUPRI,'(//A/)') '*** ERROR, SIRORB called but no'//
      *      ' absorption level specified.'
-         CALL QTRACE(LUW4)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (SIRORB) - SOFTWARE ERROR, PLEASE REPORT')
       END IF
-#if defined (VAR_NOITRABS)
-C --- 851216 -- EXPLICIT ORBITAL HESSIAN DIAGONAL IS WRONG
-C               IF KTRLVL = 0 !
-      JTRLVL   = ITRLVL
-#endif
-      WRITE (LUW4,'(/A,I3)') ' *** ORBITAL ABSORPTION LEVEL =',LVLABS
+      WRITE (LUPRI,'(/A,I3)') ' *** ORBITAL ABSORPTION LEVEL =',LVLABS
 C
 C     START-UP SECTION:
 C     =================
@@ -133,16 +128,16 @@ C     LEVEL USING LOGICAL FUNCTION GETWOP(XLABEL,LUNIT):
 C
       IF ( .NOT. GETWOP(TABLE(LVLABS)) ) THEN
 C        NWARN = NWARN + 1
-C        WRITE (LUW4,'(//A,A8,A/A/)')
+C        WRITE (LUPRI,'(//A,A8,A/A/)')
 C    *      ' *** WARNING (SIRORB), label "',
 C    *      TABLE(LVLABS),'" not found on file LUINDF',
 C    *      '     Continuation without absorption will be attempted.'
-         WRITE (LUW4,'(//A,A8,A/A/)') ' *** ERROR (SIRORB), label "',
+         WRITE (LUPRI,'(//A,A8,A/A/)') ' *** ERROR (SIRORB), label "',
      *      TABLE(LVLABS),'" not found on file LUINDF'
-         CALL QTRACE(LUW4)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (SIRORB) label not found on LUINDF')
       END IF
-      WRITE (LUW4,'(/T6,A,I5)') 'Number of orbital rotations =',NWOPT
+      WRITE (LUPRI,'(/T6,A,I5)') 'Number of orbital rotations =',NWOPT
       NEWLVL = .FALSE.
 C
       CALL UPDGRD (3,DUMMY,CMO,DV,PV,GORB,EMCMY,EMCACT,FC,FV,FQ,
@@ -157,8 +152,8 @@ C
 C     Write orbital gradient which probably is greater than before
 C     because of active-active rotations
 C
-      WRITE (LUW4,1020) GNORM(3)
-      IF (LUPRI.NE.LUW4) WRITE (LUPRI,1020) GNORM(3)
+      WRITE (LUPRI,1020) GNORM(3)
+      IF (LUPRI.NE.LUW4) WRITE (LUW4,1020) GNORM(3)
 C
       ITORB  = 0
       ITBCK  = 0
@@ -172,13 +167,13 @@ C REPEAT OUTER LOOP UNTIL (converged or ITORB .gt. MAXITO or error)
 C
  1000 CONTINUE
          ITORB = ITORB + 1
-         WRITE (LUW4,21000) ITMAC,ITORB
-         IF (LUPRI .NE. LUW4) WRITE (LUPRI,21000) ITMAC,ITORB
+         WRITE (LUPRI,21000) ITMAC,ITORB
+         IF (LUPRI .NE. LUW4) WRITE (LUW4,21000) ITMAC,ITORB
 21000    FORMAT(//,' <<< ORBITAL ABSORPTION ITERATION NO. (',I3,',',
      *          I3,') >>>'/)
 C
-         CALL FLSHFO(LUW4)
-         IF (LUPRI .NE. LUW4) CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUPRI)
+         IF (LUPRI .NE. LUW4) CALL FLSHFO(LUW4)
 C
          EMCOLD = EMCSCF
          CALL DCOPY(NCMOT,CMO,1,WRK(KCMOOL),1)
@@ -200,7 +195,7 @@ C    *               CMO,GORB,DV,PV,FC,FV,WRK,LFREE)
          OSTP0  = DNORM2(NWOPT,WRK(KXKAP),1)
          XKAPN2 = OSTP0**2
          DEPRED = DP5*EVAL*(XKAPN2 + D1/(DAMP*DAMP))
-         WRITE (LUW4,'(/A,F15.10)')
+         WRITE (LUPRI,'(/A,F15.10)')
      *      ' Orbital rotation step length =',OSTP0
 C
  1100    CONTINUE
@@ -210,7 +205,7 @@ C           CALL MO_ROTATE(XKAP,CMO,WRK,LFREE)
             FLAG(14) = FLAG(34)
 C           ... new orbitals, integral transformation may be needed.
             IF ( ITORB .GE. MAXITO ) THEN
-               WRITE (LUW4,'(//A/A/)')
+               WRITE (LUPRI,'(//A/A/)')
      *           ' *** Orbital absorption discontinued,',
      *           '     maximum number of absorption iterations reached.'
                GO TO 9000
@@ -222,7 +217,7 @@ C                 converged (861016 - hjaaj)
                END IF
  1200          LVLABS = LVLABS + 1
                IF (LVLABS .GT. 3) THEN
-                  WRITE (LUW4,'(//A)')
+                  WRITE (LUPRI,'(//A)')
      *               ' *** Orbital absorption converged.'
 C                 Low level absorption is only useful in first
 C                 macro iteration
@@ -247,24 +242,24 @@ C              always last absorption at highest level
                END IF
             END IF
             IF (NEWLVL) THEN
-               WRITE (LUW4,'(/A,I3)')
+               WRITE (LUPRI,'(/A,I3)')
      *            ' *** NEW ORBITAL ABSORPTION LEVEL =',LVLABS
                IF ( .NOT. GETWOP(TABLE(LVLABS)) ) THEN
-                  WRITE (LUW4,'(//A,A8,A/)')
+                  WRITE (LUPRI,'(//A,A8,A/)')
      *               ' *** ERROR (SIRORB), label "',TABLE(LVLABS),
      *               '" not found on file LUINDF'
-                  CALL QTRACE(LUW4)
+                  CALL QTRACE(LUPRI)
                   CALL QUIT('*ERROR (SIRORB) label not found on LUINDF')
                END IF
-               WRITE (LUW4,'(/T6,A,I5)')
+               WRITE (LUPRI,'(/T6,A,I5)')
      *            'Number of orbital rotations =',NWOPT
                IF (LVLABS .EQ. 3) JTRLVL = ITRLVL
                ROTRST = RTRUST
                NEWLVL = .FALSE.
             END IF
 C
-            CALL FLSHFO(LUW4)
-            IF (LUPRI .NE. LUW4) CALL FLSHFO(LUPRI)
+            CALL FLSHFO(LUPRI)
+            IF (LUPRI .NE. LUW4) CALL FLSHFO(LUW4)
 C
 C
 C           Transform integrals
@@ -284,7 +279,7 @@ C    *                   DIAOR,INDXCI,WRK,LFREE)
             CALL GRDINF(GNORM,GORB)
             NCONF  = MCONF
             EMCSCF = POTNUC + EMCMY + EMCACT + EDFTY
-            WRITE (LUW4,1010) EMCSCF,ITORB
+            WRITE (LUPRI,1010) EMCSCF,ITORB
             IF ( P4FLAG(2) .OR. (LUPRI.EQ.LUW4 .AND. P6FLAG(1)) )
      *         WRITE (LUW4,1015) POTNUC,EMCMY,EMCACT
             WRITE (LUW4,1020) GNORM(3)
@@ -330,7 +325,7 @@ C           CALL ORBSTP(ISTEP,DAMP,EVAL,OSTP0,CMO,CMOOL,XKAP,ROTRST)
                WRITE (LUW4,21100) ITBCK
                IF (LUPRI .NE. LUW4) WRITE (LUPRI,21100) ITBCK
                IF (ITBCK .GT. MAXBCK) THEN
-                  WRITE (LUW4,'(//A/A)')
+                  WRITE (LUPRI,'(//A/A)')
      *               ' *** Orbital absorption discontinued,'//
      *               ' maximum number of absorption backsteps reached.',
      *               ' Old orbitals restored.'
@@ -357,9 +352,9 @@ C
  9000 CONTINUE
       FLAG(23) = ACTROT
       IF ( .NOT. GETWOP(TABLE(4)) ) THEN
-         WRITE (LUW4,'(//A,A8,A/)')' *** ERROR (SIRORB), label "',
+         WRITE (LUPRI,'(//A,A8,A/)')' *** ERROR (SIRORB), label "',
      *      TABLE(4),'" not found on file LUINDF'
-         CALL QTRACE(LUW4)
+         CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (SIRORB) label not found on LUINDF')
       END IF
       NITORB = ITORB
@@ -421,10 +416,10 @@ C
       DEACT = EMCSCF - EMCOLD
       IF (ABS(DEPRED).GT.THDE) THEN
          RATIO = DEACT / DEPRED
-         WRITE (LUW4,1100) DEACT,DEPRED,RATIO
+         WRITE (LUPRI,1100) DEACT,DEPRED,RATIO
       ELSE
          RATIO = D1
-         WRITE (LUW4,1110) DEACT,DEPRED
+         WRITE (LUPRI,1110) DEACT,DEPRED
       END IF
  1100 FORMAT (/' (ORBSTP) Energy difference;',
      *         ' actual, predicted and ratio:',/5X,3F15.10)
@@ -461,7 +456,7 @@ C
 C *****************************************************************
 C *** Step is too large:
 C
-      WRITE (LUW4,'(/A,F10.5)')
+      WRITE (LUPRI,'(/A,F10.5)')
      *   ' (ORBSTP) step is too large -- STEP IS SCALED TO',ROTRST
 C
 C     PUT OLD MOLECULAR ORBITALS IN CMO
@@ -484,7 +479,7 @@ C *****************************************************************
 C *** End of subroutine ORBSTP
 C
  9000 CONTINUE
-      WRITE (LUW4,'(/A,2F15.10)')
+      WRITE (LUPRI,'(/A,2F15.10)')
      *   ' (ORBSTP) Old and new trust radius:',RTSAVE,ROTRST
       CALL QEXIT('ORBSTP')
       RETURN
