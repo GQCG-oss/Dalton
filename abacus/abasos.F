@@ -2605,17 +2605,17 @@ C
                                  CALL HEADER('FC part of spin-spin '//
      &                                       'coupling tensor',-1)
 C
-                                 CALL PLCPRT(NLOCCS,NLVIRS,ILOCCF,ILOCCL,
-     &                                       JLOCCF,JLOCCL,3*NUCDEP,
-     &                                       IATOM1,IATOM2,SPNFC,FACTOR)
+                                 CALL PLCPRT(NLOCCS,NLVIRS,ILOCCF,ILOCCL
+     &                                      ,JLOCCF,JLOCCL,3*NUCDEP
+     &                                      ,IATOM1,IATOM2,SPNFC,FACTOR)
 C
 C
                                  CALL HEADER('SD(+FC) part of spin-'//
      &                                       ' spin coupling tensor',-1)
 C
-                                 CALL PLCPRT(NLOCCS,NLVIRS,ILOCCF,ILOCCL,
-     &                                       JLOCCF,JLOCCL,3*NUCDEP,
-     &                                       IATOM1,IATOM2,SPNSD,FACTOR)
+                                 CALL PLCPRT(NLOCCS,NLVIRS,ILOCCF,ILOCCL
+     &                                      ,JLOCCF,JLOCCL,3*NUCDEP
+     &                                      ,IATOM1,IATOM2,SPNSD,FACTOR)
 C
 C
                               END IF
