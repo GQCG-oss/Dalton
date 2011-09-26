@@ -184,15 +184,15 @@ C     (they may have been generated with the MAKE_AOTWOINT routine,
 C      even if RUNTWO is .false. now ! This will for example be
 C      the case if DIRCAL and DOMP2))
 
-      CALL GPOPEN(LUINTA,'AOTWOINT',
+      IF (LUINTA  .LE. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUINTA,'DELETE')
       IF (DOSRIN) THEN
-         CALL GPOPEN(LUSRINT,'AO2SRINT',
-     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         IF (LUSRINT .LE. 0) CALL GPOPEN(LUSRINT,'AO2SRINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          CALL GPCLOSE(LUSRINT,'DELETE')
       END IF
-      CALL GPOPEN(LUSUPM,'AOSUPINT',
+      IF (LUSUPM .LE. 0) CALL GPOPEN(LUSUPM,'AOSUPINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUSUPM,'DELETE')
 
@@ -412,7 +412,7 @@ cLig <> added RANGMO and RPSO
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             '.NEWTRA', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
+     &             '.NEWTRA', '.KINADI', 'xxxxxxx', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
@@ -1212,6 +1212,9 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             NEWTRA = .TRUE.
             GO TO 100
   238    CONTINUE
+            KINADI = .TRUE.
+            ONEPRP = .TRUE.
+            GOTO 100
   239    CONTINUE
   240    CONTINUE
             ONEPRP = .TRUE.
@@ -1314,6 +1317,8 @@ C
 C
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
      &      '- electronic kinetic energy'
+         IF (KINADI) WRITE (LUPRI,'(10X,A)')
+     &      '- adiabatic kinetic energy from nuclear derivatives'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
@@ -2355,6 +2360,14 @@ C
                CALL TIMER('KINENE',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
 !           END IF
+
+            IF (KINADI) THEN ! reduced mass diagonal correction
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('KINADIA',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('KINADI',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
 
 C        ------------------------------------------------------
 
