@@ -100,9 +100,9 @@ C
          DO 300 I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
             WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
   300    CONTINUE
       END IF
       CALL TIMER('GETDIS',TIMSTR,TIMEND)
@@ -260,13 +260,13 @@ C     Write out integral distributions
 C--------------------------------------
 C
       IF (IPRINT.GT.3) THEN
-         CALL HEADER('Distribution matrices in GETDIS',-1)
-         DO 300 I = 1, NUMDIS
-            CALL UNPKIJ(INDXAB(I),IA,IB)
-            WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
-            WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB
-            CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-  300    CONTINUE
+        CALL HEADER('Distribution matrices in GETDIS',-1)
+        DO, I = 1, NUMDIS
+          CALL UNPKIJ(INDXAB(I),IA,IB)
+          WRITE(LUPRI,'(//A,2I5)')' Distribution matrix No.',I,NUMDIS
+          WRITE(LUPRI,'(A,2I5)')  ' Orbital indices:       ',IA,IB
+          CALL OUTPUT(GMAT(1,1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+        END DO
       END IF
 C
       RETURN
@@ -364,7 +364,7 @@ C
  100  CONTINUE
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output of squared matrix from SQDENS','*',103)
-         CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -796,10 +796,10 @@ C
          DO 300 I = 1, NDMAT
             WRITE (LUPRI,'(//A,I3,A,I3)')
      &         ' Density matrix No.',I,' of',NDMAT
-            CALL OUTPUTx(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//A,I3,A,I3)')
      &         ' Fock matrix No.',I,' of',NDMAT
-            CALL OUTPUTx(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
   300    CONTINUE
       END IF
 C
