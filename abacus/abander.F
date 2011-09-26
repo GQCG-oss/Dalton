@@ -189,7 +189,7 @@ C
 C
          WRITE (LUPRI,'(5x,A)') 'Group used for force constants ' //
      &                           GRPTMP
-         WRITE (LUPRI,'(5x,A,F6.4)') 'Step size used: ', DISPLC
+         WRITE (LUPRI,'(5x,A,F10.4)') 'Step size used: ', DISPLC
          IF (SDRTST) THEN
             WRITE (LUPRI,'(/5X,A)') 'Comparison of numerical Hessian '
      &          // 'with analytical Hessian is performed'
@@ -3814,7 +3814,7 @@ C     DALTON.NOR for use in Midas Vibrational calculations
      &            .FALSE.)
       WRITE(LUNOR,'(A)') 'Harmonic Freqs. in cm^-1'
       DO 911 IMODE = 1, NONZRO
-        WRITE(LUNOR,'(E23.16)') XTKAYS*FREQ(IMODE)
+        WRITE(LUNOR,'(1P,E23.16)') XTKAYS*FREQ(IMODE)
  911  CONTINUE
       WRITE(LUNOR,*)
 
@@ -3842,7 +3842,7 @@ C     would like the normal coordinates to be normalized to one in q-space, q = 
         DO 916 I = 1, NCOOR
           ENORM2 = ENORM2 + (ENORMN(IMODE)*SYMCOR(I,IMODE))**2
  916    CONTINUE
-      WRITE(LUNOR,'(E23.16)') SQRT(ENORM2)
+      WRITE(LUNOR,'(1P,E23.16)') SQRT(ENORM2)
  915  CONTINUE
 
       CALL GPCLOSE(LUNOR,'KEEP')
@@ -4740,10 +4740,9 @@ C
          END IF
  600  CONTINUE
       CALL HEADER('Comparison of numerical and analytical gradients',-1)
-      WRITE (LUPRI,'(//A,E13.7,A,I4)')  'Largest difference ', RMAXGD,
-     &                                  ' for element:', NMG
-      WRITE (LUPRI,'(A,2E13.7//)') 'The values of these elements are: ',
-     &                             TMPGRD(NMG),TSTGDR(NMG)
+      WRITE (LUPRI,'(//A,1P,E13.5,A,I5/A,2E15.7)')
+     &  'Largest difference ', RMAXGD,' for element:', NMG,
+     &  'The values of these elements are: ',TMPGRD(NMG),TSTGDR(NMG)
 
       RLRGST = D0
       DO 700 J = 1, NCOOR
@@ -4759,10 +4758,10 @@ C
  700  CONTINUE
 C
       CALL HEADER('Comparison of numerical and analytical Hessians',-1)
-      WRITE (LUPRI,'(//A,E13.7,A,2I4)') 'Largest difference ',
+      WRITE (LUPRI,'(//A,1P,E15.7,A,2I5)') 'Largest difference ',
      &                 SQRT(RLRGST), ' for elements:', NMI, NMJ
-      WRITE (LUPRI,'(A,2E13.7//)') 'The values of these elements are: ',
-     &                              HVALC, HVALN
+      WRITE (LUPRI,'(A,1P,2E15.7//)')
+     &  'The values of these elements are: ',HVALC, HVALN
 C
       DO 800 IC2 = 1, NCOOR
          GRDMOL(IC2) = BKPGRD(IC2)
@@ -4823,8 +4822,8 @@ C
      &         'redundencies.'
          WRITE (LUPRI,'(A)') '                                    '
          WRITE (LUPRI,'(5X,A)') 'Symmetry of coordinates left:'
-         WRITE (LUPRI,'(5X,24I4)') (ICRIRP(II,1),II=1,NDCOOR)
-         WRITE (LUPRI,'(5X,24I4)') (ICRIRP(II,2),II=1,NDCOOR)
+         WRITE (LUPRI,'(5X,24I5)') (ICRIRP(II,1),II=1,NDCOOR)
+         WRITE (LUPRI,'(5X,24I5)') (ICRIRP(II,2),II=1,NDCOOR)
       END IF
       RETURN
       END
@@ -5289,8 +5288,8 @@ C
          BEGIN = BEGIN + KCOL
          LAST  = MIN(NCOOR,KCOL+LAST)
  101  CONTINUE
- 1001 FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
- 2001 FORMAT (1X,I4,2X,6F12.6)
+ 1001 FORMAT (8X,6(I7,5X),(I7,5X))
+ 2001 FORMAT (I5,2X,6F12.6)
 C
 C     *** Qubic force field. ***
 C
@@ -5788,11 +5787,11 @@ C
                      DO ICOOR = 1, NDCOOR
                         IF (IC.EQ.1) THEN
                            IDERV = IDERV + 1
-                           WRITE (LUPRI,'(5X,A,I4)')
+                           WRITE (LUPRI,'(5X,A,I5)')
      &                        'Derivative with respect to ' //
      &                        'symmetry coordinate', ICOOR
                         ELSE
-                           WRITE (LUPRI,'(5X,A,I4)')
+                           WRITE (LUPRI,'(5X,A,I5)')
      &                        'Derivative with respect to ' //
      &                        'cartesian coordinate', ICOOR
                         END IF
@@ -5841,9 +5840,9 @@ C
                      END IF
 C
                      IF (PRIVAL) THEN
-                        WRITE (LUPRI,'(5X,A,I4,A,I4)')
+                        WRITE (LUPRI,'(5X,A,I5,A,I5)')
      &                       'Derivative with respect to coordinate',
-     &                       ICOOR2, ' and ', ICOOR1
+     &                       ICOOR2, ' and', ICOOR1
 C
                         LUPRPCO = -1
                         CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',
@@ -5869,7 +5868,7 @@ C
 C
                      IDERV = IDERV + 1
 C
-                     WRITE (LUPRI,'(5X,A,I4)')
+                     WRITE (LUPRI,'(5X,A,I5)')
      &                    'Derivative with respect to coordinate',
      &                    ICOOR
 C
@@ -5891,9 +5890,9 @@ C
                      END IF
 C
                      IF (PRIVAL) THEN
-                        WRITE (LUPRI,'(5X,A,I4,A,I4)')
+                        WRITE (LUPRI,'(5X,A,I5,A,I5)')
      &                       'Derivative with respect to coordinate',
-     &                       ICOOR2, ' and ', ICOOR1
+     &                       ICOOR2, ' and', ICOOR1
 C
                         CALL PRSPSP(SPSPDR(1,1,1,IDERV),NCOOR,NCOOR,
      &                              LUPRI)
@@ -5919,7 +5918,7 @@ C
 C
                      IDERV = IDERV + 1
 C
-                     WRITE (LUPRI,'(5X,A,I4)')
+                     WRITE (LUPRI,'(5X,A,I5)')
      &                    'Derivative with respect to coordinate',
      &                    ICOOR
 C
@@ -5942,9 +5941,9 @@ C
                      END IF
 C
                      IF (PRIVAL) THEN
-                        WRITE (LUPRI,'(5X,A,I4,A,I4)')
+                        WRITE (LUPRI,'(5X,A,I5,A,I5)')
      &                       'Derivative with respect to coordinate',
-     &                       ICOOR2, ' and ', ICOOR1
+     &                       ICOOR2, ' and', ICOOR1
 C
                         CALL PRDPTR(TRLNDR(1,1,1,IDERV),EXENFV(1,1,1),
      &                              NSYM,LUPRI)
@@ -6382,21 +6381,18 @@ C
 C     *** Test print ***
 C
       IF (IPRINT .GT. 50) THEN
-         WRITE (LUPRI,'(A)')
+         WRITE (LUPRI,'(/A)')
      &                  'The nuclear coordinates used by the program:'
          DO ICOOR = 1, NCOOR
-            WRITE (LUPRI,'(5X,2F10.5,I4)') CRTPRG(ICOOR)
+            WRITE (LUPRI,'(F15.5)') CRTPRG(ICOOR)
          END DO
-         WRITE (LUPRI,'(A)') '                                       '
-         WRITE (LUPRI,'(A)')
+         WRITE (LUPRI,'(/A)')
      &              'Transforming to using these nuclear coordinates.'
          DO ICOOR = 1, NCOOR
-            WRITE (LUPRI,'(5X,F10.5)') COOR(ICOOR)
+            WRITE (LUPRI,'(F15.5)') COOR(ICOOR)
          END DO
 C
-         WRITE (LUPRI,'(5X,A)') '                       '
-         WRITE (LUPRI,'(5X,A)') 'Transformation matrix: '
-         WRITE (LUPRI,'(5X,A)') '                       '
+         WRITE (LUPRI,'(/5X,A/)') 'Transformation matrix:'
          CALL PRTRMA(TRAMAT,NCOOR,NCOOR,NCOOR,NCOOR,LUPRI)
       END IF
 C
@@ -6898,7 +6894,7 @@ C
 C           Read in info on property
 C
          READ(LUPRPCO,
-     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1P,E23.16,4(1X,A8),3E23.16,3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
          IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHKCCS')
@@ -7084,7 +7080,7 @@ C
      &           ' Two point formula'
          DO IPRPC = 1, NPRPC
             READ(LUPRPCO,
-     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         '(I5,I3,I4,1X,A10,1P,E23.16,4(1X,A8),3E23.16,3I4)')
      *         IPRPC2,ISYMIN,NORD,LABEL,PROP,
      *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             IF (IPRPC.NE.IPRPC2) CALL QUIT( 'Strange stuff in CHK1DR')
@@ -7181,7 +7177,7 @@ C           *** Writing frequencies. ***
 C
 C        WRITE (LMIDAS,*) 'Frequencies'
             DO I = 1, NDCOOR
-               WRITE (LMIDAS,'(E23.16,2(1X,I5))')
+               WRITE (LMIDAS,'(1P,E23.16,2I6)')
      *               FAC*FREQ(I)*FREQ(I),I,I
 c               WRITE (LMIDAS,'(F18.10)') FREQ(I)
             END DO
@@ -7219,10 +7215,10 @@ C
          NTOT   = NDCOOR
          NWRIT  = NDCOOR
          THRTRM = FAC*FRQLAR*FRQLAR*THRMID
-C        WRITE(LUPRI,'(A,E23.16)') " FRQLAR " ,FRQLAR
-C        WRITE(LUPRI,'(A,E23.16)') " FAC    " ,FAC
-C        WRITE(LUPRI,'(A,E23.16)') " THRMID " ,THRMID
-C        WRITE(LUPRI,'(A,E23.16)') " THRTRM " ,THRTRM  
+C        WRITE(LUPRI,'(A,1P,E23.16)') " FRQLAR " ,FRQLAR
+C        WRITE(LUPRI,'(A,1P,E23.16)') " FAC    " ,FAC
+C        WRITE(LUPRI,'(A,1P,E23.16)') " THRMID " ,THRMID
+C        WRITE(LUPRI,'(A,1P,E23.16)') " THRTRM " ,THRTRM  
 C
 C        *** Writing cubic force field. ***
 C        Note scaling with norms and symmetry factors!
@@ -7239,7 +7235,7 @@ C         WRITE (LMIDAS,*) 'Cubic force field'
                IF (ABS(QUANT).GE.THRTRM) THEN
 
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,3(1X,I5))')
+                  WRITE (LMIDAS,'(1P,E23.16,3I6)')
      *              QUANT, I, J, K
                   NWRIT=NWRIT+1
                ENDIF
@@ -7258,7 +7254,7 @@ C           WRITE (LMIDAS,*) 'Quartic force field'
                NTOT=NTOT+1
                IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
+                  WRITE (LMIDAS,'(1P,E23.16,4I6)')
      *            QUANT,I, J, K, L
                   NWRIT=NWRIT+1
                ENDIF
@@ -7271,7 +7267,7 @@ C one mode
                NTOT=NTOT+1
                IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,3(1X,I5))')
+                  WRITE (LMIDAS,'(1P,E23.16,3I6)')
      *               QUANT, I, I, I
                   NWRIT=NWRIT+1
                ENDIF
@@ -7283,7 +7279,7 @@ C one mode
      *              RNNORM(I)*RNNORM(I)
                IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
+                  WRITE (LMIDAS,'(1P,E23.16,4I6)')
      *              QUANT,I,I,I,I
                   NWRIT=NWRIT+1
                ENDIF
@@ -7298,7 +7294,7 @@ C two mode coupling
      *                       *RNNORM(J)*RNNORM(J)
                   IF (ABS(QUANT).GE.THRTRM) THEN
                      SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                     WRITE (LMIDAS,'(E23.16,3(1X,I5))')
+                     WRITE (LMIDAS,'(1P,E23.16,3I6)')
      *                 QUANT, I, J, J
 
                      NWRIT=NWRIT+1
@@ -7313,7 +7309,7 @@ C two mode coupling
      *           RNNORM(J)*RNNORM(J)
                IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
+                  WRITE (LMIDAS,'(1P,E23.16,4I6)')
      *               QUANT, I, I, J, J
                   NWRIT=NWRIT+1
                ENDIF
@@ -7327,7 +7323,7 @@ C two mode coupling
      *                    RNNORM(J)*RNNORM(J)
                   IF (ABS(QUANT).GE.THRTRM) THEN
                      SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                     WRITE (LMIDAS,'(E23.16,4(1X,I5))') QUANT,I,J,J,J
+                     WRITE (LMIDAS,'(1P,E23.16,4I6)') QUANT,I,J,J,J
                      NWRIT=NWRIT+1
                   ENDIF
                ENDIF
@@ -7341,7 +7337,7 @@ C three mode coupling
                QUANT = FAC*QUBIC(I,J,K)*RNNORM(I)*RNNORM(J)*RNNORM(K)
                IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,3(1X,I5))') QUANT,I,J,K
+                  WRITE (LMIDAS,'(1P,E23.16,3I6)') QUANT,I,J,K
                   NWRIT=NWRIT+1
                ENDIF
  130        CONTINUE
@@ -7355,7 +7351,7 @@ C three mode coupling
      *               RNNORM(J)*RNNORM(K)
                   IF (ABS(QUANT).GE.THRTRM) THEN
                      SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                     WRITE (LMIDAS,'(E23.16,4(1X,I5))')
+                     WRITE (LMIDAS,'(1P,E23.16,4I6)')
      *               QUANT, I, I, J, K
                      NWRIT=NWRIT+1
                   ENDIF
@@ -7373,7 +7369,7 @@ C four mode coupling
      *           RNNORM(K)*RNNORM(L)
                IF (ABS(QUANT).GE.THRTRM) THEN
                   SUM_QUANT=SUM_QUANT+ABS(QUANT)
-                  WRITE (LMIDAS,'(E23.16,4(1X,I5))')
+                  WRITE (LMIDAS,'(1P,E23.16,4I6)')
      *             QUANT,I, J, K, L
                   NWRIT=NWRIT+1
                END IF
