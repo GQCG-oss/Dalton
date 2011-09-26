@@ -198,7 +198,7 @@ C     perturbation (WORD=PCMBSOL/PCM2BSL) (Feb2004 KR&DM)
 #include "efield.h"
 #include "ccom.h"
 #include "qm3.h"
-      PARAMETER (NTABLE = 100)
+      PARAMETER (NTABLE = 101)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -228,56 +228,32 @@ C
 #include "pcm.h"
 #include "pcmlog.h"
 C
-!                   1          2          3          4
-      DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
-!                   5          6          7          8
-     &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ',
-!                   9         10         11         12
-     &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ',
-!                  13         14         15         16
-     &            'SPIN-DI', 'DSO    ', 'SDFC   ', 'HDO    ',
-!                  17         18         19         20
-     &            'S1MAG  ', 'S2MAG  ', 'ANGLON ', 'ANGMOM ',
-!                  21         22         23         24
-     &            'LONMOM ', 'MAGMOM ', 'KINENER', 'DSUSNOL',
-!                  25         26         27         28
-     &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO',
-!                  29         30         31         32
-     &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC',
-!                  33         34         35         36
-     &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ',
-!                  37         38         39         40
-     &            'NUCPOT ', 'HBDO   ', 'SQHDOL ', 'DSUSCGO',
-!                  41         42         43         44
-     &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
-!                  45         46         47         48
-     &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
-!                  49         50         51         52
-     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ',
-!                  53         54         55         56
-     &            'S1ELB  ', 'ONEELD ', 'DPLGRA ', 'QUAGRA ',
-!                  57         58         59         60
-     &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
-!                  61         62         63         64
-     &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
-!                  65         66         67         68
-     &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
-!                  69         70         71         72
-     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
-!                  73         74         75         76
-     &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA',
-!                  77         78         79         80
-     &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ',
-!                  81         82         83         84
-     &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ',
-!                  85         86         87         88
-     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ',
-!                  89         90         91         92
-     &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ',
-!                  93         94         95         96
-     &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2',
-!                  97         98         99        100
-     &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP'/
+      DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP', !   1: 4
+     &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ', !   5: 8
+     &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ', !   9:12
+     &            'SPIN-DI', 'DSO    ', 'SDFC   ', 'HDO    ', !  13:16
+     &            'S1MAG  ', 'S2MAG  ', 'ANGLON ', 'ANGMOM ', !  17:20
+     &            'LONMOM ', 'MAGMOM ', 'KINENER', 'DSUSNOL', !  21:24
+     &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO', !  25:28
+     &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC', !  29:32
+     &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ', !  33:36
+     &            'NUCPOT ', 'HBDO   ', 'SQHDOL ', 'DSUSCGO', !  37:40
+     &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ', !  41:44
+     &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP', !  45:48
+     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', !  49:52
+     &            'S1ELB  ', 'ONEELD ', 'DPLGRA ', 'QUAGRA ', !  53:56
+     &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD', !  57:60
+     &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN', !  61:64
+     &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ', !  65:68
+     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ', !  69:72
+     &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA', !  73:76
+     &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ', !  77:80
+     &            'PRPINT ', 'OZKE   ', 'PSOKE  ', 'DNSKE  ', !  81:84
+     &            'SDKE   ', 'FCKE   ', 'DSOKE  ', 'PSOOZ  ', !  85:88
+     &            'NPETES ', 'PCMBSOL', 'PCMB2SL', 'DIPLOC ', !  89:92
+     &            'HUCKEL ', 'SQHD2OR', 'EFIELB1', 'EFIELB2', !  93:96
+     &            'MAGQDP ', 'DERANGM', 'DIPANH ', 'POPOVLP', !  97:100
+     &            'KINADIA'/                                  ! 101
 C
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
@@ -301,13 +277,17 @@ C
       FMMORI = .FALSE. ! in orgcom.h
       DO I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
-            GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
-     &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
-     &             79,80,81,82,83,84,85,86,87,88,89,90,91,92, 1,
-     &             94,95,96,97,98,99,100), I
+            GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &             11,12,13,14,15,16,17,18,19,20,
+     &             21,22,23,24,25,26,27,28,29,30,
+     &             31,32,33,34,35,36,37,38,39,40,
+     &             41,42,43,44,45,46,47,48,49,50,
+     &             51,52,53,54,55,56,57,58,59,60,
+     &             61,62,63,64,65,66,67,68,69,70,
+     &             71,72,73,74,75,76,77,78,79,80,
+     &             81,82,83,84,85,86,87,88,89,90,
+     &             91,92, 1,94,95,96,97,98,99,100,
+     &             101), I
          END IF
       END DO
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2347,6 +2327,23 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          ANTI = .FALSE.
       GOTO 200
+C
+C     Adiabatic kinetic energy KINADIAB
+C     -------------------------
+C     (from nuclear second derivatives, with specified isotopes)
+C     hjaaj August 2011
+C
+  101 CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &   ' Calculation of adiabatic kinetic energy contribution'
+         INTTYP = 1002 ! standard kinetic integrals are type 21
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'KINADIAB'
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
 C
   200 CONTINUE
 C

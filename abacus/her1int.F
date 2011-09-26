@@ -229,7 +229,8 @@ C
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.21) THEN
+      ELSE IF (INTTYP .EQ.21 .OR. INTTYP .EQ. 1002) THEN
+              ! KINENERG .or. KINADIAB
          JMAXD  = 2
          JMAXM  = 0
          DONUC1 = .FALSE.
@@ -1067,12 +1068,18 @@ C
       DO 100 ISYMOP = 0, MAXOPR
       IF(IBTAND(ISYMOP,MAB) .EQ. 0) THEN
          LDIAG  = (ISHELA .EQ. ISHELB) .AND. (.NOT.SQUARE)
-         ONECEN = .FALSE.
+         ONECEN = .FALSE. ! must be .false.,
+                          ! .true. means: exclude these one-center
+                          ! integrals!!!!
          IDENB  = IDENB + KHKTB
          CORBX  = XYZ(1,ISYMOP)*CORBX0
          CORBY  = XYZ(2,ISYMOP)*CORBY0
          CORBZ  = XYZ(3,ISYMOP)*CORBZ0
          ICENTB = NUCNUM(NCENTB,ISYMOP+1)
+         IF (ICENTA .NE. ICENTB) THEN
+            IF (INTTYP .EQ. 1002) GO TO 100
+            ! only one center terms for KINADIAB
+         END IF
          DIFABX = CORAX - CORBX
          DIFABY = CORAY - CORBY
          DIFABZ = CORAZ - CORBZ
@@ -1126,6 +1133,21 @@ C
      &               NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,
      &               JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
      &               GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,NCENTC,NSHINT)
+C
+C        --- 1/M_A factor for adiabatic kinetic energy correction
+C            (cannot be done at KININT call because the factor then
+C             would be multiplied on repeatedly for contracted GTOs)
+C
+         IF (INTTYP .EQ. 1002) THEN
+            QMASS_FACTOR = 1.0D0 /
+     &           DISOTP(IZATOM(NCENTB),ISOTOP(NCENTB),'MASS_in_AU')
+            IF (IPRINT .GT. 05) THEN
+               write (lupri,*) 'NCENTA, NCENTB, IZ, ISOTOP   ',
+     &               NCENTA, NCENTB, IZATOM(NCENTB), ISOTOP(NCENTB)
+               write (lupri,*) 'QMASS_FACTOR ',QMASS_FACTOR
+            END IF
+            CALL DSCAL(KCKTAB,QMASS_FACTOR,SHLINT,1)
+         END IF
 C
 C        ****************************************
 C        ***** Transform to spherical basis *****
@@ -1385,7 +1407,7 @@ cLig <> set DIFODC true also for INTTYP = 81 and 82
      &    .OR. (INTTYP.EQ.91) .OR. (INTTYP.EQ.92) .OR. (INTTYP.EQ.93)
      &    .OR. (INTTYP.EQ.94) .OR. (INTTYP.EQ.97) .OR. (INTTYP.EQ.98)
      &    .OR. (INTTYP.EQ.99) .OR. (INTTYP.EQ.100).OR. (INTTYP.EQ.101)
-     &    .OR. (INTTYP.EQ.102).OR. (INTTYP.EQ.103)
+     &    .OR. (INTTYP.EQ.102).OR. (INTTYP.EQ.103).OR. (INTTYP.EQ.1002)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
      &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.62)
@@ -1603,8 +1625,16 @@ C        Modified Overlap integrals for population analysis
 C        --------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 1001) THEN
+            IF (DISTAB .LE. 1.0D-14) THEN
+               FAC = 1.0D0 ! for one-center case
+            ELSE
+               ! DISTPA = SQRT(DIFPAX**2 + DIFPAY**2 + DIFPAZ**2)
+               ! DISTPB = SQRT(DIFPBX**2 + DIFPBY**2 + DIFPBZ**2)
+               ! FAC = 2.0D0 * DISTPA / (DISTPA + DISTPB)
+               FAC = 2.0D0 * EXPBPI ! same value as from previous line !
+            END IF
             CALL POPOVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &                     EXPBPI,SHGTF,SHLINT,INTTYP)
+     &                     FAC,SHGTF,SHLINT,INTTYP)
 C
 C        Dipole length integrals
 C        -----------------------
@@ -1753,10 +1783,10 @@ C
             CALL MM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,INTTYP)
 C
-C        Kinetic energy integrals
-C        ------------------------
+C        Kinetic energy integrals or adiabatic kinetic integrals
+C        ------------------------    ---------------------------
 C
-         ELSE IF (INTTYP .EQ. 21) THEN
+         ELSE IF (INTTYP .EQ. 21 .OR. INTTYP .EQ. 1002) THEN
             CALL KININT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C        Diamagnetic susceptiblity
@@ -2525,7 +2555,7 @@ C
       END
 C  /* Deck popovlint */
       SUBROUTINE POPOVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &                     EXPBPI,SHGTF,SHLINT,INTTYP)
+     &                     FAC,SHGTF,SHLINT,INTTYP)
 C
 C     Mar 2006 hjaaj -- POPOVLP type for population analysis
 C     Based on subr. OVLINT
@@ -2538,7 +2568,6 @@ C
 #include <onecom.h>
 #include <lmns.h>
 C
-      FAC = 2*EXPBPI
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7540,10 +7569,10 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.D0, D2 = 2.D0)
+      PARAMETER (D0 = 0.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 
-      EXPPIH = EXPPI/D2
+      EXPPIH = EXPPI/2
       DO 100 IA = 0, JMAXA
          DO 200 IB = 0, JMAXB
             DO 300 I = 0, IA + IB + 1
