@@ -144,6 +144,10 @@ C
       CALL MEMGET('REAL',KAOCC ,NASHT ,WRK,KFREE,LFREE)
       IF (NASHT .LE. 1) THEN
          IF (NASHT .EQ. 1) WRK(KAOCC) = NACTEL
+      ELSE IF (HSROHF) THEN
+         DO, I = 1,NASHT
+            WRK(KAOCC-1+I) = 1.0D0
+         END DO
       ELSE IF ( FNDLAB('NATOCCAC',LUIT1) ) THEN
          CALL READT(LUIT1,NASHT,WRK(KAOCC))
       ELSE
@@ -334,14 +338,14 @@ C
       ELSE IF (IPRMUL .NE. 0) THEN
          WRITE(LUPRI,'(T7,A,F14.6)') 'Virial theorem: -V/T =',VIR
       END IF
- 1001 FORMAT(/18X,'               Energy analysis'
-     &       /18X,'-----------------------------------------------'
-     &       /21X,'Total energy',T30,F18.10
-     &       /21X,'Kinetic energy',T30,F18.10
-     &       /21X,'Potential energy',T30,F18.10
-     &       /21X,'Nuclear repulsion energy',T30,F18.10
-     &       /21X,'-V/T',T30,F14.6
-     &       /18X,'-----------------------------------------------')
+ 1001 FORMAT(/ 8X,'               Energy analysis'
+     &       / 8X,58('-')
+     &       /11X,'Total energy',T40,F18.10
+     &       /11X,'Kinetic energy',T40,F18.10
+     &       /11X,'Potential energy',T40,F18.10
+     &       /11X,'Nuclear repulsion energy',T40,F18.10
+     &       /11X,'-V/T',T40,F14.6
+     &       / 8X,58('-'))
       RETURN
       END
 C  /* Deck poptra */
