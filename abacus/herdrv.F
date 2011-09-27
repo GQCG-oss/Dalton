@@ -23,13 +23,6 @@
 !
 #include <single.h>
 C
-#ifdef OLD_LOG
-c===========================================================================
-c/* Comdeck notes */
-c950602-vebjorn:
-c  Added flag HRINPC to ensure that HERMIT input processing is done only once.
-c===========================================================================
-#endif
 C  /* Deck herctl */
 #ifndef PRG_DIRAC
       SUBROUTINE HERCTL(WORK,LWORK)
@@ -288,9 +281,12 @@ C
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
+C     <<< General Input for HERMIT >>>
+C
 C     Trygve Helgaker, extensively extended by others 
 C
-C <<< General Input for HERMIT >>>
+C     950602-vebjorn:
+C     Added flag HRINPC to ensure that HERMIT input processing is done only once.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -305,7 +301,6 @@ C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
       DIMENSION WORK(LWORK)
-      LOGICAL :: KINADI = .false.
 C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -415,17 +410,17 @@ cLig <> added RANGMO and RPSO
 !                    237        238        239        240
      &             '.NEWTRA', '.KINADI', 'xxxxxxx', 'xxxxxxx'/
 C
-C     Check if input has been processed earlier.
 C
       CALL QENTER('HERINP')
+C
       IPRDEF = IPRUSR + 1
-      IF (HRINPC) THEN
-#ifndef PRG_DIRAC
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-#endif
-         GOTO 1000
-      END IF
+      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
+C
+C     Check if input has been processed earlier.
+C     HRINPC variable makes sure HERMIT input is only read once
+C
+      IF (HRINPC) GOTO 1000
       HRINPC = .TRUE.
 C
 C     *** Initialize ***
@@ -452,10 +447,6 @@ C
 C
 C     **** Find Hermit input *****
 C
-#ifndef PRG_DIRAC
-      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
-#endif
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
@@ -821,11 +812,11 @@ C
             CM2    = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
-  167    CONTINUE
+  167    CONTINUE ! .SQHDOL - Bra differentiated half-derivative overlap matrix
             SQHDOL = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
-  168    CONTINUE
+  168    CONTINUE ! .SQHDOR - Ket differentiated half-derivative overlap matrix
             SQHDOR = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
@@ -1098,8 +1089,7 @@ cLig >> added what to do for RANGMO and RPSO options
             PSOOZ = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
-C        .SQH2DO
-  222    CONTINUE
+  222    CONTINUE ! .SQH2DO - Ket second differentiated half-derivative overlap matrix
             SQHD2O = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
@@ -2206,7 +2196,6 @@ C
       CHARACTER*8 LABELT(3), LABELS(6)
 C
       DIMENSION WORK(LWORK)
-      LOGICAL :: KINADI = .false.
 #include <memint.h>
 C
 C     Control routine for calculation of undifferentiated one- and
@@ -2556,7 +2545,7 @@ C
                CALL TIMER('HDO   ',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
-            IF (SQHD2O) THEN
+            IF (SQHD2O) THEN ! second derivative
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('SQHD2OR',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
