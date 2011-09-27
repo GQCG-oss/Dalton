@@ -305,6 +305,7 @@ C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
       DIMENSION WORK(LWORK)
+      LOGICAL :: KINADI = .false.
 C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -2205,6 +2206,7 @@ C
       CHARACTER*8 LABELT(3), LABELS(6)
 C
       DIMENSION WORK(LWORK)
+      LOGICAL :: KINADI = .false.
 #include <memint.h>
 C
 C     Control routine for calculation of undifferentiated one- and
