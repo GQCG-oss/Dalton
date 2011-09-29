@@ -119,18 +119,18 @@ ERROR[2]="DIPOLE MOMENT NOT CORRECT"
 
 
 # Quadrupole moment
-CRIT1=`$GREP "( |0)\.80655...    ( |0)\.00000000    ( |0)\.00000" $log | wc -l`
-CRIT2=`$GREP "( |0)\.00000000    ( |0)\.80655...    ( |0)\.00000" $log | wc -l`
-CRIT3=`$GREP "( |0)\.00000000    ( |0)\.00000000   \-1\.61310..." $log | wc -l`
+CRIT1=`$GREP "( |0)\.80655...  * ( |0)\.00000000 *  ( |0)\.00000" $log | wc -l`
+CRIT2=`$GREP "( |0)\.00000000  * ( |0)\.80655... *  ( |0)\.00000" $log | wc -l`
+CRIT3=`$GREP "( |0)\.00000000  * ( |0)\.00000000 * \-1\.61310..." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="QUADRUPOLE MOMENT NOT CORRECT"
 
 
 # Second moment of charge
-CRIT1=`$GREP "7\.74658...    ( |0)\.00000000    ( |0)\.00000" $log | wc -l`
-CRIT2=`$GREP "( |0)\.00000000    7\.74658...    ( |0)\.00000" $log | wc -l`
-CRIT3=`$GREP "( |0)\.00000000    ( |0)\.00000000   24.94716..." $log | wc -l`
+CRIT1=`$GREP "7\.74658...  * ( |0)\.00000000 *  ( |0)\.00000" $log | wc -l`
+CRIT2=`$GREP "( |0)\.00000000  * 7\.74658... *  ( |0)\.00000" $log | wc -l`
+CRIT3=`$GREP "( |0)\.00000000  * ( |0)\.00000000 * 24.94716..." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="SECOND MOMENT NOT CORRECT"
