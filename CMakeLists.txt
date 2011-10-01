@@ -139,9 +139,22 @@ if(ENABLE_64BIT_INTEGERS)
     endif()
 endif()
 
+# set Gen1Int library
 if(ENABLE_GEN1INT)
-    add_definitions(-DBUILD_GEN1INT)
-    message(FATAL_ERROR "fix Gen1Int compilation in CMakeLists.txt")
+    find_library(GEN1INT_LIBRARIES NAMES libgen1int.a
+                 PATHS ${PATH_GEN1INT}
+                 PATH_SUFFIXES build lib obj src)
+    if(GEN1INT_LIBRARIES)
+        message("-- Find Gen1Int library at "${GEN1INT_LIBRARIES})
+        message("-- Enable Gen1Int module")
+        add_definitions(-DBUILD_GEN1INT)
+        set(LIBS
+            ${LIBS}
+            ${GEN1INT_LIBRARIES}
+            )
+    else()
+        message("-- Disable Gen1Int module")
+    endif()
 endif()
 
 # set cdash buildname

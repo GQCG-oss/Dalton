@@ -144,6 +144,13 @@ group.add_option('--host',
                  default=None,
                  help="use predefined defaults for 'host'",
                  metavar='STRING')
+group.add_option('--gen1int-dir',
+                 type='string',
+                 action='store',
+                 dest='path_gen1int',
+                 default=None,
+                 help='directory of Gen1Int library libgen1int.a [default: %default]',
+                 metavar='PATH')
 parser.add_option_group(group)
 
 # process input
@@ -207,6 +214,11 @@ def gen_cmake_command():
         command += ' -DENABLE_CODE_COVERAGE=ON'
     if options.install:
             command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
+
+    # enables Gen1Int module
+    if options.path_gen1int:
+        command += ' -DENABLE_GEN1INT=ON'
+        command += ' -DPATH_GEN1INT="%s"' % options.path_gen1int
 
     if options.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'

@@ -98,15 +98,15 @@ C>    \return vals_expect contains the calculated expectation values
 #include "dummy.h"
 C     number of geometric differentiated centers
       integer num_cents
-C     number of different paths from subroutine \fn(geom_deriv_cent_tree)
+C     number of different paths for total geometric derivatives
       integer num_paths
 C     depth of atom to visit
       integer visit_depth
 C     selected atom nodes
-      integer node_list(MAX_ORDER_GEO)
+      integer idx_node(MAX_ORDER_GEO)
 C     weights of the selected atom nodes
       integer wt_node(MAX_ORDER_GEO)
-C     incremental recorder over different paths from subroutine \fn(geom_deriv_cent_tree)
+C     incremental recorder over different paths of total geometric derivatives
       integer ipath
 C     number of geometric derivatives per path
       integer num_dgeo
@@ -165,19 +165,16 @@ C     one-center operators
       end select
 C     calculates geometric derivatives
       if (order_geo>0) then
-C       computes the number of different paths from subroutine \fn(geom_deriv_cent_tree)
-C       FIXME: NUCDEP is the number of atoms?
-        call geom_deriv_cent_npath(NUCDEP, order_geo,
-     &                             num_cents, num_paths)
+C       computes the total number of different paths, and generates
+C       the first path (composition of centers)
+        start_geo = 1
+        call geom_total_tree_init(NUCDEP, order_geo, num_cents,
+     &                            num_paths, visit_depth, idx_node,
+     &                            wt_node, idx_cent, order_cent,
+     &                            num_dgeo)
+C       dumps to check
         if (level_print>=10) write(LUPRI,1001)
      &    "Number of compositions of differentiated centers:", num_paths
-C       the first path (composition of centers), geometric derivatives
-C       with respect to the first atom
-        start_geo = 1
-        call geom_deriv_cent_tree_init(order_geo, num_cents,
-     &                                 visit_depth, node_list, wt_node,
-     &                                 idx_cent, order_cent, num_dgeo)
-C       dumps to check
         if (level_print>=20) then
           write(LUPRI,1002) ipath, start_geo, wt_node(order_geo),
      &                      (idx_cent(icent),"(",order_cent(icent),
@@ -195,9 +192,9 @@ C       loops over other paths
 C         computes the position of current geometric derivatives
           start_geo = start_geo+num_dgeo
 C         generates the differentiated centers and their orders
-          call geom_deriv_cent_tree(NUCDEP, order_geo, num_cents,
-     &                              visit_depth, node_list, wt_node,
-     &                              idx_cent, order_cent, num_dgeo)
+          call geom_total_tree_search(NUCDEP, order_geo, num_cents,
+     &                                visit_depth, idx_node, wt_node,
+     &                                idx_cent, order_cent, num_dgeo)
 C         dumps to check
           if (level_print>=20) then
             write(LUPRI,1002) ipath, start_geo, wt_node(order_geo),
@@ -345,8 +342,11 @@ C     computes the number of geometric derivatives
       if (num_cents==0) then
         num_dgeo = 1
       else
-        call geom_deriv_cent_ndgeo(num_cents, order_cent(1:num_cents),
-     &                             num_dgeo)
+        num_dgeo = (order_cent(1)+2)*(order_cent(1)+1)/2
+        do icomp = 2, num_cents
+          num_dgeo = num_dgeo
+     &             * (order_cent(icomp)+2)*(order_cent(icomp)+1)/2
+        end do
       end if
 C     computes the number of the magnetic derivatives
       num_dmag = (order_mag+1)*(order_mag+2)/2
@@ -592,27 +592,27 @@ C                          call PSEUD2(WORK(KGOUT),L1+1,L2+1,EXP1,EXP2)
                 end select
               end if
 C             transforms to spherical Gaussian integrals
-              if (SPHRA.and.SPHRB) then
-                call cgto_to_sgto(NHKTB-1, (/nbra_cgto,KCKTB,
-     &                            NRCB*num_deriv*num_ops/), dal_work)
-                call cgto_to_sgto(NHKTA-1, (/1,KCKTA,
-     &                            NRCA*nket_cgto*num_deriv*num_ops/),
-     &                            dal_work)
-C             reorders the Cartesian Gaussian integrals
-              else
-                call reorder_cgto(NHKTB, power_ket,
-     &                            (/nbra_cgto,KCKTB,
-     &                              NRCB*num_deriv*num_ops/),
-     &                            dal_work(1:num_cints),
-     &                            dal_work(num_cints+1:
-     &                                     num_cints+num_cints))
-                call reorder_cgto(NHKTA, power_bra,
-     &                            (/1,KCKTA,
-     &                              NRCA*nbra_cgto*num_deriv*num_ops/),
-     &                            dal_work(num_cints+1:
-     &                                     num_cints+num_cints),
-     &                            dal_work(1:num_cints))
-              end if
+C FIXME              if (SPHRA.and.SPHRB) then
+C FIXME                call cgto_to_sgto(NHKTB-1, (/nbra_cgto,KCKTB,
+C FIXME     &                            NRCB*num_deriv*num_ops/), dal_work)
+C FIXME                call cgto_to_sgto(NHKTA-1, (/1,KCKTA,
+C FIXME     &                            NRCA*nket_cgto*num_deriv*num_ops/),
+C FIXME     &                            dal_work)
+C FIXMEC             reorders the Cartesian Gaussian integrals
+C FIXME              else
+C FIXME                call reorder_cgto_ints(NHKTA, NHKTB, power_ket,
+C FIXME     &                            (/nbra_cgto,KCKTB,
+C FIXME     &                              NRCB*num_deriv*num_ops/),
+C FIXME     &                            dal_work(1:num_cints),
+C FIXME     &                            dal_work(num_cints+1:
+C FIXME     &                                     num_cints+num_cints))
+C FIXME                call reorder_cgto(NHKTA, power_bra,
+C FIXME     &                            (/1,KCKTA,
+C FIXME     &                              NRCA*nbra_cgto*num_deriv*num_ops/),
+C FIXME     &                            dal_work(num_cints+1:
+C FIXME     &                                     num_cints+num_cints),
+C FIXME     &                            dal_work(1:num_cints))
+C FIXME              end if
 C             post-processes the integrals or computes the expectation values
               do icontr = 1, NRCA
                 INDFA = BLOCK_INDFA(:,:,icontr)
