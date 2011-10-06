@@ -1235,7 +1235,7 @@ $ECHO "\n--> In DALTON release Dalton2011 Gen1Int is only used for ECPs; activat
 $ECHO   "--> makes it possible to calculate many more types of ECPs than in Dalton 2.0"
 get_yes_or_no "\nDo you want to activate Gen1Int package for ECPs in DALTON?" n
 if [ "$answer" = "y" ]; then
-  $ECHO "\n-->Trying to find Gen1Int (libgen1int.a) ..."
+  $ECHO "\n-->Trying to find Gen1Int library libgen1int.a ..."
   lib_genint=`locate libgen1int.a`
   # ask user to manually provide the path of libgen1int.a
   if test ${#lib_genint} -eq 0; then

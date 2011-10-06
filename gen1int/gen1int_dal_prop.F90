@@ -46,7 +46,8 @@
   !> \param num_cents is the number of geometric differentiated centers
   !> \param idx_cent contains the indices of differentiated centers
   !> \param order_cent contains the orders of differentiated centers
-  !> \param sym_int indicates if the integral matrices are symmetric
+  !> \param kind_int indicates if the kind of integral matrices, 1 for symmetric, -1 for
+  !>        anti-symmetric, others for square
   !> \param get_int indicates if getting integrals back
   !> \param wrt_int indicates if writing integrals to file
   !> \param dim_int is the dimension of integral matrices
@@ -64,7 +65,7 @@
                               order_ram_bra, order_ram_ket, order_ram_total,  &
                               order_geo_bra, order_geo_ket,                   &
                               num_cents, idx_cent, order_cent,                &
-                              sym_int, get_int, wrt_int, dim_int, vals_int,   &
+                              kind_int, get_int, wrt_int, dim_int, vals_int,  &
                               do_expt, num_dens, ao_dens, get_expt, wrt_expt, &
                               vals_expt, io_unit, level_print)
     ! AO sub-shells
@@ -83,7 +84,7 @@
     integer, intent(in) :: num_cents
     integer, intent(in) :: idx_cent(num_cents)
     integer, intent(in) :: order_cent(num_cents)
-    logical, intent(in) :: sym_int
+    integer, intent(in) :: kind_int
     logical, intent(in) :: get_int
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
@@ -99,6 +100,7 @@
 #ifdef BUILD_GEN1INT
 ! common block with origins
 #include "orgcom.h"
+    integer num_ao_orb                    !number of atomic orbitals
     integer num_derv                      !number of derivatives
     integer num_opt                       !number of operators including derivatives
     integer num_ao_bra, num_ao_ket        !number of AOs on bra and ket centers
@@ -107,11 +109,15 @@
                                           !the contracted integrals
     real(REALK), allocatable :: contr_ints(:,:,:)
                                           !contracted integrals between sub-shells on bra and ket centers
+    integer base_orb_bra, base_orb_ket    !base address of orbitals on bra and ket centers
     integer ishell, jshell                !incremental recorders over sub-shells
     integer ibra, iket, iopt              !incremental recorders over contracted integrals
-    integer ival                          !incremental recorder over returned values
+    integer addr_ket                      !address of orbitals on ket center in returned integrals
     integer ierr                          !error information
     call QENTER("gen1int_dal_prop")
+    ! gets the number of atomic orbitals
+    call gen1int_shell_num_orb(num_ao_shells, ao_shells, num_ao_orb)
+    if (level_print>=10) write(io_unit,100) "number of atomic orbitals", num_ao_orb
     ! computes the number of derivatives
     num_derv = (order_mag_bra+1)*(order_mag_bra+2)     &
              * (order_mag_ket+1)*(order_mag_ket+2)     &
@@ -125,16 +131,20 @@
       num_derv = num_derv*(order_cent(ishell)+1)*(order_cent(ishell)+2)/2
     end do
     if (level_print>=10) write(io_unit,100) "number of derivatives", num_derv
-    ! symmetric integral matrices
-    if (sym_int) then
-      ival = 0
+    select case(kind_int)
+    ! symmetric integral matrices (column- or ket-major, upper and diagonal parts)
+    case(1)
+      ! initializes the base address of orbitals on ket center
+      base_orb_ket = 0
       ! loops over AO sub-shells on ket center
       do jshell = 1, num_ao_shells
         ! gets the number of AOs and contractions on ket center
         call gen1int_shell_dims(ao_shells(jshell), num_ao_ket, num_contr_ket)
         num_orb_ket = num_ao_ket*num_contr_ket
-        ! loops over AO sub-shells on bra center (lower part of integral matrix)
-        do ishell = jshell, num_ao_shells
+        ! initializes the base address of orbitals on bra center
+        base_orb_bra = 0
+        ! loops over AO sub-shells on bra center (upper and diagonal parts)
+        do ishell = 1, jshell
           ! gets the number of AOs and contractions on bra center
           call gen1int_shell_dims(ao_shells(ishell), num_ao_bra, num_contr_bra)
           num_orb_bra = num_ao_bra*num_contr_bra
@@ -156,35 +166,38 @@
             call QUIT("gen1int_dal_prop>> "//trim(prop_name)//" is not implemented!")
           end select
           ! assigns returned integrals
-!FIXME
           if (get_int) then
-            if (jshell<ishell) then
+            if (ishell<jshell) then
               do iopt = 1, num_opt
+                addr_ket = (base_orb_ket-1)*base_orb_ket/2
                 do iket = 1, num_orb_ket
+                  addr_ket = addr_ket+iket+base_orb_ket-1  !=(iket+base_orb_ket-1)*(iket+base_orb_ket)/2
                   do ibra = 1, num_orb_bra
-                    ival = ival+1
-                    vals_int(ival,iopt) = contr_ints(ibra,iket,iopt)
+                    vals_int(addr_ket+ibra+base_orb_bra,iopt) &
+                      = contr_ints(ibra,iket,iopt)
                   end do
                 end do
               end do
             else
               do iopt = 1, num_opt
+                addr_ket = (base_orb_ket-1)*base_orb_ket/2
                 do iket = 1, num_orb_ket
-                  do ibra = iket, num_orb_bra
-                    ival = ival+1
-                    vals_int(ival,iopt) = contr_ints(ibra,iket,iopt)
+                  addr_ket = addr_ket+iket+base_orb_ket-1  !=(iket+base_orb_ket-1)*(iket+base_orb_ket)/2
+                  do ibra = 1, iket  !only upper and diagonal parts returned
+                    vals_int(addr_ket+ibra+base_orb_bra,iopt) &
+                      = contr_ints(ibra,iket,iopt)
                   end do
                 end do
               end do
             end if
           end if
           if (wrt_int) then
-            if (jshell<ishell) then
+            if (ishell<jshell) then
             else
             end if
           end if
           if (do_expt) then
-            if (jshell<ishell) then
+            if (ishell<jshell) then
             else
             end if
             if (get_expt) then
@@ -193,16 +206,25 @@
             end if
           end if
           deallocate(contr_ints)
+          ! updates the base address of orbitals on bra center
+          base_orb_bra = base_orb_bra+num_orb_bra
         end do
+        ! updates the base address of orbitals on ket center
+        base_orb_ket = base_orb_ket+num_orb_ket
       end do
-    ! non-symmetric integral matrices
-    else
-      ival = 0
+    ! anti-symmetric integral matrices (column- or ket-major, upper and diagonal parts)
+    case(-1)
+    ! square integral matrices (column- or ket-major)
+    case default
+      ! initializes the base address of orbitals on ket center
+      base_orb_ket = 0
       ! loops over AO sub-shells on ket center
       do jshell = 1, num_ao_shells
         ! gets the number of AOs and contractions on ket center
         call gen1int_shell_dims(ao_shells(jshell), num_ao_ket, num_contr_ket)
         num_orb_ket = num_ao_ket*num_contr_ket
+        ! initializes the base address of orbitals on bra center
+        base_orb_bra = 0
         ! loops over AO sub-shells on bra center
         do ishell = 1, num_ao_shells
           ! gets the number of AOs and contractions on bra center
@@ -226,13 +248,14 @@
             call QUIT("gen1int_dal_prop>> "//trim(prop_name)//" is not implemented!")
           end select
           ! assigns returned integrals
-!FIXME
           if (get_int) then
             do iopt = 1, num_opt
+              addr_ket = (base_orb_ket-1)*num_ao_orb
               do iket = 1, num_orb_ket
+                addr_ket = addr_ket+num_ao_orb  !=(iket+base_orb_ket-1)*num_ao_orb
                 do ibra = 1, num_orb_bra
-                  ival = ival+1
-                  vals_int(ival,iopt) = contr_ints(ibra,iket,iopt)
+                  vals_int(addr_ket+ibra+base_orb_bra,iopt) &
+                    = contr_ints(ibra,iket,iopt)
                 end do
               end do
             end do
@@ -246,9 +269,13 @@
             end if
           end if
           deallocate(contr_ints)
+          ! updates the base address of orbitals on bra center
+          base_orb_bra = base_orb_bra+num_orb_bra
         end do
+        ! updates the base address of orbitals on ket center
+        base_orb_ket = base_orb_ket+num_orb_ket
       end do
-    end if
+    end select
     call QEXIT("gen1int_dal_prop")
     return
 100 format("gen1int_dal_prop>> ",A,I10)

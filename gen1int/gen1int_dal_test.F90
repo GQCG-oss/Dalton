@@ -86,8 +86,8 @@
     integer, parameter :: ORDER_GEO_TOT(NUM_TEST) = &
       (/0/)
     ! if the integral matrices are symmetric
-    logical, parameter :: SYM_INT(NUM_TEST) = &
-      (/.true./)
+    integer, parameter :: KIND_INT(NUM_TEST) = &
+      (/1/)
     ! if getting integrals back from Gen1Int
     logical, parameter :: GET_INT(NUM_TEST) = &
       (/.true./)
@@ -127,8 +127,8 @@
     ! error information
     integer ierr
     call QENTER("gen1int_dal_test")
-    ! initializes the data used in Gen1Int interface before any calculation
-    call gen1int_dal_init
+    ! checks if the Gen1Int interface is initialized
+    if (.not.shell_init) call QUIT("Gen1Int interface is not properly initialized!")
     ! gets the number of orbitals
     call gen1int_shell_num_orb(num_ao_shells, ao_shells, num_orb)
     ! loops over different tests
@@ -136,11 +136,12 @@
       ! number of expectation values
       num_expt = NUM_DENS*NUM_OPT(itst)
       ! size of integrals
-      if (SYM_INT(itst)) then
+      select case(KIND_INT(itst))
+      case(1, -1)
         dim_int = num_orb*(num_orb+1)/2
-      else
+      case default
         dim_int = num_orb*num_orb
-      end if
+      end select
 !FIXME: ao_dens
       allocate(ao_dens(dim_int,NUM_DENS), stat=ierr)
       if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate ao_dens!")
@@ -157,13 +158,13 @@
         call QUIT("Increase Dalton workspace!")
       end if
       ! computes the integrals and/or expectation values
-      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst),                     &
-             ORDER_MAG_BRA(itst), ORDER_MAG_KET(itst), ORDER_MAG_TOT(itst),    &
-             ORDER_RAM_BRA(itst), ORDER_RAM_KET(itst), ORDER_RAM_TOT(itst),    &
-             ORDER_GEO_BRA(itst), ORDER_GEO_KET(itst), MAX_NUM_CENT(itst),     &
-             ORDER_GEO_TOT(itst), SYM_INT(itst), GET_INT(itst), WRT_INT(itst), &
-             dim_int, dal_work(start_int:end_int), DO_EXPT(itst), NUM_DENS,    &
-             ao_dens, GET_EXPT(itst), WRT_EXPT(itst), dal_work(1:num_expt),    &
+      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst),                      &
+             ORDER_MAG_BRA(itst), ORDER_MAG_KET(itst), ORDER_MAG_TOT(itst),     &
+             ORDER_RAM_BRA(itst), ORDER_RAM_KET(itst), ORDER_RAM_TOT(itst),     &
+             ORDER_GEO_BRA(itst), ORDER_GEO_KET(itst), MAX_NUM_CENT(itst),      &
+             ORDER_GEO_TOT(itst), KIND_INT(itst), GET_INT(itst), WRT_INT(itst), &
+             dim_int, dal_work(start_int:end_int), DO_EXPT(itst), NUM_DENS,     &
+             ao_dens, GET_EXPT(itst), WRT_EXPT(itst), dal_work(1:num_expt),     &
              io_unit, level_print)
       ! gets the referenced results
 !FIXME
@@ -171,12 +172,13 @@
       ! checks the results
 !FIXME
       call AROUND('gen1int_dal_test>> '//trim(PROP_NAME(itst)))
-      if (SYM_INT(itst)) then
+      select case(KIND_INT(itst)) 
+      case(1, -1)
         call OUTPAK(dal_work(start_int:end_int), num_orb, 1, io_unit)
-      else
+      case default
         call OUTPUT(dal_work(start_int:end_int), 1, num_orb, 1, num_orb, &
                     num_orb, num_orb, 1, io_unit)
-      end if
+      end select
     end do
     ! cleans up the data in Gen1Int interface after all calculations will be
     ! performed in abacus/dalton.F

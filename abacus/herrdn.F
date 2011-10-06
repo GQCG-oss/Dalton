@@ -874,8 +874,11 @@ C
 
 #ifdef BUILD_GEN1INT
 C...  added by Bin Gao, Feb. 16, 2011
-C...  initializes the Gen1Int interface
-      call gen1int_dal_init
+C...  initializes basis sets used in Gen1Int interface
+      call gen1int_dal_init(NONTYP, KATOM, NONT, IQM(:,1),
+     &                      NBLCK(:,1), KANG, JCO(:,:,1), KBLOCK,
+     &                      NUC(:,1), NRC(:,1), KPRIM, ALPHA(:,:,1),
+     &                      CPRIMU(:,:,:,1))
 #endif
 C
 C     ***********************************

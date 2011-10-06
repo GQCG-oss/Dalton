@@ -49,7 +49,8 @@
   !> \param order_geo_ket is the order of geometric derivatives with respect to ket center
   !> \param max_num_cent is the maximum number of geometric differentiated centers
   !> \param order_geo_total is the order of total geometric derivatives
-  !> \param sym_int indicates if the integral matrices are symmetric
+  !> \param kind_int indicates if the kind of integral matrices, 1 for symmetric, -1 for
+  !>        anti-symmetric, others for square
   !> \param get_int indicates if getting integrals back
   !> \param wrt_int indicates if writing integrals to file
   !> \param dim_int is the dimension of integral matrices
@@ -67,9 +68,11 @@
                               order_ram_bra, order_ram_ket, order_ram_total, &
                               order_geo_bra, order_geo_ket,                  &
                               max_num_cent, order_geo_total,                 &
-                              sym_int, get_int, wrt_int, dim_int, vals_int,  &
+                              kind_int, get_int, wrt_int, dim_int, vals_int, &
                               do_expt, num_dens, ao_dens, get_expt,          &
                               wrt_expt, vals_expt, io_unit, level_print)
+    ! AO sub-shells
+    use gen1int_shell
     implicit none
     character*(*), intent(in) :: prop_name
     logical, intent(in) :: is_lao
@@ -83,7 +86,7 @@
     integer, intent(in) :: order_geo_ket
     integer, intent(in) :: max_num_cent
     integer, intent(in) :: order_geo_total
-    logical, intent(in) :: sym_int
+    integer, intent(in) :: kind_int
     logical, intent(in) :: get_int
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
@@ -137,7 +140,7 @@
     call GETTIM(TIMHER, WALHER)
     call HEADER("Gen1Int calculates "//trim(prop_name), -1)
     ! checks if the Gen1Int interface is initialized
-    call gen1int_dal_init
+    if (.not.shell_init) call QUIT("Gen1Int interface is not properly initialized!")
     ! dumps to check
     if (level_print>=5) then
       if (is_lao) write(io_unit,100) "using London atomic orbitals"
@@ -154,11 +157,14 @@
       write(io_unit,100) "order of geometric derivatives on ket center", order_geo_ket
       write(io_unit,100) "maximum number of differentiated centers", max_num_cent
       write(io_unit,100) "order of total geometric derivatives", order_geo_total
-      if (sym_int) then
+      select case(kind_int)
+      case(1)
         write(io_unit,100) "symmetric integral matrices"
-      else
-        write(io_unit,100) "non-symmetric integral matrices"
-      end if
+      case(-1)
+        write(io_unit,100) "anti-symmetric integral matrices"
+      case default
+        write(io_unit,100) "square integral matrices"
+      end select
       if (get_int) write(io_unit,100) "return integrals"
       if (wrt_int) write(io_unit,100) "write integrals on file"
       write(io_unit,110) "dimension of integral matrices", dim_int
@@ -220,7 +226,7 @@
                             wt_node(order_geo_total),                       &
                             idx_cent(1:wt_node(order_geo_total)),           &
                             order_cent(1:wt_node(order_geo_total)),         &
-                            sym_int, get_int, wrt_int, dim_int,             &
+                            kind_int, get_int, wrt_int, dim_int,            &
                             vals_int(:,start_idx_opt:end_idx_opt),          &
                             do_expt, num_dens, ao_dens, get_expt, wrt_expt, &
                             vals_expt(:,start_idx_opt:end_idx_opt),         &
@@ -255,7 +261,7 @@
                               wt_node(order_geo_total),                       &
                               idx_cent(1:wt_node(order_geo_total)),           &
                               order_cent(1:wt_node(order_geo_total)),         &
-                              sym_int, get_int, wrt_int, dim_int,             &
+                              kind_int, get_int, wrt_int, dim_int,            &
                               vals_int(:,start_idx_opt:end_idx_opt),          &
                               do_expt, num_dens, ao_dens, get_expt, wrt_expt, &
                               vals_expt(:,start_idx_opt:end_idx_opt),         &
@@ -276,7 +282,7 @@
                             order_ram_bra, order_ram_ket, order_ram_total, & 
                             order_geo_bra, order_geo_ket,                  & 
                             0, (/0/), (/0/),                               &
-                            sym_int, get_int, wrt_int, dim_int, vals_int,  & 
+                            kind_int, get_int, wrt_int, dim_int, vals_int, & 
                             do_expt, num_dens, ao_dens, get_expt,          & 
                             wrt_expt, vals_expt, io_unit, level_print)
     end if

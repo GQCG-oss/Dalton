@@ -339,13 +339,13 @@ module gen1int_shell
     ! London atomic orbitals
     if (is_lao) then
       stop "gen1int_shell_carmom>> LAO is not implemented!"
-      ! SGTOs
+      ! SGTOs (Dalton does not use mixed Cartesian and spherical GTOs)
       if (bra_shell%is_sgto .or. ket_shell%is_sgto) then
       ! CGTOs
       else
       end if
     else
-      ! SGTOs
+      ! SGTOs (Dalton does not use mixed Cartesian and spherical GTOs)
       if (bra_shell%is_sgto .or. ket_shell%is_sgto) then
         call contr_sgto_carmom(bra_shell%idx_cent, bra_shell%coord_cent, &
                                bra_shell%ang_num, bra_shell%num_prim,    &
@@ -494,13 +494,13 @@ module gen1int_shell
     ! London atomic orbitals
     if (is_lao) then
       stop "gen1int_shell_nucpot>> LAO is not implemented!"
-      ! SGTOs
+      ! SGTOs (Dalton does not use mixed Cartesian and spherical GTOs)
       if (bra_shell%is_sgto .or. ket_shell%is_sgto) then
       ! CGTOs
       else
       end if
     else
-      ! SGTOs
+      ! SGTOs (Dalton does not use mixed Cartesian and spherical GTOs)
       if (bra_shell%is_sgto .or. ket_shell%is_sgto) then
         call contr_sgto_nucpot(bra_shell%idx_cent, bra_shell%coord_cent, &
                                bra_shell%ang_num, bra_shell%num_prim,    &
