@@ -5,28 +5,30 @@ include ./Makefile.config
 
 # OBS! DALTON_LIBS, MODULES and SUBDIRS must be modified at the same time!
 #
-DALTON_LIBS =      \
--Labacus -labacus  \
--Lrsp -lrsp        \
--Lsirius -lsirius  \
--labacus           \
--Leri -leri        \
--Ldensfit -ldensfit\
--Lcc  -lcc         \
--Ldft -ldft        \
--Lsoppa -lsoppa    \
--Llucita -llucita  \
--Lcholes -lcholes  \
--Lgp -lgp          \
+DALTON_LIBS =       \
+-Labacus -labacus   \
+-Lrsp -lrsp         \
+-Lsirius -lsirius   \
+-labacus            \
+-Leri -leri         \
+-Ldensfit -ldensfit \
+-Lcc  -lcc          \
+-Ldft -ldft         \
+-Lsoppa -lsoppa     \
+-Llucita -llucita   \
+-Lgen1int -lgen1int \
+-Lcholes -lcholes   \
+-Lgp -lgp           \
 -Lpdpack -lpdpack
 
 #NB! LUCITA_OBJ must be before GP_OBJ because it creates .mod files used in gp/
 #NB! GP_OBJ must be before SIR_OBJ because it creates .mod files used in sirius/
 
-MODULES = MAIN_OBJ ABA_OBJ LUCITA_OBJ GP_OBJ SIR_OBJ RSP_OBJ SLAVE_OBJ ERI_OBJ \
-	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ
+MODULES = MAIN_OBJ ABA_OBJ LUCITA_OBJ GEN1INT_OBJ GP_OBJ SIR_OBJ RSP_OBJ SLAVE_OBJ \
+	ERI_OBJ DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ AMFI_OBJ SOP_OBJ CHOLESKY_OBJ
 
-SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles lucita
+SUBDIRS = abacus sirius rsp gp cc eri densfit pdpack dft amfi soppa choles lucita \
+	gen1int
 
 # ---------------
 
@@ -155,6 +157,9 @@ ABA_OBJ :
 
 LUCITA_OBJ :
 	cd lucita && $(MAKE) all
+
+GEN1INT_OBJ :
+	cd gen1int && $(MAKE) all
 
 SIR_OBJ :
 	cd sirius && $(MAKE) all

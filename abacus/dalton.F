@@ -245,8 +245,6 @@ C
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
-     *'Gao Bin,','University of Tromsoe,','Norway',
-     &  '(ECP with Gen1Int)',
      *'Ove Christiansen,','Aarhus University,','Denmark',
      &  '(CC module)',
      *'Renzo Cimiraglia,','University of Ferrara,','Italy','(NEVPT2)',
@@ -263,6 +261,8 @@ C
      *'Heike Fliegl,','University of Helsinki,','Finland',
      &  '(CCSD(R12))',
      *'Luca Frediani,','University of Tromsoe,','Norway','(PCM)',
+     *'Bin Gao,','University of Tromsoe,','Norway',
+     &  '(Gen1Int module)',
      *'Christof Haettig,','Ruhr University Bochum,','Germany',
      &  '(CC module)',
      *'Kasper Hald,', 'Aarhus University,','Denmark','(CC module)',
@@ -599,6 +599,11 @@ C
       END IF
 #endif
 
+#ifdef BUILD_GEN1INT
+C...  added by Bin Gao, Oct. 2, 2011
+C...  cleans up for Gen1Int interface
+      call gen1int_dal_clean
+#endif
       CALL QEXIT('DALTON main')
       END
 

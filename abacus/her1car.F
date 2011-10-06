@@ -341,11 +341,11 @@ C
      &                     NATOMC)
             ELSE IF (PROPTY) THEN
 C...           modified by Bin Gao, Jan. 18, 2011
-C...           ECP will be computed through gen1int_wrapper()
-#ifndef BUILD_GEN1INT
+C...           ECP will be computed through Gen1Int library
+C...#ifndef BUILD_GEN1INT
                IF (ECP) CALL QUIT(
      &            'ECP not implemented yet in ONEPR1 for "PROPTY" !')
-#endif
+C...#endif
                IF (ONECEN) THEN
                   CALL CINT1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,ADER,
      &                       AHGTF,NCENTC,NATOMC,SECDER)
@@ -362,7 +362,7 @@ C...           ECP will be computed through gen1int_wrapper()
      &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
 C...           modified by Bin Gao, Jul. 8, 2011
 C...           also needs ECPINT to debug the results from Gen1Int
-C...           ECP in gen1int_wrapper() is not efficient, backs to ECPINT temporarily
+C...           ECP in Gen1Int library is not efficient, backs to ECPINT temporarily
 C...#ifndef BUILD_GEN1INT
                IF (ECP) THEN
                   CALL ECPINT(CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,

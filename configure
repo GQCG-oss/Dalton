@@ -1224,7 +1224,7 @@ else
 fi
 rm configure_conftest.c configure_conftest > /dev/null 2>&1
 
-# added by Bin Gao, other plugins may be used in DALTON
+# added by Bin Gao, other plugins may be used in Dalton
 # 1) Gen1Int
 $ECHO "\nGen1Int is a tool package for computing many different one-electron integrals as well as"
 $ECHO "their high-order magnetic and geometric derivatives using London atomic-orbitals."

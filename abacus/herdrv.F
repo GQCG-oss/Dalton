@@ -339,6 +339,8 @@ cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT',
      &             '*QM3INP'/
+C     adds test suite of Gen1Int interface as term 239
+C     Bin Gao, Oct. 3, 2011
 !                    101        102        103        104
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
 !                    105        106        107        108
@@ -408,7 +410,7 @@ cLig <> added RANGMO and RPSO
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             '.NEWTRA', '.KINADI', 'xxxxxxx', 'xxxxxxx'/
+     &             '.NEWTRA', '.KINADI', '.GENINT', 'xxxxxxx'/
 C
 C
       CALL QENTER('HERINP')
@@ -1207,6 +1209,13 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GOTO 100
   239    CONTINUE
+#ifdef BUILD_GEN1INT
+C           test suite of Gen1Int interface, added by Bin Gao, Oct. 3, 2011
+            call gen1int_dal_test(LWORK, WORK, LUPRI, IPRDEF)
+            GOTO 100
+#else
+            call QUIT("Gen1Int is not installed!")
+#endif
   240    CONTINUE
             ONEPRP = .TRUE.
             GO TO 100

@@ -874,8 +874,8 @@ C
 
 #ifdef BUILD_GEN1INT
 C...  added by Bin Gao, Feb. 16, 2011
-C...  sets the AO blocks for Gen1Int
-      call gen1int_block
+C...  initializes the Gen1Int interface
+      call gen1int_dal_init
 #endif
 C
 C     ***********************************

@@ -1,0 +1,57 @@
+1. A brief description of the project
+
+   Gen1Int is a Fortran 90 library (with Python interface) to evaluate the
+   derivatives of one-electron integrals with respect to the geometry perturbation,
+   external electric and magnetic fields, and total rotational angular momentum
+   at zero fields with contracted rotational London atomic orbitals (LAO).
+
+   For more details, please visit
+
+   http://repo.ctcc.no/projects/gen1int
+   http://sourceforge.net/projects/gen1int
+
+2. Notes on the developer's build environment and potential portability problems
+
+   In order to implement Gen1Int into Dalton, we have modified the following files:
+
+   * configure
+     tries to find Gen1Int library libgen1int.a and sets the corresponding compiler
+     flag (-DBUILD_GEN1INT) if found Gen1Int library
+   * Makefile
+     add Gen1Int module
+   * CMakeLists.txt
+     tries to find Gen1Int library libgen1int.a and sets the corresponding compiler 
+     flag (-DBUILD_GEN1INT) if found Gen1Int library
+   * cmake/Sources.cmake
+     adds the source codes of Gen1Int interface
+   * abacus/dalton.F
+     calls gen1int_dal_clean() to clean up memory etc. for Gen1Int interface
+   * abacus/herdrv.F
+     calls gen1int_dal_test() to perform test suite of Gen1Int interface
+   * abacus/herrdn.F (please search BUILD_GEN1INT)
+     some modifications for processing different ECPs, and calling gen1int_dal_init()
+     to intialize Gen1Int interface
+   * abacus/her1car.F (please search BUILD_GEN1INT)
+     removes the interface of calling old ECP subroutine
+   * abacus/her1drv.F (please search BUILD_GEN1INT)
+     calls gen1int_dal_main() to calculate property integrals
+
+   and added the following files:
+   * gen1int directory
+     source codes of Gen1Int interface, README, installation instruction, Makefile,
+     and test sutie
+
+3. Important files in Gen1Int interface
+
+   * Makefile              : Makefile for Dalton
+   * gen1int_dal_clean.F90 : cleans up the data used in Gen1Int interface after
+                             all calculations
+   * gen1int_dal_init.F90  : initializes the data used in Gen1Int interface before
+                             any calculation
+   * gen1int_dal_test.F90  : test suite of Gen1Int interface
+   * gen1int_dal_main.F90  : main driver of calling Gen1Int interface from Dalton
+   * gen1int_dal_prop.F90  : calculates property integrals and/or expectation values
+   * gen1int_shell.F90     : defines the AO sub-shells used in Gen1Int interface and
+                             corresponding subroutines
+
+4. Please see INSTALL for installation instructions

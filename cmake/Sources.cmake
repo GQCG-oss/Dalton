@@ -119,7 +119,6 @@ abacus/abawalk.F
 abacus/dalgnr.F
 abacus/eckart.F
 abacus/ecp.F
-abacus/gen1int_wrapper.F
 abacus/her1ave.F
 abacus/her1car.F
 abacus/her1drv.F
@@ -725,6 +724,12 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+gen1int/gen1int_shell.F90
+gen1int/gen1int_dal_init.F90
+gen1int/gen1int_dal_clean.F90
+gen1int/gen1int_dal_prop.F90
+gen1int/gen1int_dal_main.F90
+gen1int/gen1int_dal_test.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F

@@ -556,39 +556,44 @@ C...  added by Bin Gao, Feb. 15, 2011
 C...    computes expectation values
         if (PROPTY) then
 C...      expectation values from ECP integrals
-          call gen1int_driver('.ECP', 0, 0, .false., .false., .false.,
-     &                        (/DUMMY/), .true., 1, DENMAT,
-     &                        .true., .false., WORK(KLAST:KLAST),
-     &                        LWRK-1, WORK(KLAST+1), IPRINT)
+          call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+     &                          0, 0, 0, 0, .true., .false., .false.,
+     &                          NNBASX, WORK(KLAST+1:), .true., 1,
+     &                          DENMAT, .true., .false.,
+     &                          WORK(KLAST:KLAST), LUPRI, IPRINT)
           ENERNA = ENERNA+WORK(KLAST)
 C...      expectation values and writing the integrals of first-order geometric derivatives
           if (SECDER .OR. DIFDIP .OR. DIFQDP) then
-            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
-     &                          .true., (/DUMMY/), .true., 1, DENMAT,
-     &                          .true., .false., GRADNA,
-     &                          LWRK, WORK(KLAST), IPRINT)
+            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+     &                            0, 0, 1, MAXDIF, .true., .false.,
+     &                            .true., NNBASX, WORK(KLAST+1:),
+     &                            .true., 1, DENMAT, .true., .false.,
+     &                            GRADNA, LUPRI, IPRINT)
 C...      expectation values of first-order geometric derivatives
           else
-            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
-     &                          .false., (/DUMMY/), .true., 1, DENMAT,
-     &                          .true., .false., GRADNA,
-     &                          LWRK, WORK(KLAST), IPRINT)
+            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+     &                            0, 0, 1, MAXDIF, .true., .false.,
+     &                            .false., NNBASX, WORK(KLAST+1:),
+     &                            .true., 1, DENMAT, .true., .false.,
+     &                            GRADNA, LUPRI, IPRINT)
           end if
 C...      expectation values of second-order geometric derivatives
           if (SECDER) then
-            call gen1int_driver('.ECP', MAXDIF, 0, .false., .false.,
-     &                          .false., (/DUMMY/), .true., 1, DENMAT,
-     &                          .true., .false., HESSNA,
-     &                          LWRK, WORK(KLAST), IPRINT)
+            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+     &                            0, 0, 2, MAXDIF, .true., .false.,
+     &                            .false., NNBASX, WORK(KLAST+1:),
+     &                            .true., 1, DENMAT, .true., .false.,
+     &                            HESSNA, LUPRI, IPRINT)
           end if
-C...    ECP in gen1int_wrapper() is not efficient, backs to ECPINT temporarily,
+C...    ECP in Gen1Int is not efficient, backs to ECPINT temporarily,
 C...    also needs ECPINT to debug the results from Gen1Int
 C...    ECP integrals, do not write the integrals (FIXME)?
 C...        else
-C...          call gen1int_driver('.ECP', MAXDIF, 0, .false., .true.,
-C...     &                        .false., STHMAT(:,2), .false., 1, DENMAT,
-C...     &                        .false., .false., (/DUMMY/),
-C...     &                        LWRK, WORK(KLAST), IPRINT)
+C...          call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+C...     &                          0, 0, 0, 0, .true., .true., .false.,
+C...     &                          NNBASX, STHMAT(:,2), .false., 1,
+C...     &                          DENMAT, .false., .false., (/DUMMY/),
+C...     &                          LUPRI, IPRINT)
         end if
       end if
 #endif
