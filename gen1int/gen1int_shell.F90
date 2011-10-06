@@ -71,6 +71,7 @@ module gen1int_shell
   ! AO sub-shells from Dalton
   type(sub_shell_t), public, allocatable, save :: ao_shells(:)
 
+#ifdef BUILD_GEN1INT
   public :: gen1int_shell_set
   public :: gen1int_shell_dims
   public :: gen1int_shell_num_orb
@@ -603,5 +604,6 @@ module gen1int_shell
     deallocate(pshell_ints)
     return
   end subroutine 
+#endif
 
 end module gen1int_shell
