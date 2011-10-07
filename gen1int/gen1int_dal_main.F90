@@ -21,8 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-!...  This file is the main driver of calling Gen1Int interface from Dalton,
-!...  in which the integral matrices are symmetric
+!...  This file is the main driver of calling Gen1Int interface from Dalton.
 !
 !...  2011-02-13, Bin Gao
 !...  * this file does not read information from input anymore, it will only
@@ -33,18 +32,22 @@
 
 #include "xkind.h"
 
-  !> \brief main driver of calling Gen1Int interface from Dalton, in which
-  !>        the integral matrices are symmetric
+  !> \brief main driver of calling Gen1Int interface from Dalton
   !> \author Bin Gao
   !> \date 2010-07-28
   !> \param prop_name is the name of property integrals to calculated
   !> \param is_lao indicates if using rotational London atomic orbitals
+  !> \param order_mom is the order of Cartesian multipole moments, only used for
+  !>        integrals "CARMOM"
   !> \param order_mag_bra is the order of magnetic derivatives on bra center
   !> \param order_mag_ket is the order of magnetic derivatives on ket center
   !> \param order_mag_total is the order of total magnetic derivatives
-  !> \param order_ram_bra is the order of derivatives w.r.t. total rotational angular momentum on bra center
-  !> \param order_ram_ket is the order of derivatives w.r.t. total rotational angular momentum on ket center
-  !> \param order_ram_total is the order of total derivatives w.r.t. total rotational angular momentum
+  !> \param order_ram_bra is the order of derivatives w.r.t. total rotational
+  !>        angular momentum on bra center
+  !> \param order_ram_ket is the order of derivatives w.r.t. total rotational
+  !>        angular momentum on ket center
+  !> \param order_ram_total is the order of total derivatives w.r.t. total
+  !>        rotational angular momentum
   !> \param order_geo_bra is the order of geometric derivatives with respect to bra center
   !> \param order_geo_ket is the order of geometric derivatives with respect to ket center
   !> \param max_num_cent is the maximum number of geometric differentiated centers
@@ -61,21 +64,22 @@
   !> \param wrt_expt indicates if writing expectation values to file
   !> \param io_unit is the IO unit of standard output
   !> \param level_print is the level of print
-  !> \return vals_int contains the calculated integrals
-  !> \return vals_expt contains the calculated expectation values
-  subroutine gen1int_dal_main(prop_name, is_lao,                             &
+  !> \return val_ints contains the calculated integrals
+  !> \return val_expt contains the calculated expectation values
+  subroutine gen1int_dal_main(prop_name, is_lao, order_mom,                  &
                               order_mag_bra, order_mag_ket, order_mag_total, &
                               order_ram_bra, order_ram_ket, order_ram_total, &
                               order_geo_bra, order_geo_ket,                  &
                               max_num_cent, order_geo_total,                 &
-                              kind_int, get_int, wrt_int, dim_int, vals_int, &
+                              kind_int, get_int, wrt_int, dim_int, val_ints, &
                               do_expt, num_dens, ao_dens, get_expt,          &
-                              wrt_expt, vals_expt, io_unit, level_print)
+                              wrt_expt, val_expt, io_unit, level_print)
     ! AO sub-shells
     use gen1int_shell
     implicit none
     character*(*), intent(in) :: prop_name
     logical, intent(in) :: is_lao
+    integer, intent(in) :: order_mom
     integer, intent(in) :: order_mag_bra
     integer, intent(in) :: order_mag_ket
     integer, intent(in) :: order_mag_total
@@ -90,13 +94,13 @@
     logical, intent(in) :: get_int
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
-    real(REALK), intent(out) :: vals_int(dim_int,*)
+    real(REALK), intent(out) :: val_ints(dim_int,*)
     logical, intent(in) :: do_expt
     integer, intent(in) :: num_dens
     real(REALK), intent(in) :: ao_dens(dim_int,num_dens)
     logical, intent(in) :: get_expt
     logical, intent(in) :: wrt_expt
-    real(REALK), intent(out) :: vals_expt(num_dens,*)
+    real(REALK), intent(out) :: val_expt(num_dens,*)
     integer, intent(in) :: io_unit
     integer, intent(in) :: level_print
 #ifdef BUILD_GEN1INT
@@ -188,6 +192,11 @@
                    * (order_geo_bra+1)*(order_geo_bra+2)     &
                    * (order_geo_ket+1)*(order_geo_ket+2)/256
       select case(trim(prop_name))
+      case("CARMOM")
+        num_opt_derv = num_opt_derv*(order_mom+1)*(order_mom+2)/2
+      case("DIPLEN")
+        num_opt_derv = num_opt_derv*3
+      case("KINENE")
       case("OVERLAP")
       case default
         call QUIT("gen1int_dal_main>> "//trim(prop_name)//" is not implemented!")
@@ -219,7 +228,7 @@
       ! calculates the geometric and magnetic derivatives
       start_idx_opt = num_opt_derv*(start_idx_geo-1)+1
       end_idx_opt = num_opt_derv*end_idx_geo
-      call gen1int_dal_prop(prop_name, is_lao,                              &
+      call gen1int_dal_prop(prop_name, is_lao, order_mom,                   &
                             order_mag_bra, order_mag_ket, order_mag_total,  &
                             order_ram_bra, order_ram_ket, order_ram_total,  &
                             order_geo_bra, order_geo_ket,                   &
@@ -227,9 +236,9 @@
                             idx_cent(1:wt_node(order_geo_total)),           &
                             order_cent(1:wt_node(order_geo_total)),         &
                             kind_int, get_int, wrt_int, dim_int,            &
-                            vals_int(:,start_idx_opt:end_idx_opt),          &
+                            val_ints(:,start_idx_opt:end_idx_opt),          &
                             do_expt, num_dens, ao_dens, get_expt, wrt_expt, &
-                            vals_expt(:,start_idx_opt:end_idx_opt),         &
+                            val_expt(:,start_idx_opt:end_idx_opt),         &
                             io_unit, level_print)
       if (level_print>=10) then
         write(io_unit,110) "current number of geometric derivatives", &
@@ -254,7 +263,7 @@
         ! calculates the geometric and magnetic derivatives
         start_idx_opt = num_opt_derv*(start_idx_geo-1)+1
         end_idx_opt = num_opt_derv*end_idx_geo
-        call gen1int_dal_prop(prop_name, is_lao,                              &
+        call gen1int_dal_prop(prop_name, is_lao, order_mom,                   &
                               order_mag_bra, order_mag_ket, order_mag_total,  &
                               order_ram_bra, order_ram_ket, order_ram_total,  &
                               order_geo_bra, order_geo_ket,                   &
@@ -262,9 +271,9 @@
                               idx_cent(1:wt_node(order_geo_total)),           &
                               order_cent(1:wt_node(order_geo_total)),         &
                               kind_int, get_int, wrt_int, dim_int,            &
-                              vals_int(:,start_idx_opt:end_idx_opt),          &
+                              val_ints(:,start_idx_opt:end_idx_opt),          &
                               do_expt, num_dens, ao_dens, get_expt, wrt_expt, &
-                              vals_expt(:,start_idx_opt:end_idx_opt),         &
+                              val_expt(:,start_idx_opt:end_idx_opt),         &
                               io_unit, level_print)
         if (level_print>=10) then
           write(io_unit,110) "current number of geometric derivatives", &
@@ -277,14 +286,14 @@
       deallocate(wt_node)
     ! no geometric derivatives
     else
-      call gen1int_dal_prop(prop_name, is_lao,                             &
+      call gen1int_dal_prop(prop_name, is_lao, order_mom,                  &
                             order_mag_bra, order_mag_ket, order_mag_total, & 
                             order_ram_bra, order_ram_ket, order_ram_total, & 
                             order_geo_bra, order_geo_ket,                  & 
                             0, (/0/), (/0/),                               &
-                            kind_int, get_int, wrt_int, dim_int, vals_int, & 
+                            kind_int, get_int, wrt_int, dim_int, val_ints, & 
                             do_expt, num_dens, ao_dens, get_expt,          & 
-                            wrt_expt, vals_expt, io_unit, level_print)
+                            wrt_expt, val_expt, io_unit, level_print)
     end if
     ! Dalton stuff
     call GETTIM(TEND, WEND)

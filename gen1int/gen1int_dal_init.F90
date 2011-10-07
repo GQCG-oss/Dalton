@@ -138,12 +138,22 @@
           end if
           !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
           ishell = ishell+1
-          !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
-          call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,    &
-                 coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,        &
-                 num_prim=NUC(KBCH), exponents=ALPHA(1:NUC(KBCH),KBCH), &
-                 num_contr=NRC(KBCH), contr_coef=contr_coef,            &
-                 ao_shell=ao_shells(ishell))
+          if (ishell>1) then
+            !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
+            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,    &
+                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,        &
+                   num_prim=NUC(KBCH), exponents=ALPHA(1:NUC(KBCH),KBCH), &
+                   num_contr=NRC(KBCH), contr_coef=contr_coef,            &
+                   last_shell=ao_shells(ishell-1), ao_shell=ao_shells(ishell))
+          ! sets the first AO sub-shell
+          else
+            !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
+            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,    &
+                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,        &
+                   num_prim=NUC(KBCH), exponents=ALPHA(1:NUC(KBCH),KBCH), &
+                   num_contr=NRC(KBCH), contr_coef=contr_coef,            &
+                   ao_shell=ao_shells(ishell))
+          end if
           deallocate(contr_coef)
           ! skips other CGTOs in this AO block for this angular momentum
           KBCH = KBCH+JCO(IANG,ITYP)-1

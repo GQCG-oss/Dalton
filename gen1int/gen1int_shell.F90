@@ -26,6 +26,7 @@
 !...  2011-10-02, Bin Gao
 !...  * first version
 
+#include "stdout.h"
 #include "xkind.h"
 
 !> \brief defines the AO sub-shells used in Gen1Int interface and corresponding subroutines
@@ -62,8 +63,30 @@ module gen1int_shell
     !-integer, allocatable :: mag_num(:)
     ! Cartesian powers if Cartesian GTOs
     integer, allocatable :: powers(:,:)
+    ! base index of the atomic orbitals in this sub-shell, i.e., the index of the
+    ! first atomic orbital in this shell minus 1
+    integer base_idx
   end type sub_shell_t
+  ! contracted integrals between two sub-shells
+  type, public :: shell_int_t
+    ! base index of the atomic orbitals on bra center
+    integer base_idx_bra
+    ! base index of the atomic orbitals on ket center
+    integer base_idx_ket
+    ! number of orbitals on bra center
+    integer num_orb_bra
+    ! number of orbitals on ket center
+    integer num_orb_ket
+    ! number of operators
+    integer num_opt
+    ! number of derivatives
+    integer num_derv
+    ! contracted integrals between sub-shells on bra and ket centers
+    real(REALK), allocatable :: contr_ints(:,:,:,:)
+  end type shell_int_t
 
+  ! for Dalton
+  !
   ! if the AO sub-shells from Dalton initialized
   logical, public, save :: shell_init = .false.
   ! number of AO sub-shells from Dalton
@@ -74,11 +97,19 @@ module gen1int_shell
 #ifdef BUILD_GEN1INT
   public :: gen1int_shell_set
   public :: gen1int_shell_dims
-  public :: gen1int_shell_num_orb
+  public :: gen1int_shell_idx_orb
   public :: gen1int_shell_dump
   public :: gen1int_shell_clean
+  public :: gen1int_shell_prop
+  public :: gen1int_shell_int_clean
+  public :: gen1int_shell_int_tri_diag
+  public :: gen1int_shell_int_tri_off
+  public :: gen1int_shell_int_square
   public :: gen1int_shell_carmom
   public :: gen1int_shell_nucpot
+
+  ! for Dalton p-shell spherical GTOs
+  private :: reorder_dalton_pshell
 
   contains
 
@@ -94,10 +125,11 @@ module gen1int_shell
   !> \param num_contr is the number of contractions
   !> \param contr_coef contains the contraction coefficients
   !> \param powers contains the Cartesian powers if Cartesian GTOs
+  !> \param last_shell is the last sub-shell before this AO sub-shell
   !> \return ao_shell is the initialized AO sub-shell
-  subroutine gen1int_shell_set(is_sgto, idx_cent, coord_cent, ang_num,    &
-                              num_prim, exponents, num_contr, contr_coef, &
-                              powers, ao_shell)
+  subroutine gen1int_shell_set(is_sgto, idx_cent, coord_cent, ang_num,     &
+                               num_prim, exponents, num_contr, contr_coef, &
+                               powers, last_shell, ao_shell)
     implicit none
     logical, intent(in) :: is_sgto
     integer, intent(in) :: idx_cent
@@ -108,6 +140,7 @@ module gen1int_shell
     integer, intent(in) :: num_contr
     real(REALK), intent(in) :: contr_coef(num_contr,num_prim)
     integer, optional, intent(in) :: powers(3,(ang_num+1)*(ang_num+2)/2)
+    type(sub_shell_t), optional, intent(in) :: last_shell
     type(sub_shell_t), intent(inout) :: ao_shell
     integer iao         !incremental recorder
     integer xpow, ypow  !incremental recorders over xy powers
@@ -163,6 +196,13 @@ module gen1int_shell
         end do
       end if  
     end if
+    if (present(last_shell)) then
+      ao_shell%base_idx = last_shell%base_idx &
+                        + last_shell%num_ao*last_shell%num_contr
+    ! this is the first sub-shell
+    else
+      ao_shell%base_idx = 0
+    end if
     return
   end subroutine gen1int_shell_set
 
@@ -182,24 +222,21 @@ module gen1int_shell
     return
   end subroutine gen1int_shell_dims
 
-  !> \brief gets the number of orbtials for the given AO sub-shells
+  !> \brief gets the index of the first and last orbtials for the given AO sub-shell
   !> \author Bin Gao
   !> \date 2011-10-06
-  !> \param num_shell is the number of AO sub-shells
-  !> \param ao_shells are the AO sub-shells
-  !> \return num_orb is the number of orbitals
-  subroutine gen1int_shell_num_orb(num_shell, ao_shells, num_orb)
+  !> \param ao_shell is the AO sub-shell
+  !> \return idx_first is the index of the first orbital
+  !> \return idx_last is the index of the last orbital
+  subroutine gen1int_shell_idx_orb(ao_shell, idx_first, idx_last)
     implicit none
-    integer, intent(in) :: num_shell
-    type(sub_shell_t), intent(in) :: ao_shells(*)
-    integer, intent(out) :: num_orb
-    integer ishell  !incremental recorder
-    num_orb = ao_shells(1)%num_ao*ao_shells(1)%num_contr
-    do ishell = 2, num_shell
-      num_orb = num_orb+ao_shells(ishell)%num_ao*ao_shells(ishell)%num_contr
-    end do
+    type(sub_shell_t), intent(in) :: ao_shell
+    integer, intent(out) :: idx_first
+    integer, intent(out) :: idx_last
+    idx_first = ao_shell%base_idx+1
+    idx_last = ao_shell%base_idx+ao_shell%num_ao*ao_shell%num_contr
     return
-  end subroutine gen1int_shell_num_orb
+  end subroutine gen1int_shell_idx_orb
 
   !> \brief dumps information of several AO sub-shells
   !> \author Bin Gao
@@ -238,6 +275,7 @@ module gen1int_shell
         write(io_unit,100) "CGTOs used"
         write(io_unit,150) ao_shells(ishell)%powers
       end if
+      write(io_unit,100) "base index of the orbitals", ao_shells(ishell)%base_idx
     end do
     return
 100 format("gen1int_shell_dump>> "A,2I8)
@@ -270,9 +308,304 @@ module gen1int_shell
     return
   end subroutine gen1int_shell_clean
 
+  !> \brief calculates contracted property integrals between two AO sub-shells
+  !> \author Bin Gao
+  !> \date 2011-10-07
+  !> \param prop_name is the name of property integrals to calculated
+  !> \param bra_shell is the sub-shell on bra center
+  !> \param ket_shell is the sub-shell on ket center
+  !> \param is_lao indicates if using London atomic orbitals
+  !> \param order_mom is the order of Cartesian multipole moments, only used for
+  !>        integrals "CARMOM"
+  !> \param order_mag_bra is the order of magnetic derivatives on bra center
+  !> \param order_mag_ket is the order of magnetic derivatives on ket center
+  !> \param order_mag_total is the order of total magnetic derivatives
+  !> \param order_ram_bra is the order of derivatives w.r.t. total rotational angular momentum on bra center
+  !> \param order_ram_ket is the order of derivatives w.r.t. total rotational angular momentum on ket center
+  !> \param order_ram_total is the order of total derivatives w.r.t. total rotational angular momentum
+  !> \param order_geo_bra is the order of geometric derivatives with respect to bra center
+  !> \param order_geo_ket is the order of geometric derivatives with respect to ket center
+  !> \param num_cents is the number of geometric differentiated centers
+  !> \param idx_cent contains the indices of differentiated centers
+  !> \param order_cent contains the orders of differentiated centers
+  !> \param num_derv is the number of different derivatives
+  !> \return prop_int contains the contracted property integrals between two AO sub-shells
+  subroutine gen1int_shell_prop(prop_name, bra_shell, ket_shell, is_lao, order_mom, &
+                                order_mag_bra, order_mag_ket, order_mag_total,      &
+                                order_ram_bra, order_ram_ket, order_ram_total,      &
+                                order_geo_bra, order_geo_ket, num_cents, idx_cent,  &
+                                order_cent, num_derv, prop_int)
+    implicit none
+    character*(*), intent(in) :: prop_name
+    type(sub_shell_t), intent(in) :: bra_shell
+    type(sub_shell_t), intent(in) :: ket_shell
+    logical, intent(in) :: is_lao
+    integer, intent(in) :: order_mom
+    integer, intent(in) :: order_mag_bra
+    integer, intent(in) :: order_mag_ket
+    integer, intent(in) :: order_mag_total
+    integer, intent(in) :: order_ram_bra
+    integer, intent(in) :: order_ram_ket
+    integer, intent(in) :: order_ram_total
+    integer, intent(in) :: order_geo_bra
+    integer, intent(in) :: order_geo_ket
+    integer, intent(in) :: num_cents
+    integer, intent(in) :: idx_cent(num_cents)
+    integer, intent(in) :: order_cent(num_cents)
+    integer, intent(in) :: num_derv
+    type(shell_int_t), intent(inout) :: prop_int
+    ! origins in Dalton
+#include "orgcom.h"
+    ! uses "MXCENT"
+#include "mxcent.h"
+    ! coordinates and charges of atoms
+#include "nuclei.h"
+    integer icent                                !incremental recorder over atomic centers
+    real(REALK), allocatable :: tmp_ints(:,:,:)  !temporary contracted integrals
+    integer ierr                                 !error information
+    ! sets the base index of orbitals on bra and ket centers
+    prop_int%base_idx_bra = bra_shell%base_idx
+    prop_int%base_idx_ket = ket_shell%base_idx
+    ! sets the dimensions of contracted integrals between two sub-shells
+    prop_int%num_orb_bra = bra_shell%num_ao*bra_shell%num_contr
+    prop_int%num_orb_ket = ket_shell%num_ao*ket_shell%num_contr
+    prop_int%num_derv = num_derv
+    ! different property integrals, please use alphabetical order
+    select case(trim(prop_name))
+    case("1ELPOT")
+      prop_int%num_opt = 1
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      ! the first atomic center
+      call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, 0,                &
+                                1, CORD(:,1), -1, DIPORG, CHARGE(1), order_mom, &
+                                order_mag_bra, order_mag_ket, order_mag_total,  &
+                                order_ram_bra, order_ram_ket, order_ram_total,  &
+                                order_geo_bra, order_geo_ket, 0, 0,             &
+                                num_cents, idx_cent, order_cent,                &
+                                bra_shell%num_ao, bra_shell%num_contr,          &
+                                ket_shell%num_ao, ket_shell%num_contr,          &
+                                prop_int%num_derv, prop_int%contr_ints)
+      ! allocates memory for temporary contracted integrals
+      allocate(tmp_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                        prop_int%num_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_ints!"
+      ! other atomic centers
+      do icent = 2, NUCDEP
+        call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, 0,               &
+                                  icent, CORD(:,icent), -1, DIPORG,              &
+                                  CHARGE(icent), order_mom,                      &
+                                  order_mag_bra, order_mag_ket, order_mag_total, &
+                                  order_ram_bra, order_ram_ket, order_ram_total, &
+                                  order_geo_bra, order_geo_ket, 0, 0,            &
+                                  num_cents, idx_cent, order_cent,               &
+                                  bra_shell%num_ao, bra_shell%num_contr,         &
+                                  ket_shell%num_ao, ket_shell%num_contr,         &
+                                  prop_int%num_derv, tmp_ints)
+        prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:)+tmp_ints
+      end do
+      deallocate(tmp_ints)
+    case("CARMOM")
+      prop_int%num_opt = (order_mom+1)*(order_mom+2)/2
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,               &
+                                -1, DIPORG, 1.0_REALK, order_mom,              &
+                                order_mag_bra, order_mag_ket, order_mag_total, &
+                                order_ram_bra, order_ram_ket, order_ram_total, &
+                                order_geo_bra, order_geo_ket, 0,               &
+                                num_cents, idx_cent, order_cent,               &
+                                bra_shell%num_ao, bra_shell%num_contr,         &
+                                ket_shell%num_ao, ket_shell%num_contr,         &
+                                prop_int%num_opt*prop_int%num_derv,            &
+                                prop_int%contr_ints)
+    case("DIPLEN")
+      prop_int%num_opt = 3
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,               &
+                                -1, DIPORG, 1.0_REALK, 1,                      &
+                                order_mag_bra, order_mag_ket, order_mag_total, &
+                                order_ram_bra, order_ram_ket, order_ram_total, &
+                                order_geo_bra, order_geo_ket, 0,               &
+                                num_cents, idx_cent, order_cent,               &
+                                bra_shell%num_ao, bra_shell%num_contr,         &
+                                ket_shell%num_ao, ket_shell%num_contr,         &
+                                prop_int%num_opt*prop_int%num_derv,            &
+                                prop_int%contr_ints)
+    case("KINENE")
+      prop_int%num_opt = 6
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 2,               &
+                                -1, DIPORG, -0.5_REALK, 0,                     &
+                                order_mag_bra, order_mag_ket, order_mag_total, &
+                                order_ram_bra, order_ram_ket, order_ram_total, &
+                                order_geo_bra, order_geo_ket, 0,               &
+                                num_cents, idx_cent, order_cent,               &
+                                bra_shell%num_ao, bra_shell%num_contr,         &
+                                ket_shell%num_ao, ket_shell%num_contr,         &
+                                prop_int%num_opt*prop_int%num_derv,            &
+                                prop_int%contr_ints)
+      ! sums xx, yy and zz components
+      prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:) &
+                                   + prop_int%contr_ints(:,:,3,:) &
+                                   + prop_int%contr_ints(:,:,6,:)
+      prop_int%num_opt = 1
+    case("OVERLAP")
+      prop_int%num_opt = 1
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,               &
+                                -1, DIPORG, 1.0_REALK, 0,                      &
+                                order_mag_bra, order_mag_ket, order_mag_total, &
+                                order_ram_bra, order_ram_ket, order_ram_total, &
+                                order_geo_bra, order_geo_ket, 0,               &
+                                num_cents, idx_cent, order_cent,               &
+                                bra_shell%num_ao, bra_shell%num_contr,         &
+                                ket_shell%num_ao, ket_shell%num_contr,         &
+                                prop_int%num_opt*prop_int%num_derv,            &
+                                prop_int%contr_ints)
+    case default
+      write(STDOUT,999) trim(prop_name)
+      stop
+    end select
+    return
+999 format("gen1int_shell_prop>> ",A," is not implemented!")
+  end subroutine gen1int_shell_prop
+
+  !> \brief cleans the contracted property integrals between two AO sub-shells
+  !> \author Bin Gao
+  !> \date 2011-10-07
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  subroutine gen1int_shell_int_clean(prop_int)
+    implicit none
+    type(shell_int_t), intent(inout) :: prop_int    
+    deallocate(prop_int%contr_ints)
+    return
+  end subroutine gen1int_shell_int_clean
+
+  !> \brief gets the contracted property integrals between two AO sub-shells back,
+  !>        and writes the integrals on file is required, the integrals are belong
+  !>        to the diagonal parts in triangular format
+  !> \author Bin Gao
+  !> \date 2011-10-07
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  !> \param wrt_int indicates if writing integrals to file
+  !> \param dim_int is the dimension of integral matrices
+  !> \return val_ints contains the returned integrals
+  subroutine gen1int_shell_int_tri_diag(prop_int, wrt_int, dim_int, val_ints)
+    implicit none
+    type(shell_int_t), intent(in) :: prop_int
+    logical, intent(in) :: wrt_int
+    integer, intent(in) :: dim_int
+    real(REALK), intent(inout) :: val_ints(dim_int,*)
+    integer iderv, iopt, jopt, iket, ibra  !incremental recorders
+    integer addr_ket                       !address of orbitals on ket center in returned integrals
+    jopt = 0
+    do iderv = 1, prop_int%num_derv
+      do iopt = 1, prop_int%num_opt
+        jopt = jopt+1
+        addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+        do iket = 1, prop_int%num_orb_ket
+          addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+          do ibra = 1, iket  !only upper and diagonal parts returned
+            val_ints(addr_ket+ibra+prop_int%base_idx_bra,jopt) &
+              = prop_int%contr_ints(ibra,iket,iopt,iderv)
+          end do
+        end do
+      end do
+    end do
+!FIXME
+    ! the path, dimension, and kind of integral matrices should already be created
+    if (wrt_int) then
+    end if
+    return
+  end subroutine gen1int_shell_int_tri_diag
+
+  !> \brief gets the contracted property integrals between two AO sub-shells back,
+  !>        and writes the integrals on file is required, the integrals are belong
+  !>        to the off-diagonal parts in triangular format
+  !> \author Bin Gao
+  !> \date 2011-10-07
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  !> \param wrt_int indicates if writing integrals to file
+  !> \param dim_int is the dimension of integral matrices
+  !> \return val_ints contains the returned integrals
+  subroutine gen1int_shell_int_tri_off(prop_int, wrt_int, dim_int, val_ints)
+    implicit none
+    type(shell_int_t), intent(in) :: prop_int
+    logical, intent(in) :: wrt_int
+    integer, intent(in) :: dim_int
+    real(REALK), intent(inout) :: val_ints(dim_int,*)
+    integer iderv, iopt, jopt, iket, ibra  !incremental recorders
+    integer addr_ket                       !address of orbitals on ket center in returned integrals
+    jopt = 0
+    do iderv = 1, prop_int%num_derv
+      do iopt = 1, prop_int%num_opt
+        jopt = jopt+1
+        addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+        do iket = 1, prop_int%num_orb_ket
+          addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+          do ibra = 1, prop_int%num_orb_bra
+            val_ints(addr_ket+ibra+prop_int%base_idx_bra,jopt) &
+              = prop_int%contr_ints(ibra,iket,iopt,iderv)
+          end do
+        end do
+      end do
+    end do
+!FIXME
+    ! the path, dimension, and kind of integral matrices should already be created
+    if (wrt_int) then
+    end if
+    return
+  end subroutine gen1int_shell_int_tri_off
+
+  !> \brief gets the contracted property integrals between two AO sub-shells back,
+  !>        and writes the integrals on file is required, the integrals are parts
+  !>        of square matrix
+  !> \author Bin Gao
+  !> \date 2011-10-07
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  !> \param num_ao_orb is the total number of atomic orbitals
+  !> \param wrt_int indicates if writing integrals to file
+  !> \return val_ints contains the returned integrals
+  subroutine gen1int_shell_int_square(prop_int, num_ao_orb, wrt_int, val_ints)
+    implicit none
+    type(shell_int_t), intent(in) :: prop_int
+    integer num_ao_orb
+    logical, intent(in) :: wrt_int
+    real(REALK), intent(inout) :: val_ints(num_ao_orb,num_ao_orb,*)
+    integer iderv, iopt, jopt, iket, ibra  !incremental recorders
+    integer addr_ket                       !address of orbitals on ket center in returned integrals
+    jopt = 0
+    do iderv = 1, prop_int%num_derv
+      do iopt = 1, prop_int%num_opt
+        jopt = jopt+1
+        do iket = 1, prop_int%num_orb_ket
+          addr_ket = iket+prop_int%base_idx_ket
+          do ibra = 1, prop_int%num_orb_bra
+            val_ints(ibra+prop_int%base_idx_bra,addr_ket,jopt) &
+              = prop_int%contr_ints(ibra,iket,iopt,iderv)
+          end do
+        end do
+      end do
+    end do
+!FIXME
+    ! the path, dimension, and kind of integral matrices should already be created
+    if (wrt_int) then
+    end if
+    return
+  end subroutine gen1int_shell_int_square
+
   !> \brief calculates the Cartesian multipole moment integrals using contracted GTOs
   !> \author Bin Gao
-  !> \date 2010-07-28
+  !> \date 2011-10-05
   !> \param bra_shell is the sub-shell on bra center
   !> \param ket_shell is the sub-shell on ket center
   !> \param is_lao indicates if using London atomic orbitals
@@ -417,7 +750,7 @@ module gen1int_shell
   !> \brief calculates the nuclear attraction potential (with Cartesian multipole
   !>        moment) integrals using contracted GTOs
   !> \author Bin Gao
-  !> \date 2010-07-28
+  !> \date 2011-10-05
   !> \param bra_shell is the sub-shell on bra center
   !> \param ket_shell is the sub-shell on ket center
   !> \param is_lao indicates if using London atomic orbitals

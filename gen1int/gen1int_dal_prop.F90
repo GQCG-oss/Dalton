@@ -21,26 +21,29 @@
 !...      http://daltonprogram.org
 !
 !
-!...  This file calculates property integrals and/or expectation values, in which
-!...  the integral matrices are symmetric
+!...  This file calculates property integrals and/or expectation values.
 !
 !...  2011-10-04, Bin Gao
 !...  * first version
 
 #include "xkind.h"
 
-  !> \brief calculates property integrals and/or expectation values, in which
-  !>        the integral matrices are symmetric
+  !> \brief calculates property integrals and/or expectation values
   !> \author Bin Gao
   !> \date 2011-10-04
   !> \param prop_name is the name of property integrals to calculated
   !> \param is_lao indicates if using rotational London atomic orbitals
+  !> \param order_mom is the order of Cartesian multipole moments, only used for
+  !>        integrals "CARMOM"
   !> \param order_mag_bra is the order of magnetic derivatives on bra center
   !> \param order_mag_ket is the order of magnetic derivatives on ket center
   !> \param order_mag_total is the order of total magnetic derivatives
-  !> \param order_ram_bra is the order of derivatives w.r.t. total rotational angular momentum on bra center
-  !> \param order_ram_ket is the order of derivatives w.r.t. total rotational angular momentum on ket center
-  !> \param order_ram_total is the order of total derivatives w.r.t. total rotational angular momentum
+  !> \param order_ram_bra is the order of derivatives w.r.t. total rotational
+  !>        angular momentum on bra center
+  !> \param order_ram_ket is the order of derivatives w.r.t. total rotational
+  !>        angular momentum on ket center
+  !> \param order_ram_total is the order of total derivatives w.r.t. total
+  !>        rotational angular momentum
   !> \param order_geo_bra is the order of geometric derivatives with respect to bra center
   !> \param order_geo_ket is the order of geometric derivatives with respect to ket center
   !> \param num_cents is the number of geometric differentiated centers
@@ -58,21 +61,22 @@
   !> \param wrt_expt indicates if writing expectation values to file
   !> \param io_unit is the IO unit of standard output
   !> \param level_print is the level of print
-  !> \return vals_int contains the calculated integrals
-  !> \return vals_expt contains the calculated expectation values
-  subroutine gen1int_dal_prop(prop_name, is_lao,                              &
+  !> \return val_ints contains the calculated integrals
+  !> \return val_expt contains the calculated expectation values
+  subroutine gen1int_dal_prop(prop_name, is_lao, order_mom,                   &
                               order_mag_bra, order_mag_ket, order_mag_total,  &
                               order_ram_bra, order_ram_ket, order_ram_total,  &
                               order_geo_bra, order_geo_ket,                   &
                               num_cents, idx_cent, order_cent,                &
-                              kind_int, get_int, wrt_int, dim_int, vals_int,  &
+                              kind_int, get_int, wrt_int, dim_int, val_ints,  &
                               do_expt, num_dens, ao_dens, get_expt, wrt_expt, &
-                              vals_expt, io_unit, level_print)
+                              val_expt, io_unit, level_print)
     ! AO sub-shells
     use gen1int_shell
     implicit none
     character*(*), intent(in) :: prop_name
     logical, intent(in) :: is_lao
+    integer, intent(in) :: order_mom
     integer, intent(in) :: order_mag_bra
     integer, intent(in) :: order_mag_ket
     integer, intent(in) :: order_mag_total
@@ -88,36 +92,24 @@
     logical, intent(in) :: get_int
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
-    real(REALK), intent(out) :: vals_int(dim_int,*)
+    real(REALK), intent(out) :: val_ints(dim_int,*)
     logical, intent(in) :: do_expt
     integer, intent(in) :: num_dens
     real(REALK), intent(in) :: ao_dens(dim_int,num_dens)
     logical, intent(in) :: get_expt
     logical, intent(in) :: wrt_expt
-    real(REALK), intent(out) :: vals_expt(num_dens,*)
+    real(REALK), intent(out) :: val_expt(num_dens,*)
     integer, intent(in) :: io_unit
     integer, intent(in) :: level_print
 #ifdef BUILD_GEN1INT
 ! common block with origins
 #include "orgcom.h"
-    integer num_ao_orb                    !number of atomic orbitals
-    integer num_derv                      !number of derivatives
-    integer num_opt                       !number of operators including derivatives
-    integer num_ao_bra, num_ao_ket        !number of AOs on bra and ket centers
-    integer num_contr_bra, num_contr_ket  !number of contractions on bra and ket centers
-    integer num_orb_bra, num_orb_ket      !number of orbitals on bra and ket centers for
-                                          !the contracted integrals
-    real(REALK), allocatable :: contr_ints(:,:,:)
-                                          !contracted integrals between sub-shells on bra and ket centers
-    integer base_orb_bra, base_orb_ket    !base address of orbitals on bra and ket centers
-    integer ishell, jshell                !incremental recorders over sub-shells
-    integer ibra, iket, iopt              !incremental recorders over contracted integrals
-    integer addr_ket                      !address of orbitals on ket center in returned integrals
-    integer ierr                          !error information
+    integer num_derv            !number of different derivatives
+    integer icent               !incremental recorder over differetiated centers
+    type(shell_int_t) prop_int  !contracted property integrals between two AO sub-shells
+    integer ishell, jshell      !incremental recorders over sub-shells
+    integer num_ao_orb          !total number of atomic orbitals
     call QENTER("gen1int_dal_prop")
-    ! gets the number of atomic orbitals
-    call gen1int_shell_num_orb(num_ao_shells, ao_shells, num_ao_orb)
-    if (level_print>=10) write(io_unit,100) "number of atomic orbitals", num_ao_orb
     ! computes the number of derivatives
     num_derv = (order_mag_bra+1)*(order_mag_bra+2)     &
              * (order_mag_ket+1)*(order_mag_ket+2)     &
@@ -127,75 +119,33 @@
              * (order_ram_total+1)*(order_ram_total+2) &
              * (order_geo_bra+1)*(order_geo_bra+2)     &
              * (order_geo_ket+1)*(order_geo_ket+2)/256
-    do ishell = 1, num_cents
-      num_derv = num_derv*(order_cent(ishell)+1)*(order_cent(ishell)+2)/2
+    do icent = 1, num_cents
+      num_derv = num_derv*(order_cent(icent)+1)*(order_cent(icent)+2)/2
     end do
     if (level_print>=10) write(io_unit,100) "number of derivatives", num_derv
     select case(kind_int)
     ! symmetric integral matrices (column- or ket-major, upper and diagonal parts)
     case(1)
-      ! initializes the base address of orbitals on ket center
-      base_orb_ket = 0
       ! loops over AO sub-shells on ket center
       do jshell = 1, num_ao_shells
-        ! gets the number of AOs and contractions on ket center
-        call gen1int_shell_dims(ao_shells(jshell), num_ao_ket, num_contr_ket)
-        num_orb_ket = num_ao_ket*num_contr_ket
-        ! initializes the base address of orbitals on bra center
-        base_orb_bra = 0
         ! loops over AO sub-shells on bra center (upper and diagonal parts)
         do ishell = 1, jshell
-          ! gets the number of AOs and contractions on bra center
-          call gen1int_shell_dims(ao_shells(ishell), num_ao_bra, num_contr_bra)
-          num_orb_bra = num_ao_bra*num_contr_bra
           ! different property integrals
-          select case(trim(prop_name))
-          case("OVERLAP")
-            num_opt = num_derv
-            allocate(contr_ints(num_orb_bra,num_orb_ket,num_opt), stat=ierr)
-            if (ierr/=0) call QUIT("gen1int_dal_prop>> failed to allocate contr_ints!")
-            call gen1int_shell_carmom(ao_shells(ishell), ao_shells(jshell), is_lao,  &
-                                      0, -1, DIPORG, 1.0_REALK, 0,                   &
-                                      order_mag_bra, order_mag_ket, order_mag_total, &
-                                      order_ram_bra, order_ram_ket, order_ram_total, &
-                                      order_geo_bra, order_geo_ket, 0,               &
-                                      num_cents, idx_cent, order_cent,               &
-                                      num_ao_bra, num_contr_bra, num_ao_ket,         &
-                                      num_contr_ket, num_opt, contr_ints)
-          case default
-            call QUIT("gen1int_dal_prop>> "//trim(prop_name)//" is not implemented!")
-          end select
-          ! assigns returned integrals
+          call gen1int_shell_prop(prop_name, ao_shells(ishell),                  &
+                                  ao_shells(jshell), is_lao, order_mom,          &
+                                  order_mag_bra, order_mag_ket, order_mag_total, &
+                                  order_ram_bra, order_ram_ket, order_ram_total, &
+                                  order_geo_bra, order_geo_ket, num_cents,       &
+                                  idx_cent, order_cent, num_derv, prop_int)
+          ! assigns the returned integrals, and write the integrals to file if required
           if (get_int) then
             if (ishell<jshell) then
-              do iopt = 1, num_opt
-                addr_ket = (base_orb_ket-1)*base_orb_ket/2
-                do iket = 1, num_orb_ket
-                  addr_ket = addr_ket+iket+base_orb_ket-1  !=(iket+base_orb_ket-1)*(iket+base_orb_ket)/2
-                  do ibra = 1, num_orb_bra
-                    vals_int(addr_ket+ibra+base_orb_bra,iopt) &
-                      = contr_ints(ibra,iket,iopt)
-                  end do
-                end do
-              end do
+              call gen1int_shell_int_tri_off(prop_int, wrt_int, dim_int, val_ints)
             else
-              do iopt = 1, num_opt
-                addr_ket = (base_orb_ket-1)*base_orb_ket/2
-                do iket = 1, num_orb_ket
-                  addr_ket = addr_ket+iket+base_orb_ket-1  !=(iket+base_orb_ket-1)*(iket+base_orb_ket)/2
-                  do ibra = 1, iket  !only upper and diagonal parts returned
-                    vals_int(addr_ket+ibra+base_orb_bra,iopt) &
-                      = contr_ints(ibra,iket,iopt)
-                  end do
-                end do
-              end do
+              call gen1int_shell_int_tri_diag(prop_int, wrt_int, dim_int, val_ints)
             end if
           end if
-          if (wrt_int) then
-            if (ishell<jshell) then
-            else
-            end if
-          end if
+          ! calculates the expectation values
           if (do_expt) then
             if (ishell<jshell) then
             else
@@ -205,75 +155,76 @@
             if (wrt_expt) then
             end if
           end if
-          deallocate(contr_ints)
-          ! updates the base address of orbitals on bra center
-          base_orb_bra = base_orb_bra+num_orb_bra
+          ! cleans contracted property integrals
+          call gen1int_shell_int_clean(prop_int)
         end do
-        ! updates the base address of orbitals on ket center
-        base_orb_ket = base_orb_ket+num_orb_ket
       end do
     ! anti-symmetric integral matrices (column- or ket-major, upper and diagonal parts)
     case(-1)
-    ! square integral matrices (column- or ket-major)
-    case default
-      ! initializes the base address of orbitals on ket center
-      base_orb_ket = 0
       ! loops over AO sub-shells on ket center
       do jshell = 1, num_ao_shells
-        ! gets the number of AOs and contractions on ket center
-        call gen1int_shell_dims(ao_shells(jshell), num_ao_ket, num_contr_ket)
-        num_orb_ket = num_ao_ket*num_contr_ket
-        ! initializes the base address of orbitals on bra center
-        base_orb_bra = 0
+        ! loops over AO sub-shells on bra center (upper and diagonal parts)
+        do ishell = 1, jshell
+          ! different property integrals
+          call gen1int_shell_prop(prop_name, ao_shells(ishell),                  &
+                                  ao_shells(jshell), is_lao, order_mom,          &
+                                  order_mag_bra, order_mag_ket, order_mag_total, &
+                                  order_ram_bra, order_ram_ket, order_ram_total, &
+                                  order_geo_bra, order_geo_ket, num_cents,       &
+                                  idx_cent, order_cent, num_derv, prop_int)
+          ! assigns the returned integrals, and write the integrals to file if required
+          if (get_int) then
+            if (ishell<jshell) then
+              call gen1int_shell_int_tri_off(prop_int, wrt_int, dim_int, val_ints)
+            else
+              call gen1int_shell_int_tri_diag(prop_int, wrt_int, dim_int, val_ints)
+            end if
+          end if
+          ! calculates the expectation values, and notice that the integral matrices
+          ! are anti-symmetric
+          if (do_expt) then
+            if (ishell<jshell) then
+            else
+            end if
+            if (get_expt) then
+            end if
+            if (wrt_expt) then
+            end if
+          end if
+          ! cleans contracted property integrals
+          call gen1int_shell_int_clean(prop_int)
+        end do
+      end do
+    ! square integral matrices (column- or ket-major)
+    case default
+      ! gets the total number of atomic orbitals
+      call gen1int_shell_idx_orb(ao_shells(num_ao_shells), icent, num_ao_orb)
+      if (level_print>=10) write(io_unit,100) "number of atomic orbitals", num_ao_orb
+      ! loops over AO sub-shells on ket center
+      do jshell = 1, num_ao_shells
         ! loops over AO sub-shells on bra center
         do ishell = 1, num_ao_shells
-          ! gets the number of AOs and contractions on bra center
-          call gen1int_shell_dims(ao_shells(ishell), num_ao_bra, num_contr_bra)
-          num_orb_bra = num_ao_bra*num_contr_bra
           ! different property integrals
-          select case(trim(prop_name))
-          case("OVERLAP")
-            num_opt = num_derv
-            allocate(contr_ints(num_orb_bra,num_orb_ket,num_opt), stat=ierr)
-            if (ierr/=0) call QUIT("gen1int_dal_prop>> failed to allocate contr_ints!")
-            call gen1int_shell_carmom(ao_shells(ishell), ao_shells(jshell), is_lao,  &
-                                      0, -1, DIPORG, 1.0_REALK, 0,                   &
-                                      order_mag_bra, order_mag_ket, order_mag_total, &
-                                      order_ram_bra, order_ram_ket, order_ram_total, &
-                                      order_geo_bra, order_geo_ket, 0,               &
-                                      num_cents, idx_cent, order_cent,               &
-                                      num_ao_bra, num_contr_bra, num_ao_ket,         &
-                                      num_contr_ket, num_opt, contr_ints)
-          case default
-            call QUIT("gen1int_dal_prop>> "//trim(prop_name)//" is not implemented!")
-          end select
+          call gen1int_shell_prop(prop_name, ao_shells(ishell),                  &
+                                  ao_shells(jshell), is_lao, order_mom,          &
+                                  order_mag_bra, order_mag_ket, order_mag_total, &
+                                  order_ram_bra, order_ram_ket, order_ram_total, &
+                                  order_geo_bra, order_geo_ket, num_cents,       &
+                                  idx_cent, order_cent, num_derv, prop_int)
           ! assigns returned integrals
           if (get_int) then
-            do iopt = 1, num_opt
-              addr_ket = (base_orb_ket-1)*num_ao_orb
-              do iket = 1, num_orb_ket
-                addr_ket = addr_ket+num_ao_orb  !=(iket+base_orb_ket-1)*num_ao_orb
-                do ibra = 1, num_orb_bra
-                  vals_int(addr_ket+ibra+base_orb_bra,iopt) &
-                    = contr_ints(ibra,iket,iopt)
-                end do
-              end do
-            end do
+            call gen1int_shell_int_square(prop_int, num_ao_orb, wrt_int, val_ints)
           end if
-          if (wrt_int) then
-          end if
+          ! calculates the expectation values
           if (do_expt) then
             if (get_expt) then
             end if
             if (wrt_expt) then
             end if
           end if
-          deallocate(contr_ints)
-          ! updates the base address of orbitals on bra center
-          base_orb_bra = base_orb_bra+num_orb_bra
+          ! cleans contracted property integrals
+          call gen1int_shell_int_clean(prop_int)
         end do
-        ! updates the base address of orbitals on ket center
-        base_orb_ket = base_orb_ket+num_orb_ket
       end do
     end select
     call QEXIT("gen1int_dal_prop")

@@ -556,7 +556,7 @@ C...  added by Bin Gao, Feb. 15, 2011
 C...    computes expectation values
         if (PROPTY) then
 C...      expectation values from ECP integrals
-          call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+          call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0, 0,
      &                          0, 0, 0, 0, 1, .false., .false.,
      &                          NNBASX, WORK(KLAST+1:), .true., 1,
      &                          DENMAT, .true., .false.,
@@ -564,14 +564,14 @@ C...      expectation values from ECP integrals
           ENERNA = ENERNA+WORK(KLAST)
 C...      expectation values and writing the integrals of first-order geometric derivatives
           if (SECDER .OR. DIFDIP .OR. DIFQDP) then
-            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0, 0,
      &                            0, 0, 1, MAXDIF, 1, .false.,
      &                            .true., NNBASX, WORK(KLAST+1:),
      &                            .true., 1, DENMAT, .true., .false.,
      &                            GRADNA, LUPRI, IPRINT)
 C...      expectation values of first-order geometric derivatives
           else
-            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0, 0,
      &                            0, 0, 1, MAXDIF, 1, .false.,
      &                            .false., NNBASX, WORK(KLAST+1:),
      &                            .true., 1, DENMAT, .true., .false.,
@@ -579,7 +579,7 @@ C...      expectation values of first-order geometric derivatives
           end if
 C...      expectation values of second-order geometric derivatives
           if (SECDER) then
-            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+            call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0, 0,
      &                            0, 0, 2, MAXDIF, 1, .false.,
      &                            .false., NNBASX, WORK(KLAST+1:),
      &                            .true., 1, DENMAT, .true., .false.,
@@ -589,7 +589,7 @@ C...    ECP in Gen1Int is not efficient, backs to ECPINT temporarily,
 C...    also needs ECPINT to debug the results from Gen1Int
 C...    ECP integrals, do not write the integrals (FIXME)?
 C...        else
-C...          call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0,
+C...          call gen1int_dal_main("ECP", .false., 0, 0, 0, 0, 0, 0, 0,
 C...     &                          0, 0, 0, 0, 1, .true., .false.,
 C...     &                          NNBASX, STHMAT(:,2), .false., 1,
 C...     &                          DENMAT, .false., .false., (/DUMMY/),

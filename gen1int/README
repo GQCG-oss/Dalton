@@ -51,9 +51,20 @@
    * gen1int_dal_init.F90  : initializes the data used in Gen1Int interface before
                              any calculation
    * gen1int_dal_test.F90  : test suite of Gen1Int interface
-   * gen1int_dal_main.F90  : main driver of calling Gen1Int interface from Dalton
-   * gen1int_dal_prop.F90  : calculates property integrals and/or expectation values
+   * gen1int_dal_main.F90  : main driver of calling Gen1Int interface from Dalton,
+                             loops over different total geometric derivatives, and
+                             calls gen1int_dal_prop() to perform calculations
+   * gen1int_dal_prop.F90  : calculates property integrals and/or expectation values,
+                             loops all necessary AO sub-shells, the contracted integrals
+                             between two AO sub-shells are then calculated through
+                             the subroutines in module gen1int_shell
    * gen1int_shell.F90     : defines the AO sub-shells used in Gen1Int interface and
                              corresponding subroutines
+   * err_thrsh.h           : threshold of error for test suite
+   * stdout.h              : IO unit of standard output
+   * xkind.h               : kind type parameter of real numbers
+
+   The parallelization may be implemented in gen1int_dal_main.F90 and/or gen1int_dal_prop.F90,
+   which correspond to total geometric derivatives and AO sub-shells, respectively.
 
 4. Please see INSTALL for installation instructions
