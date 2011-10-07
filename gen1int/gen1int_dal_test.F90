@@ -36,15 +36,15 @@
   !> \date 2011-10-04
   !> \param len_work is the length of Dalton workspace
   !> \param dal_work is the Dalton workspace
-  !> \param io_unit is the IO unit of standard output
+  !> \param io_std is the IO unit of standard output
   !> \param level_print is the level of print
-  subroutine gen1int_dal_test(len_work, dal_work, io_unit, level_print)
+  subroutine gen1int_dal_test(len_work, dal_work, io_std, level_print)
     ! AO sub-shells
     use gen1int_shell
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: dal_work(len_work)
-    integer, intent(in) :: io_unit
+    integer, intent(in) :: io_std
     integer, intent(in) :: level_print
 #ifdef BUILD_GEN1INT
 ! threshold of error
@@ -60,30 +60,6 @@
       (/.false., .false., .false./)
     ! order of Cartesian multipole moments
     integer, parameter :: ORDER_MOM(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of magnetic derivatives on bra center
-    integer, parameter :: ORDER_MAG_BRA(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of magnetic derivatives on ket center
-    integer, parameter :: ORDER_MAG_KET(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of total magnetic derivatives
-    integer, parameter :: ORDER_MAG_TOT(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of derivatives w.r.t. total rotational angular momentum on bra center
-    integer, parameter :: ORDER_RAM_BRA(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of derivatives w.r.t. total rotational angular momentum on ket center
-    integer, parameter :: ORDER_RAM_KET(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of total derivatives w.r.t. total rotational angular momentum
-    integer, parameter :: ORDER_RAM_TOT(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of geometric derivatives on bra center
-    integer, parameter :: ORDER_GEO_BRA(NUM_TEST) = &
-      (/0, 0, 0/)
-    ! order of geometric derivatives on ket center
-    integer, parameter :: ORDER_GEO_KET(NUM_TEST) = &
       (/0, 0, 0/)
     ! maximum number of differentiated centers
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &
@@ -176,20 +152,19 @@
       end_int = start_ref-1
       end_ref = start_ref+size_int-1
       if (end_ref>len_work) then
-        write(io_unit,100) "ID of test", itst
-        write(io_unit,100) "required memory", end_ref
-        write(io_unit,100) "available memory", len_work
+        write(io_std,100) "ID of test", itst
+        write(io_std,100) "required memory", end_ref
+        write(io_std,100) "available memory", len_work
         call QUIT("Increase Dalton workspace!")
       end if
       ! computes the integrals and/or expectation values
-      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),     &
-             ORDER_MAG_BRA(itst), ORDER_MAG_KET(itst), ORDER_MAG_TOT(itst),     &
-             ORDER_RAM_BRA(itst), ORDER_RAM_KET(itst), ORDER_RAM_TOT(itst),     &
-             ORDER_GEO_BRA(itst), ORDER_GEO_KET(itst), MAX_NUM_CENT(itst),      &
-             ORDER_GEO_TOT(itst), KIND_INT(itst), GET_INT(itst), WRT_INT(itst), &
-             dim_int, dal_work(start_int:end_int), DO_EXPT(itst), NUM_DENS,     &
-             ao_dens, GET_EXPT(itst), WRT_EXPT(itst), dal_work(1:num_expt),     &
-             io_unit, level_print)
+      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),       &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),              &
+                            KIND_INT(itst), GET_INT(itst), WRT_INT(itst),         &
+                            dim_int, dal_work(start_int:end_int),                 &
+                            DO_EXPT(itst), NUM_DENS, ao_dens,                     &
+                            GET_EXPT(itst), WRT_EXPT(itst), dal_work(1:num_expt), &
+                            io_std, level_print)
       ! gets the referenced results from HERMIT
 !FIXME
       !call PR1INT(PROP_NAME(itst), dal_work(end_ref+1:), len_work-end_ref, &
@@ -200,33 +175,33 @@
       !call AROUND('gen1int_dal_test>> '//trim(PROP_NAME(itst)))
       !select case(KIND_INT(itst)) 
       !case(1, -1)
-      !  !-call OUTPAK(dal_work(start_int:end_int), num_orb, 1, io_unit)
-      !  call OUTPAK(dal_work(start_int:end_int), NBAST, 1, io_unit)
+      !  !-call OUTPAK(dal_work(start_int:end_int), num_orb, 1, io_std)
+      !  call OUTPAK(dal_work(start_int:end_int), NBAST, 1, io_std)
       !case default
       !  !-call OUTPUT(dal_work(start_int:end_int), 1, num_orb, 1, num_orb, &
-      !  !-            num_orb, num_orb, 1, io_unit)
+      !  !-            num_orb, num_orb, 1, io_std)
       !  call OUTPUT(dal_work(start_int:end_int), 1, NBAST, 1, NBAST, &
-      !              NBAST, NBAST, 1, io_unit)
+      !              NBAST, NBAST, 1, io_std)
       !end select
 !FIXME
-      write(io_unit,"(A)") "  ! results of "//trim(PROP_NAME(itst))
+      write(io_std,"(A)") "  ! results of "//trim(PROP_NAME(itst))
       num_last = mod(dim_int,NUM_PER_LINE)
       if (num_last==0) num_last = NUM_PER_LINE
       num_line = (dim_int-num_last)/NUM_PER_LINE
       start_dump = num_expt
       do iline = 1, num_line
         end_dump = start_dump+NUM_PER_LINE
-        write(io_unit,110) dal_work(start_dump+1:end_dump)
+        write(io_std,110) dal_work(start_dump+1:end_dump)
         start_dump = end_dump
       end do
       ! last line
       select case(num_last)
       case(1)
-        write(io_unit,111) dal_work(end_int)
+        write(io_std,111) dal_work(end_int)
       case(2)
-        write(io_unit,112) dal_work(end_int-1:end_int)
+        write(io_std,112) dal_work(end_int-1:end_int)
       case(3)
-        write(io_unit,113) dal_work(end_int-2:end_int)
+        write(io_std,113) dal_work(end_int-2:end_int)
       end select
     end do
     ! cleans up the data in Gen1Int interface after all calculations will be
