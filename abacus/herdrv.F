@@ -224,6 +224,13 @@ C
         END IF
   753   CONTINUE
       END IF
+
+#ifdef BUILD_GEN1INT
+C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
+      if (TEST_GEN1INT)
+     &  call gen1int_dal_test(LWORK, WORK, LUPRI, IPRDEF)
+#endif
+
 C
 C     **********************************
 C     ***** P Supermatrix Elements *****
@@ -1210,9 +1217,8 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             GOTO 100
   239    CONTINUE
 #ifdef BUILD_GEN1INT
-C           test suite of Gen1Int interface, added by Bin Gao, Oct. 3, 2011
-            call gen1int_dal_test(LWORK, WORK, LUPRI, IPRDEF)
-            GOTO 100
+            TEST_GEN1INT = .true.
+            goto 100
 #else
             call QUIT("Gen1Int is not installed!")
 #endif

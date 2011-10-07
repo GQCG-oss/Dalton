@@ -110,8 +110,10 @@
     ! if writing expectation values on file
     logical, parameter :: WRT_EXPT(NUM_TEST) = &
       (/.false./)
-    ! number of orbitals
-    integer num_orb
+    ! uses NBAST (number of orbitals)
+#include "inforb.h"
+    !-! number of orbitals
+    !-integer num_orb
     ! number of expectation values
     integer num_expt
     ! dimension of integral matrices
@@ -129,8 +131,8 @@
     call QENTER("gen1int_dal_test")
     ! checks if the Gen1Int interface is initialized
     if (.not.shell_init) call QUIT("Gen1Int interface is not properly initialized!")
-    ! gets the number of orbitals
-    call gen1int_shell_num_orb(num_ao_shells, ao_shells, num_orb)
+    !-! gets the number of orbitals
+    !-call gen1int_shell_num_orb(num_ao_shells, ao_shells, num_orb)
     ! loops over different tests
     do itst = 1, NUM_TEST
       ! number of expectation values
@@ -138,9 +140,11 @@
       ! size of integrals
       select case(KIND_INT(itst))
       case(1, -1)
-        dim_int = num_orb*(num_orb+1)/2
+        !-dim_int = num_orb*(num_orb+1)/2
+        dim_int = NBAST*(NBAST+1)/2
       case default
-        dim_int = num_orb*num_orb
+        !-dim_int = num_orb*num_orb
+        dim_int = NBAST*NBAST
       end select
 !FIXME: ao_dens
       allocate(ao_dens(dim_int,NUM_DENS), stat=ierr)
@@ -174,10 +178,13 @@
       call AROUND('gen1int_dal_test>> '//trim(PROP_NAME(itst)))
       select case(KIND_INT(itst)) 
       case(1, -1)
-        call OUTPAK(dal_work(start_int:end_int), num_orb, 1, io_unit)
+        !-call OUTPAK(dal_work(start_int:end_int), num_orb, 1, io_unit)
+        call OUTPAK(dal_work(start_int:end_int), NBAST, 1, io_unit)
       case default
-        call OUTPUT(dal_work(start_int:end_int), 1, num_orb, 1, num_orb, &
-                    num_orb, num_orb, 1, io_unit)
+        !-call OUTPUT(dal_work(start_int:end_int), 1, num_orb, 1, num_orb, &
+        !-            num_orb, num_orb, 1, io_unit)
+        call OUTPUT(dal_work(start_int:end_int), 1, NBAST, 1, NBAST, &
+                    NBAST, NBAST, 1, io_unit)
       end select
     end do
     ! cleans up the data in Gen1Int interface after all calculations will be

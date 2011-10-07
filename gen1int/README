@@ -35,6 +35,8 @@
      removes the interface of calling old ECP subroutine
    * abacus/her1drv.F (please search BUILD_GEN1INT)
      calls gen1int_dal_main() to calculate property integrals
+   * include/cbiher.h
+     adds logical variable TEST_GEN1INT to perform test suite of Gen1Int interface
 
    and added the following files:
    * gen1int directory
