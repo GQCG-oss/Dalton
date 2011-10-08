@@ -86,7 +86,7 @@
 #ifdef BUILD_GEN1INT
     ! indices of atomic centers
     integer, allocatable :: idx_cent(:)
-    ! order of derivatives of the corresponding atomic centers
+    ! orders of total geometric derivatives of the corresponding atomic centers
     integer, allocatable :: order_cent(:)
     ! selected atom nodes
     integer, allocatable :: idx_node(:)

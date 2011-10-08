@@ -76,13 +76,13 @@
     logical, intent(in) :: get_int
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
-    real(REALK), intent(out) :: val_ints(dim_int,*)
+    real(REALK), intent(inout) :: val_ints(dim_int,*)
     logical, intent(in) :: do_expt
     integer, intent(in) :: num_dens
     real(REALK), intent(in) :: ao_dens(dim_int,num_dens)
     logical, intent(in) :: get_expt
     logical, intent(in) :: wrt_expt
-    real(REALK), intent(out) :: val_expt(num_dens,*)
+    real(REALK), intent(inout) :: val_expt(num_dens,*)
     integer, intent(in) :: io_std
     integer, intent(in) :: level_print
 #ifdef BUILD_GEN1INT
