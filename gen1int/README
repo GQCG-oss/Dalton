@@ -24,19 +24,19 @@
      flag (-DBUILD_GEN1INT) if found Gen1Int library
    * cmake/Sources.cmake
      adds the source codes of Gen1Int interface
-   * abacus/dalton.F
-     calls gen1int_dal_clean() to clean up memory etc. for Gen1Int interface
-   * abacus/herdrv.F
-     calls gen1int_dal_test() to perform test suite of Gen1Int interface
+   * abacus/dalton.F (please search BUILD_GEN1INT)
+     calls \fn(gen1int_dal_clean) to clean up memory etc. for Gen1Int interface
+   * abacus/herdrv.F (please search BUILD_GEN1INT)
+     calls \fn(gen1int_dal_test) to perform test suite of Gen1Int interface
    * abacus/herrdn.F (please search BUILD_GEN1INT)
-     some modifications for processing different ECPs, and calling gen1int_dal_init()
+     some modifications for processing different ECPs, and calling \fn(gen1int_dal_init)
      to intialize Gen1Int interface
    * abacus/her1car.F (please search BUILD_GEN1INT)
      removes the interface of calling old ECP subroutine
    * abacus/her1drv.F (please search BUILD_GEN1INT)
-     calls gen1int_dal_main() to calculate property integrals
+     calls \fn(gen1int_dal_main) to calculate property integrals
    * include/cbiher.h
-     adds logical variable TEST_GEN1INT to perform test suite of Gen1Int interface
+     adds logical variable \var(TEST_GEN1INT) to perform test suite of Gen1Int interface
 
    and added the following files:
    * gen1int directory
@@ -60,6 +60,11 @@
                              the subroutines in module gen1int_shell
    * gen1int_shell.F90     : defines the AO sub-shells used in Gen1Int interface and
                              corresponding subroutines
+   * gen1int_num_opt.F90   : returns the number of operators (including different derivatives)
+                             and total geometric derivatives according to given property
+                             name and the information of total geometric derivatives; this
+                             file should be consistent with subroutine \fn(gen1int_shell_prop)
+                             in gen1int_shell.F90!!
    * err_thrsh.h           : threshold of error for test suite
    * stdout.h              : IO unit of standard output
    * xkind.h               : kind type parameter of real numbers

@@ -54,7 +54,7 @@
     ! property integral names
     ! see TABLE in abacus/her1pro.F
     character*8, parameter :: PROP_NAME(NUM_TEST) = &
-      (/"1ELPOT  ", "KINENE  ", "OVERLAP "/)
+      (/"KINENERG", "OVERLAP ", "POTENERG"/)
     ! if London atomic orbitals
     logical, parameter :: IS_LAO(NUM_TEST) = &
       (/.false., .false., .false./)
@@ -79,19 +79,18 @@
     ! if calculating expectation values
     logical, parameter :: DO_EXPT(NUM_TEST) = &
       (/.false., .false., .false./)
-    ! number of operators including derivatives
-    integer, parameter :: NUM_OPT(NUM_TEST) = &
-      (/1, 1, 1/)
-    ! number of AO density matrices
-    integer, parameter :: NUM_DENS = 1
-    ! AO density matrices
-    real(REALK), allocatable :: ao_dens(:,:)
     ! if getting expectation values back
     logical, parameter :: GET_EXPT(NUM_TEST) = &
       (/.false., .false., .false./)
     ! if writing expectation values on file
     logical, parameter :: WRT_EXPT(NUM_TEST) = &
       (/.false., .false., .false./)
+    ! number of operators including derivatives
+    integer num_opt_derv
+    ! number of AO density matrices
+    integer, parameter :: NUM_DENS = 1
+    ! AO density matrices
+    real(REALK), allocatable :: ao_dens(:,:)
     ! integrals are triangularized or squared
     logical is_triang
     ! if printing referenced property integrals
@@ -102,6 +101,10 @@
 #include "inforb.h"
     !-! number of orbitals
     !-integer num_orb
+    ! uses "MXCENT"
+#include "mxcent.h"
+    ! number of atomic centers
+#include "nuclei.h"
     ! number of expectation values
     integer num_expt
     ! dimension of integral matrices
@@ -129,8 +132,12 @@
     !-call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
     ! loops over different tests
     do itst = 1, NUM_TEST
+      ! gets the number of operators including derivatives
+      call gen1int_num_opt(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),  &
+                           MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst), NUCDEP, &
+                           num_opt_derv)
       ! number of expectation values
-      num_expt = NUM_DENS*NUM_OPT(itst)
+      num_expt = NUM_DENS*num_opt_derv
       ! size of integrals
       select case(KIND_INT(itst))
       case(1, -1)
@@ -145,7 +152,7 @@
 !FIXME: ao_dens
       allocate(ao_dens(dim_int,NUM_DENS), stat=ierr)
       if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate ao_dens!")
-      size_int = dim_int*NUM_OPT(itst)
+      size_int = dim_int*num_opt_derv
       ! addresses for integrals and referenced results
       start_int = num_expt+1
       start_ref = start_int+size_int

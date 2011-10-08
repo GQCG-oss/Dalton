@@ -149,9 +149,10 @@
       if (ierr/=0) call QUIT("gen1int_dal_main>> failed to allocate idx_node!")
       allocate(wt_node(order_geo_total), stat=ierr)
       if (ierr/=0) call QUIT("gen1int_dal_main>> failed to allocate wt_node!")
+      ! initializes the base address of total geometric derivatives
+      base_geo_derv = 0
       ! computes the total number of different paths, and generates
       ! the first path (composition of centers)
-      base_geo_derv = 0
       call geom_total_tree_init(NUCDEP, order_geo_total, max_num_cent,     &
                                 num_paths, visit_depth, idx_node, wt_node, &
                                 idx_cent, order_cent, num_geo_cent)

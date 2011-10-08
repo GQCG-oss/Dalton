@@ -351,9 +351,73 @@ module gen1int_shell
     prop_int%num_orb_bra = bra_shell%num_ao*bra_shell%num_contr
     prop_int%num_orb_ket = ket_shell%num_ao*ket_shell%num_contr
     prop_int%num_geo_derv = num_geo_derv
-    ! different property integrals, please use alphabetical order
+    ! different property integrals, please use alphabetical order!
+    ! the following keywords and \var(prop_int%num_opt) should be
+    ! consistent with subroutine \fn(gen1int_num_opt)!!
     select case(trim(prop_name))
-    case("1ELPOT")
+    ! Cartesian multipole integrals
+    case("CARMOM")
+      prop_int%num_opt = (order_mom+1)*(order_mom+2)/2
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
+                                -1, DIPORG, 1.0_REALK, order_mom,       &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
+                                num_cents, idx_cent, order_cent,        &
+                                bra_shell%num_ao, bra_shell%num_contr,  &
+                                ket_shell%num_ao, ket_shell%num_contr,  &
+                                prop_int%num_opt*prop_int%num_geo_derv, &
+                                prop_int%contr_ints)
+    ! dipole length integrals
+    case("DIPLEN")
+      prop_int%num_opt = 3
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
+                                -1, DIPORG, 1.0_REALK, 1,               &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
+                                num_cents, idx_cent, order_cent,        &
+                                bra_shell%num_ao, bra_shell%num_contr,  &
+                                ket_shell%num_ao, ket_shell%num_contr,  &
+                                prop_int%num_opt*prop_int%num_geo_derv, &
+                                prop_int%contr_ints)
+    ! kinetic energy integrals
+    case("KINENERG")
+      prop_int%num_opt = 6
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 2,        &
+                                -1, DIPORG, -0.5_REALK, 0,              &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
+                                num_cents, idx_cent, order_cent,        &
+                                bra_shell%num_ao, bra_shell%num_contr,  &
+                                ket_shell%num_ao, ket_shell%num_contr,  &
+                                prop_int%num_opt*prop_int%num_geo_derv, &
+                                prop_int%contr_ints)
+      ! sums xx, yy and zz components
+      prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:) &
+                                   + prop_int%contr_ints(:,:,3,:) &
+                                   + prop_int%contr_ints(:,:,6,:)
+      prop_int%num_opt = 1
+    ! overlap integrals
+    case("OVERLAP")
+      prop_int%num_opt = 1
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
+                                -1, DIPORG, 1.0_REALK, 0,               &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
+                                num_cents, idx_cent, order_cent,        &
+                                bra_shell%num_ao, bra_shell%num_contr,  &
+                                ket_shell%num_ao, ket_shell%num_contr,  &
+                                prop_int%num_opt*prop_int%num_geo_derv, &
+                                prop_int%contr_ints)
+    ! one-electron potential energy integrals
+    case("POTENERG")
       prop_int%num_opt = 1
       allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
                                    prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
@@ -384,63 +448,6 @@ module gen1int_shell
         prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:)+tmp_ints
       end do
       deallocate(tmp_ints)
-    case("CARMOM")
-      prop_int%num_opt = (order_mom+1)*(order_mom+2)/2
-      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
-                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
-      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
-                                -1, DIPORG, 1.0_REALK, order_mom,       &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
-    case("DIPLEN")
-      prop_int%num_opt = 3
-      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
-                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
-      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
-                                -1, DIPORG, 1.0_REALK, 1,               &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
-    case("KINENE")
-      prop_int%num_opt = 6
-      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
-                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
-      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 2,        &
-                                -1, DIPORG, -0.5_REALK, 0,              &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
-      ! sums xx, yy and zz components
-      prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:) &
-                                   + prop_int%contr_ints(:,:,3,:) &
-                                   + prop_int%contr_ints(:,:,6,:)
-      prop_int%num_opt = 1
-    case("OVERLAP")
-      prop_int%num_opt = 1
-      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
-                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
-      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
-                                -1, DIPORG, 1.0_REALK, 0,               &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
     case default
       write(STDOUT,999) trim(prop_name)
       stop
