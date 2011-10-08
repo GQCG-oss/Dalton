@@ -29,7 +29,6 @@
 !...  * first version
 
 #include "stdout.h"
-#include "xkind.h"
 
   !> \brief returns the number of operators (including different derivatives)
   !>        and total geometric derivatives according to given property
@@ -60,6 +59,7 @@
     integer, intent(out) :: num_opt
     ! number of total geometric derivatives
     integer num_geo_derv
+#ifdef BUILD_GEN1INT
     ! gets the number of total geometric derivatives (up to four-center total geometric derivatives)
     if (max_num_cent>0 .and. order_geo_total>0) then
       call geom_total_num_derv(order_geo_total, max_num_cent, &
@@ -92,4 +92,7 @@
     end select
     return
 999 format("gen1int_num_opt>> ",A," is not implemented!")
+#else
+    stop "gen1int_num_opt>> Gen1Int is not installed!"
+#endif
   end subroutine gen1int_num_opt
