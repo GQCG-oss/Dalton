@@ -35,6 +35,8 @@
   !> \param is_lao indicates if using rotational London atomic orbitals
   !> \param order_mom is the order of Cartesian multipole moments, only used for
   !>        integrals "CARMOM"
+  !> \param base_geo_derv is the base address of current total geometric derivatives in the
+  !>        list of all total geometric derivatives
   !> \param num_cents is the number of geometric differentiated centers
   !> \param idx_cent contains the indices of differentiated centers
   !> \param order_cent contains the orders of differentiated centers
@@ -44,8 +46,6 @@
   !> \param wrt_int indicates if writing integrals to file
   !> \param dim_int is the dimension of integral matrices
   !> \param do_expt indicates if calculating expectation values
-  !> \param base_geo_derv is the base address of current total geometric derivatives in the
-  !>        list of all total geometric derivatives
   !> \param num_dens is the number of AO density matrices
   !> \param ao_dens contains the AO density matrices
   !> \param get_expt indicates if getting expectation values back
@@ -86,8 +86,6 @@
     integer, intent(in) :: io_std
     integer, intent(in) :: level_print
 #ifdef BUILD_GEN1INT
-! common block with origins
-#include "orgcom.h"
     integer num_geo_derv        !number of total geometric derivatives
     integer icent               !incremental recorder over differetiated centers
     type(shell_int_t) prop_int  !contracted property integrals between two AO sub-shells
@@ -95,10 +93,14 @@
     integer num_ao_orb          !total number of atomic orbitals
     call QENTER("gen1int_dal_prop")
     ! computes the number of total geometric derivatives
-    num_geo_derv = (order_cent(1)+1)*(order_cent(1)+2)/2
-    do icent = 2, num_cents
-      num_geo_derv = num_geo_derv*(order_cent(icent)+1)*(order_cent(icent)+2)/2
-    end do
+    if (num_cents>0) then
+      num_geo_derv = (order_cent(1)+1)*(order_cent(1)+2)/2
+      do icent = 2, num_cents
+        num_geo_derv = num_geo_derv*(order_cent(icent)+1)*(order_cent(icent)+2)/2
+      end do
+    else
+      num_geo_derv = 1
+    end if
     if (level_print>=10) &
       write(io_std,100) "number of total geometric derivatives", num_geo_derv
     select case(kind_int)
@@ -184,7 +186,7 @@
           call gen1int_shell_prop(prop_name, ao_shells(ishell), ao_shells(jshell), &
                                   is_lao, order_mom, num_cents, idx_cent,          &
                                   order_cent, num_geo_derv, prop_int)
-          ! assigns returned integrals
+          ! assigns the returned integrals, and write the integrals to file if required
           if (get_int) then
             call gen1int_shell_int_square(prop_int, base_geo_derv, num_ao_orb, &
                                           wrt_int, val_ints)
@@ -205,6 +207,6 @@
     return
 100 format("gen1int_dal_prop>> ",A,I10)
 #else
-    call QUIT("Gen1Int is not installed!")
+    call QUIT("gen1int_dal_prop>> Gen1Int is not installed!")
 #endif
   end subroutine gen1int_dal_prop

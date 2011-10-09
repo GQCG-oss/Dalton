@@ -115,7 +115,8 @@
     call GETTIM(TIMHER, WALHER)
     call HEADER("Gen1Int calculates "//trim(prop_name), -1)
     ! checks if the Gen1Int interface is initialized
-    if (.not.shell_init) call QUIT("Gen1Int interface is not properly initialized!")
+    if (.not.shell_init) &
+      call QUIT("gen1int_dal_main>> Gen1Int interface is not properly initialized!")
     ! dumps to check
     if (level_print>=5) then
       if (is_lao) write(io_std,100) "using London atomic orbitals"
@@ -232,6 +233,6 @@
 120 format("gen1int_dal_main>> ","path",I8,", base",I10,", N_{cent}",I3, &
            ", atom(order)",20(I3,A,I2,A))
 #else
-    call QUIT("Gen1Int is not installed!")
+    call QUIT("gen1int_dal_main>> Gen1Int is not installed!")
 #endif
   end subroutine gen1int_dal_main

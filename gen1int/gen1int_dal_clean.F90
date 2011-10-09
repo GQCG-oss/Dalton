@@ -43,6 +43,6 @@
     call QEXIT("gen1int_dal_clean")
     return
 #else
-    call QUIT("Gen1Int is not installed!")
+    call QUIT("gen1int_dal_clean>> Gen1Int is not installed!")
 #endif
   end subroutine gen1int_dal_clean

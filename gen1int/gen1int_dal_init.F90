@@ -168,6 +168,6 @@
     call QEXIT("gen1int_dal_init")
     return
 #else
-    call QUIT("Gen1Int is not installed!")
+    call QUIT("gen1int_dal_init>> Gen1Int is not installed!")
 #endif
   end subroutine gen1int_dal_init

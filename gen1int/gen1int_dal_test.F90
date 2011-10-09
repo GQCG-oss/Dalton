@@ -127,7 +127,8 @@
     integer start_dump, end_dump                !start and end addresses of integrals to dump
     call QENTER("gen1int_dal_test")
     ! checks if the Gen1Int interface is initialized
-    if (.not.shell_init) call QUIT("Gen1Int interface is not properly initialized!")
+    if (.not.shell_init) &
+      call QUIT("gen1int_dal_test>> Gen1Int interface is not properly initialized!")
     !-! gets the number of orbitals
     !-call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
     ! loops over different tests
@@ -162,7 +163,7 @@
         write(io_std,100) "ID of test", itst
         write(io_std,100) "required memory", end_ref
         write(io_std,100) "available memory", len_work
-        call QUIT("Increase Dalton workspace!")
+        call QUIT("gen1int_dal_test>> increase Dalton workspace!")
       end if
       ! computes the integrals and/or expectation values
       call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),       &
@@ -222,6 +223,6 @@
 112 format(F23.8,"_REALK,",F23.8,"_REALK/")
 113 format(2(F23.8,"_REALK,"),F23.8,"_REALK/")
 #else
-    call QUIT("Gen1Int is not installed!")
+    call QUIT("gen1int_dal_test>> Gen1Int is not installed!")
 #endif
   end subroutine gen1int_dal_test
