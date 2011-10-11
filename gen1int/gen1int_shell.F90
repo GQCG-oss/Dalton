@@ -337,7 +337,7 @@ module gen1int_shell
     type(shell_int_t), intent(inout) :: prop_int
     ! origins in Dalton
 #include "orgcom.h"
-    ! uses "MXCENT"
+    ! uses \var(MXCENT)
 #include "mxcent.h"
     ! coordinates and charges of atoms
 #include "nuclei.h"

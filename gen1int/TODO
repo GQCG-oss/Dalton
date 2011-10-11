@@ -3,8 +3,7 @@
 Short-term:
 1) adds calculations of expectation values
 2) adds functionality of reading/writing integrals and/or expectation values on file
-3) make the test suite more automatically, a much better and friendly test suite,
-   not eye checking
+3) test suite: why the first time calling PR1IN1 gives wrong results?
 4) enables London atomic orbitals (indicating by logical variable \var(is_lao))
 5) implement more property integrals
 6) considers molecular symmetry
