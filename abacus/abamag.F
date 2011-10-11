@@ -954,12 +954,15 @@ C
 #include <dorps.h>
 #include <spnout.h>
 #include <inftap.h>
+#include <maxorb.h>
+#include <infpar.h>
 C
       LOGICAL TOFILE, TRIMAT, DOINT(2,2), EXP1VL
       CHARACTER WORD*7, LABINT(*)*8
       DIMENSION WORK(LWORK), SINTMA(*), INTREP(*), INTADR(*), EXPVAL(*),
      &          DENMAT(*)
 C
+      CALL QENTER('GET1IN')
       TRIANG = TRIMAT
       PROPRI = NPRINT .GT. 5
 C
@@ -1006,7 +1009,7 @@ C
       END IF
 C
       LUPBKP = LUPROP
-      IF (LUPROP .LE. 0) THEN
+      IF (LUPROP .LE. 0 .AND. TOFILE .AND. MYNUM .EQ. MASTER) THEN
          CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      $        'UNFORMATTED',IDUMMY,.FALSE.)
       END IF
@@ -1016,7 +1019,10 @@ C
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
      &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT,EXPVAL,
      &            EXP1VL,DENMAT)
-      IF (LUPBKP .LE. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      IF (TOFILE .AND. MYNUM .EQ. MASTER) THEN
+         IF (LUPBKP .LE. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      END IF
+      CALL QEXIT('GET1IN')
       RETURN
       END
 C  /* Deck spntra */

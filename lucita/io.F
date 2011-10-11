@@ -116,7 +116,8 @@ C
        ELSE
          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
        ENDIF
-      Open(Unit=LUSCR_MPI,File=NLUSCR_MPI(1:LUSCR_MPIL),
+      if (luci_myproc.eq.0)
+     &Open(Unit=LUSCR_MPI,File=NLUSCR_MPI(1:LUSCR_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
 
 * =================
@@ -171,7 +172,8 @@ C
         write(nluc_mpi,'(a12,a1,a1)') luc_mpin,'.',symflabel
       end if
 
-      Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
+      if (luci_myproc.eq.0)
+     &Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *. Sigma vector file
       LUHC = 62
@@ -186,7 +188,8 @@ C
          WRITE (NLUHC_MPI,'(A6,A1,I3)') LUHC_MPIN,'.',LUCI_MYPROC
          LUHC_MPIL=10
        ENDIF
-      Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
+      if (luci_myproc.eq.0)
+     &Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 * =================
 * Scratch files
@@ -213,7 +216,8 @@ C
          WRITE (NLUSC3_MPI,'(A5,A1,I3)') LUSC3_MPIN,'.',LUCI_MYPROC
          LUSC123_MPIL=9
       ENDIF
-      Open(Unit=LUSC1,File=NLUSC1_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
+      if (luci_myproc.eq.0)
+     &Open(Unit=LUSC1,File=NLUSC1_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
       Open(Unit=LUSC2,File=NLUSC2_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')

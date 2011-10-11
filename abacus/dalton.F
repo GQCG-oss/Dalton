@@ -193,12 +193,14 @@ C         for Master if OUTFIL is an environment variable;
 C         for slaves the name will be changed to
 C         "DALTON.OUT#<slave no>" in GPOPEN
 
+      IF (MYNUM.EQ.MASTER) THEN
       CALL GPOPEN(LUNDPF,'DALTON.PROP','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND(LUNDPF)
       CALL GPOPEN(LUNMPF,'midasifc.prop','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND(LUNMPF)
+      END IF
 C
       CALL MEMINI(LUPRI,LUERR)
 C
