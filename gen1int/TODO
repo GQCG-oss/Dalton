@@ -1,7 +1,7 @@
 !! Give future long- and short-term developments
 
 Short-term:
-1) adds calculations of expectation values
+1) tests the calculations of expectation values
 2) adds functionality of reading/writing integrals and/or expectation values on file
 3) test suite: why the first time calling PR1IN1 gives wrong results?
 4) enables London atomic orbitals (indicating by logical variable \var(is_lao))

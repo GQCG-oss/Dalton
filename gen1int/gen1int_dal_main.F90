@@ -41,27 +41,30 @@
   !>        integrals "CARMOM"
   !> \param max_num_cent is the maximum number of geometric differentiated centers
   !> \param order_geo_total is the order of total geometric derivatives
-  !> \param kind_int indicates if the kind of integral matrices, 1 for symmetric, -1 for
-  !>        anti-symmetric, others for square
+  !> \param is_triang indicates if returning integral matrices are in triangular format,
+  !>        otherwise square format
   !> \param get_int indicates if getting integrals back
-  !> \param wrt_int indicates if writing integrals to file
+  !> \param wrt_int indicates if writing integrals on file
   !> \param dim_int is the dimension of integral matrices
-  !> \param do_expt indicates if calculating expectation values
+  !> \param kind_dens indicates the kind of AO density matrices, 1 for symmetric, -1 for
+  !>        anti-symmetric, others for square
+  !> \param dim_dens is the dimension of AO density matrices
   !> \param num_dens is the number of AO density matrices
   !> \param ao_dens contains the AO density matrices
   !> \param get_expt indicates if getting expectation values back
-  !> \param wrt_expt indicates if writing expectation values to file
+  !> \param wrt_expt indicates if writing expectation values on file
   !> \param io_std is the IO unit of standard output
   !> \param level_print is the level of print
   !> \return val_ints contains the calculated integrals
-  !> \return val_expt contains the calculated expectation values
+  !> \return val_expt contains the calculated expectation values,
+  !>         it should be zero before calculations
   subroutine gen1int_dal_main(prop_name, is_lao, order_mom,  &
                               max_num_cent, order_geo_total, &
-                              kind_int, get_int, wrt_int,    &
+                              is_triang, get_int, wrt_int,   &
                               dim_int, val_ints,             &
-                              do_expt, num_dens, ao_dens,    &
-                              get_expt, wrt_expt, val_expt,  &
-                              io_std, level_print)
+                              kind_dens, dim_dens, num_dens, &
+                              ao_dens, get_expt, wrt_expt,   &
+                              val_expt, io_std, level_print)
     ! AO sub-shells
     use gen1int_shell
     implicit none
@@ -70,14 +73,15 @@
     integer, intent(in) :: order_mom
     integer, intent(in) :: max_num_cent
     integer, intent(in) :: order_geo_total
-    integer, intent(in) :: kind_int
+    logical, intent(in) :: is_triang
     logical, intent(in) :: get_int
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
     real(REALK), intent(out) :: val_ints(dim_int,*)
-    logical, intent(in) :: do_expt
+    integer, intent(in) :: kind_dens
+    integer, intent(in) :: dim_dens
     integer, intent(in) :: num_dens
-    real(REALK), intent(in) :: ao_dens(dim_int,num_dens)
+    real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
     logical, intent(in) :: get_expt
     logical, intent(in) :: wrt_expt
     real(REALK), intent(out) :: val_expt(num_dens,*)
@@ -122,24 +126,23 @@
       if (is_lao) write(io_std,100) "using London atomic orbitals"
       write(io_std,100) "maximum number of differentiated centers", max_num_cent
       write(io_std,100) "order of total geometric derivatives", order_geo_total
-      select case(kind_int)
-      case(1)
-        write(io_std,100) "symmetric integral matrices"
-      case(-1)
-        write(io_std,100) "anti-symmetric integral matrices"
-      case default
-        write(io_std,100) "square integral matrices"
-      end select
+      if (is_triang) then
+        write(io_std,100) "returns integral matrices in triangular format"
+      else
+        write(io_std,100) "returns integral matrices in square format"
+      end if
       if (get_int) write(io_std,100) "return integrals"
       if (wrt_int) write(io_std,100) "write integrals on file"
       write(io_std,110) "dimension of integral matrices", dim_int
-      if (do_expt) then
+      if (get_expt .or. wrt_expt) then
         write(io_std,100) "calculate expectation values"
         write(io_std,100) "number of AO density matrices", num_dens
         if (get_expt) write(io_std,100) "return expectation values"
         if (wrt_expt) write(io_std,100) "write expectation values on file"
       end if
     end if
+    ! zeros the expectation values
+    !-if (get_expt) val_expt = 0.0_REALK
     ! calculates total geometric derivatives
     if (max_num_cent>0 .and. order_geo_total>0) then
       allocate(idx_cent(max_num_cent), stat=ierr)
@@ -171,9 +174,10 @@
                             base_geo_derv, wt_node(order_geo_total), &
                             idx_cent(1:wt_node(order_geo_total)),    &
                             order_cent(1:wt_node(order_geo_total)),  &
-                            kind_int, get_int, wrt_int, dim_int,     &
-                            val_ints, do_expt, num_dens, ao_dens,    &
-                            get_expt, wrt_expt, val_expt, io_std, level_print)
+                            is_triang, get_int, wrt_int, dim_int,    &
+                            val_ints, kind_dens, dim_dens, num_dens, &
+                            ao_dens, get_expt, wrt_expt, val_expt,   &
+                            io_std, level_print)
       if (level_print>=10) then
         write(io_std,110) "current number of total geometric derivatives", &
                            base_geo_derv+num_geo_cent
@@ -198,9 +202,10 @@
                               base_geo_derv, wt_node(order_geo_total), &
                               idx_cent(1:wt_node(order_geo_total)),    &
                               order_cent(1:wt_node(order_geo_total)),  &
-                              kind_int, get_int, wrt_int, dim_int,     &
-                              val_ints, do_expt, num_dens, ao_dens,    &
-                              get_expt, wrt_expt, val_expt, io_std, level_print)
+                              is_triang, get_int, wrt_int, dim_int,    &
+                              val_ints, kind_dens, dim_dens, num_dens, &
+                              ao_dens, get_expt, wrt_expt, val_expt,   &
+                              io_std, level_print)
         if (level_print>=10) then
           write(io_std,110) "current number of total geometric derivatives", &
                              base_geo_derv+num_geo_cent
@@ -212,11 +217,12 @@
       deallocate(wt_node)
     ! no total geometric derivatives
     else
-      call gen1int_dal_prop(prop_name, is_lao, order_mom,         &
-                            0, 0, (/0/), (/0/),                   &
-                            kind_int, get_int, wrt_int, dim_int,  &
-                            val_ints, do_expt, num_dens, ao_dens, &
-                            get_expt, wrt_expt, val_expt, io_std, level_print)
+      call gen1int_dal_prop(prop_name, is_lao, order_mom,            &
+                            0, 0, (/0/), (/0/),                      &
+                            is_triang, get_int, wrt_int, dim_int,    &
+                            val_ints, kind_dens, dim_dens, num_dens, &
+                            ao_dens, get_expt, wrt_expt, val_expt,   &
+                            io_std, level_print)
     end if
     ! Dalton stuff
     call GETTIM(TEND, WEND)

@@ -725,7 +725,7 @@ lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
 gen1int/gen1int_shell.F90
-gen1int/gen1int_num_opt.F90
+gen1int/gen1int_prop_attr.F90
 gen1int/gen1int_dal_init.F90
 gen1int/gen1int_dal_clean.F90
 gen1int/gen1int_dal_prop.F90

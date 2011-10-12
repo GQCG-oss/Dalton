@@ -67,17 +67,11 @@
     ! order of total geometric derivatives
     integer, parameter :: ORDER_GEO_TOT(NUM_TEST) = &
       (/0, 0, 0/)
-    ! if the integral matrices are symmetric, anti-symmetric or square
-    integer, parameter :: KIND_INT(NUM_TEST) = &
-      (/1, 1, 1/)
     ! if getting integrals back from Gen1Int
     logical, parameter :: GET_INT(NUM_TEST) = &
       (/.true., .true., .true./)
     ! if writing integrals on file
     logical, parameter :: WRT_INT(NUM_TEST) = &
-      (/.false., .false., .false./)
-    ! if calculating expectation values
-    logical, parameter :: DO_EXPT(NUM_TEST) = &
       (/.false., .false., .false./)
     ! if getting expectation values back
     logical, parameter :: GET_EXPT(NUM_TEST) = &
@@ -87,6 +81,14 @@
       (/.false., .false., .false./)
     ! number of operators including derivatives
     integer num_opt_derv
+    ! kind of integral matrices
+    integer kind_int
+    ! integrals are triangularized or squared
+    logical is_triang
+    ! kind of AO density matrices
+    integer kind_dens
+    ! dimension of AO density matrices
+    integer dim_dens
     ! number of AO density matrices
     integer, parameter :: NUM_DENS = 1
     ! AO density matrices
@@ -107,8 +109,6 @@
     character*6, parameter :: MTFORM = "TRIANG"
     !
     logical, parameter :: DOINT(4) = (/.true., .false., .false., .false./)
-    ! integrals are triangularized or squared
-    logical is_triang
     ! if printing referenced property integrals
     logical, parameter :: PROP_PRINT = .false.
     ! number of integration points for diamagnetic spin-orbit integrals
@@ -162,26 +162,29 @@
     ! loops over different tests
     do itst = 1, NUM_TEST
       ! gets the number of operators including derivatives
-      call gen1int_num_opt(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),  &
-                           MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst), NUCDEP, &
-                           num_opt_derv)
+      call gen1int_prop_attr(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),  &
+                             MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst), NUCDEP, &
+                             num_opt_derv, kind_int)
+      kind_dens = kind_int
       ! number and addresses of expectation values
       num_expt = NUM_DENS*num_opt_derv
       strt_dal_expt = num_expt+1
       end_dal_expt = 2*num_expt
       ! size of integrals
-      select case(KIND_INT(itst))
+      select case(kind_int)
       case(1, -1)
         !-dim_int = num_orb*(num_orb+1)/2
         dim_int = NBAST*(NBAST+1)/2
         is_triang = .true.
+        dim_dens = dim_int
       case default
         !-dim_int = num_orb*num_orb
         dim_int = NBAST*NBAST
         is_triang = .false.
+        dim_dens = dim_int
       end select
 !FIXME: ao_dens
-      allocate(ao_dens(dim_int,NUM_DENS), stat=ierr)
+      allocate(ao_dens(dim_dens,NUM_DENS), stat=ierr)
       if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate ao_dens!")
       size_int = dim_int*num_opt_derv
       ! addresses for integrals and referenced results
@@ -196,13 +199,14 @@
         call QUIT("gen1int_dal_test>> increase Dalton workspace!")
       end if
       ! computes the integrals and/or expectation values
-      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),       &
-                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),              &
-                            KIND_INT(itst), GET_INT(itst), WRT_INT(itst),         &
-                            dim_int, dal_work(strt_gen_int:end_gen_int),          &
-                            DO_EXPT(itst), NUM_DENS, ao_dens,                     &
-                            GET_EXPT(itst), WRT_EXPT(itst), dal_work(1:num_expt), &
-                            io_std, level_print)
+      dal_work(1:num_expt) = 0.0_REALK
+      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst), &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
+                            is_triang, GET_INT(itst), WRT_INT(itst),        &
+                            dim_int, dal_work(strt_gen_int:end_gen_int),    &
+                            kind_dens, dim_dens, NUM_DENS, ao_dens,         &
+                            GET_EXPT(itst), WRT_EXPT(itst),                 &
+                            dal_work(1:num_expt), io_std, level_print)
       ! gets the referenced results from HERMIT
 !FIXME: \var(FORQM3)
       if (trim(PROP_NAME(itst))=="DSO") then
@@ -230,7 +234,7 @@
                   lb_int, PROP_NAME(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                   PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),         &
                   NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt),  &
-                  DO_EXPT(itst), ao_dens)
+                  GET_EXPT(itst), ao_dens)
 !FIXME: why the first time calling PR1IN1 gives wrong results??
       if (itst==1) then
         base_free = 1
@@ -239,7 +243,7 @@
                     lb_int, PROP_NAME(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                     PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),         &
                     NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt),  &
-                    DO_EXPT(itst), ao_dens)
+                    GET_EXPT(itst), ao_dens)
       end if
       deallocate(int_rep)
       deallocate(int_adr)
@@ -266,7 +270,7 @@
           end if
         end if
       end do
-      if (DO_EXPT(itst)) then
+      if (GET_EXPT(itst)) then
         do ierr = 1, num_expt
           ! we check the ratio for absolutely greater values
           if (abs(dal_work(num_expt+ierr))>ERR_THRSH) then

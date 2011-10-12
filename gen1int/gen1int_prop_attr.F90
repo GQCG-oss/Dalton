@@ -22,8 +22,8 @@
 !
 !
 !...  This file returns the number of operators (including different derivatives)
-!...  and total geometric derivatives according to given property
-!...  name and the information of total geometric derivatives.
+!...  and total geometric derivatives, kind of integral matrices according to given
+!...  property name and the information of total geometric derivatives.
 !
 !...  2011-10-08, Bin Gao
 !...  * first version
@@ -31,8 +31,8 @@
 #include "stdout.h"
 
   !> \brief returns the number of operators (including different derivatives)
-  !>        and total geometric derivatives according to given property
-  !>        name and the information of total geometric derivatives
+  !>        and total geometric derivatives, kind of integral matrices according
+  !>        to given property name and the information of total geometric derivatives
   !> \note this file should be consistent with subroutine \fn(gen1int_shell_prop)
   !>       in gen1int_shell.F90!!
   !> \author Bin Gao
@@ -46,9 +46,11 @@
   !> \param num_atoms is the number of atoms
   !> \return num_opt is the number of operators (including different derivatives)
   !>         and total geometric derivatives
-  subroutine gen1int_num_opt(prop_name, is_lao, order_mom,             &
-                             max_num_cent, order_geo_total, num_atoms, &
-                             num_opt)
+  !> \return kind_int indicates if the kind of integral matrices, 1 for symmetric, -1 for
+  !>         anti-symmetric, others for square
+  subroutine gen1int_prop_attr(prop_name, is_lao, order_mom,             &
+                               max_num_cent, order_geo_total, num_atoms, &
+                               num_opt, kind_int)
     implicit none
     character*(*), intent(in) :: prop_name
     logical, intent(in) :: is_lao
@@ -57,6 +59,7 @@
     integer, intent(in) :: order_geo_total
     integer, intent(in) :: num_atoms
     integer, intent(out) :: num_opt
+    integer, intent(out) :: kind_int
     ! number of total geometric derivatives
     integer num_geo_derv
 #ifdef BUILD_GEN1INT
@@ -74,25 +77,30 @@
     ! Cartesian multipole integrals
     case("CARMOM")
       num_opt = (order_mom+1)*(order_mom+2)*num_geo_derv/2
+      kind_int = 1
     ! dipole length integrals
     case("DIPLEN")
       num_opt = 3*num_geo_derv
+      kind_int = 1
     ! kinetic energy integrals
     case("KINENERG")
       num_opt = num_geo_derv
+      kind_int = 1
     ! overlap integrals
     case("OVERLAP")
       num_opt = num_geo_derv
+      kind_int = 1
     ! one-electron potential energy integrals
     case("POTENERG")
       num_opt = num_geo_derv
+      kind_int = 1
     case default
       write(STDOUT,999) trim(prop_name)
       stop
     end select
     return
-999 format("gen1int_num_opt>> ",A," is not implemented!")
+999 format("gen1int_prop_attr>> ",A," is not implemented!")
 #else
-    stop "gen1int_num_opt>> Gen1Int is not installed!"
+    stop "gen1int_prop_attr>> Gen1Int is not installed!"
 #endif
-  end subroutine gen1int_num_opt
+  end subroutine gen1int_prop_attr

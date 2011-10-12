@@ -104,6 +104,9 @@ module gen1int_shell
   public :: gen1int_shell_int_tri_diag
   public :: gen1int_shell_int_tri_off
   public :: gen1int_shell_int_square
+  public :: gen1int_shell_tr_tri_diag
+  public :: gen1int_shell_tr_tri_off
+  public :: gen1int_shell_tr_square
 
   private :: gen1int_shell_carmom
   private :: gen1int_shell_nucpot
@@ -354,7 +357,7 @@ module gen1int_shell
     prop_int%num_geo_derv = num_geo_derv
     ! different property integrals, please use alphabetical order!
     ! the following keywords and \var(prop_int%num_opt) should be
-    ! consistent with subroutine \fn(gen1int_num_opt)!!
+    ! consistent with subroutine \fn(gen1int_prop_attr)!!
     select case(trim(prop_name))
     ! Cartesian multipole integrals
     case("CARMOM")
@@ -476,36 +479,63 @@ module gen1int_shell
   !> \param prop_int contains the contracted property integrals between two AO sub-shells
   !> \param base_geo_derv is the base address of current total geometric derivatives in the
   !>        list of all total geometric derivatives
-  !> \param wrt_int indicates if writing integrals to file
+  !> \param is_triang indicates if returning integral matrices are in triangular format,
+  !>        otherwise square format
+  !> \param num_ao_orb is the total number of atomic orbitals
+  !> \param wrt_int indicates if writing integrals on file
   !> \param dim_int is the dimension of integral matrices
   !> \return val_ints contains the returned integrals
-  subroutine gen1int_shell_int_tri_diag(prop_int, base_geo_derv, wrt_int, &
-                                        dim_int, val_ints)
+  subroutine gen1int_shell_int_tri_diag(prop_int, base_geo_derv, is_triang, &
+                                        num_ao_orb, wrt_int, dim_int, val_ints)
     implicit none
     type(shell_int_t), intent(in) :: prop_int
     integer, intent(in) :: base_geo_derv
+    logical, intent(in) :: is_triang
+    integer, intent(in) :: num_ao_orb
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
     real(REALK), intent(inout) :: val_ints(dim_int,*)
-    integer iderv, iopt, jopt, iket, ibra  !incremental recorders
-    integer addr_ket                       !address of orbitals on ket center in returned integrals
-    jopt = base_geo_derv*prop_int%num_opt
-    do iderv = 1, prop_int%num_geo_derv
-      do iopt = 1, prop_int%num_opt
-        jopt = jopt+1
-        addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
-        do iket = 1, prop_int%num_orb_ket
-          addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
-          do ibra = 1, iket  !only upper and diagonal parts returned
-            val_ints(addr_ket+ibra+prop_int%base_idx_bra,jopt) &
-              = prop_int%contr_ints(ibra,iket,iopt,iderv)
+    integer addr_opt_derv            !address of operators and derivatives
+    integer iderv, iopt, iket, ibra  !incremental recorders
+    integer addr_ket                 !address of orbitals on ket center in returned integrals
+    addr_opt_derv = base_geo_derv*prop_int%num_opt
+    ! triangular format
+    if (is_triang) then
+      do iderv = 1, prop_int%num_geo_derv
+        do iopt = 1, prop_int%num_opt
+          addr_opt_derv = addr_opt_derv+1
+          addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+          do iket = 1, prop_int%num_orb_ket
+            addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+            do ibra = 1, iket  !only upper and diagonal parts returned
+              val_ints(addr_ket+ibra+prop_int%base_idx_bra,addr_opt_derv) &
+                = prop_int%contr_ints(ibra,iket,iopt,iderv)
+            end do
           end do
         end do
       end do
-    end do
+  !FIXME
+      ! the path, dimension, and kind of integral matrices should already be created
+      if (wrt_int) then
+      end if
+    ! square format
+    else
+      do iderv = 1, prop_int%num_geo_derv
+        do iopt = 1, prop_int%num_opt
+          addr_opt_derv = addr_opt_derv+1
+          do iket = 1, prop_int%num_orb_ket
+            addr_ket = prop_int%base_idx_ket*num_ao_orb
+            do ibra = 1, prop_int%num_orb_bra
+              val_ints(ibra+prop_int%base_idx_bra+addr_ket,addr_opt_derv) &
+                = prop_int%contr_ints(ibra,iket,iopt,iderv)
+            end do
+          end do
+        end do
+      end do
 !FIXME
-    ! the path, dimension, and kind of integral matrices should already be created
-    if (wrt_int) then
+      ! the path, dimension, and kind of integral matrices should already be created
+      if (wrt_int) then
+      end if
     end if
     return
   end subroutine gen1int_shell_int_tri_diag
@@ -518,36 +548,102 @@ module gen1int_shell
   !> \param prop_int contains the contracted property integrals between two AO sub-shells
   !> \param base_geo_derv is the base address of current total geometric derivatives in the
   !>        list of all total geometric derivatives
-  !> \param wrt_int indicates if writing integrals to file
+  !> \param is_triang indicates if returning integral matrices are in triangular format,
+  !>        otherwise square format
+  !> \param sym_int indicates if the integrals matrices are symmetric, otherwise anti-symmetric
+  !> \param num_ao_orb is the total number of atomic orbitals
+  !> \param wrt_int indicates if writing integrals on file
   !> \param dim_int is the dimension of integral matrices
   !> \return val_ints contains the returned integrals
-  subroutine gen1int_shell_int_tri_off(prop_int, base_geo_derv, wrt_int, &
-                                       dim_int, val_ints)
+  subroutine gen1int_shell_int_tri_off(prop_int, base_geo_derv, is_triang,    &
+                                       sym_int, num_ao_orb, wrt_int, dim_int, &
+                                       val_ints)
     implicit none
     type(shell_int_t), intent(in) :: prop_int
     integer, intent(in) :: base_geo_derv
+    logical, intent(in) :: is_triang
+    logical, intent(in) :: sym_int
+    integer, intent(in) :: num_ao_orb
     logical, intent(in) :: wrt_int
     integer, intent(in) :: dim_int
     real(REALK), intent(inout) :: val_ints(dim_int,*)
-    integer iderv, iopt, jopt, iket, ibra  !incremental recorders
-    integer addr_ket                       !address of orbitals on ket center in returned integrals
-    jopt = base_geo_derv*prop_int%num_opt
-    do iderv = 1, prop_int%num_geo_derv
-      do iopt = 1, prop_int%num_opt
-        jopt = jopt+1
-        addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
-        do iket = 1, prop_int%num_orb_ket
-          addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
-          do ibra = 1, prop_int%num_orb_bra
-            val_ints(addr_ket+ibra+prop_int%base_idx_bra,jopt) &
-              = prop_int%contr_ints(ibra,iket,iopt,iderv)
+    integer addr_opt_derv            !address of operators and derivatives
+    integer iderv, iopt, iket, ibra  !incremental recorders
+    integer addr_bra                 !address of orbitals on bra center in returned integrals
+    integer addr_ket                 !address of orbitals on ket center in returned integrals
+    addr_opt_derv = base_geo_derv*prop_int%num_opt
+    ! triangular format
+    if (is_triang) then
+      do iderv = 1, prop_int%num_geo_derv
+        do iopt = 1, prop_int%num_opt
+          addr_opt_derv = addr_opt_derv+1
+          addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+          do iket = 1, prop_int%num_orb_ket
+            addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+            do ibra = 1, prop_int%num_orb_bra
+              val_ints(addr_ket+ibra+prop_int%base_idx_bra,addr_opt_derv) &
+                = prop_int%contr_ints(ibra,iket,iopt,iderv)
+            end do
           end do
         end do
       end do
-    end do
 !FIXME
-    ! the path, dimension, and kind of integral matrices should already be created
-    if (wrt_int) then
+      ! the path, dimension, and kind of integral matrices should already be created
+      if (wrt_int) then
+      end if
+    ! square format
+    else
+      ! symmetric matrices
+      if (sym_int) then
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do iket = 1, prop_int%num_orb_ket
+              addr_ket = prop_int%base_idx_ket*num_ao_orb
+              do ibra = 1, prop_int%num_orb_bra
+                val_ints(ibra+prop_int%base_idx_bra+addr_ket,addr_opt_derv) &
+                  = prop_int%contr_ints(ibra,iket,iopt,iderv)
+              end do
+            end do
+            do ibra = 1, prop_int%num_orb_bra
+              addr_bra = prop_int%base_idx_bra*num_ao_orb
+              do iket = 1, prop_int%num_orb_ket
+                val_ints(iket+prop_int%base_idx_ket+addr_bra,addr_opt_derv) &
+                  = prop_int%contr_ints(ibra,iket,iopt,iderv)
+              end do
+            end do
+          end do
+        end do
+!FIXME
+        ! the path, dimension, and kind of integral matrices should already be created
+        if (wrt_int) then
+        end if
+      ! anti-symmetric matrices
+      else
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do iket = 1, prop_int%num_orb_ket
+              addr_ket = prop_int%base_idx_ket*num_ao_orb
+              do ibra = 1, prop_int%num_orb_bra
+                val_ints(ibra+prop_int%base_idx_bra+addr_ket,addr_opt_derv) &
+                  = prop_int%contr_ints(ibra,iket,iopt,iderv)
+              end do
+            end do
+            do ibra = 1, prop_int%num_orb_bra
+              addr_bra = prop_int%base_idx_bra*num_ao_orb
+              do iket = 1, prop_int%num_orb_ket
+                val_ints(iket+prop_int%base_idx_ket+addr_bra,addr_opt_derv) &
+                  = -prop_int%contr_ints(ibra,iket,iopt,iderv)
+              end do
+            end do
+          end do
+        end do
+!FIXME
+        ! the path, dimension, and kind of integral matrices should already be created
+        if (wrt_int) then
+        end if
+      end if
     end if
     return
   end subroutine gen1int_shell_int_tri_off
@@ -561,7 +657,7 @@ module gen1int_shell
   !> \param base_geo_derv is the base address of current total geometric derivatives in the
   !>        list of all total geometric derivatives
   !> \param num_ao_orb is the total number of atomic orbitals
-  !> \param wrt_int indicates if writing integrals to file
+  !> \param wrt_int indicates if writing integrals on file
   !> \return val_ints contains the returned integrals
   subroutine gen1int_shell_int_square(prop_int, base_geo_derv, num_ao_orb, &
                                       wrt_int, val_ints)
@@ -571,16 +667,17 @@ module gen1int_shell
     integer, intent(in) :: num_ao_orb
     logical, intent(in) :: wrt_int
     real(REALK), intent(inout) :: val_ints(num_ao_orb,num_ao_orb,*)
-    integer iderv, iopt, jopt, iket, ibra  !incremental recorders
-    integer addr_ket                       !address of orbitals on ket center in returned integrals
-    jopt = base_geo_derv*prop_int%num_opt
+    integer addr_opt_derv            !address of operators and derivatives
+    integer iderv, iopt, iket, ibra  !incremental recorders
+    integer addr_ket                 !address of orbitals on ket center in returned integrals
+    addr_opt_derv = base_geo_derv*prop_int%num_opt
     do iderv = 1, prop_int%num_geo_derv
       do iopt = 1, prop_int%num_opt
-        jopt = jopt+1
+        addr_opt_derv = addr_opt_derv+1
         do iket = 1, prop_int%num_orb_ket
           addr_ket = iket+prop_int%base_idx_ket
           do ibra = 1, prop_int%num_orb_bra
-            val_ints(ibra+prop_int%base_idx_bra,addr_ket,jopt) &
+            val_ints(ibra+prop_int%base_idx_bra,addr_ket,addr_opt_derv) &
               = prop_int%contr_ints(ibra,iket,iopt,iderv)
           end do
         end do
@@ -592,6 +689,304 @@ module gen1int_shell
     end if
     return
   end subroutine gen1int_shell_int_square
+
+  !> \brief calculates the expectation values and writes them on file is required,
+  !>        the involved integrals are belong to the diagonal parts in triangular format
+  !> \author Bin Gao
+  !> \date 2011-10-11
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  !> \param base_geo_derv is the base address of current total geometric derivatives in the
+  !>        list of all total geometric derivatives
+  !> \param sym_int indicates if the integrals matrices are symmetric, otherwise anti-symmetric
+  !> \param num_ao_orb is the total number of atomic orbitals
+  !> \param kind_dens indicates if the kind of AO density matrices, 1 for symmetric, -1 for
+  !>        anti-symmetric, others for square
+  !> \param dim_dens is the dimension of AO density matrices
+  !> \param num_dens is the number of AO density matrices
+  !> \param ao_dens contains the AO density matrices
+  !> \return val_expt contains the calculated expectation values
+  subroutine gen1int_shell_tr_tri_diag(prop_int, base_geo_derv, sym_int, &
+                                       num_ao_orb, kind_dens, dim_dens,  &
+                                       num_dens, ao_dens, val_expt)
+    implicit none
+    type(shell_int_t), intent(in) :: prop_int
+    integer, intent(in) :: base_geo_derv
+    logical, intent(in) :: sym_int
+    integer, intent(in) :: num_ao_orb
+    integer, intent(in) :: kind_dens
+    integer, intent(in) :: dim_dens
+    integer, intent(in) :: num_dens
+    real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
+    real(REALK), intent(inout) :: val_expt(num_dens,*)
+    ! zero expectation values
+    if ((kind_dens==1 .and. .not.sym_int) .and. (kind_dens==-1 .and. sym_int)) then
+      return
+    else
+      call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
+                                   kind_dens, dim_dens, num_dens, ao_dens, &
+                                   val_expt)
+    end if
+    return
+  end subroutine gen1int_shell_tr_tri_diag
+
+  !> \brief calculates the expectation values and writes them on file is required,
+  !>        the involved integrals are belong to the off-diagonal parts in triangular format
+  !> \author Bin Gao
+  !> \date 2011-10-11
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  !> \param base_geo_derv is the base address of current total geometric derivatives in the
+  !>        list of all total geometric derivatives
+  !> \param sym_int indicates if the integrals matrices are symmetric, otherwise anti-symmetric
+  !> \param num_ao_orb is the total number of atomic orbitals
+  !> \param kind_dens indicates if the kind of AO density matrices, 1 for symmetric, -1 for
+  !>        anti-symmetric, others for square
+  !> \param dim_dens is the dimension of AO density matrices
+  !> \param num_dens is the number of AO density matrices
+  !> \param ao_dens contains the AO density matrices
+  !> \return val_expt contains the calculated expectation values
+  subroutine gen1int_shell_tr_tri_off(prop_int, base_geo_derv, sym_int, &
+                                      num_ao_orb, kind_dens, dim_dens,  &
+                                      num_dens, ao_dens, val_expt)
+    implicit none
+    type(shell_int_t), intent(inout) :: prop_int
+    integer, intent(in) :: base_geo_derv
+    logical, intent(in) :: sym_int
+    integer, intent(in) :: num_ao_orb
+    integer, intent(in) :: kind_dens
+    integer, intent(in) :: dim_dens
+    integer, intent(in) :: num_dens
+    real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
+    real(REALK), intent(inout) :: val_expt(num_dens,*)
+    real(REALK), allocatable :: tmp_expt(:,:,:)  !temporary expectation values
+    integer addr_opt_derv                        !address of operators and derivatives
+    integer iderv, iopt, idens                   !incremental recorders
+    integer ierr                                 !error information
+    ! zero expectation values
+    if ((kind_dens==1 .and. .not.sym_int) .and. (kind_dens==-1 .and. sym_int)) then
+      return
+    else
+      ! both AO density and integral matrices are symmetric or anti-symmetric
+      if ((kind_dens==1 .and. sym_int) .or. (kind_dens==-1 .and. .not.sym_int)) then
+        allocate(tmp_expt(num_dens,prop_int%num_opt,prop_int%num_geo_derv), &
+                 stat=ierr)
+        if (ierr/=0) stop "gen1int_shell_tr_tri_off>> failed to allocate tmp_expt!"
+        call gen1int_shell_tr_square(prop_int, 0, num_ao_orb, kind_dens, &
+                                     dim_dens, num_dens, ao_dens, tmp_expt)
+        addr_opt_derv = base_geo_derv*prop_int%num_opt
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                + 2.0_REALK*tmp_expt(idens,iopt,iderv)
+            end do
+          end do
+        end do
+        deallocate(tmp_expt)
+      else
+        call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
+                                     kind_dens, dim_dens, num_dens, ao_dens, &
+                                     val_expt)
+        ! takes the opposite sign for anti-symmetric integral matrices
+        if (.not.sym_int) prop_int%contr_ints = -prop_int%contr_ints
+        call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
+                                     kind_dens, dim_dens, num_dens, ao_dens, &
+                                     val_expt)
+      end if
+    end if
+    return
+  end subroutine gen1int_shell_tr_tri_off
+
+  !> \brief calculates the expectation values and writes them on file is required,
+  !>        the involved integrals are parts of square matrix
+  !> \author Bin Gao
+  !> \date 2011-10-11
+  !> \param prop_int contains the contracted property integrals between two AO sub-shells
+  !> \param base_geo_derv is the base address of current total geometric derivatives in the
+  !>        list of all total geometric derivatives
+  !> \param num_ao_orb is the total number of atomic orbitals
+  !> \param kind_dens indicates if the kind of AO density matrices, 1 for symmetric, -1 for
+  !>        anti-symmetric, others for square
+  !> \param dim_dens is the dimension of AO density matrices
+  !> \param num_dens is the number of AO density matrices
+  !> \param ao_dens contains the AO density matrices
+  !> \return val_expt contains the calculated expectation values
+  subroutine gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
+                                     kind_dens, dim_dens, num_dens, ao_dens, &
+                                     val_expt)
+    implicit none
+    type(shell_int_t), intent(in) :: prop_int
+    integer, intent(in) :: base_geo_derv
+    integer, intent(in) :: num_ao_orb
+    integer, intent(in) :: kind_dens
+    integer, intent(in) :: dim_dens
+    integer, intent(in) :: num_dens
+    real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
+    real(REALK), intent(inout) :: val_expt(num_dens,*)
+    integer addr_opt_derv                   !address of operators and derivatives
+    integer iderv, iopt, idens, iket, ibra  !incremental recorders
+    integer addr_ket                        !address of orbitals on ket center in AO density matrices
+    integer addr_bra                        !address of orbitals on bra center in AO density matrices
+    addr_opt_derv = base_geo_derv*prop_int%num_opt
+    select case(kind_dens)
+    ! symmetric matrices (column- or ket-major, upper and diagonal parts)
+    case(1)
+      ! diagonal part integral matrices
+      if (prop_int%base_idx_bra==prop_int%base_idx_ket) then
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              ! lower and diagonal parts
+              addr_bra = (prop_int%base_idx_bra-1)*prop_int%base_idx_bra/2
+              do ibra = 1, prop_int%num_orb_bra
+                addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
+                do iket = 1, ibra
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
+                end do
+              end do
+              ! upper part
+              addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+              do iket = 1, prop_int%num_orb_ket
+                addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+                do ibra = 1, iket-1
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_ket+ibra+prop_int%base_idx_bra,idens)
+                end do
+              end do
+            end do
+          end do
+        end do
+      ! upper part integral matrices, needs lower part AO density matrices
+      else if (prop_int%base_idx_bra<prop_int%base_idx_ket) then
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+              do iket = 1, prop_int%num_orb_ket
+                addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+                do ibra = 1, prop_int%num_orb_bra
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_ket+ibra+prop_int%base_idx_bra,idens)
+                end do
+              end do
+            end do
+          end do
+        end do
+      ! lower part integral matrices, needs upper part AO density matrices,
+      ! or the lower part AO density matrices
+      else
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              addr_bra = (prop_int%base_idx_bra-1)*prop_int%base_idx_bra/2
+              do ibra = 1, prop_int%num_orb_bra
+                addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
+                do iket = 1, prop_int%num_orb_ket
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
+                end do
+              end do
+            end do
+          end do
+        end do
+      end if
+    ! anti-symmetric matrices (column- or ket-major, upper and diagonal parts)
+    case(-1)
+      ! diagonal part integral matrices
+      if (prop_int%base_idx_bra==prop_int%base_idx_ket) then
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              ! lower and diagonal parts
+              addr_bra = (prop_int%base_idx_bra-1)*prop_int%base_idx_bra/2
+              do ibra = 1, prop_int%num_orb_bra
+                addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
+                do iket = 1, ibra
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    - prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
+                end do
+              end do
+              ! upper part
+              addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+              do iket = 1, prop_int%num_orb_ket
+                addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+                do ibra = 1, iket-1
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_ket+ibra+prop_int%base_idx_bra,idens)
+                end do
+              end do
+            end do
+          end do
+        end do
+      ! upper part integral matrices, needs lower part AO density matrices
+      else if (prop_int%base_idx_bra<prop_int%base_idx_ket) then
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
+              do iket = 1, prop_int%num_orb_ket
+                addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
+                do ibra = 1, prop_int%num_orb_bra
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_ket+ibra+prop_int%base_idx_bra,idens)
+                end do
+              end do
+            end do
+          end do
+        end do
+      ! lower part integral matrices, needs upper part AO density matrices,
+      ! or the opposite of lower part AO density matrices
+      else
+        do iderv = 1, prop_int%num_geo_derv
+          do iopt = 1, prop_int%num_opt
+            addr_opt_derv = addr_opt_derv+1
+            do idens = 1, num_dens
+              addr_bra = (prop_int%base_idx_bra-1)*prop_int%base_idx_bra/2
+              do ibra = 1, prop_int%num_orb_bra
+                addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
+                do iket = 1, prop_int%num_orb_ket
+                  val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                    - prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
+                end do
+              end do
+            end do
+          end do
+        end do
+      end if
+    ! square matrices (column- or ket-major)
+    case default
+      do iderv = 1, prop_int%num_geo_derv
+        do iopt = 1, prop_int%num_opt
+          addr_opt_derv = addr_opt_derv+1
+          do idens = 1, num_dens
+            do ibra = 1, prop_int%num_orb_bra
+              addr_bra = prop_int%base_idx_bra*num_ao_orb
+              do iket = 1, prop_int%num_orb_ket
+                val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
+                  + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                  * ao_dens(iket+prop_int%base_idx_ket+addr_bra,idens)
+              end do
+            end do
+          end do
+        end do
+      end do
+    end select
+    return
+  end subroutine gen1int_shell_tr_square
 
   !> \brief calculates the Cartesian multipole moment integrals using contracted GTOs
   !> \author Bin Gao
