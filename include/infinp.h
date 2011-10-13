@@ -6,8 +6,8 @@
 !     - SCF specific input is in scbrhf.h
 !     - orbital specifications are in inforb.h
 !
-      INTEGER         NFLAG, MAXRTS, MXFELT
-      PARAMETER (NFLAG = 80, MAXRTS = 100, MXFELT = 20)
+      INTEGER         NFLAG, MAXRTS, MXFELT 
+      PARAMETER (NFLAG = 80, MAXRTS = 150, MXFELT = 20) ! MAXRTS ==> max. number of roots; has to be equal to MAXRTS_LU in lucita/cstate.inc
 !
       INTEGER         NFIELD, ISPIN,NMCAVER,ISTATE,LSYM,NACTEL, MCTYPE, &
      &                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,        &
