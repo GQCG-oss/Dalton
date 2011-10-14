@@ -74,6 +74,10 @@
     ! the following keywords and \var(num_opt) should be consistent
     ! with subroutine \fn(gen1int_shell_prop) in gen1int_shell.F90!!
     select case(trim(prop_name))
+    ! electronic angular momentum around the nuclei
+    case("ANGLON")
+      num_opt = 3*num_geo_derv
+      kind_int = 0
     ! Cartesian multipole integrals
     case("CARMOM")
       num_opt = (order_mom+1)*(order_mom+2)*num_geo_derv/2
@@ -86,6 +90,14 @@
     case("KINENERG")
       num_opt = num_geo_derv
       kind_int = 1
+    ! London orbital contribution to nuclear shielding tensor integrals
+    case("NSTLON")
+      num_opt = 9*num_atoms
+      kind_int = 0
+    ! nuclear shielding integrals without London orbital contribution
+    case("NSTNOL")
+      num_opt = 9*num_atoms
+      kind_int = 0
     ! overlap integrals
     case("OVERLAP")
       num_opt = num_geo_derv
@@ -94,6 +106,10 @@
     case("POTENERG")
       num_opt = num_geo_derv
       kind_int = 1
+    ! paramagnetic spin-orbit integrals
+    case("PSO")
+      num_opt = 3*num_atoms
+      kind_int = -1
     case default
       write(STDOUT,999) trim(prop_name)
       stop

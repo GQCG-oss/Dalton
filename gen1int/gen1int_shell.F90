@@ -344,10 +344,10 @@ module gen1int_shell
 #include "mxcent.h"
     ! coordinates and charges of atoms
 #include "nuclei.h"
-    integer, parameter :: IDX_DIPORG = -1        !index of dipole origin
-    integer icent                                !incremental recorder over atomic centers
-    real(REALK), allocatable :: tmp_ints(:,:,:)  !temporary contracted integrals
-    integer ierr                                 !error information
+    integer, parameter :: IDX_DIPORG = -1  !index of dipole origin
+    integer icent                          !incremental recorder over atomic centers
+    type(shell_int_t) tmp_prop             !temporary contracted integrals
+    integer ierr                           !error information
     ! sets the base index of orbitals on bra and ket centers
     prop_int%base_idx_bra = bra_shell%base_idx
     prop_int%base_idx_ket = ket_shell%base_idx
@@ -359,6 +359,35 @@ module gen1int_shell
     ! the following keywords and \var(prop_int%num_opt) should be
     ! consistent with subroutine \fn(gen1int_prop_attr)!!
     select case(trim(prop_name))
+    ! electronic angular momentum around the nuclei
+    case("ANGLON")
+      prop_int%num_opt = 3
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      ! sets temporary contracted integrals
+      tmp_prop%num_opt = 9
+      tmp_prop%num_geo_derv = prop_int%num_geo_derv
+      allocate(tmp_prop%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   tmp_prop%num_opt,tmp_prop%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_prop!"
+      ! \var(tmp_prop) contains the integrals of operators:
+      ! (1) x_N*d/dx, (2) x_N*d/dy, (3) x_N*d/dz, (4) y_N*d/dx, (5) y_N*d/dy, (6) y_N*d/dz,
+      ! (7) z_N*d/dx, (8) z_N*d/dy, (9) z_N*d/dz, where N is the ket center
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 1,          &
+                                ket_shell%idx_cent, ket_shell%coord_cent, &
+                                1.0_REALK, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  &
+                                num_cents, idx_cent, order_cent, tmp_prop)
+      ! operator -(y_N*d/dz-z_N*d/dy)
+      prop_int%contr_ints(:,:,1,:) = tmp_prop%contr_ints(:,:,8,:) &
+                                   - tmp_prop%contr_ints(:,:,6,:)
+      ! operator -(z_N*d/dx-x_N*d/dz)
+      prop_int%contr_ints(:,:,2,:) = tmp_prop%contr_ints(:,:,3,:) &
+                                   - tmp_prop%contr_ints(:,:,7,:)
+      ! operator -(x_N*d/dy-y_N*d/dx)
+      prop_int%contr_ints(:,:,3,:) = tmp_prop%contr_ints(:,:,4,:) &
+                                   - tmp_prop%contr_ints(:,:,2,:)
+      deallocate(tmp_prop%contr_ints)
     ! Cartesian multipole integrals
     case("CARMOM")
       prop_int%num_opt = (order_mom+1)*(order_mom+2)/2
@@ -368,39 +397,27 @@ module gen1int_shell
       call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,          &
                                 IDX_DIPORG, DIPORG, 1.0_REALK, order_mom, &
                                 0, 0, 0, 0, 0, 0, 0, 0, 0,                &
-                                num_cents, idx_cent, order_cent,          &
-                                bra_shell%num_ao, bra_shell%num_contr,    &
-                                ket_shell%num_ao, ket_shell%num_contr,    &
-                                prop_int%num_opt*prop_int%num_geo_derv,   &
-                                prop_int%contr_ints)
+                                num_cents, idx_cent, order_cent, prop_int)
     ! dipole length integrals
     case("DIPLEN")
       prop_int%num_opt = 3
       allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
                                    prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
       if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
-                                IDX_DIPORG, DIPORG, 1.0_REALK, 1,       &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,  &
+                                IDX_DIPORG, DIPORG, 1.0_REALK, 1, &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,        &
+                                num_cents, idx_cent, order_cent, prop_int)
     ! kinetic energy integrals
     case("KINENERG")
       prop_int%num_opt = 6
       allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
                                    prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
       if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 2,        &
-                                IDX_DIPORG, DIPORG, -0.5_REALK, 0,      &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 2,   &
+                                IDX_DIPORG, DIPORG, -0.5_REALK, 0, &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,         &
+                                num_cents, idx_cent, order_cent, prop_int)
       ! sums xx, yy and zz components
       prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:) &
                                    + prop_int%contr_ints(:,:,3,:) &
@@ -412,14 +429,10 @@ module gen1int_shell
       allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
                                    prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
       if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
-      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,        &
-                                IDX_DIPORG, DIPORG, 1.0_REALK, 0,       &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0,              &
-                                num_cents, idx_cent, order_cent,        &
-                                bra_shell%num_ao, bra_shell%num_contr,  &
-                                ket_shell%num_ao, ket_shell%num_contr,  &
-                                prop_int%num_opt*prop_int%num_geo_derv, &
-                                prop_int%contr_ints)
+      call gen1int_shell_carmom(bra_shell, ket_shell, is_lao, 0,  &
+                                IDX_DIPORG, DIPORG, 1.0_REALK, 0, &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0,        &
+                                num_cents, idx_cent, order_cent, prop_int)
     ! one-electron potential energy integrals
     case("POTENERG")
       prop_int%num_opt = 1
@@ -427,31 +440,27 @@ module gen1int_shell
                                    prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
       if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
       ! the first atomic center
-      call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, 0,       &
-                                1, CORD(:,1), IDX_DIPORG,              &
-                                DIPORG, CHARGE(1), 0,                  &
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          &
-                                num_cents, idx_cent, order_cent,       &
-                                bra_shell%num_ao, bra_shell%num_contr, &
-                                ket_shell%num_ao, ket_shell%num_contr, &
-                                prop_int%num_geo_derv, prop_int%contr_ints)
-      ! allocates memory for temporary contracted integrals
-      allocate(tmp_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
-                        prop_int%num_geo_derv), stat=ierr)
-      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_ints!"
+      call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, 0, &
+                                1, CORD(:,1), IDX_DIPORG,        &
+                                DIPORG, -CHARGE(1), 0,           &
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    &
+                                num_cents, idx_cent, order_cent, prop_int)
+      ! sets temporary contracted integrals
+      tmp_prop%num_opt = 1
+      tmp_prop%num_geo_derv = prop_int%num_geo_derv
+      allocate(tmp_prop%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   tmp_prop%num_opt,tmp_prop%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_prop!"
       ! other atomic centers
       do icent = 2, NUCDEP
         call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, 0,       &
                                   icent, CORD(:,icent),                  &
-                                  IDX_DIPORG, DIPORG, CHARGE(icent), 0,  &
+                                  IDX_DIPORG, DIPORG, -CHARGE(icent), 0, &
                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          &
-                                  num_cents, idx_cent, order_cent,       &
-                                  bra_shell%num_ao, bra_shell%num_contr, &
-                                  ket_shell%num_ao, ket_shell%num_contr, &
-                                  prop_int%num_geo_derv, tmp_ints)
-        prop_int%contr_ints(:,:,1,:) = prop_int%contr_ints(:,:,1,:)+tmp_ints
+                                  num_cents, idx_cent, order_cent, tmp_prop)
+        prop_int%contr_ints = prop_int%contr_ints+tmp_prop%contr_ints
       end do
-      deallocate(tmp_ints)
+      deallocate(tmp_prop%contr_ints)
     case default
       write(STDOUT,999) trim(prop_name)
       stop
@@ -1011,20 +1020,13 @@ module gen1int_shell
   !> \param num_cents is the number of geometric differentiated centers
   !> \param idx_cent contains the indices of differentiated centers
   !> \param order_cent contains the orders of differentiated centers
-  !> \param num_ao_bra is the number of AOs on bra center
-  !> \param num_contr_bra is the number of contractions on bra center
-  !> \param num_ao_ket is the number of AOs on ket center
-  !> \param num_contr_ket is the number of contractions on ket center
-  !> \param num_opt is the number of operators including derivatives
-  !> \return contr_ints contains the calculated contracted integrals
+  !> \return prop_int contains the calculated contracted integrals
   subroutine gen1int_shell_carmom(bra_shell, ket_shell, is_lao, order_elec,         &
                                   idx_diporg, dipole_origin, scal_const, order_mom, &
                                   order_mag_bra, order_mag_ket, order_mag_total,    &
                                   order_ram_bra, order_ram_ket, order_ram_total,    &
                                   order_geo_bra, order_geo_ket, order_geo_mom,      &
-                                  num_cents, idx_cent, order_cent, num_ao_bra,      &
-                                  num_contr_bra, num_ao_ket, num_contr_ket,         &
-                                  num_opt, contr_ints)
+                                  num_cents, idx_cent, order_cent, prop_int)
     implicit none
     type(sub_shell_t), intent(in) :: bra_shell
     type(sub_shell_t), intent(in) :: ket_shell
@@ -1046,18 +1048,15 @@ module gen1int_shell
     integer, intent(in) :: num_cents
     integer, intent(in) :: idx_cent(num_cents)
     integer, intent(in) :: order_cent(num_cents)
-    integer, intent(in) :: num_ao_bra
-    integer, intent(in) :: num_contr_bra
-    integer, intent(in) :: num_ao_ket
-    integer, intent(in) :: num_contr_ket
-    integer, intent(in) :: num_opt
-    real(REALK), intent(out) :: contr_ints(num_ao_bra,num_contr_bra, &
-                                           num_ao_ket,num_contr_ket,num_opt)
+    type(shell_int_t), intent(inout) :: prop_int
+#ifdef BUILD_GEN1INT
+    ! number of operators including derivatives
+    integer num_opt_derv
     ! contracted integrals from Gen1Int
     real(REALK), allocatable :: gen_ints(:,:,:,:,:)
     !error information
     integer ierr
-#ifdef BUILD_GEN1INT
+    num_opt_derv = prop_int%num_opt*prop_int%num_geo_derv
     ! London atomic orbitals
     if (is_lao) then
       stop "gen1int_shell_carmom>> LAO is not implemented!"
@@ -1080,15 +1079,16 @@ module gen1int_shell
                                order_elec, idx_diporg, dipole_origin,    &
                                scal_const, order_mom, order_geo_bra,     &
                                order_geo_ket, order_geo_mom, num_cents,  &
-                               idx_cent, order_cent, num_ao_bra,         &
-                               num_ao_ket, num_opt, contr_ints)
+                               idx_cent, order_cent, bra_shell%num_ao,   &
+                               ket_shell%num_ao, num_opt_derv, prop_int%contr_ints)
         ! reorders p-shell
-        if (bra_shell%ang_num==1)                                            &
-          call dal_reorder_p_sgto(1, num_contr_bra*num_ao_ket*num_contr_ket, &
-                                  num_opt, contr_ints)
-        if (ket_shell%ang_num==1)                           &
-          call dal_reorder_p_sgto(num_ao_bra*num_contr_bra, &
-                                  num_contr_ket, num_opt, contr_ints)
+        if (bra_shell%ang_num==1)                                          &
+          call dal_reorder_p_sgto(1,                                       &
+                 bra_shell%num_contr*ket_shell%num_ao*ket_shell%num_contr, &
+                 num_opt_derv, prop_int%contr_ints)
+        if (ket_shell%ang_num==1)                                       &
+          call dal_reorder_p_sgto(bra_shell%num_ao*bra_shell%num_contr, &
+                 ket_shell%num_contr, num_opt_derv, prop_int%contr_ints)
       ! CGTOs
       else
         ! s-shell
@@ -1104,12 +1104,13 @@ module gen1int_shell
                                  order_elec, idx_diporg, dipole_origin,    &
                                  scal_const, order_mom, order_geo_bra,     &
                                  order_geo_ket, order_geo_mom, num_cents,  &
-                                 idx_cent, order_cent, num_ao_bra,         &
-                                 num_ao_ket, num_opt, contr_ints)
+                                 idx_cent, order_cent, bra_shell%num_ao,   &
+                                 ket_shell%num_ao, num_opt_derv, prop_int%contr_ints)
         else
           ! contracted integrals from Gen1Int
-          allocate(gen_ints(num_ao_bra,num_contr_bra, &
-                            num_ao_ket,num_contr_ket,num_opt), stat=ierr)
+          allocate(gen_ints(bra_shell%num_ao,bra_shell%num_contr, &
+                            ket_shell%num_ao,ket_shell%num_contr, &
+                            num_opt_derv), stat=ierr)
           if (ierr/=0) stop "gen1int_shell_carmom>> failed to allocate gen_ints!"
           call contr_cgto_carmom(bra_shell%idx_cent, bra_shell%coord_cent, &
                                  bra_shell%ang_num, bra_shell%num_prim,    &
@@ -1122,13 +1123,15 @@ module gen1int_shell
                                  order_elec, idx_diporg, dipole_origin,    &
                                  scal_const, order_mom, order_geo_bra,     &
                                  order_geo_ket, order_geo_mom, num_cents,  &
-                                 idx_cent, order_cent, num_ao_bra,         &
-                                 num_ao_ket, num_opt, gen_ints)
+                                 idx_cent, order_cent, bra_shell%num_ao,   &
+                                 ket_shell%num_ao, num_opt_derv, gen_ints)
           ! reorder the integrals
-          call reorder_cgto_ints(bra_shell%ang_num, num_ao_bra, bra_shell%powers, &
-                                 ket_shell%ang_num, num_ao_ket, ket_shell%powers, &
-                                 num_contr_bra, num_contr_ket, num_opt, gen_ints, &
-                                 contr_ints)
+          call reorder_cgto_ints(bra_shell%ang_num, bra_shell%num_ao,      &
+                                 bra_shell%powers,                         &
+                                 ket_shell%ang_num, ket_shell%num_ao,      &
+                                 ket_shell%powers,                         &
+                                 bra_shell%num_contr, ket_shell%num_contr, &
+                                 num_opt_derv, gen_ints, prop_int%contr_ints)
           deallocate(gen_ints)
         end if
       end if
@@ -1166,12 +1169,7 @@ module gen1int_shell
   !> \param num_cents is the number of differentiated centers
   !> \param idx_cent contains the indices of differentiated centers
   !> \param order_cent contains the order of derivatives of the differentiated centers
-  !> \param num_ao_bra is the number of AOs on bra center
-  !> \param num_contr_bra is the number of contractions on bra center
-  !> \param num_ao_ket is the number of AOs on ket center
-  !> \param num_contr_ket is the number of contractions on ket center
-  !> \param num_opt is the number of operators including derivatives
-  !> \return contr_ints contains the calculated contracted integrals
+  !> \return prop_int contains the calculated contracted integrals
   subroutine gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, order_elec,       &
                                   idx_nucorg, nucpot_origin, idx_diporg,          &
                                   dipole_origin, scal_const, order_mom,           &
@@ -1179,8 +1177,7 @@ module gen1int_shell
                                   order_ram_bra, order_ram_ket, order_ram_total,  &
                                   order_geo_bra, order_geo_ket, order_geo_nuc,    &
                                   order_geo_mom, num_cents, idx_cent, order_cent, &
-                                  num_ao_bra, num_contr_bra, num_ao_ket,          &
-                                  num_contr_ket, num_opt, contr_ints)
+                                  prop_int)
     implicit none
     type(sub_shell_t), intent(in) :: bra_shell
     type(sub_shell_t), intent(in) :: ket_shell
@@ -1205,18 +1202,15 @@ module gen1int_shell
     integer, intent(in) :: num_cents
     integer, intent(in) :: idx_cent(num_cents)
     integer, intent(in) :: order_cent(num_cents)
-    integer, intent(in) :: num_ao_bra
-    integer, intent(in) :: num_contr_bra
-    integer, intent(in) :: num_ao_ket
-    integer, intent(in) :: num_contr_ket
-    integer, intent(in) :: num_opt
-    real(REALK), intent(out) :: contr_ints(num_ao_bra,num_contr_bra, &
-                                           num_ao_ket,num_contr_ket,num_opt)
+    type(shell_int_t), intent(inout) :: prop_int
+#ifdef BUILD_GEN1INT
+    ! number of operators including derivatives
+    integer num_opt_derv
     ! contracted integrals from Gen1Int
     real(REALK), allocatable :: gen_ints(:,:,:,:,:)
     !error information
     integer ierr
-#ifdef BUILD_GEN1INT
+    num_opt_derv = prop_int%num_opt*prop_int%num_geo_derv
     ! London atomic orbitals
     if (is_lao) then
       stop "gen1int_shell_nucpot>> LAO is not implemented!"
@@ -1240,15 +1234,16 @@ module gen1int_shell
                                idx_diporg, dipole_origin, scal_const,    &
                                order_mom, order_geo_bra, order_geo_ket,  &
                                order_geo_nuc, order_geo_mom, num_cents,  &
-                               idx_cent, order_cent, num_ao_bra,         &
-                               num_ao_ket, num_opt, contr_ints)
+                               idx_cent, order_cent, bra_shell%num_ao,   &
+                               ket_shell%num_ao, num_opt_derv, prop_int%contr_ints)
         ! reorders p-shell
-        if (bra_shell%ang_num==1)                                            &
-          call dal_reorder_p_sgto(1, num_contr_bra*num_ao_ket*num_contr_ket, &
-                                     num_opt, contr_ints)
-        if (ket_shell%ang_num==1)                           &
-          call dal_reorder_p_sgto(num_ao_bra*num_contr_bra, &
-                                  num_contr_ket, num_opt, contr_ints)
+        if (bra_shell%ang_num==1)                                          &
+          call dal_reorder_p_sgto(1,                                       &
+                 bra_shell%num_contr*ket_shell%num_ao*ket_shell%num_contr, &
+                 num_opt_derv, prop_int%contr_ints)
+        if (ket_shell%ang_num==1)                                       &
+          call dal_reorder_p_sgto(bra_shell%num_ao*bra_shell%num_contr, &
+                 ket_shell%num_contr, num_opt_derv, prop_int%contr_ints)
       ! CGTOs
       else
         ! s-shell
@@ -1265,12 +1260,13 @@ module gen1int_shell
                                  idx_diporg, dipole_origin, scal_const,    &
                                  order_mom, order_geo_bra, order_geo_ket,  &
                                  order_geo_nuc, order_geo_mom, num_cents,  &
-                                 idx_cent, order_cent, num_ao_bra,         &
-                                 num_ao_ket, num_opt, contr_ints)
+                                 idx_cent, order_cent, bra_shell%num_ao,   &
+                                 ket_shell%num_ao, num_opt_derv, prop_int%contr_ints)
         else
           ! contracted integrals from Gen1Int
-          allocate(gen_ints(num_ao_bra,num_contr_bra, &
-                            num_ao_ket,num_contr_ket,num_opt), stat=ierr)
+          allocate(gen_ints(bra_shell%num_ao,bra_shell%num_contr, &
+                            ket_shell%num_ao,ket_shell%num_contr, &
+                            num_opt_derv), stat=ierr)
           if (ierr/=0) stop "gen1int_shell_nucpot>> failed to allocate gen_ints!"
           call contr_cgto_nucpot(bra_shell%idx_cent, bra_shell%coord_cent, &
                                  bra_shell%ang_num, bra_shell%num_prim,    &
@@ -1284,13 +1280,15 @@ module gen1int_shell
                                  idx_diporg, dipole_origin, scal_const,    &
                                  order_mom, order_geo_bra, order_geo_ket,  &
                                  order_geo_nuc, order_geo_mom, num_cents,  &
-                                 idx_cent, order_cent, num_ao_bra,         &
-                                 num_ao_ket, num_opt, gen_ints)
+                                 idx_cent, order_cent, bra_shell%num_ao,   &
+                                 ket_shell%num_ao, num_opt_derv, gen_ints)
           ! reorder the integrals
-          call reorder_cgto_ints(bra_shell%ang_num, num_ao_bra, bra_shell%powers, &
-                                 ket_shell%ang_num, num_ao_ket, ket_shell%powers, &
-                                 num_contr_bra, num_contr_ket, num_opt, gen_ints, &
-                                 contr_ints)
+          call reorder_cgto_ints(bra_shell%ang_num, bra_shell%num_ao,      &
+                                 bra_shell%powers,                         &
+                                 ket_shell%ang_num, ket_shell%num_ao,      &
+                                 ket_shell%powers,                         &
+                                 bra_shell%num_contr, ket_shell%num_contr, &
+                                 num_opt_derv, gen_ints, prop_int%contr_ints)
           deallocate(gen_ints)
         end if
       end if

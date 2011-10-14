@@ -50,35 +50,35 @@
 ! threshold of error
 #include "err_thrsh.h"
     ! number of tests
-    integer, parameter :: NUM_TEST = 3
+    integer, parameter :: NUM_TEST = 4
     ! property integral names, see subroutine \fn(gen1int_shell_prop) in gen1int_shell.F90,
     ! and variable \var(TABLE) in subroutine \fn(PR1IN1) in abacus/her1pro.F
     character*8, parameter :: PROP_NAME(NUM_TEST) = &
-      (/"KINENERG", "OVERLAP ", "POTENERG"/)
+      (/"ANGLON  ", "KINENERG", "OVERLAP ", "POTENERG"/)
     ! if London atomic orbitals
     logical, parameter :: IS_LAO(NUM_TEST) = &
-      (/.false., .false., .false./)
+      (/.false., .false., .false., .false./)
     ! order of Cartesian multipole moments
     integer, parameter :: ORDER_MOM(NUM_TEST) = &
-      (/0, 0, 0/)
+      (/0, 0, 0, 0/)
     ! maximum number of differentiated centers
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &
-      (/0, 0, 0/)
+      (/0, 0, 0, 0/)
     ! order of total geometric derivatives
     integer, parameter :: ORDER_GEO_TOT(NUM_TEST) = &
-      (/0, 0, 0/)
+      (/0, 0, 0, 0/)
     ! if getting integrals back from Gen1Int
     logical, parameter :: GET_INT(NUM_TEST) = &
-      (/.true., .true., .true./)
+      (/.true., .true., .true., .true./)
     ! if writing integrals on file
     logical, parameter :: WRT_INT(NUM_TEST) = &
-      (/.false., .false., .false./)
+      (/.false., .false., .false., .false./)
     ! if getting expectation values back
     logical, parameter :: GET_EXPT(NUM_TEST) = &
-      (/.false., .false., .false./)
+      (/.false., .false., .false., .false./)
     ! if writing expectation values on file
     logical, parameter :: WRT_EXPT(NUM_TEST) = &
-      (/.false., .false., .false./)
+      (/.false., .false., .false., .false./)
     ! number of operators including derivatives
     integer num_opt_derv
     ! kind of integral matrices
@@ -149,6 +149,10 @@
     logical test_failed
     ! incremental recorder of tests
     integer itst
+    ! indices of row and column
+    integer irow, icol
+    ! addresses of results from Gen1Int and Dalton's routines
+    integer addr_gen, addr_dal
     ! error information
     integer ierr
     call QENTER("gen1int_dal_test")
@@ -207,6 +211,9 @@
                             kind_dens, dim_dens, NUM_DENS, ao_dens,         &
                             GET_EXPT(itst), WRT_EXPT(itst),                 &
                             dal_work(1:num_expt), io_std, level_print)
+      ! Dalton uses positive sign for potential energy integrals
+      if (PROP_NAME(itst)=="POTENERG") &
+        dal_work(strt_gen_int:end_gen_int) = -dal_work(strt_gen_int:end_gen_int)
       ! gets the referenced results from HERMIT
 !FIXME: \var(FORQM3)
       if (trim(PROP_NAME(itst))=="DSO") then
@@ -252,24 +259,55 @@
       ! checks the results
       write(io_std,100) "checks the results of "//trim(PROP_NAME(itst))
       test_failed = .false.
-      do ierr = 1, size_int
-        ! we check the ratio for absolutely greater values
-        if (abs(dal_work(end_gen_int+ierr))>ERR_THRSH) then
-          ratio_to_dal = dal_work(end_dal_expt+ierr)/dal_work(end_gen_int+ierr)
-          if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
-            write(io_std,998) PROP_NAME(itst), dal_work(end_gen_int+ierr), &
-                              dal_work(end_dal_expt+ierr)
-            test_failed = .true.
-          end if
-        ! checks the difference for smaller values
-        else
-          if (abs(dal_work(end_dal_expt+ierr)-dal_work(end_gen_int+ierr))>ERR_THRSH) then
-            write(io_std,998) PROP_NAME(itst), dal_work(end_gen_int+ierr), &
-                              dal_work(end_dal_expt+ierr)
-            test_failed = .true.
-          end if
-        end if
-      end do
+      addr_gen = end_dal_expt
+      addr_dal = end_gen_int
+      if (is_triang) then
+        do icol = 1, NBAST
+          do irow = 1, icol
+            addr_gen = addr_gen+1
+            addr_dal = addr_dal+1
+            ! we check the ratio for absolutely greater values
+            if (abs(dal_work(addr_dal))>ERR_THRSH) then
+              ratio_to_dal = dal_work(addr_gen)/dal_work(addr_dal)
+              if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
+                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
+                                  dal_work(addr_gen)
+                test_failed = .true.
+              end if
+            ! checks the difference for smaller values
+            else
+              if (abs(dal_work(addr_gen)-dal_work(addr_dal))>ERR_THRSH) then
+                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
+                                  dal_work(addr_gen)
+                test_failed = .true.
+              end if
+            end if
+          end do
+        end do
+      else
+        do icol = 1, NBAST
+          do irow = 1, NBAST
+            addr_gen = addr_gen+1
+            addr_dal = addr_dal+1
+            ! we check the ratio for absolutely greater values
+            if (abs(dal_work(addr_dal))>ERR_THRSH) then
+              ratio_to_dal = dal_work(addr_gen)/dal_work(addr_dal)
+              if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
+                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
+                                  dal_work(addr_gen)
+                test_failed = .true.
+              end if
+            ! checks the difference for smaller values
+            else
+              if (abs(dal_work(addr_gen)-dal_work(addr_dal))>ERR_THRSH) then
+                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
+                                  dal_work(addr_gen)
+                test_failed = .true.
+              end if
+            end if
+          end do
+        end do
+      end if
       if (GET_EXPT(itst)) then
         do ierr = 1, num_expt
           ! we check the ratio for absolutely greater values
@@ -303,7 +341,8 @@
 100 format("gen1int_dal_test>> ",A,Es16.6)
 110 format("gen1int_dal_test>> ",A,Es16.6,"-->",Es16.6)
 997 format("gen1int_dal_test>> ",A,"_expt, HERMIT>>",F18.12,", Gen1Int>>",F18.12)
-998 format("gen1int_dal_test>> ",A,"_int, HERMIT>>",F18.12,", Gen1Int>>",F18.12)
+998 format("gen1int_dal_test>> ",A,"_int ("I6,",",I6,"), HERMIT>>",F18.12, &
+           ", Gen1Int>>",F18.12)
 999 format("gen1int_dal_test>> ",A,I16)
 #else
     call QUIT("gen1int_dal_test>> Gen1Int is not installed!")
