@@ -52,10 +52,11 @@
      &                THRSSY, DEFLVL, WEIGHT_MCAVER(MAXRTS),            &
      &                THRCIDFT
 !
-      CHARACTER*60 TITLE(6)
-      CHARACTER*72 TITMOL(2)
-      CHARACTER*4  CENT,   TYPE
-      CHARACTER*8  LFIELD
-      COMMON /CHRINP/ TITLE, TITMOL,                                    &
+      character (len=60) :: TITLE(6)
+      character (len=72) :: TITMOL(2)
+      character (len= 9) :: ci_program
+      character (len= 4) :: CENT, TYPE
+      character (len= 8) :: LFIELD
+      COMMON /CHRINP/ TITLE, TITMOL, ci_program,                        &
      &                CENT(MXCORB), TYPE(MXCORB), LFIELD(MXFELT)
 !-- end of infinp.h --
