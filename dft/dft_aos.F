@@ -698,11 +698,6 @@ c     grid point.
 C
 #include <ibtfun.h>
 
-!#define DEBUG_SHELL_RANGE
-#ifdef DEBUG_SHELL_RANGE
-!radovan: this debug info is used in DIRAC
-      character(kmax) :: shell_range
-#endif
 
 C
       IF(NDER.GT.1) THEN
@@ -713,18 +708,10 @@ c        fixme - this won't scale linearly
          END IF
       END IF
 
-#ifdef DEBUG_SHELL_RANGE
-      do ishela = 1, kmax
-         shell_range(ishela:ishela) = ' '
-      end do
-#endif
 
       DO IBL = 1, NBLCNT
       DO ISHELA = IBLCKS(1,IBL),IBLCKS(2,IBL)
 
-#ifdef DEBUG_SHELL_RANGE
-         shell_range(ishela:ishela) = '*'
-#endif
 
          IADR =   KSTRT(ISHELA)+1
          NHKTA  = NHKT(ISHELA)
@@ -803,9 +790,6 @@ C        write (2,*) ' zz integrals from BLDFTAOS '
 C        call output(gao(1,1,10),1,nvclen,1,nbast,nvclen,nbast,1,2)
 C     end if
 
-#ifdef DEBUG_SHELL_RANGE
-      write(lupri, *) 'shell range: [', shell_range, ']'
-#endif
 
       RETURN
       END
