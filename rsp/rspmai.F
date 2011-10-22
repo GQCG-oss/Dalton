@@ -1066,7 +1066,7 @@ C     Initialization of TRHSO for HSOINP
 C     Initialization of INFHSO for HSOINP
       DATA TESTZY/.FALSE./, DOSO1/.TRUE./, DOSO2/.TRUE./, IPRHSO/0/
       DATA X2MAT/.FALSE./, A2MAT/.FALSE./, X2GRAD/.FALSE./,
-     &     PHOSPH/.FALSE./, MNFPHO/.FALSE./
+     &     PHOSPH/.FALSE./, MNFPHO/.FALSE./, ECPHOS/.FALSE./
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
       DATA QRSPEC/.FALSE./,QRSHG/.FALSE./,QRPOCK/.FALSE./
@@ -4354,18 +4354,18 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 C
-      PARAMETER ( NTABLE = 7 )
+      PARAMETER ( NTABLE = 8 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*QUADRA' )
       DATA TABLE /'.SINGLE', '.DOUBLE', '.PHOSPH', '.TWO-PH',
-     &            '.MNFPHO', '.TPCD  ', '.ESA   '/
+     &            '.MNFPHO', '.TPCD  ', '.ESA   ', '.ECPHOS'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2,3,4,5,4,6), I
+            GO TO (1,2,3,4,5,4,6,8), I
          END IF
       END DO
       GO TO 100
@@ -4422,6 +4422,15 @@ C
  150  READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD .NE. STRING) GO TO 150
+      CALL SMOINP(WORD)
+      RETURN
+C
+C     Phosphorescence calculation using effective charge integrals
+C
+ 8    REWIND (LUCMD,IOSTAT=IOS)
+ 180  READ (LUCMD, '(A7)',END=2100) WORD
+      CALL UPCASE(WORD)
+      IF (WORD .NE. STRING) GO TO 180
       CALL SMOINP(WORD)
       RETURN
 C

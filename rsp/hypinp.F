@@ -591,7 +591,7 @@ C
 #include <gnrinf.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 26)
+      PARAMETER ( NTABLE = 27)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -601,7 +601,7 @@ C
      *            '.ISPABC', '.TPCD  ', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
-     *            '.MCDBTE', '.MCDPRJ'/
+     *            '.MCDBTE', '.MCDPRJ', '.ECPHOS'/
 C
 C READ IN  INPUT
 C
@@ -621,7 +621,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24,25,26), I
+     &                      17,18,19,20,21,22,23,24,25,26,27), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -789,6 +789,21 @@ C                 B operators
                   LABEL='Z1MNF-SO'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
+ 27            CONTINUE
+                  ECPHOS = .TRUE.
+                  LABEL='XDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='X1SPNSCA'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Y1SPNSCA'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Z1SPNSCA'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
                   LABEL='XDIPLEN'
@@ -902,7 +917,11 @@ C
            WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
      &     //' with atomic mean-field spin-orbit operator (AMFI).'
          END IF
-         IF (PHOSPH .OR. MNFPHO) THEN
+         IF (ECPHOS) THEN
+           WRITE(LUPRI,'(/A)') ' Phosphorescence calculation requested'
+     &     //' with effective charge spin-orbit operator.'
+         END IF
+         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
             IF (JSPABC .GT. 0 .AND. ISPINA .NE. 0 .AND.
      &          ISPINB .NE. 1 .AND. ISPINC .NE. 1) THEN
                NWARN = NWARN + 1

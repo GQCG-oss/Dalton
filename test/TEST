@@ -89,7 +89,7 @@ SHORT="$SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTQM3"
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
 geoopt_symbrk prop_expgrad prop_nucquad prop_roa rsp_dckerr rsp_esr \
-rsp_esr2 rsp_mnfphosph rsp_solvesr walk_polar2"
+rsp_esr2 rsp_mnfphosph rsp_ecphosph rsp_solvesr walk_polar2"
 #
 MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
 cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \

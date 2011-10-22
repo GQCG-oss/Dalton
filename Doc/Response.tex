@@ -734,6 +734,20 @@ Test the contributions to the quadratic response function arising from
 the $E^{\left[3\right]}$ and $S^{\left[3\right]}$ terms.  Mainly for
 debugging purposes.
 
+\item{\Key{ECPHOS}}
+Specifies a phosphorescence\index{phosphorescence} calculation using
+the effective charge approximation for the spin--orbit operator, {\it i.e.\/}
+the spin-orbit\index{spin-orbit}
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the
+calculation so that no further response input is required except \Key{ROOTS}; the
+$A$ operator is set to the dipole operators\index{dipole length} and
+the $B$ operator
+is set to the effective charge spin-orbit\index{spin-orbit}
+operators. The set of effective charges is obtained from Koseki et al.
+\cite{skmsgmwsnm99,skmwsmsgjpca102} for atoms with ECP:s and Ref.\cite{skmwsmsgjpc96} for "all-electron" atoms.
+The reference state {\em must} be a singlet spin state. See  also \Key{PHOSPHORESCENCE}
+
+
 \item{\Key{ISPABC}}\\
 \verb|READ *, ISPINA,ISPINB,ISPINC|\\
 Spin symmetry of $A$-operators (ISPINA), $B$-operators (ISPINB),
@@ -792,7 +806,7 @@ $A$ operator is set to the dipole operators\index{dipole length} and
 the $B$ operator
 is set to the atomic mean-field spin-orbit\index{spin-orbit}
 operators.
-The reference state {\em must} be a singlet spin state.
+The reference state {\em must} be a singlet spin state. See also \Key{PHOSPHORESCENCE}
 
 \item{\Key{PHOSPHORESCENCE}}
 Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}

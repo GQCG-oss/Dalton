@@ -2819,6 +2819,7 @@ c  /* Deck SCALE_CHRG */
 #include "elements.h"
 #include "ecpinf.h"
       DIMENSION SVCHRG(*)
+      LOGICAL ISECP
 C      
       PARAMETER (CHGLi = 3D0, CHGF  = 9D0,  CHGNa = 11D0, CHGCl = 17D0,
      &     CHGSc = 21D0, CHGZn = 30D0, CHGY  = 39D0, CHGCd = 48D0,
@@ -2840,10 +2841,10 @@ C            true charge if ECP). With this change this
 C            may (???) also work for ECP ???
 C
 c     scaling according to Koseki et al, J.Phys.Chem 1995, 99, 12764
-         IF (INDECP(I) .NE. 0) THEN
+         IF (ISECP(I)) THEN
             IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
                VLE = CHG - 2D0
-               FAC = 0.40 + 0.05*VLE
+               FAC = 0.45 + 0.05*VLE
             ELSE IF(CHG.GE.CHGNa.AND.CHG.LE.CHGCl) THEN
                FAC = 12.0D0
 c     scaling according to Koseki et al, J. Pys. Chem. A 1998, 102, 10430  
@@ -2897,6 +2898,29 @@ C            charge in CHARGE(I) /hjaaj mar 2004
 C            
          WRITE(LUPRI,'(A4,11X,F8.2)')ELEMENTS(IND),CHARGE(I)
       END DO
+      END
+      LOGICAL FUNCTION ISECP(IATOM) 
+C
+C True if atom I is an ECP type atom
+C
+      IMPLICIT NONE
+      INTEGER IATOM
+C
+#include <ecpinf.h>
+C
+      INTEGER ITYP, INONT
+C
+      ISECP = .FALSE.
+      DO ITYP = 1, NTYECP
+         DO INONT = 1, NECP(ITYP)
+            IF (IATOM .EQ. INDECP(ITYP) + INONT - 1) THEN
+               ISECP = .TRUE.
+               GOTO 999
+            END IF
+         END DO
+      END DO
+ 999  CONTINUE
+      RETURN
       END
 C  /* Deck ioden */
       FUNCTION IODEN(I)

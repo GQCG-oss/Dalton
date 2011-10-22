@@ -17,21 +17,21 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_mnfphosph.info <<'%EOF%'
-   rsp_mnfphosph
+cat > rsp_ecphosph.info <<'%EOF%'
+   rsp_ecphosph
    -------------
    Molecule:         C2H4
    Wave Function:    MCSCF (CAS) / ANO (Atombasis)
-   Test Purpose:     Atomic mean field (AMFI) spin-orbit and phosphorescence
+   Test Purpose:     Effective charge spin-orbit and phosphorescence
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_mnfphosph.mol <<'%EOF%'
+cat > rsp_ecphosph.mol <<'%EOF%'
 ATOMBASIS
 AMFI spin-orbit and phosphorescence
-Note: only spherical GTOs allowed with AMFI
+
     2    3  X  Y  Z 1 1.00D-12
         6.0   1 Basis=ano-1 3 2 0 0 
 C             0.000000       0.000000       1.257892
@@ -42,14 +42,9 @@ H             0.000000       1.745462       2.342716
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_mnfphosph.dal <<'%EOF%'
+cat > rsp_ecphosph.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
-**INTEGRALS
-.MNF-SO
-.PROPRI
-.PRINT
- 4
 **WAVE FUNCTIONS
 .HF
 .MP2
@@ -70,7 +65,7 @@ cat > rsp_mnfphosph.dal <<'%EOF%'
  1
 **RESPONS
 *QUADRATIC
-.MNFPHO                
+.ECPHOS                
 .PRINT
  5  
 .ROOTS
@@ -86,8 +81,8 @@ cat > rsp_mnfphosph.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >rsp_mnfphosph.check
-cat >>rsp_mnfphosph.check <<'%EOF%'
+echo $CHECK_SHELL >rsp_ecphosph.check
+cat >>rsp_ecphosph.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -136,16 +131,6 @@ TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
-# Integrals
-CRIT1=`$GREP "SO\-integrals are calculated for * C\: \[He\]2s\^2 2p\^2" $log | wc -l`
-CRIT2=`$GREP "SO\-integrals are calculated for * H\: no mean\-field" $log | wc -l`
-CRIT3=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
-CRIT4=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
-CRIT5=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
-TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[4]=5
-ERROR[4]="INTEGRALS NOT SET UP CORRECTLY"
-
 # Energy
 CRIT1=`$GREP "Final MCSCF energy\: * \-78\.1785072190[0-9][0-9]" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
@@ -153,7 +138,7 @@ CTRL[5]=1
 ERROR[5]="MCSCF ENERGY NOT CORRECT"
 
 # Response setup
-CRIT1=`$GREP "Phosphorescence calculation requested with atomic mean\-field spin\-orbit operator \(AMFI\)\." $log | wc -l`
+CRIT1=`$GREP "Phosphorescence calculation requested with effective charge spin-orbit operator." $log | wc -l`
 CRIT2=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT3=`$GREP "Spin of operator B \, ISPINB\= * 1" $log | wc -l`
 CRIT4=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 1" $log | wc -l`
@@ -175,17 +160,17 @@ CTRL[7]=2
 ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 
 # Phosphorescence
-CRIT1=`$GREP "Partial rates \(AMFI\)\: X\-polarization * 1\.74[6-7]..(D|E)\-02" $log | wc -l`
-CRIT2=`$GREP "Partial rates \(AMFI\)\: Y\-polarization * 1\.98(3|4)..(D|E)\-03" $log | wc -l`
-CRIT3=`$GREP "Partial rates \(AMFI\)\: Z\-polarization * (0| )\.(    |000)" $log | wc -l`
-CRIT4=`$GREP "Total transition * rate * \(AMFI\) * 6\.48.(D|E)\-03 s\-1" $log | wc -l`
-CRIT5=`$GREP "Total phosphorescence lifetime \(AMFI\) * 1\.54.(D|E)\+02 * s" $log | wc -l`
+CRIT1=`$GREP "Partial rates \(ECSO\)\: X\-polarization * 0\.254[0-9]" $log | wc -l`
+CRIT2=`$GREP "Partial rates \(ECSO\)\: Y\-polarization * 2\.848[0-9]*(D|E)\-03" $log | wc -l`
+CRIT3=`$GREP "Partial rates \(ECSO\)\: Z\-polarization * (0| )\.(    |000)" $log | wc -l`
+CRIT4=`$GREP "Total transition * rate * \(ECSO\) * 8\.57[0-9](D|E)\-02 s\-1" $log | wc -l`
+CRIT5=`$GREP "Total phosphorescence lifetime * \(ECSO\) * 1\.16[0-9](D|E)\+01 s" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[8]=5
 ERROR[8]="PHOSPHORESCENCE NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7 8
+for i in 1 2 3 5 6 7 8
 do
    if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "

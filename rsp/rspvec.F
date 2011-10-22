@@ -1716,6 +1716,7 @@ C
          MSYMCX = MULD2H(IREFSY,MSYMC)
          IF (PHOSPH) CALL DZERO(PHOSMAT,9*NSMCNV(MSYMC))
          IF (MNFPHO) CALL DZERO(PHOSMN,9*NSMCNV(MSYMC))
+         IF (ECPHOS) CALL DZERO(PHOSEC,9*NSMCNV(MSYMC))
          DO 400 MSYMB = 1,NSYM
             MSYMA = MULD2H(MSYMC,MSYMB)
             IF ( (NSMCNV(MSYMC) .GT. 0) .AND. (NBSMOP(MSYMB) .GT. 0)
@@ -2071,6 +2072,13 @@ C
                                 IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
                                 PHOSMN(IDIP,IHSO,IC)=SMOM
                                END IF
+                              IF (ECPHOS .AND.
+     &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
+     &                        BSMLB(MSYMB,IBOP)(2:8).EQ.'1SPNSCA' ) THEN
+                                IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
+                                IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
+                                PHOSEC(IDIP,IHSO,IC)=SMOM
+                               END IF
                            IF (TWOPHO) THEN
                               IF (IC.LE.IMXEXC) THEN
                                  IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
@@ -2184,7 +2192,7 @@ C ---------------------------------------------------------------endofmcd-------
  500           CONTINUE
             END IF
  400     CONTINUE
-         IF (PHOSPH .OR. MNFPHO) THEN
+         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
             WRITE (LUPRI,'(/A/A,I3/A,I3/A/)')
      &         ' Phosphorescence electric dipole transition rates',
      &         ' from excited states of symmetry',MULD2H(MSYMC,IREFSY),
@@ -2193,7 +2201,9 @@ C ---------------------------------------------------------------endofmcd-------
             IF (PHOSPH) WRITE(LUPRI,'(A)')
      &        ' (H_SO: Full spin-orbit integrals used.)'
             IF (MNFPHO) WRITE(LUPRI,'(A)')
-     &        ' (AMFI: Atomic Mean field spin-orbit Integrals used.)'
+     &        ' (AMFI: Atomic Mean field spin-orbit integrals used.)'
+            IF (ECPHOS) WRITE(LUPRI,'(A)')
+     &        ' (Effective charge spin-orbit integrals used.)'
             IF (NSMCNV(MSYMC) .LE. 0) WRITE(LUPRI,'(/A)')
      &        ' No excited states calculated of this symmetry.'
             DO IC = 1,NSMCNV(MSYMC)
@@ -2201,36 +2211,63 @@ C ---------------------------------------------------------------endofmcd-------
      &  ' Phosphorescence transition rate from excited state no.',IC,
      &  ' (Triplet->singlet transition, high-temperature limit)'
                W=EXCITA(MSYMC,IC,ISPINC+1)
+               WRITE(LUPRI,'(/A,F7.3,A/)') 
+     &  ' Transition energy:',W*XTEV,' eV'
                RATE =D0
                RATEA=D0
+               RATEE=D0
+               DIP=D0
+               DIPA=D0
+               DIPE=D0
                DO I=1,3
                   XDIP=D0
                   XDIPA=D0
+                  XDIPE=D0
                   DO J=1,3
                      IF (PHOSPH) XDIP =XDIP +PHOSMAT(I,J,IC)**2
                      IF (MNFPHO) XDIPA=XDIPA+ PHOSMN(I,J,IC)**2
+                     IF (ECPHOS) XDIPE=XDIPE+ PHOSEC(I,J,IC)**2
                   END DO
                   IF (PHOSPH) THEN
                      XRATE=D4D3*(ALPHAC*W)**3*XDIP/XFSEC
-                     WRITE(LUPRI,'(2A,1P,G17.5)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (H_SO): ',
-     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE,
+     &               ' Transition moment : ',SQRT(XDIP)
                      RATE=RATE+XRATE
+                     DIP = DIP + XDIP
                    END IF
                    IF (MNFPHO) THEN
                      XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/XFSEC
-                     WRITE(LUPRI,'(2A,1P,G17.5)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (AMFI): ',
-     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA,
+     &               ' Transition moment : ',SQRT(XDIPA)
                      RATEA=RATEA+XRATEA
+                     DIPA = DIPA + XDIPA
+                   END IF
+                   IF (ECPHOS) THEN
+                     XRATEE=D4D3*(ALPHAC*W)**3*XDIPE/XFSEC
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
+     &               ' Partial rates (ECSO): ',
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEE,
+     &               ' Transition moment : ',SQRT(XDIPE)
+                     RATEE=RATEE+XRATEE
+                     DIPE = DIPE + XDIPE
                    END IF
                END DO
-               IF (PHOSPH) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
+               IF (PHOSPH) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
+     &        ' Oscillator strength            (H_SO)', 2*W*DIP/D3,'',
      &        ' Total transition       rate    (H_SO)', RATE/D3,' s-1',
      &        ' Total phosphorescence lifetime (H_SO)', D3/RATE,' s'
-               IF (MNFPHO) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &        ' Total transition       rate    (AMFI)', RATEA/D3,' s-1',
-     &        ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
+               IF (MNFPHO) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
+     &        ' Oscillator strength            (AMFI)', 2*W*DIPA/D3,'',
+     &        ' Total transition       rate    (AMFI)',RATEA/D3,' s-1',
+     &        ' Total phosphorescence lifetime (AMFI)',D3/RATEA,' s'
+               IF (ECPHOS) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
+     &        ' Oscillator strength            (ECSO)', 2*W*DIPE/D3,'',
+     &        ' Total transition       rate    (ECSO)', RATEE/D3,' s-1',
+     &        ' Total phosphorescence lifetime (ECSO)', D3/RATEE,' s'
             END DO
          END IF
  300  CONTINUE
