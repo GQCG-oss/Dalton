@@ -215,8 +215,9 @@
                             kind_dens, dim_dens, NUM_DENS, ao_dens,         &
                             GET_EXPT(itst), WRT_EXPT(itst),                 &
                             dal_work(1:num_expt), io_std, level_print)
-      ! Dalton uses positive sign for potential energy integrals
-      if (PROP_NAME(itst)=="POTENERG") &
+      ! Dalton uses different sign for the following integrals
+      if (PROP_NAME(itst)=="POTENERG" .or. PROP_NAME(itst)=="NSTLON  " .or. &
+          PROP_NAME(itst)=="PSO     ")                                      &
         dal_work(strt_gen_int:end_gen_int) = -dal_work(strt_gen_int:end_gen_int)
       ! gets the referenced results from HERMIT
 !FIXME: \var(FORQM3)
