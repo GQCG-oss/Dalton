@@ -346,8 +346,11 @@ module gen1int_shell
 #include "nuclei.h"
     integer, parameter :: IDX_DIPORG = -1  !index of dipole origin
     integer icent                          !incremental recorder over atomic centers
+    integer iopt                           !incremental recorder over operators
     type(shell_int_t) tmp_prop             !temporary contracted integrals
     integer ierr                           !error information
+!FIXME: removes coord_ket_bra after LAOs enabled
+    real(REALK) coord_ket_bra(3)           !relative coordinates from ket center to bra center
     ! sets the base index of orbitals on bra and ket centers
     prop_int%base_idx_bra = bra_shell%base_idx
     prop_int%base_idx_ket = ket_shell%base_idx
@@ -423,6 +426,189 @@ module gen1int_shell
                                    + prop_int%contr_ints(:,:,3,:) &
                                    + prop_int%contr_ints(:,:,6,:)
       prop_int%num_opt = 1
+    ! London orbital contribution to nuclear shielding tensor integrals
+    case("NSTLON")
+      prop_int%num_opt = 9*NUCDEP
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      ! NSTLON contains the following integrals (scaled by 1/2):
+      ! -(Y_{MN}*z-Z_{MN}*y)*(y_K/r_K^3*d/dz-z_K/r_K^3*d/dy), (001 x)
+      ! -(Z_{MN}*x-X_{MN}*z)*(y_K/r_K^3*d/dz-z_K/r_K^3*d/dy), (001 y)
+      ! -(X_{MN}*y-Y_{MN}*x)*(y_K/r_K^3*d/dz-z_K/r_K^3*d/dy), (001 z)
+      ! -(Y_{MN}*z-Z_{MN}*y)*(z_K/r_K^3*d/dx-x_K/r_K^3*d/dz), (002 x)
+      ! -(Z_{MN}*x-X_{MN}*z)*(z_K/r_K^3*d/dx-x_K/r_K^3*d/dz), (002 y)
+      ! -(X_{MN}*y-Y_{MN}*x)*(z_K/r_K^3*d/dx-x_K/r_K^3*d/dz), (002 z)
+      ! -(Y_{MN}*z-Z_{MN}*y)*(x_K/r_K^3*d/dy-y_K/r_K^3*d/dx), (003 x)
+      ! -(Z_{MN}*x-X_{MN}*z)*(x_K/r_K^3*d/dy-y_K/r_K^3*d/dx), (003 y)
+      ! -(X_{MN}*y-Y_{MN}*x)*(x_K/r_K^3*d/dy-y_K/r_K^3*d/dx), (003 z)
+      !
+      ! where M and N are the bra and ket centers, and K runs for all atoms
+      !
+      ! NOTE: we use x,y,z for component of the magnetic field,
+      !       while 001, 002, ..., for coordinates of K
+      !
+      ! sets temporary contracted integrals
+      tmp_prop%num_opt = 27  !eletronic derivatives, Cartesian multipole moments, derivatives of 1/r_K
+      tmp_prop%num_geo_derv = prop_int%num_geo_derv
+      allocate(tmp_prop%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   tmp_prop%num_opt,tmp_prop%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_prop!"
+      ! sets the relative coordinates from ket center to bra center
+      coord_ket_bra = bra_shell%coord_cent-ket_shell%coord_cent
+      iopt =  0
+      do icent = 1, NUCDEP
+        ! \var(tmp_prop) contains the integrals of operators:
+        !  (1) (x_K/r_K^3)*x*d/dx,  (2) (x_K/r_K^3)*x*d/dy,  (3) (x_K/r_K^3)*x*d/dz,
+        !  (4) (x_K/r_K^3)*y*d/dx,  (5) (x_K/r_K^3)*y*d/dy,  (6) (x_K/r_K^3)*y*d/dz,
+        !  (7) (x_K/r_K^3)*z*d/dx,  (8) (x_K/r_K^3)*z*d/dy,  (9) (x_K/r_K^3)*z*d/dz,
+        ! (10) (y_K/r_K^3)*x*d/dx, (11) (y_K/r_K^3)*x*d/dy, (12) (y_K/r_K^3)*x*d/dz,
+        ! (13) (y_K/r_K^3)*y*d/dx, (14) (y_K/r_K^3)*y*d/dy, (15) (y_K/r_K^3)*y*d/dz,
+        ! (16) (y_K/r_K^3)*z*d/dx, (17) (y_K/r_K^3)*z*d/dy, (18) (y_K/r_K^3)*z*d/dz,
+        ! (19) (z_K/r_K^3)*x*d/dx, (20) (z_K/r_K^3)*x*d/dy, (21) (z_K/r_K^3)*x*d/dz,
+        ! (22) (z_K/r_K^3)*y*d/dx, (23) (z_K/r_K^3)*y*d/dy, (24) (z_K/r_K^3)*y*d/dz,
+        ! (25) (z_K/r_K^3)*z*d/dx, (26) (z_K/r_K^3)*z*d/dy, (27) (z_K/r_K^3)*z*d/dz,
+        call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao,    &
+                                  1, icent, CORD(:,icent),         &
+                                  IDX_DIPORG, DIPORG, 0.5_REALK,   &
+                                  1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, &
+                                  num_cents, idx_cent, order_cent, tmp_prop)
+        ! Y_{MN}*(z_K/r_K^3)*z*d/dy-Z_{MN}*(z_K/r_K^3)*y*d/dy
+        ! -Y_{MN}*(y_K/r_K^3)*z*d/dz+Z_{MN}*(y_K/r_K^3)*y*d/dz
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(2)*tmp_prop%contr_ints(:,:,26,:) &
+                                        - coord_ket_bra(3)*tmp_prop%contr_ints(:,:,23,:) &
+                                        - coord_ket_bra(2)*tmp_prop%contr_ints(:,:,18,:) &
+                                        + coord_ket_bra(3)*tmp_prop%contr_ints(:,:,15,:)
+        ! Z_{MN}*(z_K/r_K^3)*x*d/dy-X_{MN}*(z_K/r_K^3)*z*d/dy
+        ! +X_{MN}*(y_K/r_K^3)*z*d/dz-Z_{MN}*(y_K/r_K^3)*x*d/dz
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(3)*tmp_prop%contr_ints(:,:,20,:) &
+                                        - coord_ket_bra(1)*tmp_prop%contr_ints(:,:,26,:) &
+                                        + coord_ket_bra(1)*tmp_prop%contr_ints(:,:,18,:) &
+                                        - coord_ket_bra(3)*tmp_prop%contr_ints(:,:,12,:) 
+        ! X_{MN}*(z_K/r_K^3)*y*d/dy-Y_{MN}*(z_K/r_K^3)*x*d/dy
+        ! -X_{MN}*(y_K/r_K^3)*y*d/dz+Y_{MN}*(y_K/r_K^3)*x*d/dz
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(1)*tmp_prop%contr_ints(:,:,23,:) &
+                                        - coord_ket_bra(2)*tmp_prop%contr_ints(:,:,20,:) &
+                                        - coord_ket_bra(1)*tmp_prop%contr_ints(:,:,15,:) &
+                                        + coord_ket_bra(2)*tmp_prop%contr_ints(:,:,12,:)
+        ! Y_{MN}*(x_K/r_K^3)*z*d/dz-Z_{MN}*(x_K/r_K^3)*y*d/dz
+        ! +Z_{MN}*(z_K/r_K^3)*y*d/dx-Y_{MN}*(z_K/r_K^3)*z*d/dx
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(2)*tmp_prop%contr_ints(:,:,9,:)  &
+                                        - coord_ket_bra(3)*tmp_prop%contr_ints(:,:,6,:)  &
+                                        + coord_ket_bra(3)*tmp_prop%contr_ints(:,:,22,:) &
+                                        - coord_ket_bra(2)*tmp_prop%contr_ints(:,:,25,:)
+        ! X_{MN}*(z_K/r_K^3)*z*d/dx-Z_{MN}*(z_K/r_K^3)*x*d/dx
+        ! -X_{MN}*(x_K/r_K^3)*z*d/dz+Z_{MN}*(x_K/r_K^3)*x*d/dz
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(1)*tmp_prop%contr_ints(:,:,25,:) &
+                                        - coord_ket_bra(3)*tmp_prop%contr_ints(:,:,19,:) &
+                                        - coord_ket_bra(1)*tmp_prop%contr_ints(:,:,9,:)  &
+                                        + coord_ket_bra(3)*tmp_prop%contr_ints(:,:,3,:)
+        ! X_{MN}*(x_K/r_K^3)*y*d/dz-Y_{MN}*(x_K/r_K^3)*x*d/dz
+        ! +Y_{MN}*(z_K/r_K^3)*x*d/dx-X_{MN}*(z_K/r_K^3)*y*d/dx
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(1)*tmp_prop%contr_ints(:,:,6,:)  &
+                                        - coord_ket_bra(2)*tmp_prop%contr_ints(:,:,3,:)  &
+                                        + coord_ket_bra(2)*tmp_prop%contr_ints(:,:,19,:) &
+                                        - coord_ket_bra(1)*tmp_prop%contr_ints(:,:,22,:)
+        ! Y_{MN}*(y_K/r_K^3)*z*d/dx-Z_{MN}*(y_K/r_K^3)*y*d/dx
+        ! -Y_{MN}*(x_K/r_K^3)*z*d/dy+Z_{MN}*(x_K/r_K^3)*y*d/dy
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(2)*tmp_prop%contr_ints(:,:,16,:) &
+                                        - coord_ket_bra(3)*tmp_prop%contr_ints(:,:,13,:) &
+                                        - coord_ket_bra(2)*tmp_prop%contr_ints(:,:,8,:)  &
+                                        + coord_ket_bra(3)*tmp_prop%contr_ints(:,:,5,:)
+        ! X_{MN}*(x_K/r_K^3)*z*d/dy-Z_{MN}*(x_K/r_K^3)*x*d/dy
+        ! +Z_{MN}*(y_K/r_K^3)*x*d/dx-X_{MN}*(y_K/r_K^3)*z*d/dx
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(1)*tmp_prop%contr_ints(:,:,8,:)  &
+                                        - coord_ket_bra(3)*tmp_prop%contr_ints(:,:,2,:)  &
+                                        + coord_ket_bra(3)*tmp_prop%contr_ints(:,:,10,:) &
+                                        - coord_ket_bra(1)*tmp_prop%contr_ints(:,:,16,:)
+        ! X_{MN}*(y_K/r_K^3)*y*d/dx-Y_{MN}*(y_K/r_K^3)*x*d/dx
+        ! -X_{MN}*(x_K/r_K^3)*y*d/dy+Y_{MN}*(x_K/r_K^3)*x*d/dy
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = coord_ket_bra(1)*tmp_prop%contr_ints(:,:,13,:) &
+                                        - coord_ket_bra(2)*tmp_prop%contr_ints(:,:,10,:) &
+                                        - coord_ket_bra(1)*tmp_prop%contr_ints(:,:,5,:)  &
+                                        + coord_ket_bra(2)*tmp_prop%contr_ints(:,:,2,:)
+      end do
+      deallocate(tmp_prop%contr_ints)
+    ! nuclear shielding integrals without London orbital contribution
+    case("NSTNOL")
+      prop_int%num_opt = 9*NUCDEP
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      ! NSTNOL contains the following integrals (scaled by 1/2):
+      ! y_N*y_K/r_K^3+z_N*z_K/r_K^3, (001 x)
+      ! -x_N*y_K/r_K^3,              (001 y)
+      ! -x_N*z_K/r_K^3,              (001 z)
+      ! -y_N*x_K/r_K^3,              (002 x)
+      ! x_N*x_K/r_K^3+z_N*z_K/r_K^3, (002 y)
+      ! -y_N*z_K/r_K^3,              (002 z)
+      ! -z_N*x_K/r_K^3,              (003 x)
+      ! -z_N*y_K/r_K^3,              (003 y)
+      ! x_N*x_K/r_K^3+y_N*y_K/r_K^3, (003 z)
+      !
+      ! where N is ket center, and K runs for all atoms
+      !
+      ! NOTE: we use x,y,z for component of the magnetic field,
+      !       while 001, 002, ..., for coordinates of K
+      !
+      ! sets temporary contracted integrals
+      tmp_prop%num_opt = 9  !Cartesian multipole moments, derivatives of 1/r_K
+      tmp_prop%num_geo_derv = prop_int%num_geo_derv
+      allocate(tmp_prop%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   tmp_prop%num_opt,tmp_prop%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_prop!"
+      iopt =  0
+      do icent = 1, NUCDEP
+        ! \var(tmp_prop) contains the integrals of operators:
+        ! (1) (x_K/r_K^3)*x_N, (2) (x_K/r_K^3)*y_N, (3) (x_K/r_K^3)*z_N,
+        ! (4) (y_K/r_K^3)*x_N, (5) (y_K/r_K^3)*y_N, (6) (y_K/r_K^3)*z_N,
+        ! (7) (z_K/r_K^3)*x_N, (8) (z_K/r_K^3)*y_N, (9) (z_K/r_K^3)*z_N,
+        call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao, 0,          &
+                                  icent, CORD(:,icent), ket_shell%idx_cent, &
+                                  ket_shell%coord_cent, 0.5_REALK,          &
+                                  1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,          &
+                                  num_cents, idx_cent, order_cent, tmp_prop)
+        ! y_N*y_K/r_K^3+z_N*z_K/r_K^3, (001 x)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = tmp_prop%contr_ints(:,:,5,:) &
+                                        + tmp_prop%contr_ints(:,:,9,:)
+        ! -x_N*y_K/r_K^3,              (001 y)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = -tmp_prop%contr_ints(:,:,4,:)
+        ! -x_N*z_K/r_K^3,              (001 z)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = -tmp_prop%contr_ints(:,:,7,:)
+        ! -y_N*x_K/r_K^3,              (002 x)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = -tmp_prop%contr_ints(:,:,2,:)
+        ! x_N*x_K/r_K^3+z_N*z_K/r_K^3, (002 y)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = tmp_prop%contr_ints(:,:,1,:) &
+                                        + tmp_prop%contr_ints(:,:,9,:)
+        ! -y_N*z_K/r_K^3,              (002 z)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = -tmp_prop%contr_ints(:,:,8,:)
+        ! -z_N*x_K/r_K^3,              (003 x)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = -tmp_prop%contr_ints(:,:,3,:)
+        ! -z_N*y_K/r_K^3,              (003 y)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = -tmp_prop%contr_ints(:,:,6,:)
+        ! x_N*x_K/r_K^3+y_N*y_K/r_K^3, (003 z)
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = tmp_prop%contr_ints(:,:,1,:) &
+                                        + tmp_prop%contr_ints(:,:,5,:)
+      end do
+      deallocate(tmp_prop%contr_ints)
     ! overlap integrals
     case("OVERLAP")
       prop_int%num_opt = 1
@@ -459,6 +645,43 @@ module gen1int_shell
                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          &
                                   num_cents, idx_cent, order_cent, tmp_prop)
         prop_int%contr_ints = prop_int%contr_ints+tmp_prop%contr_ints
+      end do
+      deallocate(tmp_prop%contr_ints)
+    ! paramagnetic spin-orbit integrals
+    case("PSO")
+      prop_int%num_opt = 3*NUCDEP
+      allocate(prop_int%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   prop_int%num_opt,prop_int%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate contr_ints!"
+      ! sets temporary contracted integrals
+      tmp_prop%num_opt = 9  !electronic derivatives, derivatives of 1/r_K
+      tmp_prop%num_geo_derv = prop_int%num_geo_derv
+      allocate(tmp_prop%contr_ints(prop_int%num_orb_bra,prop_int%num_orb_ket, &
+                                   tmp_prop%num_opt,tmp_prop%num_geo_derv), stat=ierr)
+      if (ierr/=0) stop "gen1int_shell_prop>> failed to allocate tmp_prop!"
+      iopt =  0
+      do icent = 1, NUCDEP
+        ! \var(tmp_prop) contains the integrals of operators:
+        ! (1) (x_K/r_K^3)*d/dx, (2) (x_K/r_K^3)*d/dy, (3) (x_K/r_K^3)*d/dz,
+        ! (4) (y_K/r_K^3)*d/dx, (5) (y_K/r_K^3)*d/dy, (6) (y_K/r_K^3)*d/dz,
+        ! (7) (z_K/r_K^3)*d/dx, (8) (z_K/r_K^3)*d/dy, (9) (z_K/r_K^3)*d/dz,
+        call gen1int_shell_nucpot(bra_shell, ket_shell, is_lao,    &
+                                  1, icent, CORD(:,icent),         &
+                                  IDX_DIPORG, DIPORG, 1.0_REALK,   &
+                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, &
+                                  num_cents, idx_cent, order_cent, tmp_prop)
+        ! operator (y_k/r_k^3)*d/dz-(z_k/r_k^3)*d/dy
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = tmp_prop%contr_ints(:,:,6,:) &
+                                        - tmp_prop%contr_ints(:,:,8,:)
+        ! operator (z_k/r_k^3)*d/dx-(x_k/r_k^3)*d/dz
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = tmp_prop%contr_ints(:,:,7,:) &
+                                        - tmp_prop%contr_ints(:,:,3,:)
+        ! operator (x_k/r_k^3)*d/dy-(y_k/r_k^3)*d/dx
+        iopt = iopt+1
+        prop_int%contr_ints(:,:,iopt,:) = tmp_prop%contr_ints(:,:,2,:) &
+                                        - tmp_prop%contr_ints(:,:,4,:)
       end do
       deallocate(tmp_prop%contr_ints)
     case default

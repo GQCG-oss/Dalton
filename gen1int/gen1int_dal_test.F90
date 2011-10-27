@@ -50,35 +50,39 @@
 ! threshold of error
 #include "err_thrsh.h"
     ! number of tests
-    integer, parameter :: NUM_TEST = 4
+    integer, parameter :: NUM_TEST = 7
     ! property integral names, see subroutine \fn(gen1int_shell_prop) in gen1int_shell.F90,
-    ! and variable \var(TABLE) in subroutine \fn(PR1IN1) in abacus/her1pro.F
-    character*8, parameter :: PROP_NAME(NUM_TEST) = &
-      (/"ANGLON  ", "KINENERG", "OVERLAP ", "POTENERG"/)
+    character*8, parameter :: PROP_NAME(NUM_TEST) =                 &
+      (/"ANGLON  ", "KINENERG", "NSTLON  ", "NSTNOL  ", "OVERLAP ", &
+        "POTENERG", "PSO     "/)
+    ! property integral names in subroutine \fn(PR1IN1) in abacus/her1pro.F
+    character*8, parameter :: DAL_PROP(NUM_TEST) =                  &
+      (/"ANGLON  ", "KINENERG", "NUCSLO  ", "NUCSNLO ", "OVERLAP ", &
+        "POTENERG", "PSO     "/)
     ! if London atomic orbitals
     logical, parameter :: IS_LAO(NUM_TEST) = &
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false., .false., .false./)
     ! order of Cartesian multipole moments
     integer, parameter :: ORDER_MOM(NUM_TEST) = &
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0/)
     ! maximum number of differentiated centers
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0/)
     ! order of total geometric derivatives
     integer, parameter :: ORDER_GEO_TOT(NUM_TEST) = &
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0/)
     ! if getting integrals back from Gen1Int
     logical, parameter :: GET_INT(NUM_TEST) = &
-      (/.true., .true., .true., .true./)
+      (/.true., .true., .true., .true., .true., .true., .true./)
     ! if writing integrals on file
     logical, parameter :: WRT_INT(NUM_TEST) = &
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false., .false., .false./)
     ! if getting expectation values back
     logical, parameter :: GET_EXPT(NUM_TEST) = &
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false., .false., .false./)
     ! if writing expectation values on file
     logical, parameter :: WRT_EXPT(NUM_TEST) = &
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false., .false., .false./)
     ! number of operators including derivatives
     integer num_opt_derv
     ! kind of integral matrices
@@ -237,19 +241,19 @@
       base_free = 1
       len_free = len_work-end_dal_int
       write(io_std,100) "gets the referenced results from HERMIT ..."
-      call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,     &
-                  lb_int, PROP_NAME(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
-                  PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),         &
-                  NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt),  &
+      call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
+                  lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                  PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                  NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
                   GET_EXPT(itst), ao_dens)
 !FIXME: why the first time calling PR1IN1 gives wrong results??
       if (itst==1) then
         base_free = 1
         len_free = len_work-end_dal_int
-        call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,     &
-                    lb_int, PROP_NAME(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
-                    PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),         &
-                    NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt),  &
+        call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
+                    lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                    PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                    NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
                     GET_EXPT(itst), ao_dens)
       end if
       deallocate(int_rep)
