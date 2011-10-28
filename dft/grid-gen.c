@@ -523,8 +523,14 @@ becke_orig_preprocess(GridGenMolGrid* mg, int atom, int point_cnt,
     /* compute weight normalization factors */
     pc = point_cnt; dzero_(ggw->vec, &pc);
     for(atno=0; atno<mg->atom_cnt; atno++)
-        for(ptno=0; ptno<point_cnt; ptno++)
-            ggw->vec[ptno] += ggw->IDX(p_kg,atno,ptno); 
+        // radovan:
+        // this if {} is to exclude centers which carry no grid points
+        // these are point charges without basis sets
+        // they should not be included in the partitioning
+        if (mg->atom_grids[atno]->pnt > 0) {
+            for(ptno=0; ptno<point_cnt; ptno++)
+                ggw->vec[ptno] += ggw->IDX(p_kg,atno,ptno);
+        }
 
     /*
      *   Apply the computed weights
