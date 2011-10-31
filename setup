@@ -135,7 +135,9 @@ group.add_option('-D',
                  action="append",
                  dest='cmake',
                  default=[],
-                 help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1)',
+                 help='forward directly to cmake (example: -D ENABLE_THIS=1 -D ENABLE_THAT=1); \
+                       you can also forward CPP defintions all the way to the program \
+                       (example: -D CPP="-DDEBUG")',
                  metavar='STRING')
 group.add_option('--host',
                  type='string',

@@ -139,6 +139,12 @@ if(ENABLE_64BIT_INTEGERS)
     endif()
 endif()
 
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
+
 # set Gen1Int library
 if(ENABLE_GEN1INT)
     find_library(GEN1INT_LIBRARIES NAMES libgen1int.a
