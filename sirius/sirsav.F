@@ -429,38 +429,58 @@ C
 C        (calculate the NROOTS specified in input)
 C        NRS   = number of CI vectors to be written to LUIT1
 C
+         WRITE (LUIT1) LAB123(1), STAKEY, RSTKEY, TABLE(3)
          KBVEC = 1
          KY    = KBVEC + NCONF
          NSIM  = (LFREE/NCONF)-1
          NSIM  = MIN(NSIM,NRS)
          JOFF  = 0
+         if(ci_program .eq. 'SIRIUS-CI')then
+ 5100      CONTINUE
+           REWIND LUIT3
+           CALL DZERO(WRK(KY),NSIM*NCONF)
+           DO 5200 K=1,NREDL
+             CALL READT(LUIT3,NCONF,WRK(KBVEC))
+             DO 5300 J=1,NSIM
+               JEVEC = (JOFF+J-1)*NREDL + K
+               CALL DAXPY(NCONF,EVEC(JEVEC),WRK(KBVEC),1,
+     *                    WRK(KY+(J-1)*NCONF),1)
+ 5300        CONTINUE
+ 5200      CONTINUE
 C
-         WRITE (LUIT1) LAB123(1), STAKEY, RSTKEY, TABLE(3)
- 5100    CONTINUE
-         REWIND LUIT3
-         CALL DZERO(WRK(KY),NSIM*NCONF)
-         DO 5200 K=1,NREDL
-           CALL READT(LUIT3,NCONF,WRK(KBVEC))
-           DO 5300 J=1,NSIM
-             JEVEC = (JOFF+J-1)*NREDL + K
-             CALL DAXPY(NCONF,EVEC(JEVEC),WRK(KBVEC),1,
-     *                  WRK(KY+(J-1)*NCONF),1)
- 5300      CONTINUE
- 5200    CONTINUE
-C
-C        We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
-         DO 5400 J = 1,NSIM
-            DN = DNRM2(NCONF,WRK(KY+(J-1)*NCONF),1)
-            IF (DN.NE.D1) THEN
+C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
+           DO 5400 J = 1,NSIM
+              DN = DNRM2(NCONF,WRK(KY+(J-1)*NCONF),1)
+              IF (DN.NE.D1) THEN
+                 DN = D1 / DN
+                 CALL DSCAL(NCONF,DN,WRK(KY+(J-1)*NCONF),1)
+              END IF
+              CALL WRITT(LUIT1,NC4,WRK(KY+(J-1)*NCONF))
+ 5400      CONTINUE
+           JOFF = JOFF + NSIM
+           NSIM = MIN(NSIM,NRS-JOFF)
+           IF (NSIM.GT.0) GO TO 5100
+
+         else if(ci_program .eq. 'LUCITA   ')then
+!          final ci c-vectors provided by LUCITA - just store them on disk
+           rewind luit3
+           do j = 1, nrs
+             call readt(luit3,nconf,wrk(kbvec))
+             DN = DNRM2(NCONF,wrk(kbvec+(j-1)*nconf),1)
+#ifdef LUCI_DEBUG
+             do i = 1, nconf
+               write(lupri,*) 'print element #i ==> ',i,
+     &                         wrk(kbvec+i-1+(j-1)*nconf)
+             end do
+             write(lupri,*) 'normalization factor ==> ',dn
+#endif
+             IF(DN.NE.D1) THEN
                DN = D1 / DN
-               CALL DSCAL(NCONF,DN,WRK(KY+(J-1)*NCONF),1)
-            END IF
-            CALL WRITT(LUIT1,NC4,WRK(KY+(J-1)*NCONF))
- 5400    CONTINUE
-         JOFF = JOFF + NSIM
-         NSIM = MIN(NSIM,NRS-JOFF)
-         IF (NSIM.GT.0) GO TO 5100
-C
+               CALL DSCAL(NCONF,DN,wrk(kbvec+(j-1)*nconf),1)
+             END IF
+             call writt(luit1,nc4,wrk(kbvec+(j-1)*nconf))
+           end do
+         end if ! ci_program switch
 C
 C        save orbitals with label NEWORB
 C

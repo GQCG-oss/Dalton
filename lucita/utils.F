@@ -21,11 +21,57 @@
 !...      http://daltonprogram.org
 !
 !
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+!**********************************************************************
+      subroutine symmetrize_transition_density_matrix(xmat,ndim,
+     &                                                print_lvl)
+!**********************************************************************
+      implicit none
+#include "priunit.h"
+      real(8), intent(inout) :: xmat(ndim,ndim,ndim,ndim)
+      integer, intent(in)    :: ndim
+      integer, intent(in)    :: print_lvl
+!----------------------------------------------------------------------
+      integer                :: i, j, k, l
+      real(8)                :: value
+!----------------------------------------------------------------------
+      
+      do j = 1, ndim
+        do i = 1, j
+          do l = 1, ndim
+            do k = 1, l
+              if(j == i)then
+                value         = xmat(i,j,k,l) + xmat(i,j,l,k)
+                xmat(i,j,k,l) = value
+                xmat(i,j,l,k) = value
+              else if(j > i)then
+                value         = xmat(i,j,k,l) + xmat(j,i,l,k)
+                if(l > k)then
+#ifdef LUCI_DEBUG
+                  write(lupri,*) ' special: i,j,k,l ==> value ',
+     &                                      i,j,k,l,value
+                  write(lupri,*) ' special: xmat(i,j,k,l)',xmat(i,j,k,l)
+                  write(lupri,*) ' special: xmat(i,j,l,k)',xmat(i,j,l,k)
+                  write(lupri,*) ' special: xmat(j,i,l,k)',xmat(j,i,l,k)
+                  write(lupri,*) ' special: xmat(j,i,k,l)',xmat(j,i,k,l)
+#endif
+                  xmat(j,i,l,k) = value + xmat(j,i,k,l)
+                  xmat(i,j,k,l) = value + xmat(i,j,l,k)
+                else
+                  xmat(i,j,k,l) = value
+                  xmat(j,i,l,k) = value
+                end if
+              end if
+#ifdef LUCI_DEBUG
+              write(lupri,*) 'i,j,k,l ==> value ',i,j,k,l,value
+#endif
+            end do
+          end do
+        end do
+      end do
+
+      end
+!**********************************************************************
+
       SUBROUTINE CHAR_TO_INTEGER(CHAR_X,INT_X)
 
 *     Convert an integer number given as a string into
@@ -49,7 +95,7 @@
       WRITE (*,*) ' THE LAST LINE PROCESSED WAS:'
       WRITE (*,*) CHAR_X
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_INTEGER')
+      CALL QUIT(16)
 
 200   WRITE (*,*)
       WRITE (*,*) ' *** ERROR IN INPUT ***'
@@ -58,7 +104,7 @@
       WRITE (*,*)
       WRITE (*,*) ' FORTRAN I/O STATUS = ',IOS
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_INTEGER')
+      CALL QUIT(16)
 
       END
 ***********************************************************************
@@ -148,7 +194,7 @@
       WRITE (*,*) ' THE LAST LINE PROCESSED WAS:'
       WRITE (*,*) CHAR_X
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_REAL')
+      CALL QUIT(16)
 
 200   WRITE (*,*)
       WRITE (*,*) ' *** ERROR IN INPUT ***'
@@ -157,7 +203,7 @@
       WRITE (*,*)
       WRITE (*,*) ' FORTRAN I/O STATUS = ',IOS
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_REAL')
+      CALL QUIT(16)
 
       END
 ***********************************************************************
@@ -241,8 +287,12 @@
 * IELMNT of this array
 *
       INTEGER vector(*)
-*
-#include "SysDef.inc"
+#ifdef VAR_INT64
+      integer, parameter :: rtoi = 1
+#else
+      integer, parameter :: rtoi = 2
+#endif
+
 *. offset when vector is integer array
       IIOFF = 1 + RtoI * (IROFF-1)
       IFRMR = vector(IIOFF-1+IELMNT)

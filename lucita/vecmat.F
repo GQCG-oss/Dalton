@@ -21,12 +21,8 @@
 !...      http://daltonprogram.org
 !
 !
+***********************************************************************
 
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE ADD_TTS_BLK_TO_VECTOR
      &           (NBLOCKI,IBLOCKI,IOFFI,VECI,
      &            NBLOCKO,IBLOCKO,IOFFO,VECO,FACTOR)
@@ -65,10 +61,7 @@
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ADDBLKV(VEC,VECA,FACTOR,NBLKA,IBLKA,IBLOCK,IOFF)
 *
 * A blocked vector VEC is given
@@ -114,10 +107,7 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
 *
 * Construct B defined as
@@ -155,17 +145,15 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
       IAPR = 0
       IPERTOP = 0
 *. And : DO IT
-      CALL MV7(VEC1,VEC2,LUC,LUB)
+!     CALL MV7(VEC1,VEC2,LUC,LUB)
+      call quit('*** BVEC is disabled in this lucita version. ***')
 *. Restore order
       CALL SWAPVE(B,WORK(KINT1),NTOOB**2)
 *
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE CLASS_PROD(VEC1,VEC2,NOCTPA,NOCTPB,
      &                      IBLOCK_OFF,NBLOCK,IBLOCK,NOCCLS,IOCCLS,
      &                      CLSVEC)
@@ -214,10 +202,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE EXPCIV(ISM,ISPCIN,LUIN,
      &                  ISPCUT,LUUT,LBLK,
      &                  LUSCR,NROOT,ICOPY,IDC,NTESTG)
@@ -421,10 +406,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE EXPCIVS(LUIN,VECIN,NCOMBIN,NTTSIN,ITTSIN,IABIN,
      &                   NOCTPA,NOCTPB,IBLTPIN,
      &                   LUUT,VECUT,NCOMBUT,NTTSUT,ITTSUT,IABUT,
@@ -577,10 +559,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE EXTRROW(INMAT,IROW,NROW,NCOL,IOUTVEC)
 *
 * Extract row IROW from integer matrix INMAT
@@ -606,10 +585,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
 *
 * Extract row IROW from integer matrix INMAT, starting from column
@@ -636,10 +612,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GASANA(C,NBLOCK,IBLOCK,IBLTP,LUC,ICISTR)
 *
 *
@@ -756,10 +729,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GASANAS(C,LUC,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                   MXPNGAS,IOCTPA,IOCTPB,NBLOCK,IBLOCK,
      &                   THRES,MAXTRM,NAEL,NBEL,
@@ -811,7 +781,6 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
        WRITE(lupri,*)
       END IF
 
-C     WRITE(6,*) 'C(1) = ',C(1)
       MINPRT = 0
       ITRM = 0
       IDET = 0
@@ -852,6 +821,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
         IBTP = IBLOCK(2,JBLOCK)
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
+        IOFF = IBLOCK(6,JBLOCK)
 *. Obtain alpha strings of sym IASM and type IATP
         IDUM = 0
         CALL GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
@@ -874,7 +844,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
-          CALL FRMDSC_LUCI(C,IDET,-1,LUC,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(C(IOFF),IDET,-1,LUC,IMZERO,IAMPACK)
 C?        WRITE(6,*) ' Number of elements readin ',IDET
           IDET = 0
         END IF
@@ -894,12 +864,13 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
             IF(ILOOP .EQ. 1 ) NCIVAR = NCIVAR + 1
             IDET = IDET + 1
-            IF( XMAX .GE. ABS(C(IDET)) .AND.
-     &      ABS(C(IDET)).GT. XMIN ) THEN
+            IOFF = IOFF + IDET - 1
+            IF( XMAX .GE. ABS(C(IOFF)) .AND.
+     &      ABS(C(IOFF)).GT. XMIN ) THEN
               ITRM = ITRM + 1
               IIDET = IIDET + 1
               IF( ITRM .LE. MAXTRM ) THEN
-                CNORM = CNORM + C(IDET) ** 2
+                CNORM = CNORM + C(IOFF) ** 2
                 if(iprint_hline.gt.0)then
                   WRITE(lupri,'(A )')
      &            '                  =================== '
@@ -908,7 +879,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
                 WRITE(lupri,'(A,I8,A,E14.8)')
      &          '   Coefficient of combination ',IDET,' is ',
-     &          C(IDET)
+     &          C(IOFF)
                 WRITE(lupri,'(A)')
      &          '   Corresponding alpha - and beta string '
                 IF(IUSLAB.EQ.0) THEN
@@ -943,13 +914,14 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
       IDET = 0
       IF(ICISTR .GE. 2 ) CALL REWINE(LUC,-1)
-      CALL ISETVC(NCPMT,0    ,10*NOCCLS)
-      CALL SETVEC(WCPMT,0.0D0,10*NOCCLS)
+      call izero(ncpmt,10*noccls)
+      call dzero(wcpmt,10*noccls)
       DO JBLOCK = 1, NBLOCK
         IATP = IBLOCK(1,JBLOCK)
         IBTP = IBLOCK(2,JBLOCK)
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
+        IOFF = IBLOCK(6,JBLOCK)
 *
         IF(IBLTP(IASM).EQ.2) THEN
           IRESTR = 1
@@ -975,7 +947,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
-          CALL FRMDSC_LUCI(C,IDET,-1,LUC,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(C(IOFF),IDET,-1,LUC,IMZERO,IAMPACK)
           IDET = 0
         END IF
         IF(IMZERO.EQ.0) THEN
@@ -988,11 +960,12 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
           END IF
           DO IA = MINIA,IABAS+NIA-1
             IDET = IDET + 1
+            IOFF = IOFF + IDET - 1
             DO IPOT = 1, ipot_max
-              IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IDET)).AND.
-     &           ABS(C(IDET)).GT. 10.0D0 ** ( - IPOT )) THEN
+              IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IOFF)).AND.
+     &           ABS(C(IOFF)).GT. 10.0D0 ** ( - IPOT )) THEN
                  NCPMT(IPOT,JOCCLS)= NCPMT(IPOT,JOCCLS)+ 1
-                 WCPMT(IPOT,JOCCLS)= WCPMT(IPOT,JOCCLS)+ C(IDET) ** 2
+                 WCPMT(IPOT,JOCCLS)= WCPMT(IPOT,JOCCLS)+ C(IOFF) ** 2
               END IF
             END DO
 *           ^ End of loop over powers of ten
@@ -1080,10 +1053,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_BLOCKS_FROM_DISC
      &           (LU,NBLOCK,IOFF,IBLOCK,NBLOCKT,C,IREW)
 *
@@ -1141,10 +1111,7 @@ CM    IREW = 1
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_DIAG_DOM(AIN,AOUT,NDIM,IREO)
 *
 * A square matrix AIN is given. Permute columns to obtain
@@ -1198,10 +1165,7 @@ CM    IREW = 1
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_NMLW(VEC,N,M,LW,N_MAX,M_MAX,
      &           LUCORR,LUREF,IREAD,LUOUT,IREW,LBLK,LUOUTEFF)
 *
@@ -1294,10 +1258,7 @@ C?            write(6,*) ' Vector skipped ', IVEC
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_TTS_BATCH(CTTS,NBLOCK,IBLOCK,NBLOCKC,IBLOCKC,
      &                  NOCTPA,NOCTPB,NSMST,NSASO,NSBSO,
      &                  IDC,LUC,ISCR,IREW,ISCALE)
@@ -1434,10 +1395,7 @@ C    &                  NSASO,NSBSO,ISC)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE GET_TTS_BLK_IN_VECTOR
      &           (NBLOCKI,IBLOCKI,IOFFI,VECI,
      &            NBLOCKO,IBLOCKO,IOFFO,
@@ -1503,10 +1461,7 @@ C    &                  NSASO,NSBSO,ISC)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0TV2(VEC1,VEC2,LUC,LUHC,LU0,LUSCR1,E0,LBLK)
 *
 * Multiply vector in LUC with H0 where H0 is defined as
@@ -1541,7 +1496,8 @@ C    &                     LUC, LUHC, LU0, LUSCR1
          IPERTOP = 1
       END IF
       WRITE(6,*) ' MV7 will be called in a few NANOSECONDS'
-      CALL MV7(VEC1,VEC2,LUSCR1,LUHC)
+!     CALL MV7(VEC1,VEC2,LUSCR1,LUHC)
+      call quit('*** H0TV2 is disabled in this lucita version. ***')
 *. Orthogonalize LUHC to LU0
       IF(LU0.NE.0) THEN
         SSIGMA0 = INPRDD(VEC1,VEC2,LUHC,LU0,1,LBLK)
@@ -1574,10 +1530,7 @@ CSEPT29 CALL COPVCD(LUSCR1,LUHC,VEC1,1,LBLK)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0TVM(VEC1,VEC2,LLUC,LLUHC)
 *
 * Outer routine for zero order operator + shift times vector
@@ -1622,7 +1575,6 @@ C
      &               LLUC,LLUHC,LU0,LUSCR1
         WRITE(6,*) ' E0 , Shift : ', E0 , SHIFT
       END IF
-*. A scratch file not used by linear solver in SIMPRT : LUSCR1
       IF(SHIFT.EQ.0.0D0) THEN
         CALL H0TV2(VEC1,VEC2,LLUC,LLUHC,LU0,LUSCR1,E0,LBLK)
       ELSE
@@ -1643,10 +1595,7 @@ C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Multiply P1P2Q preconditioner with a vector
@@ -1692,10 +1641,7 @@ C
       END IF
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE HPQTVM(VECIN,VECUT,IDUM,JDUM)
 *
 * Outer routine for Preconditioner times vector
@@ -1735,10 +1681,7 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE LULU(A,L,U,NDIM)
 C
 C LU DECOMPOSITION OF MATRIX A
@@ -1806,10 +1749,7 @@ C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,
      &                         LAROW,LACOL,LBROW,LBCOL,ITRNSP)
 *
@@ -1862,10 +1802,7 @@ C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PAMTMT(X,T,WORK,NORB)
 *
 * GENERATE PER AKE'S T MATRIX FROM AN
@@ -1937,40 +1874,36 @@ C     KLL = KFLREE
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PR_MATML_STAT
-*
-* Print statistics from matrix multiplier
-      IMPLICIT REAL*8(A-H,O-Z)
-      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
-*
-      WRITE(6,*)
-      WRITE(6,*) ' Information about MATML7 calls : '
-      WRITE(6,*) ' ================================'
-      WRITE(6,*)
-      WRITE(6,*) ' Number of calls ', XNCALL
-      WRITE(6,*) ' Number of flops executed ', XNFLOP
-      WRITE(6,*) ' Average row length of C ',
+
+!     print statistics from matrix multiplier
+
+      use lucita_matmul_statistics
+      implicit none
+#include "priunit.h"
+!
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' Information about MATML7 calls : '
+      WRITE(lupri,*) ' ================================'
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' Number of calls ', XNCALL
+      WRITE(lupri,*) ' Number of flops executed ', XNFLOP
+      WRITE(lupri,*) ' Average row length of C ',
      &           XLCROWCOL/XLCCOL
-      WRITE(6,*) ' Average column  length of C ',
+      WRITE(lupri,*) ' Average column  length of C ',
      &           XLCROWCOL/XLCROW
-      WRITE(6,*) ' Average number of operations per element of  C ',
+      WRITE(lupri,*) ' Average number of operations per element of  C ',
      &           XNFLOP/XLCROWCOL
-      WRITE(6,*) ' Average number of operations per per call ',
+      WRITE(lupri,*) ' Average number of operations per per call ',
      &           XNFLOP/XNCALL
-      WRITE(6,*) ' Number of seconds spent in MATML7', TMULT
-*
-      WRITE(6,*) ' Average MFLOPS ',XNFLOP/TMULT/1000000.0D0
+      WRITE(lupri,*) ' Number of seconds spent in MATML7', TMULT
+!
+      WRITE(lupri,*) ' Average MFLOPS ',XNFLOP/TMULT/1000000.0D0
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
 *. Print one-electron integrals with symmetry IHSM
@@ -2004,10 +1937,7 @@ C     KLL = KFLREE
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE RDVEC(LU,NSYM,NBAS,NORB,CMO,OCC,LOCC,TITLE)
       IMPLICIT REAL*8 (A-H,O-Z)
       DIMENSION NBAS(NSYM),NORB(NSYM),CMO(*),OCC(*)
@@ -2059,10 +1989,7 @@ C     KLL = KFLREE
       Call Abend1( 20 )
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE REDBLK(NBLOCKI,IBLOCKI,IBBLOCKI,IOCOC,
      &                  NOCTPA,NOCTPB,
      &                  NBLOCKO,IBLOCKO,IMAP)
@@ -2111,10 +2038,7 @@ C     KLL = KFLREE
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE SETVCD(LUIN,LUOUT,SEGMNT,VALUE,IREW,LBLK)
 *
 * Construct a vector with the same structure as LUIN
@@ -2158,10 +2082,7 @@ C     KLL = KFLREE
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE TYPE_TO_SYM_REO_MAT(XIN,XOUT)
 *
 *. a matrix XIN is given as NTOOB X NTOOB matrix in type form
@@ -2220,10 +2141,7 @@ C     KLL = KFLREE
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE VECSMDP(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
 C
 C DISC VERSION OF VECSUM :
@@ -2301,12 +2219,7 @@ C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-C                WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-C    &           LUDIA)
+
       SUBROUTINE WRSVCD(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM,JPACK)
 *
 * Write scattered vector to disc.
@@ -2358,10 +2271,7 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRTBLKN(VEC,NBLOCK,LBLOCK)
 *
 * Write the NBLOCK blocks of VEC
@@ -2387,10 +2297,7 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRTRS2(VECTOR,ISMOST,ICBLTP,IOCOC,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,NSMST)
 *
@@ -2451,10 +2358,7 @@ C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRTTTS2(BLOCKS,IBLOCK,NBLOCK,IOFF,
      &                  NSMST,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,ISC)
@@ -2529,10 +2433,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE WRTTTSC(BLOCKS,IBLOCK,NBLOCK,
      &                  NSMST,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,ISC,I0CHK,I0BLK)
@@ -2627,10 +2528,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE XDIAXT(XDX,X,DIA,NDIM,SCR)
 *
 * Obtain XDX = X * DIA * X(Transposed)
@@ -2652,10 +2550,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE XDIXT2(XDX,X,DIA,NXRDM,NXCDM,SHIFT,SCR)
 *
 * Obtain XDX = X * (DIA+Shift)-1 * X(Transposed)
@@ -2694,10 +2589,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ZAP_BLOCK_VEC(LUIN,LBLK,IBLKS_A,SEGMNT,LUSCR)
 *
 * Zap blocks in vector in file LUIN for which IBLKS_A is zero

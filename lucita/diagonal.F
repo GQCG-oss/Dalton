@@ -650,6 +650,7 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 *
 * Jeppe Olsen, August 1995
 *
+      use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
      &          KLBSTR, KLRJKA
@@ -669,9 +670,6 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 #include "gasstr.inc"
 #include "glbbas.inc"
 #include "oper.inc"
-*
-C     COMMON/CECORE/ECORE,ECORE_ORIG
-#include "cecore.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *
@@ -1122,7 +1120,7 @@ C     REAL * 8  INPROD
       DO IBLK = 1, NBLOCK
 
          if(LUCI_NMPROC .gt. 1)then
-           IF( NPARBLOCK( IBLK ) .ne. LUCI_MYPROC ) GOTO 2425
+           if(nparblock(iblk) .ne. luci_myproc) goto 2425
          end if
 *
         IATP = IBLKFO(1,IBLK)
@@ -1215,19 +1213,17 @@ C     REAL * 8  INPROD
              CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
             end if
           END IF
-          IF (LUCI_NMPROC .GT. 1) THEN
+          if(luci_nmproc .gt. 1)then
 #ifdef VAR_MPI
-             CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                           MPI_REAL8,my_STATUS,IERR)
-C            new offset
-             IDIA_OFFSET = IDIA_OFFSET + IDET
-#else
-             call quit('LUCI_NMPROC .gt. 1 but not VAR_MPI')
+            CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                             MPI_REAL8,my_STATUS,IERR)
+!           new offset
+            IDIA_OFFSET = IDIA_OFFSET + IDET
 #endif
-          ELSE
-             CALL ITODS(IDET,1,-1,LUDIA)
-             CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
-          END IF
+          else
+            CALL ITODS(IDET,1,-1,LUDIA)
+            CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
+          end if
           IDET = 0
         END IF
 2425    CONTINUE
@@ -1243,8 +1239,7 @@ C            new offset
       END IF
 *
       IF ( ICISTR.GE.2 ) CALL ITODS(-1,1,-1,LUDIA)
-*
-      RETURN
+
       END
 ***********************************************************************
 *                                                                     *

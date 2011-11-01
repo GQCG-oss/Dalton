@@ -1045,179 +1045,6 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MV7(C,HC,LUC,LUHC
-#ifdef VAR_MPI
-     &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
-     &                IGROUPLIST,IPROCLIST
-#endif
-     &            )
-*
-* Outer routine for sigma vector generation
-* GAS version !!!!
-*
-* Written in terms of RASG3/SBLOCK, May 1997
-* Works only for ICISTR .ne. 1, i.e. pure memory version
-* has been eliminated.
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP,
-     &          KISCLFAC, KSCALLOC
-!               for addressing of WORK
-#ifdef VAR_MPI
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
-#include "mxpdim.inc"
-*
-* =====
-*.Input
-* =====
-*
-*.Definition of c and sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
-*
-*./ORBINP/ : NACOB used
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "crun.inc"
-#include "gasstr.inc"
-#include "cgas.inc"
-*. Used : NSMOB
-#include "lucinp.inc"
-#include "cprnt.inc"
-#include "glbbas.inc"
-#include "oper.inc"
-C
-#ifdef VAR_MPI
-      DIMENSION LUCLIST(*),LUHCLIST(*),IBLOCKL(*),NPARBLOCK(*)
-      INTEGER RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
-#endif
-C
-      CALL QENTER('MV7  ')
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'MV7   ')
-
-*
-      IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) ' MV7 does not work for ICISTR = 1'
-        WRITE(6,*) ' SWITCH to ICISTR = 2,3 or program'
-        Call Abend2(' MV7 does not work for ICISTR = 1')
-      END IF
-*
-      IATP = 1
-      IBTP = 2
-*
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-*     offset for supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-*
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*     arrays giving allowed type combinations
-      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
-      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &                IGSOCCX,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
-*     arrays for additional symmetry operation
-      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
-        CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
-         
-        CALL SIGVST(WORK(KSVST),NSMST)
-      ELSE
-         KSVST = 1
-      END IF
-*     arrays giving block type
-      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
-      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
-*     arrays for partitioning of sigma
-      NTTS = MXNTTS
-      CALL MEMMAN(KLSLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
-      CALL MEMMAN(KLSLEBT ,NTTS  ,'ADDL  ',1,'CLEBT ')
-      CALL MEMMAN(KLSI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
-      CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
-*     batches  of s vector
-      ITTSS_ORD = 2
-
-      IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-         CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
-     &                   LBLOCK_LUCI,
-     &                   WORK(KSIOIO),ISMOST(1,ISSM),
-     &                   NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &                   WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD,
-     &                   NPARBLOCK,NUM_BLOCKS2)
-#endif
-      ELSE ! (LUCI_NMPROC .GT. 1) THEN
-         CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &               WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
-     &               WORK(KSIOIO),ISMOST(1,ISSM),
-     &               NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &               WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
-C
-      IF(I12.EQ.2) THEN
-        IDOH2 = 1
-      ELSE
-        IDOH2 = 0
-      END IF
-*
-      IF(ICISTR.EQ.1) THEN
-       LLUC = 0
-       LLUHC = 0
-      ELSE
-       LLUC = LUC
-       LLUHC = LUHC
-      END IF
-C
-C     scaling factor array
-C
-      CALL MEMMAN(KISCLFAC,NUM_BLOCKS2,'ADDL  ',2,'SSCLFC')
-      CALL DZERO(WORK(KISCLFAC),NUM_BLOCKS2)
-C
-C     ISCLFAC_GROUP array for c-blocks:
-C     0 = block is not active, > 0: block is active
-C
-      CALL MEMMAN(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'KITCLL')
-      
-      IF(ICISTR.EQ.1) THEN
-        WRITE(6,*) 'ICISTR = 1 route currently not active'
-        Call Abend2('MV7 : ICISTR = 1 route currently not active')
-      ELSE
-        CALL RASSG3(C,HC,NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,
-     &       WORK(KISCLFAC),WORK(KSCALLOC)
-#ifdef VAR_MPI
-     &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
-     &                IGROUPLIST,IPROCLIST
-#endif
-     &             )
-C            RASSG3(CB,SB,LBATS,LEBATS,I1BATS,IBATS,
-C    &       LUC,LUHC)
-      END IF
-*. Eliminate local memory
-      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'MV7   ')
-*
-      CALL QEXIT('MV7  ')
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE MXRESC(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                  NSMST,NSTFSMSPGP,
      &                  MXPNSMST,
@@ -1657,13 +1484,13 @@ C    &       LUC,LUHC)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MXRESCPH(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &                  NSMST,NSTFSMSPGP,
-     &                  MXPNSMST,
-     &                  NSMOB,MXPTOB,NTPOB,NTSOB,NTESTG,MXPKA,
-     &                  NEL1234,
-     &                  MXCJ,MXCIJA,
-     &                  MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,IPHGAS,
-     &                  NHLFSPGP,MNHL,IADVICE)
+     &                    NSMST,NSTFSMSPGP,
+     &                    MXPNSMST,
+     &                    NSMOB,MXPTOB,NTPOB,NTSOB,NTESTG,MXPKA,
+     &                    NEL1234,
+     &                    MXCJ,MXCIJA,
+     &                    MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,IPHGAS,
+     &                    NHLFSPGP,MNHL,IADVICE)
 *
 * Find largest dimension of matrix C(Ka,Ib,J)
 * Find largest dimension of matrix C(ij,Ka,Ib)
@@ -1684,6 +1511,7 @@ C    &       LUC,LUHC)
 * Version of Jan 98 : IPHGAS added
 
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION IAB(NOCTPA,NOCTPB)
       DIMENSION NSTFSMSPGP(MXPNSMST,*)
       DIMENSION NTSOB(MXPTOB,NSMOB)
@@ -1693,7 +1521,7 @@ C    &       LUC,LUHC)
 *
       NTESTL = 000
       NTEST = MAX(NTESTG,NTESTL)
-      IF(NTEST.GE.100) WRITE(6,*) ' MXRESC : MXPKA ', MXPKA
+      IF(NTEST.GE.100) WRITE(lupri,*) ' MXRESC : MXPKA ', MXPKA
 *
 * matrix C(j,Ka,Ib)
 *
@@ -1709,27 +1537,27 @@ C    &       LUC,LUHC)
 
           IF(IAB(IATP,IBTP).NE.0) THEN
             IF(NTEST.GE.100)
-     &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
+     &      WRITE(lupri,*) ' allowed IATP,IBTP', IATP,IBTP
             MXB = 0
             DO 210 ISM = 1, NSMST
               MXB =MAX(MXB,NSTFSMSPGP(ISM,IBTPABS))
   210       CONTINUE
-            IF(NTEST.GE.100) WRITE(6,*) ' MXB = ', MXB
+            IF(NTEST.GE.100) WRITE(lupri,*) ' MXB = ', MXB
             DO 300 IOBTP = 1, NTPOB
 *. No K strings obtained from creation in particle space
               IF(IAORC.EQ.2.AND.IPHGAS(IOBTP).EQ.1) GOTO 300
 *. type of K string obtained
               CALL NEWTYP(IATPABS,IAORC,IOBTP,1,KATP)
               IF(NTEST.GE.100)
-     &        WRITE(6,*) ' IOBTP KATP ',IOBTP,KATP
+     &        WRITE(lupri,*) ' IOBTP KATP ',IOBTP,KATP
 *. addi constraint to avoid calc with long columns and few rows
 *. Works only in connection with active advice routine !
               IF(KATP.GT.0) THEN
                 IF(IAORC.EQ.1.AND.IADVICE.EQ.1.AND.
      &          NHLFSPGP(IBTPABS)+NHLFSPGP(KATP).LT.MNHL.AND.
      &          NHLFSPGP(IATPABS).GT.(NHLFSPGP(IBTPABS)+1)) THEN
-C                 WRITE(6,*) ' N-1 hole space eliminated '
-C                 WRITE(6,*) ' IOBTP,IBTPABS,KATP',
+C                 WRITE(lupri,*) ' N-1 hole space eliminated '
+C                 WRITE(lupri,*) ' IOBTP,IBTPABS,KATP',
 C    &            IOBTP,IBTPABS,KATP
                   KATP = 0
                 END IF
@@ -1739,7 +1567,7 @@ C    &            IOBTP,IBTPABS,KATP
                 DO 310 KSM = 1, NSMST
                   MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
   310           CONTINUE
-                IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXKA = ',MXKA
                 MXKAO = MXKA
                 IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &          MXKA= MXPKA
@@ -1747,7 +1575,7 @@ C    &            IOBTP,IBTPABS,KATP
                 DO 320 ISMOB = 1, NSMOB
                   MXSOB = MAX(MXSOB,NTSOB(IOBTP,ISMOB))
   320           CONTINUE
-                IF(NTEST.GE.100) WRITE(6,*) ' MXSOB = ', MXSOB
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXSOB = ', MXSOB
 *
                 MXADKBLK = MAX(MXADKBLK,MXSOB*MXKAO)
                 LCJBLK = MXSOB*MXKA*MXB
@@ -1771,24 +1599,24 @@ C    &            IOBTP,IBTPABS,KATP
 
           IF(IAB(IATP,IBTP).NE.0) THEN
             IF(NTEST.GE.100)
-     &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
+     &      WRITE(lupri,*) ' allowed IATP,IBTP', IATP,IBTP
             MXA = 0
             DO ISM = 1, NSMST
               MXA =MAX(MXA,NSTFSMSPGP(ISM,IATPABS))
             END DO
-            IF(NTEST.GE.100) WRITE(6,*) ' MXA = ', MXA
+            IF(NTEST.GE.100) WRITE(lupri,*) ' MXA = ', MXA
             DO IOBTP = 1, NTPOB
 *. type of K string obtained by removing one elec of type IOPBTP from IATP
               IF(IAORC.EQ.2.AND.IPHGAS(IOBTP).EQ.1) GOTO 2812
               CALL NEWTYP(IBTPABS,IAORC,IOBTP,1,KBTP)
               IF(NTEST.GE.100)
-     &        WRITE(6,*) ' IOBTP KBTP ',IOBTP,KBTP
+     &        WRITE(lupri,*) ' IOBTP KBTP ',IOBTP,KBTP
               IF(KBTP.GT.0) THEN
                 IF(IAORC.EQ.1.AND.IADVICE.EQ.1.AND.
      &          NHLFSPGP(IATPABS)+NHLFSPGP(KBTP).LT.MNHL.AND.
      &          NHLFSPGP(IBTPABS).GT.NHLFSPGP(IATPABS)+1) THEN
-C                 WRITE(6,*) ' N-1 hole space eliminated '
-C                 WRITE(6,*) ' IOBTP,IATPABS,KBTP',
+C                 WRITE(lupri,*) ' N-1 hole space eliminated '
+C                 WRITE(lupri,*) ' IOBTP,IATPABS,KBTP',
 C    &            IOBTP,IATPABS,KBTP
                   KBTP = 0
                 END IF
@@ -1798,7 +1626,7 @@ C    &            IOBTP,IATPABS,KBTP
                 DO KSM = 1, NSMST
                   MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                 END DO
-                IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXKB = ',MXKB
                 MXKBO = MXKB
                 IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &          MXKB= MXPKA
@@ -1806,7 +1634,7 @@ C    &            IOBTP,IATPABS,KBTP
                 DO ISMOB = 1, NSMOB
                   MXSOB = MAX(MXSOB,NTSOB(IOBTP,ISMOB))
                 END DO
-                IF(NTEST.GE.100) WRITE(6,*) ' MXSOB = ', MXSOB
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXSOB = ', MXSOB
 *
                 MXADKBLK = MAX(MXADKBLK,MXSOB*MXKBO)
 CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
@@ -1822,7 +1650,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       END DO
 *     ^ End of loop over creation/annihilation
       IF(NTEST.GT.100) THEN
-        WRITE(6,*) 'MXRESC : MXADKBLK,MXCJ ', MXADKBLK,MXCJ
+        WRITE(lupri,*) 'MXRESC : MXADKBLK,MXCJ ', MXADKBLK,MXCJ
       END IF
 *
 * matrix C(ij,Ka,Ib)
@@ -1840,7 +1668,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
               MXIB = MAX(MXIB,NSTFSMSPGP(ISM,IBTPABS))
             END DO
             IF(MXIB.GT.MXPKA) MXIB = MXPKA
-            IF(NTEST.GE.100) WRITE(6,*) ' MXIB = ', MXIB
+            IF(NTEST.GE.100) WRITE(lupri,*) ' MXIB = ', MXIB
             DO IAORC = 1, 2
             DO  IOBTP = 1, NTPOB
 *. type of K string obtained by removing one elec of type IOPBTP from IATP
@@ -1848,13 +1676,13 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *. No N+1 mappings for particle spaces
               IF(IAORC.EQ.2.AND.IPHGAS(IOBTP).EQ.1) K1ATP = 0
               IF(NTEST.GE.100)
-     &        WRITE(6,*) ' IOBTP K1ATP ',IOBTP,K1ATP
+     &        WRITE(lupri,*) ' IOBTP K1ATP ',IOBTP,K1ATP
               IF(K1ATP.GT.0) THEN
                 MXISOB = 0
                 DO ISMOB = 1, NSMOB
                   MXISOB = MAX(MXISOB,NTSOB(IOBTP,ISMOB))
                 END DO
-                IF(NTEST.GE.100) WRITE(6,*) ' MXISOB = ', MXISOB
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXISOB = ', MXISOB
                 DO JAORC = 1, 2
                 DO JOBTP = 1, NTPOB
 *  type of K string obtained by removing one elec of type JOPBTP from K1ATP
@@ -1865,14 +1693,14 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                     DO KSM = 1, NSMST
                       MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
                     END DO
-                    IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
+                    IF(NTEST.GE.100) WRITE(lupri,*) ' MXKA = ',MXKA
                     IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &              MXKA= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
                       MXJSOB = MAX(MXJSOB,NTSOB(JOBTP,JSMOB))
                     END DO
-                    IF(NTEST.GE.100) WRITE(6,*) ' MXJSOB = ', MXJSOB
+                    IF(NTEST.GE.100) WRITE(lupri,*) ' MXJSOB = ', MXJSOB
 *
                     LBLK = MXISOB*MXJSOB*MXKA*MXIB
                     MXCIJA = MAX(MXCIJA,LBLK)
@@ -1889,7 +1717,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       END DO
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) 'MXRESC : MXCIJA ', MXCIJA
+        WRITE(lupri,*) 'MXRESC : MXCIJA ', MXCIJA
       END IF
 *
 *
@@ -1907,20 +1735,20 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
               MXIA = MAX(MXIA,NSTFSMSPGP(ISM,IATPABS ))
             END DO
             IF(MXIA.GT.MXPKA) MXIA = MXPKA
-            IF(NTEST.GE.100) WRITE(6,*) ' MXIA = ', MXIA
+            IF(NTEST.GE.100) WRITE(lupri,*) ' MXIA = ', MXIA
             DO IAORC = 1, 2
             DO  IOBTP = 1, NTPOB
 *. type of K string obtained by removing one elec of type IOPBTP from IBTP
               CALL NEWTYP(IBTPABS,IAORC,IOBTP,1,K1BTP)
               IF(NTEST.GE.100)
-     &        WRITE(6,*) ' IOBTP K1BTP ',IOBTP,K1BTP
+     &        WRITE(lupri,*) ' IOBTP K1BTP ',IOBTP,K1BTP
               IF(IAORC.EQ.2.AND.IPHGAS(IOBTP).EQ.1)K1BTP = 0
               IF(K1BTP.GT.0) THEN
                 MXISOB = 0
                 DO ISMOB = 1, NSMOB
                   MXISOB = MAX(MXISOB,NTSOB(IOBTP,ISMOB))
                 END DO
-                IF(NTEST.GE.100) WRITE(6,*) ' MXISOB = ', MXISOB
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXISOB = ', MXISOB
                 DO JAORC = 1, 2
                 DO JOBTP = 1, NTPOB
 *  type of K string obtained by removing one elec of type JOPBTP from K1ATP
@@ -1931,14 +1759,14 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                     DO KSM = 1, NSMST
                       MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                     END DO
-                    IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
+                    IF(NTEST.GE.100) WRITE(lupri,*) ' MXKB = ',MXKB
                     IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
                       MXJSOB = MAX(MXJSOB,NTSOB(JOBTP,JSMOB))
                     END DO
-                    IF(NTEST.GE.100) WRITE(6,*) ' MXJSOB = ', MXJSOB
+                    IF(NTEST.GE.100) WRITE(lupri,*) ' MXJSOB = ', MXJSOB
 *
                     LBLK = MXISOB*MXJSOB*MXKB*MXIA
                     MXCIJB = MAX(MXCIJB,LBLK)
@@ -1955,7 +1783,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       END DO
 *
       IF(NTEST.GT.10) THEN
-        WRITE(6,*) 'MXRESC : MXCIJB ', MXCIJB
+        WRITE(lupri,*) 'MXRESC : MXCIJB ', MXCIJB
       END IF
 *
 *
@@ -1972,19 +1800,19 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *. type of Ka string obtained by removing one elec of type IOPBTP from IATP
               CALL NEWTYP(IATPABS,1,IOBTP,1,KATP)
               IF(NTEST.GE.100)
-     &        WRITE(6,*) ' IOBTP KATP ',IOBTP,KATP
+     &        WRITE(lupri,*) ' IOBTP KATP ',IOBTP,KATP
               IF(KATP.GT.0) THEN
                 MXKA = 0
                 DO KSM = 1, NSMST
                   MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
                 END DO
-                IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXKA = ',MXKA
                 IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA) MXKA= MXPKA
                 MXISOB = 0
                 DO ISMOB = 1, NSMOB
                   MXISOB = MAX(MXISOB,NTSOB(IOBTP,ISMOB))
                 END DO
-                IF(NTEST.GE.100) WRITE(6,*) ' MXISOB = ', MXISOB
+                IF(NTEST.GE.100) WRITE(lupri,*) ' MXISOB = ', MXISOB
                 DO JOBTP = 1, NTPOB
 *  type of K string obtained by removing one elec of type JOPBTP from IBTP
                   CALL NEWTYP(IBTPABS,1,JOBTP,1,KBTP)
@@ -1993,14 +1821,14 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                     DO KSM = 1, NSMST
                       MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                     END DO
-                    IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
+                    IF(NTEST.GE.100) WRITE(lupri,*) ' MXKB = ',MXKB
                     IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
                       MXJSOB = MAX(MXJSOB,NTSOB(JOBTP,JSMOB))
                     END DO
-                    IF(NTEST.GE.100) WRITE(6,*) ' MXJSOB = ', MXJSOB
+                    IF(NTEST.GE.100) WRITE(lupri,*) ' MXJSOB = ', MXJSOB
 *
                     LBLK = MXISOB*MXJSOB*MXKB*MXKA
                     MXCIJAB = MAX(MXCIJAB,LBLK)
@@ -2026,13 +1854,13 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
         DO  ISM = 1, NSMST
           MXIA = MAX(MXIA,NSTFSMSPGP(ISM,IATPABS))
         END DO
-        IF(NTEST.GE.100) WRITE(6,*) ' MXIA = ', MXIA
+        IF(NTEST.GE.100) WRITE(lupri,*) ' MXIA = ', MXIA
 *. Orbitals to be removed
         DO  JOBTP = 1, NTPOB
 *. Is this removal allowed ??
           CALL NEWTYP(IATPABS,1,JOBTP,1,KATP)
           IF(NTEST.GE.100)
-     &    WRITE(6,*) ' JOBTP KATP ',JOBTP,KATP
+     &    WRITE(lupri,*) ' JOBTP KATP ',JOBTP,KATP
           IF(KATP.GT.0) THEN
 *. Number of possible choices of J orbitals
             MXJOB = 0
@@ -2040,7 +1868,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                MXJOB = MAX(MXJOB,NTSOB(JOBTP,JSMOB))
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IATPABS))
-            IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
+            IF(NTEST.GE.100) WRITE(lupri,*) ' MXJOB = ', MXJOB
 *. Then  : add an electron
             DO IOBTP = 1, NTPOB
 *  Allowed ?
@@ -2065,13 +1893,13 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
         DO  ISM = 1, NSMST
           MXIB = MAX(MXIB,NSTFSMSPGP(ISM,IBTPABS))
         END DO
-        IF(NTEST.GE.100) WRITE(6,*) ' MXIB = ', MXIB
+        IF(NTEST.GE.100) WRITE(lupri,*) ' MXIB = ', MXIB
 *. Orbitals to be removed
         DO  JOBTP = 1, NTPOB
 *. Is this removal allowed ??
           CALL NEWTYP(IBTPABS,1,JOBTP,1,KBTP)
           IF(NTEST.GE.100)
-     &    WRITE(6,*) ' JOBTP KBTP ',JOBTP,KBTP
+     &    WRITE(lupri,*) ' JOBTP KBTP ',JOBTP,KBTP
           IF(KBTP.GT.0) THEN
 *. Number of possible choices of J orbitals
             MXJOB = 0
@@ -2079,7 +1907,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                MXJOB = MAX(MXJOB,NTSOB(JOBTP,JSMOB))
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IBTP))
-            IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
+            IF(NTEST.GE.100) WRITE(lupri,*) ' MXJOB = ', MXJOB
 *. Then  : add an electron
             DO IOBTP = 1, NTPOB
 *  Allowed ?
@@ -2097,325 +1925,10 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
         END DO
       END DO
       IF(NTEST.GT.10) THEN
-        WRITE(6,*) 'MXRESC: MXSXBL : ', MXSXBL
+        WRITE(lupri,*) 'MXRESC: MXSXBL : ', MXSXBL
       END IF
 *
       RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE RASSG3(CB,SB,NBATS,LBATS,LEBATS,I1BATS,IBATS,
-     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP
-#ifdef VAR_MPI
-     &                  ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
-     &                   IGROUPLIST,IPROCLIST
-#endif
-     &                 )
-*
-* Direct RAS routine employing combined MOC/n-1 resolution method
-*
-* Jeppe Olsen   Winter of 1991
-*               May 1997 : Connected to SBLOCK
-*
-* =====
-* Input
-* =====
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#ifdef VAR_MPI
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-      DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
-      INTEGER IPROCLIST(*), RCCTOS(*)
-      DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
-      CHARACTER SECTID*12,WALLTID*12,WALLTID2*12
-      LOGICAL WRITE_SB
-#endif
-#include "parluci.h"
-*     batches of sigma
-      INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
-*     scratch
-      DIMENSION SB(*),CB(*),SSCLFAC(*)
-      NZERO = 0
-      IONE  = 1
-      xreadtimebi = 0.0D0
-      xcomputesi  = 0.0D0
-      ISI_CALC_BL = 0
-      IBI_MULT_BL = 0
-*
-      CALL QENTER('RASSG')
-
-      NTEST     = 0000 ! normal print level
-!     NTEST     = 9999 ! debug
-      NPTESTVAR = NTEST
-
-      IF(NTEST.GE.20) THEN
-        WRITE(luwrt,*) ' ================='
-        WRITE(luwrt,*) ' RASSG3 speaking :'
-        WRITE(luwrt,*) ' ================='
-        WRITE(luwrt,*) ' RASSG3 : NBATS = ',NBATS
-      END IF
-*
-      IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-*
-*     make an update of list ISCLFAC_GROUP using LUCLIST...
-*
-      BLOCKTIME = 0.0D0
-*
-*     only real part needed
-*
-      IRILP = 1
-*
-      CALL UPDATE_LUC_LIST2(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
-     &                      NPARBLOCK,IBLOCKL,IGROUPLIST,
-     &                      IPROCLIST,IRILP,BLOCKTIME)
-C
-C     debug printing of 'complete' C vector on node/global file
-C
-      IF( NPTESTVAR .ge. 20 ) THEN
-        IOFFSET_SCRATCH = 0
-        WRITE(LUWRT,*) 'left vector = C-vector'
-        DO IBLK = 1, NUM_BLOCKS2
-C
-           LENGTH_BLK = IBLOCKL(IBLK)
-C
-           IF( ISCLFAC_GROUP( IBLK ) .ne. 0 ) THEN
-             CALL MPI_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,LENGTH_BLK,
-     &                             MPI_REAL8,my_STATUS,IERR)
-             WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
-     &             IOFFSET_SCRATCH,'for block', IBLK, LENGTH_BLK
-             CALL WRTMATMN(CB,1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
-           END IF
-           IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
-          END DO
-      END IF
-      IOFFSET_SCRATCH = 0
-C
-C     initialize writing of vector file
-C
-      IOFF_SCR1 = 0
-      IOFF_SCR2 = 0
-C     file offset
-      IOFF_SCR1 = MY_LU4_OFF
-     &          + MY_VEC2_IOFF * ( JVEC_SF )
-      INT_IOFF1  = 0
-      INT_IOFF2  = 0
-C     block list offset
-      INT_IOFF1  = 1 + MY_ACT_BLK2 * ( JVEC_SF )
-C
-C?    WRITE(LUCIWT,*) 'INT_IOFF1 in RASSG3',INT_IOFF1
-C
-C     include in C-vector batches only C-blocks which are 
-C     needed to compute a s-block for a given CPU
-C
-      CALL UPDATE_GEN_LIST(ISCLFAC_GROUP,RCCTOS,NUM_BLOCKS2)
-      CALL IFACTOSFAC(ISCLFAC_GROUP,SSCLFAC,NUM_BLOCKS2)
-C
-C     debug info
-C
-      IF( NPTESTVAR .ge. 20 ) THEN
-         WRITE(LUWRT,*) ' ISCLFAC_GROUP '
-         CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-         WRITE(LUWRT,*) ' RCCTOS '
-         CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-         WRITE(LUWRT,*) ' SSCLFAC '
-         CALL WRTMATMN(SSCLFAC,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-      END IF
-C
-*=====================================================
-#endif
-      ELSE ! (LUCI_NMPROC .GT. 1) THEN
-         IF(LUHC.GT.0) CALL REWINE(LUHC,-1)
-C
-C        get scaling factor - 0.0D0 or 1.0D0
-C
-         CALL FIND_ACTIVE_BLOCKS(LUC,-1,SSCLFAC,CB)
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
-C
-C     loop over batches over sigma blocks
-C
-      DO JBATS = 1, NBATS
-C
-#ifdef VAR_MPI
-       IF (LUCI_NMPROC .GT. 1) THEN
-*
-*       start various timings...
-*
-        starttime  = mpi_wtime()
-        sbatchtime = 0.0D0
-        writetime  = 0.0D0
-C
-C       do we need to calculate a single s-block?
-C
-        ICOMPUTE = 0
-*
-        DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
-           IF( NPARBLOCK( ISBLK ) .eq. LUCI_MYPROC ) THEN
-             ICOMPUTE = 1
-           END IF
-        END DO
-csk     WRITE(LUWRT,*) ' ICOMPUTE is',ICOMPUTE
-        IF( ICOMPUTE .eq. 0 ) THEN
-           starttimer = MPI_WTIME()
-           GOTO 60
-        ENDIF
-       END IF ! (LUCI_NMPROC .GT. 1) THEN
-*
-#endif /* if def VAR_MPI */
-C       zero SB
-        LS = LEBATS(JBATS)
-!       WRITE(LUWRT,*) ' LS - sbtach length =',LS
-        CALL DZERO(SB,LS)
-C
-        CALL SBLOCK(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
-     &       CB,SB,LUC,0,0,0,0,0,SSCLFAC,ISCLFAC_GROUP
-#ifdef VAR_MPI
-     &      ,LUCLIST,NPARBLOCK,IBLOCKL
-#endif
-     &                             )
-C  
-C       transfer S block to permanent storage
-C
- 60     CONTINUE
-C
-#ifdef VAR_MPI
-      IF (LUCI_NMPROC .GT. 1) THEN
-        starttimer = MPI_WTIME()
-        IF( ICOMPUTE .eq. 0 ) GOTO 70
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
-#endif /* if def VAR_MPI */
-C
-        if (NTEST.ge.100) then
-            WRITE(luwrt,*) ' **********************************'
-            WRITE(luwrt,*) ' *                                *'
-            WRITE(luwrt,*) ' * Array containing final sbatch  *'
-            WRITE(luwrt,*) ' *                                *'
-            WRITE(luwrt,*) ' **********************************'
-            CALL WRTMATMN(SB,1,LS,1,LS,LUCIWT)
-        end if
-C
-        DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
-           IOFF = IBATS(6,ISBLK)
-           LEN  = IBATS(8,ISBLK)
-         IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-*          check again if block is needed
-           IF( NPARBLOCK(ISBLK) .ne. LUCI_MYPROC ) GOTO 65
-*
-*          new offset
-*
-           IOFF_SCR1 = IOFF_SCR1 + IOFF_SCR2
-           INT_IOFF1 = INT_IOFF1 + INT_IOFF2
-*          check norm of the block
-           XXX = 0.0D0
-           XXX = DDOT(LEN,SB(IOFF),1,SB(IOFF),1)
-           WRITE_SB = .FALSE.
-           IF( XXX .eq. 0.0D0 ) THEN
-              LUHCLIST(INT_IOFF1) = NZERO
-           ELSE
-*             mark block as nonzero
-              LUHCLIST(INT_IOFF1) = IONE
-              WRITE_SB = .TRUE.
-           END IF
-*          transfer block to disc
-           IF( WRITE_SB ) THEN
-#ifdef LUCI_DEBUG
-              WRITE(luwrt,*) 'I transfer to file block ISBLK',
-     &                        ISBLK
-              CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,luwrt)
-              WRITE(luwrt,*) 'offset,length',IOFF_SCR1,LEN
-#endif
-              CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
-     &                               MPI_REAL8,my_STATUS,IERR)
-              ISI_CALC_BL = ISI_CALC_BL + 1
-           END IF
-*          keep track of correct offset
-           IOFF_SCR2 = LEN
-           INT_IOFF2 = 1
- 65        CONTINUE
-C
-#endif
-          ELSE ! (LUCI_NMPROC .GT. 1) THEN
-           CALL ITODS(LEN,1,-1,LUHC)
-           CALL TODSC_LUCI(SB(IOFF),LEN,-1,LUHC)
-          END IF ! (LUCI_NMPROC .GT. 1) THEN
-        END DO
- 70     CONTINUE
-#ifdef VAR_MPI
-        IF (LUCI_NMPROC .GT. 1) THEN
-          IF( ICOMPUTE .ne. 0 ) THEN
-            writetime = writetime + MPI_WTIME() - starttimer
-            sbatchtime = sbatchtime + MPI_WTIME() - starttime
-CSK too much information?                WALLTID  = SECTID(writetime)
-            WALLTID2 = SECTID(sbatchtime)
-CSK too much information?                 WRITE(LUWRT,50000) WALLTID
-            IF( TIMING_par ) THEN
-              WRITE(LUWRT,60001) WALLTID2
-            END IF
-CSK         WRITE(LUWRT,60000) WALLTID2, JBATABS
-          END IF
-        END IF ! (LUCI_NMPROC .GT. 1) THEN
-#endif /* if def VAR_MPI */
-      END DO
-*
-C
-      IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-      WALLTID2 = SECTID(BLOCKTIME)
-      IF( TIMING_par ) THEN
-        WRITE(LUWRT,80000) WALLTID2
-      END IF
-*
-50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
-     & ',A)
-60001 FORMAT(' >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :
-     & ',A)
-80000 FORMAT(' >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :
-     & ',A)
-*
-C
-      IF( TIMING_par ) THEN
-C
-C       print statistics
-C
-        WRITE(LUWRT,'(/A)')
-     &  '               H x b_i contraction run statistics  '
-        WRITE(LUWRT,'(A/)')
-     &  '              ____________________________________ '
-        WRITE(LUWRT,'(2X,A,1X,I9)')
-     &  ' number of s_i blocks calculated          : ',ISI_CALC_BL
-        WRITE(LUWRT,'(2X,A,1X,I9)')
-     &  ' total number of b_i read from disk       : ',IBI_MULT_BL
-        WALLTID = SECTID(xreadtimebi)
-        WRITE(LUWRT,'(2X,A,1X,A)')
-     &  ' read time for b_i blocks from disk       : ', WALLTID
-        WALLTID = SECTID(xcomputesi)
-        WRITE(LUWRT,'(2X,A,1X,A/)')
-     &  ' pure matrix x vector multiplication time : ', WALLTID
-C
-      END IF
-C
-#endif
-      ELSE ! (LUCI_NMPROC .GT. 1) THEN
-C     write EOF mark
-      CALL ITODS(-1,1,-1,LUHC)
-C
-      IF(NTEST.GE.100) THEN
-        WRITE(LUCIWT,*) ' Final S-vector on disc'
-        CALL WRTVCD(SB,LUHC,1,-1)
-      END IF
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
-*
-      CALL QEXIT('RASSG')
       END
 ***********************************************************************
 *                                                                     *
@@ -4905,966 +4418,6 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,
-     &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
-     &                  SSCLFAC,ISCLFAC_GROUP
-#ifdef VAR_MPI
-     &                 ,LUCLIST,NPARBLOCK,IBLOCKL
-#endif
-     &                  )
-*
-* Generate a set of sigma blocks,
-* The NBLOCK specified in IBLOCK starting from IBOFF,
-* be more specific.
-*
-* The blocks are delivered in HCB
-*
-* The blocks are scaled and reformed to combination order
-* If LUCBLK.GT.0, the blocks of C corresponding to IBLOCK
-* are stored on LUCBLK
-*
-* ICONSPA,ICONSPB  added October 1996
-* ICBAT_RES, ICBAT_INI, IBBAT_END added august 1997
-*
-* If ICBAT_RES .eq.1 then it as assumed that only
-* Cbatches ICBAT_INI to ICBAT_END are stored on  LUC
-*
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP,
-     &          KISCLFAC, KSCALLOC, KLLBT, KLLEBT, KLI1BT, KLIBT, 
-     &          KLSCLFAC, KI1, KXI1S, KI2, KXI2S, KI3, KXI3S, KI4,KXI4S,
-     &          KC2, KCJRES, KSIRES, KSSCR, KCSCR, KCJPA, KSIPA, KSOMEH,
-     &          KSOMESCR, KCONSPA, KCONSPB, KSTSTS, KSTSTD, KINSCR, 
-     &          KCIOIO, KCBLTP
-      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
-!               for addressing of WORK
-#ifdef VAR_MPI
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
-#include "mxpdim.inc"
-*
-* =====
-*.Input
-* =====
-*
-*.Definition of c and sigma spaces
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
-*. Sigma blocks require
-      INTEGER IBLOCK(8,*)
-*
-*./ORBINP/ : NACOB used
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "crun.inc"
-#include "gasstr.inc"
-#include "cgas.inc"
-*. Used : NSMOB
-#include "lucinp.inc"
-#include "cprnt.inc"
-#include "glbbas.inc"
-#include "oper.inc"
-*
-      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
-      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
-     &              ADSXA(MXPOBS,2*MXPOBS),
-     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-      COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*
-      dimension XIJILS(MXTSOB)
-      INTEGER MLTHCHCK, ITEMPP
-      DIMENSION SSCLFAC(*),ISCLFAC_GROUP(*)
-*
-*     set local mark memory
-* 
-      IDUM = 0
-      CALL MEMMAN(KDUM,IDUM,'MARK  ',IDUM,'SBLOCK')
-*
-CTF
-*     scratch space for rsbb2a, rsbb2bn, rsbb2bvn, skickj
-CTF
-      LSOMESQ = MXTSOB*MXTSOB
-      call memman(KSOMEH,LSOMESQ,'ADDS',2,'SOMSCH')
-      call memman(KSOMESCR,LSOMESQ**2,'ADDS',2,'SOMSCR')
-CTF
-CTF   dimension SOMESCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
-CTF   dimension SOMEH(MXTSOB*MXTSOB)
-      NTEST = 0
-      IF(NTEST.GE.5)
-     &WRITE(6,*) ' SBLOCK : ISSPC,ICSPC ', ISSPC,ICSPC
-C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
-      IF(LUCBLK.GT.0) THEN
-        CALL REWINE(LUCBLK,-1)
-      END IF
-*
-*     info for this internal space
-*     type of alpha and beta strings
-      IATP = 1
-      IBTP = 2
-*     alpha and beta strings with an electron removed
-      IATPM1 = 3
-      IBTPM1 = 4
-*     alpha and beta strings with two electrons removed
-      IATPM2 = 5
-      IBTPM2 = 6
-*     number of supergroups
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-*     offset for supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-*
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*
-*     connection matrices for supergroups
-*
-      CALL MEMMAN(KCONSPA,NOCTPA**2,'ADDL  ',1,'CONSPA')
-      CALL MEMMAN(KCONSPB,NOCTPB**2,'ADDL  ',1,'CONSPB')
-C     SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,ISPGRPCON,IPRNT)
-      CALL SPGRPCON(IOCTPA,NOCTPA,NGAS,MXPNGAS,NELFSPGP,
-     &              WORK(KCONSPA),IPRCIX)
-      CALL SPGRPCON(IOCTPB,NOCTPB,NGAS,MXPNGAS,NELFSPGP,
-     &              WORK(KCONSPB),IPRCIX)
-*     string sym, string sym => sx sym
-*     string sym, string sym => dx sym
-      CALL MEMMAN(KSTSTS,NSMST ** 2,'ADDL  ',2,'KSTSTS')
-      CALL MEMMAN(KSTSTD,NSMST ** 2,'ADDL  ',2,'KSTSTD')
-      CALL STSTSM(WORK(KSTSTS),WORK(KSTSTD),NSMST)
-*     largest block of strings in zero order space
-      MXSTBL0 = MXNSTR
-*     largest number of strings of given symmetry and type
-      MAXA = 0
-      MAXA0 = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTYP(IATP),2)
-      MAXA = MAX(MAXA,MAXA0)
-      IF(NAEL.GE.1) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      IF(NAEL.GE.2) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-*
-      MAXB = 0
-      MAXB0 = IMNMX(WORK(KNSTSO(IBTP)),NSMST*NOCTYP(IBTP),2)
-      MAXB = MAX(MAXB,MAXB0)
-      IF(NBEL.GE.1) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      IF(NBEL.GE.2) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      MXSTBL = MAX(MAXA,MAXB)
-      IF(IPRCIX.GE.3 ) WRITE(6,*)
-     &' Largest block of strings with given symmetry and type',MXSTBL
-*     largest number of resolution strings and spectator strings
-*     that can be treated simultaneously
-      MAXI = MIN(MXINKA,MXSTBL)
-      MAXK = MIN(MXINKA,MXSTBL)
-*     largest active orbital block belonging to given type and symmetry
-      MXTSOB_L = 0
-      DO IOBTP = 1, NGAS
-        DO IOBSM = 1, NSMOB
-          MXTSOB_L = MAX(MXTSOB_L,NOBPTS(IOBTP,IOBSM))
-        END DO
-      END DO
-C?    WRITE(6,*) ' MXTSOB_L = ', MXTSOB_L
-      MAXIJ = MXTSOB_L ** 2
-*     local scratch arrays for blocks of C and sigma
-      IF(IPRCIX.GE.3)
-     &WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
-*     SCRATCH space for integrals
-*     SCRATCH space for integrals
-*     4 index integral block with four indeces belonging OS class
-      INTSCR = MXTSOB_L ** 4
-      IF(IPRCIX.GE.3)
-     &WRITE(6,*) ' Integral scratch space ',INTSCR
-      CALL MEMMAN(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
-*. Arrays giving allowed type combinations '
-      CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
-      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
-*. Offsets for alpha and beta supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-*. sigma needed for MXRESC
-C          IAIBCM(ICISPC,IAIB)
-      CALL IAIBCM(ISSPC,WORK(KSIOIO))
-      CALL IAIBCM(ICSPC,WORK(KCIOIO))
-*. Arrays giving block type
-      CALL MEMMAN(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*. Arrays for additional symmetry operation
-      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
-        CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
-        CALL SIGVST(WORK(KSVST),NSMST)
-      ELSE
-         KSVST = 1
-      END IF
-*
-*.scratch space for projected matrices and a CI block
-*
-*. Scratch space for CJKAIB resolution matrices
-*. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
-      CALL MXRESCPH(WORK(KSIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &            NSMST,NSTFSMSPGP,MXPNSMST,
-     &            NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
-     &            NELFSPGP,
-     &            MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
-     &            IPHGAS,NHLFSPGP,MNHL,IADVICE)
-      IF(IPRCIX.GE.3) THEN
-        WRITE(6,*) 'SBLOCK : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                       MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-         WRITE(6,*) 'SBLOCK : MXADKBLK ', MXADKBLK
-      END IF
-      LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
-      IF(IPRCIX.GE.3)
-     &WRITE(6,*) ' Space for resolution matrices ',LSCR2
-*
-      IF(IPRCIX.GE.3)  WRITE(6,*) ' LSCR2 = ', LSCR2
-C
-      LSCR12 = MAX(LBLOCK,2*LSCR2)
-csk?  LSCR12 = MIN(LBLOCK,2*LSCR2)
-C     I assume memory was allocated for blocks, so
-      KC2 = KVEC3
-*
-      KCJRES = KC2
-      KSIRES = KC2 + LSCR2
-*
-      KSSCR = KSIRES
-      KCSCR = KCJRES
-*     space for active/passive blocks
-      KCJPA = KC2 + 2*LSCR2
-      KSIPA = KC2 + 3*LSCR2
-*
-*     vectors able to hold strings of given sym and type
-      MAXIK = MAX(MAXI,MAXK)
-*     I1 and Xi1s must also be able to hold largest st block
-      LSCR3 = MAX(MXADKBLK,MAXIK*MXTSOB_L*MXTSOB_L,MXSTBL0)
-      CALL MEMMAN(KI1  ,LSCR3,'ADDL  ',1,'I1    ')
-      CALL MEMMAN(KXI1S,LSCR3,'ADDL  ',2,'XI1S  ')
-*
-      CALL MEMMAN(KI2  ,LSCR3,'ADDL  ',1,'I2    ')
-      CALL MEMMAN(KXI2S,LSCR3,'ADDL  ',2,'XI2S  ')
-*
-      CALL MEMMAN(KI3  ,LSCR3,'ADDL  ',1,'I3    ')
-      CALL MEMMAN(KXI3S,LSCR3,'ADDL  ',2,'XI3S  ')
-*
-      CALL MEMMAN(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
-      CALL MEMMAN(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
-      CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
-*     some TTS arrays
-      NOOS = NOCTPA*NOCTPB*NSMCI
-      NTTS = MXNTTS
-C
-C     for partitioning of vector
-C
-      CALL MEMMAN(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
-      CALL MEMMAN(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
-      CALL MEMMAN(KLI1BT,NTTS  ,'ADDL  ',1,'I1BTC ')
-      CALL MEMMAN(KLIBT ,8*NTTS,'ADDL  ',1,'IBTC  ')
-C
-C     for scaling for each TTS block
-C
-      CALL MEMMAN(KLSCLFAC ,NTTS,'ADDL  ',2,'SCLFAC')
-C
-C     space for four blocks of string occupations and arrays of
-C     reordering arrays
-C     
-      LZSCR = (MAX(NAEL,NBEL)+3)*(NOCOB+1) + 2 * NOCOB
-      LZ    = (MAX(NAEL,NBEL)+2) * NOCOB
-      DO I1234 = 1, 1
-        CALL MEMMAN(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
-      END DO
-
-      DO I1234 = 1, 2
-        CALL MEMMAN(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
-        CALL MEMMAN(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
-      END DO
-      CALL MEMMAN(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
-*
-      IF(I12.EQ.2) THEN
-        IDOH2 = 1
-      ELSE
-        IDOH2 = 0
-      END IF
-*     Place perturbation integrals over one body integrals
-      IF(I12.EQ.2) THEN
-        IDOH2 = 1
-      ELSE
-        IDOH2 = 0
-      END IF
-*
-*
-      CALL SBLOCKS(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KC2),
-     &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),
-     &     NACOB,WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-     &     NAEL,IATP,NBEL,IBTP,
-     &     IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &     NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,MXPNGAS,
-     &     ITSOB,MAXIJ,MAXK,MAXI,INSCR,LBLOCK,
-     &     LBLOCK,WORK(KINSCR),WORK(KCSCR),WORK(KSSCR),
-     &     SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
-     &     ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
-     &     MXTSOB,WORK(KSOMESCR),WORK(KSOMEH),XIJILS,
-     &     WORK(KI1),WORK(KXI1S),
-     &     WORK(KI2),WORK(KXI2S),IDOH2,MXPOBS,WORK(KSVST),
-     &     PSSIGN,IPRDIA,LUC,ICJKAIB,WORK(KCJRES),
-     &     WORK(KSIRES),WORK(KI3),WORK(KXI3S),
-     &     WORK(KI4),WORK(KXI4S),MXSXBL,
-     &     MOCAA,MOCAB,IAPR,
-     &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
-     &     IRESTRICT,WORK(KCONSPA),WORK(KCONSPB),WORK(KLSCLFAC),
-     &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
-     &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
-     &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),ISCLFAC_GROUP,SSCLFAC
-#ifdef VAR_MPI
-     &    ,LUCLIST,NPARBLOCK,IBLOCKL
-#endif
-     &                  )
-*
-      IF(IDC.EQ.2) THEN
-*       reform
-        CALL RFTTS(HCB,CB,IBLOCK(1,IBOFF),NBLOCK,
-     &             1,NSMST,NOCTPA,NOCTPB,
-     &             WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
-     &             IDC,PSSIGN,1,NTEST)
-*       scale
-        CALL SCDTTS(HCB,IBLOCK(1,IBOFF),NBLOCK,NSMST,NOCTPA,NOCTPB,
-     &              WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-     &              IDC,1,NTEST)
-      END IF
-*
-      IF(LUCBLK.GT.0) THEN
-        CALL ITODS(-1,1,-1,LUCBLK)
-      END IF
-*     eliminate local memory
-      IDUM = 0
-      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SBLOCK')
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SBLOCKS(NSBLOCK,ISBLOCK,CB,SB,C2,
-     &           ICOCOC,ICSMOS,ICBLTP,NACOB,NSSOA,NSSOB,
-     &           NAEL,IAGRP,NBEL,IBGRP,
-     &           IOCTPA,IOCTPB, NOCTPA,NOCTPB,
-     &           NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,MXPNGAS,
-     &           ITSOB,MAXIJ,MAXK,MAXI,LI,LC,LS,
-     &           XINT,CSCR,SSCR,SXSTSM,STSTSX,STSTDX,
-     &           SXDXSX,ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
-     &           MXTSOB,SOMESCR,SOMEH,XIJILS,
-     &           I1,XI1S,I2,XI2S,IDOH2,MXPOBS,ISTRFL,
-     &           PS,IPRNT,LUC,ICJKAIB,CJRES,SIRES,I3,XI3S,
-     &           I4,XI4S,MXSXBL,MOCAA,MOCAB,IAPR,
-     &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,IRESTRICT,
-     &           ICONSPA,ICONSPB,SCLFAC,
-     &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
-     &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
-     &           I_RES_AB,IUSE_PA,CJPA,SIPA,ISCLFAC_GROUP,SSCLFAC
-#ifdef VAR_MPI
-     &          ,LUCLIST,NPARBLOCK,IBLOCKL
-#endif
-     &           )
-*
-* Direct RAS routine employing combined MOC/n-1 resolution method
-*
-* Jeppe Olsen , Winter of 1991
-*
-* =====
-* Input
-* =====
-*
-* NSBLOCK : Number of BLOCKS included
-* ISBLOCK : Blocks included
-*   ISBLOCK(1,*) : alpha type of block
-*   ISBLOCK(2,*) : beta type of block
-*   ISBLOCK(3,*) : sym of alpha in block
-*   ISBLOCK(4,*) : Offset of block
-*
-* ICOCOC : Allowed type combinations for C
-* ICSMOS : Symmetry array for C
-* ICBLTP : Block types for C
-* NACOB : Number of active orbitals
-* NSSOA : Number of strings per type and symmetry for alpha strings
-* NAEL  : Number of active alpha electrons
-* NSSOB : Number of strings per type and symmetry for beta strings
-* NBEL  : Number of active beta electrons
-* NTSOB : Number of orbitals per type and symmetry
-* NOBPTS: Orbitals of given type and symmetry
-* IOBPTS: Offset for orbitals of given sym and type
-*
-* MAXIJ : Largest allowed number of orbital pairs treated simultaneously
-* MAXK  : Largest number of N-2,N-1 strings treated simultaneously
-* MAXI  : Max number of N strings treated simultaneously
-*
-* LI : Length of scratch array for integrals
-* LC : Length of scratch array for C
-* LS : Length of scratch array for S
-* XINT : Scratch array for integrals
-* CSCR : Scratch array for C vector
-* SSCR : Scratch array for S vector
-*
-* ICJKAIB = 1 => construct C(Ka,Jb,j) and S(Ka,IB,i) as intermediate terms
-*         = 0 => do not construct the above montioned matrices
-* CJRES,SIRES : Space for above matrices
-* The C and S vectors are accessed through routines that
-* either fetches/disposes symmetry blocks or
-* Symmetry-occupation-occupation blocks
-*
-*
-* If IRESTRICT.NE. 0 THEN we are after :
-* sigma(iblk) = summa(jblk.le.iblk) (2-delta(iblk,jblk))/2
-*                                                 * <Iblk!H!Jblk>C(Jblk)
-      IMPLICIT REAL*8(A-H,O-Z)
-#ifdef VAR_MPI
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#endif
-#include "parluci.h"
-*. Specific input
-      INTEGER ISBLOCK(8,*)
-*.General input
-      INTEGER ICOCOC(NOCTPA,NOCTPB)
-      INTEGER ICSMOS(NSMST)
-      INTEGER ICBLTP(*)
-      INTEGER NSSOA(NSMST ,*), NSSOB(NSMST ,*)
-      INTEGER SXSTSM(NSMSX,NSMST),STSTSX(NSMST,NSMST)
-      INTEGER STSTDX(NSMST,NSMST), ADSXA(MXPOBS,2*MXPOBS)
-      INTEGER SXDXSX(2*MXPOBS,4*MXPOBS), ASXAD(MXPOBS,2*MXPOBS)
-      INTEGER NOBPTS(MXPNGAS,*),IOBPTS(MXPNGAS,*),ITSOB(*)
-      INTEGER NELFSPGP(MXPNGAS,*)
-      INTEGER ICONSPA(NOCTPA,NOCTPA), ICONSPB(NOCTPB,NOCTPB)
-*     scratch
-      DIMENSION SB(*),CB(*),C2(*)
-      DIMENSION XINT(*),CSCR(*),SSCR(*)
-      DIMENSION I1(*),I2(*),I3(*),XI1S(*),XI2S(*),XI3S(*)
-      INTEGER   LCBLOCK(*),I1CBLOCK(*),ICBLOCK(8,*),LECBLOCK(*)
-*     zero order Hamiltonian
-      INTEGER IH0SPC(NOCTPA,NOCTPB)
-      INTEGER IH0INSPC(*)
-*     resolution matrices
-      DIMENSION CJRES(*),SIRES(*)
-*
-      DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
-      DIMENSION SCLFAC(*),SSCLFAC(*)
-#ifdef VAR_MPI
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCR
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C1, IOFF_SCR_C_EXPL
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C2
-      DIMENSION LUCLIST(*),NPARBLOCK(*),IBLOCKL(*)
-#endif
-*     new scratch
-      DOUBLE PRECISION CPUSIGXXX1,CPUSIGXXX2,WALLSIGXXX1,WALLSIGXXX2
-      DOUBLE PRECISION CPUSIGXXXX1,CPUSIGXXXX2
-      DOUBLE PRECISION WALLSIGXXXX1,WALLSIGXXXX2
-      DOUBLE PRECISION CPUSIGXX1,CPUSIGXX2,WALLSIGXX1,WALLSIGXX2
-      DOUBLE PRECISION CPUSIGX1,CPUSIGX2,WALLSIGX1,WALLSIGX2
-      CHARACTER SECTID*12, CPUTIDXXX*12, WALLTIDXXX*12
-      CHARACTER CPUTIDXXXX*12, WALLTIDXXXX*12
-      CHARACTER CPUTIDX*12, WALLTIDX*12
-      CHARACTER CPUTIDXX*12, WALLTIDXX*12
-      DIMENSION ISCLFAC_GROUP(*)
-#include "comjep.inc"
-*
-      CALL QENTER('SBLOC')
-      NTEST = 000
-      NTEST = MAX(NTEST,IPRNT)
-      IF(NTEST.GE.10) THEN
-        WRITE(luwrt,*) ' ================='
-        WRITE(luwrt,*) ' SBLOCKS speaking :'
-        WRITE(luwrt,*) ' ================='
-        WRITE(luwrt,*)
-        WRITE(luwrt,*) ' Number of sigma blocks to be calculated ',
-     &  NSBLOCK
-        WRITE(luwrt,*) ' TTSS for each ACTIVE sigma block'
-          DO IBLOCK = 1, NSBLOCK
-            IF(ISBLOCK(1,IBLOCK).GT.0)
-     &      WRITE(luwrt,'(10X,4I3,2I8)') (ISBLOCK(II,IBLOCK),II=1,4)
-          END DO
-          WRITE(luwrt,*) ' IDC PS IPERTOP', IDC,PS,IPERTOP
-          WRITE(luwrt,*) ' IDOH2 = ',IDOH2
-          WRITE(luwrt,*) ' IRES_AB=',IRES_AB
-      END IF
-C     copy scaling factors from restore array to working array
-      CALL DCOPY(NUM_BLOCKS2,SSCLFAC,1,SCLFAC,1)
-      IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-C     initialize offsets in C-vector file
-      IOFFSET_SCR     = 0
-      IOFF_SCR_C1     = 0
-      IOFF_SCR_C2     = 0
-      IOFF_SCR_C_EXPL = 0
-      INT_IOFF_C1     = 1
-      INT_IOFF_C2     = 0
-C
-C     find batches of C-blocks; restrict to 'active' blocks
-C     for a given CPU
-C
-      ITTSS_ORD = 2
-      CALL PART_CIV_PAR2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
-     &                   LBLOCK_LUCI,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,
-     &                   LECBLOCK,I1CBLOCK,ICBLOCK,0,ITTSS_ORD,
-     &                   SCLFAC,NUM_BLOCKS2,0)
-#endif
-      ELSE ! (LUCI_NMPROC .GT. 1) THEN
-      IF(NTEST.GE.50) THEN
-        WRITE(LUCIWT,*) ' Initial C vector '
-        CALL WRTVCD(CB,LUC,1,-1)
-      END IF
-C
-C     find batches of C-blocks
-C
-      ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
-     &              LC,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,LECBLOCK,
-     &              I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
-C
-C     rewind C block file
-C
-      REWIND LUC
-C
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
-C     set max. excitations allowed by operator IDOH2
-      IF(IDOH2.EQ.1) THEN
-        MXEXC  = 2
-      ELSE
-        MXEXC = 1
-      END IF
-C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
-      IF(ICBAT_RES.EQ.1) THEN
-        WRITE(6,*) ' Restricted set of C batches '
-        WRITE(6,*) ' ICBAT_INI ICBAT_END', ICBAT_INI,ICBAT_END
-        JCBAT_INI = ICBAT_INI
-        JCBAT_END = ICBAT_END
-      ELSE
-        JCBAT_INI = 1
-        JCBAT_END = NCBATCH
-      END IF
-C
-C     loop over batches over C blocks
-C     -------------------------------
-C
-      DO 20000 JCBATCH = JCBAT_INI,JCBAT_END
-C
-C       read C blocks into core
-C
-        ICOFF = 1
-        NJBLOCK = LCBLOCK(JCBATCH)
-
-#ifdef VAR_MPI
-        IF (LUCI_NMPROC .GT. 1) THEN
-C
-C       C block non-zero?
-C
-        ICOMPUTE_C  = 0
-C
-        DO ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
-          IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
-             ICOMPUTE_C = 1
-csk       WRITE(LUCIWT,*) ' active C block found',ICBLK
-          END IF
-        END DO ! loop over blocks in this C-batch
-        IF( ICOMPUTE_C .eq. 0 ) THEN
-          DO ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
-            LBL             = IBLOCKL( ICBLK )
-            IOFF_SCR_C_EXPL = LBL
-            IOFF_SCR_C1     = IOFF_SCR_C1 + IOFF_SCR_C_EXPL
-            SCLFAC( ICBLK ) = 0.0D0
-          END DO
-          GOTO 20000
-        END IF
-        END IF ! (LUCI_NMPROC .GT. 1) THEN
-#endif
-        DO JJCBLOCK = 1, NJBLOCK
-          JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
-          INTERACT = 0
-!!!#ifdef VAR_MPI  -- for Stefan to check/remove later !!! 2-dec-2010
-!!!          IF( ISCLFAC_GROUP( JBLOCK ) .gt. 0 ) THEN
-!!!#else
-          IF( SCLFAC(JBLOCK) .ne. 0.0D0 ) THEN
-!!!#endif
-csk       WRITE(LUCIWT,*) ' Nonvanishing block ', JBLOCK
-          JATP = ICBLOCK(1,JBLOCK)
-          JBTP = ICBLOCK(2,JBLOCK)
-          JASM = ICBLOCK(3,JBLOCK)
-          JBSM = ICBLOCK(4,JBLOCK)
-          JOFF = ICBLOCK(5,JBLOCK)
-          CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
-     &                LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
-          DO IPERM = 1, NPERM
-            LLASM = LASM(IPERM)
-            LLBSM = LBSM(IPERM)
-            LLATP = LATP(IPERM)
-            LLBTP = LBTP(IPERM)
-*           loop over sigma blocks in batch
-            DO JSBLOCK = 1, NSBLOCK
-            IDENT = 0
-C
-C           parallel CI: ISBLOCK(1,JSBLOCK) == 0 for 
-C           blocks which are not assigned to a given CPU
-C
-            IF( ISBLOCK(1,JSBLOCK) .gt. 0 ) THEN
-              IATP = ISBLOCK(1,JSBLOCK)
-              IBTP = ISBLOCK(2,JSBLOCK)
-              IASM = ISBLOCK(3,JSBLOCK)
-              IBSM = ISBLOCK(4,JSBLOCK)
-*             are the two blocks connected by allowed excitation
-              IF(MXEXC.EQ.1) THEN
-                 IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
-     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
-     &              (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
-     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
-                       INTERACT = 1
-                 ENDIF
-              ELSE IF(MXEXC.EQ.2) THEN
-                 IF((ICONSPA(IATP,LLATP).LE.1.AND.
-     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
-     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
-     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
-     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
-     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
-                        INTERACT = 1
-                 END IF
-              END IF
-*             are they identical ?
-              IDENT = 0
-              IF(IASM.EQ.JASM.AND.IATP.EQ.JATP.AND.
-     &           IBSM.EQ.JBSM.AND.IBTP.EQ.JBTP) IDENT = 1
-*
-            END IF
-C           ^ IF( ISBLOCK(1,JSBLOCK) .gt. 0 ) THEN
-            END DO
-C           ^ s-block loop
-          END DO
-*         ^ IPERM loop
-          END IF
-*         ^ Checking was only done for nonvanishing blocks
-*
-          ISCALE = 0
-        IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-C         length of block
-          LBL         = IBLOCKL(JBLOCK)
-          IOFF_SCR_C2 = LBL
-          IF( INTERACT .eq. 1 ) THEN
-C
-C            file offset
-C
-csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
-             xxxreadtime = MPI_WTIME()
-             CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
-     &                             LBL,MPI_REAL8,my_STATUS,IERR)
-csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
-             xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
-             IBI_MULT_BL = IBI_MULT_BL + 1
-             SCLFAC(JBLOCK) = 1.0D0
-          ELSE
-             SCLFAC(JBLOCK) = 0.0D0
-          END IF
-          IOFF_SCR_C1 = IOFF_SCR_C1 + IOFF_SCR_C2
-csk       WRITE(LUWRT,*) ' set new IOFF_SCR_C2 for JBLOCK   ',
-csk  &                     IOFF_SCR_C2, JBLOCK
-#endif
-        ELSE ! (LUCI_NMPROC .GT. 1) THEN
-          IF(INTERACT.EQ.1) THEN
-            CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
-     &                  NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
-     &                  PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
-csk      write(luciwt,*)'read in done for JBLOCK',JBLOCK
-csk      CALL WRTMATMN(CB(JOFF),NSSOB(JBSM,JBTP),
-csk  &                 NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
-csk  &                 NSSOA(JASM,JATP),LUCIWT)
-          ELSE
-            CALL IFRMDS(LBL,-1,1,LUC)
-            CALL SKPRCD2(LBL,-1,LUC)
-            SCLFAC(JBLOCK) = 0.0D0
-          END IF
-        END IF ! (LUCI_NMPROC .GT. 1) THEN
-C
-          IF(IDENT.EQ.1 .AND. LUCBLK.GT.0)THEN
-            write(6,*) ' block will be copied to LUCLBLK'
-            NJA = NSSOA(JASM,JATP)
-            NJB = NSSOB(JBSM,JBTP)
-            IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM)THEN
-*             block is unpacked, pack first
-              IF(SCLFAC(JBLOCK).EQ.0.0D0) THEN
-                CALL DZERO(C2,NJA*(NJA+1)/2)
-              ELSE
-                CALL TRIPK2(CB(ICOFF),C2,1,NJA,NJA,PS)
-              END IF
-              CALL TODSCP(C2,NJA*(NJA+1)/2,-1,LUCBLK)
-            ELSE
-              IF(SCLFAC(ICBLK).EQ.0.0D0) THEN
-                CALL SETVEC(CB(ICOFF),ZERO,NJA*NJB)
-              END IF
-              CALL TODSCP(CB(ICOFF),NJA*NJB,-1,LUCBLK)
-            END IF
-          END IF
-*
-          IF(NTEST.GE.100) THEN
-            IF(INTERACT.EQ.1) THEN
-              WRITE(luwrt,*) ' TTSS for C block read in  '
-              CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
-            ELSE
-              WRITE(luwrt,*) ' TTSS for C block skipped  '
-              CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
-            END IF
-          END IF
-*
-        END DO
-C       ^ loop over blocks in C-batch
-C
-C       loop again over blocks in C-batch -- contraction run
-C
-C                          sigma_n = Hb_n
-C                          --------------
-C
-        DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
-C
-!!!#ifdef VAR_MPI
-!!!            IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
-!!!#else
-            IF( SCLFAC( ICBLK ) .ne. 0.0D0 ) THEN
-!!!#endif
-              JATP = ICBLOCK(1,ICBLK)
-              JBTP = ICBLOCK(2,ICBLK)
-              JASM = ICBLOCK(3,ICBLK)
-              JBSM = ICBLOCK(4,ICBLK)
-              ICOFF = ICBLOCK(5,ICBLK)
-              NJA = NSSOA(JASM,JATP)
-              NJB = NSSOB(JBSM,JBTP)
-C             other symmetry blocks that can be obtained from this block
-              CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
-     &                    LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
-C             start with transposed block
-              DO 8765 IPERM = NPERM,1, -1
-                LLASM = LASM(IPERM)
-                LLBSM = LBSM(IPERM)
-                LLATP = LATP(IPERM)
-                LLBTP = LBTP(IPERM)
-                NLLA = NSSOA(LLASM,LLATP)
-                NLLB = NSSOB(LLBSM,LLBTP)
-C               the routines assumes on input that the blocks are transposed, 
-C               so, initial tour, IPERM = 1 corresponds always to no transpose, 
-C               so transpose!
-                IF(IPERM.EQ.1) THEN
-                  IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
-C                   diagonal blocks, Transposing corresponds to scaling
-                    IF(PS.EQ.-1.0D0) THEN
-                      CALL DSCAL(NJA*NJB,PS,CB(ICOFF),1)
-                    END IF
-                  ELSE
-C                   offdiagonal blocks, explicit transposing
-                    CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
-                    CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
-                    if (LSGN(IPERM).eq.-1) then
-                      write(6,*) 'LROW,LCOL undef. in sblocks'
-                      write(6,*) 'and LSGN(IPERM).eq.-1'
-                      Call Abend2('Quitting.')
-CTF                   CALL SCALVE(CB(ICOFF),-1.0D0,LROW*LCOL)
-                    end if
-                  END IF
-                END IF
-C
-C               loop over sigma blocks in this batch
-C
-C               NOTE: in parallel execution ISBLOCK(1,ISBLK) is 
-C                     set to 0 if block is not included in block 
-C                     distribution list NPARBLOCK for a given CPU.
-C
-                DO 10000 ISBLK = 1, NSBLOCK
-                IF( ISBLOCK(1,ISBLK) .GT. 0 ) THEN
-                  IATP = ISBLOCK(1,ISBLK)
-                  IBTP = ISBLOCK(2,ISBLK)
-                  IASM = ISBLOCK(3,ISBLK)
-                  IBSM = ISBLOCK(4,ISBLK)
-                  ISOFF = ISBLOCK(5,ISBLK)
-                  NIA = NSSOA(IASM,IATP)
-                  NIB = NSSOB(IBSM,IBTP)
-C
-                  IF(NIA*NIB.EQ.0) GOTO 10000
-                  IF(IRESTRICT.EQ.1.AND.
-     &               (JASM.GT.IASM.OR.
-     &               JASM.EQ.IASM.AND.JATP.GT.IATP.OR.
-     &               JASM.EQ.IASM.AND.JATP.EQ.IATP.AND.JBTP.GT.IBTP))
-     &            GOTO 10000
-C             are the two blocks connected by allowed excitation
-              INTERACT = 0
-              IF(MXEXC.EQ.1) THEN
-                 IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
-     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
-     &              (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
-     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
-                       INTERACT = 1
-                 ENDIF
-              ELSE IF(MXEXC.EQ.2) THEN
-                 IF((ICONSPA(IATP,LLATP).LE.1.AND.
-     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
-     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
-     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
-     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
-     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
-                        INTERACT = 1
-                 END IF
-              END IF
-C
-                 IF(INTERACT.EQ.0) GOTO 10000
-
-                 IF(NTEST.GE.100) THEN
-                   WRITE(luwrt,*) ' Next s block in batch : '
-                   write(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
-                   write(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
-                 END IF
-C
-                IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP.AND.
-     &            ((LLBSM.GT.LLASM).OR.
-     &            (LLASM.EQ.LLBSM).AND.(LLBTP.GT.LLATP)))
-     &            GOTO 8764
-C
-                IF(NTEST.GE.60) THEN
-                  WRITE(LUCIWT,*) ' RSSBCB will be called for '
-                  WRITE(LUCIWT,*) ' Sigma block : '
-                  WRITE(LUCIWT,*) ' ISOFF ', ISOFF
-                  WRITE(LUCIWT,*) ' ISBLK IASM IBSM IATP IBTP'
-                  WRITE(LUCIWT,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
-                  WRITE(LUCIWT,*) ' C     block : '
-                  WRITE(LUCIWT,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
-                  WRITE(LUCIWT,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
-                  WRITE(LUCIWT,*) ' ICOFF ', ICOFF
-                  WRITE(LUCIWT,*) ' Overall scale',SCLFAC(ICBLK)
-                END IF
-*
-                IF(IRESTRICT.EQ.1.AND.
-     &             ((IASM.EQ.LLASM.AND.IBSM.EQ.LLBSM.AND.
-     &               IATP.EQ.LLATP.AND.IBTP.EQ.LLBTP     ) .OR.
-     &              (IDC.EQ.2.AND.
-     &               IASM.EQ.LLBSM.AND.IBSM.EQ.LLASM.AND.
-     &               IATP.EQ.LLBTP.AND.IBTP.EQ.LLATP     )     ))THEN
-                     XFAC = 0.5D0*SCLFAC(ICBLK)
-                ELSE
-                     XFAC = SCLFAC(ICBLK)
-                END IF
-C               form of operator in action
-                IF(IPERTOP.NE.0) THEN
-C                  not exact Hamiltonian in use
-                   IPTSPC = IH0SPC(IATP,IBTP)
-                   JPTSPC = IH0SPC(JATP,JBTP)
-                   IJOP   = IH0INSPC(IPTSPC)
-*
-C?                 WRITE(6,*) ' SBLOCKS:IPTSPC,JPTSPC,IJOP',
-C?   &                         IPTSPC,JPTSPC,IJOP
-*
-                ELSE
-                   IPTSPC = -1
-                   JPTSPC = -1
-                   IJOP   = -1
-                END IF
-*
-#ifdef VAR_MPI
-                IF (LUCI_NMPROC .GT. 1) THEN
-                   xxxcomputtime = MPI_WTIME()
-                END IF ! (LUCI_NMPROC .GT. 1) THEN
-#endif
-*
-                CALL RSSBCB2(IASM,IATP,IOCTPA,
-     &               IBSM,IBTP,IOCTPB,
-     &               LLASM,LLATP,LLBSM,LLBTP,NGAS,
-     &               NELFSPGP(1,IATP+IOCTPA-1),
-     &               NELFSPGP(1,IBTP+IOCTPB-1),
-     &               NELFSPGP(1,LLATP+IOCTPA-1),
-     &               NELFSPGP(1,LLBTP+IOCTPB-1),
-     &               NAEL,NBEL,
-     &               IAGRP,IBGRP,
-     &               SB(ISOFF),CB(ICOFF),IDOH2,
-     &               ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
-     &               NOBPTS,IOBPTS,MXPNGAS,ITSOB,MAXI,MAXK,
-     &               SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,C2,
-     &               NSMOB,NSMST,NSMSX,NSMDX,
-     &               NIA,NIB,NLLA,NLLB,MXPOBS,IDC,PS,
-     &               ICJKAIB,CJRES,SIRES,I3,XI3S,I4,XI4S,
-     &               MXSXBL,MOCAA,MOCAB,IAPR,
-     &               IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,XFAC,
-     &               IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,CJPA,SIPA,
-     &               MXTSOB,SOMESCR,SOMEH,XIJILS,luwrt)
-#ifdef VAR_MPI
-                IF (LUCI_NMPROC .GT. 1) THEN
-                   xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
-                END IF ! (LUCI_NMPROC .GT. 1) THEN
-#endif
-C
- 8764         CONTINUE
-              END IF
-10000         CONTINUE
-C             ^ end of loop over sigma blocks
- 8765         CONTINUE
-            END IF
-C           ^ non-vanishing C-block
- 9000       CONTINUE
-C           ^ end of loop over C blocks in Batch
-20000   CONTINUE
-C       ^ end of loop over batches of C blocks
-C
-C     order
-C
-      DO  ISBLK = 1 , NSBLOCK
-      IF(ISBLOCK(1,ISBLK).GT.0) THEN
-        IATP = ISBLOCK(1,ISBLK)
-        IBTP = ISBLOCK(2,ISBLK)
-        IASM = ISBLOCK(3,ISBLK)
-        IBSM = ISBLOCK(4,ISBLK)
-        ISOFF  = ISBLOCK(5,ISBLK)
-        ISOFFP = ISBLOCK(6,ISBLK)
-        NIA = NSSOA(IASM,IATP)
-        NIB = NSSOB(IBSM,IBTP)
-        IF(ICJKAIB.NE.0) THEN
-C
-C          tranposed sigma block was obtained, 
-C          transpose to obtain correct block
-C          ----------------------------------
-C
-           CALL TRPMT3(SB(ISOFF),NSSOB(IBSM,IBTP),
-     &                 NSSOA(IASM,IATP),C2)
-           CALL DCOPY(NSSOA(IASM,IATP)*NSSOB(IBSM,IBTP),C2,1,
-     &                SB(ISOFF),1)
-        END IF
-        IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)
-     &  CALL TRPAD3(SB(ISOFF),PS,NSSOA(IASM,IATP))
-*
-      END IF
-      END DO
-*
-      IF(NTEST.GE.50) THEN
-        WRITE(luwrt,*) ' output blocks from SBLOCKS '
-        CALL WRTTTS(SB,ISBLOCK,NSBLOCK,
-     &              NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,1)
-      END IF
-C
-      CALL QEXIT('SBLOC')
-C
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE SKICKJ(SKII,CKJJ,NKA,NIB,NJB,NKB,XIJKL,
      &                  NI,NJ,NK,NL,MAXK,
      &                  KBIB,XKBIB,KBJB,XKBJB,IKORD,
@@ -6136,7 +4689,1604 @@ C     CALL QEXIT('SKICK')
         END IF
       END IF
       END
-!**********************************************************************
+
+      SUBROUTINE SIGDEN_CI(C,HC,C2,LUC,LUHC,CV,HCV,ISIGDEN 
+#ifdef VAR_MPI
+     &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
+     &                IGROUPLIST,IPROCLIST
+#endif
+     &            )
+*
+* Outer routine for sigma vector generation (ISIGDEN = 1)
+* or density matrix generation (ISIGDEN=2)
+*
+* GAS version !!!!
+*
+* Adopted from MV7 for generating common sigma/density routine
+* Works only for ICISTR .ne. 1, i.e. pure memory version
+* has been eliminated.
+      IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP,
+     &          KISCLFAC, KSCALLOC
+!               for addressing of WORK
+#ifdef VAR_MPI
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
+#include "mxpdim.inc"
+*
+* =====
+*.Input
+* =====
+*
+*.Definition of c and sigma
+      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+*
+*./ORBINP/ : NACOB used
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "strbas.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "wrkspc.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+*. Used : NSMOB, nirrep
+#include "lucinp.inc"
+#include "cprnt.inc"
+#include "glbbas.inc"
+#include "oper.inc"
+C
+#ifdef VAR_MPI
+      DIMENSION LUCLIST(*),LUHCLIST(*),IBLOCKL(*),NPARBLOCK(*)
+      INTEGER RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
+#endif
+C
+* Blocks of C and sigma
+      DIMENSION C(*),HC(*)
+!     resolution matrix
+      DIMENSION C2(*)
+*. To prepare for version allowing complete C and HC in core
+      DIMENSION CV(*), HCV(*)
+     
+      
+      CALL QENTER('SIDE ')
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIDE  ')
+*
+      NTEST = 000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Entering SIGDEN_CI '
+        WRITE(6,*) ' ISIGDEN = ', ISIGDEN
+      END IF
+
+*
+      IF(ICISTR.EQ.1) THEN
+        WRITE(6,*) ' SIGDEN_CI does not work for ICISTR = 1'
+        WRITE(6,*) ' SWITCH to ICISTR = 2,3 or program'
+        call quit(' SIGDEN_CI does not work for ICISTR = 1')
+      END IF
+*
+      IATP = 1
+      IBTP = 2
+*
+      NOCTPA = NOCTYP(IATP)
+      NOCTPB = NOCTYP(IBTP)
+*     offset for supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+*
+      NAEL = NELEC(IATP)
+      NBEL = NELEC(IBTP)
+*     arrays giving allowed type combinations
+      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
+      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
+*     arrays for additional symmetry operation
+      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
+        CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
+         
+        CALL SIGVST(WORK(KSVST),NSMST)
+      ELSE
+         KSVST = 1
+      END IF
+*     arrays giving block type
+      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
+      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
+*     arrays for partitioning of sigma
+      NTTS = MXNTTS
+      CALL MEMMAN(KLSLBT  , NTTS,'ADDL  ',1,'CLBT  ')
+      CALL MEMMAN(KLSLEBT , NTTS,'ADDL  ',1,'CLEBT ')
+      CALL MEMMAN(KLSI1BT,  NTTS,'ADDL  ',1,'CI1BT ')
+      CALL MEMMAN(KLSIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
+*     batches  of s vector
+      ITTSS_ORD = 2
+
+      IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+         CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
+     &                   LBLOCK_LUCI,
+     &                   WORK(KSIOIO),ISMOST(1,ISSM),
+     &                   NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &                   WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD,
+     &                   NPARBLOCK,NUM_BLOCKS)
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+         CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
+     &               WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
+     &               WORK(KSIOIO),ISMOST(1,ISSM),
+     &               NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &               WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
+C
+      IF(I12.EQ.2) THEN
+        IDOH2 = 1
+      ELSE
+        IDOH2 = 0
+      END IF
+*
+      IF(ICISTR.EQ.1) THEN
+       LLUC  = 0
+       LLUHC = 0
+      ELSE
+       LLUC  = LUC
+       LLUHC = LUHC
+      END IF
+C
+C     scaling factor array
+C
+      CALL MEMMAN(KISCLFAC,NUM_BLOCKS2,'ADDL  ',2,'SSCLFC')
+      CALL DZERO(WORK(KISCLFAC),NUM_BLOCKS2)
+C
+C     ISCLFAC_GROUP array for c-blocks:
+C     0 = block is not active, > 0: block is active
+C
+      CALL MEMMAN(KSCALLOC,NUM_BLOCKS2,'ADDL  ',1,'KITCLL')
+*
+      IF(ISIGDEN.EQ.2) THEN
+*. Initialize density matrices to zero
+        LRHO1 = NTOOB**2
+        LRHO2 = NTOOB**2*(NTOOB**2+1)/2
+        IF(IDENSI.GE.1) CALL dzero(WORK(KRHO1),LRHO1)
+        IF(IDENSI.EQ.2) CALL dzero(WORK(KRHO2),LRHO2)
+      END IF
+      
+      IF(ICISTR.EQ.1) THEN
+        WRITE(6,*) 'ICISTR = 1 route currently not active'
+        call quit('SIGDEN_CI : ICISTR = 1 route currently not active')
+      ELSE
+        CALL SIGDEN2_CI(C,HC,C2,CV,HCV,ISIGDEN,
+     &       NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
+     &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,
+     &       WORK(KISCLFAC),WORK(KSCALLOC)
+#ifdef VAR_MPI
+     &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
+     &                IGROUPLIST,IPROCLIST
+#endif
+     &             )
+      END IF
+
+*. Eliminate local memory
+      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SIDE  ')
+*
+      CALL QEXIT('SIDE ')
+*
+      RETURN
+      END
+      SUBROUTINE SIGDEN2_CI(CB,SB,C2,CV,SV,ISIGDEN,
+     &                  NBATS,LBATS,LEBATS,I1BATS,IBATS,
+     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP
+#ifdef VAR_MPI
+     &                  ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
+     &                   IGROUPLIST,IPROCLIST
+#endif
+     &                 )
+*
+* Direct routine for sigma/density matrix generation
+*
+* Jeppe Olsen   April 2011, adopted from RASSG3
+*
+* =====
+* Input
+* =====
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#ifdef VAR_MPI
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
+      INTEGER IPROCLIST(*), RCCTOS(*)
+      DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      CHARACTER SECTID*12,WALLTID*12,WALLTID2*12
+      LOGICAL WRITE_SB
+#endif
+#include "parluci.h"
+*     batches of sigma
+      INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
+*     scratch
+      DIMENSION SB(*),CB(*),SSCLFAC(*),C2(*)
+*. For complete vectors (ICISTR = 1)
+      DIMENSION CV(*),SV(*)
+*
+      NZERO = 0
+      IONE  = 1
+      xreadtimebi = 0.0D0
+      xcomputesi  = 0.0D0
+      ISI_CALC_BL = 0
+      IBI_MULT_BL = 0
+*
+      CALL QENTER('SIDE2')
+
+      NTEST     = 0000 ! normal print level
+!     NTEST     = 9999 ! debug
+      NPTESTVAR = NTEST
+!     NPTESTVAR = 25
+
+      IF(NTEST.GE.20) THEN
+        WRITE(luwrt,*) ' ====================='
+        WRITE(luwrt,*) ' SIGDEN2_CI speaking :'
+        WRITE(luwrt,*) ' ====================='
+        WRITE(luwrt,*) ' ISIGDEN, NBATS = ',ISIGDEN,NBATS
+      END IF
+*
+      IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+*
+*     make an update of list ISCLFAC_GROUP using LUCLIST...
+*
+      BLOCKTIME = 0.0D0
+*
+*     only real part needed
+*
+      IRILP = 1
+*
+      CALL UPDATE_LUC_LIST2(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
+     &                      NPARBLOCK,IBLOCKL,IGROUPLIST,
+     &                      IPROCLIST,IRILP,BLOCKTIME)
+C
+C     debug printing of 'complete' C vector on node/global file
+C
+      IF( NPTESTVAR .ge. 20 ) THEN
+        IOFFSET_SCRATCH = 0
+        WRITE(LUWRT,*) ' Right vector = C-vector'
+        DO IBLK = 1, NUM_BLOCKS2
+C
+           LENGTH_BLK = IBLOCKL(IBLK)
+C
+           IF( ISCLFAC_GROUP( IBLK ) .ne. 0 ) THEN
+             CALL MPI_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,LENGTH_BLK,
+     &                             MPI_REAL8,my_STATUS,IERR)
+             WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
+     &             IOFFSET_SCRATCH,'for block', IBLK, LENGTH_BLK
+             CALL WRTMATMN(CB,1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
+           END IF
+           IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
+          END DO
+      END IF
+      IOFFSET_SCRATCH = 0
+C
+C     initialize accessing the sigma-vector file
+C
+      IOFF_SCR1 = 0
+      IOFF_SCR2 = 0
+C     file offset
+      IOFF_SCR1 = MY_LU4_OFF
+     &          + MY_VEC2_IOFF * ( JVEC_SF )
+      INT_IOFF1  = 0
+      INT_IOFF2  = 0
+C     block list offset
+      INT_IOFF1  = 1 + MY_ACT_BLK2 * ( JVEC_SF )
+C
+C?    WRITE(luwrt,*) 'INT_IOFF1 in RASSG3',INT_IOFF1
+C
+C     include in C-vector batches only C-blocks which are 
+C     needed to compute a s-block for a given CPU
+C
+      CALL UPDATE_GEN_LIST(ISCLFAC_GROUP,RCCTOS,NUM_BLOCKS2)
+      CALL IFACTOSFAC(ISCLFAC_GROUP,SSCLFAC,NUM_BLOCKS2)
+C
+C     debug info
+C
+      IF( NPTESTVAR .ge. 20 ) THEN
+         WRITE(LUWRT,*) ' ISCLFAC_GROUP '
+         CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+         WRITE(LUWRT,*) ' RCCTOS '
+         CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+         WRITE(LUWRT,*) ' SSCLFAC '
+         CALL WRTMATMN(SSCLFAC,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+      END IF
+C
+*=====================================================
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+         write(luwrt,*) ' rhs vector'
+         CALL WRTVCD(cb,luc,1,-1)
+         rewind luc
+         IF(ISIGDEN.gt.1)THEN
+           write(luwrt,*) ' lhs vector'
+           CALL WRTVCD(sb,luhc,1,-1)
+           rewind luhc
+         end if
+#undef LUCI_DEBUG
+#endif
+C
+C        get scaling factor - 0.0D0 or 1.0D0
+C
+         CALL FIND_ACTIVE_BLOCKS(LUC,-1,SSCLFAC,CB)
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
+C
+C     loop over batches over sigma blocks
+C
+      DO JBATS = 1, NBATS
+C
+#ifdef VAR_MPI
+       IF (LUCI_NMPROC .GT. 1) THEN
+*
+*       start various timings...
+*
+        starttime  = mpi_wtime()
+        sbatchtime = 0.0D0
+        writetime  = 0.0D0
+C
+C       do we need to calculate a single s-block / does a s block
+C       contribute to rho1/rho2?
+        ICOMPUTE = 0
+*
+        DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
+           IF( NPARBLOCK( ISBLK ) .eq. LUCI_MYPROC ) THEN
+             ICOMPUTE = 1
+           END IF
+        END DO
+
+        IF( ICOMPUTE .eq. 0 ) THEN
+           starttimer = MPI_WTIME()
+           GOTO 70
+        ENDIF
+       END IF ! (LUCI_NMPROC .GT. 1) THEN
+*
+#endif /* if def VAR_MPI */
+C       zero SB
+        LS = LEBATS(JBATS)
+
+        IF(ISIGDEN.EQ.1) THEN
+          CALL DZERO(SB,LS)
+        ELSE
+
+*. Read current batch of sigma in for density calculation
+          DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
+             IOFF = IBATS(6,ISBLK)
+             LEN  = IBATS(8,ISBLK)
+           IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+*            check again if block is needed
+             IF( NPARBLOCK(ISBLK) .ne. LUCI_MYPROC ) GOTO 165
+*
+*            new offset
+*
+             IOFF_SCR1 = IOFF_SCR1 + IOFF_SCR2
+             INT_IOFF1 = INT_IOFF1 + INT_IOFF2
+*            check norm of the block
+             IF(LUHCLIST(INT_IOFF1).eq.1) THEN
+              CALL MPI_FILE_READ_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
+     &                              MPI_REAL8,my_STATUS,IERR)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+              WRITE(luwrt,*) 'I transfer from file block ISBLK',
+     &                        ISBLK
+              CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,luwrt)
+              WRITE(luwrt,*) 'offset,length',IOFF_SCR1,LEN
+#undef LUCI_DEBUG
+#endif
+              ISI_CALC_BL = ISI_CALC_BL + 1
+             END IF
+*            keep track of correct offset
+             IOFF_SCR2 = LEN
+             INT_IOFF2 = 1
+165          CONTINUE
+C
+#endif
+            ELSE ! (LUCI_NMPROC .GT. 1) THEN
+             CALL IFRMDS(LEN_L,1,-1,LUHC)
+             CALL FRMDSC_LUCI(SB(IOFF),LEN_L,-1,LUHC,IMZERO,IAMPACK)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+              WRITE(luwrt,*) 'I transfer from file block ISBLK',
+     &                        ISBLK
+              CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,luwrt)
+              WRITE(luwrt,*) 'offset,length',IOFF,LEN_L
+#undef LUCI_DEBUG
+#endif
+            END IF ! (LUCI_NMPROC .GT. 1) THEN
+          END DO ! end of loop over S-blocks
+       END IF ! End of ISIGDEN switch
+C
+       CALL SIGDEN3_CI(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
+     &      CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,ISCLFAC_GROUP
+#ifdef VAR_MPI
+     &      ,LUCLIST,NPARBLOCK,IBLOCKL
+#endif
+     &                             )
+      IF(ISIGDEN.EQ.1) THEN
+C  
+C       transfer S block to permanent storage
+#ifdef VAR_MPI
+        IF (LUCI_NMPROC .GT. 1) THEN
+          starttimer = MPI_WTIME()
+          IF( ICOMPUTE .eq. 0 ) GOTO 70
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
+#endif /* if def VAR_MPI */
+C
+        if(NTEST.ge.100) then
+          WRITE(luwrt,*) ' **********************************'
+          WRITE(luwrt,*) ' *                                *'
+          WRITE(luwrt,*) ' * Array containing final sbatch  *'
+          WRITE(luwrt,*) ' *                                *'
+          WRITE(luwrt,*) ' **********************************'
+          CALL WRTMATMN(SB,1,LS,1,LS,luwrt)
+        end if
+C
+        DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
+          IOFF = IBATS(6,ISBLK)
+          LEN  = IBATS(8,ISBLK)
+          IF(LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+!           check again if block is needed
+            IF( NPARBLOCK(ISBLK) .ne. LUCI_MYPROC ) GOTO 65
+
+*           new offset
+            IOFF_SCR1 = IOFF_SCR1 + IOFF_SCR2
+            INT_IOFF1 = INT_IOFF1 + INT_IOFF2
+*           check norm of the block
+            XXX      = 0.0D0
+            XXX      = DDOT(LEN,SB(IOFF),1,SB(IOFF),1)
+            WRITE_SB = .FALSE.
+            IF( XXX .eq. 0.0D0 ) THEN
+              LUHCLIST(INT_IOFF1) = NZERO
+            ELSE
+*             mark block as nonzero
+              LUHCLIST(INT_IOFF1) = IONE
+              WRITE_SB            = .TRUE.
+            END IF
+*           transfer block to disc
+            IF(WRITE_SB)THEN
+#ifdef LUCI_DEBUG
+              WRITE(luwrt,*) 'I transfer to file block ISBLK',
+     &                      ISBLK
+              CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,luwrt)
+              WRITE(luwrt,*) 'offset,length',IOFF_SCR1,LEN
+#endif
+              CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
+     &                               MPI_REAL8,my_STATUS,IERR)
+              ISI_CALC_BL = ISI_CALC_BL + 1
+            END IF
+*           keep track of correct offset
+            IOFF_SCR2 = LEN
+            INT_IOFF2 = 1
+ 65         CONTINUE
+C
+#endif
+          ELSE ! (LUCI_NMPROC .GT. 1) THEN
+            CALL ITODS(LEN,1,-1,LUHC)
+            CALL TODSC_LUCI(SB(IOFF),LEN,-1,LUHC)
+          END IF ! (LUCI_NMPROC .GT. 1) THEN
+
+          END DO ! end of loop over S-blocks
+
+        end if ! isigden switch
+ 70     CONTINUE
+#ifdef VAR_MPI
+        IF (LUCI_NMPROC .GT. 1) THEN
+          IF( ICOMPUTE .ne. 0 ) THEN
+            sbatchtime = sbatchtime + MPI_WTIME() - starttime
+            WALLTID2 = SECTID(sbatchtime)
+            IF( TIMING_par ) THEN
+              WRITE(LUWRT,50000) WALLTID2
+            END IF
+          END IF
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
+#endif /* if def VAR_MPI */
+      END DO
+*
+C
+      IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+        WALLTID2 = SECTID(BLOCKTIME)
+        IF( TIMING_par ) THEN
+          WRITE(LUWRT,80000) WALLTID2
+        END IF
+*
+50000   FORMAT(' >>>  WALL TIME FOR WRITING SIGMA BATCH          :
+     &   ',A)
+80000   FORMAT(' >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :
+     &   ',A)
+*
+C
+        IF( TIMING_par ) THEN
+C
+C         print statistics
+C
+          WRITE(LUWRT,'(/A)')
+     &    '               H x b_i contraction run statistics  '
+          WRITE(LUWRT,'(A/)')
+     &    '              ____________________________________ '
+          WRITE(LUWRT,'(2X,A,1X,I9)')
+     &    ' number of s_i blocks calculated          : ',ISI_CALC_BL
+          WRITE(LUWRT,'(2X,A,1X,I9)')
+     &    ' total number of b_i read from disk       : ',IBI_MULT_BL
+          WALLTID = SECTID(xreadtimebi)
+          WRITE(LUWRT,'(2X,A,1X,A)')
+     &    ' read time for b_i blocks from disk       : ', WALLTID
+          WALLTID = SECTID(xcomputesi)
+          WRITE(LUWRT,'(2X,A,1X,A/)')
+     &    ' pure matrix x vector multiplication time : ', WALLTID
+C
+        END IF
+C
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+C       write EOF mark
+        CALL ITODS(-1,1,-1,LUHC)
+C
+        IF(NTEST.GE.100) THEN
+          WRITE(luwrt,*) ' Final S-vector on disc'
+          CALL WRTVCD(SB,LUHC,1,-1)
+        END IF
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
+*
+      CALL QEXIT('SIDE2')
+      RETURN
+      END
+
+!------------------------------------------------------------------------------
+      SUBROUTINE SIGDEN3_CI(NBLOCK,IBLOCK,IBOFF,CB,HCB,C2,CV,ISIGDEN,
+     &                  LUC,IRESTRICT,
+     &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
+     &                  SSCLFAC,ISCLFAC_GROUP
+#ifdef VAR_MPI
+     &                 ,LUCLIST,NPARBLOCK,IBLOCKL
+#endif
+     &                  )
+*
+* Contributions to/from a set of sigma blocks,
+* The NBLOCK specified in IBLOCK starting from IBOFF,
+* be more specific.
+*
+* The blocks are delivered in /read from  HCB
+*
+* The blocks are scaled and reformed to combination order
+* If LUCBLK.GT.0, the blocks of C corresponding to IBLOCK
+* are stored on LUCBLK
+*
+*
+* Stefan Knecht und Jeppe Olsen, April 2011, from SBLOCK
+*
+* If ICBAT_RES .eq.1 then it as assumed that only
+* Cbatches ICBAT_INI to ICBAT_END are stored on  LUC
+*
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KSIOIO, KSVST, KLSLBT, KLSLEBT, KLSI1BT, KLSIBT, KSBLTP,
+     &          KISCLFAC, KSCALLOC, KLLBT, KLLEBT, KLI1BT, KLIBT, 
+     &          KLSCLFAC, KI1, KXI1S, KI2, KXI2S, KI3, KXI3S, KI4,KXI4S,
+     &          KCJRES, KSIRES, KSSCR, KCSCR, KCJPA, KSIPA, KSOMEH,
+     &          KSOMESCR, KCONSPA, KCONSPB, KSTSTS, KSTSTD, KINSCR, 
+     &          KCIOIO, KCBLTP, KRHO1S
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+!               for addressing of WORK
+#ifdef VAR_MPI
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
+#include "mxpdim.inc"
+*
+* =====
+*.Input
+* =====
+*
+*.Definition of c and sigma spaces
+      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+*. Sigma blocks require
+      INTEGER IBLOCK(8,*)
+*
+*./ORBINP/ : NACOB used
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "strbas.inc"
+#include "cstate.inc"
+#include "strinp.inc"
+#include "stinf.inc"
+#include "csm.inc"
+#include "wrkspc.inc"
+#include "crun.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+*. Used : NSMOB
+#include "lucinp.inc"
+#include "cprnt.inc"
+#include "glbbas.inc"
+#include "oper.inc"
+*
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+      COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+*
+      dimension XIJILS(MXTSOB)
+      INTEGER MLTHCHCK, ITEMPP
+      DIMENSION SSCLFAC(*),ISCLFAC_GROUP(*)
+*
+      DIMENSION CB(*),HCB(*),C2(*)
+*. Preparation for storage of complete Sigma and C-vectors
+      DIMENSION CV(*)
+
+*
+*     set local mark memory
+* 
+      IDUM = 0
+      CALL MEMMAN(KDUM,IDUM,'MARK  ',IDUM,'SIDE3 ')
+*
+CTF
+*     scratch space for rsbb2a, rsbb2bn, rsbb2bvn, skickj
+CTF
+      LSOMESQ = MXTSOB*MXTSOB
+      call memman(KSOMEH,LSOMESQ,'ADDS',2,'SOMSCH')
+      call memman(KSOMESCR,LSOMESQ**2,'ADDS',2,'SOMSCR')
+CTF
+CTF   dimension SOMESCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
+CTF   dimension SOMEH(MXTSOB*MXTSOB)
+      NTEST = 0
+      IF(NTEST.GE.5)
+     &WRITE(6,*) ' SBLOCK : ISSPC,ICSPC ', ISSPC,ICSPC
+C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
+      IF(LUCBLK.GT.0) THEN
+        CALL REWINE(LUCBLK,-1)
+      END IF
+*
+*     info for this internal space
+*     type of alpha and beta strings
+      IATP = 1
+      IBTP = 2
+*     alpha and beta strings with an electron removed
+      IATPM1 = 3
+      IBTPM1 = 4
+*     alpha and beta strings with two electrons removed
+      IATPM2 = 5
+      IBTPM2 = 6
+*     number of supergroups
+      NOCTPA = NOCTYP(IATP)
+      NOCTPB = NOCTYP(IBTP)
+*     offset for supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+*
+      NAEL = NELEC(IATP)
+      NBEL = NELEC(IBTP)
+*
+*     connection matrices for supergroups
+*
+      CALL MEMMAN(KCONSPA,NOCTPA**2,'ADDL  ',1,'CONSPA')
+      CALL MEMMAN(KCONSPB,NOCTPB**2,'ADDL  ',1,'CONSPB')
+C     SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,ISPGRPCON,IPRNT)
+      CALL SPGRPCON(IOCTPA,NOCTPA,NGAS,MXPNGAS,NELFSPGP,
+     &              WORK(KCONSPA),IPRCIX)
+      CALL SPGRPCON(IOCTPB,NOCTPB,NGAS,MXPNGAS,NELFSPGP,
+     &              WORK(KCONSPB),IPRCIX)
+*     string sym, string sym => sx sym
+*     string sym, string sym => dx sym
+      CALL MEMMAN(KSTSTS,NSMST ** 2,'ADDL  ',2,'KSTSTS')
+      CALL MEMMAN(KSTSTD,NSMST ** 2,'ADDL  ',2,'KSTSTD')
+      CALL STSTSM(WORK(KSTSTS),WORK(KSTSTD),NSMST)
+*     largest block of strings in zero order space
+      MXSTBL0 = MXNSTR
+*     largest number of strings of given symmetry and type
+      MAXA = 0
+      MAXA0 = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTYP(IATP),2)
+      MAXA = MAX(MAXA,MAXA0)
+      IF(NAEL.GE.1) THEN
+        MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
+        MAXA = MAX(MAXA,MAXA1)
+      END IF
+      IF(NAEL.GE.2) THEN
+        MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
+        MAXA = MAX(MAXA,MAXA1)
+      END IF
+*
+      MAXB = 0
+      MAXB0 = IMNMX(WORK(KNSTSO(IBTP)),NSMST*NOCTYP(IBTP),2)
+      MAXB = MAX(MAXB,MAXB0)
+      IF(NBEL.GE.1) THEN
+        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
+        MAXB = MAX(MAXB,MAXB1)
+      END IF
+      IF(NBEL.GE.2) THEN
+        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
+        MAXB = MAX(MAXB,MAXB1)
+      END IF
+      MXSTBL = MAX(MAXA,MAXB)
+      IF(IPRCIX.GE.3 ) WRITE(6,*)
+     &' Largest block of strings with given symmetry and type',MXSTBL
+*     largest number of resolution strings and spectator strings
+*     that can be treated simultaneously
+      MAXI = MIN(MXINKA,MXSTBL)
+      MAXK = MIN(MXINKA,MXSTBL)
+*     largest active orbital block belonging to given type and symmetry
+      MXTSOB_L = 0
+      DO IOBTP = 1, NGAS
+        DO IOBSM = 1, NSMOB
+          MXTSOB_L = MAX(MXTSOB_L,NOBPTS(IOBTP,IOBSM))
+        END DO
+      END DO
+C?    WRITE(6,*) ' MXTSOB_L = ', MXTSOB_L
+      MAXIJ = MXTSOB_L ** 2
+*     local scratch arrays for blocks of C and sigma
+      IF(IPRCIX.GE.3)
+     &WRITE(luwrt,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
+*     SCRATCH space for integrals
+*     SCRATCH space for integrals
+*     4 index integral block with four indeces belonging OS class
+      INTSCR = MXTSOB_L ** 4
+      IF(IPRCIX.GE.3)
+     &WRITE(luwrt,*) ' Integral scratch space ',INTSCR
+      CALL MEMMAN(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
+*. Arrays giving allowed type combinations '
+      CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
+      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
+*. Offsets for alpha and beta supergroups
+      IOCTPA = IBSPGPFTP(IATP)
+      IOCTPB = IBSPGPFTP(IBTP)
+*. sigma needed for MXRESC
+C          IAIBCM(ICISPC,IAIB)
+      CALL IAIBCM(ISSPC,WORK(KSIOIO))
+      CALL IAIBCM(ICSPC,WORK(KCIOIO))
+*. Arrays giving block type
+      CALL MEMMAN(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
+*. Arrays for additional symmetry operation
+      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
+        CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
+        CALL SIGVST(WORK(KSVST),NSMST)
+      ELSE
+         KSVST = 1
+      END IF
+*
+*.scratch space for projected matrices and a CI block
+*
+*. Scratch space for CJKAIB resolution matrices
+*. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
+      CALL MXRESCPH(WORK(KSIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
+     &            NSMST,NSTFSMSPGP,MXPNSMST,
+     &            NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
+     &            NELFSPGP,
+     &            MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
+     &            IPHGAS,NHLFSPGP,MNHL,IADVICE)
+      IF(IPRCIX.GE.3) THEN
+        WRITE(luwrt,*) 'SBLOCK : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
+     &                       MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
+         WRITE(luwrt,*) 'SBLOCK : MXADKBLK ', MXADKBLK
+      END IF
+      LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
+      IF(IPRCIX.GE.3)
+     &WRITE(luwrt,*) ' Space for resolution matrices ',LSCR2
+*
+      IF(IPRCIX.GE.luwrt)  WRITE(6,*) ' LSCR2 = ', LSCR2
+C
+      LSCR12 = MAX(LBLOCK,2*LSCR2)
+*
+*     space for active/passive blocks
+      CALL MEMMAN(KCJPA,LSCR2,'ADDL  ',2,'KCJPA ')
+      CALL MEMMAN(KSIPA,LSCR2,'ADDL  ',2,'KSIPA ')
+*
+*     vectors able to hold strings of given sym and type
+      MAXIK = MAX(MAXI,MAXK)
+*     I1 and Xi1s must also be able to hold largest st block
+      LSCR3 = MAX(MXADKBLK,MAXIK*MXTSOB_L*MXTSOB_L,MXSTBL0)
+      CALL MEMMAN(KI1  ,LSCR3,'ADDL  ',1,'I1    ')
+      CALL MEMMAN(KXI1S,LSCR3,'ADDL  ',2,'XI1S  ')
+*
+      CALL MEMMAN(KI2  ,LSCR3,'ADDL  ',1,'I2    ')
+      CALL MEMMAN(KXI2S,LSCR3,'ADDL  ',2,'XI2S  ')
+*
+      CALL MEMMAN(KI3  ,LSCR3,'ADDL  ',1,'I3    ')
+      CALL MEMMAN(KXI3S,LSCR3,'ADDL  ',2,'XI3S  ')
+*
+      CALL MEMMAN(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
+      CALL MEMMAN(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
+      CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
+*     some TTS arrays
+      NOOS = NOCTPA*NOCTPB*NSMCI
+      NTTS = MXNTTS
+C
+C     for partitioning of vector
+C
+      CALL MEMMAN(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
+      CALL MEMMAN(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
+      CALL MEMMAN(KLI1BT,NTTS  ,'ADDL  ',1,'I1BTC ')
+      CALL MEMMAN(KLIBT ,8*NTTS,'ADDL  ',1,'IBTC  ')
+C
+C     for scaling for each TTS block
+C
+      CALL MEMMAN(KLSCLFAC ,NTTS,'ADDL  ',2,'SCLFAC')
+C
+C     space for four blocks of string occupations and arrays of
+C     reordering arrays
+C     
+      LZSCR = (MAX(NAEL,NBEL)+3)*(NOCOB+1) + 2 * NOCOB
+      LZ    = (MAX(NAEL,NBEL)+2) * NOCOB
+      DO I1234 = 1, 1
+        CALL MEMMAN(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
+      END DO
+
+      DO I1234 = 1, 2
+        CALL MEMMAN(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
+        CALL MEMMAN(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
+      END DO
+      CALL MEMMAN(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
+*
+*     Place perturbation integrals over one body integrals
+      IF(I12.EQ.2) THEN
+        IDOH2 = 1
+      ELSE
+        IDOH2 = 0
+      END IF
+
+!     scratch space for active one body density matrix
+      if(isigden .eq. 1)then
+        KRHO1S = 1
+      else
+        CALL MEMMAN(KRHO1S,NACOB ** 2,'ADDL  ',2,'RHO1S ')
+      end if
+!
+!     this is the pointer scheme in the old code...
+!     ---------------------
+!     KCJRES = KC2
+!     KSIRES = KC2 + LSCR2
+!     KSSCR = KSIRES
+!     KCSCR = KCJRES
+!     ---------------------
+
+      CALL SIGDEN4_CI(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,CV,ISIGDEN,
+     &     C2,
+     &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),
+     &     NACOB,WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
+     &     NAEL,IATP,NBEL,IBTP,
+     &     IOCTPA,IOCTPB,NOCTPA,NOCTPB,
+     &     NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,
+     &     ITSOB,MAXIJ,MAXK,MAXI,INSCR,LBLOCK,
+     &     LBLOCK,WORK(KINSCR),C2,C2(1+LSCR2),
+     &     SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
+     &     ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
+     &     WORK(KSOMESCR),WORK(KSOMEH),XIJILS,
+     &     WORK(KI1),WORK(KXI1S),
+     &     WORK(KI2),WORK(KXI2S),IDOH2,WORK(KSVST),
+     &     PSSIGN,IPRDIA,LUC,ICJKAIB,C2,
+     &     C2(1+LSCR2),WORK(KI3),WORK(KXI3S),
+     &     WORK(KI4),WORK(KXI4S),MXSXBL,
+     &     MOCAA,MOCAB,IAPR,
+     &     WORK(KLLBT),WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),
+     &     IRESTRICT,WORK(KCONSPA),WORK(KCONSPB),WORK(KLSCLFAC),
+     &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
+     &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
+     &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),ISCLFAC_GROUP,SSCLFAC,
+     &     WORK(KRHO1S)
+#ifdef VAR_MPI
+     &    ,LUCLIST,NPARBLOCK,IBLOCKL
+#endif
+     &                  )
+*
+      IF(ISGDEN.EQ.1.AND.IDC.EQ.2) THEN
+*       reform
+        CALL RFTTS(HCB,CB,IBLOCK(1,IBOFF),NBLOCK,
+     &             1,NSMST,NOCTPA,NOCTPB,
+     &             WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
+     &             IDC,PSSIGN,1,NTEST)
+*       scale
+        CALL SCDTTS(HCB,IBLOCK(1,IBOFF),NBLOCK,NSMST,NOCTPA,NOCTPB,
+     &              WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
+     &              IDC,1,NTEST)
+      END IF
+
+      IF(isigden.eq.2 .and. I12.EQ.2) THEN
+* <L!S**2|R>
+        EXPS2 = NAEL +
+     &          0.5*(NAEL-NBEL)*(0.5*(NAEL-NBEL)-1)
+        EXPS2 = EXPS2 + S2_TERM1
+!       write(luwrt,*) 'NAEL, NBEL',NAEL, NBEL
+!       WRITE(luwrt,*) ' Term 1 to S2 ', S2_TERM1
+!       WRITE(luwrt,*) ' Expectation value of S2 ', EXPS2
+      ELSE
+        EXPS2 = 0.0D0
+      END IF
+
+*
+      IF(LUCBLK.GT.0) THEN
+        CALL ITODS(-1,1,-1,LUCBLK)
+      END IF
+*     eliminate local memory
+      IDUM = 0
+      CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SIDE3 ')
+C
+      RETURN
+      END
+      SUBROUTINE SIGDEN4_CI(NSBLOCK,ISBLOCK,CB,SB,CV,ISIGDEN,C2,
+     &           ICOCOC,ICSMOS,ICBLTP,NACOB,NSSOA,NSSOB,
+     &           NAEL,IAGRP,NBEL,IBGRP,
+     &           IOCTPA,IOCTPB, NOCTPA,NOCTPB,
+     &           NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,
+     &           ITSOB,MAXIJ,MAXK,MAXI,LI,LC,LS,
+     &           XINT,CSCR,SSCR,SXSTSM,STSTSX,STSTDX,
+     &           SXDXSX,ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
+     &           SOMESCR,SOMEH,XIJILS,
+     &           I1,XI1S,I2,XI2S,IDOH2,ISTRFL,
+     &           PS,IPRNT,LUC,ICJKAIB,CJRES,SIRES,I3,XI3S,
+     &           I4,XI4S,MXSXBL,MOCAA,MOCAB,IAPR,
+     &           LCBLOCK,LECBLOCK,I1CBLOCK,ICBLOCK,IRESTRICT,
+     &           ICONSPA,ICONSPB,SCLFAC,
+     &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
+     &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
+     &           I_RES_AB,IUSE_PA,CJPA,SIPA,ISCLFAC_GROUP,SSCLFAC,
+     &           RHO1S
+#ifdef VAR_MPI
+     &          ,LUCLIST,NPARBLOCK,IBLOCKL
+#endif
+     &           )
+*
+* Direct RAS routine employing combined MOC/n-1 resolution method
+*
+* Jeppe Olsen , Winter of 1991
+*
+* =====
+* Input
+* =====
+*
+* NSBLOCK : Number of BLOCKS included
+* ISBLOCK : Blocks included
+*   ISBLOCK(1,*) : alpha type of block
+*   ISBLOCK(2,*) : beta type of block
+*   ISBLOCK(3,*) : sym of alpha in block
+*   ISBLOCK(4,*) : Offset of block
+*
+* ICOCOC : Allowed type combinations for C
+* ICSMOS : Symmetry array for C
+* ICBLTP : Block types for C
+* NACOB : Number of active orbitals
+* NSSOA : Number of strings per type and symmetry for alpha strings
+* NAEL  : Number of active alpha electrons
+* NSSOB : Number of strings per type and symmetry for beta strings
+* NBEL  : Number of active beta electrons
+* NTSOB : Number of orbitals per type and symmetry
+* NOBPTS: Orbitals of given type and symmetry
+* IOBPTS: Offset for orbitals of given sym and type
+*
+* MAXIJ : Largest allowed number of orbital pairs treated simultaneously
+* MAXK  : Largest number of N-2,N-1 strings treated simultaneously
+* MAXI  : Max number of N strings treated simultaneously
+*
+* LI : Length of scratch array for integrals
+* LC : Length of scratch array for C
+* LS : Length of scratch array for S
+* XINT : Scratch array for integrals
+* CSCR : Scratch array for C vector
+* SSCR : Scratch array for S vector
+*
+* ICJKAIB = 1 => construct C(Ka,Jb,j) and S(Ka,IB,i) as intermediate terms
+*         = 0 => do not construct the above montioned matrices
+* CJRES,SIRES : Space for above matrices
+* The C and S vectors are accessed through routines that
+* either fetches/disposes symmetry blocks or
+* Symmetry-occupation-occupation blocks
+*
+*
+* If IRESTRICT.NE. 0 THEN we are after :
+* sigma(iblk) = summa(jblk.le.iblk) (2-delta(iblk,jblk))/2
+*                                                 * <Iblk!H!Jblk>C(Jblk)
+      IMPLICIT REAL*8(A-H,O-Z)
+#ifdef VAR_MPI
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#endif
+#include "parluci.h"
+#include "mxpdim.inc"
+#include "glbbas.inc"
+*. Specific input
+      INTEGER ISBLOCK(8,*)
+*.General input
+      INTEGER ICOCOC(NOCTPA,NOCTPB)
+      INTEGER ICSMOS(NSMST)
+      INTEGER ICBLTP(*)
+      INTEGER NSSOA(NSMST ,*), NSSOB(NSMST ,*)
+      INTEGER SXSTSM(NSMSX,NSMST),STSTSX(NSMST,NSMST)
+      INTEGER STSTDX(NSMST,NSMST), ADSXA(MXPOBS,2*MXPOBS)
+      INTEGER SXDXSX(2*MXPOBS,4*MXPOBS), ASXAD(MXPOBS,2*MXPOBS)
+      INTEGER NOBPTS(MXPNGAS,*),IOBPTS(MXPNGAS,*),ITSOB(*)
+      INTEGER NELFSPGP(MXPNGAS,*)
+      INTEGER ICONSPA(NOCTPA,NOCTPA), ICONSPB(NOCTPB,NOCTPB)
+*     scratch
+      DIMENSION SB(*),CB(*),C2(*)
+      DIMENSION XINT(*),CSCR(*),SSCR(*)
+      DIMENSION I1(*),I2(*),I3(*),XI1S(*),XI2S(*),XI3S(*)
+      INTEGER   LCBLOCK(*),I1CBLOCK(*),ICBLOCK(8,*),LECBLOCK(*)
+*     zero order Hamiltonian
+      INTEGER IH0SPC(NOCTPA,NOCTPB)
+      INTEGER IH0INSPC(*)
+*     resolution matrices
+      DIMENSION CJRES(*),SIRES(*)
+*
+      DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
+      DIMENSION SCLFAC(*),SSCLFAC(*)
+*. For version with complete vector in core
+      DIMENSION CV(*)
+#ifdef VAR_MPI
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCR
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C1, IOFF_SCR_C_EXPL
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR_C2
+      DIMENSION LUCLIST(*),NPARBLOCK(*),IBLOCKL(*)
+#endif
+*     new scratch
+      DOUBLE PRECISION CPUSIGXXX1,CPUSIGXXX2,WALLSIGXXX1,WALLSIGXXX2
+      DOUBLE PRECISION CPUSIGXXXX1,CPUSIGXXXX2
+      DOUBLE PRECISION WALLSIGXXXX1,WALLSIGXXXX2
+      DOUBLE PRECISION CPUSIGXX1,CPUSIGXX2,WALLSIGXX1,WALLSIGXX2
+      DOUBLE PRECISION CPUSIGX1,CPUSIGX2,WALLSIGX1,WALLSIGX2
+      CHARACTER SECTID*12, CPUTIDXXX*12, WALLTIDXXX*12
+      CHARACTER CPUTIDXXXX*12, WALLTIDXXXX*12
+      CHARACTER CPUTIDX*12, WALLTIDX*12
+      CHARACTER CPUTIDXX*12, WALLTIDXX*12
+      DIMENSION ISCLFAC_GROUP(*)
+#include "comjep.inc"
+*. For accessing density matrices through KRHO*
+#include "wrkspc.inc"
+*
+      CALL QENTER('SIDE4')
+      NTEST = 000
+      NTEST = MAX(NTEST,IPRNT)
+      IF(NTEST.GE.10) THEN
+        WRITE(luwrt,*) ' ====================='
+        WRITE(luwrt,*) ' SIGDEN4_CI speaking :'
+        WRITE(luwrt,*) ' ====================='
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of sigma blocks to be calculated ',
+     &  NSBLOCK
+        WRITE(luwrt,*) ' TTSS for each ACTIVE sigma block'
+          DO IBLOCK = 1, NSBLOCK
+            IF(ISBLOCK(1,IBLOCK).GT.0)
+     &      WRITE(luwrt,'(10X,4I3,2I8)') (ISBLOCK(II,IBLOCK),II=1,4)
+          END DO
+          WRITE(luwrt,*) ' ISIGDEN = ', ISIGDEN
+          WRITE(luwrt,*) ' IDC PS IPERTOP', IDC,PS,IPERTOP
+          WRITE(luwrt,*) ' IDOH2 = ',IDOH2
+          WRITE(luwrt,*) ' IUSE_PH, IRES_AB=',IUSE_PH, IRES_AB
+      END IF
+C     copy scaling factors from restore array to working array
+      CALL DCOPY(NUM_BLOCKS2,SSCLFAC,1,SCLFAC,1)
+      IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+C     initialize offsets in C-vector file
+      IOFFSET_SCR     = 0
+      IOFF_SCR_C1     = 0
+      IOFF_SCR_C2     = 0
+      IOFF_SCR_C_EXPL = 0
+      INT_IOFF_C1     = 1
+      INT_IOFF_C2     = 0
+C
+C     find batches of C-blocks; restrict to 'active' blocks
+C     for a given CPU
+C
+      ITTSS_ORD = 2
+      CALL PART_CIV_PAR2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
+     &                   LBLOCK_LUCI,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,
+     &                   LECBLOCK,I1CBLOCK,ICBLOCK,0,ITTSS_ORD,
+     &                   SCLFAC,NUM_BLOCKS2,0)
+#endif
+      ELSE ! (LUCI_NMPROC .GT. 1) THEN
+#ifdef LUCI_DEBUG
+        WRITE(luwrt,*) ' Initial C vector '
+        CALL WRTVCD(CB,LUC,1,-1)
+#endif
+C
+C     find batches of C-blocks
+C
+      ITTSS_ORD = 2
+      CALL PART_CIV2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
+     &              LC,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,LECBLOCK,
+     &              I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
+C
+C     rewind C block file
+C
+      REWIND LUC
+C
+      END IF ! (LUCI_NMPROC .GT. 1) THEN
+C     set max. excitations allowed by operator IDOH2
+      IF(IDOH2.EQ.1) THEN
+        MXEXC  = 2
+      ELSE
+        MXEXC = 1
+      END IF
+C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
+      IF(ICBAT_RES.EQ.1) THEN
+        WRITE(luwrt,*) ' Restricted set of C batches '
+        WRITE(luwrt,*) ' ICBAT_INI ICBAT_END', ICBAT_INI,ICBAT_END
+        JCBAT_INI = ICBAT_INI
+        JCBAT_END = ICBAT_END
+      ELSE
+        JCBAT_INI = 1
+        JCBAT_END = NCBATCH
+      END IF
+C
+C     loop over batches over C blocks
+C     -------------------------------
+C
+      DO 20000 JCBATCH = JCBAT_INI,JCBAT_END
+C
+C       read C blocks into core
+C
+        ICOFF = 1
+        NJBLOCK = LCBLOCK(JCBATCH)
+
+#ifdef VAR_MPI
+        IF (LUCI_NMPROC .GT. 1) THEN
+C
+C       C block non-zero?
+C
+        ICOMPUTE_C  = 0
+C
+        DO ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
+          IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
+             ICOMPUTE_C = 1
+csk       WRITE(luwrt,*) ' active C block found',ICBLK
+          END IF
+        END DO ! loop over blocks in this C-batch
+        IF( ICOMPUTE_C .eq. 0 ) THEN
+          DO ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
+            LBL             = IBLOCKL( ICBLK )
+            IOFF_SCR_C_EXPL = LBL
+            IOFF_SCR_C1     = IOFF_SCR_C1 + IOFF_SCR_C_EXPL
+            SCLFAC( ICBLK ) = 0.0D0
+          END DO
+          GOTO 20000
+        END IF
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
+#endif
+        DO JJCBLOCK = 1, NJBLOCK
+          JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
+          INTERACT = 0
+          IF( SCLFAC(JBLOCK) .ne. 0.0D0 ) THEN
+
+          JATP = ICBLOCK(1,JBLOCK)
+          JBTP = ICBLOCK(2,JBLOCK)
+          JASM = ICBLOCK(3,JBLOCK)
+          JBSM = ICBLOCK(4,JBLOCK)
+          JOFF = ICBLOCK(5,JBLOCK)
+          CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
+     &                LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
+          DO IPERM = 1, NPERM
+            LLASM = LASM(IPERM)
+            LLBSM = LBSM(IPERM)
+            LLATP = LATP(IPERM)
+            LLBTP = LBTP(IPERM)
+*           loop over sigma blocks in batch
+            DO JSBLOCK = 1, NSBLOCK
+            IDENT = 0
+C
+C           parallel CI: ISBLOCK(1,JSBLOCK) == 0 for 
+C           blocks which are not assigned to a given CPU
+C
+            IF( ISBLOCK(1,JSBLOCK) .gt. 0 ) THEN
+              IATP = ISBLOCK(1,JSBLOCK)
+              IBTP = ISBLOCK(2,JSBLOCK)
+              IASM = ISBLOCK(3,JSBLOCK)
+              IBSM = ISBLOCK(4,JSBLOCK)
+*             are the two blocks connected by allowed excitation
+              IF(MXEXC.EQ.1) THEN
+                 IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
+     &              (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
+     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
+                       INTERACT = 1
+                 ENDIF
+              ELSE IF(MXEXC.EQ.2) THEN
+                 IF((ICONSPA(IATP,LLATP).LE.1.AND.
+     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
+     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
+     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
+     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+                        INTERACT = 1
+                 END IF
+              END IF
+*             are they identical ?
+              IDENT = 0
+              IF(IASM.EQ.JASM.AND.IATP.EQ.JATP.AND.
+     &           IBSM.EQ.JBSM.AND.IBTP.EQ.JBTP) IDENT = 1
+*
+            END IF
+C           ^ IF( ISBLOCK(1,JSBLOCK) .gt. 0 ) THEN
+            END DO
+C           ^ s-block loop
+          END DO
+*         ^ IPERM loop
+          END IF
+*         ^ Checking was only done for nonvanishing blocks
+*
+          ISCALE = 0
+        IF (LUCI_NMPROC .GT. 1) THEN
+#ifdef VAR_MPI
+C         length of block
+          LBL         = IBLOCKL(JBLOCK)
+          IOFF_SCR_C2 = LBL
+          IF( INTERACT .eq. 1 ) THEN
+C
+C            file offset
+C
+csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
+             xxxreadtime = MPI_WTIME()
+             CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
+     &                             LBL,MPI_REAL8,my_STATUS,IERR)
+csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
+             xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
+             IBI_MULT_BL = IBI_MULT_BL + 1
+             SCLFAC(JBLOCK) = 1.0D0
+          ELSE
+             SCLFAC(JBLOCK) = 0.0D0
+          END IF
+          IOFF_SCR_C1 = IOFF_SCR_C1 + IOFF_SCR_C2
+csk       WRITE(LUWRT,*) ' set new IOFF_SCR_C2 for JBLOCK   ',
+csk  &                     IOFF_SCR_C2, JBLOCK
+#endif
+        ELSE ! (LUCI_NMPROC .GT. 1) THEN
+          IF(INTERACT.EQ.1) THEN
+            CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
+     &                  NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
+     &                  PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
+csk      write(luwrt,*)'read in done for JBLOCK',JBLOCK
+csk      CALL WRTMATMN(CB(JOFF),NSSOB(JBSM,JBTP),
+csk  &                 NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
+csk  &                 NSSOA(JASM,JATP),luwrt)
+          ELSE
+            CALL IFRMDS(LBL,-1,1,LUC)
+            CALL SKPRCD2(LBL,-1,LUC)
+            SCLFAC(JBLOCK) = 0.0D0
+          END IF
+        END IF ! (LUCI_NMPROC .GT. 1) THEN
+C
+          IF(IDENT.EQ.1 .AND. LUCBLK.GT.0)THEN
+            write(luwrt,*) ' block will be copied to LUCLBLK'
+            NJA = NSSOA(JASM,JATP)
+            NJB = NSSOB(JBSM,JBTP)
+            IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM)THEN
+*             block is unpacked, pack first
+              IF(SCLFAC(JBLOCK).EQ.0.0D0) THEN
+                CALL DZERO(C2,NJA*(NJA+1)/2)
+              ELSE
+                CALL TRIPK2(CB(ICOFF),C2,1,NJA,NJA,PS)
+              END IF
+              CALL TODSCP(C2,NJA*(NJA+1)/2,-1,LUCBLK)
+            ELSE
+              IF(SCLFAC(ICBLK).EQ.0.0D0) THEN
+                CALL SETVEC(CB(ICOFF),ZERO,NJA*NJB)
+              END IF
+              CALL TODSCP(CB(ICOFF),NJA*NJB,-1,LUCBLK)
+            END IF
+          END IF
+*
+          IF(NTEST.GE.100) THEN
+            IF(INTERACT.EQ.1) THEN
+              WRITE(luwrt,*) ' TTSS for C block read in  '
+              CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
+            ELSE
+              WRITE(luwrt,*) ' TTSS for C block skipped  '
+              CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
+            END IF
+          END IF
+*
+        END DO
+C       ^ loop over blocks in C-batch
+C
+C       loop again over blocks in C-batch -- contraction run
+C
+C                          sigma_n = Hb_n
+C                          --------------
+C
+        DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
+C
+!!!#ifdef VAR_MPI
+!!!            IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
+!!!#else
+            IF( SCLFAC( ICBLK ) .ne. 0.0D0 ) THEN
+!!!#endif
+              JATP = ICBLOCK(1,ICBLK)
+              JBTP = ICBLOCK(2,ICBLK)
+              JASM = ICBLOCK(3,ICBLK)
+              JBSM = ICBLOCK(4,ICBLK)
+              ICOFF = ICBLOCK(5,ICBLK)
+              NJA = NSSOA(JASM,JATP)
+              NJB = NSSOB(JBSM,JBTP)
+C             other symmetry blocks that can be obtained from this block
+              CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
+     &                    LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
+C             start with transposed block
+              DO 8765 IPERM = NPERM,1, -1
+                LLASM = LASM(IPERM)
+                LLBSM = LBSM(IPERM)
+                LLATP = LATP(IPERM)
+                LLBTP = LBTP(IPERM)
+                NLLA = NSSOA(LLASM,LLATP)
+                NLLB = NSSOB(LLBSM,LLBTP)
+C               the routines assumes on input that the blocks are transposed, 
+C               so, initial tour, IPERM = 1 corresponds always to no transpose, 
+C               so transpose!
+*. transpose is done for sigma, not density so
+                IF(ISIGDEN.EQ.1) THEN
+                 IF(IPERM.EQ.1) THEN
+                   IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
+C                    diagonal blocks, Transposing corresponds to scaling
+                     IF(PS.EQ.-1.0D0) THEN
+                       CALL DSCAL(NJA*NJB,PS,CB(ICOFF),1)
+                     END IF
+                   ELSE
+C                    offdiagonal blocks, explicit transposing
+                     CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
+                     CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
+                     if (LSGN(IPERM).eq.-1) then
+                       write(luwrt,*) 'LROW,LCOL undef. in sblocks'
+                       write(luwrt,*) 'and LSGN(IPERM).eq.-1'
+                       Call Abend2('Quitting.')
+CTF                    CALL SCALVE(CB(ICOFF),-1.0D0,LROW*LCOL)
+                     end if
+                   END IF
+                 END IF! IPERM.EQ.1 switch
+                END IF !  ISIGDEN switch
+              
+C
+C               loop over sigma blocks in this batch
+C
+C               NOTE: in parallel execution ISBLOCK(1,ISBLK) is 
+C                     set to 0 if block is not included in block 
+C                     distribution list NPARBLOCK for a given CPU.
+C
+                DO 10000 ISBLK = 1, NSBLOCK
+                IF( ISBLOCK(1,ISBLK) .GT. 0 ) THEN
+                  IATP = ISBLOCK(1,ISBLK)
+                  IBTP = ISBLOCK(2,ISBLK)
+                  IASM = ISBLOCK(3,ISBLK)
+                  IBSM = ISBLOCK(4,ISBLK)
+                  ISOFF = ISBLOCK(5,ISBLK)
+                  NIA = NSSOA(IASM,IATP)
+                  NIB = NSSOB(IBSM,IBTP)
+C
+                  IF(NIA*NIB.EQ.0) GOTO 10000
+                  IF(IRESTRICT.EQ.1.AND.
+     &               (JASM.GT.IASM.OR.
+     &               JASM.EQ.IASM.AND.JATP.GT.IATP.OR.
+     &               JASM.EQ.IASM.AND.JATP.EQ.IATP.AND.JBTP.GT.IBTP))
+     &            GOTO 10000
+C             are the two blocks connected by allowed excitation
+              INTERACT = 0
+              IF(MXEXC.EQ.1) THEN
+                 IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
+     &              (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
+     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
+                       INTERACT = 1
+                 ENDIF
+              ELSE IF(MXEXC.EQ.2) THEN
+                 IF((ICONSPA(IATP,LLATP).LE.1.AND.
+     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
+     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
+     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
+     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+                        INTERACT = 1
+                 END IF
+              END IF
+C
+                 IF(INTERACT.EQ.0) GOTO 10000
+
+                 IF(NTEST.GE.100) THEN
+                   WRITE(luwrt,*) ' Next s block in batch : '
+                   write(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
+                   write(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
+                 END IF
+C
+                IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP.AND.
+     &            ((LLBSM.GT.LLASM).OR.
+     &            (LLASM.EQ.LLBSM).AND.(LLBTP.GT.LLATP)))
+     &            GOTO 8764
+C
+                IF(NTEST.GE.60) THEN
+                  WRITE(luwrt,*) ' Slave will be called for '
+                  WRITE(luwrt,*) ' Sigma block : '
+                  WRITE(luwrt,*) ' ISOFF ', ISOFF
+                  WRITE(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
+                  WRITE(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
+                  WRITE(luwrt,*) ' C     block : '
+                  WRITE(luwrt,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
+                  WRITE(luwrt,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
+                  WRITE(luwrt,*) ' ICOFF ', ICOFF
+                  WRITE(luwrt,*) ' Overall scale',SCLFAC(ICBLK)
+                END IF
+*
+                IF(IRESTRICT.EQ.1.AND.
+     &             ((IASM.EQ.LLASM.AND.IBSM.EQ.LLBSM.AND.
+     &               IATP.EQ.LLATP.AND.IBTP.EQ.LLBTP     ) .OR.
+     &              (IDC.EQ.2.AND.
+     &               IASM.EQ.LLBSM.AND.IBSM.EQ.LLASM.AND.
+     &               IATP.EQ.LLBTP.AND.IBTP.EQ.LLATP     )     ))THEN
+                     XFAC = 0.5D0*SCLFAC(ICBLK)
+                ELSE
+                     XFAC = SCLFAC(ICBLK)
+                END IF
+C               form of operator in action
+                IF(IPERTOP.NE.0) THEN
+C                  not exact Hamiltonian in use
+                   IPTSPC = IH0SPC(IATP,IBTP)
+                   JPTSPC = IH0SPC(JATP,JBTP)
+                   IJOP   = IH0INSPC(IPTSPC)
+*
+C?                 WRITE(6,*) ' SBLOCKS:IPTSPC,JPTSPC,IJOP',
+C?   &                         IPTSPC,JPTSPC,IJOP
+*
+                ELSE
+                   IPTSPC = -1
+                   JPTSPC = -1
+                   IJOP   = -1
+                END IF
+*
+#ifdef VAR_MPI
+                IF (LUCI_NMPROC .GT. 1) THEN
+                   xxxcomputtime = MPI_WTIME()
+                END IF ! (LUCI_NMPROC .GT. 1) THEN
+#endif
+*
+                IF(ISIGDEN.EQ.1) THEN
+                  CALL RSSBCB2(IASM,IATP,IOCTPA,
+     &                         IBSM,IBTP,IOCTPB,
+     &                         LLASM,LLATP,LLBSM,LLBTP,NGAS,
+     &                         NELFSPGP(1,IATP+IOCTPA-1),
+     &                         NELFSPGP(1,IBTP+IOCTPB-1),
+     &                         NELFSPGP(1,LLATP+IOCTPA-1),
+     &                         NELFSPGP(1,LLBTP+IOCTPB-1),
+     &                         NAEL,NBEL,
+     &                         IAGRP,IBGRP,
+     &                         SB(ISOFF),CB(ICOFF),IDOH2,
+     &                         ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
+     &                         NOBPTS,IOBPTS,MXPNGAS,ITSOB,MAXI,MAXK,
+     &                         SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,C2,
+     &                         NSMOB,NSMST,NSMSX,NSMDX,
+     &                         NIA,NIB,NLLA,NLLB,MXPOBS,IDC,PS,
+     &                         ICJKAIB,CJRES,SIRES,I3,XI3S,I4,XI4S,
+     &                         MXSXBL,MOCAA,MOCAB,IAPR,
+     &                         IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,
+     &                         XFAC,IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,
+     &                         CJPA,SIPA,MXTSOB,SOMESCR,SOMEH,
+     &                         XIJILS,luwrt)
+                ELSE
+                  I12_local = 1
+                  IF(IDOH2.EQ.1) I12_local = 2
+*. RHO1, Rho2
+                  IF(NTEST.GE.10) THEN
+                    WRITE(luwrt,*) ' RSDNBB will be called for '
+                    WRITE(luwrt,*) ' L block : '
+                    WRITE(luwrt,'(A,5I5)')
+     &              ' IASM IBSM IATP IBTP',
+     &                IASM,IBSM,IATP,IBTP
+                    WRITE(luwrt,*) ' R  block : '
+                    WRITE(luwrt,'(A,5I5)')
+     &              ' JASM JBSM JATP JBTP',
+     &                JASM,JBSM,JATP,JBTP
+                    WRITE(luwrt,*) ' IOFF,JOFF ', ISOFF,ICOFF
+                    WRITE(luwrt,*) ' SCLFAC = ', xfac
+                  END IF
+
+                  CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
+     &                         IASM,IATP,IBSM,IBTP,
+     &                         JASM,JATP,JBSM,JBTP,NGAS,
+     &                         NELFSPGP(1,IATP+IOCTPA-1),
+     &                         NELFSPGP(1,IBTP+IOCTPB-1),
+     &                         NELFSPGP(1,JATP+IOCTPA-1), 
+     &                         NELFSPGP(1,JBTP+IOCTPB-1),
+     &                         NAEL,NBEL,IAGRP,IBGRP,
+     &                         SB(ISOFF),CB(ICOFF),C2,
+     &                         ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
+     &                         MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
+     &                         SSCR,CSCR,
+     &                         I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                         XINT,NSMOB,NSMST,NSMSX,NSMDX,
+     &                         NIA,NIB,NJA,NJB,MXPOBS,
+     &                         IPRNT,NACOB,RHO1S,XFAC,
+     &                         S2_TERM1,IUSE_PH,IPHGAS,
+     &                         MXTSOB)
+                  IF(NTEST.GE.100) THEN
+                    write(luwrt,*) ' Updated rho1 '
+                    call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
+                  END IF
+
+                END IF
+
+
+#ifdef VAR_MPI
+                IF (LUCI_NMPROC .GT. 1) THEN
+                   xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
+                END IF ! (LUCI_NMPROC .GT. 1) THEN
+#endif
+C
+ 8764         CONTINUE
+              END IF
+10000         CONTINUE
+C             ^ end of loop over sigma blocks
+ 8765         CONTINUE
+            END IF
+C           ^ non-vanishing C-block
+ 9000       CONTINUE
+C           ^ end of loop over C blocks in Batch
+20000   CONTINUE
+C       ^ end of loop over batches of C blocks
+C
+C     order
+C
+      IF(ISIGDEN.EQ.1) THEN
+       DO  ISBLK = 1 , NSBLOCK
+        IF(ISBLOCK(1,ISBLK).GT.0) THEN
+          IATP = ISBLOCK(1,ISBLK)
+          IBTP = ISBLOCK(2,ISBLK)
+          IASM = ISBLOCK(3,ISBLK)
+          IBSM = ISBLOCK(4,ISBLK)
+          ISOFF  = ISBLOCK(5,ISBLK)
+          ISOFFP = ISBLOCK(6,ISBLK)
+          NIA = NSSOA(IASM,IATP)
+          NIB = NSSOB(IBSM,IBTP)
+          IF(ICJKAIB.NE.0) THEN
+C
+C            tranposed sigma block was obtained, 
+C            transpose to obtain correct block
+C            ----------------------------------
+C
+             CALL TRPMT3(SB(ISOFF),NSSOB(IBSM,IBTP),
+     &                   NSSOA(IASM,IATP),C2)
+             CALL DCOPY(NSSOA(IASM,IATP)*NSSOB(IBSM,IBTP),C2,1,
+     &                  SB(ISOFF),1)
+          END IF
+          IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)
+     &    CALL TRPAD3(SB(ISOFF),PS,NSSOA(IASM,IATP))
+*
+        END IF
+       END DO
+*
+       IF(NTEST.GE.50) THEN
+         WRITE(luwrt,*) ' output blocks from SBLOCKS '
+         CALL WRTTTS(SB,ISBLOCK,NSBLOCK,
+     &               NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,1)
+       END IF
+      END IF
+C
+      CALL QEXIT('SIDE4')
+C
+      RETURN
+      END
+***********************************************************************
+
       SUBROUTINE MATML7(C,A,B,NCROW,NCCOL,NAROW,NACOL,
      &                  NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 C
@@ -6152,10 +6302,10 @@ C... JEPPE OLSEN,
 C
 *. Notice : If the summation index has dimension zero nothing
 *           is performed
+      use lucita_matmul_statistics
       IMPLICIT REAL*8           (A-H,O-Z)
       DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
       DIMENSION C(NCROW,NCCOL)
-      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
 #ifdef LUCI_DEBUG
       NTEST = 00
@@ -6216,3 +6366,4 @@ C
       TMULT = TMULT + T_END - T_INI 
 C
       END
+

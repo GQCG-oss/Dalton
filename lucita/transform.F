@@ -108,7 +108,7 @@ C       TKK = 1.0D0
 *
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLASTR, KLBSTR, KLKAOC, KLKBOC,
-     &          KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLCBLTP
+     &          KLCLBTx, KLCLEBTx, KLCI1BTx, KLCIBTx, KLCBLTPx
 !               for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -137,8 +137,8 @@ C       TKK = 1.0D0
       NAEL = NELEC(IATP)
       NBEL = NELEC(IBTP)
 *
-      CALL Z_BLKFO(ISPC,ISM,IATP,IBTP,KLCLBT,KLCLEBT,
-     &            KLCI1BT,KLCIBT,KLCBLTP,NBATCH,NBLOCK)
+      CALL Z_BLKFO(ISPC,ISM,IATP,IBTP,KLCLBTx,KLCLEBTx,
+     &            KLCI1BTx,KLCIBTx,KLCBLTPx,NBATCH,NBLOCK)
 C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       NAEL = NELEC(IATP)
       NBEL = NELEC(IBTP)
@@ -152,9 +152,9 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       KKORB = IREOST(KORB)
       CALL T_TO_NK_VECS
      &  (T,KKORB,C,LUCIN,LUCOUT,WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-     &      NBLOCK,WORK(KLCIBT),
+     &      NBLOCK,WORK(KLCIBTx),
      &      NAEL,NBEL,WORK(KLASTR),WORK(KLBSTR),
-     &      WORK(KLCBLTP),NSMST,
+     &      WORK(KLCBLTPx),NSMST,
      &      ICISTR,NTOOB,WORK(KLKAOC),WORK(KLKBOC))
 
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'T_TO_N')
@@ -595,7 +595,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE TRACI_CTL
+      SUBROUTINE TRACI_CTL(vec1,vec2)
 *
 * Master routine for transforming CI vectors to new orbital basis
 *
@@ -605,10 +605,12 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *
 * Jeppe Olsen, January 98
 *
+      use lucita_vector_partitioning_pointer
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KVEC1, KVEC2, KLCMOMO, KLH1SAVE,
-     &          KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLCBLTP
+      INTEGER*8 KLCMOMO, KLH1SAVE
 !               for addressing of WORK
+      real(8), intent(inout) :: vec1(*)
+      real(8), intent(inout) :: vec2(*)
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
@@ -616,6 +618,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 #include "cstate.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
+#include "parluci.h"
 *
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
@@ -627,9 +630,8 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       WRITE(6,*) ' Wellcome to TRACI_CTL'
       WRITE(6,*) ' ====================='
       WRITE(6,*)
-*. The three scratch  blocks
-C          GET_3BLKS(KVEC1,KVEC2,KC2)
-      CALL GET_3BLKS(KVEC1,KVEC2,KVEC3)
+      call quit('*** TRACI_CTL is not active in this 
+     &          lucita version. do a clean check first ***')
 
 *. MO-MO transformation matrix :
       CALL MEMMAN(KLCMOMO,NTOOB**2,'ADDL  ',2,'CMOMO ')
@@ -637,13 +639,6 @@ C          GET_3BLKS(KVEC1,KVEC2,KC2)
       CALL MEMMAN(KLH1SAVE,NTOOB**2,'ADDL  ',2,'H1SAVE')
 *. We are going to mess with the one-electron integrals, take a copy
       CALL COPVEC(WORK(KINT1),WORK(KLH1SAVE),NTOOB*NTOOB)
-*. Set up block structure of CI space
-      IATP = 1
-      IBTP = 2
-      CALL  Z_BLKFO(ISSPC,ISSM,IATP,IBTP,KLCLBT,KLCLEBT,
-     &      KLCI1BT,KLCIBT,KLCBLTP,NBATCH,NBLOCK)
-C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
-C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *
       LBLK = -1
       CALL REWINE(LUC,-1)
@@ -653,10 +648,12 @@ C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
       DO JROOT = 1, NROOT
 *. One-electron density for root JROOT
         CALL REWINE(LUSC1,-1)
-        CALL COPVCD(LUC,LUSC1,WORK(KVEC1),0,LBLK)
-        CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
-        CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
-     &        WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
+        CALL COPVCD(LUC,LUSC1,VEC1,0,LBLK)
+        CALL COPVCD(LUSC1,LUSC2,VEC1,1,LBLK)
+!       CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
+!    &        VEC1,VEC2,LUSC1,LUSC2,EXPS2)
+        call quit('*** TRACI_CTL is not active in this 
+     &            lucita version. ***')
 *. Obtain MO-MO transformation matrix
 C             GET_CMOMO(CMOMO)
         CALL GET_CMOMO(WORK(KLCMOMO))
@@ -664,23 +661,22 @@ C             GET_CMOMO(CMOMO)
         CALL LMEMCHK('TRACI_CTL')
 *
 *. Transform CI vector : Input on LUHC, output on LUDIA (!)
-        CALL COPVCD(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
+        CALL COPVCD(LUSC1,LUHC,VEC1,1,LBLK)
 *
-        CALL TRACI_LUCI(WORK(KLCMOMO),LUHC,LUDIA,ISSPC,ISSM,
-     &             WORK(KVEC1),WORK(KVEC2))
+        CALL TRACI_LUCI(WORK(KLCMOMO),LUHC,LUDIA,ISSPC,ISSM,VEC1,VEC2)
 C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
        WRITE(6,*)
        WRITE(6,*) ' Analysis of rotated state number ', JROOT
        WRITE(6,*) ' ====================================='
        WRITE(6,*)
-       CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
+       CALL GASANA(VEC1,NUM_BLOCKS,WORK(KLCIBT),WORK(KLCBLTP),
      &                LUSC1,ICISTR)
       END DO
 *     ^ End of loop over roots
       CALL REWINE(LUDIA,-1)
       IF(NTEST.GE.100) THEN
         DO JROOT = 1, NROOT
-          CALL WRTVCD(WORK(KVEC1),LUDIA,0,LBLK)
+          CALL WRTVCD(VEC1,LUDIA,0,LBLK)
         END DO
       END IF
 *
@@ -752,7 +748,9 @@ C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
         END IF
 *. For each orbital calculate (1+T+1/2 T^2)|0>
 * + T
-        CALL MV7(VEC1,VEC2,LUSC1,LUSC2)
+!       CALL MV7(VEC1,VEC2,LUSC1,LUSC2)
+        call quit('*** TRACID is still 
+     &             disabled in this lucita version. ***')
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction vector'
           CALL WRTVCD(VEC1,LUSC2,1,LBLK)
@@ -765,7 +763,9 @@ C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
           CALL WRTVCD(VEC1,LUSC1,1,LBLK)
         END IF
 *. + 1/2 T^2
-        CALL MV7(VEC1,VEC2,LUSC2,LUSC3)
+!       CALL MV7(VEC1,VEC2,LUSC2,LUSC3)
+        call quit('*** TRACID is still 
+     &             disabled in this lucita version. ***')
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction vector'
           CALL WRTVCD(VEC1,LUSC3,1,LBLK)
@@ -854,49 +854,6 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
       END DO
 *
       RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TRAINT
-*
-* Very simple integral transformation for LUCIA
-* - for testing the real one
-*
-* MO => MO transformation defined by matrix C
-*
-* Jeppe Olsen, One day in November 98, Magistratsvaegen 37D
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
-*
-      CALL QENTER('TRAIN')
-*
-      WRITE(6,*) ' TRACTL(Fusk) entered '
-*
-      NTEST = 100
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Transformation matrix C '
-        CALL APRBLM2(WORK(KMOMO),NTOOBS,NTOOBS,NSMOB,0)
-C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
-      END IF
-
-*
-*. Transform 1-electron integrals :
-*
-      CALL TRA1_SIMPLE(WORK(KMOMO))
-*
-*. Transform 2-electron integrals
-*
-      CALL TRA2_SIMPLE(WORK(KMOMO))
-*
-      CALL QEXIT ('TRAIN')
       END
 ***********************************************************************
 *                                                                     *

@@ -1,13 +1,11 @@
-*comdeck glbbas.inc $Revision: 1.1.2.1 $ 
-      INTEGER*8     KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
-     &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,
-     &              KSBIA,KSBIB,KVEC3,KPNIJ,KIJKK,KFI,KINH1,
-     &              KMOAOIN,KMOAOUT,KRHO2,KLOCCLS,KPGINT1,
-     &              KINT1O,KFIO,KPGINT1A,KCC1,KCC2,KCC3,
-     &              KMOMO
-      COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
-     &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,
-     &              KSBIA,KSBIB,KVEC3,KPNIJ,KIJKK,KFI,KINH1,
-     &              KMOAOIN,KMOAOUT,KRHO2,KLOCCLS,KPGINT1(MXPOBS),
-     &              KINT1O,KFIO,KPGINT1A(MXPOBS),KCC1,KCC2,KCC3,
-     &              KMOMO
+
+      INTEGER*8     KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,        &
+     &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,             &
+     &              KSBIA,KSBIB,      KPNIJ,KIJKK,KFI,KINH1,            &
+     &              KRHO2,KLOCCLS,KPGINT1,                              &
+     &              KINT1O,KFIO,KPGINT1A,KCC1,KCC2,KCC3
+      COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,        &
+     &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR,             &
+     &              KSBIA,KSBIB,      KPNIJ,KIJKK,KFI,KINH1,            &
+     &              KRHO2,KLOCCLS,KPGINT1(MXPOBS),                      &
+     &              KINT1O,KFIO,KPGINT1A(MXPOBS),KCC1,KCC2,KCC3

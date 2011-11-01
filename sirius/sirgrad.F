@@ -83,8 +83,18 @@ C           calculate CI matrix times reference vector
 C
       DISTYP = 1
       IADINT = IADH2
+!#define TESTTEST
+#ifdef TESTTEST
+      write(lupri,*) 'ATTENTION bla bla - hardwired CREF READING!!!'
+      call RDCREF(CREF)
+#endif
       CALL CISIGC(1,CREF,GCI,NCONF,FCAC,H2AC,INDXCI,WRK,LFREE)
 C     CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,INDXCI,WRK,LFREE)
+#ifdef TESTTEST
+      write(lupri,*) 'ATTENTION bla bla - hardwired CREF READING!!!'
+      call RDCREF(CREF)
+#undef TESTTEST
+#endif
 C
 C
 C *** 2 *** Calculate total energy:
@@ -1416,6 +1426,9 @@ C
 C Scratch:
 C   WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg ! needed for storage of EMCMY
+
 #include <implicit.h>
       DIMENSION CREF(*),CMO(*),DV(NNASHX,*),PV(*),FC(*),FV(*),FQ(*)
       DIMENSION FCAC(*),H2AC(*)
@@ -1573,6 +1586,9 @@ C Step 2: calculate inactive and active Fock matrices.
 C
       CALL FCKMAT((NASHT.EQ.0),DV,CMO,EMCMY,FC,FV,WRK(KWRKF),LWRKF)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
+!     save EMCMY on common variable for LUCITA
+      einact_mc2lu = emcmy
+
       IF (NASHT .EQ. 0) CALL DZERO(FV,NNORBT)
 C     ... ORBGRD and ORBSIG always reference FV
 C
@@ -2530,6 +2546,8 @@ C
 C Scratch:
 C   WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg ! needed for storage of EMCMY
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION CREF(*),CMO(*),DV(*),PV(*), G(*),
@@ -2676,6 +2694,8 @@ C Step 2: calculate inactive and active Fock matrices.
 C
       CALL FCKMAT((NASHT.EQ.0),DV,CMO,EMCMY,FC,FV,WRK(KWRKF),LWRKF)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
+!     save EMCMY on common variable for LUCITA
+      einact_mc2lu = emcmy
       IF (NASHT .EQ. 0) CALL DZERO(FV,NNORBT)
 C     ... currently ORBGRD and ORBSIG always references FV
 C

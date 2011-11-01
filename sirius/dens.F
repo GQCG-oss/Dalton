@@ -25,7 +25,7 @@
 C
 #ifdef UNDEF
 /* Comdeck last_changes */
-C modifications by jeppe sunday jan 17  '88  ( DSPDM3 ADDED )
+C modifications by jeppe sunday jan 17  88  ( DSPDM3 ADDED )
 C 880715-hjaaj: Lunar to Sirius orbital reordering.
 #endif
 C  /* Deck dispdm */
@@ -1152,8 +1152,12 @@ C     CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *            XNDXCI,WORK,KFREE,LFREE)
 C
-      CALL DSITSP(NASHT,WORK(KRHO1),RHO1)
-C     ... pack RHO1 as triangular matrix
+      if(ci_program .eq. 'SIRIUS-CI')then
+        CALL DSITSP(NASHT,WORK(KRHO1),RHO1)
+C       ... pack RHO1 as triangular matrix
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(nnashx,work(krho1),1,rho1,1)
+      end if
 C
       RETURN
 C     ... end of MAKDM
@@ -1184,6 +1188,7 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
+#include <priunit.h>
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1206,7 +1211,7 @@ C
 C
       KRHO1  = 1
       KFREE  = KRHO1  + N2ASHX
-      CALL SETVEC(WORK(KRHO1),D0,N2ASHX)
+      CALL DZERO(WORK(KRHO1),N2ASHX)
       CALL GETTIM(T1,W1)
       CALL DENSID(ILSYM,IRSYM,NCONF,NCONF,CREF,CREF,WORK(KRHO1),DUMMY,
      *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
@@ -1215,8 +1220,12 @@ C     CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *            XNDXCI,WORK,KFREE,LFREE)
 C
-      CALL DSITSP(NASHT,WORK(KRHO1),RHO1)
-C     ... pack RHO1 as triangular matrix
+      if(ci_program .eq. 'SIRIUS-CI')then
+        CALL DSITSP(NASHT,WORK(KRHO1),RHO1)
+C       ... pack RHO1 as triangular matrix
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(nnashx,work(krho1),1,rho1,1)
+      end if
 C
       RETURN
 C
@@ -1280,8 +1289,12 @@ C     CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1S,RHO2,
 C    *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *            XNDXCI,WORK,KFREE,LFREE)
 C
-      CALL DSITSP(NASHT,WORK(KRHO1S),RHO1S)
-C     ... pack RHO1S as triangular matrix
+      if(ci_program .eq. 'SIRIUS-CI')then
+        CALL DSITSP(NASHT,WORK(KRHO1S),RHO1S)
+C       ... pack RHO1S as triangular matrix
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(nnashx,work(krho1s),1,rho1s,1)
+      end if
 C
       RETURN
 C
@@ -1308,7 +1321,7 @@ C     ... old routines used PV = 0.5 * <| Eij Ekl - DELjk Eil |>
       RETURN
       END
       SUBROUTINE MAKTD2(NCSIM,BCVECS,CREF,RHO1,RHO2,XNDXCI,WORK,LWRK)
-#endif
+#endif /* VAR_PACKPV */
 C
 C     CONSTRUCT ONE (RHO1) AND SYMMETRIC TWO (RHO2) PARTICLE DENSITY
 C     MATRICES.
@@ -1369,8 +1382,8 @@ C
       LWRKD  = LWRK + 1 - KWRKD
       DO 100 ICSIM=1,NCSIM
          KFREED = KWRKD
-         CALL SETVEC(RHO2(1,ICSIM),D0,NNASHX*NNASHX)
-         CALL SETVEC(WORK(KRHO1),D0,N2ASHX)
+         CALL DZERO(RHO2(1,ICSIM),NNASHX*NNASHX)
+         CALL DZERO(WORK(KRHO1),N2ASHX)
          CALL DENSID(LSYMRF,LSYMST,NCONRF,NCONST,CREF,BCVECS(1,ICSIM),
      *               WORK(KRHO1),RHO2(1,ICSIM),
      *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
@@ -1379,8 +1392,20 @@ C        CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *               XNDXCI,WORK,KFREE,LWRK)
 C
-         CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM))
-C     ... pack RHO1 as triangular matrix
+#ifdef LUCI_DEBUG
+         write(lupri,*) 'dens 1 after - part 1...'
+         call wrtmatmn(WORK(KRHO1),1,N2ASHX,1,N2ASHX,lupri)
+#endif
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSITSP(NASHT,WORK(KRHO1),RHO1(1,ICSIM))
+C          ... pack RHO1 as triangular matrix
+         else if(ci_program .eq. 'LUCITA   ')then
+           call dcopy(nnashx,work(krho1),1,rho1(1,ICSIM),1)
+         end if
+#ifdef LUCI_DEBUG
+         write(lupri,*) 'dens 1 after - part 2...'
+         call wrtmatmn(RHO1(1,ICSIM),1,NNASHX,1,NNASHX,lupri)
+#endif
          IF (IPRDNS .GE. 6) WRITE (LUPRI,'(/5X,A,2I5,2I10)')
      *      'MAKTDM : ICSIM, NCSIM, KFREE, LWRK =',
      *      ICSIM,NCSIM,KFREED,LWRK
@@ -1435,6 +1460,11 @@ C     PERMSM  =T  MS .eq. 0 for CL and CR
 C             =F  MS .ne. 0 for CL and/or CR or do not use symmetry
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
 #include <implicit.h>
       DIMENSION CL(NCLDIM), CR(NCRDIM), RHO1(*), RHO2(*)
       DIMENSION XNDXCI(*), WORK(*)
@@ -1596,9 +1626,64 @@ C        ... determinant basis
          ELSE
             ILVERV = 1
          END IF
-         CALL DENSD2(ILSYM,IRSYM,NLDET,NRDET,CL,CR,RHO1,RHO2,
-     *               RHOTYP,IDMTYP,ISPIN1,ISPIN2,PERMSM,
-     *               XNDXCI,WORK,KFREE,LWRK,ILVERV)
+         if(ci_program .eq. 'LUCITA   ')then
+           call define_lucita_cfg_dynamic(ilsym,       ! rhs symmetry ! swap see subroutine below
+     &                                    irsym,       ! lhs symmetry ! swap see subroutine below
+     &                                    -1,          ! no istaci
+     &                                    ispin1,      ! spin for operator
+     &                                    ispin2,      ! spin for operator
+     &                                    1,           ! one root
+     &                                    ispin,       ! singlet, doublet, triplet, ...
+     &                                    -1,          ! # of davidson iterations
+     &                                    idmtyp,      ! 1/2-particle density calcs
+     &                                    iprdns,      ! print level      
+     &                                    1.0d-10,     ! screening factor
+     &                                    0.0d0,       ! davidson ci convergence
+     &                                    0.0d0,       ! davidson ci convergence (auxiliary)
+     &                                    .false.,     ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                    .false.,     ! wave function analysis
+     &                                    norho2,      ! no 2-el operators active
+     &                                    .true.,      ! integrals provided by / return density matrices to the MCSCF environment
+     &                                    .not.norho2, ! calculate 2-particle density matrix
+     &                                    tdm,         ! calculate transition density matrix
+     &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+#ifdef LUCI_DEBUG
+           write(lupri,*) ' before dens run: cl'
+           call wrtmatmn(cr,1,NLDET,1,NLDET,lupri)
+           write(lupri,*) ' before dens run: cr'
+           call wrtmatmn(cl,1,NrDET,1,NrDET,lupri)
+#endif
+!          cl == cref
+           call mcscf_lucita_interface(cr,cl,rho1,rho2,
+     &                                 'Xp-density m',
+     &                                 work(kfree),lwrk,iprdns)
+
+#ifdef LUCI_DEBUG
+           write(lupri,*) ' after dens run: cl'
+           call wrtmatmn(cr,1,NLDET,1,NLDET,lupri)
+           write(lupri,*) ' after dens run: cr'
+           call wrtmatmn(cl,1,NrDET,1,NrDET,lupri)
+#endif
+
+         else if(ci_program .eq. 'SIRIUS-CI')then
+#ifdef LUCI_DEBUG
+           write(lupri,*) ' before dens run: cl'
+           call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)
+           write(lupri,*) ' before dens run: cr'
+           call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
+#endif
+           CALL DENSD2(ILSYM,IRSYM,NLDET,NRDET,CL,CR,RHO1,RHO2,
+     &                 RHOTYP,IDMTYP,ISPIN1,ISPIN2,PERMSM,
+     &                 XNDXCI,WORK,KFREE,LWRK,ILVERV)
+#ifdef LUCI_DEBUG
+           write(lupri,*) ' after dens run: cl'
+           call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)
+           write(lupri,*) ' after dens run: cr'
+           call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
+#endif
+         end if
+
       END IF
 C
       RETURN
@@ -1725,15 +1810,31 @@ c. And then , the density matrix
 C** Symmetrize RHO1 for TDM
 C
       IF (RHOTYP .EQ. 3) THEN
+#ifdef LUCI_DEBUG
+         write(lupri,*) ' rho1 before symm..'
+         call wrtmatmn(rho1,1,NASHT**2,1,NASHT**2,lupri)
+#endif
          CALL TRPAD(RHO1,D1,NASHT)
+#ifdef LUCI_DEBUG
+         write(lupri,*) ' rho1 after symm..'
+         call wrtmatmn(rho1,1,NASHT**2,1,NASHT**2,lupri)
+#endif
       END IF
 c. Add contributions from one-electron density matrix
       IF ( IDMTYP .EQ. 2 ) THEN
          IF ( RHOTYP .EQ. 1 .OR. RHOTYP .EQ. 3 ) THEN
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' rho2 before symm..'
+            call wrtmatmn(rho2,1,NNASHX**2,1,NNASHX**2,lupri)
+#endif
             CALL R1TR21(RHO1,RHO2,NASHT,
      &                  XNDXCI(KLTSOB),XNDXCI(KSTLOB))
             CALL DSCAL(NNASHX*NNASHX,DP5,RHO2,1)
 C           ... RHO2(ij,kl) = 0.5 * (rho2(ij,kl) + rho2(ij,lk))
+#ifdef LUCI_DEBUG
+         write(lupri,*) ' rho2 after symm..'
+         call wrtmatmn(rho2,1,NNASHX**2,1,NNASHX**2,lupri)
+#endif
          ELSE IF ( RHOTYP .EQ.2 ) THEN
             IF ( (ISPIN1+ISPIN2) .NE. 1 ) THEN
                CALL R1TR22(RHO1,RHO2,NASHT)

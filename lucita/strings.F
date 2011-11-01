@@ -1934,6 +1934,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
       DIMENSION STRING(NEL,NSTINI),NEWORD(NSTINO),Z(NORB,NEL+1)
@@ -1946,11 +1947,11 @@ C?      write(6,*) ' KACGRP ', KACGRP
       NTESTL =  1
       NTEST = MAX(IPRNT,NTESTL)
       IF( NTEST .GE. 20 ) THEN
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)  ' ANNSTR speaking '
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)
-         WRITE(6,*) ' Number of input electrons ', NEL
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)  ' ANNSTR speaking '
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Number of input electrons ', NEL
       END IF
       LUOUT = 6
 *
@@ -1964,9 +1965,6 @@ C?      write(6,*) ' KACGRP ', KACGRP
            STRIN2(JEL-1) = STRING(JEL,ISTRIN)
           END DO
           JSTRIN = ISTRNM(STRIN2,NACOB,NEL-1,Z,NEWORD,1)
-C?        WRITE(6,*) ' anni-string and number '
-C?        CALL IWRTMA(STRIN2,1,NEL-1,1,NEL-1)
-C?        WRITE(6,*) ' JSTRIN = ', JSTRIN
 *
           IORBABS = STRING(IEL,ISTRIN)
           IORB = STRING(IEL,ISTRIN)-IORBOF+1
@@ -1977,7 +1975,6 @@ C?        WRITE(6,*) ' JSTRIN = ', JSTRIN
           END IF
 *
           TI(IROW,ISTRIN ) = -IORBABS
-C         TI(IROW,ISTRIN ) = -IORB
           TTO(IROW,ISTRIN) = JSTRIN
           IIISGN = (-1)**(IEL-1)
           IF(LSGSTR.NE.0)
@@ -1991,18 +1988,17 @@ C         TI(IROW,ISTRIN ) = -IORB
       IF ( NTEST .GE. 20) THEN
         MAXPR = 60
         NPR = MIN(NSTINI,MAXPR)
-        WRITE(LUOUT,*) ' Output from ANNSTR : '
-        WRITE(LUOUT,*) '==================='
+        WRITE(lupri,*) ' Output from ANNSTR : '
+        WRITE(lupri,*) '==================='
 *
-        WRITE(6,*)
-        WRITE(LUOUT,*) ' Strings with an electron added or removed'
+        WRITE(lupri,*) ' Strings with an electron added or removed'
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' New strings.. ',
      &     (TTO(I,ISTRIN),I = 1,LDIM)
         END DO
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' orbitals added or removed ' ,
      &     (TI(I,ISTRIN),I = 1,LDIM)
         END DO
@@ -2049,6 +2045,7 @@ C         TI(IROW,ISTRIN ) = -IORB
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
       DIMENSION STRING(NEL,NSTINI),NEWORD(NSTINO),Z(NORB,NEL+1)
@@ -2061,20 +2058,15 @@ C         TI(IROW,ISTRIN ) = -IORB
       NTESTL =  1
       NTEST = MAX(IPRNT,NTESTL)
       IF( NTEST .GE. 20 ) THEN
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)  ' CRESTR speaking '
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)
-         WRITE(6,*) ' Number of input electrons ', NEL
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)  ' CRESTR speaking '
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Number of input electrons ', NEL
       END IF
-C?    WRITE(6,*) ' Reorder array NEWORD '
-C?    CALL IWRTMA(NEWORD,1,NSTINO,1,NSTINO)
-      LUOUT = 6
 *
       DO 1000 ISTRIN = 1,NSTINI
-C?    write(6,*) ' Input string ',istrin,(string(i,istrin),i=1,nel)
         DO 100 IORB = IORBOF, IORBOF-1+NORB
-C?      write(6,*) ' orbital ',iorb
            IPLACE = 0
            IF(NEL.EQ.0) THEN
              IPLACE = 1
@@ -2097,7 +2089,6 @@ C?      write(6,*) ' orbital ',iorb
            END IF
    11     CONTINUE
 *
-C?        write(6,*) ' iplace = ', iplace
           IF(IPLACE.NE.0) THEN
 *. Generate next string
             DO 30 I = 1, IPLACE-1
@@ -2125,18 +2116,18 @@ C?          write(6,*) ' corresponding number ', JSTRIN
       IF ( NTEST .GE. 20) THEN
         MAXPR = 60
         NPR = MIN(NSTINI,MAXPR)
-        WRITE(LUOUT,*) ' Output from CRESTR : '
-        WRITE(LUOUT,*) '==================='
+        WRITE(lupri,*) ' Output from CRESTR : '
+        WRITE(lupri,*) '==================='
 *
-        WRITE(6,*)
-        WRITE(LUOUT,*) ' Strings with an electron added  '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Strings with an electron added  '
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' New strings.. ',
      &     (TTO(I,ISTRIN),I = 1,NORB)
         END DO
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' orbitals added or removed ' ,
      &     (TI(I,ISTRIN),I = 1,NORB)
         END DO
@@ -4089,7 +4080,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
       CALL QENTER('STRIN')
 *
-      NTEST = 00
+!     NTEST = 100 ! debug
+      NTEST = 000
       NTEST = MAX(NTEST,IPRNT)
 *
 **.2 : Number of classes per string type and mappings between
@@ -4321,7 +4313,7 @@ CMOD &  = MAX(MAX_STR_OC_BLK,NEL*NSTFSMSPGP(ISTSM,ISPGP))
 *
 * Possible occupation classes
 *
-      CALL OCCLS(2,NMXOCCLS,WORK(KIOCLS),NACTEL,NGAS,
+      CALL OCCLS(2,NMXOCCLS,WORK(KIOCLS),LUCI_NACTEL,NGAS,
      &           IGSOCC(1,1),IGSOCC(1,2),0,0)
 *
 * Maps creation/annihilation of given gas orb from given supergroup
@@ -4494,20 +4486,20 @@ C     WRITE(6,*) ' MNHL' , MNHL
 *. Occupation classes corresponding to largest CI space
 *
 C     CALL QENTER('OCCLS')
-      CALL OCCLS(1,NOCCLS,IOCCLS,NACTEL,NGAS,IGSOCC(1,1),IGSOCC(1,2),
-     &           0,0)
+      CALL OCCLS(1,NOCCLS,IOCCLS,LUCI_NACTEL,NGAS,IGSOCC(1,1),
+     &           IGSOCC(1,2),0,0)
       NMXOCCLS = NOCCLS
 *
 * Split into alpha and beta parts
 *
 *. Number of alpha. and beta electrons
 *
-      NAEL = (MS2 + NACTEL ) / 2
-      NBEL = (NACTEL - MS2 ) / 2
+      NAEL = (MS2 + LUCI_NACTEL ) / 2
+      NBEL = (LUCI_NACTEL - MS2 ) / 2
 *
-      IF(NAEL + NBEL .NE. NACTEL ) THEN
-        WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
-        WRITE(6,'(5I4)')   MS2,NACTEL,NAEL,NBEL
+      IF(NAEL + NBEL .NE. LUCI_NACTEL ) THEN
+        WRITE(6,*) '  MS2 LUCI_NACTEL NAEL NBEL '
+        WRITE(6,'(5I4)')   MS2,LUCI_NACTEL,NAEL,NBEL
         WRITE(6,*)
      &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
         Call
@@ -4515,13 +4507,13 @@ C     CALL QENTER('OCCLS')
       END IF
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
-        WRITE(6,'(5I6)')   MS2,NACTEL,NAEL,NBEL
+        WRITE(6,*) '  MS2 LUCI_NACTEL NAEL NBEL '
+        WRITE(6,'(5I6)')   MS2,LUCI_NACTEL,NAEL,NBEL
       END IF
 *
-      IF(NAEL + NBEL .NE. NACTEL ) THEN
-        WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
-        WRITE(6,'(5I4)')   MS2,NACTEL,NAEL,NBEL
+      IF(NAEL + NBEL .NE. LUCI_NACTEL ) THEN
+        WRITE(6,*) '  MS2 LUCI_NACTEL NAEL NBEL '
+        WRITE(6,'(5I4)')   MS2,LUCI_NACTEL,NAEL,NBEL
         WRITE(6,*)
      &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
         Call

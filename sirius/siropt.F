@@ -68,10 +68,6 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
-#ifdef VAR_MPI
-      use par_mcci_io
-#endif
-
 #include <implicit.h>
 
 C
@@ -273,10 +269,10 @@ C.. 1.4 .. (SIRUPD)
 C..
       NCONF4 = MAX(4,NCONF)
 C
-C     Get CI information if active orbitals
+C     Get CI information if active orbitals (and ci_program .eq. SIRIUS-CI)
 C
-      IF (.NOT.RHFCLC)
-     &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
+      IF(.NOT.RHFCLC)
+     &  CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
 C
 C ****************************
 C *** GET STARTING VECTORS ***

@@ -52,7 +52,14 @@ C   Sweden
 C
 C
 
-      use lucita_orbital_spaces
+      use lucita_cfg
+      use gasci_input_cfg
+      use lucita_mcscf_ci_cfg
+      use mcscf_or_gasci_2_define_cfg
+      use lucita_orbital_spaces, only: set_inforb_lucita
+      use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
+      use lucita_mcscf_ci_interface_procedures
+      use ttss_block_module
 
 #include <implicit.h>
 C
@@ -731,6 +738,32 @@ C
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
 
+!       define LUCITA control variables and orbital spaces provided via GASCI input (irun_type == '2')
+        irun_type =  2 
+!       step 1: dynamic variables
+        call define_lucita_cfg_dynamic(gasci_input_ptg_symmetry,
+     &                                 gasci_input_ptg_symmetry,
+     &                                 -1,
+     &                                  0,
+     &                                  0,
+     &                                  gasci_input_nr_roots,
+     &                                  gasci_input_is_spin_multiplett,
+     &                                  gasci_input_max_nr_dav_ci_iter,
+     &                                  gasci_input_density_calc_lvl,
+     &                                  gasci_input_global_print_lvl,
+     &                                  gasci_input_accepted_truncation,
+     &                                  gasci_input_convergence_thr,
+     &                                  gasci_input_aux_convergence_thr,
+     &                                  gasci_input_natural_orb_occ_nr,
+     &                                  gasci_input_analyze_cvec,
+     &                                  .false.,
+     &                                  .false.,
+     &                                  .false.,
+     &                                  .false.,
+     &                                  .false.) ! no vector exchange between lucita/mc using io2io (here: no vector exchange at all...)
+!        step 2: static variables
+         call define_lucita_cfg_static(irun_type)
+
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
          JTRALVL = 0 ! all active orbitals for all four indices
@@ -745,9 +778,28 @@ C
          CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
 
 !        perform large-scale (GAS)CI calculation with LUCITA
+!        ---------------------------------------------------
+
          CALL GETTIM(TSTART,WSTART)
-         CALL LUCITA(WORK,LFREE)
+!        a. calculate dimensions of vector and resolution matrices
+         call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+     &                               'return CIdim',work,lfree,iprsir)
+
+!        b. set vector, resolution matrices and integral array length in common MC/CI module
+         call setup_lucita_mcci_wrkspc_dimensions('standard ci ',0)
+!        c. allocate vectors (dimensions are provided by the module lucita_mcscf_ci_cfg)
+         call memget('REAL',K_VEC1,len_cref_mc2lu,WORK,KFREE,LFREE)
+         call memget('REAL',K_VEC2,  len_hc_mc2lu,WORK,KFREE,LFREE)
+
+!        d. ------------------- start of LUCITA machinery ---------------------
+         CALL LUCITA('standard ci ',work(k_vec1),work(k_vec2),dummy2,
+     &               dummy2,work(kfree),lfree)
+!        ---------------------- end of LUCITA machinery -----------------------
+
+         CALL MEMREL('lucita-ci.done',work,kfrsav,kfrsav,kfree,lfree)
          CALL GETTIM(TEND,WEND)
+
+!        timing statistics
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
 
@@ -762,6 +814,10 @@ C
          CALL SET_INFORB_LUCITA('RESET ')
        END IF
       END IF
+
+!     possibly free ttss-type used in LUCITA/MCSCF-LUCITA
+      call ttss_free(ttss_info)
+
 C
 C *** POPULATION ANALYSIS AND PROPERTIES
 C

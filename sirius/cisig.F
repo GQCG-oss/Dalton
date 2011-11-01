@@ -502,6 +502,11 @@ C  Calculate the diagonal of the CI matrix and,
 C  if LUIT2 .gt. 0, save it on LUIT2.
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
 #include <implicit.h>
       DIMENSION FCAC(*),H2AC(*),DIAGC(*)
       DIMENSION XNDXCI(*), WRK(LFREE)
@@ -519,6 +524,7 @@ C   SPINFO : ?
 C   CSFBAS : CSF core allocation for XNDXCI
 C
 #include <maxorb.h>
+#include <dummy.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
@@ -539,33 +545,63 @@ C     ... 980820-hjaaj: only CSF for ref.sym. LSYM,
 C         determinants for other symmetries
 C
 C *** Construct diagonal of CI matrix
-      KFIJ  = 1
-      KFJI  = KFIJ  + N2ASHX
-      KW1   = KFJI  + N2ASHX
-      LW1   = LFREE - KW1
-      IF (NOH2) THEN
-         CALL DZERO(WRK(KFIJ),2*N2ASHX)
-      ELSE
-         CALL GETFIJ(WRK(KFIJ),WRK(KFJI),H2AC)
-      END IF
-      IF (.NOT.CSFEXP) THEN
-         CALL DZERO (DIAGC,NCONF)
-         CALL CIDIAD(DIAGC,FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,ICSYM,
-     *               WRK(KW1),LW1)
-      ELSE
+      if(ci_program .eq. 'LUCITA   ')then
+        KW1   = 1
+        LW1   = LFREE - KW1
+        call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
+     &                                 icsym,   ! lhs symmetry
+     &                                 -1,      ! no istaci
+     &                                  0,      ! spin for operator
+     &                                  0,      ! spin for operator
+     &                                  1,      ! one root
+     &                                 ispin,   ! singlet, doublet, triplet, ...
+     &                                 -1,      ! # of davidson iterations
+     &                                 -1,      ! 1/2-particle density calcs
+     &                                 iprdia,  ! print level      
+     &                                 1.0d-10, ! screening factor
+     &                                 0.0d0,   ! davidson ci convergence
+     &                                 0.0d0,   ! davidson ci convergence (auxiliary)
+     &                                 .false., ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                 .false., ! wave function analysis
+     &                                 NOH2,    ! no 2-el operators active
+     &                                 .true.,  ! integrals provided by / return density matrices to the MCSCF environment
+     &                                 .false., ! calculate 2-particle density matrix
+     &                                 .false., ! calculate transition density matrix
+     &                                 .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+         call dzero(diagc,nconf)
+         call mcscf_lucita_interface(diagc,dummy2,fcac,h2ac,
+     &                               'return CIdia',wrk(kw1),lw1,
+     &                               iprdia)
+      else if(ci_program .eq. 'SIRIUS-CI')then
+        KFIJ  = 1
+        KFJI  = KFIJ  + N2ASHX
+        KW1   = KFJI  + N2ASHX
+        LW1   = LFREE - KW1
+        IF (NOH2) THEN
+           CALL DZERO(WRK(KFIJ),2*N2ASHX)
+        ELSE
+           CALL GETFIJ(WRK(KFIJ),WRK(KFJI),H2AC)
+        END IF
+        IF (.NOT.CSFEXP) THEN
+           CALL DZERO (DIAGC,NCONF)
+           CALL CIDIAD(DIAGC,FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,ICSYM,
+     *                 WRK(KW1),LW1)
+        ELSE
 C
 C.. Change to CSF format
 C
-         KDETDG = KW1
-         KW1    = KDETDG + NDTASM(ICSYM)
-         LW1    = LFREE  - KW1
-         CALL CIDIAD(WRK(KDETDG),FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,
-     *               ICSYM,WRK(KW1),LW1)
-         CALL CSDIAG(DIAGC,WRK(KDETDG),NCNFTP(1,ICSYM),NTYP,
-     &               XNDXCI(KICTS(1)),NDTFTP,NCSFTP,0,IPRDIA)
-C        CSDIAG(CSFDIA,DETDIA,NCNFTP,NTYP,
-C    &          ICTSDT,NDTFTP,NCSFTP,IFLAG,NTEST)
-      END IF
+           KDETDG = KW1
+           KW1    = KDETDG + NDTASM(ICSYM)
+           LW1    = LFREE  - KW1
+           CALL CIDIAD(WRK(KDETDG),FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,
+     *                 ICSYM,WRK(KW1),LW1)
+           CALL CSDIAG(DIAGC,WRK(KDETDG),NCNFTP(1,ICSYM),NTYP,
+     &                 XNDXCI(KICTS(1)),NDTFTP,NCSFTP,0,IPRDIA)
+C               CSDIAG(CSFDIA,DETDIA,NCNFTP,NTYP,
+C    &                 ICTSDT,NDTFTP,NCSFTP,IFLAG,NTEST)
+        END IF
+      end if ! ci_program switch
 C
       IF (LUIT2 .GT. 0) THEN
 C
@@ -708,7 +744,7 @@ C  /* Deck cisigc */
      *                  FCAC,H2AC,XNDXCI,WRK,LFREE)
 C
 C Written 18-JAN-1988 by J.O.
-C   ( from hjaaj's cisigc )
+C   ( from hjaaj cisigc )
 C
 C Purpose:
 C   Compute CI sigma vector(s) for direct CI,
@@ -722,6 +758,7 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
+
 #include <implicit.h>
       DIMENSION BCVECS(NCONST,*),FCAC(*),H2AC(*),SCVECS(LSCVEC,*)
       DIMENSION XNDXCI(*), WRK(LFREE)
@@ -733,13 +770,14 @@ C     IH8SM ... integrals have 8-fold symmetry
 C
 C Used from common blocks:
 C   INFORB : NASHT, N2ASHX
-C   INFLIN : LSYMST,NCONST
+C   INFLIN : LSYMST,NCONST (set in sirset.F)
 C   INFTIM : NCALLS,TIMCPU,TIMWAL    ! IDTIM is index for these
 C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <inflin.h>
+#include <infpri.h>
 C ---
       PARAMETER (IDTIM = 2)
 #include <inftim.h>
@@ -754,25 +792,32 @@ C  ** One- and two-electron contributions
 C
       CALL GETTIM(T1,W1)
       CALL GETTIM(T2,W2)
-C
-C     Unpack FCAC
-C
-      KUFCAC = 1
-      KW1    = KUFCAC + N2ASHX
-      LW1    = LFREE  - KW1
-      CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
-C     ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+
       ISPIN1 = 0
       ISPIN2 = 0
 C     ... singlet-singlet coupling of 2-electron integrals
-      DO 100 ISIM = 1, NSIM
-         CALL DZERO(SCVECS(1,ISIM),NCONST)
-         CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
-     &               BCVECS(1,ISIM),SCVECS(1,ISIM), WRK(KUFCAC),H2AC,
-     &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
-C        CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
-C    &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
-  100 CONTINUE
+
+      KUFCAC = 1
+      KW1    = KUFCAC + N2ASHX
+      LW1    = LFREE  - KW1
+!     Unpack FCAC for SIRIUS-CI
+      if(ci_program .eq. 'SIRIUS-CI')then
+        CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
+!       ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(NNASHX,FCAC,1,WRK(KUFCAC),1)
+      end if
+
+      DO isim = 1,nsim ! loop over sigma vectors to calculate
+
+        call dzero(scvecs(1,isim),nconst)
+
+        CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
+     &              BCVECS(1,ISIM),SCVECS(1,ISIM), WRK(KUFCAC),H2AC,
+     &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
+C       CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
+C    &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
+      end do
 C
       CALL GETTIM(T3,W3)
 C
@@ -835,7 +880,6 @@ C
 C
 C *** SCVECS(I) = SUM(J) <I|PRP|J> * CREF(J)
 C
-C
       KW1    = 1
       LW1    = LFREE  - KW1
 C
@@ -881,6 +925,10 @@ C OUTPUT :
 C        HC : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCVEC
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
 #include <implicit.h>
       DIMENSION C(*), HC(*)
       DIMENSION FCAC(*), H2AC(*), WRK(LFREE), XNDXCI(*)
@@ -992,18 +1040,78 @@ C        .. change from CSf basis to determinant basis
             CALL DAXPY(NHCVEC,D1,WRK(KHCDET),1,HC,1)
          END IF
       ELSE
-         IF (NCVEC  .NE. NDTASM( ICSYM) .OR.
-     *       NHCVEC .NE. NDTASM(IHCSYM)) THEN
-            WRITE (LUPRI,*) 'ERROR in CISIGD'
-            WRITE (LUPRI,*) ' ICSYM,  NCVEC, NDTASM( ICSYM):',
-     *                        ICSYM,  NCVEC, NDTASM( ICSYM)
-            WRITE (LUPRI,*) 'IHCSYM, NHCVEC, NDTASM(IHCSYM):',
-     *                       IHCSYM, NHCVEC, NDTASM(IHCSYM)
-            CALL QUIT('NCVEC/NHCVEC disagree with NDTASM(:) in cisigd')
-         END IF
-         CALL CISGD2(ICSYM,IHCSYM,NCVEC,NHCVEC,C,HC,
-     *               FCAC,H2AC,ONLYH1,IH8SM,XNDXCI,WRK,LFREE)
+        IF (NCVEC  .NE. NDTASM( ICSYM) .OR.
+     *      NHCVEC .NE. NDTASM(IHCSYM)) THEN
+           WRITE (LUPRI,*) 'ERROR in CISIGD'
+           WRITE (LUPRI,*) ' ICSYM,  NCVEC, NDTASM( ICSYM):',
+     *                       ICSYM,  NCVEC, NDTASM( ICSYM)
+           WRITE (LUPRI,*) 'IHCSYM, NHCVEC, NDTASM(IHCSYM):',
+     *                      IHCSYM, NHCVEC, NDTASM(IHCSYM)
+           CALL QUIT('NCVEC/NHCVEC disagree with NDTASM(:) in cisigd')
+        END IF
+
+        if(ci_program .eq. 'LUCITA   ')then
+
+          call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
+     &                                   ihcsym,  ! lhs symmetry
+     &                                   -1,      ! no istaci
+     &                                   ispin1,  ! spin for operator
+     &                                   ispin2,  ! spin for operator
+     &                                    1,      ! one root
+     &                                   ispin,   ! singlet, doublet, triplet, ...
+     &                                   -1,      ! # of davidson iterations
+     &                                   -1,      ! 1/2-particle density calcs
+     &                                   iprsig,  ! print level      
+     &                                   1.0d-10, ! screening factor
+     &                                   0.0d0,   ! davidson ci convergence
+     &                                   0.0d0,   ! davidson ci convergence (auxiliary)
+     &                                   .false., ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                   .false., ! wave function analysis
+     &                                   onlyh1,  ! no 2-el operators active
+     &                                   .true.,  ! integrals provided by / return density matrices to the MCSCF environment
+     &                                   .false., ! calculate 2-particle density matrix
+     &                                   .false., ! calculate transition density matrix
+     &                                   .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' before sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' before sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+
+          call mcscf_lucita_interface(c,hc,fcac,h2ac,'sigma vec   ',
+     &                                wrk,lfree,iprsig)
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' after sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+
+        else if(ci_program .eq. 'SIRIUS-CI')then
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' before sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' before sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+
+          CALL CISGD2(ICSYM,IHCSYM,NCVEC,NHCVEC,C,HC,
+     *                FCAC,H2AC,ONLYH1,IH8SM,XNDXCI,WRK,LFREE)
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' after sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+        end if
+
       END IF
+
       RETURN
       END
 C  /* Deck cisgd2 */
@@ -1104,7 +1212,7 @@ C
          INTFRM = 1
       END IF
 C
-C     Make sure ISGN1/ISGN2 is defined for the DISTYP's where
+C     Make sure ISGN1/ISGN2 is defined for the DISTYPs where
 C     they are needed in GETIN2. They are now only defined in
 C     RSP2GR /950524-hjaaj
 C
@@ -1215,6 +1323,7 @@ C
 #include <inforb.h>
 #include <inflin.h>
 #include <inftim.h>
+#include <infinp.h>
 C
 C
       KUFCAC = 1
@@ -1236,8 +1345,12 @@ C
 C
       DO 300 IOSIM = 1, NOSIM
 C
-         CALL DSPTSI(NASHT,FXCAC(1,IOSIM),WRK(KUFCAC))
-C        ... unpack FXCAC using CALL DSPTSI(N,ASP,ASI)
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSPTSI(NASHT,FXCAC(1,IOSIM),WRK(KUFCAC))
+C          ... unpack FXCAC using CALL DSPTSI(N,ASP,ASI)
+         else if(ci_program .eq. 'LUCITA   ')then
+           CALL DCOPY(NNASHX,FXCAC(1,IOSIM),1,WRK(KUFCAC),1)
+         end if
          CALL DZERO(SOVECS(1,IOSIM),NCONST)
          CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,
      &               CREF,SOVECS(1,IOSIM),WRK(KUFCAC),H2XAC(1,1,IOSIM),

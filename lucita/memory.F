@@ -107,6 +107,13 @@
       CALL MEMMAN(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
       CALL MEMMAN(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
 
+!
+!     stefan: idea: can't we just set the KRHO1/KRHO2 equal to the integral
+!                   work array pointer - they are needed only for
+!                   natorbs or mcscf densities and then we do not need
+!                   the ints any longer/do not have them available...
+!
+
 !     density matrices
 !     ----------------
 !     one-body density matrix
@@ -155,24 +162,6 @@
 *
       CALL MEMMAN(KINH1,NTOOB*NTOOB,'ADDS  ',2,'KINH1  ')
 *
-*. Length of MO-MO and MO_AO expansion file
-      LMOMO = 0
-      LMOAO = 0
-      DO ISM = 1, NSMOB
-        LMOMO = LMOMO + NMOS_ENV(ISM)*NMOS_ENV(ISM)
-        LMOAO = LMOAO + NMOS_ENV(ISM)*NAOS_ENV(ISM)
-      END DO
-      CALL MEMMAN(KMOMO  ,LMOMO ,'ADDS  ',2,'MOMO  ')
-      IF(NOMOFL.EQ.0) THEN
-        WRITE(6,*)
-     &  ' Alloc : space for MO-AO matrices will be allocated '
-        CALL MEMMAN(KMOAOIN,LMOAO ,'ADDS  ',2,'MOAOIN')
-        CALL MEMMAN(KMOAOUT,LMOAO ,'ADDS  ',2,'MOAOUT')
-      ELSE
-        KMOAOIN = 0
-        KMOAOUT = 0
-      END IF
-
 !     call lmemchk('LUCITA_ALLOC')
 
       END
@@ -233,8 +222,12 @@
 *
 #include "priunit.h"
 #include "mxpdim.inc"
-#include "SysDef.inc"
 #include "wrkspc.inc"
+#ifdef VAR_INT64
+      integer, parameter :: rtoi = 1
+#else
+      integer, parameter :: rtoi = 2
+#endif
 *
       ISTOP = 0
       ITSOK  = 1
@@ -303,7 +296,7 @@
         IF(NS.GT.MAXLVL) THEN
           WRITE(2,*) ' Too many levels in MEMMAN '
           WRITE(2,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1(11)
+          call quit('*** error in MEMMAN: too many levels. ***')
         END IF
         IIDENT(NS) = IDENT
         KFREEL     = KFREES
@@ -344,7 +337,7 @@
         IF(NS+NL.GT.MAXLVL) THEN
           WRITE(2,*) ' Too many levels in MEMMAN '
           WRITE(2,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1(11)
+          call quit('*** error in MEMMAN: too many levels. ***')
         END IF
         IIDENT(NS+NL) = IDENT
         IBASE(NS+NL) = KBASE
@@ -365,7 +358,7 @@
         IF(NM.GT.MAXMRK) THEN
           WRITE(2,*) ' Too many marks  in MEMMAN '
           WRITE(2,*) ' Increase MAXMRK from ', MAXMRK
-          Call Abend1(11)
+          call quit('*** error in MEMMAN: too many marks. ***')
         END IF
         MARKC(NM) = IDENT
         IMARK(NM) = KFREEL
@@ -388,7 +381,7 @@
       ELSE
           WRITE(2,*) ' MEMMAN : Unknown task parameter ',TASK
           WRITE(2,*) ' Too confused to continue  '
-          Call Abend1(11)
+          call quit('*** error in MEMMAN: unknown task. ***')
       END IF
 *
 **. Check paddings
@@ -494,10 +487,11 @@ C           find local off-set to WORK for print
           END DO
 *
         IF (ITSOK.EQ.0)
-     &     Call Abend2(' Error observed by  memory manager ')
+     &    call quit('*** error in MEMMAN: memory corrupted. ***')
         END IF
 *
       IF (ISTOP.NE.0)
-     &   Call Abend2(' Error observed by  memory manager ')
+     &   call quit(
+     & '*** error in MEMMAN: not enough memory available. ***')
 
       END

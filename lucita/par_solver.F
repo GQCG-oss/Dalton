@@ -487,7 +487,8 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE MICDV6_PAR(VEC1,VEC2,RNRM,EIG,FINEIG,MAXIT,
+      SUBROUTINE MICDV6_PAR(VEC1,VEC2,C2,RNRM,EIG,nfinal_vec,
+     &                      FINEIG,root_converged,root_residual,MAXIT,
      &                      NVAR,NROOT,MAXVEC,NINVEC,APROJ,AVEC,WORK,
      &                      IPRTXX,NPRDIM,H0,IPNTR,
      &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
@@ -543,7 +544,7 @@ C
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER IERR
 #include "parluci.h"
-      DIMENSION VEC1(*),VEC2(*)
+      DIMENSION VEC1(*),VEC2(*),C2(*)
       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
       DIMENSION APROJ(MAXVEC*(MAXVEC+1)/2),AVEC(*),WORK(*)
       DIMENSION H0(*),IPNTR(1)
@@ -551,6 +552,8 @@ C
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*), LU7LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LU6LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
+      real(8)              :: cdummy
+      real(8)              :: sdummy
       real(8), allocatable :: tmp_space0(:)
       real(8), allocatable :: tmp_space1(:)
       real(8), allocatable :: tmp_space2(:)
@@ -565,7 +568,11 @@ C
 *     eigenvectors in iteration n+1 as the approximations
 *     with largest overlap with the previous space
 *
-      DIMENSION FINEIG(NROOT)
+      real(8), intent(out) :: FINEIG(nroot)
+      real(8), intent(out) :: root_residual(nroot)
+      integer, intent(out) :: root_converged(nroot)
+      integer, intent(out) :: nfinal_vec
+
       LOGICAL CONVER
       REAL*8 INPRDD, INPROD 
       DOUBLE PRECISION tottime,endtime,starttime
@@ -579,17 +586,14 @@ C
       DIMENSION IBLOCKL(*),NBLOCKDN(*), IPROCLIST(LUCI_NMPROC)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
       character (len=13)   :: convergence
-      logical, allocatable :: rtcnv(:)
  
 !     allocate scratch space
       allocate(tmp_space0(maxvec*(maxvec+1)/2))
       allocate(tmp_space1(maxvec**2))
       allocate(tmp_space2(maxvec**2))
-      allocate(rtcnv(nroot))
       tmp_space0 = 0
       tmp_space1 = 0
       tmp_space2 = 0
-      rtcnv      = .false.
 *
 C
 C     set check point parameters - after every 6th iteration
@@ -694,7 +698,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,luwrt)
         sigmatime = MPI_WTIME()
 *
 *=======================================================================
-        CALL MV7(VEC1,VEC2,ILUC,ILU2 
+        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU2,cdummy,sdummy,1 
 #ifdef VAR_MPI
      &           ,LUCLIST,LU2LIST,IBLOCKL,NBLOCKDN,RCCTOS,IGROUPLIST,
      &           IPROCLIST
@@ -829,7 +833,8 @@ C
 *       calculate residues ...
 *
         CALL P1_B_PAR_RL_LUCI1(VEC1,VEC2,EIGAPR,RNRM,EIGSHF,
-     &                         EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
+     &                         EIG,TEST,THRES_E,root_converged,CONVER,
+     &                         ITER,MAXIT,
      &                         IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,
      &                         LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU2_OFF,MY_LU1_OFF,MY_LU5_OFF,
@@ -843,7 +848,7 @@ C
 *       1.2 : multiply with inverse Hessian approximation
 *             to get new direction
 *
-        IF( .NOT. RTCNV(IROOT) ) THEN
+        IF(root_converged(iroot) .gt. 0) THEN
 *
 *         (D-E)-1 *( HX - EX )
 *
@@ -966,7 +971,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
         sigmatime = MPI_WTIME()
 *
 *==================================================================
-        CALL MV7(VEC1,VEC2,ILUC,ILU4
+        CALL SIGDEN_CI(VEC1,VEC2,C2,ILUC,ILU4,cdummy,sdummy,1 
 #ifdef VAR_MPI
      &           ,LUCLIST,LU4LIST,IBLOCKL,NBLOCKDN,RCCTOS,IGROUPLIST,
      &           IPROCLIST
@@ -1340,11 +1345,11 @@ C       reset ITER_CHECKP
 C
 C       copy c-vectors from nodes and master back to the master
         CALL REWINE(61,-1)
-        call copy_vector_mpi_2_sequential_io(ILU1,61,VEC1,
-     &                                       MY_LU1_OFF,LU1LIST,
-     &                                       NBLOCKDN,IBLOCKL,
-     &                                       MPI_COMM_WORLD,
-     &                                       NUM_BLOCKS2,nroot,1)
+        call mcci_cp_vcd_mpi_2_seq_io_interface(VEC1,61,ILU1,
+     &                                          MY_LU1_OFF,lu1list,
+     &                                          NBLOCKDN,IBLOCKL,
+     &                                          MPI_COMM_WORLD,
+     &                                          NUM_BLOCKS2,NROOT,1,2)
         IF(luci_myproc .eq. luci_master) CALL REWINE(61,-1)
       END IF
 C
@@ -1398,18 +1403,19 @@ C
       write(LUWRT,'(1x,a )') '**********************************'//
      &           '******************************'
       DO 1601 IROOT = 1, NROOT
-         FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-         if(rtcnv(iroot)) then 
+         FINEIG(IROOT)        = EIG(ITER,IROOT)+EIGSHF
+         root_residual(IROOT) = rnrm(iter,iroot)
+         if(root_converged(iroot) .eq. 0) then
            convergence = ' converged'
          else
            convergence = 'NOT converged'
          end if
-         WRITE(LUWRT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
-     &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+         WRITE(LUWRTOUT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
+     &         ITER,IROOT,FINEIG(IROOT),root_residual(IROOT),
      &         convergence
  1601 CONTINUE
+      nfinal_vec = nvec
 C
-      deallocate(rtcnv)
       deallocate(tmp_space2)
       deallocate(tmp_space1)
       deallocate(tmp_space0)

@@ -251,6 +251,11 @@ C
       NCLIN  = 0
       NOLIN  = 0
       ITMIC  = 0
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) 'bla bla IPRI6 raised from X to 101',IPRI6
+      IPRI6  = 101
+#endif
 C
   100 ITMIC  = ITMIC + 1
          IF (IPRI6.ge.10) WRITE(LUPRI,'(/A,I5)')

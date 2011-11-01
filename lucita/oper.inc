@@ -1,3 +1,4 @@
-*comdeck oper.inc $Revision: 1.1.2.1 $ 
+       
+      integer I12,IPERTOP,IAPR,MNRS1E,MXRS3E,IPART,I_RES_AB
       COMMON/OPER/I12,IPERTOP,IAPR,MNRS1E,MXRS3E,IPART,I_RES_AB
 

@@ -327,7 +327,6 @@ C     CALL ORBSIG(NCSIM,NOSIM,SCVECS,SOVECS,
 C    *            DTV,FC,FTV,FTQ,BOVECS,DV,FXC,FXV,FXQ,
 C    *            GORB,WRK,LWRK)
 C
-C
 C ***
 C
       CALL GETTIM(T3,W3)
@@ -553,6 +552,7 @@ C
          DO 210 IOSIM = 1,NOSIM
             JUBO = KUBO + (IOSIM-1)*N2ORBX
             CALL UPKWOP(NWOPT,JWOP,BOVECS(1,IOSIM),WRK(JUBO))
+#define VAR_DEBUG
 #if defined (VAR_DEBUG)
             IF (P6FLAG(19) .OR. IPRLIN .GE. 19) THEN
                WRITE (LUPRI,2110) IOSIM,NOSIM
@@ -561,6 +561,7 @@ C
             END IF
  2110 FORMAT (/,' ORBSIG: Orbital trial vector unpacked to ',
      *        'matrix form (no.',I3,' of',I3,')')
+#undef VAR_DEBUG
 #endif
   210    CONTINUE
          CALL UPKWOP(NWOPH,JWOP,GORB,WRK(KUGORB))
@@ -668,6 +669,7 @@ C
 #include <infind.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <priunit.h>
 
 C
 C ***** Step 1: calculate sigma vectors of configuration trial vectors

@@ -13,7 +13,7 @@ module sync_coworkers
 !           written by sknecht for DALTON, december 2010.
   use dalton_mpi
   use lucita_cfg
-  use lucita_mcscf_ci_task
+  use lucita_mcscf_ci_cfg
 #ifndef VAR_USE_MPIF
   use mpi
   implicit none
@@ -44,8 +44,6 @@ module sync_coworkers
 
 #ifdef PRG_DIRAC
 #include "dgroup.h"
-#else
-#include "inforb.h"
 #endif
 
 contains 
@@ -73,15 +71,16 @@ contains
           print *,' *** select_sync = ***',select_sync
 #endif
           select case(select_sync)
-            case(1) ! CI default settings and input variables
+            case(1) ! CI default settings and MCSCF/CI input variables
               call sync_coworkers_ci_cfg()
-            case(2) ! MCSCF default settings and input variables
+            case(2) ! MCSCF environment settings
+              call sync_coworkers_mc_cfg()
             case(3) ! synchronize 1-el (i|j) and 2-el (ab|cd) integrals
               if(present(xarray1) .and. present(xarray2))then
                 call sync_coworkers_ij_abcd(xarray1,xarray2)
               else
-                call quit('*** sync_coworkers_cfg: sync of 1-/2-el integrals requires& 
- the output arrays in the argument list.***')
+                call quit('*** sync_coworkers_cfg: sync of 1-/2-el integrals requires'//          &
+                          ' the output arrays in the argument list.***')
               end if
             case(4) ! distribute previous solution vector (i.e., we restart a CI run)
             case(5) ! synchronize with current expansion point (CEP) vector (MCSCF run)
@@ -97,9 +96,9 @@ contains
           print *,' *** sync_coworkers_cfg: synchronization requested but not needed, program continues. ***'
 #endif
       end select
-#ifdef LUCI_DEBUG
-          print *,' *** sync_coworkerscfg: synchronization done. ***'
-#endif
+!     reset control array
+      sync_ctrl_array(select_sync) = .false.
+
   end subroutine sync_coworkers_cfg
 
   subroutine sync_coworkers_ci_cfg()
@@ -111,26 +110,29 @@ contains
 !*******************************************************************************
 !-------------------------------------------------------------------------------
 
+!     transfer information from Dalton cb to LUCITA
+#ifdef PRG_DIRAC
+      lucita_cfg_nr_ptg_irreps = nbsym
+#endif
 !     character
       call dalton_mpi_bcast(lucita_cfg_run_title,           0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_ini_wavef,           0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_ci_type,             0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_calculation_size,    0, mpi_comm_world)
 !     real(8)
       call dalton_mpi_bcast(lucita_cfg_accepted_truncation, 0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_convergence_c      , 0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_auxiliary_conv_c   , 0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_core_energy        , 0, mpi_comm_world)
 !     logical
       call dalton_mpi_bcast(lucita_cfg_inactive_shell_set,  0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_minmax_occ_gas_set,  0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_analyze_cvec,        0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_timing_par,          0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_natural_orb_occ_nr,  0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_transition_densm,    0, mpi_comm_world)
 !     integer
-#ifdef PRG_DIRAC
-      lucita_cfg_nr_ptg_irreps = nbsym
-#else
-      lucita_cfg_nr_ptg_irreps = nsym
-#endif
-!     general definitions/settings
+!       a. general definitions/settings
+      call dalton_mpi_bcast(lucita_cfg_el_operator_level,   0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_nr_roots,            0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_nr_active_e,         0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_global_print_lvl,    0, mpi_comm_world)
@@ -144,14 +146,23 @@ contains
       call dalton_mpi_bcast(lucipar_cfg_mem_reduction_multp,0, mpi_comm_world)
 !     call dalton_mpi_bcast(lucita_cfg_nr_calc_sequences,   0, mpi_comm_world)
 
-!     symmetry, spin and orbital spaces
+!       b. symmetry, spin and orbital spaces
+      call dalton_mpi_bcast(lucita_cfg_csym,                0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_hcsym,               0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_icstate,             0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_spin1_2el_op,        0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_spin2_2el_op,        0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_ptg_symmetry,        0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_is_spin_multiplett,  0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_nr_ptg_irreps,       0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_nr_gas_spaces,       0, mpi_comm_world)
-      call dalton_mpi_bcast(lucita_cfg_init_input_type,     0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_init_wave_f_type,    0, mpi_comm_world)
       call dalton_mpi_bcast(nish_lucita,                    0, mpi_comm_world)
+      call dalton_mpi_bcast(naos_lucita,                    0, mpi_comm_world)
+      call dalton_mpi_bcast(nmos_lucita,                    0, mpi_comm_world)
+      call dalton_mpi_bcast(nash_lucita,                    0, mpi_comm_world)
+      call dalton_mpi_bcast(nfro_lucita,                    0, mpi_comm_world)
+      call dalton_mpi_bcast(nocc_lucita,                    0, mpi_comm_world)
 
       select case(lucita_cfg_init_wave_f_type)
         case(1) ! GAS settings
@@ -173,6 +184,34 @@ contains
   end subroutine sync_coworkers_ci_cfg
 !******************************************************************************
 
+  subroutine sync_coworkers_mc_cfg()
+!*******************************************************************************
+!
+!    purpose:  provide co-workers with the basic settings from the mcscf
+!              environment.
+!
+!*******************************************************************************
+!-------------------------------------------------------------------------------
+
+!     logical
+      call dalton_mpi_bcast(integrals_from_mcscf_env,         0,mpi_comm_world)
+!     call dalton_mpi_bcast(io2io_vector_exchange_mc2lu_lu2mc,0,mpi_comm_world) ! no need to sync - co-workers never touch this part of the code
+
+!     real(8)
+!     call dalton_mpi_bcast(einact_mc2lu,                     0, mpi_comm_world) ! no need to sync - we sync ecore/ecore_orig in lucita internally
+
+!     integer
+      call dalton_mpi_bcast(len_cref_mc2lu,                   0, mpi_comm_world)
+      call dalton_mpi_bcast(len_hc_mc2lu,                     0, mpi_comm_world)
+      call dalton_mpi_bcast(len_resolution_mat_mc2lu,         0, mpi_comm_world)
+      call dalton_mpi_bcast(len_int1_or_rho1_mc2lu,           0, mpi_comm_world)
+      call dalton_mpi_bcast(len_int2_or_rho2_mc2lu,           0, mpi_comm_world)
+
+!     more to come once we actually have an mcscf-lucita interface
+
+  end subroutine sync_coworkers_mc_cfg
+!******************************************************************************
+
   subroutine sync_coworkers_ij_abcd(xarray1,xarray2)
 !******************************************************************************
 !
@@ -180,12 +219,11 @@ contains
 !              CI/MCSCF runs.
 !
 !******************************************************************************
+    use lucita_energy_types
     real(8), intent(inout) :: xarray1(*)
     real(8), intent(inout) :: xarray2(*)
 !-------------------------------------------------------------------------------
-!   common blocks from lucita (note: they do not have their own include file)
-    real(8)    :: ecore,ecore_orig,ecore_h,ecore_hex
-    COMMON/CECORE/ecore,ecore_orig,ecore_h,ecore_hex
+!   common block from lucita (note: the one below does not have its own include file)
     integer    :: i12s,i34s,i1234s,nint1,nint2,nbint1,nbint2
     COMMON/CINTFO/i12s,i34s,i1234s,nint1,nint2,nbint1,nbint2
 !#include "parluci.h"
@@ -220,9 +258,7 @@ contains
 !-------------------------------------------------------------------------------
 
 !     character
-      call dalton_mpi_bcast(lucita_citask_id, 0, mpi_comm_world)
-
-!     more to come once we actually have an mcscf-lucita interface
+      call dalton_mpi_bcast(lucita_ci_run_id, 0, mpi_comm_world)
 
   end subroutine sync_coworkers_citask
 !******************************************************************************
