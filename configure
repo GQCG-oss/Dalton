@@ -26,6 +26,11 @@
 # machine libraries
 #
 
+# stefan: we do not track empty directories in git...
+parent_path=`pwd`
+mkdir -p $parent_path/modules
+
+
 # defaults section for quick config
 do_quick_config=n
 
