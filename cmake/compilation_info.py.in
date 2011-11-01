@@ -31,7 +31,7 @@ s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
 output = ''
 output += 'subroutine print_compilation_info()\n'
-output += 'include "priunit.h"\n'
+output += '#include "priunit.h"\n'
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
@@ -50,4 +50,4 @@ output += print_line('Configuration time', datetime.datetime.now())
 
 output += 'end subroutine'
 
-print output
+print(output)

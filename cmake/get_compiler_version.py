@@ -4,7 +4,7 @@ import sys
 import subprocess
 
 if len(sys.argv) == 1:
-   sys.exit('call script with argument')
+    sys.exit('call script with argument')
 
 compiler_name = sys.argv[1].split('/')[-1]
 
@@ -38,12 +38,6 @@ if sys.version >= '2.4':
         if out != '':
             # use only first line, not the copyright stuff
             version = out.split('\n')[0]
-    else:
-        print  >> sys.stderr,'compiler name ',compiler_name,' not found in the list...'
-        sys.exit(2)
-else:
-    print  >> sys.stderr,'can not run this python script, needs python version >= 2.4'
-    sys.exit(1)
 
 # finally flush the stdout what is wanted variable
-print version
+print(version)

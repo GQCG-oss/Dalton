@@ -3,7 +3,7 @@
 import sys
 
 if len(sys.argv) == 1:
-   sys.exit('call script with argument (source dir)')
+    sys.exit('call script with argument (source dir)')
 
 last_commit_rev = 'unknown'
 
@@ -20,4 +20,4 @@ if sys.version >= '2.4':
     else:
         last_commit_rev = string.replace(stdout.splitlines()[0], 'commit ', '')
 
-print last_commit_rev
+print(last_commit_rev)

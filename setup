@@ -11,7 +11,7 @@ import subprocess
 from optparse import OptionParser, OptionGroup
 
 if sys.version < '2.4':
-    print 'setup requires python version >= 2.4'
+    print('requires python version >= 2.4')
     sys.exit(1)
 
 root_directory = os.path.realpath(__file__)[:-5]
@@ -165,13 +165,13 @@ def check_cmake_exists():
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE)
     if not ('cmake version' in p.communicate()[0]):
-        print '   This code is built using CMake'
-        print
-        print '   CMake is not found'
-        print '   get CMake at http://www.cmake.org/'
-        print '   on many clusters CMake is installed'
-        print '   but you have to load it first:'
-        print '   $ module load cmake'
+        print('   This code is built using CMake')
+        print('')
+        print('   CMake is not found')
+        print('   get CMake at http://www.cmake.org/')
+        print('   on many clusters CMake is installed')
+        print('   but you have to load it first:')
+        print('   $ module load cmake')
         sys.exit()
 
 def gen_cmake_command():
@@ -198,7 +198,7 @@ def gen_cmake_command():
             command += ' -DUSERDEFINED_MATH="%s"' % options.math
     elif options.mathdir:
             if not os.path.exists(options.mathdir):
-                    print "Specified MATH directory does not exist!"
+                    print("Specified MATH directory does not exist!")
                     sys.exit(1)
             command += ' -DMATH_ROOT="%s"' % options.mathdir
 
@@ -233,7 +233,7 @@ def gen_cmake_command():
 
     command += ' %s' % root_directory
     
-    print '%s\n' % command
+    print('%s\n' % command)
     if options.show:
             sys.exit()
     return command
@@ -248,21 +248,21 @@ def configure_host(host):
         elif host == 'thor':
                 configure_thor()
         else:
-                print "Unknown host/system: {0}".format(host)
+                print("Unknown host/system: {0}".format(host))
                 sys.exit(1)
 
 def print_build_help(build_path):
-    print '   configure step is done'
-    print '   now you need to compile the sources'
-    print
-    print '   to compile with configured parameters (recommended):'
-    print '   $ cd ' + build_path
-    print '   $ make'
-    print
-    print '   to modify configured parameters and then compile:'
-    print '   $ cd ' + build_path
-    print '   $ ccmake ' + root_directory
-    print '   $ make'
+    print('   configure step is done')
+    print('   now you need to compile the sources')
+    print('')
+    print('   to compile with configured parameters (recommended):')
+    print('   $ cd ' + build_path)
+    print('   $ make')
+    print('')
+    print('   to modify configured parameters and then compile:')
+    print('   $ cd ' + build_path)
+    print('   $ ccmake ' + root_directory)
+    print('   $ make')
 
 def gen_reconfigure_script(command, build_path):
     file_name = os.path.join(build_path, 'reconfigure')
@@ -281,8 +281,8 @@ def save_setup_command(argv, build_path):
 def setup_build_path(build_path, only_show_command):
     if os.path.isdir(build_path):
         if not only_show_command:
-            print 'aborting setup - build directory %s exists already' % build_path
-            print 'please first remove it and then rerun setup'
+            print('aborting setup - build directory %s exists already' % build_path)
+            print('please first remove it and then rerun setup')
             sys.exit()
     else:
         os.makedirs(build_path, 0755)
@@ -295,14 +295,14 @@ def run_cmake(command, build_path):
                                                  stdin=subprocess.PIPE,
                                                  stdout=subprocess.PIPE)
         s = p.communicate()[0]
-        print s
+        print(s)
         os.chdir(topdir)
         return s
 
 def main():
         if len(sys.argv) == 1:
                 # user has given no arguments: print help and exit
-                print parser.format_help().strip()
+                print(parser.format_help().strip())
                 sys.exit()
 
         check_cmake_exists()

@@ -2,25 +2,17 @@ execute_process(
     COMMAND python ${CMAKE_SOURCE_DIR}/cmake/get_compiler_version.py ${CMAKE_Fortran_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE FORTRAN_COMPILER_VERSION
-    ERROR_VARIABLE  STDERR_STREAM
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-if(VERBOSE_OUTPUT AND STDERR_STREAM)
-    message("stderr stream in python script (FORTRAN_COMPILER_VERSION): ${STDERR_STREAM}")
-endif()
 
 execute_process(
     COMMAND python ${CMAKE_SOURCE_DIR}/cmake/get_compiler_version.py ${CMAKE_C_COMPILER}
     TIMEOUT 1
     OUTPUT_VARIABLE C_COMPILER_VERSION
-    ERROR_VARIABLE  STDERR_STREAM
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-if(VERBOSE_OUTPUT AND STDERR_STREAM)
-    message("stderr stream in python script (C_COMPILER_VERSION): ${STDERR_STREAM}")
-endif()
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/cmake/compilation_info.py.in
