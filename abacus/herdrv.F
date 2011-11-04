@@ -1216,12 +1216,8 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GOTO 100
   239    CONTINUE
-#ifdef BUILD_GEN1INT
             TEST_GEN1INT = .true.
             goto 100
-#else
-            call QUIT("Gen1Int is not installed!")
-#endif
   240    CONTINUE
             ONEPRP = .TRUE.
             GO TO 100
