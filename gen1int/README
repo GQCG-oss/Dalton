@@ -69,6 +69,10 @@
    * stdout.h              : IO unit of standard output
    * xkind.h               : kind type parameter of real numbers
 
+   When you use this Gen1Int interface, please be aware that (see gen1int_dal_main.F90):
+     * \var(val_ints) contains the upper and diagonal parts if using triangular format;
+     * \var(val_expt) should be zero before calculations
+
    The parallelization may be implemented in gen1int_dal_main.F90 and/or gen1int_dal_prop.F90,
    which correspond to total geometric derivatives and AO sub-shells, respectively.
 

@@ -49,9 +49,15 @@
 #ifdef BUILD_GEN1INT
 ! threshold of error
 #include "err_thrsh.h"
+    ! number of expectation value tests
+    integer, parameter :: NUM_EXP_TEST = 3
+    ! property integral names for testing expectation values, see subroutine
+    ! \fn(gen1int_shell_prop) in gen1int_shell.F90
+    character*8, parameter :: PROP_EXPT(NUM_EXP_TEST) = &
+      (/"ANGLON  ", "KINENERG", "PSO     "/)
     ! number of tests
     integer, parameter :: NUM_TEST = 7
-    ! property integral names, see subroutine \fn(gen1int_shell_prop) in gen1int_shell.F90,
+    ! property integral names, see subroutine \fn(gen1int_shell_prop) in gen1int_shell.F90
     character*8, parameter :: PROP_NAME(NUM_TEST) =                 &
       (/"ANGLON  ", "KINENERG", "NSTLON  ", "NSTNOL  ", "OVERLAP ", &
         "POTENERG", "PSO     "/)
@@ -72,32 +78,31 @@
     integer, parameter :: ORDER_GEO_TOT(NUM_TEST) = &
       (/0, 0, 0, 0, 0, 0, 0/)
     ! if getting integrals back from Gen1Int
-    logical, parameter :: GET_INT(NUM_TEST) = &
-      (/.true., .true., .true., .true., .true., .true., .true./)
+    logical, parameter :: GET_INT = .true.
     ! if writing integrals on file
-    logical, parameter :: WRT_INT(NUM_TEST) = &
-      (/.false., .false., .false., .false., .false., .false., .false./)
+    logical, parameter :: WRT_INT = .false.
+!FIXME: having problem of calling \fn(PR1IN1) with \var(GET_EXPT)=.true., which gives wrong integrals
     ! if getting expectation values back
-    logical, parameter :: GET_EXPT(NUM_TEST) = &
-      (/.false., .false., .false., .false., .false., .false., .false./)
+    logical, parameter :: GET_EXPT = .false.
     ! if writing expectation values on file
-    logical, parameter :: WRT_EXPT(NUM_TEST) = &
-      (/.false., .false., .false., .false., .false., .false., .false./)
+    logical, parameter :: WRT_EXPT = .false.
     ! number of operators including derivatives
     integer num_opt_derv
     ! kind of integral matrices
     integer kind_int
     ! integrals are triangularized or squared
     logical is_triang
-    ! kind of AO density matrices
-    integer kind_dens
-    ! dimension of AO density matrices
-    integer dim_dens
+    ! dimensions of AO density matrices
+    integer dim_tri_dens, dim_sq_dens
     ! number of AO density matrices
     integer, parameter :: NUM_DENS = 1
     ! AO density matrices
-    real(REALK), allocatable :: ao_dens(:,:)
-    !
+    real(REALK), allocatable :: sym_ao_dens(:)
+    real(REALK), allocatable :: anti_ao_dens(:)
+    real(REALK), allocatable :: sq_sym_dens(:,:)
+    real(REALK), allocatable :: sq_anti_dens(:,:)
+    real(REALK), allocatable :: sq_gen_dens(:,:)
+    ! variables related to \fn(PR1IN1) ...
     integer max_typ
     integer, allocatable :: int_rep(:)
     !
@@ -133,6 +138,8 @@
 #include "symmet.h"
     ! number of expectation values
     integer num_expt
+    ! addresses for expectation values of square matrices
+    integer strt_sq_expt, end_sq_expt
     ! addresses for expectation values from Dalton's routines
     integer strt_dal_expt, end_dal_expt
     ! dimension of integral matrices
@@ -167,13 +174,206 @@
     !-call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
     write(io_std,100) "threshold of error", ERR_THRSH
     write(io_std,110) "threshold of ratio to the referenced result", RATIO_THRSH
+    ! sets artifical AO density matrices
+    dim_tri_dens = NBAST*(NBAST+1)/2
+    dim_sq_dens = NBAST*NBAST
+    allocate(sym_ao_dens(dim_tri_dens), stat=ierr)
+    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sym_ao_dens!")
+    allocate(anti_ao_dens(dim_tri_dens), stat=ierr)
+    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate anti_ao_dens!")
+    allocate(sq_sym_dens(NBAST,NBAST), stat=ierr)
+    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sq_sym_dens!")
+    allocate(sq_anti_dens(NBAST,NBAST), stat=ierr)
+    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sq_anti_dens!")
+    allocate(sq_gen_dens(NBAST,NBAST), stat=ierr)
+    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sq_gen_dens!")
+    call random_number(sym_ao_dens)
+    call random_number(sq_gen_dens)
+    ! we uses the upper and diagonal parts in triangular format
+    addr_gen = 0
+    do icol = 1, NBAST
+      do irow = 1, icol-1
+        addr_gen = addr_gen+1
+        sym_ao_dens(addr_gen) = 0.1_REALK*sym_ao_dens(addr_gen)
+        anti_ao_dens(addr_gen) = sym_ao_dens(addr_gen)
+        sq_sym_dens(irow,icol) = sym_ao_dens(addr_gen)
+        sq_sym_dens(icol,irow) = sym_ao_dens(addr_gen)
+        sq_anti_dens(irow,icol) = sym_ao_dens(addr_gen)
+        sq_anti_dens(icol,irow) = -sym_ao_dens(addr_gen)
+      end do
+      addr_gen = addr_gen+1
+      sym_ao_dens(addr_gen) = 0.1_REALK*sym_ao_dens(addr_gen)
+      anti_ao_dens(addr_gen) = 0.0_REALK
+      sq_sym_dens(icol,icol) = sym_ao_dens(addr_gen)
+      sq_anti_dens(icol,icol) = 0.0_REALK
+    end do
+    ! loops over different expectation value tests
+    do itst = 1, NUM_EXP_TEST
+      ! gets the number of operators including derivatives
+      call gen1int_prop_attr(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst),  &
+                             MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst), NUCDEP, &
+                             num_opt_derv, kind_int)
+      ! number and addresses of expectation values
+      num_expt = NUM_DENS*num_opt_derv
+      strt_sq_expt = num_expt+1
+      end_sq_expt = 2*num_expt
+      ! format of integral matrix
+      select case(kind_int)
+      case(1, -1)
+        is_triang = .true.
+      case default
+        is_triang = .false.
+      end select
+      ! addresses for integrals
+      strt_gen_int = end_sq_expt+1
+      end_gen_int = strt_gen_int
+      if (end_gen_int>len_work) then
+        write(io_std,100) "expectation value test of "//trim(PROP_EXPT(itst))// &
+                          ".Gen1Int failed!"
+        write(io_std,999) "required memory", end_dal_int
+        write(io_std,999) "available memory", len_work
+        call QUIT("gen1int_dal_test>> increase Dalton workspace!")
+      end if
+      ! computes the expectation values of symmetric AO density matrix in triangular format
+      dal_work(1:num_expt) = 0.0_REALK
+      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
+                            is_triang, .false., WRT_INT, 1,                 &
+                            dal_work(strt_gen_int:end_gen_int),             &
+                            1, dim_tri_dens, NUM_DENS, sym_ao_dens, .true., &
+                            WRT_EXPT, dal_work(1:num_expt),                 &
+                            io_std, level_print)
+      ! computes the expectation values of symmetric AO density matrix in square format
+      dal_work(strt_sq_expt:end_sq_expt) = 0.0_REALK
+      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
+                            is_triang, .false., WRT_INT, 1,                 &
+                            dal_work(strt_gen_int:end_gen_int),             &
+                            0, dim_sq_dens, NUM_DENS, sq_sym_dens, .true.,  &
+                            WRT_EXPT, dal_work(strt_sq_expt:end_sq_expt),   &
+                            io_std, level_print)
+      if (kind_int==-1) then
+        if (any(abs(dal_work(1:num_expt))>ERR_THRSH)) then
+          test_failed = .true.
+          write(io_std,100) "expectation value of symmetric AO density matrix"
+          write(io_std,100) "and anti-symmetric integral matrix should be zero!"
+          write(io_std,100) "wrong result using triangular AO density matrix!"
+        else
+          test_failed = .false.
+        end if
+        if (any(abs(dal_work(strt_sq_expt:end_sq_expt))>ERR_THRSH)) then
+          test_failed = .true.
+          write(io_std,100) "expectation value of symmetric AO density matrix"
+          write(io_std,100) "and anti-symmetric integral matrix should be zero!"
+          write(io_std,100) "wrong result using square AO density matrix!"
+        else
+          test_failed = .false.
+        end if
+      else
+        test_failed = .false.
+      end if
+      if (.not.test_failed) then
+        do ierr = 1, num_expt
+          ! we check the ratio for absolutely greater values
+          if (abs(dal_work(num_expt+ierr))>ERR_THRSH) then
+            ratio_to_dal = dal_work(ierr)/dal_work(num_expt+ierr)
+            if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
+              write(io_std,995) trim(PROP_EXPT(itst)), ierr, dal_work(num_expt+ierr), &
+                                dal_work(ierr)
+              test_failed = .true.
+            end if
+          ! checks the difference for smaller values
+          else
+            if (abs(dal_work(ierr)-dal_work(num_expt+ierr))>ERR_THRSH) then
+              write(io_std,995) trim(PROP_EXPT(itst)), ierr, dal_work(num_expt+ierr), &
+                                dal_work(ierr)
+              test_failed = .true.
+            end if
+          end if
+        end do
+      end if
+      if (test_failed) then
+        write(io_std,100) "expectation value test of "//trim(PROP_EXPT(itst))// &
+                          ".Gen1Int failed!"
+      else
+        write(io_std,100) "expectation value test of "//trim(PROP_EXPT(itst))// &
+                          ".Gen1Int passed!"
+      end if
+      ! computes the expectation values of anti-symmetric AO density matrix in triangular format
+      dal_work(1:num_expt) = 0.0_REALK
+      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst),   &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),          &
+                            is_triang, .false., WRT_INT, 1,                   &
+                            dal_work(strt_gen_int:end_gen_int),               &
+                            -1, dim_tri_dens, NUM_DENS, anti_ao_dens, .true., &
+                            WRT_EXPT, dal_work(1:num_expt),                   &
+                            io_std, level_print)
+      ! computes the expectation values of anti-symmetric AO density matrix in square format
+      dal_work(strt_sq_expt:end_sq_expt) = 0.0_REALK
+      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
+                            is_triang, .false., WRT_INT, 1,                 &
+                            dal_work(strt_gen_int:end_gen_int),             &
+                            0, dim_sq_dens, NUM_DENS, sq_anti_dens, .true., &
+                            WRT_EXPT, dal_work(strt_sq_expt:end_sq_expt),   &
+                            io_std, level_print)
+      if (kind_int==1) then
+        if (any(abs(dal_work(1:num_expt))>ERR_THRSH)) then
+          test_failed = .true.
+          write(io_std,100) "expectation value of anti-symmetric AO density matrix"
+          write(io_std,100) "and symmetric integral matrix should be zero!"
+          write(io_std,100) "wrong result using triangular AO density matrix!"
+        else
+          test_failed = .false.
+        end if
+        if (any(abs(dal_work(strt_sq_expt:end_sq_expt))>ERR_THRSH)) then
+          test_failed = .true.
+          write(io_std,100) "expectation value of anti-symmetric AO density matrix"
+          write(io_std,100) "and symmetric integral matrix should be zero!"
+          write(io_std,100) "wrong result using square AO density matrix!"
+        else
+          test_failed = .false.
+        end if
+      else
+        test_failed = .false.
+      end if
+      if (.not.test_failed) then
+        do ierr = 1, num_expt
+          ! we check the ratio for absolutely greater values
+          if (abs(dal_work(num_expt+ierr))>ERR_THRSH) then
+            ratio_to_dal = dal_work(ierr)/dal_work(num_expt+ierr)
+            if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
+              write(io_std,996) trim(PROP_EXPT(itst)), ierr, dal_work(num_expt+ierr), &
+                                dal_work(ierr)
+              test_failed = .true.
+            end if
+          ! checks the difference for smaller values
+          else
+            if (abs(dal_work(ierr)-dal_work(num_expt+ierr))>ERR_THRSH) then
+              write(io_std,996) trim(PROP_EXPT(itst)), ierr, dal_work(num_expt+ierr), &
+                                dal_work(ierr)
+              test_failed = .true.
+            end if
+          end if
+        end do
+      end if
+      if (test_failed) then
+        write(io_std,100) "expectation value test of "//trim(PROP_EXPT(itst))// &
+                          ".Gen1Int failed!"
+      else
+        write(io_std,100) "expectation value test of "//trim(PROP_EXPT(itst))// &
+                          ".Gen1Int passed!"
+      end if
+    end do
+    deallocate(anti_ao_dens)
+    deallocate(sq_sym_dens)
+    deallocate(sq_anti_dens)
     ! loops over different tests
     do itst = 1, NUM_TEST
       ! gets the number of operators including derivatives
       call gen1int_prop_attr(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),  &
                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst), NUCDEP, &
                              num_opt_derv, kind_int)
-      kind_dens = kind_int
       ! number and addresses of expectation values
       num_expt = NUM_DENS*num_opt_derv
       strt_dal_expt = num_expt+1
@@ -184,16 +384,11 @@
         !-dim_int = num_orb*(num_orb+1)/2
         dim_int = NBAST*(NBAST+1)/2
         is_triang = .true.
-        dim_dens = dim_int
       case default
         !-dim_int = num_orb*num_orb
         dim_int = NBAST*NBAST
         is_triang = .false.
-        dim_dens = dim_int
       end select
-!FIXME: ao_dens
-      allocate(ao_dens(dim_dens,NUM_DENS), stat=ierr)
-      if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate ao_dens!")
       size_int = dim_int*num_opt_derv
       ! addresses for integrals and referenced results
       strt_gen_int = end_dal_expt+1
@@ -201,24 +396,36 @@
       end_gen_int = strt_dal_int-1
       end_dal_int = strt_dal_int+size_int-1
       if (end_dal_int>len_work) then
-        write(io_std,999) "ID of test", itst
+        write(io_std,100) "test of "//trim(PROP_NAME(itst))//".Gen1Int failed!"
         write(io_std,999) "required memory", end_dal_int
         write(io_std,999) "available memory", len_work
         call QUIT("gen1int_dal_test>> increase Dalton workspace!")
       end if
       ! computes the integrals and/or expectation values
       dal_work(1:num_expt) = 0.0_REALK
-      call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst), &
-                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
-                            is_triang, GET_INT(itst), WRT_INT(itst),        &
-                            dim_int, dal_work(strt_gen_int:end_gen_int),    &
-                            kind_dens, dim_dens, NUM_DENS, ao_dens,         &
-                            GET_EXPT(itst), WRT_EXPT(itst),                 &
-                            dal_work(1:num_expt), io_std, level_print)
+      if (is_triang) then
+        call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst), &
+                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
+                              is_triang, GET_INT, WRT_INT, dim_int,           &
+                              dal_work(strt_gen_int:end_gen_int),             &
+                              kind_int, dim_tri_dens, NUM_DENS, sym_ao_dens,  &
+                              GET_EXPT, WRT_EXPT, dal_work(1:num_expt),       &
+                              io_std, level_print)
+      else
+        call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst), &
+                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
+                              is_triang, GET_INT, WRT_INT, dim_int,           &
+                              dal_work(strt_gen_int:end_gen_int),             &
+                              kind_int, dim_sq_dens, NUM_DENS, sq_gen_dens,   &
+                              GET_EXPT, WRT_EXPT, dal_work(1:num_expt),       &
+                              io_std, level_print)
+      end if
       ! Dalton uses different sign for the following integrals
       if (PROP_NAME(itst)=="POTENERG" .or. PROP_NAME(itst)=="NSTLON  " .or. &
-          PROP_NAME(itst)=="PSO     ")                                      &
+          PROP_NAME(itst)=="PSO     ") then
         dal_work(strt_gen_int:end_gen_int) = -dal_work(strt_gen_int:end_gen_int)
+        dal_work(1:num_expt) = -dal_work(1:num_expt)
+      end if
       ! gets the referenced results from HERMIT
 !FIXME: \var(FORQM3)
       if (trim(PROP_NAME(itst))=="DSO") then
@@ -242,25 +449,42 @@
       base_free = 1
       len_free = len_work-end_dal_int
       write(io_std,100) "gets the referenced results from HERMIT ..."
-      call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
-                  lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
-                  PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
-                  NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
-                  GET_EXPT(itst), ao_dens)
-!FIXME: why the first time calling PR1IN1 gives wrong results??
-      if (itst==1) then
-        base_free = 1
-        len_free = len_work-end_dal_int
+      dal_work(strt_dal_expt:end_dal_expt) = 0.0_REALK
+      if (is_triang) then
         call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
                     lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                     PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
                     NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
-                    GET_EXPT(itst), ao_dens)
+                    GET_EXPT, sym_ao_dens)
+      else
+        call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
+                    lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                    PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                    NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
+                    GET_EXPT, sq_gen_dens)
+      end if
+!FIXME: why the first time calling PR1IN1 gives wrong results??
+      if (itst==1) then
+        base_free = 1
+        len_free = len_work-end_dal_int
+        dal_work(strt_dal_expt:end_dal_expt) = 0.0_REALK
+        if (is_triang) then
+          call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
+                      lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                      PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                      NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
+                      GET_EXPT, sym_ao_dens)
+        else
+          call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
+                      lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                      PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                      NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
+                      GET_EXPT, sq_gen_dens)
+        end if
       end if
       deallocate(int_rep)
       deallocate(int_adr)
       deallocate(lb_int)
-      deallocate(ao_dens)
       ! checks the results
       write(io_std,100) "checks the results of "//trim(PROP_NAME(itst))
       test_failed = .false.
@@ -275,15 +499,15 @@
             if (abs(dal_work(addr_dal))>ERR_THRSH) then
               ratio_to_dal = dal_work(addr_gen)/dal_work(addr_dal)
               if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
-                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
-                                  dal_work(addr_gen)
+                write(io_std,998) trim(PROP_NAME(itst)), irow, icol, &
+                                  dal_work(addr_dal), dal_work(addr_gen)
                 test_failed = .true.
               end if
             ! checks the difference for smaller values
             else
               if (abs(dal_work(addr_gen)-dal_work(addr_dal))>ERR_THRSH) then
-                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
-                                  dal_work(addr_gen)
+                write(io_std,998) trim(PROP_NAME(itst)), irow, icol, &
+                                  dal_work(addr_dal), dal_work(addr_gen)
                 test_failed = .true.
               end if
             end if
@@ -298,35 +522,35 @@
             if (abs(dal_work(addr_dal))>ERR_THRSH) then
               ratio_to_dal = dal_work(addr_gen)/dal_work(addr_dal)
               if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
-                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
-                                  dal_work(addr_gen)
+                write(io_std,998) trim(PROP_NAME(itst)), irow, icol, &
+                                  dal_work(addr_dal), dal_work(addr_gen)
                 test_failed = .true.
               end if
             ! checks the difference for smaller values
             else
               if (abs(dal_work(addr_gen)-dal_work(addr_dal))>ERR_THRSH) then
-                write(io_std,998) PROP_NAME(itst), irow, icol, dal_work(addr_dal), &
-                                  dal_work(addr_gen)
+                write(io_std,998) trim(PROP_NAME(itst)), irow, icol, &
+                                  dal_work(addr_dal), dal_work(addr_gen)
                 test_failed = .true.
               end if
             end if
           end do
         end do
       end if
-      if (GET_EXPT(itst)) then
+      if (GET_EXPT) then
         do ierr = 1, num_expt
           ! we check the ratio for absolutely greater values
           if (abs(dal_work(num_expt+ierr))>ERR_THRSH) then
             ratio_to_dal = dal_work(ierr)/dal_work(num_expt+ierr)
             if (ratio_to_dal<RATIO_THRSH(1) .or. ratio_to_dal>RATIO_THRSH(2)) then
-              write(io_std,997) PROP_NAME(itst), dal_work(num_expt+ierr), &
+              write(io_std,997) trim(PROP_NAME(itst)), ierr, dal_work(num_expt+ierr), &
                                 dal_work(ierr)
               test_failed = .true.
             end if
           ! checks the difference for smaller values
           else
             if (abs(dal_work(ierr)-dal_work(num_expt+ierr))>ERR_THRSH) then
-              write(io_std,997) PROP_NAME(itst), dal_work(num_expt+ierr), &
+              write(io_std,997) trim(PROP_NAME(itst)), ierr, dal_work(num_expt+ierr), &
                                 dal_work(ierr)
               test_failed = .true.
             end if
@@ -334,22 +558,27 @@
         end do
       end if
       if (test_failed) then
-        write(io_std,100) "test of "//trim(PROP_NAME(itst))//" failed!"
+        write(io_std,100) "test of "//trim(PROP_NAME(itst))//".Gen1Int failed!"
       else
-        write(io_std,100) "test of "//trim(PROP_NAME(itst))//" passed!"
+        write(io_std,100) "test of "//trim(PROP_NAME(itst))//".Gen1Int passed!"
       end if
     end do
+    deallocate(sym_ao_dens)
+    deallocate(sq_gen_dens)
     ! cleans up the data in Gen1Int interface after all calculations will be
     ! performed in abacus/dalton.F
     call QEXIT("gen1int_dal_test")
     return
 100 format("gen1int_dal_test>> ",A,Es16.6)
 110 format("gen1int_dal_test>> ",A,Es16.6,"-->",Es16.6)
-997 format("gen1int_dal_test>> ",A,"_expt, HERMIT>>",F18.12,", Gen1Int>>",F18.12)
-998 format("gen1int_dal_test>> ",A,"_int ("I6,",",I6,"), HERMIT>>",F18.12, &
+995 format("gen1int_dal_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", SYM>>",F18.12)
+996 format("gen1int_dal_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", ANTI>>",F18.12)
+997 format("gen1int_dal_test>> ",A,".EXP(",I6,")>> HERMIT>>",F18.12,", Gen1Int>>",F18.12)
+998 format("gen1int_dal_test>> ",A,".INT(",I6,",",I6,")>> HERMIT>>",F18.12, &
            ", Gen1Int>>",F18.12)
 999 format("gen1int_dal_test>> ",A,I16)
 #else
-    call QUIT("gen1int_dal_test>> Gen1Int is not installed!")
+    write(io_std,100) "Gen1Int is not installed! No tests will be performed!"
+    return
 #endif
   end subroutine gen1int_dal_test
