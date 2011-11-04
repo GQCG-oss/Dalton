@@ -580,5 +580,6 @@
 #else
     write(io_std,100) "Gen1Int is not installed! No tests will be performed!"
     return
+100 format("gen1int_dal_test>> ",A)
 #endif
   end subroutine gen1int_dal_test
