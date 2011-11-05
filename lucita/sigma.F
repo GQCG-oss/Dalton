@@ -6038,14 +6038,19 @@ C               the routines assumes on input that the blocks are transposed,
 C               so, initial tour, IPERM = 1 corresponds always to no transpose, 
 C               so transpose!
 *. transpose is done for sigma, not density so
+                ipermdia_off = -1
                 IF(ISIGDEN.EQ.1) THEN
                  IF(IPERM.EQ.1) THEN
                    IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
+                     write(luwrt,*) ' iperm business, ps ==> ',ps
 C                    diagonal blocks, Transposing corresponds to scaling
                      IF(PS.EQ.-1.0D0) THEN
+                       ipermdia_off = 0
                        CALL DSCAL(NJA*NJB,PS,CB(ICOFF),1)
                      END IF
                    ELSE
+                     ipermdia_off = 1
+                     write(luwrt,*) ' iperm business, offdiag block'
 C                    offdiagonal blocks, explicit transposing
                      CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
                      CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
@@ -6236,7 +6241,15 @@ C
               END IF
 10000         CONTINUE
 C             ^ end of loop over sigma blocks
- 8765         CONTINUE
+              if(isigden .eq. 1)then ! back-transposing for sigma-vec run
+                if(ipermdia_off .eq. 0)then
+                  CALL DSCAL(NJA*NJB,-1.0d0,CB(ICOFF),1)
+                else if(ipermdia_off .eq. 1)then
+                  CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
+                  CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
+                end if
+              end if
+ 8765         CONTINUE ! perm loop
             END IF
 C           ^ non-vanishing C-block
  9000       CONTINUE
@@ -6258,6 +6271,7 @@ C
           NIA = NSSOA(IASM,IATP)
           NIB = NSSOB(IBSM,IBTP)
           IF(ICJKAIB.NE.0) THEN
+             write(luwrt,*) ' sigma transpose business'
 C
 C            tranposed sigma block was obtained, 
 C            transpose to obtain correct block

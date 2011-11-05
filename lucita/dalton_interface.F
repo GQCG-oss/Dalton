@@ -2578,7 +2578,6 @@ C
      &                 1,nr_actorb_tot**2*(nr_actorb_tot**2+1)/2,lupri)
         end if
       end if
-#undef LUCI_DEBUG
 #endif
 
 !     1-electron integrals/density matrix
@@ -2664,12 +2663,19 @@ C
       character (len=90) :: error_message
 !     -----------------------------------------------------------------
 
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      write(lupri,*) ' h1_in:'
-      do isym = 1, nnashx
-        write(lupri,*) ' h1_in(',isym,') = ',h1_in(isym)
-      end do
+      if(rhotype > 0)then
+        write(lupri,*) ' distributing 1p-dens mat elements from h1_out:'
+        call wrtmatmn(h1_out,nr_actorb_tot,nr_actorb_tot,
+     &                       nr_actorb_tot,nr_actorb_tot,lupri)
+      else
+        write(lupri,*) ' distributing 1e-ints from h1_in:'
+        do isym = 1, nnashx
+          write(lupri,*) ' h1_in(',isym,') = ',h1_in(isym)
+        end do
+      end if
+!#undef LUCI_DEBUG
 #endif
 
 !     1-electron integrals/density matrix elements
@@ -2708,14 +2714,15 @@ C
 
           do jsorb = 1, nr_act_jsym
             loop_counter_i = jsorb
-            if(rhotype > 1) loop_counter_i = nr_act_isym
+            if(rhotype > 0) loop_counter_i = nr_act_isym
             do isorb = 1, loop_counter_i
 !             calculate offset on dalton 1e-array (lower triangular matrix)
               i_index   =  (orb_tmp+isorb)
               j_index   = ((orb_tmp+jsorb)*(orb_tmp+jsorb-1)/2)
 !             no triangular packing if rhotype > 1              
-              if(rhotype > 1) j_index   = ((orb_tmp+jsorb  )
-     &                                  * ( orb_tmp+jsorb-1))
+              if(rhotype > 0) j_index   = ((orb_tmp+jsorb-1))
+!    &                                  * ( orb_tmp+jsorb  ))
+     &                                  * nr_actorb_tot
               offset_ij = i_index + j_index
   
               if(iintden .eq. 1)then ! 1e integral
@@ -2728,9 +2735,9 @@ C
                 offset_internal  = 
      &          (ireost(isorb+orb_tmp)-1) * nr_actorb_tot + 
      &           ireost(jsorb+orb_tmp) 
-!               if(rhotype > 1) offset_internal = 
-!    &          (ireost(jsorb+orb_tmp)-1) * nr_actorb_tot + 
-!    &           ireost(isorb+orb_tmp) 
+                if(rhotype > 1) offset_internal = 
+     &          (ireost(jsorb+orb_tmp)-1) * nr_actorb_tot + 
+     &           ireost(isorb+orb_tmp) 
      
                 h1_in(offset_ij) = h1_out(offset_internal)
               end if
@@ -2755,15 +2762,28 @@ C
       nr_1int = offset_internal - 1
 
 #ifdef LUCI_DEBUG
-      write(lupri,*) '  final 1e- list: # of ints =', nr_1int
-      call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+      if(rhotype <= 0)then
+        write(lupri,*) '  final 1e- list: # of ints =', nr_1int
+        call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+      end if
 #undef LUCI_DEBUG
 #endif
 
 !     symmetrize 1p-dens matrix
-      if(rhotype == 3)then
+      if(rhotype >  0)then
+
+        write(lupri,*) '  temp 1p-tdm: '
+        call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+     &                nr_actorb_tot,nr_actorb_tot,lupri)
 
         call trpad(h1_in,1.0d0,nr_actorb_tot)
+        write(lupri,*) '  temp 1p-tdm: part 2'
+        call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+     &                nr_actorb_tot,nr_actorb_tot,lupri)
+        if(rhotype == 1) call dscal(nr_actorb_tot**2,0.5d0,h1_in,1)
+        write(lupri,*) '  temp 1p-tdm: part 3'
+        call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+     &                nr_actorb_tot,nr_actorb_tot,lupri)
 !       pack symmetrized 1p-dens matrix (h1_in) as triangular matrix h1_out
         call dsitsp(nr_actorb_tot,h1_in,h1_out)
 !       save triangular matrix in h1_in

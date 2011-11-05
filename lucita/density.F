@@ -974,6 +974,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       DIMENSION IJ_OFF(2)
       DIMENSION ISCR(2)
       DIMENSION ICGRP(16),ISGRP(16)
+#include "priunit.h"
 *
 *.Local arrays
       NTEST = 000
@@ -1018,6 +1019,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
         IJ_AC(2) = 1
         IJ_TP(1) = ITYP
         IJ_TP(2) = JTYP
+        write(lupri,*) 'iuse_ph ==> ',iuse_ph
         IF(IUSE_PH.EQ.1) THEN
           CALL ALG_ROUTERX(IAOC,JAOC,NOP,IJ_TP,IJ_AC,IJ_REO,SIGNIJ)
         ELSE
@@ -1087,7 +1089,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
           ELSE
               NKAEFF = NKASTR
           END IF
-C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
+          WRITE(lupri,*) ' NKAEFF NKASTR', NKAEFF ,NKASTR
 
 *. Loop over partitionings of N-1 strings
             KBOT = 1-MAXK
@@ -1123,24 +1125,33 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
      &                   XI2S(KBOT+(IIORB-1)*NKASTR) )
                 END DO
 *
-                IF(NTEST.GE.1000) THEN
-                 WRITE(6,*) ' CSCR and SSCR '
-                 CALL WRTMT_LU(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI)
-                 CALL WRTMT_LU(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI)
-                END IF
 *
 *. And then the hard  work
                 NKI = LKABTC*NIBTC
-                FACTORC = 0.0D0
+                FACTORC  = 0.0D0
                 FACTORAB = 1.0D0
+
+                WRITE(lupri,*) ' CSCR... ij_dim==> ',IJ_DIM(1),IJ_DIM(2)
+                WRITE(lupri,*) ' CSCR... nki   ==> ',nki
+                ntest = 1000
+                IF(NTEST.GE.1000) THEN
+                 WRITE(lupri,*) ' CSCR and SSCR '
+                 CALL WRTMATMN(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI,lupri)
+                 CALL WRTMATMN(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI,lupri)
+                 WRITE(lupri,*) ' C    and S    '
+                 CALL WRTMATMN(CB,nacob,nacob,nacob,nacob,lupri)
+                 CALL WRTMATMN(SB,nacob,nacob,nacob,nacob,lupri)
+                END IF
+
                 CALL MATML7(RHO1S,SSCR,CSCR,IJ_DIM(1),IJ_DIM(2),NKI,
      &               IJ_DIM(1),NKI,IJ_DIM(2),FACTORC,FACTORAB,1)
 *
                 IF(NTEST.GE.100) THEN
-                  WRITE(6,*) ' Block to one-body density '
-                  CALL WRTMT_LU(RHO1S,IJ_DIM(1),IJ_DIM(2),
-     &                              IJ_DIM(1),IJ_DIM(2))
+                  WRITE(lupri,*) ' Block to one-body density '
+                  CALL WRTMATMN(RHO1S,IJ_DIM(1),IJ_DIM(2),
+     &                              IJ_DIM(1),IJ_DIM(2),lupri)
                 END IF
+                ntest = 0
 *. Scatter out to complete matrix
                 DO JJORB = 1, IJ_DIM(2)
                   JORB = IJ_OFF(2)-1+JJORB
@@ -1150,6 +1161,8 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
      &              RHO1((JORB-1)*NACOB+IORB) +
      &              RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)
                   END DO
+                  WRITE(lupri,*) ' one-body density after scatter'
+                  CALL WRTMATMN(RHO1,nacob,nacob,nacob,nacob,lupri)
                 END DO
 *               /\ End of hard work
 
@@ -1832,38 +1845,39 @@ C?              call prsym(rho2,NORB*NORB)
       DIMENSION SSCR(*),CSCR(*)
       DIMENSION  I1(*),XI1S(*),I2(*),XI2S(*),I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION C2(*)
+#include "priunit.h"
 *
       CALL QENTER('GSDNB')
-!     NTEST = 500 ! debug
-      NTEST = 000 ! no debug
+      NTEST = 500 ! debug
+!     NTEST = 000 ! no debug
       NTEST = MAX(NTEST,IPRNT)
       NTESTO= NTEST
       IF(NTEST.GE.200) THEN
-        WRITE(6,*) ' =================='
-        WRITE(6,*) ' GSDNBB2 :  R block '
-        WRITE(6,*) ' ==================='
-        CALL WRTMT_LU(CB,NJA,NJB,NJA,NJB)
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) ' GSDNBB2 :  L block '
-        WRITE(6,*) ' ==================='
-        CALL WRTMT_LU(SB,NIA,NIB,NIA,NIB)
+        WRITE(lupri,*) ' =================='
+        WRITE(lupri,*) ' GSDNBB2 :  R block '
+        WRITE(lupri,*) ' ==================='
+        CALL WRTMATMN(CB,NJA,NJB,NJA,NJB,LUPRI)
+        WRITE(lupri,*) ' ==================='
+        WRITE(lupri,*) ' GSDNBB2 :  L block '
+        WRITE(lupri,*) ' ==================='
+        CALL WRTMATMN(SB,NIA,NIB,NIA,NIB,LUPRI)
 *
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of alpha strings in L '
-        CALL IWRTMA(IAOC,1,NGAS,1,NGAS)
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of beta  strings in L '
-        CALL IWRTMA(IBOC,1,NGAS,1,NGAS)
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of alpha strings in R '
-        CALL IWRTMA(JAOC,1,NGAS,1,NGAS)
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of beta  strings in R '
-        CALL IWRTMA(JBOC,1,NGAS,1,NGAS)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of alpha strings in L '
+        CALL IWRTMAMN(IAOC,1,NGAS,1,NGAS,LUPRI)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of beta  strings in L '
+        CALL IWRTMAMN(IBOC,1,NGAS,1,NGAS,LUPRI)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of alpha strings in R '
+        CALL IWRTMAMN(JAOC,1,NGAS,1,NGAS,LUPRI)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of beta  strings in R '
+        CALL IWRTMAMN(JBOC,1,NGAS,1,NGAS,LUPRI)
 *
-        WRITE(6,*) ' MAXI,MAXK,NSMOB',MAXI,MAXK,NSMOB
+        WRITE(lupri,*) ' MAXI,MAXK,NSMOB',MAXI,MAXK,NSMOB
 *
-        WRITE(6,*) 'SCLFAC =',SCLFAC
+        WRITE(lupri,*) 'SCLFAC =',SCLFAC
       END IF
       IACTIVE = 0
 *
@@ -1873,7 +1887,9 @@ C?              call prsym(rho2,NORB*NORB)
 *  beta contribution to RHO1
 * =============================
 *
-C?      WRITE(6,*) ' GSBBD1 will be called (beta)'
+        WRITE(lupri,*) ' GSBBD1 will be called (beta)'
+!       CALL TRPMT3(CB,NJA,NJB,C2)
+!       CALL COPVEC(C2,CB,NJA*NJB)
         CALL GSBBD1(RHO1,NACOB,IBSM,IBTP,JBSM,JBTP,IJBGRP,NIA,
      &       NGAS,IBOC,JBOC,
      &       SB,CB,
@@ -1917,11 +1933,11 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 *
         CALL TRPMT3(CB,NJA,NJB,C2)
         CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMT3(SB,NIA,NIB,C2)
-        CALL COPVEC(C2,SB,NIA*NIB)
-C?        WRITE(6,*) ' GSBBD1 will be called (alpha)'
+!       CALL TRPMT3(SB,NIA,NIB,C2)
+!       CALL COPVEC(C2,SB,NIA*NIB)
+        WRITE(lupri,*) ' GSBBD1 will be called (alpha)'
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
-     &       NGAS,IAOC,JAOC,SB,CB,
+     &       NGAS,IAOC,JAOC,C2,CB,
      &       ADSXA,SXSTST,STSTSX,MXPNGAS,
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
@@ -1936,7 +1952,7 @@ C?        WRITE(6,*) ' GSBBD1 was called '
 *
 C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
           CALL GSBBD2A(RHO2,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
-     &         NGAS,IAOC,JAOC,SB,CB,
+     &         NGAS,IAOC,JAOC,C2,CB,
      &         ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
@@ -1945,8 +1961,8 @@ C?        WRITE(6,*) ' GSBBD2A was called '
         END IF
         CALL TRPMT3(CB,NJB,NJA,C2)
         CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMAT(SB,NIB,NIA,C2)
-        CALL COPVEC(C2,SB,NIB*NIA)
+!       CALL TRPMT3(SB,NIB,NIA,C2)
+!       CALL COPVEC(C2,SB,NIB*NIA)
       END IF
 *
 * ===================================

@@ -1121,6 +1121,7 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
+#include <priunit.h>
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1158,7 +1159,14 @@ C       ... pack RHO1 as triangular matrix
       else if(ci_program .eq. 'LUCITA   ')then
         call dcopy(nnashx,work(krho1),1,rho1,1)
       end if
-C
+
+#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      write(lupri,*) ' makdm: rho1 total ==> ',nnashx
+      call wrtmatmn(rho1,1,nnashx,1,nnashx,lupri)
+#undef LUCI_DEBUG
+#endif
+
       RETURN
 C     ... end of MAKDM
       END
@@ -1392,6 +1400,7 @@ C        CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *               XNDXCI,WORK,KFREE,LWRK)
 C
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
          write(lupri,*) 'dens 1 after - part 1...'
          call wrtmatmn(WORK(KRHO1),1,N2ASHX,1,N2ASHX,lupri)
@@ -1405,6 +1414,7 @@ C          ... pack RHO1 as triangular matrix
 #ifdef LUCI_DEBUG
          write(lupri,*) 'dens 1 after - part 2...'
          call wrtmatmn(RHO1(1,ICSIM),1,NNASHX,1,NNASHX,lupri)
+#undef LUCI_DEBUG
 #endif
          IF (IPRDNS .GE. 6) WRITE (LUPRI,'(/5X,A,2I5,2I10)')
      *      'MAKTDM : ICSIM, NCSIM, KFREE, LWRK =',
@@ -1647,23 +1657,23 @@ C        ... determinant basis
      &                                    .not.norho2, ! calculate 2-particle density matrix
      &                                    tdm,         ! calculate transition density matrix
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
-
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
            write(lupri,*) ' before dens run: cl'
-           call wrtmatmn(cr,1,NLDET,1,NLDET,lupri)
+           call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)
            write(lupri,*) ' before dens run: cr'
-           call wrtmatmn(cl,1,NrDET,1,NrDET,lupri)
+           call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
 #endif
 !          cl == cref
-           call mcscf_lucita_interface(cr,cl,rho1,rho2,
+           call mcscf_lucita_interface(cl,cr,rho1,rho2,
      &                                 'Xp-density m',
      &                                 work(kfree),lwrk,iprdns)
 
 #ifdef LUCI_DEBUG
            write(lupri,*) ' after dens run: cl'
-           call wrtmatmn(cr,1,NLDET,1,NLDET,lupri)
+           call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)
            write(lupri,*) ' after dens run: cr'
-           call wrtmatmn(cl,1,NrDET,1,NrDET,lupri)
+           call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
 #endif
 
          else if(ci_program .eq. 'SIRIUS-CI')then
@@ -1681,6 +1691,7 @@ C        ... determinant basis
            call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)
            write(lupri,*) ' after dens run: cr'
            call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
+#undef LUCI_DEBUG
 #endif
          end if
 
@@ -1810,14 +1821,16 @@ c. And then , the density matrix
 C** Symmetrize RHO1 for TDM
 C
       IF (RHOTYP .EQ. 3) THEN
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
          write(lupri,*) ' rho1 before symm..'
-         call wrtmatmn(rho1,1,NASHT**2,1,NASHT**2,lupri)
+         call wrtmatmn(rho1,NASHT,NASHT,NASHT,NASHT,lupri)
 #endif
          CALL TRPAD(RHO1,D1,NASHT)
 #ifdef LUCI_DEBUG
          write(lupri,*) ' rho1 after symm..'
-         call wrtmatmn(rho1,1,NASHT**2,1,NASHT**2,lupri)
+         call wrtmatmn(rho1,NASHT,NASHT,NASHT,NASHT,lupri)
+#undef LUCI_DEBUG
 #endif
       END IF
 c. Add contributions from one-electron density matrix
@@ -1891,18 +1904,18 @@ C
  200    CONTINUE
       ELSE
         IF(FACTOR .EQ. 1.0D0) THEN
-        DO 300 I = 1, NDIM
-         DO 290 J = 1, I - 1
-            MAT(J,I) = MAT(I,J )
- 290     CONTINUE
- 300    CONTINUE
-      ELSE
-        DO 400 I = 1, NDIM
-         DO 390 J = 1, I - 1
-            MAT(J,I) =-MAT(I,J )
- 390     CONTINUE
- 400    CONTINUE
-      END IF
+          DO 300 I = 1, NDIM
+           DO 290 J = 1, I - 1
+              MAT(J,I) = MAT(I,J )
+ 290       CONTINUE
+ 300      CONTINUE
+        ELSE
+          DO 400 I = 1, NDIM
+           DO 390 J = 1, I - 1
+              MAT(J,I) =-MAT(I,J )
+ 390       CONTINUE
+ 400      CONTINUE
+        END IF
       END IF
       RETURN
       END

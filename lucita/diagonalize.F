@@ -159,8 +159,14 @@ c      IPRT = IPRTXX
 *
       KAPROJ = 1
       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST   = 1.0D-4
       CONVER = .FALSE.
+!     set convergence thresholds
+!     norm   
+      THRQC  = E_CONV
+!     THRQC  = 1.0d-04
+!     energy change
+      THRQE  = E_CONV * 1.0d-10
+!     THRQE  = E_CONV
 *
 * ===================
 *.Initial iteration
@@ -310,9 +316,14 @@ CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
 *
          CALL FLSHFO(LUWRTOUT)
 *
-         IF(RNORM.LT. TEST .OR.
-     &      (ITER.GT.2.AND.
-     &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+         write(LUWRTOUT,*) 'RNORM, THRQC, abs, THRQE',
+     &                      RNORM, THRQC, 
+     &                      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)),
+     &                      THRQE
+!hjajj/s IF(RNORM.LT. THRQC .OR.
+!    &      (ITER.GT.2.AND.
+!    &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.THRQE)) THEN
+         IF(RNORM.LT. THRQC)THEN
             root_converged(IROOT) = 0
          ELSE
             root_converged(IROOT) = iroot
@@ -619,13 +630,66 @@ C     CALL PRSYM(XJEP(1000),NVEC)
 *          vectors allowing generation of previous approxs.
 *
 *
-C     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
-*
-*. 3.1 : Current wave function approximations, collect on LU7
 *
 *  check timing of part3 in loop iteration
-       CALL GETTIM(CPUSTEP3,WALLSTEP3)
+      CALL GETTIM(CPUSTEP3,WALLSTEP3)
+
+#ifdef debug_blabla
+      IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+        CALL REWINE( LU5,LBLK)
+        DO 320 IROOT = 1, NROOT
+          CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+          XNORM = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
+          CALL REWINE(LU3,LBLK)
+          SCALE  = 1.0D0/SQRT(XNORM)
+          WORK(IROOT) = SCALE
+          CALL SCLVCD(LU3,LU5,SCALE,VEC1,0,LBLK)
+  320   CONTINUE
+*. Transfer C vectors to LU1
+        CALL REWINE( LU5,LBLK)
+        CALL REWINE( LU1,LBLK)
+        DO 411 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU1,VEC1,0,LBLK)
+  411   CONTINUE
+*. corresponding sigma vectors
+        CALL REWINE (LU5,LBLK)
+        CALL REWINE (LU2,LBLK)
+        DO 329 IROOT = 1, NROOT
+          CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
 *
+          CALL REWINE(LU3,LBLK)
+          CALL SCLVCD(LU3,LU5,WORK(IROOT),VEC1,0,LBLK)
+  329   CONTINUE
+*
+* Transfer HC's to LU2
+        CALL REWINE( LU2,LBLK)
+        CALL REWINE( LU5,LBLK)
+        DO 400 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU2,VEC1,0,LBLK)
+  400   CONTINUE
+        NVEC = NROOT
+*
+        CALL DZERO(AVEC,NVEC**2)
+        DO 410 IROOT = 1,NROOT
+          AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
+  410   CONTINUE
+*
+        CALL SETVEC(APROJ,0.0D0,NVEC*(NVEC+1)/2)
+        DO 420 IROOT = 1, NROOT
+          APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
+  420   CONTINUE
+*
+      END IF
+*
+#endif
+
+!     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+*
+*. 3.1 : Current wave function approximations, collect on LU7
+!#ifdef blabla_debug
+        IPRT = 1000
         IF(IPRT.GE.1000) THEN
         write(LUWRTOUT,*) ' I am going to reset '
         write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
@@ -717,9 +781,7 @@ CSK          WRITE(LUWRTOUT,*) ' SCALE = ', SCALE
         IF(IPRT.GE.1000)
      &  write(LUWRTOUT,*) ' end of s reset, part 4'
         NNVEC = NROOT
-*. Overlap between first vectors on LU1 and LU2
-        E11 = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
+
         IF(3*NROOT.LE.MAXVEC) THEN
 *
 *. Orthogonalize the
@@ -843,7 +905,7 @@ C     &luci_myproc,(NROOT + IADD)
 *      /\ End if more than NROOT vectors to be reset
        NVEC = NNVEC
 *       write(LUWRTOUT,*)'NVEC(1)',NVEC NVEC = IADD (iadd can change!!!)+ NROOT
-C      END IF
+!      END IF
 *.     ^ End if reset
 *. New subspace
 *. Calculate subspace Hamiltonian from actual vectors
@@ -880,6 +942,8 @@ CSK        ididaproj = ididaproj + 1
          write(LUWRTOUT,*) ' Reset hamiltonian'
          call prsym(aproj,nvec)
        end if
+       IPRT = 0
+!#endif
 CSK       write(LUWRTOUT,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
 CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
 *  check timing of part3 in loop iteration

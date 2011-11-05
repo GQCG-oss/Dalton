@@ -365,6 +365,7 @@ C
 !
 !       note for stefan/hjaaj: kcdiag is not used for lucita; we might want to NOT allocate it then above!!!
 !
+        write(lupri,*) ' incoming thrcit ==> ',thrcit
         call define_lucita_cfg_dynamic(lsym,
      &                                 lsym,
      &                                 istaci,
@@ -476,9 +477,11 @@ C     *****************************************************************
 C
 C     Save CI vectors and orbitals on LUIT1
 C
-      CALL CISAVE(KEYWRD,NCROOT,NCIRED,ECI,residual_croot,
-     &            WRK(kvec_generic),CMO,INDXCI,WRK(KW2),LW2)
-C     CALL CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,WRK,LFREE)
+      if(maxitc .gt. 0 .or. ci_program .eq. 'LUCITA   ')then
+        CALL CISAVE(KEYWRD,NCROOT,NCIRED,ECI,residual_croot,
+     &              WRK(kvec_generic),CMO,INDXCI,WRK(KW2),LW2)
+C       CALL CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,WRK,LFREE)
+      end if
 C
       ICONV = 0
       J = 0
@@ -2341,6 +2344,11 @@ C        ... avoid getting part of a degenerate eigenvalue
 #endif
       END IF
       CALL DZERO(WRK(NRS+1),NCONF)
+      WRK(NRS+2) = 1.0d0
+      CALL WRITT(LUIT1,NC4,WRK(NRS+1))
+      MCSIM = MCSIM + 1
+      LAST  = IFRST
+#ifdef blabla_debug
       IF (PLUSCB) THEN
 C        ... take plus combination of degenerate diagonal elements
   170    CONTINUE
@@ -2371,6 +2379,7 @@ C           ... end repeat
             WRK(NRS + NLIST(I)) = D0
   185    CONTINUE
       END IF
+#endif
       IF (NCSIM .GT. MCSIM .AND. LAST .LT. NCONF) THEN
 C        ... MXNLIS too small, or NRS too small compared to NCSIM.
          WRITE (LUPRI,1850) MCSIM, NCSIM

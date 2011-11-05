@@ -533,6 +533,7 @@ C
 #include <ciinfo.h>
 #include <spinfo.h>
 #include <csfbas.h>
+#include <priunit.h>
 C
 C *** local variables:
       LOGICAL     CSFEXP
@@ -573,6 +574,11 @@ C *** Construct diagonal of CI matrix
          call mcscf_lucita_interface(diagc,dummy2,fcac,h2ac,
      &                               'return CIdia',wrk(kw1),lw1,
      &                               iprdia)
+#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after diag run: hdiag'
+          call wrtmatmn(diagc,1,nconf,1,nconf,lupri)
+#endif
       else if(ci_program .eq. 'SIRIUS-CI')then
         KFIJ  = 1
         KFJI  = KFIJ  + N2ASHX
@@ -587,6 +593,11 @@ C *** Construct diagonal of CI matrix
            CALL DZERO (DIAGC,NCONF)
            CALL CIDIAD(DIAGC,FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,ICSYM,
      *                 WRK(KW1),LW1)
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after diag run: hdiag'
+          call wrtmatmn(diagc,1,nconf,1,nconf,lupri)
+#undef LUCI_DEBUG
+#endif
         ELSE
 C
 C.. Change to CSF format
@@ -1073,6 +1084,7 @@ C        .. change from CSf basis to determinant basis
      &                                   .false., ! calculate transition density matrix
      &                                   .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           write(lupri,*) ' before sigma vec run: c'
           call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
@@ -1107,6 +1119,7 @@ C        .. change from CSf basis to determinant basis
           call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
           write(lupri,*) ' after sigma vec run: hc'
           call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#undef LUCI_DEBUG
 #endif
         end if
 

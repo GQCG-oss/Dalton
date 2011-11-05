@@ -2475,11 +2475,12 @@ C     WRITE(6,'(1X,A)') CARD
       INTEGER IGAT(*)
       DIMENSION GATSGN(*)
       DIMENSION CIN(NROWI,*),COUT(NROWO,*)
+#include "priunit.h"
 *
-C?    write(6,*) ' MATCG NROWI,NROWO,IROWI1,NGCOL '
-C?    write(6,*)         NROWI,NROWO,IROWI1,NGCOL
+      write(lupri,*) ' MATCG NROWI,NROWO,IROWI1,NGCOL '
+      write(lupri,*)         NROWI,NROWO,IROWI1,NGCOL
       DO 100 IG = 1, NGCOL
-C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
+        write(lupri,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
         IF(IGAT(IG).EQ.0) THEN
           DO 20 IR = 1, NROWO
             COUT(IR,IG)=0.0D0
@@ -2493,10 +2494,10 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
         END IF
   100 CONTINUE
 *
-      NTEST = 0
+      NTEST = 1
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' Column gathered matrix '
-        CALL WRTMT_LU(COUT,NROWO,NGCOL,NROWO,NGCOL)
+        WRITE(lupri,*) ' Column gathered matrix '
+        CALL WRTMatmn(COUT,NROWO,NGCOL,NROWO,NGCOL,lupri)
       END IF
 *
       RETURN
@@ -4714,7 +4715,8 @@ C
       DO 100 I=1,NROW
         WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
   100 CONTINUE
- 1010 FORMAT(/I4,':',5F16.8,/,(5X,5F16.8))
+!1010 FORMAT(/I4,':',5F16.8,/,(5X,5F16.8))
+ 1010 FORMAT(/I4,':',5F20.14,/,(5X,5F20.14))
 ! 200 CONTINUE
       END
 ***********************************************************************

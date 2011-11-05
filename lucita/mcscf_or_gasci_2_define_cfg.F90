@@ -250,6 +250,9 @@ contains
       if(two_el_dens_matrix)                       &
       lucita_cfg_density_calc_lvl                  = max(lucita_cfg_density_calc_lvl,2)
 
+!     set for mcscf (if not set otherwise)
+      if(lucita_cfg_max_dav_subspace_dim == 0) lucita_cfg_max_dav_subspace_dim = 16 * lucita_cfg_nr_roots
+
   end subroutine define_lucita_cfg_dynamic
 
 end module

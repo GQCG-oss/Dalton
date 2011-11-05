@@ -641,8 +641,12 @@ C
       END IF
       KAPROJ = 1
       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST   = 1.0D-4
       CONVER = .FALSE.
+!     set convergence thresholds
+!     norm   
+      THRQC  = THRES_E
+!     energy change
+      THRQE  = THRES_E * 1.0d-08
 C
 C     ===================
 C      Initial iteration
@@ -833,7 +837,7 @@ C
 *       calculate residues ...
 *
         CALL P1_B_PAR_RL_LUCI1(VEC1,VEC2,EIGAPR,RNRM,EIGSHF,
-     &                         EIG,TEST,THRES_E,root_converged,CONVER,
+     &                         EIG,THRQC,THRQE,root_converged,CONVER,
      &                         ITER,MAXIT,
      &                         IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,
      &                         LBATV,LEBATV,I1BATV,IBATV,
@@ -860,7 +864,7 @@ csk       CSCREEN = .FALSE.
           CALL H0M1TD_REL_PAR(ILU6,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                        LU6LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                        I1BATV,IBATV,MY_LU6_OFF,MY_DIA_OFF,
-     &                        MY_LU5_OFF,1,THRES_E)
+     &                        MY_LU5_OFF,1,THRQE)
 *              H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,LISTOUT,
 *    &                        LISTIN,NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
 *    &                        OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV)
