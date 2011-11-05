@@ -1,3 +1,7 @@
+add_test(gen1int_fluorobenzene_cart ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null gen1int_fluorobenzene_cart)
+add_test(gen1int_fluorobenzene_spher ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null gen1int_fluorobenzene_spher)
+add_test(gen1int_water_cart ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null gen1int_water_cart)
+add_test(gen1int_water_spher ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null gen1int_water_spher)
 add_test(energy_direct ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_direct)
 add_test(energy_direct_eri ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_direct_eri)
 add_test(energy_douglaskroll ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_douglaskroll)
