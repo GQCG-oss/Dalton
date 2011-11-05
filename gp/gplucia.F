@@ -2477,10 +2477,7 @@ C     WRITE(6,'(1X,A)') CARD
       DIMENSION CIN(NROWI,*),COUT(NROWO,*)
 #include "priunit.h"
 *
-      write(lupri,*) ' MATCG NROWI,NROWO,IROWI1,NGCOL '
-      write(lupri,*)         NROWI,NROWO,IROWI1,NGCOL
       DO 100 IG = 1, NGCOL
-        write(lupri,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
         IF(IGAT(IG).EQ.0) THEN
           DO 20 IR = 1, NROWO
             COUT(IR,IG)=0.0D0
@@ -2494,10 +2491,11 @@ C     WRITE(6,'(1X,A)') CARD
         END IF
   100 CONTINUE
 *
-      NTEST = 1
+      NTEST = 0 ! no debug
+!     NTEST = 1 ! debug
       IF(NTEST.NE.0) THEN
-        WRITE(lupri,*) ' Column gathered matrix '
-        CALL WRTMatmn(COUT,NROWO,NGCOL,NROWO,NGCOL,lupri)
+        write(lupri,*) ' Column gathered matrix '
+        call wrtmatmn(cout,nrowo,ngcol,nrowo,ngcol,lupri)
       END IF
 *
       RETURN

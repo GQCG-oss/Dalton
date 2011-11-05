@@ -2343,12 +2343,15 @@ C        ... avoid getting part of a degenerate eigenvalue
          END IF
 #endif
       END IF
+
+#ifdef LUCI_DEBUG_test_case
       CALL DZERO(WRK(NRS+1),NCONF)
       WRK(NRS+2) = 1.0d0
       CALL WRITT(LUIT1,NC4,WRK(NRS+1))
       MCSIM = MCSIM + 1
       LAST  = IFRST
-#ifdef blabla_debug
+#endif
+
       IF (PLUSCB) THEN
 C        ... take plus combination of degenerate diagonal elements
   170    CONTINUE
@@ -2379,7 +2382,6 @@ C           ... end repeat
             WRK(NRS + NLIST(I)) = D0
   185    CONTINUE
       END IF
-#endif
       IF (NCSIM .GT. MCSIM .AND. LAST .LT. NCONF) THEN
 C        ... MXNLIS too small, or NRS too small compared to NCSIM.
          WRITE (LUPRI,1850) MCSIM, NCSIM

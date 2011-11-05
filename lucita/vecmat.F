@@ -682,10 +682,10 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
 *. Number of terms to be printed
       IF (IPRNCIV.EQ.0) THEN
         THRES  = 1.0D0
-        MAXTRM =  100
+        MAXTRM =  25
       ELSE IF (IPRNCIV.EQ.1) THEN
         THRES  = 5.0D-2
-        MAXTRM =  250
+        MAXTRM =  100
       ELSE IF (IPRNCIV.EQ.2) THEN
         THRES  = 5.0D-3
         MAXTRM = 1000

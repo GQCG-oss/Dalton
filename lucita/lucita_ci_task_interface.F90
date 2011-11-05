@@ -553,7 +553,7 @@ contains
         end if
 !
         call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,           &
-                       cv_dummy,hcv_dummy,isigden                                          &
+                       cv_dummy,hcv_dummy,isigden,rhotype                                  &
 #ifdef VAR_MPI
                       ,luclist,lu2list,block_list,par_dist_block_list,                     &
                        rcctos,grouplist,proclist                                           &
@@ -796,7 +796,7 @@ contains
         end if
 !
         call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,           &
-                       cv_dummy,hcv_dummy,isigden                                          &
+                       cv_dummy,hcv_dummy,isigden,-1                                       &
 #ifdef VAR_MPI
                       ,luclist,lu2list,block_list,par_dist_block_list,                     &
                        rcctos,grouplist,proclist                                           &

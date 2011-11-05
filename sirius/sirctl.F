@@ -815,8 +815,6 @@ C
        END IF
       END IF
 
-!     possibly free ttss-type used in LUCITA/MCSCF-LUCITA
-      call ttss_free(ttss_info)
 
 C
 C *** POPULATION ANALYSIS AND PROPERTIES
@@ -830,6 +828,9 @@ C
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
+
+!     possibly free ttss-type used in LUCITA/MCSCF-LUCITA
+      call ttss_free(ttss_info)
 C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR

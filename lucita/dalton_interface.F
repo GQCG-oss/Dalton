@@ -2772,18 +2772,22 @@ C
 !     symmetrize 1p-dens matrix
       if(rhotype >  0)then
 
-        write(lupri,*) '  temp 1p-tdm: '
-        call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
-     &                nr_actorb_tot,nr_actorb_tot,lupri)
+!       write(lupri,*) '  temp 1p-tdm: '
+!       call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+!    &                nr_actorb_tot,nr_actorb_tot,lupri)
 
         call trpad(h1_in,1.0d0,nr_actorb_tot)
-        write(lupri,*) '  temp 1p-tdm: part 2'
-        call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
-     &                nr_actorb_tot,nr_actorb_tot,lupri)
+
+!       write(lupri,*) '  temp 1p-tdm: part 2'
+!       call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+!    &                nr_actorb_tot,nr_actorb_tot,lupri)
+
         if(rhotype == 1) call dscal(nr_actorb_tot**2,0.5d0,h1_in,1)
-        write(lupri,*) '  temp 1p-tdm: part 3'
-        call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
-     &                nr_actorb_tot,nr_actorb_tot,lupri)
+
+!       write(lupri,*) '  temp 1p-tdm: part 3'
+!       call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+!    &                nr_actorb_tot,nr_actorb_tot,lupri)
+
 !       pack symmetrized 1p-dens matrix (h1_in) as triangular matrix h1_out
         call dsitsp(nr_actorb_tot,h1_in,h1_out)
 !       save triangular matrix in h1_in

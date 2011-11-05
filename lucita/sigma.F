@@ -4690,7 +4690,7 @@ C     CALL QEXIT('SKICK')
       END IF
       END
 
-      SUBROUTINE SIGDEN_CI(C,HC,C2,LUC,LUHC,CV,HCV,ISIGDEN 
+      SUBROUTINE SIGDEN_CI(C,HC,C2,LUC,LUHC,CV,HCV,ISIGDEN,rhotype
 #ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
@@ -4748,6 +4748,7 @@ C
       INTEGER RCCTOS(*),IGROUPLIST(*),IPROCLIST(*)
 #endif
 C
+      integer, intent(in) :: rhotype
 * Blocks of C and sigma
       DIMENSION C(*),HC(*)
 !     resolution matrix
@@ -4867,7 +4868,7 @@ C
         CALL SIGDEN2_CI(C,HC,C2,CV,HCV,ISIGDEN,
      &       NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &       WORK(KLSI1BT),WORK(KLSIBT),LLUC,LLUHC,
-     &       WORK(KISCLFAC),WORK(KSCALLOC)
+     &       WORK(KISCLFAC),WORK(KSCALLOC),rhotype
 #ifdef VAR_MPI
      &               ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                IGROUPLIST,IPROCLIST
@@ -4884,7 +4885,7 @@ C
       END
       SUBROUTINE SIGDEN2_CI(CB,SB,C2,CV,SV,ISIGDEN,
      &                  NBATS,LBATS,LEBATS,I1BATS,IBATS,
-     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP
+     &                  LUC,LUHC,SSCLFAC,ISCLFAC_GROUP,rhotype
 #ifdef VAR_MPI
      &                  ,LUCLIST,LUHCLIST,IBLOCKL,NPARBLOCK,RCCTOS,
      &                   IGROUPLIST,IPROCLIST
@@ -4906,6 +4907,7 @@ C
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+      integer, intent(in) :: rhotype
       DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
       INTEGER IPROCLIST(*), RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
@@ -5118,11 +5120,12 @@ C
        END IF ! End of ISIGDEN switch
 C
        CALL SIGDEN3_CI(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
-     &      CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,ISCLFAC_GROUP
+     &                 CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,
+     &                 ISCLFAC_GROUP,rhotype
 #ifdef VAR_MPI
-     &      ,LUCLIST,NPARBLOCK,IBLOCKL
+     &                ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
-     &                             )
+     &                )
       IF(ISIGDEN.EQ.1) THEN
 C  
 C       transfer S block to permanent storage
@@ -5258,7 +5261,7 @@ C
       SUBROUTINE SIGDEN3_CI(NBLOCK,IBLOCK,IBOFF,CB,HCB,C2,CV,ISIGDEN,
      &                  LUC,IRESTRICT,
      &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
-     &                  SSCLFAC,ISCLFAC_GROUP
+     &                  SSCLFAC,ISCLFAC_GROUP,rhotype
 #ifdef VAR_MPI
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5333,6 +5336,7 @@ C
       COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *
+      integer, intent(in) :: rhotype
       dimension XIJILS(MXTSOB)
       INTEGER MLTHCHCK, ITEMPP
       DIMENSION SSCLFAC(*),ISCLFAC_GROUP(*)
@@ -5564,6 +5568,11 @@ C
 !     KSSCR = KSIRES
 !     KCSCR = KCJRES
 !     ---------------------
+!
+!     note for isigden == 2 (density/transition density run):
+!     KCJPA and KSIPA are used as transpose/scatter scratch space in order to avoid 
+!     overwriting of C2. sk - nov 2011
+!
 
       CALL SIGDEN4_CI(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,CV,ISIGDEN,
      &     C2,
@@ -5588,7 +5597,7 @@ C
      &     LUCBLK,IPERTOP,IH0INSPC,WORK(KLH0SPC),
      &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
      &     IUSE_PA,WORK(KCJPA),WORK(KSIPA),ISCLFAC_GROUP,SSCLFAC,
-     &     WORK(KRHO1S)
+     &     WORK(KRHO1S),rhotype
 #ifdef VAR_MPI
      &    ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5628,6 +5637,8 @@ C
 C
       RETURN
       END
+!*******************************************************************************
+
       SUBROUTINE SIGDEN4_CI(NSBLOCK,ISBLOCK,CB,SB,CV,ISIGDEN,C2,
      &           ICOCOC,ICSMOS,ICBLTP,NACOB,NSSOA,NSSOB,
      &           NAEL,IAGRP,NBEL,IBGRP,
@@ -5645,7 +5656,7 @@ C
      &           LUCBLK,IPERTOP,IH0INSPC,IH0SPC,
      &           ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,
      &           I_RES_AB,IUSE_PA,CJPA,SIPA,ISCLFAC_GROUP,SSCLFAC,
-     &           RHO1S
+     &           RHO1S,rhotype
 #ifdef VAR_MPI
      &          ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5723,6 +5734,7 @@ C
       INTEGER NOBPTS(MXPNGAS,*),IOBPTS(MXPNGAS,*),ITSOB(*)
       INTEGER NELFSPGP(MXPNGAS,*)
       INTEGER ICONSPA(NOCTPA,NOCTPA), ICONSPB(NOCTPB,NOCTPB)
+      integer, intent(in) :: rhotype
 *     scratch
       DIMENSION SB(*),CB(*),C2(*)
       DIMENSION XINT(*),CSCR(*),SSCR(*)
@@ -6042,7 +6054,7 @@ C               so transpose!
                 IF(ISIGDEN.EQ.1) THEN
                  IF(IPERM.EQ.1) THEN
                    IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
-                     write(luwrt,*) ' iperm business, ps ==> ',ps
+!                    write(luwrt,*) ' iperm business, ps ==> ',ps
 C                    diagonal blocks, Transposing corresponds to scaling
                      IF(PS.EQ.-1.0D0) THEN
                        ipermdia_off = 0
@@ -6050,14 +6062,15 @@ C                    diagonal blocks, Transposing corresponds to scaling
                      END IF
                    ELSE
                      ipermdia_off = 1
-                     write(luwrt,*) ' iperm business, offdiag block'
+!                    write(luwrt,*) ' iperm business, offdiag block'
 C                    offdiagonal blocks, explicit transposing
                      CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
                      CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
                      if (LSGN(IPERM).eq.-1) then
                        write(luwrt,*) 'LROW,LCOL undef. in sblocks'
                        write(luwrt,*) 'and LSGN(IPERM).eq.-1'
-                       Call Abend2('Quitting.')
+                       call quit(' *** error in SIGDEN4_CI: undefined'//
+     &                           ' transpose action. ***')
 CTF                    CALL SCALVE(CB(ICOFF),-1.0D0,LROW*LCOL)
                      end if
                    END IF
@@ -6206,7 +6219,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
                   END IF
 
                   CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
-     &                         IASM,IATP,IBSM,IBTP,
+     &                         rhotype,IASM,IATP,IBSM,IBTP,
      &                         JASM,JATP,JBSM,JBTP,NGAS,
      &                         NELFSPGP(1,IATP+IOCTPA-1),
      &                         NELFSPGP(1,IBTP+IOCTPB-1),
@@ -6216,7 +6229,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &                         SB(ISOFF),CB(ICOFF),C2,
      &                         ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
      &                         MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                         SSCR,CSCR,
+     &                         SSCR,CSCR,SIPA,CJPA,
      &                         I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                         XINT,NSMOB,NSMST,NSMSX,NSMDX,
      &                         NIA,NIB,NJA,NJB,MXPOBS,
@@ -6271,7 +6284,7 @@ C
           NIA = NSSOA(IASM,IATP)
           NIB = NSSOB(IBSM,IBTP)
           IF(ICJKAIB.NE.0) THEN
-             write(luwrt,*) ' sigma transpose business'
+!            write(luwrt,*) ' sigma transpose business'
 C
 C            tranposed sigma block was obtained, 
 C            transpose to obtain correct block

@@ -1997,8 +1997,10 @@ C
 C           CALL NEXCI(OLSEN,ENER,NCVAR,D,XVEC,
 C       &              RES,DIAG,IPRPHP,WRK,LWRK)
 #endif
-           write(lupri,*) 'neost: bcvec after nexci ==> ',nconf
-           call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
+!        write(lupri,*) 'neost: bcvec after nexci ==> ',nconf
+!        call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
          END IF
          NCVEC = NCVEC + 1
          ISTBC = ISTBC + NCONF
@@ -2117,14 +2119,17 @@ C
       NDMBC  = MAX(1,NCONF)
       NDMBO  = MAX(1,NWOPT)
       THRLDV = NVAR*THRLDP
-      write(lupri,*) 'neost: bcvec before ortbvc ==> ',nconf
-      call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
+!     write(lupri,*) 'neost: bcvec before ortbvc ==> ',nconf
+!     call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
 
       CALL ORTBVC(NCVEC,NOVEC,NDMBC,NDMBO,NBPREV,IBNDX,LUIT3,
      *            BVECS(KBC),BVECS(KBO),
      *            THRLDV,BVECS(KTT0),BVECS(KBPREV))
-      write(lupri,*) 'neost: bcvec after ortbvc ==> ',nconf
-      call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
+!     write(lupri,*) 'neost: bcvec after ortbvc ==> ',nconf
+!     call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
 C     CALL ORTBVC(NBC,NBO,NDMBC,NDMBO,NBPREV,IBNDX,LUBVC,
 C    *            BCVECS,BOVECS,THRLDP,TT0,BPREV)
 C
@@ -2234,7 +2239,7 @@ C
             IF (TT.LT.THRTT) THEN
                CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
                TT = DNORM2(NDMBC,BCVECS(1,I),1)
-               write(lupri,*) 'ortbvc debug, double renorm vector',i
+!              write(lupri,*) 'ortbvc debug, double renorm vector',i
             END IF
             CALL DSCAL(NDMBC,(D1/TT),BCVECS(1,I),1)
          END IF

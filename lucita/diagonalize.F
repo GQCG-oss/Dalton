@@ -182,7 +182,7 @@ c      IPRT = IPRTXX
 *       Check timings for sigma vector generation
         CALL GETTIM(CPUSIG1,WALLSIG1)
 
-        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1)
 
         CALL GETTIM(CPUSIG2,WALLSIG2)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
@@ -491,7 +491,7 @@ CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
         CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
 *Check timings for sigma vector generation
         CALL GETTIM(CPUSIG1,WALLSIG1)
-        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1)
         CALL GETTIM(CPUSIG2,WALLSIG2)
         WALLTID = SECTID(WALLSIG2-WALLSIG1)
         if(ivec .eq. 1)then
@@ -599,6 +599,8 @@ C     CALL PRSYM(XJEP(1000),NVEC)
         EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
       END DO
 *
+!     IPRT = 6
+
       IF(IPRT .GE. 3 ) THEN
         WRITE(LUWRTOUT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
         WRITE(LUWRTOUT,'(5F18.13)')
@@ -615,6 +617,8 @@ C     CALL PRSYM(XJEP(1000),NVEC)
         WRITE(LUWRTOUT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMT_LU(AVEC,NVEC,NROOT,NVEC,NROOT)
       END IF
+
+!     IPRT = 0
 *
 **  perhaps reset or assemble converged eigenvectors
 *
@@ -686,10 +690,14 @@ C     CALL PRSYM(XJEP(1000),NVEC)
 #endif
 
 !     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+!     activating the IF... part above does NOT work as it is...
+!     TODO: transfer the davidson subroutine from kr-ci (dirac) which 
+!           has a working increasing subspace dimension routine.
+!           it's basically the code you find above in #ifdef ...
 *
 *. 3.1 : Current wave function approximations, collect on LU7
 !#ifdef blabla_debug
-        IPRT = 1000
+!       IPRT = 1000
         IF(IPRT.GE.1000) THEN
         write(LUWRTOUT,*) ' I am going to reset '
         write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
@@ -905,8 +913,9 @@ C     &luci_myproc,(NROOT + IADD)
 *      /\ End if more than NROOT vectors to be reset
        NVEC = NNVEC
 *       write(LUWRTOUT,*)'NVEC(1)',NVEC NVEC = IADD (iadd can change!!!)+ NROOT
-!      END IF
-*.     ^ End if reset
+
+!      END IF ! reset
+
 *. New subspace
 *. Calculate subspace Hamiltonian from actual vectors
 *. on disc
@@ -943,6 +952,7 @@ CSK        ididaproj = ididaproj + 1
          call prsym(aproj,nvec)
        end if
        IPRT = 0
+
 !#endif
 CSK       write(LUWRTOUT,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
 CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
@@ -3290,7 +3300,8 @@ C       IDOH2 = JDOH2
       ISIGDEN = 1
 *
       call quit('*** HTV is disabled in this lucita version. ***')
-      CALL SIGDEN_CI(VECIN,VECOUT,C2,LUIN,LUOUT,cdummy,sdummy,ISIGDEN)
+      CALL SIGDEN_CI(VECIN,VECOUT,C2,LUIN,LUOUT,cdummy,sdummy,
+     &               ISIGDEN,-1)
 *
       RETURN
       END
@@ -3795,7 +3806,7 @@ C
        DO 10 IVEC = 1,NINVEC
          CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
          CALL quit('*** MINDV4 is disabled in this lucita version. ***')
-         CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN)
+         CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1)
          CALL TODSC_LUCI(VEC2,NVAR,-1  ,LU2)
 *        PROJECTED MATRIX
          CALL REWINE( LU1,-1)
@@ -3990,7 +4001,7 @@ C
       DO 150 IVEC = 1, IADD
         CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
         call quit('*** MINDV4 is disabled in this lucita version. ***')
-        CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1)
         CALL TODSC_LUCI(VEC2,NVAR,-1  ,LU2)
 *   AUGMENT PROJECTED MATRIX
         CALL REWINE( LU1,-1)

@@ -112,7 +112,7 @@ C
          ISTATE = 1
       END IF
       DOCNO = FLAG(15)
-      write(lupri,*) ' sirsav... keywrd ==> ',keywrd
+!     write(lupri,*) ' sirsav... keywrd ==> ',keywrd
       IF (KEYWRD .EQ. 'NEOSAVE') THEN
          ICTL = 1
          NRS  = MIN (NROOTS,NREDL,NCONF)
@@ -265,7 +265,7 @@ C
      *      ' *** Gamma, level shift :',GAMMA,SHFLVL,
      *      '  -  Beta,  "a1"        :',BETA,EVEC(JEVEC+1)
       END IF
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE (lupri,'(//3(/A,F15.10),/2(/A,2F15.10),/)')
      *      ' *** Step length  :',STPLEN,
@@ -289,7 +289,7 @@ C     NRS  = number of CI vectors to be written to LUIT1
          FAC0 = D0
 C        ... to avoid compiler messages
       END IF
-      write(lupri,*) ' nsim, fac0 ==> ',nsim,fac0
+!     write(lupri,*) ' nsim, fac0 ==> ',nsim,fac0
       DOXKAP = .TRUE.
       KBVEC  = 1
       KY     = KBVEC + MAX(NCONF,NWOPT)
@@ -325,8 +325,8 @@ CHJ- husk at fjerne dette "DOXKAP" senere ...
             CALL QTRACE(LUERR)
             CALL QUIT('SIRSAV: illegal IBNDX value')
          END IF
-            write(lupri,*) ' bla bla 0 ==> lyvec',lyvec
-         call wrtmatmn(wrk(kbvec),1,lyvec,1,lyvec,lupri)
+!        write(lupri,*) ' bla bla 0 ==> lyvec',lyvec
+!        call wrtmatmn(wrk(kbvec),1,lyvec,1,lyvec,lupri)
          DO 1300 J = 1,NSIM
             JEVEC = (JOFF+J-1)*NREDL + K
             FAC = EVEC(JEVEC)
@@ -343,8 +343,8 @@ C
                END IF
             END IF
             CALL DAXPY(LYVEC,FAC,WRK(KBVEC),1,WRK(JYVEC),1)
-            write(lupri,*) ' bla bla 1'
-            call wrtmatmn(wrk(jyvec),1,lyvec,1,lyvec,lupri)
+!           write(lupri,*) ' bla bla 1'
+!           call wrtmatmn(wrk(jyvec),1,lyvec,1,lyvec,lupri)
             JYVEC = JYVEC + NVAR
  1300    CONTINUE
  1200 CONTINUE
@@ -367,9 +367,11 @@ C          x(j) - xkap is thus a guess for the orbital part of
 C          NEO eigenvector no. j in next iteration).
 C
          DN = DNORM2(NCONF,WRK(KYJ),1)
-            write(lupri,*) ' bla bla 2'
-         call wrtmatmn(wrk(kyj),1,nconf,1,nconf,lupri)
-         write(lupri,*) ' norm is ... => ',dn
+
+!        write(lupri,*) ' bla bla 2'
+!        call wrtmatmn(wrk(kyj),1,nconf,1,nconf,lupri)
+!        write(lupri,*) ' norm is ... => ',dn
+
          IF (DN.NE.D1 .AND. DN.NE.D0) THEN
             IF (DN .LE. THRTT) THEN
                DN = D1 / DN
@@ -388,8 +390,8 @@ C
             DO 1405 I = 1,NWOPT
                WRK(KYJ + NCONF + I) = WRK(KYJ + NCONF + I) - XKAP(I)
  1405       CONTINUE
-            write(lupri,*) ' bla bla 3 ==> nv4',nv4
-            call wrtmatmn(wrk(kyj),1,nv4,1,nv4,lupri)
+!           write(lupri,*) ' bla bla 3 ==> nv4',nv4
+!           call wrtmatmn(wrk(kyj),1,nv4,1,nv4,lupri)
             CALL WRITT(LUIT1,NV4,WRK(KYJ))
          ELSE
             CALL WRITT(LUIT1,NC4,WRK(KYJ))
@@ -502,9 +504,11 @@ C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,wrk(kbvec+(j-1)*nconf),1)
              END IF
-!            HARDWIRED FIX!!!
+#ifdef LUCI_DEBUG_test_case
+!            HARDWIRED TEST case !!!
              call dzero(wrk(kbvec+(j-1)*nconf),nc4)
              wrk(kbvec+(j-1)*nconf+1) = 1.0d0
+#endif
              call writt(luit1,nc4,wrk(kbvec+(j-1)*nconf))
            end do
          end if ! ci_program switch

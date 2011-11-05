@@ -446,6 +446,7 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "priunit.h"
+#include "dummy.h"
 *.General input
       INTEGER ICOCOC(NOCTPA,NOCTPB),ISOCOC(NOCTPA,NOCTPB)
       INTEGER ICSMOS(NSMST),ISSMOS(NSMST)
@@ -481,6 +482,7 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *.Output
       DIMENSION RHO1(*),RHO2(*)
       DIMENSION RHO1P(*),XNATO(*)
+      integer :: rhotype_local
 *
       CALL QENTER('GASDN')
 !     NTEST = 100 ! debug
@@ -692,7 +694,9 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
                        WRITE(lupri,*) ' IOFF,JOFF ', IOFF,JOFF
                        WRITE(lupri,*) ' SCLFAC = ', SCLFAC
                      END IF
-                     CALL GSDNBB2(I12,RHO1,RHO2,
+                     rhotype_local = 1 ! set dummy default rhotype here: this 
+!                                        dens-m way here is not active anymore anyway...
+                     CALL GSDNBB2(I12,RHO1,RHO2,rhotype_local,
      &                    IIASM,IIATP,IIBSM,IIBTP,
      &                    JASM,JATP,JBSM,JBTP,NGAS,
      &                    NELFSPGP(1,IOCTPA-1+IIATP),
@@ -703,7 +707,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                    SB(IOFF),CB(JOFF),C2,
      &                    ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
      &                    MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                    SSCR,CSCR,
+     &                    SSCR,CSCR,dummy2,dummy2,
      &                    I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                    X,NSMOB,NSMST,NSMSX,NSMDX,
      &                    NIIA,NIIB,NJA,NJB,MXPOBS,
@@ -991,6 +995,13 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
         WRITE(6,*) ' GSBBD1, sclfac ',SCLFAC
       END IF
+
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*) ' C'
+      CALL WRTMATMN(CB,nacob,nacob,nacob,nacob,lupri)
+      WRITE(lupri,*) ' S'
+      CALL WRTMATMN(SB,nacob,nacob,nacob,nacob,lupri)
+#endif
 *
       IFRST = 1
       JFRST = 1
@@ -1019,7 +1030,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
         IJ_AC(2) = 1
         IJ_TP(1) = ITYP
         IJ_TP(2) = JTYP
-        write(lupri,*) 'iuse_ph ==> ',iuse_ph
+!       write(lupri,*) 'iuse_ph ==> ',iuse_ph
         IF(IUSE_PH.EQ.1) THEN
           CALL ALG_ROUTERX(IAOC,JAOC,NOP,IJ_TP,IJ_AC,IJ_REO,SIGNIJ)
         ELSE
@@ -1089,7 +1100,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
           ELSE
               NKAEFF = NKASTR
           END IF
-          WRITE(lupri,*) ' NKAEFF NKASTR', NKAEFF ,NKASTR
+!         WRITE(lupri,*) ' NKAEFF NKASTR', NKAEFF ,NKASTR
 
 *. Loop over partitionings of N-1 strings
             KBOT = 1-MAXK
@@ -1106,9 +1117,12 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 
 *. This is the place to start over partitioning of I strings
               DO 701 IPART = 1, NIPART
-                IBOT = (IPART-1)*MAXI+1
-                ITOP = MIN(IBOT+MAXI-1,NROW)
+
+                IBOT  = (IPART-1)*MAXI+1
+                ITOP  = MIN(IBOT+MAXI-1,NROW)
                 NIBTC = ITOP - IBOT + 1
+                NKI   = LKABTC*NIBTC
+
 * Obtain CSCR(I,K,JORB) = SUM(J)<K!A JORB!J>C(I,J)
                 DO JJORB = 1,IJ_DIM(2)
                   ICGOFF = 1 + (JJORB-1)*LKABTC*NIBTC
@@ -1121,37 +1135,35 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 *.Gather S Block
                   ISGOFF = 1 + (IIORB-1)*LKABTC*NIBTC
                   CALL MATCG(SB,SSCR(ISGOFF),NROW,NIBTC,IBOT,
-     &                   LKABTC,I2(KBOT+(IIORB-1)*NKASTR),
-     &                   XI2S(KBOT+(IIORB-1)*NKASTR) )
+     &                       LKABTC,I2(KBOT+(IIORB-1)*NKASTR),
+     &                       XI2S(KBOT+(IIORB-1)*NKASTR) )
                 END DO
 *
 *
-*. And then the hard  work
-                NKI = LKABTC*NIBTC
-                FACTORC  = 0.0D0
-                FACTORAB = 1.0D0
 
-                WRITE(lupri,*) ' CSCR... ij_dim==> ',IJ_DIM(1),IJ_DIM(2)
-                WRITE(lupri,*) ' CSCR... nki   ==> ',nki
+#ifdef LUCI_DEBUG
                 ntest = 1000
                 IF(NTEST.GE.1000) THEN
                  WRITE(lupri,*) ' CSCR and SSCR '
                  CALL WRTMATMN(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI,lupri)
                  CALL WRTMATMN(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI,lupri)
-                 WRITE(lupri,*) ' C    and S    '
-                 CALL WRTMATMN(CB,nacob,nacob,nacob,nacob,lupri)
-                 CALL WRTMATMN(SB,nacob,nacob,nacob,nacob,lupri)
                 END IF
+#endif
+
+!               ... and then the hard  work
+                FACTORC  = 0.0D0
+                FACTORAB = 1.0D0
 
                 CALL MATML7(RHO1S,SSCR,CSCR,IJ_DIM(1),IJ_DIM(2),NKI,
      &               IJ_DIM(1),NKI,IJ_DIM(2),FACTORC,FACTORAB,1)
-*
+
+#ifdef LUCI_DEBUG
                 IF(NTEST.GE.100) THEN
                   WRITE(lupri,*) ' Block to one-body density '
                   CALL WRTMATMN(RHO1S,IJ_DIM(1),IJ_DIM(2),
      &                              IJ_DIM(1),IJ_DIM(2),lupri)
                 END IF
-                ntest = 0
+#endif
 *. Scatter out to complete matrix
                 DO JJORB = 1, IJ_DIM(2)
                   JORB = IJ_OFF(2)-1+JJORB
@@ -1161,8 +1173,10 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
      &              RHO1((JORB-1)*NACOB+IORB) +
      &              RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)
                   END DO
+#ifdef LUCI_DEBUG
                   WRITE(lupri,*) ' one-body density after scatter'
                   CALL WRTMATMN(RHO1,nacob,nacob,nacob,nacob,lupri)
+#endif
                 END DO
 *               /\ End of hard work
 
@@ -1176,7 +1190,6 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
   900 CONTINUE
  1001 CONTINUE
 *
-C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
       RETURN
       END
 ***********************************************************************
@@ -1766,7 +1779,7 @@ C?              call prsym(rho2,NORB*NORB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GSDNBB2(I12,RHO1,RHO2,
+      SUBROUTINE GSDNBB2(I12,RHO1,RHO2,rhotype,
      &                  IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                  NGAS,IAOC,IBOC,JAOC,JBOC,
      &                  NAEL,NBEL,
@@ -1774,7 +1787,8 @@ C?              call prsym(rho2,NORB*NORB)
      &                  SB,CB,C2,
      &                  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
      &                  MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                  SSCR,CSCR,I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                  SSCR,CSCR,scatS,scatC,
+     &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  X,NSMOB,NSMST,NSMSX,NSMDX,
      &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S,
      &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,MXTSOB)
@@ -1839,17 +1853,18 @@ C?              call prsym(rho2,NORB*NORB)
       INTEGER  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX
 *. Input
       DIMENSION CB(*),SB(*)
+      integer, intent(in) :: rhotype
 *. Output
       DIMENSION RHO1(*),RHO2(*)
 *. Scratch
-      DIMENSION SSCR(*),CSCR(*)
+      DIMENSION SSCR(*),CSCR(*),scatS(*),scatC(*)
       DIMENSION  I1(*),XI1S(*),I2(*),XI2S(*),I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION C2(*)
 #include "priunit.h"
 *
       CALL QENTER('GSDNB')
-      NTEST = 500 ! debug
-!     NTEST = 000 ! no debug
+!     NTEST = 500 ! debug
+      NTEST = 000 ! no debug
       NTEST = MAX(NTEST,IPRNT)
       NTESTO= NTEST
       IF(NTEST.GE.200) THEN
@@ -1887,9 +1902,10 @@ C?              call prsym(rho2,NORB*NORB)
 *  beta contribution to RHO1
 * =============================
 *
+#ifdef LUCI_DEBUG
         WRITE(lupri,*) ' GSBBD1 will be called (beta)'
-!       CALL TRPMT3(CB,NJA,NJB,C2)
-!       CALL COPVEC(C2,CB,NJA*NJB)
+        WRITE(lupri,*) ' no transpose: rhotype ==>   ',rhotype
+#endif
         CALL GSBBD1(RHO1,NACOB,IBSM,IBTP,JBSM,JBTP,IJBGRP,NIA,
      &       NGAS,IBOC,JBOC,
      &       SB,CB,
@@ -1931,13 +1947,28 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 *  alpha contribution to RHO1
 * =============================
 *
-        CALL TRPMT3(CB,NJA,NJB,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-!       CALL TRPMT3(SB,NIA,NIB,C2)
-!       CALL COPVEC(C2,SB,NIA*NIB)
+#ifdef LUCI_DEBUG
         WRITE(lupri,*) ' GSBBD1 will be called (alpha)'
+        WRITE(lupri,*) ' rhotype ==>                 ',rhotype
+#endif
+
+        CALL TRPMT3(CB,NJA,NJB,C2)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
+!       sk - nov 2011: take care of the transpose procedure: 
+!                      a. regular DM run (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
+!                      b. TDMs in MCSCF  (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
+        if(rhotype .gt. 1)then
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' SB before          transpose'
+          call wrtmatmn(sb,nia,nib,nia,nib,lupri)
+#endif
+          CALL TRPMT3(SB,NIA,NIB,scatS)
+        else
+          CALL DCOPY(NIA*NIB,SB,1,scatS,1)
+        end if
+
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
-     &       NGAS,IAOC,JAOC,C2,CB,
+     &       NGAS,IAOC,JAOC,scatS,CB,
      &       ADSXA,SXSTST,STSTSX,MXPNGAS,
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
@@ -1952,7 +1983,7 @@ C?        WRITE(6,*) ' GSBBD1 was called '
 *
 C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
           CALL GSBBD2A(RHO2,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
-     &         NGAS,IAOC,JAOC,C2,CB,
+     &         NGAS,IAOC,JAOC,scatS,CB,
      &         ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
@@ -1960,9 +1991,7 @@ C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
 C?        WRITE(6,*) ' GSBBD2A was called '
         END IF
         CALL TRPMT3(CB,NJB,NJA,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-!       CALL TRPMT3(SB,NIB,NIA,C2)
-!       CALL COPVEC(C2,SB,NIB*NIA)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
       END IF
 *
 * ===================================
@@ -1972,9 +2001,9 @@ C?        WRITE(6,*) ' GSBBD2A was called '
       IF(I12.EQ.2.AND.NAEL.GE.1.AND.NBEL.GE.1) THEN
 *. Routine uses transposed blocks
         CALL TRPMT3(CB,NJA,NJB,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
         CALL TRPMT3(SB,NIA,NIB,C2)
-        CALL COPVEC(C2,SB,NIA*NIB)
+        CALL DCOPY(NIB*NIA,C2,1,SB,1)
 C?      WRITE(6,*) ' GSBBD2B will be called '
         IUSEAB = 0
         CALL GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
@@ -1987,7 +2016,6 @@ C?      WRITE(6,*) ' GSBBD2B will be called '
      &                    SSCR,CSCR,NACOB,NTEST,SCLFAC,S2_TERM1,
      &                    MXTSOB)
 C?      WRITE(6,*) ' GSBBD2B was called '
-     &
 C     GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
 C    &                        JASM,JATP,JBSM,JBTP,NJA,NJB,
 C    &                  IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -1998,9 +2026,9 @@ C    &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
 C    &                  CJRES,SIRES,NORB,NTEST,
 C    &                  MXTSOB)
         CALL TRPMT3(CB,NJB,NJA,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMAT(SB,NIB,NIA,C2)
-        CALL COPVEC(C2,SB,NIB*NIA)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
+        CALL TRPMT3(SB,NIB,NIA,C2)
+        CALL DCOPY(NIB*NIA,C2,1,SB,1)
       END IF
 *
       CALL QEXIT('GSDNB')
