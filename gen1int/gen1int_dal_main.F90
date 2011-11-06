@@ -56,8 +56,9 @@
   !> \param io_std is the IO unit of standard output
   !> \param level_print is the level of print
   !> \return val_ints contains the calculated integrals
-  !> \return val_expt contains the calculated expectation values,
-  !>         it should be zero before calculations
+  !> \return val_expt contains the calculated expectation values
+  !> \note \var(val_ints) contains the upper and diagonal parts if using triangular format;
+  !>       \var(val_expt) should be zero before calculations
   subroutine gen1int_dal_main(prop_name, is_lao, order_mom,  &
                               max_num_cent, order_geo_total, &
                               is_triang, get_int, wrt_int,   &

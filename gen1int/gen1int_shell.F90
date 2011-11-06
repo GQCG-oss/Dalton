@@ -951,7 +951,7 @@ module gen1int_shell
     real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
     real(REALK), intent(inout) :: val_expt(num_dens,*)
     ! zero expectation values
-    if ((kind_dens==1 .and. .not.sym_int) .and. (kind_dens==-1 .and. sym_int)) then
+    if ((kind_dens==1 .and. .not.sym_int) .or. (kind_dens==-1 .and. sym_int)) then
       return
     else
       call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
@@ -990,11 +990,12 @@ module gen1int_shell
     real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
     real(REALK), intent(inout) :: val_expt(num_dens,*)
     real(REALK), allocatable :: tmp_expt(:,:,:)  !temporary expectation values
+    type(shell_int_t) tmp_prop                   !temporary contracted integrals
     integer addr_opt_derv                        !address of operators and derivatives
-    integer iderv, iopt, idens                   !incremental recorders
+    integer ibra, iket, iderv, iopt, idens       !incremental recorders
     integer ierr                                 !error information
     ! zero expectation values
-    if ((kind_dens==1 .and. .not.sym_int) .and. (kind_dens==-1 .and. sym_int)) then
+    if ((kind_dens==1 .and. .not.sym_int) .or. (kind_dens==-1 .and. sym_int)) then
       return
     else
       ! both AO density and integral matrices are symmetric or anti-symmetric
@@ -1002,6 +1003,7 @@ module gen1int_shell
         allocate(tmp_expt(num_dens,prop_int%num_opt,prop_int%num_geo_derv), &
                  stat=ierr)
         if (ierr/=0) stop "gen1int_shell_tr_tri_off>> failed to allocate tmp_expt!"
+        tmp_expt = 0.0_REALK
         call gen1int_shell_tr_square(prop_int, 0, num_ao_orb, kind_dens, &
                                      dim_dens, num_dens, ao_dens, tmp_expt)
         addr_opt_derv = base_geo_derv*prop_int%num_opt
@@ -1019,11 +1021,45 @@ module gen1int_shell
         call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
                                      kind_dens, dim_dens, num_dens, ao_dens, &
                                      val_expt)
-        ! takes the opposite sign for anti-symmetric integral matrices
-        if (.not.sym_int) prop_int%contr_ints = -prop_int%contr_ints
-        call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
+        ! the parts opposite the main diagonal
+        tmp_prop%base_idx_bra = prop_int%base_idx_ket
+        tmp_prop%base_idx_ket = prop_int%base_idx_bra
+        tmp_prop%num_orb_bra = prop_int%num_orb_ket
+        tmp_prop%num_orb_ket = prop_int%num_orb_bra
+        tmp_prop%num_opt = prop_int%num_opt
+        tmp_prop%num_geo_derv = prop_int%num_geo_derv
+        allocate(tmp_prop%contr_ints(tmp_prop%num_orb_bra,tmp_prop%num_orb_ket, &
+                                     tmp_prop%num_opt,tmp_prop%num_geo_derv), stat=ierr)
+        if (ierr/=0) stop "gen1int_shell_tr_tri_off>> failed to allocate contr_ints!"
+        ! symmetric integral matrix
+        if (sym_int) then
+          do iderv = 1, tmp_prop%num_geo_derv
+            do iopt = 1, tmp_prop%num_opt
+              do iket = 1, tmp_prop%num_orb_ket
+                do ibra = 1, tmp_prop%num_orb_bra
+                  tmp_prop%contr_ints(ibra,iket,iopt,iderv) &
+                    = prop_int%contr_ints(iket,ibra,iopt,iderv)
+                end do
+              end do
+            end do
+          end do
+        ! anti-symmetric integral matrix
+        else
+          do iderv = 1, tmp_prop%num_geo_derv
+            do iopt = 1, tmp_prop%num_opt
+              do iket = 1, tmp_prop%num_orb_ket
+                do ibra = 1, tmp_prop%num_orb_bra
+                  tmp_prop%contr_ints(ibra,iket,iopt,iderv) &
+                    = -prop_int%contr_ints(iket,ibra,iopt,iderv)
+                end do
+              end do
+            end do
+          end do
+        end if
+        call gen1int_shell_tr_square(tmp_prop, base_geo_derv, num_ao_orb,    &
                                      kind_dens, dim_dens, num_dens, ao_dens, &
                                      val_expt)
+        deallocate(tmp_prop%contr_ints)
       end if
     end if
     return
@@ -1063,13 +1099,14 @@ module gen1int_shell
     select case(kind_dens)
     ! symmetric matrices (column- or ket-major, upper and diagonal parts)
     case(1)
-      ! diagonal part integral matrices
+      ! block of integral matrices along the main diagonal
       if (prop_int%base_idx_bra==prop_int%base_idx_ket) then
         do iderv = 1, prop_int%num_geo_derv
           do iopt = 1, prop_int%num_opt
             addr_opt_derv = addr_opt_derv+1
             do idens = 1, num_dens
-              ! lower and diagonal parts
+              ! lower and diagonal parts of the block of integral matrices,
+              ! and the upper and diagonal parts of the corresponding block in AO density matrices
               addr_bra = (prop_int%base_idx_bra-1)*prop_int%base_idx_bra/2
               do ibra = 1, prop_int%num_orb_bra
                 addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
@@ -1079,7 +1116,9 @@ module gen1int_shell
                     * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
                 end do
               end do
-              ! upper part
+              ! upper part of the block of integral matrices,
+              ! and the lower part of the corresponding block in AO density matrices
+              ! which are the same as the corresponding upper block
               addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
               do iket = 1, prop_int%num_orb_ket
                 addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
@@ -1093,6 +1132,7 @@ module gen1int_shell
           end do
         end do
       ! upper part integral matrices, needs lower part AO density matrices
+      ! which are the same as the corresponding upper block
       else if (prop_int%base_idx_bra<prop_int%base_idx_ket) then
         do iderv = 1, prop_int%num_geo_derv
           do iopt = 1, prop_int%num_opt
@@ -1110,8 +1150,7 @@ module gen1int_shell
             end do
           end do
         end do
-      ! lower part integral matrices, needs upper part AO density matrices,
-      ! or the lower part AO density matrices
+      ! lower part integral matrices, needs upper part AO density matrices
       else
         do iderv = 1, prop_int%num_geo_derv
           do iopt = 1, prop_int%num_opt
@@ -1132,29 +1171,32 @@ module gen1int_shell
       end if
     ! anti-symmetric matrices (column- or ket-major, upper and diagonal parts)
     case(-1)
-      ! diagonal part integral matrices
+      ! block of integral matrices along the main diagonal
       if (prop_int%base_idx_bra==prop_int%base_idx_ket) then
         do iderv = 1, prop_int%num_geo_derv
           do iopt = 1, prop_int%num_opt
             addr_opt_derv = addr_opt_derv+1
             do idens = 1, num_dens
-              ! lower and diagonal parts
+              ! lower and diagonal parts of the block of integral matrices,
+              ! and the upper and diagonal parts of the corresponding block in AO density matrices
               addr_bra = (prop_int%base_idx_bra-1)*prop_int%base_idx_bra/2
               do ibra = 1, prop_int%num_orb_bra
                 addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
                 do iket = 1, ibra
                   val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
-                    - prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
                     * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
                 end do
               end do
-              ! upper part
+              ! upper part of the block of integral matrices,
+              ! and the lower part of the corresponding block in AO density matrices
+              ! which takes the opposite sign of corresponding upper block
               addr_ket = (prop_int%base_idx_ket-1)*prop_int%base_idx_ket/2
               do iket = 1, prop_int%num_orb_ket
                 addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
                 do ibra = 1, iket-1
                   val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
-                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    - prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
                     * ao_dens(addr_ket+ibra+prop_int%base_idx_bra,idens)
                 end do
               end do
@@ -1162,6 +1204,7 @@ module gen1int_shell
           end do
         end do
       ! upper part integral matrices, needs lower part AO density matrices
+      ! which takes the opposite sign of corresponding upper block
       else if (prop_int%base_idx_bra<prop_int%base_idx_ket) then
         do iderv = 1, prop_int%num_geo_derv
           do iopt = 1, prop_int%num_opt
@@ -1172,15 +1215,14 @@ module gen1int_shell
                 addr_ket = addr_ket+iket+prop_int%base_idx_ket-1  !=(iket+base_idx_ket-1)*(iket+base_idx_ket)/2
                 do ibra = 1, prop_int%num_orb_bra
                   val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
-                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    - prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
                     * ao_dens(addr_ket+ibra+prop_int%base_idx_bra,idens)
                 end do
               end do
             end do
           end do
         end do
-      ! lower part integral matrices, needs upper part AO density matrices,
-      ! or the opposite of lower part AO density matrices
+      ! lower part integral matrices, needs upper part AO density matrices
       else
         do iderv = 1, prop_int%num_geo_derv
           do iopt = 1, prop_int%num_opt
@@ -1191,7 +1233,7 @@ module gen1int_shell
                 addr_bra = addr_bra+ibra+prop_int%base_idx_bra-1  !=(ibra+base_idx_bra-1)*(ibra+base_idx_bra)/2
                 do iket = 1, prop_int%num_orb_ket
                   val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
-                    - prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
+                    + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
                     * ao_dens(addr_bra+iket+prop_int%base_idx_ket,idens)
                 end do
               end do
@@ -1205,8 +1247,9 @@ module gen1int_shell
         do iopt = 1, prop_int%num_opt
           addr_opt_derv = addr_opt_derv+1
           do idens = 1, num_dens
+            addr_bra = (prop_int%base_idx_bra-1)*num_ao_orb
             do ibra = 1, prop_int%num_orb_bra
-              addr_bra = prop_int%base_idx_bra*num_ao_orb
+              addr_bra = addr_bra+num_ao_orb
               do iket = 1, prop_int%num_orb_ket
                 val_expt(idens,addr_opt_derv) = val_expt(idens,addr_opt_derv) &
                   + prop_int%contr_ints(ibra,iket,iopt,iderv)                 &
