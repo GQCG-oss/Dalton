@@ -1720,15 +1720,14 @@ C
           EXCENT=.FALSE.
                
 C Check if any centers were in the same LoProp calculation
-          write(lupri,*) newexc
-          IF NEWEXC THEN
+          IF (NEWEXC) THEN
             DO L = 1, NEXLST
               IF (EXLIST(1,SITEI) .EQ. EXLIST(L,SITEJ)) EXCENT = .TRUE.
             ENDDO
           ELSE
             DO L = 1, NEXLST
               IF (EXLIST(L,SITEI) .EQ. EXLIST(1,SITEJ)) EXCENT = .TRUE.
-            END DO
+            ENDDO
           ENDIF
 
 C Form F vector due to the permament moments

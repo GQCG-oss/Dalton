@@ -3046,8 +3046,7 @@ C         Inversion
               ENDIF
 
               EXCENT = .FALSE.
-          write(lupri,*) newexc
-              IF NEWEXC THEN
+              IF (NEWEXC) THEN
                 DO N = 1, NEXLST
                   IF (EXLIST(1,I) .EQ. EXLIST(N,J)) EXCENT = .TRUE.
                 ENDDO
@@ -4124,8 +4123,7 @@ C     Get electric fields due to permanent moments
          IF (J .EQ. I) GOTO 520
 
          EXCENT = .FALSE.
-          write(lupri,*) newexc
-         IF NEWEXC THEN
+         IF (NEWEXC) THEN
            DO L = 1, NEXLST
              IF (EXLIST(1,I) .EQ. EXLIST(L,J)) EXCENT = .TRUE.
            ENDDO
@@ -4294,8 +4292,7 @@ C tensor DIP at site J.
       CALL DZERO(MY,3)
       IF (J .NE. I) THEN
         EXCENT = .FALSE.
-        IF NEWEXC THEN
-          write(lupri,*) newexc
+        IF (NEWEXC) THEN
           DO L = 1, NEXLST
             IF (EXLIST(1,I) .EQ. EXLIST(L,J)) EXCENT = .TRUE.
           ENDDO
