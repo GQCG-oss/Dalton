@@ -88,7 +88,7 @@
     logical, intent(in) :: get_expt
     logical, intent(in) :: redunt_expt
     logical, intent(in) :: wrt_expt
-    real(REALK), intent(out) :: val_expt(num_dens,*)
+    real(REALK), intent(inout) :: val_expt(num_dens,*)
     integer, intent(in) :: io_std
     integer, intent(in) :: level_print
 #ifdef BUILD_GEN1INT
