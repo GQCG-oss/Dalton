@@ -13,8 +13,8 @@ F90_MODS = gen1int_shell.F90
 
 F90_MOD_OBJS = $(F90_MODS:.F90=.o)
 
-F90_OBJS = gen1int_prop_attr.o gen1int_dal_init.o gen1int_dal_clean.o \
-           gen1int_dal_prop.o gen1int_dal_main.o gen1int_dal_test.o
+F90_OBJS = gen1int_prop_attr.o gen1int_ifc_init.o gen1int_ifc_clean.o \
+           gen1int_ifc_prop.o gen1int_ifc_main.o gen1int_ifc_test.o
 
 libgen1int.a : $(F90_OBJS) $(F90_MOD_OBJS)
 	$(AR) $(ARFLAGS) $@ $?

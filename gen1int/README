@@ -18,23 +18,24 @@
      tries to find Gen1Int library libgen1int.a and sets the corresponding compiler
      flag (-DBUILD_GEN1INT) if found Gen1Int library
    * Makefile
-     add Gen1Int module
+     adds Gen1Int module
+   * setup
+     tries to find Gen1Int library libgen1int.a and enables Gen1Int interface
    * CMakeLists.txt
-     tries to find Gen1Int library libgen1int.a and sets the corresponding compiler 
-     flag (-DBUILD_GEN1INT) if found Gen1Int library
-   * cmake/Sources.cmake
-     adds the source codes of Gen1Int interface
+     tries to find Gen1Int library libgen1int.a, and sets the corresponding compiler 
+     flag (-DBUILD_GEN1INT) and adds the source codes of Gen1Int interface if found
+     Gen1Int library
    * abacus/dalton.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_dal_clean) to clean up memory etc. for Gen1Int interface
+     calls \fn(gen1int_ifc_clean) to clean up memory etc. for Gen1Int interface
    * abacus/herdrv.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_dal_test) to perform test suite of Gen1Int interface
+     calls \fn(gen1int_ifc_test) to perform test suite of Gen1Int interface
    * abacus/herrdn.F (please search BUILD_GEN1INT)
-     some modifications for processing different ECPs, and calling \fn(gen1int_dal_init)
+     some modifications for processing different ECPs, and calling \fn(gen1int_ifc_init)
      to intialize Gen1Int interface
    * abacus/her1car.F (please search BUILD_GEN1INT)
      removes the interface of calling old ECP subroutine
    * abacus/her1drv.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_dal_main) to calculate property integrals
+     calls \fn(gen1int_ifc_main) to calculate property integrals
    * include/cbiher.h
      adds logical variable \var(TEST_GEN1INT) to perform test suite of Gen1Int interface
 
@@ -46,15 +47,15 @@
 3. Important files in Gen1Int interface
 
    * Makefile              : Makefile for Dalton
-   * gen1int_dal_clean.F90 : cleans up the data used in Gen1Int interface after
+   * gen1int_ifc_clean.F90 : cleans up the data used in Gen1Int interface after
                              all calculations
-   * gen1int_dal_init.F90  : initializes the data used in Gen1Int interface before
+   * gen1int_ifc_init.F90  : initializes the data used in Gen1Int interface before
                              any calculation
-   * gen1int_dal_test.F90  : test suite of Gen1Int interface
-   * gen1int_dal_main.F90  : main driver of calling Gen1Int interface from Dalton,
+   * gen1int_ifc_test.F90  : test suite of Gen1Int interface
+   * gen1int_ifc_main.F90  : main driver of calling Gen1Int interface from Dalton,
                              loops over different total geometric derivatives, and
-                             calls gen1int_dal_prop() to perform calculations
-   * gen1int_dal_prop.F90  : calculates property integrals and/or expectation values,
+                             calls gen1int_ifc_prop() to perform calculations
+   * gen1int_ifc_prop.F90  : calculates property integrals and/or expectation values,
                              loops all necessary AO sub-shells, the contracted integrals
                              between two AO sub-shells are then calculated through
                              the subroutines in module gen1int_shell
@@ -69,11 +70,11 @@
    * stdout.h              : IO unit of standard output
    * xkind.h               : kind type parameter of real numbers
 
-   When you use this Gen1Int interface, please be aware that (see gen1int_dal_main.F90):
+   When you use this Gen1Int interface, please be aware that (see gen1int_ifc_main.F90):
      * \var(val_ints) contains the upper and diagonal parts if using triangular format;
      * \var(val_expt) should be zero before calculations
 
-   The parallelization may be implemented in gen1int_dal_main.F90 and/or gen1int_dal_prop.F90,
+   The parallelization may be implemented in gen1int_ifc_main.F90 and/or gen1int_ifc_prop.F90,
    which correspond to total geometric derivatives and AO sub-shells, respectively.
 
 4. Please see INSTALL for installation instructions

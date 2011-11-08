@@ -38,7 +38,7 @@
   !> \param dal_work is the Dalton workspace
   !> \param io_std is the IO unit of standard output
   !> \param level_print is the level of print
-  subroutine gen1int_dal_test(len_work, dal_work, io_std, level_print)
+  subroutine gen1int_ifc_test(len_work, dal_work, io_std, level_print)
     ! AO sub-shells
     use gen1int_shell
     implicit none
@@ -56,27 +56,27 @@
     character*8, parameter :: PROP_EXPT(NUM_EXP_TEST) = &
       (/"ANGLON  ", "KINENERG", "PSO     "/)
     ! number of tests
-    integer, parameter :: NUM_TEST = 7
+    integer, parameter :: NUM_TEST = 8
     ! property integral names, see subroutine \fn(gen1int_shell_prop) in gen1int_shell.F90
     character*8, parameter :: PROP_NAME(NUM_TEST) =                 &
-      (/"ANGLON  ", "KINENERG", "NSTLON  ", "NSTNOL  ", "OVERLAP ", &
-        "POTENERG", "PSO     "/)
+      (/"ANGLON  ", "DIPLEN  ", "KINENERG", "NSTLON  ", "NSTNOL  ", &
+        "OVERLAP ", "POTENERG", "PSO     "/)
     ! property integral names in subroutine \fn(PR1IN1) in abacus/her1pro.F
     character*8, parameter :: DAL_PROP(NUM_TEST) =                  &
-      (/"ANGLON  ", "KINENERG", "NUCSLO  ", "NUCSNLO ", "OVERLAP ", &
-        "POTENERG", "PSO     "/)
+      (/"ANGLON  ", "DPLGRA  ", "KINENERG", "NUCSLO  ", "NUCSNLO ", &
+        "OVERLAP ", "POTENERG", "PSO     "/)
     ! if London atomic orbitals
     logical, parameter :: IS_LAO(NUM_TEST) = &
-      (/.false., .false., .false., .false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false., .false., .false., .false./)
     ! order of Cartesian multipole moments
     integer, parameter :: ORDER_MOM(NUM_TEST) = &
-      (/0, 0, 0, 0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0, 0, 0, 0/)
     ! maximum number of differentiated centers
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &
-      (/0, 0, 0, 0, 0, 0, 0/)
+      (/0, 3, 0, 0, 0, 0, 0, 0/)
     ! order of total geometric derivatives
     integer, parameter :: ORDER_GEO_TOT(NUM_TEST) = &
-      (/0, 0, 0, 0, 0, 0, 0/)
+      (/0, 1, 0, 0, 0, 0, 0, 0/)
     ! if getting integrals back from Gen1Int
     logical, parameter :: GET_INT = .true.
     ! if writing integrals on file
@@ -166,10 +166,10 @@
     integer addr_gen, addr_dal
     ! error information
     integer ierr
-    call QENTER("gen1int_dal_test")
+    call QENTER("gen1int_ifc_test")
     ! checks if the Gen1Int interface is initialized
     if (.not.shell_init) &
-      call QUIT("gen1int_dal_test>> Gen1Int interface is not properly initialized!")
+      call QUIT("gen1int_ifc_test>> Gen1Int interface is not properly initialized!")
     !-! gets the number of orbitals
     !-call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
     write(io_std,100) "threshold of error", ERR_THRSH
@@ -178,15 +178,15 @@
     dim_tri_dens = NBAST*(NBAST+1)/2
     dim_sq_dens = NBAST*NBAST
     allocate(sym_ao_dens(dim_tri_dens), stat=ierr)
-    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sym_ao_dens!")
+    if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sym_ao_dens!")
     allocate(anti_ao_dens(dim_tri_dens), stat=ierr)
-    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate anti_ao_dens!")
+    if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate anti_ao_dens!")
     allocate(sq_sym_dens(NBAST,NBAST), stat=ierr)
-    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sq_sym_dens!")
+    if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sq_sym_dens!")
     allocate(sq_anti_dens(NBAST,NBAST), stat=ierr)
-    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sq_anti_dens!")
+    if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sq_anti_dens!")
     allocate(sq_gen_dens(NBAST,NBAST), stat=ierr)
-    if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate sq_gen_dens!")
+    if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sq_gen_dens!")
     call random_number(sym_ao_dens)
     call random_number(sq_gen_dens)
     ! we uses the upper and diagonal parts in triangular format
@@ -232,25 +232,25 @@
                           ".Gen1Int failed!"
         write(io_std,999) "required memory", end_dal_int
         write(io_std,999) "available memory", len_work
-        call QUIT("gen1int_dal_test>> increase Dalton workspace!")
+        call QUIT("gen1int_ifc_test>> increase Dalton workspace!")
       end if
       ! computes the expectation values of symmetric AO density matrix in triangular format
       dal_work(1:num_expt) = 0.0_REALK
-      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
+      call gen1int_ifc_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
                             MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
                             is_triang, .false., WRT_INT, 1,                 &
                             dal_work(strt_gen_int:end_gen_int),             &
                             1, dim_tri_dens, NUM_DENS, sym_ao_dens, .true., &
-                            WRT_EXPT, dal_work(1:num_expt),                 &
+                            .false., WRT_EXPT, dal_work(1:num_expt),        &
                             io_std, level_print)
       ! computes the expectation values of symmetric AO density matrix in square format
       dal_work(strt_sq_expt:end_sq_expt) = 0.0_REALK
-      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
-                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
-                            is_triang, .false., WRT_INT, 1,                 &
-                            dal_work(strt_gen_int:end_gen_int),             &
-                            0, dim_sq_dens, NUM_DENS, sq_sym_dens, .true.,  &
-                            WRT_EXPT, dal_work(strt_sq_expt:end_sq_expt),   &
+      call gen1int_ifc_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst),        &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),               &
+                            is_triang, .false., WRT_INT, 1,                        &
+                            dal_work(strt_gen_int:end_gen_int),                    &
+                            0, dim_sq_dens, NUM_DENS, sq_sym_dens, .true.,         &
+                            .false., WRT_EXPT, dal_work(strt_sq_expt:end_sq_expt), &
                             io_std, level_print)
       if (kind_int==-1) then
         if (any(abs(dal_work(1:num_expt))>ERR_THRSH)) then
@@ -301,21 +301,21 @@
       end if
       ! computes the expectation values of anti-symmetric AO density matrix in triangular format
       dal_work(1:num_expt) = 0.0_REALK
-      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst),   &
+      call gen1int_ifc_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst),   &
                             MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),          &
                             is_triang, .false., WRT_INT, 1,                   &
                             dal_work(strt_gen_int:end_gen_int),               &
                             -1, dim_tri_dens, NUM_DENS, anti_ao_dens, .true., &
-                            WRT_EXPT, dal_work(1:num_expt),                   &
+                            .false., WRT_EXPT, dal_work(1:num_expt),          &
                             io_std, level_print)
       ! computes the expectation values of anti-symmetric AO density matrix in square format
       dal_work(strt_sq_expt:end_sq_expt) = 0.0_REALK
-      call gen1int_dal_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst), &
-                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
-                            is_triang, .false., WRT_INT, 1,                 &
-                            dal_work(strt_gen_int:end_gen_int),             &
-                            0, dim_sq_dens, NUM_DENS, sq_anti_dens, .true., &
-                            WRT_EXPT, dal_work(strt_sq_expt:end_sq_expt),   &
+      call gen1int_ifc_main(PROP_EXPT(itst), IS_LAO(itst), ORDER_MOM(itst),        &
+                            MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),               &
+                            is_triang, .false., WRT_INT, 1,                        &
+                            dal_work(strt_gen_int:end_gen_int),                    &
+                            0, dim_sq_dens, NUM_DENS, sq_anti_dens, .true.,        &
+                            .false., WRT_EXPT, dal_work(strt_sq_expt:end_sq_expt), &
                             io_std, level_print)
       if (kind_int==1) then
         if (any(abs(dal_work(1:num_expt))>ERR_THRSH)) then
@@ -399,32 +399,26 @@
         write(io_std,100) "test of "//trim(PROP_NAME(itst))//".Gen1Int failed!"
         write(io_std,999) "required memory", end_dal_int
         write(io_std,999) "available memory", len_work
-        call QUIT("gen1int_dal_test>> increase Dalton workspace!")
+        call QUIT("gen1int_ifc_test>> increase Dalton workspace!")
       end if
       ! computes the integrals and/or expectation values
       dal_work(1:num_expt) = 0.0_REALK
       if (is_triang) then
-        call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst), &
-                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
-                              is_triang, GET_INT, WRT_INT, dim_int,           &
-                              dal_work(strt_gen_int:end_gen_int),             &
-                              kind_int, dim_tri_dens, NUM_DENS, sym_ao_dens,  &
-                              GET_EXPT, WRT_EXPT, dal_work(1:num_expt),       &
+        call gen1int_ifc_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),    &
+                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),           &
+                              is_triang, GET_INT, WRT_INT, dim_int,              &
+                              dal_work(strt_gen_int:end_gen_int),                &
+                              kind_int, dim_tri_dens, NUM_DENS, sym_ao_dens,     &
+                              GET_EXPT, .false., WRT_EXPT, dal_work(1:num_expt), &
                               io_std, level_print)
       else
-        call gen1int_dal_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst), &
-                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),        &
-                              is_triang, GET_INT, WRT_INT, dim_int,           &
-                              dal_work(strt_gen_int:end_gen_int),             &
-                              kind_int, dim_sq_dens, NUM_DENS, sq_gen_dens,   &
-                              GET_EXPT, WRT_EXPT, dal_work(1:num_expt),       &
+        call gen1int_ifc_main(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),    &
+                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst),           &
+                              is_triang, GET_INT, WRT_INT, dim_int,              &
+                              dal_work(strt_gen_int:end_gen_int),                &
+                              kind_int, dim_sq_dens, NUM_DENS, sq_gen_dens,      &
+                              GET_EXPT, .false., WRT_EXPT, dal_work(1:num_expt), &
                               io_std, level_print)
-      end if
-      ! Dalton uses different sign for the following integrals
-      if (PROP_NAME(itst)=="POTENERG" .or. PROP_NAME(itst)=="NSTLON  " .or. &
-          PROP_NAME(itst)=="PSO     ") then
-        dal_work(strt_gen_int:end_gen_int) = -dal_work(strt_gen_int:end_gen_int)
-        dal_work(1:num_expt) = -dal_work(1:num_expt)
       end if
       ! gets the referenced results from HERMIT
 !FIXME: \var(FORQM3)
@@ -434,7 +428,7 @@
         max_typ = 3*MXCOOR
       end if
       allocate(int_rep(max_typ), stat=ierr)
-      if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate int_rep!")
+      if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate int_rep!")
       !
       if (trim(PROP_NAME(itst))=="ELFGRDC" .or. trim(PROP_NAME(itst))=="ELFGRDS") then
          lint_ad = 9*NUCIND*(MAXREP+1)
@@ -442,10 +436,10 @@
          lint_ad = max_typ
       end if
       allocate(int_adr(lint_ad), stat=ierr)
-      if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate int_adr!")
+      if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate int_adr!")
       !
       allocate(lb_int(max_typ), stat=ierr)
-      if (ierr/=0) call QUIT("gen1int_dal_test>> failed to allocate lb_int!")
+      if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate lb_int!")
       base_free = 1
       len_free = len_work-end_dal_int
       write(io_std,100) "gets the referenced results from HERMIT ..."
@@ -485,6 +479,12 @@
       deallocate(int_rep)
       deallocate(int_adr)
       deallocate(lb_int)
+      ! Dalton uses different sign for the following integrals
+      if (DAL_PROP(itst)=="DPLGRA  " .or. DAL_PROP(itst)=="POTENERG" .or. &
+          DAL_PROP(itst)=="NUCSLO  " .or. DAL_PROP(itst)=="PSO     ") then
+        dal_work(strt_gen_int:end_gen_int) = -dal_work(strt_gen_int:end_gen_int)
+        dal_work(1:num_expt) = -dal_work(1:num_expt)
+      end if
       ! checks the results
       write(io_std,100) "checks the results of "//trim(PROP_NAME(itst))
       test_failed = .false.
@@ -567,19 +567,19 @@
     deallocate(sq_gen_dens)
     ! cleans up the data in Gen1Int interface after all calculations will be
     ! performed in abacus/dalton.F
-    call QEXIT("gen1int_dal_test")
+    call QEXIT("gen1int_ifc_test")
     return
-100 format("gen1int_dal_test>> ",A,Es16.6)
-110 format("gen1int_dal_test>> ",A,Es16.6,"-->",Es16.6)
-995 format("gen1int_dal_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", SYM>>",F18.12)
-996 format("gen1int_dal_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", ANTI>>",F18.12)
-997 format("gen1int_dal_test>> ",A,".EXP(",I6,")>> HERMIT>>",F18.12,", Gen1Int>>",F18.12)
-998 format("gen1int_dal_test>> ",A,".INT(",I6,",",I6,")>> HERMIT>>",F18.12, &
+100 format("gen1int_ifc_test>> ",A,Es16.6)
+110 format("gen1int_ifc_test>> ",A,Es16.6,"-->",Es16.6)
+995 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", SYM>>",F18.12)
+996 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", ANTI>>",F18.12)
+997 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> HERMIT>>",F18.12,", Gen1Int>>",F18.12)
+998 format("gen1int_ifc_test>> ",A,".INT(",I6,",",I6,")>> HERMIT>>",F18.12, &
            ", Gen1Int>>",F18.12)
-999 format("gen1int_dal_test>> ",A,I16)
+999 format("gen1int_ifc_test>> ",A,I16)
 #else
     write(io_std,100) "Gen1Int is not installed! No tests will be performed!"
     return
-100 format("gen1int_dal_test>> ",A)
+100 format("gen1int_ifc_test>> ",A)
 #endif
-  end subroutine gen1int_dal_test
+  end subroutine gen1int_ifc_test
