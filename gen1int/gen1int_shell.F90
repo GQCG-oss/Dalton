@@ -922,8 +922,8 @@ module gen1int_shell
     return
   end subroutine gen1int_shell_int_square
 
-  !> \brief calculates the expectation values and writes them on file is required,
-  !>        the involved integrals are belong to the diagonal parts in triangular format
+  !> \brief updates the expectation values, the involved integrals are belong to
+  !>        the diagonal parts in triangular format
   !> \author Bin Gao
   !> \date 2011-10-11
   !> \param prop_int contains the contracted property integrals between two AO sub-shells
@@ -961,8 +961,8 @@ module gen1int_shell
     return
   end subroutine gen1int_shell_tr_tri_diag
 
-  !> \brief calculates the expectation values and writes them on file is required,
-  !>        the involved integrals are belong to the off-diagonal parts in triangular format
+  !> \brief updates the expectation values, the involved integrals are belong to
+  !>        the off-diagonal parts in triangular format
   !> \author Bin Gao
   !> \date 2011-10-11
   !> \param prop_int contains the contracted property integrals between two AO sub-shells
@@ -1065,8 +1065,7 @@ module gen1int_shell
     return
   end subroutine gen1int_shell_tr_tri_off
 
-  !> \brief calculates the expectation values and writes them on file is required,
-  !>        the involved integrals are parts of square matrix
+  !> \brief updates the expectation values, the involved integrals are parts of square matrix
   !> \author Bin Gao
   !> \date 2011-10-11
   !> \param prop_int contains the contracted property integrals between two AO sub-shells
