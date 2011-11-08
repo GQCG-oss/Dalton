@@ -156,8 +156,16 @@ if(ENABLE_GEN1INT)
         add_definitions(-DBUILD_GEN1INT)
         set(LIBS
             ${LIBS}
-            ${GEN1INT_LIBRARIES}
-            )
+            ${GEN1INT_LIBRARIES})
+        set(FREE_FORTRAN_SOURCES
+            ${FREE_FORTRAN_SOURCES}
+            gen1int/gen1int_shell.F90
+            gen1int/gen1int_prop_attr.F90
+            gen1int/gen1int_ifc_init.F90
+            gen1int/gen1int_ifc_clean.F90
+            gen1int/gen1int_ifc_prop.F90
+            gen1int/gen1int_ifc_main.F90
+            gen1int/gen1int_ifc_test.F90)
     else()
         message("-- Disable Gen1Int module")
     endif()

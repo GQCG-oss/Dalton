@@ -228,7 +228,7 @@ C
 #ifdef BUILD_GEN1INT
 C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
       if (TEST_GEN1INT)
-     &  call gen1int_dal_test(LWORK, WORK, LUPRI, IPRDEF)
+     &  call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
 #endif
 
 C
