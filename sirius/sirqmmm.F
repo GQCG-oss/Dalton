@@ -3046,9 +3046,15 @@ C         Inversion
               ENDIF
 
               EXCENT = .FALSE.
-              DO N = 1, NEXLST
-                IF (EXLIST(N,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
-              END DO
+              IF (NEWEXC) THEN
+                DO N = 1, NEXLST
+                  IF (EXLIST(1,I) .EQ. EXLIST(N,J)) EXCENT = .TRUE.
+                ENDDO
+              ELSE
+                DO N = 1, NEXLST
+                  IF (EXLIST(N,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+                END DO
+              ENDIF
 
               IF (EXCENT) THEN
                 DO K = 1, 3
@@ -4117,10 +4123,15 @@ C     Get electric fields due to permanent moments
          IF (J .EQ. I) GOTO 520
 
          EXCENT = .FALSE.
-
-         DO 522 L=1,NEXLST
-            IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
- 522     CONTINUE
+         IF (NEWEXC) THEN
+           DO L = 1, NEXLST
+             IF (EXLIST(1,I) .EQ. EXLIST(L,J)) EXCENT = .TRUE.
+           ENDDO
+         ELSE
+           DO L = 1, NEXLST
+             IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+           END DO
+         ENDIF
 
          IF (.NOT. EXCENT) THEN
 
@@ -4281,9 +4292,15 @@ C tensor DIP at site J.
       CALL DZERO(MY,3)
       IF (J .NE. I) THEN
         EXCENT = .FALSE.
-        DO L=1,NEXLST
-          IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
-        ENDDO
+        IF (NEWEXC) THEN
+          DO L = 1, NEXLST
+            IF (EXLIST(1,I) .EQ. EXLIST(L,J)) EXCENT = .TRUE.
+          ENDDO
+        ELSE
+          DO L = 1, NEXLST
+            IF (EXLIST(L,I) .EQ. EXLIST(1,J)) EXCENT = .TRUE.
+          END DO
+        ENDIF
 
         IF (.NOT. EXCENT) THEN
 C     Get the polarizability tensor for this site

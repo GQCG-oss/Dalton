@@ -29,20 +29,20 @@
   !> \brief cleans up the data used in Gen1Int interface after all calculations
   !> \author Bin Gao
   !> \date 2011-10-02
-  subroutine gen1int_dal_clean
+  subroutine gen1int_ifc_clean
     ! AO sub-shells
     use gen1int_shell
     implicit none
 #ifdef BUILD_GEN1INT
     if (.not. shell_init) return
-    call QENTER("gen1int_dal_clean")
+    call QENTER("gen1int_ifc_clean")
     ! cleans up the AO sub-shells
     call gen1int_shell_clean(num_ao_shells, ao_shells)
     deallocate(ao_shells)
     num_ao_shells = 0
-    call QEXIT("gen1int_dal_clean")
+    call QEXIT("gen1int_ifc_clean")
     return
 #else
-    call QUIT("gen1int_dal_clean>> Gen1Int is not installed!")
+    call QUIT("gen1int_ifc_clean>> Gen1Int is not installed!")
 #endif
-  end subroutine gen1int_dal_clean
+  end subroutine gen1int_ifc_clean
