@@ -1471,6 +1471,7 @@ module gen1int_shell
 #ifdef BUILD_GEN1INT
     ! number of operators including derivatives
     integer num_opt_derv
+    ! contracted integrals from Gen1Int
     real(REALK), allocatable :: gen_ints(:,:,:,:,:)
     !error information
     integer ierr

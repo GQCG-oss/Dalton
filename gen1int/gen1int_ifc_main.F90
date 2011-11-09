@@ -175,8 +175,8 @@
         write(io_std,110) "number of compositions of differentiated centers", &
                            num_paths
       if (level_print>=20) then
-        write(io_std,120) ipath, base_geo_derv, wt_node(order_geo_total), &
-                          (idx_cent(icent),"(",order_cent(icent),         &
+        write(io_std,120) 1, base_geo_derv, wt_node(order_geo_total), &
+                          (idx_cent(icent),"(",order_cent(icent),     &
                           ")",icent=1,wt_node(order_geo_total))
       end if
       ! calculates the property integrals

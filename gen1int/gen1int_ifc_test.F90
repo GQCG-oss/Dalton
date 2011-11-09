@@ -122,10 +122,8 @@
     logical, parameter :: PROP_PRINT = .false.
     ! number of integration points for diamagnetic spin-orbit integrals
     integer, parameter :: NUM_PQUAD = 40
-    ! uses \var(NBAST) (number of orbitals)
-#include "inforb.h"
-    !-! number of orbitals
-    !-integer num_orb
+    ! number of orbitals
+    integer num_orb
     ! uses \var(MXCENT)
 #include "mxcent.h"
     ! number of atomic centers
@@ -150,8 +148,10 @@
     integer strt_gen_int, end_gen_int
     ! addresses for integrals from Dalton's routines
     integer strt_dal_int, end_dal_int
+#if !defined (PRG_DIRAC)
     ! base address of free Dalton workspace
     integer base_free
+#endif
     ! length of free Dalton workspace
     integer len_free
     ! ratio of values from Gen1Int to Dalton's routines
@@ -170,28 +170,28 @@
     ! checks if the Gen1Int interface is initialized
     if (.not.shell_init) &
       call QUIT("gen1int_ifc_test>> Gen1Int interface is not properly initialized!")
-    !-! gets the number of orbitals
-    !-call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
+    ! gets the number of orbitals
+    call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
     write(io_std,100) "threshold of error", ERR_THRSH
     write(io_std,110) "threshold of ratio to the referenced result", RATIO_THRSH
     ! sets artifical AO density matrices
-    dim_tri_dens = NBAST*(NBAST+1)/2
-    dim_sq_dens = NBAST*NBAST
+    dim_tri_dens = num_orb*(num_orb+1)/2
+    dim_sq_dens = num_orb*num_orb
     allocate(sym_ao_dens(dim_tri_dens), stat=ierr)
     if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sym_ao_dens!")
     allocate(anti_ao_dens(dim_tri_dens), stat=ierr)
     if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate anti_ao_dens!")
-    allocate(sq_sym_dens(NBAST,NBAST), stat=ierr)
+    allocate(sq_sym_dens(num_orb,num_orb), stat=ierr)
     if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sq_sym_dens!")
-    allocate(sq_anti_dens(NBAST,NBAST), stat=ierr)
+    allocate(sq_anti_dens(num_orb,num_orb), stat=ierr)
     if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sq_anti_dens!")
-    allocate(sq_gen_dens(NBAST,NBAST), stat=ierr)
+    allocate(sq_gen_dens(num_orb,num_orb), stat=ierr)
     if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate sq_gen_dens!")
     call random_number(sym_ao_dens)
     call random_number(sq_gen_dens)
     ! we uses the upper and diagonal parts in triangular format
     addr_gen = 0
-    do icol = 1, NBAST
+    do icol = 1, num_orb
       do irow = 1, icol-1
         addr_gen = addr_gen+1
         sym_ao_dens(addr_gen) = 0.1_REALK*sym_ao_dens(addr_gen)
@@ -370,6 +370,9 @@
     deallocate(sq_anti_dens)
     ! loops over different tests
     do itst = 1, NUM_TEST
+#ifdef PRG_DIRAC
+      if (DAL_PROP(itst)=="POTENERG") cycle
+#endif
       ! gets the number of operators including derivatives
       call gen1int_prop_attr(PROP_NAME(itst), IS_LAO(itst), ORDER_MOM(itst),  &
                              MAX_NUM_CENT(itst), ORDER_GEO_TOT(itst), NUCDEP, &
@@ -381,12 +384,10 @@
       ! size of integrals
       select case(kind_int)
       case(1, -1)
-        !-dim_int = num_orb*(num_orb+1)/2
-        dim_int = NBAST*(NBAST+1)/2
+        dim_int = num_orb*(num_orb+1)/2
         is_triang = .true.
       case default
-        !-dim_int = num_orb*num_orb
-        dim_int = NBAST*NBAST
+        dim_int = num_orb*num_orb
         is_triang = .false.
       end select
       size_int = dim_int*num_opt_derv
@@ -440,40 +441,72 @@
       !
       allocate(lb_int(max_typ), stat=ierr)
       if (ierr/=0) call QUIT("gen1int_ifc_test>> failed to allocate lb_int!")
+#if !defined (PRG_DIRAC)
       base_free = 1
+#endif
       len_free = len_work-end_dal_int
       write(io_std,100) "gets the referenced results from HERMIT ..."
       dal_work(strt_dal_expt:end_dal_expt) = 0.0_REALK
       if (is_triang) then
+#ifdef PRG_DIRAC
+        call PR1IN1(dal_work(end_dal_int+1:), len_free, int_rep, int_adr,               &
+                    lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                    PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                    NCOMP, TOFILE, MTFORM, DOINT)
+#else
         call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
                     lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                     PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
                     NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
                     GET_EXPT, sym_ao_dens)
+#endif
       else
+#ifdef PRG_DIRAC
+        call PR1IN1(dal_work(end_dal_int+1:), len_free, int_rep, int_adr,               &
+                    lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                    PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                    NCOMP, TOFILE, MTFORM, DOINT)
+#else
         call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
                     lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                     PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
                     NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
                     GET_EXPT, sq_gen_dens)
+#endif
       end if
 !FIXME: why the first time calling PR1IN1 gives wrong results??
       if (itst==1) then
+#if !defined (PRG_DIRAC)
         base_free = 1
+#endif
         len_free = len_work-end_dal_int
         dal_work(strt_dal_expt:end_dal_expt) = 0.0_REALK
         if (is_triang) then
+#ifdef PRG_DIRAC
+          call PR1IN1(dal_work(end_dal_int+1:), len_free, int_rep, int_adr,               &
+                      lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                      PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                      NCOMP, TOFILE, MTFORM, DOINT)
+#else
           call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
                       lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                       PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
                       NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
                       GET_EXPT, sym_ao_dens)
+#endif
         else
+#ifdef PRG_DIRAC
+          call PR1IN1(dal_work(end_dal_int+1:), len_free, int_rep, int_adr,               &
+                      lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
+                      PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
+                      NCOMP, TOFILE, MTFORM, DOINT)
+#else
           call PR1IN1(dal_work(end_dal_int+1:), base_free, len_free, int_rep, int_adr,    &
                       lb_int, DAL_PROP(itst)(1:7), ORDER_MOM(itst), NUM_PQUAD, is_triang, &
                       PROP_PRINT, level_print, dal_work(strt_dal_int:end_dal_int),        &
                       NCOMP, TOFILE, MTFORM, DOINT, dal_work(strt_dal_expt:end_dal_expt), &
                       GET_EXPT, sq_gen_dens)
+#endif
         end if
       end if
       deallocate(int_rep)
@@ -491,7 +524,7 @@
       addr_gen = end_dal_expt
       addr_dal = end_gen_int
       if (is_triang) then
-        do icol = 1, NBAST
+        do icol = 1, num_orb
           do irow = 1, icol
             addr_gen = addr_gen+1
             addr_dal = addr_dal+1
@@ -514,8 +547,8 @@
           end do
         end do
       else
-        do icol = 1, NBAST
-          do irow = 1, NBAST
+        do icol = 1, num_orb
+          do irow = 1, num_orb
             addr_gen = addr_gen+1
             addr_dal = addr_dal+1
             ! we check the ratio for absolutely greater values
@@ -537,6 +570,7 @@
           end do
         end do
       end if
+#if !defined (PRG_DIRAC)
       if (GET_EXPT) then
         do ierr = 1, num_expt
           ! we check the ratio for absolutely greater values
@@ -557,6 +591,7 @@
           end if
         end do
       end if
+#endif
       if (test_failed) then
         write(io_std,100) "test of "//trim(PROP_NAME(itst))//".Gen1Int failed!"
       else
@@ -566,14 +601,16 @@
     deallocate(sym_ao_dens)
     deallocate(sq_gen_dens)
     ! cleans up the data in Gen1Int interface after all calculations will be
-    ! performed in abacus/dalton.F
+    ! performed in abacus/dalton.F (Dalton), main/dirac.F(Dirac)
     call QEXIT("gen1int_ifc_test")
     return
 100 format("gen1int_ifc_test>> ",A,Es16.6)
 110 format("gen1int_ifc_test>> ",A,Es16.6,"-->",Es16.6)
 995 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", SYM>>",F18.12)
 996 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", ANTI>>",F18.12)
+#if !defined (PRG_DIRAC)
 997 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> HERMIT>>",F18.12,", Gen1Int>>",F18.12)
+#endif
 998 format("gen1int_ifc_test>> ",A,".INT(",I6,",",I6,")>> HERMIT>>",F18.12, &
            ", Gen1Int>>",F18.12)
 999 format("gen1int_ifc_test>> ",A,I16)

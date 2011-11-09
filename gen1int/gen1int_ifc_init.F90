@@ -135,25 +135,28 @@
                                  exponents(1:num_prim(KBCH),KBCH), &
                                  num_contr(KBCH), contr_coef)
           else
-            call norm_contr_cgto(ang_num, num_prim(KBCH), exponents(1:num_prim(KBCH),KBCH), &
+            call norm_contr_cgto(ang_num, num_prim(KBCH),          &
+                                 exponents(1:num_prim(KBCH),KBCH), &
                                  num_contr(KBCH), contr_coef)
           end if
           !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
           ishell = ishell+1
           if (ishell>1) then
             !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
-            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,    &
-                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,        &
-                   num_prim=num_prim(KBCH), exponents=exponents(1:num_prim(KBCH),KBCH), &
-                   num_contr=num_contr(KBCH), contr_coef=contr_coef,            &
+            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT, &
+                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,     &
+                   num_prim=num_prim(KBCH),                            &
+                   exponents=exponents(1:num_prim(KBCH),KBCH),         &
+                   num_contr=num_contr(KBCH), contr_coef=contr_coef,   &
                    last_shell=ao_shells(ishell-1), ao_shell=ao_shells(ishell))
           ! sets the first AO sub-shell
           else
             !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
-            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,    &
-                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,        &
-                   num_prim=num_prim(KBCH), exponents=exponents(1:num_prim(KBCH),KBCH), &
-                   num_contr=num_contr(KBCH), contr_coef=contr_coef,            &
+            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT, &
+                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,     &
+                   num_prim=num_prim(KBCH),                            &
+                   exponents=exponents(1:num_prim(KBCH),KBCH),         &
+                   num_contr=num_contr(KBCH), contr_coef=contr_coef,   &
                    ao_shell=ao_shells(ishell))
           end if
           deallocate(contr_coef)
