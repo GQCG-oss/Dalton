@@ -128,7 +128,8 @@
     order_geo = sum(order_cent)
     ! only writes the expectation values but without returning, or gets the
     ! expectation values of redundant total geometric derivatives (order>1)
-    alloc_expt = (wrt_expt .and. .not.get_expt) .or. (redunt_expt .and. order_geo>1)
+    alloc_expt = (wrt_expt .and. .not.get_expt) .or. &
+                 (get_expt .and. redunt_expt .and. order_geo>1)
     if (alloc_expt) then
       allocate(tmp_expt(num_dens,num_opt,num_geo_derv), stat=ierr)
       if (ierr/=0) call QUIT("gen1int_ifc_prop>> failed to allocate tmp_expt!")
@@ -269,7 +270,7 @@
     end select
     if (alloc_expt) then
       ! puts the expectation values from Gen1Int into appropriate positions
-      if (redunt_expt) then
+      if (get_expt) then
         call geom_total_redundant_expt(num_cents, idx_cent, order_cent, NUCDEP,  &
                                        num_dens*num_opt, num_geo_derv, tmp_expt, &
                                        (3*NUCDEP)**order_geo, val_expt)

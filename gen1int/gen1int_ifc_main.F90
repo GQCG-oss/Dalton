@@ -130,27 +130,27 @@
       if (is_lao) write(io_std,100) "using London atomic orbitals"
       write(io_std,100) "maximum number of differentiated centers", max_num_cent
       write(io_std,100) "order of total geometric derivatives", order_geo_total
-      if (is_triang) then
-        write(io_std,100) "returns integral matrices in triangular format"
-      else
-        write(io_std,100) "returns integral matrices in square format"
-      end if
       if (get_int) then
-        write(io_std,100) "return integrals"
+        write(io_std,100) "integrals returned"
         write(io_std,110) "dimension of integral matrices", dim_int
+        if (is_triang) then
+          write(io_std,100) "returns integral matrices in triangular format"
+        else
+          write(io_std,100) "returns integral matrices in square format"
+        end if
       end if
-      if (wrt_int) write(io_std,100) "write integrals on file"
-      if (get_expt .or. wrt_expt .or. redunt_expt) then
-        write(io_std,100) "calculate expectation values"
+      if (wrt_int) write(io_std,100) "writes integrals on file"
+      if (get_expt .or. wrt_expt) then
+        write(io_std,100) "calculates expectation values"
         write(io_std,100) "number of AO density matrices", num_dens
         if (redunt_expt) then
-          write(io_std,100) "return expectation values of redundant "// &
+          write(io_std,100) "calculates expectation values of redundant "// &
                             "total geometric derivatives"
-        else if (get_expt) then
-          write(io_std,100) "return expectation values of non-redundant "// &
+        else
+          write(io_std,100) "calculates expectation values of non-redundant "// &
                             "total geometric derivatives"
         end if
-        if (wrt_expt) write(io_std,100) "write expectation values on file"
+        if (wrt_expt) write(io_std,100) "writes expectation values on file"
       end if
     end if
     ! calculates total geometric derivatives
