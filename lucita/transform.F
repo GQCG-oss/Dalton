@@ -595,7 +595,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE TRACI_CTL(vec1,vec2)
+      SUBROUTINE TRACI_CTL(vec1,vec2,mo2mo_mat)
 *
 * Master routine for transforming CI vectors to new orbital basis
 *
@@ -611,6 +611,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 !               for addressing of WORK
       real(8), intent(inout) :: vec1(*)
       real(8), intent(inout) :: vec2(*)
+      real(8), intent(inout) :: mo2mo_mat(*)
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
@@ -626,15 +627,11 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACIC')
 *
-      WRITE(6,*)
-      WRITE(6,*) ' Wellcome to TRACI_CTL'
-      WRITE(6,*) ' ====================='
-      WRITE(6,*)
-      call quit('*** TRACI_CTL is not active in this 
-     &          lucita version. do a clean check first ***')
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' Wellcome to TRACI_CTL'
+      WRITE(luwrt,*) ' ====================='
+      WRITE(luwrt,*)
 
-*. MO-MO transformation matrix :
-      CALL MEMMAN(KLCMOMO,NTOOB**2,'ADDL  ',2,'CMOMO ')
 *. Copy of one-electron integrals
       CALL MEMMAN(KLH1SAVE,NTOOB**2,'ADDL  ',2,'H1SAVE')
 *. We are going to mess with the one-electron integrals, take a copy
@@ -642,41 +639,36 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *
       LBLK = -1
       CALL REWINE(LUC,-1)
-*. Make sure LUDIA corresponds to original def
-      LUDIA = 20
-      CALL REWINE(LUDIA,-1)
+      CALL REWINE(luhc,-1)
       DO JROOT = 1, NROOT
-*. One-electron density for root JROOT
-        CALL REWINE(LUSC1,-1)
-        CALL COPVCD(LUC,LUSC1,VEC1,0,LBLK)
-        CALL COPVCD(LUSC1,LUSC2,VEC1,1,LBLK)
+!
+!       stefan - nov 2011: the mo2mo transformation matrix is provided from the outer 
+!                          CI/MCSCF environment - the following two steps are therefore commented out. 
+!
+!       step 1: get PV for state JROOT
+!       ------------------------------
 !       CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
 !    &        VEC1,VEC2,LUSC1,LUSC2,EXPS2)
-        call quit('*** TRACI_CTL is not active in this 
-     &            lucita version. ***')
-*. Obtain MO-MO transformation matrix
-C             GET_CMOMO(CMOMO)
-        CALL GET_CMOMO(WORK(KLCMOMO))
-        WRITE(6,*) ' Memcheck after GET_CMOMO'
-        CALL LMEMCHK('TRACI_CTL')
+
+!       step 2: Obtain MO-MO transformation matrix 
+!       ------------------------------------------
+!       CALL GET_CMOMO(mo2mo_mat)
 *
-*. Transform CI vector : Input on LUHC, output on LUDIA (!)
-        CALL COPVCD(LUSC1,LUHC,VEC1,1,LBLK)
+*. Transform CI vector : Input on lusc1, output on luhc
+        CALL COPVCD(LUC,lusc1,VEC1,1,LBLK)
 *
-        CALL TRACI_LUCI(WORK(KLCMOMO),LUHC,LUDIA,ISSPC,ISSM,VEC1,VEC2)
+        CALL TRACI_LUCI(mo2mo_mat,lusc1,luhc,ISSPC,ISSM,VEC1,VEC2)
 C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
-       WRITE(6,*)
-       WRITE(6,*) ' Analysis of rotated state number ', JROOT
-       WRITE(6,*) ' ====================================='
-       WRITE(6,*)
-       CALL GASANA(VEC1,NUM_BLOCKS,WORK(KLCIBT),WORK(KLCBLTP),
-     &                LUSC1,ICISTR)
       END DO
 *     ^ End of loop over roots
-      CALL REWINE(LUDIA,-1)
+      CALL REWINE(luhc,-1)
       IF(NTEST.GE.100) THEN
         DO JROOT = 1, NROOT
-          CALL WRTVCD(VEC1,LUDIA,0,LBLK)
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Analysis of rotated state number ', JROOT
+          WRITE(luwrt,*) ' ====================================='
+          WRITE(luwrt,*)
+          CALL WRTVCD(VEC1,luhc,0,LBLK)
         END DO
       END IF
 *
