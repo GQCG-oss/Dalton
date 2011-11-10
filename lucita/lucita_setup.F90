@@ -16,6 +16,7 @@ module lucita_setup
   public setup_lucita_cb_interface
   public setup_lucita_check_input
   public setup_lucita_mcci_wrkspc_dimensions
+  public setup_lucita_par_dist_in_seq
 #ifdef VAR_MPI
   public setup_lucita_inc_wrkspc_alloc_cw
 #endif
@@ -886,6 +887,32 @@ contains
 
 
   end subroutine print_lucita_run_setup
+!*******************************************************************************
+
+  subroutine setup_lucita_par_dist_in_seq(par_dist_block_list,   &
+                                          block_list,            &
+                                          nblock)
+!*******************************************************************************
+!
+!    purpose:  set parallel distribution list to master-only list.
+!              this can be useful in sequential calculations. 
+!
+!*******************************************************************************
+    integer, intent(in)           :: nblock
+    integer, intent(in)           :: block_list(nblock)
+    integer, intent(out)          :: par_dist_block_list(nblock)
+!-------------------------------------------------------------------------------
+    integer                       :: i
+!-------------------------------------------------------------------------------
+
+      i = 1
+
+      do while (i <= nblock)
+        if(block_list(i) > 0) par_dist_block_list(i) = 0 
+        i = i + 1
+      end do
+
+  end subroutine setup_lucita_par_dist_in_seq
 !*******************************************************************************
 
   subroutine setup_lucita_mcci_wrkspc_dimensions(ci_run_id,print_lvl)

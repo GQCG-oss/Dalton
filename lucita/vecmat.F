@@ -1843,7 +1843,7 @@ C     KLL = KFLREE
 *.LU factorize X
       CALL LULU(X,WORK(KLL),WORK(KLU),NORB)
 *.Expand U to full matrix
-      CALL SETVEC(T,0.0D0,NORB ** 2 )
+      CALL DZERO(T,NORB ** 2 )
       DO 10 I = 1,NORB
       DO 10 J = I,NORB
         T(I,J) = WORK(KLU-1+J*(J-1)/2+I)

@@ -106,7 +106,7 @@ contains
                                      rcctos,grouplist,proclist,                                   &
                                      cref,hc,resolution_mat,int1_or_rho1,int2_or_rho2)
           case ('return rotVC')
-            call traci_ctl(cref,hc)
+            call traci_ctl(cref,hc,resolution_mat,int1_or_rho1,par_dist_block_list)
           case ('report CIana')
             call report_CI_vector_analysis(cref,print_lvl)
           case ('return densM')

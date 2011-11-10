@@ -3552,7 +3552,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 
       END
 !**********************************************************************
-#ifdef VAR_MPI
+
       SUBROUTINE Z_BLKFO_partitioning_parallel(ispc,ism,iatp,ibtp,
      &                                         blocks_per_batch,
      &                                         batch_length,
@@ -3644,7 +3644,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
      &           + IFRMR(blocks_per_batch,1,NBATCH_par) - 1
 
       END
-#endif
 ***********************************************************************
 
 *

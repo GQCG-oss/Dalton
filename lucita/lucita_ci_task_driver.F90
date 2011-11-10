@@ -291,8 +291,8 @@
       rcctos              =  0
       fh_array            =  0
 
-#ifdef VAR_MPI
       if(luci_nmproc > 1)then
+#ifdef VAR_MPI
 
 !       setup parallel model:
 !         1. communication model
@@ -307,8 +307,11 @@
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
                                          kilu7list,fh_array,mxciv,nroot)
-      end if
 #endif
+      else
+        call setup_lucita_par_dist_in_seq(par_dist_block_list,          &
+                                          block_list,nblock)
+      end if
 
 !     ----------------------------------------------------------------------------
 !      branching point for MCSCF/CI tasks (controlled by entries in ci_task_list)

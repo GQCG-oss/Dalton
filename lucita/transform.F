@@ -56,15 +56,14 @@
       NK = NTOOBS(KSM)
 
 *
-      ZERO = 0.0D0
-      CALL SETVEC(H,ZERO,NTOOB**2)
+      CALL DZERO(H,NTOOB**2)
 *
       IOFF = IFRMR(WORK(KPGINT1A(1)),1,KSM)
-      CALL COPVEC(T(IOFF+(KREL-1)*NK),H(IOFF+(KREL-1)*NK),NK)
+      CALL DCOPY(NK,T(IOFF+(KREL-1)*NK),1,H(IOFF+(KREL-1)*NK),1)
       TKK = H(IOFF-1+(KREL-1)*NK+KREL)
       IF(TKK .NE. 0.0D0) THEN
         FAC = 1.0D0/TKK
-        CALL SCALVE(H(IOFF+(KREL-1)*NK),FAC,NK)
+        CALL DSCAL(NK,FAC,H(IOFF+(KREL-1)*NK),1)
 C       H(IOFF-1+(K-1)*NK+K) = H(IOFF-1+(K-1)*NK+K) -1.0D0
         H(IOFF-1+(KREL-1)*NK+KREL) = 0.0D0
       ELSE
@@ -88,7 +87,8 @@ C       TKK = 1.0D0
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
+      SUBROUTINE T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C,
+     &                       block_info,block_type_info,nblock)
 *
 * Evaluate T**(NK_operator) times vector on file LUIN
 * to yield vector on file LUOUT
@@ -107,8 +107,7 @@ C       TKK = 1.0D0
 * Jeppe Olsen, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLASTR, KLBSTR, KLKAOC, KLKBOC,
-     &          KLCLBTx, KLCLEBTx, KLCI1BTx, KLCIBTx, KLCBLTPx
+      INTEGER*8 KLASTR, KLBSTR, KLKAOC, KLKBOC
 !               for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -119,6 +118,9 @@ C       TKK = 1.0D0
 #include "gasstr.inc"
 #include "crun.inc"
 #include "csm.inc"
+      integer, intent(in) :: nblock
+      integer, intent(in) :: block_type_info(*)
+      integer, intent(in) :: block_info(8,nblock)
 
 *. Scratch block, must hold a batch of blocks
       DIMENSION C(*)
@@ -128,21 +130,15 @@ C       TKK = 1.0D0
         WRITE(6,*) ' T_TO_NK_VEC speaking '
         WRITE(6,*) ' ISM, ISPC = ', ISM,ISPC
       END IF
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'T_TO_N')
-*. Set up block and batch structure of vector
+C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       IATP = 1
       IBTP = 2
-*
       NAEL = NELEC(IATP)
       NBEL = NELEC(IBTP)
 *
-      CALL Z_BLKFO(ISPC,ISM,IATP,IBTP,KLCLBTx,KLCLEBTx,
-     &            KLCI1BTx,KLCIBTx,KLCBLTPx,NBATCH,NBLOCK)
-C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'T_TO_N')
+
       CALL MEMMAN(KLASTR,MXNSTR*NAEL,'ADDL  ',1,'KLASTR')
       CALL MEMMAN(KLBSTR,MXNSTR*NBEL,'ADDL  ',1,'KLBSTR')
       CALL MEMMAN(KLKAOC,MXNSTR,     'ADDL  ',1,'KLKAOC')
@@ -152,9 +148,9 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
       KKORB = IREOST(KORB)
       CALL T_TO_NK_VECS
      &  (T,KKORB,C,LUCIN,LUCOUT,WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-     &      NBLOCK,WORK(KLCIBTx),
+     &      NBLOCK,block_info,
      &      NAEL,NBEL,WORK(KLASTR),WORK(KLBSTR),
-     &      WORK(KLCBLTPx),NSMST,
+     &      block_type_info,NSMST,
      &      ICISTR,NTOOB,WORK(KLKAOC),WORK(KLKBOC))
 
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'T_TO_N')
@@ -511,7 +507,8 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE TRACI_LUCI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
+      SUBROUTINE TRACI_LUCI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2,C2,
+     &                      par_dist_block_list)
 *
 * A rotation matrix X is defining expansion from
 * old to new orbitals
@@ -545,7 +542,8 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *. Common block for communicating with sigma
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
-      DIMENSION X(*)
+      DIMENSION X(*), C2(*),VEC1(*), VEC2(*)
+      integer, intent(in) :: par_dist_block_list(*)
 *
       CALL QENTER('TRACI')
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACI ')
@@ -582,8 +580,8 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       ISSPC = IXSPC
       ISSM  = IXSM
 *
-      CALL TRACID(WORK(KLT),LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
-     &            VEC1,VEC2)
+      CALL TRACID(WORK(KLT),LUCIN,LUCOUT,LUSC2,LUSC3,LUSC34,
+     &            VEC1,VEC2,C2,par_dist_block_list)
 *
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACI ')
       CALL QEXIT('TRACI')
@@ -595,7 +593,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE TRACI_CTL(vec1,vec2,mo2mo_mat)
+      SUBROUTINE TRACI_CTL(vec1,vec2,c2,mo2mo_mat,par_dist_block_list)
 *
 * Master routine for transforming CI vectors to new orbital basis
 *
@@ -605,13 +603,14 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *
 * Jeppe Olsen, January 98
 *
-      use lucita_vector_partitioning_pointer
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLCMOMO, KLH1SAVE
+      INTEGER*8 KLH1SAVE
 !               for addressing of WORK
       real(8), intent(inout) :: vec1(*)
       real(8), intent(inout) :: vec2(*)
+      real(8), intent(inout) :: c2(*)
       real(8), intent(inout) :: mo2mo_mat(*)
+      integer, intent(in)    :: par_dist_block_list(*)
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
@@ -637,9 +636,9 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *. We are going to mess with the one-electron integrals, take a copy
       CALL COPVEC(WORK(KINT1),WORK(KLH1SAVE),NTOOB*NTOOB)
 *
-      LBLK = -1
       CALL REWINE(LUC,-1)
       CALL REWINE(luhc,-1)
+
       DO JROOT = 1, NROOT
 !
 !       stefan - nov 2011: the mo2mo transformation matrix is provided from the outer 
@@ -655,9 +654,10 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 !       CALL GET_CMOMO(mo2mo_mat)
 *
 *. Transform CI vector : Input on lusc1, output on luhc
-        CALL COPVCD(LUC,lusc1,VEC1,1,LBLK)
+        CALL COPVCD(LUC,lusc1,VEC1,1,-1)
 *
-        CALL TRACI_LUCI(mo2mo_mat,lusc1,luhc,ISSPC,ISSM,VEC1,VEC2)
+        CALL TRACI_LUCI(mo2mo_mat,lusc1,luhc,ISSPC,ISSM,VEC1,VEC2,C2,
+     &                  par_dist_block_list)
 C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
       END DO
 *     ^ End of loop over roots
@@ -668,7 +668,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
           WRITE(luwrt,*) ' Analysis of rotated state number ', JROOT
           WRITE(luwrt,*) ' ====================================='
           WRITE(luwrt,*)
-          CALL WRTVCD(VEC1,luhc,0,LBLK)
+          CALL WRTVCD(VEC1,luhc,0,-1)
         END DO
       END IF
 *
@@ -684,7 +684,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
-     &           VEC1,VEC2)
+     &                  VEC1,VEC2,C2,par_dist_block_list)
 *
 * Transform CI vector on LUCIN with T matrix after
 * Docent Malmquist's recipe. Place result as next vector on LUOUT
@@ -699,6 +699,8 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 *
 * each transformation is
       IMPLICIT REAL*8(A-H,O-Z)
+      INTEGER*8 KLCLBTx, KLCLEBTx, KLCI1BTx, KLCIBTx, KLCBLTPx
+!               for addressing of WORK
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
@@ -706,80 +708,111 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 #include "intform.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
+#include "csm.inc"
+#include "cicisp.inc"
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       REAL*8 INPRDD
 *. Input
       DIMENSION T(*)
-*. Scratch blocks ( two of them)
-      DIMENSION VEC1(*),VEC2(*)
-*
+      integer, intent(in) :: par_dist_block_list(*)
+      integer, parameter  :: isigden = 1
+      real(8)             :: cdummy(2), sdummy(2)
+*. Scratch blocks ( three of them)
+      DIMENSION VEC1(*),VEC2(*), C2(*)
+
       NTEST = 000
-      LBLK = -1
-      IDUM = 1
+*
 *. Transfer vector on LUCIN to LUSC1
 C           COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
-      CALL  COPVCD(LUCIN,LUSC1,VEC1,1,LBLK)
+      CALL  COPVCD(LUCIN,LUSC1,VEC1,1,-1)
 *. A bit of info for the sigma routine
       I_RES_AB = 0
 *. Do the one-electron update
-        I12 = 1
+      I12      = 1
 *. With 1-electron integrals in complete block form
-        IH1FORM = 2
+      IH1FORM  = 2
+*. Set up block and batch structure of vector
+      IDUM     = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACID')
+
+      CALL MEMMAN(KLCLBTx ,  MXNTTS,'ADDL  ',1,'CLBTx ')
+      CALL MEMMAN(KLCLEBTx,  MXNTTS,'ADDL  ',1,'CLEBTx')
+      CALL MEMMAN(KLCI1BTx,  MXNTTS,'ADDL  ',1,'CI1BTx')
+      CALL MEMMAN(KLCIBTx ,8*MXNTTS,'ADDL  ',1,'CIBTx ')
+
+      IATP     = 1
+      IBTP     = 2
+      CALL Z_BLKFO_partitioning_parallel(ISSPC,ISSM,iatp,ibtp,
+     &                                   work(KLCLBTx),
+     &                                   work(KLCLEBTx),
+     &                                   work(KLCI1BTx),
+     &                                   work(KLCIBTx),
+     &                                   NBATCH,NBLOCK,
+     &                                   par_dist_block_list)
+
+      CALL MEMMAN(KLCBLTPx,       NSMST,'ADDL  ',2,'CBLTPA')
+      CALL ZBLTP_IDC(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTPx))
+
 *. Transform each orbital separately
       DO K = 1, NTOOB
 *. Place (T(P,K)/S(K,K)   in one-electron integral list
 C                       T_ROW_TO_H(T,H,K)
         CALL T_ROW_TO_H(T,WORK(KINT1),K,TKK)
 *. T_{kk}^Nk
-C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
-        CALL T_TO_NK_VEC(TKK,K,ISSM,ISSPC,LUSC1,LUSC2,VEC1)
-        CALL COPVCD(LUSC2,LUSC1,VEC1,1,LBLK)
+C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C,block_info,block_type_info,nblock)
+        CALL T_TO_NK_VEC(TKK,K,ISSM,ISSPC,LUSC1,LUSC2,VEC1,
+     &                   work(KLCIBTx),work(KLCBLTPx),nblock)
+
+        CALL COPVCD(LUSC2,LUSC1,VEC1,1,-1)
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' output from T_TO_NK'
-          CALL WRTVCD(VEC1,LUSC1,1,LBLK)
+          CALL WRTVCD(VEC1,LUSC1,1,-1)
         END IF
 *. For each orbital calculate (1+T+1/2 T^2)|0>
 * + T
-!       CALL MV7(VEC1,VEC2,LUSC1,LUSC2)
-        call quit('*** TRACID is still 
-     &             disabled in this lucita version. ***')
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LUSC1,LUSC2,
+     &                 cdummy,sdummy,ISIGDEN,-1)
+        
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction vector'
-          CALL WRTVCD(VEC1,LUSC2,1,LBLK)
+          CALL WRTVCD(VEC1,LUSC2,1,-1)
         END IF
-        ONE = 1.0D0
-        CALL VECSMDP(VEC1,VEC2,ONE,ONE,LUSC1,LUSC2,LUSC3,1,LBLK)
-        CALL COPVCD(LUSC3,LUSC1,VEC1,1,LBLK)
+
+        CALL VECSMDP(VEC1,VEC2,1.0d0,1.0d0,LUSC1,LUSC2,LUSC3,1,-1)
+        CALL COPVCD(LUSC3,LUSC1,VEC1,1,-1)
+
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Updated vector'
-          CALL WRTVCD(VEC1,LUSC1,1,LBLK)
+          CALL WRTVCD(VEC1,LUSC1,1,-1)
         END IF
 *. + 1/2 T^2
-!       CALL MV7(VEC1,VEC2,LUSC2,LUSC3)
-        call quit('*** TRACID is still 
-     &             disabled in this lucita version. ***')
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LUSC2,LUSC3,
+     &                 cdummy,sdummy,ISIGDEN,-1)
+
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Correction vector'
-          CALL WRTVCD(VEC1,LUSC3,1,LBLK)
+          CALL WRTVCD(VEC1,LUSC3,1,-1)
         END IF
-        ONE = 1.0D0
-        HALF  = 0.5D0
-        CALL VECSMDP(VEC1,VEC2,ONE,HALF,LUSC1,LUSC3,LUSC2,1,LBLK)
+
+        CALL VECSMDP(VEC1,VEC2,1.0d0,0.5d0,LUSC1,LUSC3,LUSC2,1,-1)
 *. and transfer back to LUSC1
-        CALL COPVCD(LUSC2,LUSC1,VEC1,1,LBLK)
+        CALL COPVCD(LUSC2,LUSC1,VEC1,1,-1)
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' Updated vector'
-          CALL WRTVCD(VEC1,LUSC1,1,LBLK)
+          CALL WRTVCD(VEC1,LUSC1,1,-1)
         END IF
       END DO
 *. And transfer to LUCOUT
-      CNORM = INPRDD(VEC1,VEC2,LUSC1,LUSC1,1,LBLK)
+      CNORM = INPRDD(VEC1,VEC2,LUSC1,LUSC1,1,-1)
       WRITE(6,*) ' Norm of transformed vector', CNORM
 C?    WRITE(6,*) ' Transformed vector'
 C?    CALL WRTVCD(VEC1,LUSC1,1,LBLK)
       CALL REWINE(LUSC1,-1)
 C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
-      CALL COPVCD(LUSC1,LUCOUT,VEC1,0,LBLK)
+      CALL COPVCD(LUSC1,LUCOUT,VEC1,0,-1)
+
+!     release local memory
+      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACID')
 *
       END
 ***********************************************************************

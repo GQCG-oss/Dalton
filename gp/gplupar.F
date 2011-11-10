@@ -3,15 +3,187 @@
 !
 !dalton_copyright_end
 
-#ifdef VAR_MPI
-!**********************************************************************
-!
 !============================================================*
 !  Common LUCITA and LUCIAREL routines for parallel purposes *
 !                                                            *
 !   collected by Stefan Knecht, Jan 18 - ???, 2007           *
 !============================================================*
 !
+***********************************************************************
+
+      SUBROUTINE PART_CIV_PAR1(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
+     &                         NSMST,MXLNG,IOCOC,ISMOST,
+     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                         ICOMP,ITTSS_ORD,IBLOCKD,NDIM)
+C
+C     Partition a CI vector into batches of blocks. The length of a
+C     batch must be atmost MXLNG.
+C     S-vector routine.
+C
+C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+C     batch.
+C
+C     OUTPUT
+C     ======
+C
+C     NBATCH      : Number of batches
+C     LBATCH(*)   : Number of blocks in a given batch
+C     LEBATCH(*)  : Number of elements in a given batch ( packed ) !
+C     I1BATCH(*)  : Number of first block in a given batch
+C     IBATCH(8,*) : TTS blocks in Start of a given TTS block with respect to
+C                   start
+C     of batch --
+C     IBATCH(1,*) : Alpha type
+C     IBATCH(2,*) : Beta  type
+C     IBATCH(3,*) : Sym of alpha
+C     IBATCH(4,*) : Sym of beta
+C     IBATCH(5,*) : Offset of block with respect to start of block in
+C                   expanded form
+C     IBATCH(6,*) : Offset of block with respect to start of block in
+C                   packed form
+C     IBATCH(7,*) : Length of block, expandend form
+C     IBATCH(8,*) : Length of block, packed form
+C    
+C     original version : Jeppe Olsen     - August 1995
+C     parallel adaption: S. Knecht       - March  2007 
+C
+C     Last revision:     S. Knecht       - March  2007
+C
+************************************************************************
+      IMPLICIT REAL*8(A-H,O-Z)
+
+#include "parluci.h"
+C     Input
+      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
+      INTEGER IOCOC(NOCTPA,NOCTPB)
+      INTEGER IBLTP(*)
+      INTEGER ISMOST(*)
+      DIMENSION IBLOCKD(NDIM)
+C     Output
+      INTEGER LBATCH(*)
+      INTEGER LEBATCH(*)
+      INTEGER I1BATCH(*)
+      INTEGER IBATCH(8,*)
+*
+      NTEST = 0000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*)
+        WRITE(6,*) ' ==================='
+        WRITE(6,*) '    PART_CIV_PAR1   '
+        WRITE(6,*) ' ==================='
+        WRITE(6,*) ' IDC = ', IDC
+        WRITE(6,*)
+        WRITE(6,*) ' IOCOC Array '
+        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
+        if (NTEST.ge.500) then
+          WRITE(6,*) ' NSSOA array ( input ) '
+          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
+          WRITE(6,*) ' NSSOB array ( input ) '
+          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
+          write(6,*) ' IBLTP array: '
+          call iwrtma(IBLTP,1,NSMST,1,NSMST)
+        end if
+      END IF
+*
+*. block zero
+*
+      IB     = 1
+      IA     = 1
+      ISM    = 1
+      IFRST  = 1
+      NBATCH = 0
+      IBLOCK = 0
+      IFINI  = 0
+*. Loop over batches of blocks
+ 2000 CONTINUE
+      NBATCH          = NBATCH + 1
+      LBATCH(NBATCH)  = 0
+      I1BATCH(NBATCH) = IBLOCK  + 1
+      LENGTH          = 0
+      LENGTHP         = 0
+      NBLOCK          = 0
+      IFRST           = 1
+*. Loop over blocks in batch
+ 1000 CONTINUE
+      IF(IFRST.EQ.0) THEN
+        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+      END IF
+      IFRST = 0
+      IF (IFINI.EQ.1) GOTO 2002
+*. Should this block be included
+      IF(IBLTP(ISM).EQ.0) GOTO 1000
+      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
+*. can this block be included
+      IBSM = ISMOST(ISM)
+      NSTA = NSSOA(ISM,IA)
+      NSTB = NSSOB(IBSM,IB)
+      LBLOCK= NSTA*NSTB
+C     set unpacked length for unused block to zero
+      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCK = 0
+      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+        LBLOCKP = NSTA*NSTB
+      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+        LBLOCKP = NSTA*(NSTA+1)/2
+      END IF
+C     set packed length for unused block to zero
+      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCKP = 0
+C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
+        NBLOCK = NBLOCK + 1
+        IBLOCK = IBLOCK + 1
+        LBATCH(NBATCH) = LBATCH(NBATCH)+1
+        IBATCH(1,IBLOCK) = IA
+C       only s-blocks corresponding to distribution
+        IF( IBLOCKD(IBLOCK) .ne. LUCI_MYPROC ) IBATCH(1,IBLOCK) = 0
+        IBATCH(2,IBLOCK) = IB
+        IBATCH(3,IBLOCK) = ISM
+        IBATCH(4,IBLOCK) = IBSM
+        IBATCH(5,IBLOCK) = LENGTH+1
+        IBATCH(6,IBLOCK) = LENGTHP+1
+        IBATCH(7,IBLOCK) = LBLOCK
+        IBATCH(8,IBLOCK) = LBLOCKP
+        LENGTH = LENGTH + LBLOCK
+        LENGTHP= LENGTHP+ LBLOCKP
+        LEBATCH(NBATCH) = LENGTHP
+        GOTO 1000
+      ELSE IF(ICOMP.EQ.0.AND.
+     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
+        WRITE(6,*) ' Not enough scratch space to include a single Block'
+        WRITE(6,*) ' Since I cannot procede I will stop '
+        WRITE(6,*) ' Insufficient buffer detected in PART_CIV_PAR1'
+        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        call quit( ' Insufficient buffer space in PART_CIV_PAR1. ' )
+      ELSE
+*. This batch is finished, goto next batch
+        GOTO 2000
+      END IF
+ 2002 CONTINUE
+*
+      IF(NTEST.NE.0) THEN
+        WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
+        WRITE(luwrt,*) '========================='
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of batches ', NBATCH
+        DO JBATCH = 1, NBATCH
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Info on batch ', JBATCH
+          WRITE(luwrt,*) ' *********************** '
+          WRITE(luwrt,*)
+          WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
+          WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
+          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+            WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+          END DO
+        END DO
+      END IF
+*
+      END
+***********************************************************************
+
+#ifdef VAR_MPI
+
       subroutine copy_vector_mpi_2_sequential_io(luin,luout,vec1,
      &                                           my_ioff_luin,
      &                                           luinlist,
@@ -3930,181 +4102,7 @@ C
 C     ^ loop over batches
 C
       END
-***********************************************************************
-
-      SUBROUTINE PART_CIV_PAR1(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
-     &                         NSMST,MXLNG,IOCOC,ISMOST,
-     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-     &                         ICOMP,ITTSS_ORD,IBLOCKD,NDIM)
-C
-C     Partition a CI vector into batches of blocks. The length of a
-C     batch must be atmost MXLNG.
-C     S-vector routine.
-C
-C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
-C     batch.
-C
-C     OUTPUT
-C     ======
-C
-C     NBATCH      : Number of batches
-C     LBATCH(*)   : Number of blocks in a given batch
-C     LEBATCH(*)  : Number of elements in a given batch ( packed ) !
-C     I1BATCH(*)  : Number of first block in a given batch
-C     IBATCH(8,*) : TTS blocks in Start of a given TTS block with respect to
-C                   start
-C     of batch --
-C     IBATCH(1,*) : Alpha type
-C     IBATCH(2,*) : Beta  type
-C     IBATCH(3,*) : Sym of alpha
-C     IBATCH(4,*) : Sym of beta
-C     IBATCH(5,*) : Offset of block with respect to start of block in
-C                   expanded form
-C     IBATCH(6,*) : Offset of block with respect to start of block in
-C                   packed form
-C     IBATCH(7,*) : Length of block, expandend form
-C     IBATCH(8,*) : Length of block, packed form
-C    
-C     original version : Jeppe Olsen     - August 1995
-C     parallel adaption: S. Knecht       - March  2007 
-C
-C     Last revision:     S. Knecht       - March  2007
-C
-************************************************************************
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-C     Input
-      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
-      INTEGER IOCOC(NOCTPA,NOCTPB)
-      INTEGER IBLTP(*)
-      INTEGER ISMOST(*)
-      DIMENSION IBLOCKD(NDIM)
-C     Output
-      INTEGER LBATCH(*)
-      INTEGER LEBATCH(*)
-      INTEGER I1BATCH(*)
-      INTEGER IBATCH(8,*)
-*
-      NTEST = 0000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) '    PART_CIV_PAR1   '
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) ' IDC = ', IDC
-        WRITE(6,*)
-        WRITE(6,*) ' IOCOC Array '
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
-        if (NTEST.ge.500) then
-          WRITE(6,*) ' NSSOA array ( input ) '
-          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
-          WRITE(6,*) ' NSSOB array ( input ) '
-          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
-          write(6,*) ' IBLTP array: '
-          call iwrtma(IBLTP,1,NSMST,1,NSMST)
-        end if
-      END IF
-*
-*. block zero
-*
-      IB = 1
-      IA = 1
-      ISM = 1
-      IFRST = 1
-      NBATCH = 0
-      IBLOCK = 0
-      IFINI = 0
-*. Loop over batches of blocks
- 2000 CONTINUE
-      NBATCH = NBATCH + 1
-      LBATCH(NBATCH) = 0
-      I1BATCH(NBATCH) = IBLOCK  + 1
-      LENGTH = 0
-      LENGTHP= 0
-      NBLOCK = 0
-      IFRST = 1
-*. Loop over blocks in batch
- 1000 CONTINUE
-      IF(IFRST.EQ.0) THEN
-        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
-      END IF
-      IFRST = 0
-      IF (IFINI.EQ.1) GOTO 2002
-*. Should this block be included
-      IF(IBLTP(ISM).EQ.0) GOTO 1000
-      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
-      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
-*. can this block be included
-      IBSM = ISMOST(ISM)
-      NSTA = NSSOA(ISM,IA)
-      NSTB = NSSOB(IBSM,IB)
-      LBLOCK= NSTA*NSTB
-C     set unpacked length for unused block to zero
-      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCK = 0
-      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
-        LBLOCKP = NSTA*NSTB
-      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
-        LBLOCKP = NSTA*(NSTA+1)/2
-      END IF
-C     set packed length for unused block to zero
-      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCKP = 0
-C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
-      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
-        NBLOCK = NBLOCK + 1
-        IBLOCK = IBLOCK + 1
-        LBATCH(NBATCH) = LBATCH(NBATCH)+1
-        IBATCH(1,IBLOCK) = IA
-C       only s-blocks corresponding to distribution
-        IF( IBLOCKD(IBLOCK) .ne. LUCI_MYPROC ) IBATCH(1,IBLOCK) = 0
-        IBATCH(2,IBLOCK) = IB
-        IBATCH(3,IBLOCK) = ISM
-        IBATCH(4,IBLOCK) = IBSM
-        IBATCH(5,IBLOCK) = LENGTH+1
-        IBATCH(6,IBLOCK) = LENGTHP+1
-        IBATCH(7,IBLOCK) = LBLOCK
-        IBATCH(8,IBLOCK) = LBLOCKP
-        LENGTH = LENGTH + LBLOCK
-        LENGTHP= LENGTHP+ LBLOCKP
-        LEBATCH(NBATCH) = LENGTHP
-        GOTO 1000
-      ELSE IF(ICOMP.EQ.0.AND.
-     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
-        WRITE(6,*) ' Not enough scratch space to include a single Block'
-        WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV_PAR1'
-        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
-        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
-        call quit( ' Insufficient buffer space in PART_CIV_PAR1. ' )
-      ELSE
-*. This batch is finished, goto next batch
-        GOTO 2000
-      END IF
- 2002 CONTINUE
-*
-      IF(NTEST.NE.0) THEN
-        WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
-        WRITE(luwrt,*) '========================='
-        WRITE(luwrt,*)
-        WRITE(luwrt,*) ' Number of batches ', NBATCH
-        DO JBATCH = 1, NBATCH
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Info on batch ', JBATCH
-          WRITE(luwrt,*) ' *********************** '
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
-          WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
-          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
-          END DO
-        END DO
-      END IF
-*
-      END
-***********************************************************************
+!*******************************************************************************
 
       SUBROUTINE PART_CIV_PAR2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         NSMST,MXLNG,IOCOC,ISMOST,

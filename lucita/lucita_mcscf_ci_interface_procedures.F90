@@ -126,6 +126,8 @@ contains
           call mcscf_pre_lucita_return_e2b(c_or_cr,print_lvl)
         case('analyze Cvec')
           call mcscf_pre_lucita_bvec_analyze(c_or_cr,print_lvl)
+        case('rotate  Cvec')
+          call mcscf_pre_lucita_rotate_cref(c_or_cr,print_lvl)
         case default
           call quit('undefined pre LUCITA processing step in MCSCF process flow')
       end select
@@ -172,6 +174,8 @@ contains
           call mcscf_post_lucita_hdiag(c_or_cr,print_lvl)
         case('sigma vec   ')
           call mcscf_post_lucita_return_e2b(hc_or_cl,print_lvl)
+        case('rotate  Cvec')
+          call mcscf_post_lucita_rotate_cref(c_or_cr,print_lvl)
         case default
           call quit('undefined post LUCITA processing step in MCSCF process flow')
       end select
@@ -286,6 +290,46 @@ contains
   end subroutine mcscf_pre_lucita_return_e2b
 !*******************************************************************************
 
+  subroutine mcscf_pre_lucita_rotate_cref(c_or_cr,print_lvl)
+!*******************************************************************************
+!
+!    purpose: pre-LUCITA processing for CI task: rotate  Cvec
+!              
+!
+!*******************************************************************************
+! lucita
+  use lucita_cfg
+! sirius
+! nothing
+#include "priunit.h"
+      real(8),   intent(inout) :: c_or_cr(*)
+      integer,   intent(in)    :: print_lvl
+!-------------------------------------------------------------------------------
+      integer                  :: exchange_type1
+!-------------------------------------------------------------------------------
+      
+      exchange_type1                      = 2
+      vector_update_mc2lu(exchange_type1) = .true. ! save the incoming rhs vector to LUCITA files
+
+      if(vector_update_mc2lu(exchange_type1))then
+!       rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
+        call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,         &
+                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
+      end if
+
+      if(print_lvl >= -1)then
+        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
+        write(lupri,*) ' rhs vector saved on lucita files'
+        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
+      end if
+
+!     reset
+      vector_update_mc2lu(exchange_type1) = .false.
+
+  end subroutine mcscf_pre_lucita_rotate_cref
+!*******************************************************************************
+
+
   subroutine mcscf_pre_lucita_xpdens(c_or_cr,hc_or_cl,print_lvl)
 !*******************************************************************************
 !
@@ -395,45 +439,6 @@ contains
   end subroutine mcscf_post_lucita_cistart
 !*******************************************************************************
 
-  subroutine mcscf_post_lucita_return_e2b(hc_or_cl,print_lvl)
-!*******************************************************************************
-!
-!    purpose: pre-LUCITA processing for CI task: sigma vec   
-!              
-!
-!*******************************************************************************
-! lucita
-  use lucita_cfg
-! sirius
-! nothing
-#include "priunit.h"
-      real(8),   intent(inout) :: hc_or_cl(*)
-      integer,   intent(in)    :: print_lvl
-!-------------------------------------------------------------------------------
-      integer                  :: exchange_type1
-!-------------------------------------------------------------------------------
-      
-      exchange_type1                      = 3
-      vector_update_lu2mc(exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
-
-      if(vector_update_lu2mc(exchange_type1))then
-!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,        &
-                                    io2io_vector_exchange_mc2lu_lu2mc,hc_or_cl)
-      end if
-
-      if(print_lvl >= -1)then
-        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
-        write(lupri,*) ' lhs vector pushed to mc core-memory'
-        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
-      end if
-
-!     reset
-      vector_update_lu2mc(exchange_type1) = .false.
-
-  end subroutine mcscf_post_lucita_return_e2b
-!*******************************************************************************
-
   subroutine mcscf_post_lucita_hdiag(c_or_cr,print_lvl)
 !*******************************************************************************
 !
@@ -474,6 +479,84 @@ contains
       vector_update_lu2mc(exchange_type) = .false.
 
   end subroutine mcscf_post_lucita_hdiag
+!*******************************************************************************
+
+  subroutine mcscf_post_lucita_return_e2b(hc_or_cl,print_lvl)
+!*******************************************************************************
+!
+!    purpose: post-LUCITA processing for CI task: sigma vec   
+!              
+!
+!*******************************************************************************
+! lucita
+  use lucita_cfg
+! sirius
+! nothing
+#include "priunit.h"
+      real(8),   intent(inout) :: hc_or_cl(*)
+      integer,   intent(in)    :: print_lvl
+!-------------------------------------------------------------------------------
+      integer                  :: exchange_type1
+!-------------------------------------------------------------------------------
+      
+      exchange_type1                      = 3
+      vector_update_lu2mc(exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+
+      if(vector_update_lu2mc(exchange_type1))then
+!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+        call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,        &
+                                    io2io_vector_exchange_mc2lu_lu2mc,hc_or_cl)
+      end if
+
+      if(print_lvl >= -1)then
+        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
+        write(lupri,*) ' lhs vector pushed to mc core-memory'
+        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
+      end if
+
+!     reset
+      vector_update_lu2mc(exchange_type1) = .false.
+
+  end subroutine mcscf_post_lucita_return_e2b
+!*******************************************************************************
+
+  subroutine mcscf_post_lucita_rotate_cref(c_or_cr,print_lvl)
+!*******************************************************************************
+!
+!    purpose: post-LUCITA processing for CI task: rotate  Cvec
+!              
+!
+!*******************************************************************************
+! lucita
+  use lucita_cfg
+! sirius
+! nothing
+#include "priunit.h"
+      real(8),   intent(inout) :: c_or_cr(*)
+      integer,   intent(in)    :: print_lvl
+!-------------------------------------------------------------------------------
+      integer                  :: exchange_type1
+!-------------------------------------------------------------------------------
+      
+      exchange_type1                      = 3
+      vector_update_lu2mc(exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
+
+      if(vector_update_lu2mc(exchange_type1))then
+!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+        call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,        &
+                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
+      end if
+
+      if(print_lvl >= -1)then
+        write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
+        write(lupri,*) ' lhs vector pushed to mc core-memory'
+        write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
+      end if
+
+!     reset
+      vector_update_lu2mc(exchange_type1) = .false.
+
+  end subroutine mcscf_post_lucita_rotate_cref
 !*******************************************************************************
 
   subroutine mcscf_post_lucita_setci(print_lvl)
