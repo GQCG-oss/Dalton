@@ -52,6 +52,7 @@ option(ENABLE_GEN1INT        "Enable Gen1Int module"         OFF)
 option(ENABLE_XCFUN          "Enable XCFun library"          OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
 
 add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
 

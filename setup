@@ -60,7 +60,7 @@ group.add_option('--math-dir',
                  action='store',
                  dest='mathdir',
                  default=None,
-                 help='directory containing math libraries [default: pick automatically]',
+                 help='directory containing math libraries [default: pick automatically based on MATH_ROOT (see INSTALL.rst)]',
                  metavar='PATH')
 group.add_option('--internal-math',
                  action='store_true',
@@ -131,6 +131,11 @@ group.add_option('--coverage',
                  dest='coverage',
                  default=False,
                  help='enable code coverage [default: %default]')
+group.add_option('--nochecks',
+                 action='store_true',
+                 dest='nochecks',
+                 default=False,
+                 help='disable compatibility checks [default: %default]')
 group.add_option('-D',
                  action="append",
                  dest='cmake',
@@ -214,6 +219,8 @@ def gen_cmake_command():
         command += ' -DENABLE_BOUNDS_CHECK=ON'
     if options.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
+    if options.nochecks:
+        command += ' -DENABLE_SANITY_CHECKS=OFF'
     if options.install:
             command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 

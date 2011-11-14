@@ -29,6 +29,8 @@ s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
 s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
 s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
 
+s.append(['static libraries linking'       , r'@ENABLE_STATIC_LINKING@'      ])
+
 output = ''
 output += 'subroutine print_compilation_info()\n'
 output += '#include "priunit.h"\n'

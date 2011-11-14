@@ -27,8 +27,13 @@ if sys.version >= '2.4':
             last_commit_time = 'unknown'
     else:
         last_commit_rev    = string.replace(stdout.splitlines()[0], 'commit ', '')
-        last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[1]), 'Author: ', '')
-        last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
+        if  'Merge:' in stdout.splitlines()[1]:
+            last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[2]), 'Author: ', '')
+            last_commit_time   = string.replace(stdout.splitlines()[3], 'Date:   ', '')
+        else:
+            last_commit_author = string.replace(re.sub(r'<.*>', '', stdout.splitlines()[1]), 'Author: ', '')
+            last_commit_time   = string.replace(stdout.splitlines()[2], 'Date:   ', '')
+
 
 print('subroutine print_git_revision_info()')
 print('#include "priunit.h"')
@@ -36,7 +41,7 @@ print('#include "priunit.h"')
 def print_line(l, r):
     print("    write(lupri, '(a)') ' %s | %s'" % (l.ljust(24), r))
 
-print_line('Last commit rev',    last_commit_rev)
+print_line('Last commit revision',    last_commit_rev)
 print_line('Last commit author', last_commit_author)
 print_line('Last commit time',   last_commit_time)
 
