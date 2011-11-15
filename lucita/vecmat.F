@@ -1825,13 +1825,14 @@ C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION X(NORB,NORB),T(NORB,NORB)
       DIMENSION WORK(*)
+#include "priunit.h"
 * DIMENSION OF WORK : NORB ** 2 + NORB*(NORB+1) / 2
 *
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.2) THEN
-        WRITE(6,*) ' Wellcome to PAMTMT '
-        WRITE(6,*) ' =================='
-        WRITE(6,*)
+        WRITE(lupri,*) ' Welcome to PAMTMT '
+        WRITE(lupri,*) ' ================='
+        WRITE(lupri,*)
       END IF
 *. Allocate local memory
       KLFREE = 1
@@ -1849,13 +1850,13 @@ C     KLL = KFLREE
         T(I,J) = WORK(KLU-1+J*(J-1)/2+I)
    10 CONTINUE
       IF ( NTEST .GE. 100 ) THEN
-        WRITE(6,*) ' MATRIX TO BE INVERTED '
+        WRITE(lupri,*) ' MATRIX TO BE INVERTED '
         CALL WRTMT_LU(T,NORB,NORB,NORB,NORB)
       END IF
 *.Invert U
       CALL INVMAT(T,WORK(KLU),NORB,NORB)
       IF ( NTEST .GE. 100 ) THEN
-        WRITE(6,*) ' INVERTED MATRIX '
+        WRITE(lupri,*) ' INVERTED MATRIX '
         CALL WRTMT_LU(T,NORB,NORB,NORB,NORB)
       END IF
 *.Subtract L
@@ -1865,9 +1866,9 @@ C     KLL = KFLREE
    20 CONTINUE
 *
       IF( NTEST .GE. 2 ) THEN
-        WRITE(6,*) ' INPUT X MATRIX '
+        WRITE(lupri,*) ' INPUT X MATRIX '
         CALL WRTMT_LU(X,NORB,NORB,NORB,NORB)
-        WRITE(6,*) ' T MATRIX '
+        WRITE(lupri,*) ' T MATRIX '
         CALL WRTMT_LU(T,NORB,NORB,NORB,NORB)
       END IF
 *
@@ -2094,6 +2095,7 @@ C     KLL = KFLREE
 *. Matrix is assumed to exclude inactive orbitals !!
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "lucinp.inc"
@@ -2102,7 +2104,7 @@ C     KLL = KFLREE
       DIMENSION XIN(NTOOB,NTOOB)
       DIMENSION XOUT(*)
 *
-      NTEST = 0
+      NTEST = 00
 *
       DO ISMOB = 1, NSMOB
 *. IOBOFF : Offset for active orbitals in symmetry order
@@ -2131,10 +2133,10 @@ C     KLL = KFLREE
       END DO
 *. (End of loop over orbital symmetries )
       IF(NTEST.GE.10 ) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' Symmetry ordered matrix '
-        WRITE(6,*) ' ======================='
-        WRITE(6,*)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Symmetry ordered matrix '
+        WRITE(lupri,*) ' ======================='
+        WRITE(lupri,*)
         CALL APRBLM2(XOUT,NACOBS,NACOBS,NSMOB,0)
       END IF
 *

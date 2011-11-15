@@ -1902,13 +1902,10 @@ C?   &  ISCALE,SCLFAC
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      FUNCTION GTH1ES(IREOTS,IPNT,H,IBSO,MXPNGAS,
-     &           IBTSOB,NACOBS,IORB,ITP,ISM,JORB,JTP,JSM,IJSM)
+!**********************************************************************
+
+      FUNCTION GTH1ES(IREOTS,IPNT,H,IBSO,MXPNGAS,IBTSOB,NACOBS,
+     &                IORB,ITP,ISM,JORB,JTP,JSM,IJSM)
 *
 * one electron integral between orbitals (iorb,itp,ism,jorb,jsm,jtp)
 * correct combination of row and column symmetry is assumed
@@ -1921,6 +1918,10 @@ C?   &  ISCALE,SCLFAC
       INTEGER IREOTS(*),IPNT(*),IBTSOB(MXPNGAS,*),IBSO(*)
       INTEGER NACOBS(*)
       DIMENSION H(*)
+
+#ifdef LUCI_DEBUG
+#include "priunit.h"
+#endif
 *
       IABS = IORB+IBTSOB(ITP,ISM)-1
       IREO = IREOTS(IABS)
@@ -1947,15 +1948,14 @@ C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
       END IF
 *
       GTH1ES = H(IJ)
-      NTEST = 0
-      IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' one electron integral '
-        WRITE(6,*) ' IORB ITP ISM ',IORB,ITP,ISM
-        WRITE(6,*) ' JORB JTP JSM ',JORB,JTP,JSM
-        WRITE(6,*) ' IJ and H(IJ) ', IJ,H(IJ)
-      END IF
-*
-      RETURN
+
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*) ' one electron integral '
+      WRITE(lupri,*) ' IORB ITP ISM ',IORB,ITP,ISM
+      WRITE(lupri,*) ' JORB JTP JSM ',JORB,JTP,JSM
+      WRITE(lupri,*) ' IJ and H(IJ) ', IJ,H(IJ)
+#endif
+
       END
 ***********************************************************************
 *                                                                     *

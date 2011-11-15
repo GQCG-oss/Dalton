@@ -903,12 +903,12 @@ C     INCLUDE
 *.0 : Pointers to one-integrals, all symmetries, Lower half matrices
       DO ISM = 1, NSMOB
         CALL PNT2DM(1,NSMOB,NSMSX,ADSXA,NTOOBS,NTOOBS,
-     &       ISM  ,ISL1,WORK(KPGINT1(ISM)),MXPOBS)
+     &              ISM,ISL1,WORK(KPGINT1(ISM)),MXPOBS)
       END DO
 *.0.5 : Pointers to one-electron integrals, all symmetries, complete form
       DO ISM = 1, NSMOB
         CALL PNT2DM(0,NSMOB,NSMSX,ADSXA,NTOOBS,NTOOBS,
-     &       ISM  ,ISL1,WORK(KPGINT1A(ISM)),MXPOBS)
+     &              ISM,ISL1,WORK(KPGINT1A(ISM)),MXPOBS)
       END DO
 *.1 : Number of one-electron integrals
       CALL PNT2DM(1,NSMOB,NSMSX,ADSXA,NTOOBS,NTOOBS,

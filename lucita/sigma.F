@@ -4857,8 +4857,8 @@ C
 *. Initialize density matrices to zero
         LRHO1 = NTOOB**2
         LRHO2 = NTOOB**2*(NTOOB**2+1)/2
-        IF(IDENSI.GE.1) CALL dzero(WORK(KRHO1),LRHO1)
-        IF(IDENSI.EQ.2) CALL dzero(WORK(KRHO2),LRHO2)
+        CALL dzero(work(krho1),lrho1)
+        if(idoh2 .eq. 1) CALL dzero(WORK(KRHO2),LRHO2)
       END IF
       
       IF(ICISTR.EQ.1) THEN
@@ -4874,6 +4874,11 @@ C
      &                IGROUPLIST,IPROCLIST
 #endif
      &             )
+      END IF
+!     NTEST = 100
+      IF(ISIGDEN.EQ. 2 .and. NTEST. ge. 100) THEN
+        write(luwrt,*) 'final rho1 matrix after sigden business'
+        CALL WRTMATMN(WORK(KRHO1),1,LRHO1,1,LRHO1,luwrt)
       END IF
 
 *. Eliminate local memory
@@ -5148,6 +5153,7 @@ C
         DO ISBLK = I1BATS(JBATS),I1BATS(JBATS)+ LBATS(JBATS)-1
           IOFF = IBATS(6,ISBLK)
           LEN  = IBATS(8,ISBLK)
+
           IF(LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
 !           check again if block is needed
@@ -5345,25 +5351,18 @@ C
 *. Preparation for storage of complete Sigma and C-vectors
       DIMENSION CV(*)
 
+      NTEST = 0
 *
 *     set local mark memory
 * 
       IDUM = 0
       CALL MEMMAN(KDUM,IDUM,'MARK  ',IDUM,'SIDE3 ')
 *
-CTF
 *     scratch space for rsbb2a, rsbb2bn, rsbb2bvn, skickj
-CTF
       LSOMESQ = MXTSOB*MXTSOB
       call memman(KSOMEH,LSOMESQ,'ADDS',2,'SOMSCH')
       call memman(KSOMESCR,LSOMESQ**2,'ADDS',2,'SOMSCR')
-CTF
-CTF   dimension SOMESCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
-CTF   dimension SOMEH(MXTSOB*MXTSOB)
-      NTEST = 0
-      IF(NTEST.GE.5)
-     &WRITE(6,*) ' SBLOCK : ISSPC,ICSPC ', ISSPC,ICSPC
-C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
+
       IF(LUCBLK.GT.0) THEN
         CALL REWINE(LUCBLK,-1)
       END IF
@@ -5813,9 +5812,11 @@ C
      &                   SCLFAC,NUM_BLOCKS2,0)
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(luwrt,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
+#undef LUCI_DEBUG
 #endif
 C
 C     find batches of C-blocks
@@ -5972,10 +5973,11 @@ csk  &                     IOFF_SCR_C2, JBLOCK
             CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
      &                  NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
      &                  PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
-csk      write(luwrt,*)'read in done for JBLOCK',JBLOCK
-csk      CALL WRTMATMN(CB(JOFF),NSSOB(JBSM,JBTP),
-csk  &                 NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
-csk  &                 NSSOA(JASM,JATP),luwrt)
+
+!        write(luwrt,*)'read in done for JBLOCK',JBLOCK
+!        CALL WRTMATMN(CB(JOFF),NSSOB(JBSM,JBTP),
+!    &                 NSSOA(JASM,JATP),NSSOB(JBSM,JBTP),
+!    &                 NSSOA(JASM,JATP),luwrt)
           ELSE
             CALL IFRMDS(LBL,-1,1,LUC)
             CALL SKPRCD2(LBL,-1,LUC)
@@ -6310,7 +6312,6 @@ C
 C
       CALL QEXIT('SIDE4')
 C
-      RETURN
       END
 ***********************************************************************
 

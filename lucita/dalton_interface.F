@@ -233,7 +233,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *. Output
       DIMENSION CMOMO(*)
 *
-      NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.1) THEN
         WRITE(lupri,*)
         WRITE(lupri,*) ' ===================='

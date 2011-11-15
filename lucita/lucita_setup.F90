@@ -445,8 +445,8 @@ contains
       if(IUSE_PH > 0) IADVICE = 1
 !     do not transform CI vectors to alternative orbital representation
       ITRACI    = 0
-      ITRACI_CR = 'undefine'
-      ITRACI_CN = 'undefine'
+      ITRACI_CR = 'COMP    '
+      ITRACI_CN = 'NATURAL '
 !     do no separate strings into active and passive parts
       IUSE_PA = 0
 !     no perturbation expansion of Fock matrix

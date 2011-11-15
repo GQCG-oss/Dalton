@@ -996,11 +996,13 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
         WRITE(6,*) ' GSBBD1, sclfac ',SCLFAC
       END IF
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(lupri,*) ' C'
       CALL WRTMATMN(CB,nacob,nacob,nacob,nacob,lupri)
       WRITE(lupri,*) ' S'
       CALL WRTMATMN(SB,nacob,nacob,nacob,nacob,lupri)
+#undef LUCI_DEBUG
 #endif
 *
       IFRST = 1
@@ -1141,6 +1143,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 *
 *
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
                 ntest = 1000
                 IF(NTEST.GE.1000) THEN
@@ -1176,6 +1179,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 #ifdef LUCI_DEBUG
                   WRITE(lupri,*) ' one-body density after scatter'
                   CALL WRTMATMN(RHO1,nacob,nacob,nacob,nacob,lupri)
+#undef LUCI_DEBUG
 #endif
                 END DO
 *               /\ End of hard work
@@ -1902,9 +1906,11 @@ C?              call prsym(rho2,NORB*NORB)
 *  beta contribution to RHO1
 * =============================
 *
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' GSBBD1 will be called (beta)'
         WRITE(lupri,*) ' no transpose: rhotype ==>   ',rhotype
+#undef LUCI_DEBUG
 #endif
         CALL GSBBD1(RHO1,NACOB,IBSM,IBTP,JBSM,JBTP,IJBGRP,NIA,
      &       NGAS,IBOC,JBOC,
@@ -1947,9 +1953,11 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 *  alpha contribution to RHO1
 * =============================
 *
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' GSBBD1 will be called (alpha)'
         WRITE(lupri,*) ' rhotype ==>                 ',rhotype
+#undef LUCI_DEBUG
 #endif
 
         CALL TRPMT3(CB,NJA,NJB,C2)

@@ -148,6 +148,11 @@ C MOTECC-90: The algorithms used in this module, TRACI, are
 C            described in Chapter 8 Section D.5 of MOTECC-90
 C            "Counter Rotations of CI coefficients"
 C
+!     module dependencies
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
 #include <implicit.h>
       DIMENSION CVEC(LCVEC,NCVEC), UMO(*), XNDXCI(*), WRK(LFREE)
 C
@@ -173,6 +178,7 @@ C
 #include <csfbas.h>
 #include <ciinfo.h>
 #include <cbreor.h>
+#include <dummy.h>
       LOGICAL CSFEXP
 C
 C
@@ -201,32 +207,45 @@ c Local memory
         KLDET2 = KLDET1 + NCDET
         KLFREE = KLDET2 + NCDET
       END IF
-C..   note: C2 only needs max of nia*nib (see TRACI1)
+      lfree_local = lfree -  KLFREE
+
+!     note: C2 only needs max of nia*nib (see TRACI1)
       IF ( KLFREE-1 .GT. LFREE ) CALL ERRWRK('TRACI',KLFREE-1,LFREE)
-c orbital tranformation matrix
-      IF (.NOT. SLREOR) THEN
-         CALL DCOPY(N2ASHX,UMO,1,WRK(KLSOT),1)
-      ELSE
-C        reorder from Sirius order to Lunar order
-         CALL REORMT(UMO,WRK(KLSOT),NASHT,NASHT,XNDXCI(KLTSOB),
-     &               XNDXCI(KLTSOB) )
-      END IF
-      CALL SOTMAT(NASHT,WRK(KLSOT),IFAIL)
+
+!     orbital tranformation matrix - setup internally in LUCITA...
+      if(ci_program .eq. 'SIRIUS-CI')then
+        IF (.NOT. SLREOR)THEN
+           CALL DCOPY(N2ASHX,UMO,1,WRK(KLSOT),1)
+        ELSE
+!          reorder from Sirius order to Lunar order
+           CALL REORMT(UMO,WRK(KLSOT),NASHT,NASHT,XNDXCI(KLTSOB),
+     &                 XNDXCI(KLTSOB) )
+        END IF
+!       get single orbital transformation matrix
+        CALL SOTMAT(NASHT,WRK(KLSOT),IFAIL)
+
+C..     TRANSPOSE SOT MATRIX IN ACCORDANCE WITH LUNAR DESCRIPTION
+        CALL DGETRN(WRK(KLSOT),NASHT,NASHT)
+c       Store CI offsets in C arrays
+        IPRXXX = MAX(0,IPRTCI - 10)
+        CALL CIOFF(LSYM,1,XNDXCI,IPRXXX)
+c       CALL CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
+
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(n2ashx,umo,1,wrk(klsot),1)
+        call sotmat(nasht,wrk(klsot),ifail)   
+      end if
+
       IF ( IFAIL .NE. 0 ) THEN
          WRITE(LUPRI,'(///,A,I5,/)')
      &        ' TRACI : ERROR IN SOTMAT, IFAIL = ',IFAIL
          CALL QUIT(' TRACI : ERROR IN SOTMAT ')
       END IF
-      IF (IPRTCI .GT. 10 ) THEN
+
+!     IF (IPRTCI .GT. 10 ) THEN
          WRITE(LUPRI,'(/A)') ' SINGLE ORBITAL TRANSFORMATION MATRIX '
          CALL WRTMAT(WRK(KLSOT),NASHT,NASHT,NASHT,NASHT,0)
-      END IF
-C..TRANSPOSE SOT MATRIX IN ACCORDANCE WITH LUNAR DESCRIPTION
-      CALL DGETRN(WRK(KLSOT),NASHT,NASHT)
-c Store CI offsets in C arrays
-      IPRXXX = MAX(0,IPRTCI - 10)
-      CALL CIOFF(LSYM,1,XNDXCI,IPRXXX)
-c     CALL CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
+!     END IF
 c
       DO 450 IVEC = 1, NCVEC
         IF(CSFEXP) THEN
@@ -257,18 +276,78 @@ C         CSDTVC(CSFVEC,DETVEC,IWAY,DTOCMT,ICTSDT,IREFSM,ICOPY,NTEST)
 c
 c Rotate in DET expansion
 c
-          CALL TRACI2(WRK(KLSOT),NASHT,LSYM,NAEL,XNDXCI(KIASTR),
-     &                XNDXCI(KTAIJ),XNDXCI(KTATO),XNDXCI(KTASYM),
-     &                XNDXCI(KSTASA),XNDXCI(KSTBAA),NBEL,
-     &                XNDXCI(KIBSTR),XNDXCI(KTBIJ),
-     &                XNDXCI(KTBTO),XNDXCI(KTBSYM),XNDXCI(KSTASB),
-     &                XNDXCI(KSTBAB),NASTR,NBSTR,XNDXCI(KIANNI),
-     &                CVEC(1,IVEC),XNDXCI(KCOFF),WRK(KLC2),
-     &                NOCTPA,XNDXCI(KNSSOA),XNDXCI(KISSOA),
-     &                XNDXCI(KTPFSA),NOCTPB,XNDXCI(KNSSOB),
-     &                XNDXCI(KISSOB),
-     &                XNDXCI(KTPFSB),XNDXCI(KIOCOC),XNDXCI(KICOOS),
-     &                XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
+          if(ci_program .eq. 'LUCITA   ')then
+            call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry ! swap see subroutine below
+     &                                     lsym,        ! lhs symmetry ! swap see subroutine below
+     &                                     -1,          ! no istaci
+     &                                     0,           ! spin for operator
+     &                                     0,           ! spin for operator
+     &                                     1,           ! one root
+     &                                     ispin,       ! singlet, doublet, triplet, ...
+     &                                     -1,          ! # of davidson iterations
+     &                                     -1,          ! 1/2-particle density calcs
+     &                                     iprtci,      ! print level      
+     &                                     1.0d-10,     ! screening factor
+     &                                     0.0d0,       ! davidson ci convergence
+     &                                     0.0d0,       ! davidson ci convergence (auxiliary)
+     &                                     .false.,     ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                     .false.,     ! wave function analysis
+     &                                     .true.,      ! no 2-el operators active
+     &                                     .true.,      ! integrals provided by / return density matrices to the MCSCF environment
+     &                                     .false.,     ! calculate 2-particle density matrix
+     &                                     .false.,     ! calculate transition density matrix
+     &                                     .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
+            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+            write(lupri,*) ' before tra-ci run: sot-mat'
+            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#endif
+            call mcscf_lucita_interface(cvec(1,ivec),wrk(klc2),
+     &                                  wrk(klsot),dummy2,
+     &                                  'rotate  Cvec',
+     &                                  wrk(klfree),lfree_local,iprtci)
+
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
+            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+            write(lupri,*) ' after  tra-ci run: sot-mat'
+            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#endif
+
+          else if(ci_program .eq. 'SIRIUS-CI')then
+
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
+            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+            write(lupri,*) ' before tra-ci run: sot-mat'
+            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#endif
+
+            CALL TRACI2(WRK(KLSOT),NASHT,LSYM,NAEL,XNDXCI(KIASTR),
+     &                  XNDXCI(KTAIJ),XNDXCI(KTATO),XNDXCI(KTASYM),
+     &                  XNDXCI(KSTASA),XNDXCI(KSTBAA),NBEL,
+     &                  XNDXCI(KIBSTR),XNDXCI(KTBIJ),
+     &                  XNDXCI(KTBTO),XNDXCI(KTBSYM),XNDXCI(KSTASB),
+     &                  XNDXCI(KSTBAB),NASTR,NBSTR,XNDXCI(KIANNI),
+     &                  CVEC(1,IVEC),XNDXCI(KCOFF),WRK(KLC2),
+     &                  NOCTPA,XNDXCI(KNSSOA),XNDXCI(KISSOA),
+     &                  XNDXCI(KTPFSA),NOCTPB,XNDXCI(KNSSOB),
+     &                  XNDXCI(KISSOB),
+     &                  XNDXCI(KTPFSB),XNDXCI(KIOCOC),XNDXCI(KICOOS),
+!    &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
+     &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,100)
+
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
+            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+            write(lupri,*) ' after  tra-ci run: sot-mat'
+            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#undef LUCI_DEBUG
+#endif
+          end if
         END IF
   450 CONTINUE
 C
@@ -328,8 +407,11 @@ C..    TRANSFORM ORBITAL IORB
         CALL SETVEC(C2,0.0D0,KDET)
         IF(NTEST .GE. 25)WRITE(LUPRI,*)'  *** ORBITAL TO BE ROTATED ',
      &                                 IORB
+         write(lupri,*) 'IOCOC mat - beta part'
+         call iwrtmamn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,lupri)
         DO  890 IATP =  1, NOCTPA
         DO  880 IBTP =  1, NOCTPB
+         write(lupri,*) 'IATP,IBTP ==> iococ',IATP,IBTP,IOCOC(IATP,IBTP)
          IF( IOCOC(IATP,IBTP) .NE. 1 ) GOTO  880
          IOFF =   ICOOS (IBTP,IATP,IASM)
 C
@@ -350,12 +432,20 @@ C IS ORBITAL IORB OCCUPIED IN IB ?
                IF(IBSTR(IEL,IB) .EQ. IORB ) IOCC = 1
   750        CONTINUE
 C
+             write(lupri,*) 'IOCC ==> ',IOCC
              IF ( IOCC .EQ. 0 ) THEN
+               write(lupri,*) 
+         write(lupri,*) ' == 0: scale NIA, with 1, bf',
+     &             NIA, IOFFI+IOFF11-1, C(IOFFI),
+     &             C(IOFFI+1)
                CALL VECSUM(C2(IOFFI-IOFF11+1),C2(IOFFI-IOFF11+1),
      &                     C(IOFFI),1.0D0,1.0D0,NIA)
+         write(lupri,*) ' after: scale (iocc == 0)',
+     &             C2(IOFFI-IOFF11+1),C2(IOFFI-IOFF11+2)
              ELSE
                DO 700 IEX = TBSYM(1,IB),TBSYM(2,IB)-1
                  IJEX = TBIJ(IEX)
+                 write(lupri,*) 'IANNI(IJEX) ==> ',IANNI(IJEX)
                  IF(IANNI(IJEX) .EQ. IORB ) THEN
                    JB = TBTO(IEX)
                    IF( JB .GT. NBSTR ) THEN
@@ -366,10 +456,13 @@ C
                    END IF
 C
                    JBTP = ITPBST(JB)
+         write(lupri,*) 'IATP,JBTP ==> iococ',IATP,JBTP,IOCOC(IATP,JBTP)
                    IF( IOCOC(IATP,JBTP) .NE. 1 ) GOTO 700
                    JBEFF = JB - ISTBOS(JBTP,IBSM)+1
                    IOFFJ = ICOOS(JBTP,IATP,IASM) - IOFF11
      &                   + (JBEFF-1)*NIA + 1
+         write(lupri,*) ' == 1: scale NIA with factor NIA, factor, off',
+     &             NIA, factor, IOFFI, C(IOFFI),C(IOFFI+1),IOFFJ
                    CALL VECSUM(C2(IOFFJ),C2(IOFFJ),
      &                         C(IOFFI),1.0D0,FACTOR,NIA)
                  END IF
@@ -402,6 +495,8 @@ C.. TRANSPOSE TO EASE INDEXING
 C        CALL TRPMAT(C2,NIA,NIB,C(IOFF))
          CALL TPBLM2(C2,C(IOFF11),NSTAOS(1,IASM),NOCTPA,
      &        NSTBOS(1,IBSM),NOCTPB,IOCOC,1)
+         write(lupri,*) 'IOCOC mat - alpha part'
+         call iwrtmamn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,lupri)
          DO 1900 IORB = 1, NORB
           IF( NTEST .GE. 25 )WRITE(LUPRI,*)' ORBITAL TO BE ROTATED ',
      &                                       IORB
@@ -411,6 +506,10 @@ C        CALL TRPMAT(C2,NIA,NIB,C(IOFF))
            IF( IOCOC(IATP,IBTP) .NE. 1 ) GOTO 1880
            NIA = NSTAOS(IATP,IASM)
            NIB = NSTBOS(IBTP,IBSM)
+           IF ( NTEST .GE. 25 ) THEN
+             WRITE(LUPRI,*) ' INITIAL CI BLOCK - alpha strings'
+             CALL WRTMAT(C(IOFF11),NIA,NIB,NIA,NIB,0)
+           END IF
            IASTRT = ISTAOS(IATP,IASM)
            IBSTRT = ISTBOS(IBTP,IBSM)
            IOFF = ICOOS(IBTP,IATP,IASM)
@@ -424,8 +523,13 @@ C IS ORBITAL IORB OCCUPIED IN IA ?
  1750        CONTINUE
 C
              IF ( IOCC .EQ. 0 ) THEN
+         write(lupri,*) ' == 0: scale NIB, with 1, bf',
+     &             NIB, IOFFI+IOFF11-1, C(IOFFI+IOFF11-1),
+     &             C(IOFFI+IOFF11)
                CALL VECSUM(C2(IOFFI),C2(IOFFI),
      &                     C(IOFFI+IOFF11-1),1.0D0,1.0D0,NIB)
+         write(lupri,*) ' after: scale (iocc == 0)',
+     &             C2(IOFFI),C2(IOFFI+1)
              ELSE
                DO 1700 IEX = TASYM(1,IA),TASYM(2,IA)-1
                  IJEX = TAIJ(IEX)
@@ -444,8 +548,13 @@ C
                    JASTRT = ISTAOS(JATP,IASM)
                    IOFFJ = ICOOS(IBTP,JATP,IASM)-IOFF11
      &                   + (JA-JASTRT)*NIB + 1
+         write(lupri,*) ' == 1: scale NIB, factor NIB, factor, off, bf',
+     &             NIB, factor, IOFFI+IOFF11-1, C(IOFFI+IOFF11-1),
+     &             C(IOFFI+IOFF11),IOFFJ,C2(IOFFJ),C2(IOFFJ+1)
                    CALL VECSUM(C2(IOFFJ),C2(IOFFJ),C(IOFFI+IOFF11-1),
      &                         1.0D0,FACTOR,NIB)
+         write(lupri,*) ' after: scale',
+     &             C2(IOFFJ),C2(IOFFJ+1)
 C
                  END IF
  1700          CONTINUE
