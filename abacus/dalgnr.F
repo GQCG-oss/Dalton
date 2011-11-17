@@ -1141,7 +1141,7 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            'xXXXXXX', '.DOUGLA'/
+     &            '.THRRED', '.DOUGLA'/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
