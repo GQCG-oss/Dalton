@@ -645,8 +645,9 @@ C     If iprmp2 .le. 0 then mp2fro will be false
          END IF
 C
          IF (FCKFRO) THEN
-            WRITE (LUPRI,'(/A,8I5//A)')
-     &      ' RHF frozen orbitals per symmetry :',(NFRRHF(I),I=1,NSYM),
+            WRITE (LUPRI,'(/A,8I5)')
+     &      ' RHF frozen orbitals per symmetry :',(NFRRHF(I),I=1,NSYM)
+            WRITE (LUPRI,'(/A)')
      &      ' Total MP2 energy and NO occupations calculated with'//
      &      ' frozen orbitals from RHF.'
          ELSE
