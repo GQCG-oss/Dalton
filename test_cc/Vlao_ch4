@@ -1,0 +1,126 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > Vlao_ch4.info <<%EOF%
+   Vlao_ch4
+   --------
+   Molecule:       CH4
+   Wave Function:  CCSD
+   Test Purpose:   Verdet constant with London orbitals (D2 symm)
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > Vlao_ch4.mol <<%EOF%
+BASIS
+DZ(Dunning)
+CH4, LAO-Verdet tests 
+(revised geometry)
+    2    2 XY YZ   1
+        6.    1
+C1    0.000000      0.000000      0.000000
+        1.    1
+H1    0.626887      0.626887      0.626887
+%EOF%
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > Vlao_ch4.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.THETA
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+ 0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITAL
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 1.0d-10
+*CC INPUT
+.CCSD
+.THRENR
+ 1.0d-9
+.THRLEQ
+ 1.0d-8
+.CONNECTION
+NATURAL
+*CCFOP
+.QUADRU
+*CCQR
+.OPERAT
+(UNREL) (UNREL) (UNREL)
+ZDIPLEN XDIPLEN YANGMOM
+(UNREL) (UNREL) (RELAX)
+ZDIPLEN XDIPLEN YANGMOM
+(UNREL) (UNREL) (RELAX)
+ZDIPLEN XDIPLEN dh/dBY
+.MIXFRE
+1
+0.11391
+0.0
+**END OF DALTON
+%EOF%
+############################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+
+# SCF, MP2 and CCSD energie
+CRIT1=`$GREP "Total SCF  * energy\: * \-4(0| )\.185597115" $log | wc -l`
+CRIT2=`$GREP "Total MP2  * energy\: * \-4(0| )\.291174929" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-4(0| )\.311792532" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
+
+# Unrelaxed, relaxed and LAO+Relax V(w) components
+CRIT1=`$GREP "(0| )\.1139 * YANGMOM * \(unrel\.\) * (0| )\.0000 * 1\.385058" $log | wc -l`
+CRIT2=`$GREP "(0| )\.1139 * YANGMOM * \(relax\.\) * (0| )\.0000 * 1\.394750" $log | wc -l`
+CRIT3=`$GREP "(0| )\.1139 * dh\/dBY * \(relax\.\) * (0| )\.0000 * 4\.639750" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="UNRELAXED/RELAXED/LAO VERDET CONSTANT COMPONENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > Vlao_ch4.check
+chmod +x Vlao_ch4.check
+#######################################################################
+

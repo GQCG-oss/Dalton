@@ -1,0 +1,189 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dipgra_relax2.info <<%EOF%
+   dipgra_relax2
+   -------------
+   Molecule:       H2O in C1
+   Wave Function:  CCSD
+   Test Purpose:   orbital-relaxed dipole derivatives
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################  
+cat > dipgra_relax2.mol <<%EOF%
+BASIS
+STO-3G 
+H2O , C2v symmetry
+stretched geometry
+    2    0  X  Y      1.00D-15
+        8.0   1    2    2    1
+0     0.0000000000000000  0.0000000000000000  -0.13594222000
+        1.0   2    1    1    
+H     0.0000000000000000  1.4476145000000000   1.07875057000
+H     0.0000000000000000 -1.4476145000000000   1.07875057000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################  
+cat > dipgra_relax2.dal <<%EOF%
+**DALTON
+!.DIRECT
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.THETA
+.DIPGRA
+.QUAGRA
+.DEROVL
+.DERHAM
+**WAVE FUNCTIONS
+.CC
+*ORBITALS
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+  1.0d-10
+*CC INPUT
+.CCSD
+.PRINT
+   5
+.THRLEQ
+ 1.0d-12
+.THRENR
+ 1.0d-12
+*CCFOP
+.DIPMOM
+*CCLR
+.OLD_LR
+!.ASYMSD
+.RELAXED
+.OPERATOR
+XDIPLEN 1DHAM001
+XDIPLEN 1DHAM002
+XDIPLEN 1DHAM003
+XDIPLEN 1DHAM004
+XDIPLEN 1DHAM005
+XDIPLEN 1DHAM006
+XDIPLEN 1DHAM007
+XDIPLEN 1DHAM008
+XDIPLEN 1DHAM009
+YDIPLEN 1DHAM001
+YDIPLEN 1DHAM002
+YDIPLEN 1DHAM003
+YDIPLEN 1DHAM004
+YDIPLEN 1DHAM005
+YDIPLEN 1DHAM006
+YDIPLEN 1DHAM007
+YDIPLEN 1DHAM008
+YDIPLEN 1DHAM009
+ZDIPLEN 1DHAM001
+ZDIPLEN 1DHAM002
+ZDIPLEN 1DHAM003
+ZDIPLEN 1DHAM004
+ZDIPLEN 1DHAM005
+ZDIPLEN 1DHAM006
+ZDIPLEN 1DHAM007
+ZDIPLEN 1DHAM008
+ZDIPLEN 1DHAM009
+**END OF DALTON
+%EOF%
+
+############################################################
+
+ 
+
+############################################################
+
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >dipgra_relax2.check
+cat >>dipgra_relax2.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Total SCF   energy:  * -74.96565699" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy:  * -75.00556505" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:  * -75.02150754" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# SCF relaxed polarizabilities & dipole gradients:
+CRIT1=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =    ( -|-0)\.5487907" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =     ( |0)\.2743954" $log | wc -l`
+CRIT3=`$GREP "<<XDIPLEN ,1DHAM007>>\( ..000000\) =     ( |0)\.2743954" $log | wc -l`
+CRIT4=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =    ( -|-0)\.0229924" $log | wc -l`
+CRIT5=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =     ( |0)\.0114962" $log | wc -l`
+CRIT6=`$GREP "<<YDIPLEN ,1DHAM006>>\( ..000000\) =    ( -|-0)\.2205986" $log | wc -l`
+CRIT7=`$GREP "<<YDIPLEN ,1DHAM008>>\( ..000000\) =     ( |0)\.0114962" $log | wc -l`
+CRIT8=`$GREP "<<YDIPLEN ,1DHAM009>>\( ..000000\) =     ( |0)\.2205986" $log | wc -l`
+CRIT9=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =     ( |0)\.0882858" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
+              $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
+CTRL[2]=9
+ERROR[2]="SCF DIPOLE GRADIENTS NOT CORRECT"
+
+# CCSD relaxed polarizabilities & dipole gradients:
+CRIT1=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =     ( |0)\.5054997" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =    ( -|-0)\.2527498" $log | wc -l`
+CRIT3=`$GREP "<<XDIPLEN ,1DHAM007>>\( ..000000\) =    ( -|-0)\.2527498" $log | wc -l`
+CRIT4=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =    ( -|-0)\.0845445" $log | wc -l`
+CRIT5=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =     ( |0)\.0422722" $log | wc -l`
+CRIT6=`$GREP "<<YDIPLEN ,1DHAM006>>\( ..000000\) =     ( |0)\.2475529" $log | wc -l`
+CRIT7=`$GREP "<<YDIPLEN ,1DHAM008>>\( ..000000\) =     ( |0)\.0422722" $log | wc -l`
+CRIT8=`$GREP "<<YDIPLEN ,1DHAM009>>\( ..000000\) =    ( -|-0)\.2475529" $log | wc -l`
+CRIT9=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =    ( -|-0)\.1750830" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
+              $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
+CTRL[3]=9
+ERROR[3]="CCSD DIPOLE GRADIENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+chmod +x dipgra_relax2.check
+#######################################################################

@@ -1,0 +1,174 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Examples of generalized active space CI calculations}
+\label{ch:lucitaexamples}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In this Chapter we discuss three examples of input files (\verb|DALTON.INP|) 
+for generalized active space (GAS) and restricted active space (RAS) 
+CI calculations based on the \lucita\ module of the Dalton program. 
+Other examples may be found in the test suite. 
+
+\section{Energy calculation with a GAS-type active space decomposition I}\label{cc:lucitaex:gas1}
+%
+\lucita\  allows for the calculation of the ground and excited state energies
+of a given system based on the definition of active spaces using the concept of generalized active spaces. 
+A list of compulsory and optional keywords can be found in Section~\ref{sec:lucita-inp}. 
+The following input describes the calculation of SCF and GASCI ground state energies of HBr as well as of the 
+first excited singlet state of A1 symmetry:
+
+%
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.HF
+.GASCI
+*SCF INPUT
+.DOUBLY OCCUPIED
+ 9 4 4 1
+*LUCITA
+.TITLE
+ HBr molecule ground state + first excited state in A1
+.INIWFC
+ HF_SCF                       ! we start from a closed-shell HF reference wave function
+.CITYPE
+ GASCI                        ! GASCI calculation
+.SYMMET
+ 1                            ! symmetry irrep A1
+.MULTIP
+ 1                            ! singlet states
+.INACTIVE
+ 7 3 3 1                      ! inactive (doubly occupied) orbitals
+.GAS SHELLS
+ 3                            ! number of GA spaces
+ 5  8 / 2  1  1  0            ! min max # of accumulated e- / orbitals in GA space I
+ 6  8 / 4  2  2  1            ! min max # of accumulated e- / orbitals in GA space II
+ 8  8 / 3  1  1  0            ! min max # of accumulated e- / orbitals in GA space III
+.NROOTS
+ 2                            ! we want to converge on two eigenstates
+.MAXITR
+ 16                           ! stop the calculation after 16 Davidson CI iterations
+.MXCIVE
+ 6                            ! subspace dimension
+.ANALYZ                       ! print leading coefficients of the final CI wave function
+.DENSI
+ 1                            ! print natural orbital occupation numbers
+**END OF DALTON INPUT
+\end{verbatim}
+
+The basis set input (\verb|MOLECULE.INP|) used in this example reads as:
+
+\begin{verbatim}
+BASIS
+cc-pVDZ
+HBr with small basis set
+
+    2    2  X  Y   a
+        1.    1
+H     0.0000000000            0.0000000000           1.414431
+       35.    1
+Br    0.0000000000            0.0000000000           0.000000
+FINISH
+\end{verbatim}
+
+\section{Energy calculation with a GAS-type active space decomposition II}\label{cc:lucitaex:gas2}
+
+We now repeat the GASCI calculation from the previous section 
+with a modified GA space input (yielding nevertheless the {\bf{same}}\ CI configuration space) 
+and asking for the first two triplet states in B1 symmetry. 
+Note in particular the splitting of the former GAS II space into three 
+spaces with the ``$\sigma$''-, ``$\pi$''-\ and ``$\delta$''-like orbitals separated into different spaces. 
+Remember that the min/max number of electrons in the final GAS space have to be always identical and 
+specify the number of active (``correlated'') electrons. The kewyword \Key{NACTEL} is thus merely optional for 
+GASCI calculations whereas it is mandatory for RASCI calculations (see next section \ref{cc:lucitaex:ras}). 
+
+%
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.HF
+.GASCI
+*SCF INPUT
+.DOUBLY OCCUPIED
+ 9 4 4 1
+*LUCITA
+.TITLE
+ HBr molecule ground state + first excited state in A1
+.INIWFC
+ HF_SCF                       ! we start from a closed-shell HF reference wave function
+.CITYPE
+ GASCI                        ! GASCI calculation
+.SYMMET
+ 3                            ! symmetry irrep B1
+.MULTIP
+ 3                            ! triplet states
+.INACTIVE
+ 7 3 3 1                      ! inactive (doubly occupied) orbitals
+.GAS SHELLS
+ 5                            ! number of GA spaces
+ 5  8 / 2  1  1  0            ! min max # of accumulated e- / orbitals in GA space I
+ 5  8 / 4  0  0  0            ! min max # of accumulated e- / orbitals in GA space II
+ 5  8 / 0  2  2  0            ! min max # of accumulated e- / orbitals in GA space III
+ 6  8 / 0  0  0  1            ! min max # of accumulated e- / orbitals in GA space IV
+ 8  8 / 3  1  1  0            ! min max # of accumulated e- / orbitals in GA space  V
+.NROOTS
+ 2                            ! we want to converge on two eigenstates
+.ANALYZ                       ! print leading coefficients of the final CI wave function
+.DENSI
+ 1                            ! print natural orbital occupation numbers
+**END OF DALTON INPUT
+\end{verbatim}
+
+\section{Energy calculation with a RAS-type active space decomposition}\label{cc:lucitaex:ras}
+%
+In order to show the simple relation between RASCI and GASCI calculations with \lucita\
+we now consider the test case from Section \ref{cc:lucitaex:gas1}\ 
+based on the definition of RA spaces. Note, that internally the RASCI input is converted to a GASCI 
+input which will be printed in the output.
+
+%
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.HF
+.GASCI
+*SCF INPUT
+.DOUBLY OCCUPIED
+ 9 4 4 1
+*LUCITA
+.TITLE
+ HBr molecule ground state + first excited state in A1
+.INIWFC
+ HF_SCF                       ! we start from a closed-shell HF reference wave function
+.CITYPE
+ RASCI                        ! RASCI calculation
+.SYMMET
+ 1                            ! symmetry irrep A1
+.MULTIP
+ 1                            ! singlet states
+.NACTEL
+ 8                            ! number of active electrons
+.INACTIVE
+ 7 3 3 1                      ! inactive (doubly occupied) orbitals
+.RAS1
+  2  1  1  0                  ! orbital distribution in RA space I
+ 3                            ! maximum number of holes
+.RAS2
+  4  2  2  1                  ! orbital distribution in RA space II
+.RAS3
+  3  1  1  0                  ! orbital distribution in RA space III
+ 2                            ! maximum number of e-
+.NROOTS
+ 2                            ! we want to converge on two eigenstates
+.MAXITR
+ 16                           ! stop the calculation after 16 Davidson CI iterations
+.MXCIVE
+ 6                            ! subspace dimension
+.ANALYZ                       ! print leading coefficients of the final CI wave function
+.DENSI
+ 1                            ! print natural orbital occupation numbers
+**END OF DALTON INPUT
+\end{verbatim}
+

@@ -1,0 +1,141 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_geopt_ccpt_hf.info <<%EOF%
+   cc_geopt_ccpt_hf
+   --------------
+   Molecule:         HF, C2v 
+   Wave Function:    CCSD(T) / cc-pVDZ
+   Test Purpose:     CCSD(T) gradient
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_geopt_ccpt_hf.mol <<%EOF%
+BASIS
+cc-pVDZ
+Geometry optimization calculation
+for HF in CM coor. system
+    2    2  X  Y  Z   1.00D-15
+        1.0   1
+H     0.0000000000000000  0.000000000000000   1.645584440000000       *
+        9.0   1
+F     0.0000000000000000  0.000000000000000   -.08729478000000        *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_geopt_ccpt_hf.dal <<%EOF%
+**DALTON
+.OPTIMIZE
+**INTEGRAL
+.DIPLEN
+.DEROVL
+.DERHAM
+**WAVE FUNCTION
+.TITLE
+   test case for CCSD(T) geometry optimization
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.CC(T)
+.THRENR
+ 1.0d-08
+.THRLEQ
+ 1.0d-08
+.PRINT
+ 2
+.NSYM
+ 4
+.FROIMP
+1 0 0 0
+0 0 0 0
+.ETAPTI
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#SCF, MP2, CCSD and CCSD(T) energies of 0 iteration:
+CRIT1=`$GREP "Final *HF energy: * -100\.0194112619" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.2210387869" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * -100\.2262264844" $log | wc -l`
+CRIT4=`$GREP "Total energy CCSD\(T\): * -100\.2281469753" $log | wc -l`
+CRIT5=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1.6477699502" $log | wc -l`
+CRIT6=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * (\-|\-0)\.0894802902" $log | wc -l`
+CRIT7=`$GREP "Energy at this geometry is * : * -100\.228147" $log | wc -l`
+CRIT8=`$GREP "Norm of gradient * : * ( |0)\.004849" $log | wc -l`
+CRIT9=`$GREP "Norm of step * : * ( |0)\.004371" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
+              $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[1]=12
+ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
+
+
+#SCF, MP2, CCSD and CCSD(T) energies of 1 iteration:
+CRIT1=`$GREP "Final *HF energy: * -100\.0193187076" $log | wc -l`
+CRIT2=`$GREP "Total RSTAR energy: * -100\.2261213102" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * -100\.2262306180" $log | wc -l`
+CRIT4=`$GREP "Total energy CCSD\(T\): * -100\.2281559084" $log | wc -l`
+CRIT5=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.6482975029" $log | wc -l`
+CRIT6=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * (\-|\-0)\.0900078429" $log | wc -l`
+CRIT7=`$GREP "Energy at this geometry is * : * -100\.228156" $log | wc -l`
+CRIT8=`$GREP "Norm of gradient * : * ( |0)\.000943" $log | wc -l`
+CRIT9=`$GREP "Norm of step * : * ( |0)\.001055" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
+              $CRIT6  \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[2]=14
+ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
+#
+# Final summary:
+CRIT1=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * 1\.6483031799" $log | wc -l`
+CRIT2=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.0900135199" $log | wc -l` 
+CRIT3=`$GREP "Geometry converged in * 4 * iterations" $log | wc -l`
+CRIT4=`$GREP "Energy at final geometry is * : *  -100\.228156" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=10
+ERROR[3]="FINAL SUMMARY IS NOT CORRECT"
+#
+
+PASSED=1
+for i in 1 2 3
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > cc_geopt_ccpt_hf.check
+#######################################################################

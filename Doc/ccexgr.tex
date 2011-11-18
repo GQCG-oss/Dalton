@@ -1,0 +1,109 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Excited-state first-order properties: \Sec{CCEXGR}}\label{sec:ccexgr}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{expectation values!excited state!Coupled Cluster}
+\index{one-electron properties!excited state!Coupled Cluster}
+\index{properties!one-electron}
+\index{first-order properties!excited state!Coupled Cluster}
+\index{properties!first-order}
+
+In the \Sec{CCEXGR} section the input that is specific for coupled cluster 
+response calculation of excited-state first-order properties is read in.
+This section includes presently for example calculation of excited-state 
+dipole moments and second moments of the electronic charge distribution.
+In many cases the information generated in this way is helpful 
+for making qualitative assignments of the electronic states, for example
+in conjunction with the oscillator strengths and the 
+orbital analysis of the response eigenvectors presented in the output.
+
+The excited-state properties are available for the models CCS, CC2 and CCSD,
+but only for singlet states.
+%Publications that report results obtained this module should cite Ref.\ \cite{Christiansen:CCLR}.
+The theoretical background for the implementation is detailed in Ref.\ \cite{Christiansen:CCLR,Christiansen:QEL}.
+This section has to be used in connection with \Sec{CCEXCI} for the calculation of excited states.
+
+The properties calculated are in the approach now generally known as coupled cluster
+response---for these frequency independent properties this coincides with the so-called
+orbital-unrelaxed energy derivatives (and thus the orbital-unrelaxed finite-field result)
+for the excited-state total energies as obtained by the sum of the CC ground state energy
+and the CC response excitation energy.
+
+{\bf Note of caution:}
+Default in this section is therefore orbital {\it unrelaxed}, while for the ground state 
+first order properties \Sec{CCFOP} default is {\it relaxed}. 
+To find results in a consistent approximation turn orbital relaxation off
+for the ground state (for CCS, CC2, CCSD) calculation.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item O.~Christiansen, A.~Halkier, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}2801, (1998).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+\item[\Key{ALLONE}]
+        Calculate all of the above-mentioned excited state properties (all the
+        above-mentioned property integrals are needed).
+%
+\item[\Key{DIPOLE}]
+        Calculate the excited state permanent molecular electric dipole moment
+        (\verb+DIPLEN+ integrals).
+        \index{electric dipole}
+        \index{dipole moment}
+%
+\item[\Key{NQCC}]
+        Calculate the excited state electric field gradients at the nuclei
+        (\verb+EFGCAR+ integrals).
+        \index{electric field!gradient}
+%
+\item[\Key{OPERAT}] \verb| |\newline
+\verb|READ (LUCMD,'(1X,A8)') LABPROP|\newline
+        Calculate the excited state electronic contribution to the property defined
+        by the operator label \verb+LABPROP+ (corresponding
+        \verb+LABPROP+ integrals needed).
+
+\item[\Key{QUADRU}]
+        Calculate the excited state permanent traceless molecular electric
+        quadrupole moment (\verb+THETA+ integrals). Note that the
+        origin is the origin of the coordinate system specified
+        in the MOLECULE.INP file.
+        \index{electric quadrupole}
+        \index{quadrupole moment}
+%
+\item[\Key{RELCOR}]
+        Calculate excited state scalar-relativistic one-electron
+        corrections to the 
+        energy (\verb+DARWIN+ and \verb+MASSVELO+ integrals).
+        \index{relativistic corrections!one-electron}
+        \index{Darwin term!one-electron}
+        \index{mass-velocity term}
+%
+\item[\Key{SECMOM}]
+        Calculate the excited state electronic second moment of charge
+        (\verb+SECMOM+ integrals).
+        \index{second moment of charge}
+%
+
+\item[\Key{SELEXC}]  \verb| |\newline
+\verb|READ(LUCMD,*) IXSYM,IXST|
+
+Select which excited states the calculation of excited state properties 
+are carried out for. The default is all states according to the CCEXCI input section.
+When calculating selected states only,
+provide a list of symmetry and state numbers (order after increasing energy in
+each symmetry class).
+This list is read until next input label is found.
+
+
+%\item[\Key{SELXST}] 
+%Effect unknown at this moment... - in fact it is obsolete and without any effect.
+
+\end{description}
+

@@ -1,0 +1,166 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > alpha_deriv.info <<%EOF%
+   alpha_deriv
+   -----------
+   Molecule:       H2O in C1
+   Wave Function:  CC2, CCSD
+   Test Purpose:   geometric derivatives of frequency-dependent
+                   polarizabilities
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > alpha_deriv.mol <<%EOF%
+BASIS
+STO-3G
+H2O , C1 symmetry
+stretched geometry
+    2    0            1.00D-15
+        8.0   1    2    2    1
+0     0.0000000000000000  0.0000000000000000  -0.13594222000
+        1.0   2    1    1
+H     0.0000000000000000  1.4476145000000000   1.07875057000
+H     0.0000000000000000 -1.4476145000000000   1.07875057000    
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > alpha_deriv.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.DIPGRA
+.DEROVL
+.DERHAM
+**WAVE FUNCTIONS
+.TITLE
+  first derivative of the (unrelaxed) static
+  dipole-dipole polarizability at the CCSD level
+.CC
+*ORBITALS 
+.NOSUPSYM
+*SCF INPUT 
+.THRESH
+ 1.0d-12
+*CC INPUT 
+.CC2
+.CCSD
+.THRENR
+ 1.0d-14
+.THRLEQ
+ 1.0d-12
+.PRINT
+ 1
+*CCFOP
+.DIPMOM
+*CCQR
+.OPERATOR
+(UNREL) (UNREL) (RELAX)
+XDIPLEN XDIPLEN 1DHAM001
+XDIPLEN XDIPLEN 1DHAM002
+XDIPLEN XDIPLEN 1DHAM003
+XDIPLEN YDIPLEN 1DHAM001
+XDIPLEN YDIPLEN 1DHAM002
+XDIPLEN YDIPLEN 1DHAM003
+XDIPLEN ZDIPLEN 1DHAM001
+XDIPLEN ZDIPLEN 1DHAM002
+XDIPLEN ZDIPLEN 1DHAM003
+YDIPLEN YDIPLEN 1DHAM001
+YDIPLEN YDIPLEN 1DHAM002
+YDIPLEN YDIPLEN 1DHAM003
+YDIPLEN ZDIPLEN 1DHAM001
+YDIPLEN ZDIPLEN 1DHAM002
+YDIPLEN ZDIPLEN 1DHAM003
+ZDIPLEN ZDIPLEN 1DHAM001
+ZDIPLEN ZDIPLEN 1DHAM002
+ZDIPLEN ZDIPLEN 1DHAM003
+.STATIC
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Total SCF   energy: * \-74.96565699" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * \-75.00556505" $log | wc -l`
+CRIT3=`$GREP "Total CC2   energy: * \-75.00571352" $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy: * \-75.02150754" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[1]=10
+ERROR[1]="ENERGIES NOT CORRECT"
+
+# CC2 polarizability derivatives
+CRIT1=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     ..27451713E-01" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM001 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.1535480    " $log | wc -l`
+CRIT3=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.6435166    " $log | wc -l`
+CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM002 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.7212291    " $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -4.8048950    " $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[2]=5
+ERROR[2]="CC2 POLARIZABILITY DERIVATIVES NOT CORRECT"
+
+# CCSD polarizability derivatives
+CRIT1=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     ..30424901E-01" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM001 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.0968998    " $log | wc -l`
+CRIT3=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.0225476    " $log | wc -l`
+CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM002 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.3642070    " $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -4.5457026    " $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[3]=5
+ERROR[3]="CCSD POLARIZABILITY DERIVATIVES NOT CORRECT"
+
+# symmetry of polarizability derivatives:
+CRIT1=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM001 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
+$log |  awk "\\\$11 < 1.0e-10 {print \\\$0}" | wc -l`
+CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM002 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
+$log |  awk "\\\$11 < 1.0e-10 {print \\\$0}" | wc -l`
+CRIT3=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
+$log | awk "\\\$11 < 1.0e-10 {print \\\$0}" | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=6
+ERROR[4]="SYMMETRY OF POLARIZABILITY DERIVATIVES NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > alpha_deriv.check
+
+chmod +x alpha_deriv.check
+#######################################################################

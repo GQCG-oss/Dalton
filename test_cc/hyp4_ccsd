@@ -1,0 +1,138 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > hyp4_ccsd.info <<%EOF%
+   hyp4_ccsd
+   ---------
+   Molecule:       HF in C2
+   Wave Function:  CCSD
+   Test Purpose:   static third and fourth hyperpolarizabilities
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > hyp4_ccsd.mol <<%EOF%
+BASIS
+6-31G**
+Hydrogen flourid
+small test basis (6-31G**)
+    2    1  Y  X      1.00D-15
+        9.0   1    
+F     0.0000000000000000  0.0000000000000000 1.76320000000000000      
+        1.0   1
+H     0.0000000000000000  0.0000000000000000 0.00000000000000000      
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > hyp4_ccsd.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+**WAVE FUNCTIONS
+.TITLE
+  Compute third & fourth hyperpolarizability for the HF molecule
+  for a CCSD wavefunction
+.CC
+*ORBITALS 
+.NOSUPSYM
+*SCF INPUT 
+.THRESH
+ 1.0d-12
+*CC INPUT 
+.CCSD
+.THRENR
+ 1.0d-8
+.THRLEQ
+ 1.0d-8
+.MXLRV
+ 800
+.MAXRED
+ 800
+.PRINT
+  1
+*CC4R
+.STATIC
+.OPERATOR
+ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
+ZDIPLEN ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN 
+ZDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN 
+*CC5R
+.STATIC
+.OPERATOR
+ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
+ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN
+ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN
+XDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-100.00891989" | wc -l`
+CRIT2=`$GREP "Total SCF   energy:                  \-100.00891989" $log | wc -l`
+CRIT3=`$GREP "Total MP2   energy:                  \-100.19366257" $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy:                  \-100.19779090" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=7
+ERROR[1]="ENERGIES NOT CORRECT"
+
+# CCS freq.-dep. third hyperpolarizabilities:
+CRIT1=`$GREP "ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000    \-615\.928" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN ( |0)\.0000  ZDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000    \-83\.0707" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000  XDIPLEN ( |0)\.0000     4\.03533" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="CCS 3. HYPERPOLARIZABILITIES NOT CORRECT"
+
+
+# CCS freq.-dep. fourth hyperpolarizabilities:
+CRIT1=`$GREP "ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000    2784\.19" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN  ( |0)\.0000 ZDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000   \-1035\.48" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000    79\.5043" $log | wc -l`
+CRIT4=`$GREP "XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000 XDIPLEN  ( |0)\.0000   \-8\.96508" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=4
+ERROR[3]="CCS 4. HYPERPOLARIZABILITIES NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+' > hyp4_ccsd.check
+chmod +x hyp4_ccsd.check
+#######################################################################

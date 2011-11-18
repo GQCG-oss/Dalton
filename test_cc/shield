@@ -1,0 +1,151 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > shield.info <<%EOF%
+   shield
+   ------
+   Molecule:       H3 in C1
+   Wave Function:  CCSD
+   Test Purpose:   shieldings
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > shield.mol <<%EOF%
+BASIS
+6-31G**
+H3+ 
+...test example...
+    1  1 0  X  Y      1.00D-15
+        1.0   3
+H     0.0000000000000000  0.0000000000000000  -1.00000000000
+H     0.0000000000000000  1.4476145000000000   0.50000000000
+H     0.0000000000000000 -1.4476145000000000   0.50000000000    
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > shield.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.MAGMOM
+.NST
+.PSO
+.S1MAG
+.S1MAGR
+.GAUGEO
+ 0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITALS
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+  1.0d-10
+*CC INPUT
+.CCSD
+.PRINT
+   1
+.THRLEQ
+ 1.0d-10
+.THRENR
+ 1.0d-10
+.CONNEC
+NATURAL
+*CCFOP
+.OPERATOR
+ZDIPLEN
+*CCLR
+.OLD_LR
+.RELAXED
+.OPERATOR
+PSO 001 dh/dBX   
+PSO 002 dh/dBX
+PSO 003 dh/dBX
+PSO 001 dh/dBY
+PSO 002 dh/dBY
+PSO 003 dh/dBY
+PSO 001 dh/dBZ
+PSO 002 dh/dBZ
+PSO 003 dh/dBZ
+**END OF DALTON
+%EOF%
+
+############################################################
+
+ 
+
+############################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Total SCF * energy: * \-1.22081265" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy: * \-1.25295318" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy: * \-1.26358594" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# SCF shieldings
+CRIT1=`$GREP "<<PSO 001 ,dh/dBX  >>\( (0| ).000000\) = * ..4096282." $log | wc -l`
+CRIT2=`$GREP "<<PSO 002 ,dh/dBY  >>\( (0| ).000000\) = * ..5309353." $log | wc -l`
+CRIT3=`$GREP "<<PSO 003 ,dh/dBZ  >>\( (0| ).000000\) = * ..3677086." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[2]=3
+ERROR[2]="SCF SHIELDINGS NOT CORRECT"
+
+# CCSD shieldings
+CRIT1=`$GREP "<<PSO 001 ,dh/dBX  >>\( (0| ).000000\) = * 0*.3889442.  * 20.71180" $log | wc -l`
+CRIT2=`$GREP "<<PSO 002 ,dh/dBY  >>\( (0| ).000000\) = * 0*.3630439.  * 19.33258" $log | wc -l`
+CRIT3=`$GREP "<<PSO 003 ,dh/dBZ  >>\( (0| ).000000\) = * 0*.4260690.  * 22.68875" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="CCSD SHIELDINGS NOT CORRECT"
+
+
+# SCF and CCSD shieldings
+CRIT1=`$GREP "<<PSO 002 ,dh/dBX  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
+CRIT2=`$GREP "<<PSO 003 ,dh/dBY  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2`
+CTRL[4]=4
+ERROR[4]="SYMMETRY IN SCF AND CCSD SHIELDINGS NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > shield.check
+chmod +x shield.check
+#######################################################################

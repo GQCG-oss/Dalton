@@ -1,0 +1,221 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dpt.info <<%EOF%
+   dpt
+   ---
+   Molecule:       CO in C2v
+   Wave Function:  CCS, CCSD
+   Test Purpose:   relativistic direct perturbation theory
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > dpt.mol <<%EOF%
+BASIS
+6-311++G**
+DPT calculation of first-order
+
+    2    2  X  Y  Z   1.00D-15
+        6.0   1
+C     0.0000000000000000  0.0000000000000000 1.21824313000000000       *
+        8.0   1
+O     0.0000000000000000  0.0000000000000000 -.91397310000000000       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > dpt.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.THETA
+.EFGCAR
+.SECMOM
+.DARWIN
+.MASSVELO
+.DPTPOT
+.KINENER
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+.DOUBLY OCCUPIED
+ 5 1 1 0
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.CCS
+!.MP2
+.CCSD
+.PRINT
+ 4
+.THRENR
+1.0D-10
+.THRLEQ
+1.0D-07
+*CCFOP
+.ALLONE
+.DPTECO
+.2ELDAR
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-112.76963156" | wc -l`
+CRIT2=`$GREP "Total SCF   energy:                  \-112.76963156" $log | wc -l`
+CRIT3=`$GREP "Total MP2   energy:                  \-113.11481321" $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy:                  \-113.12042277" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=8
+ERROR[1]="ENERGIES NOT CORRECT"
+
+# RELAXED CCS FOPs:
+CRIT0=`$GREP "z [ ]* ( |0)\.119595.. [ ]* ( |0)\.303984.." $log | wc -l`
+CRIT1=`$GREP " 1       ( |0)\.834884..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
+CRIT2=`$GREP " 2       ( |0)\.00000000     ( |0)\.834884..     ( |0)\.00000000" $log | wc -l`
+CRIT3=`$GREP " 3       ( |0)\.00000000     ( |0)\.00000000    \-1\.669768.." $log | wc -l`
+CRIT4=`$GREP " 1       7\.599101..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l` 
+CRIT5=`$GREP " 2       ( |0)\.00000000     7\.599101..     ( |0)\.00000000" $log | wc -l` 
+CRIT6=`$GREP " 3       ( |0)\.00000000     ( |0)\.00000000    24\.856342.." $log | wc -l` 
+CRIT7=`$GREP "Alfa\*\*2 Invariant:  [ ]* 178.262945" $log | wc -l` 
+CRIT8=`$GREP "Beta\*\*2 Invariant:  [ ]* 297.812367" $log | wc -l` 
+CRIT9=`$GREP "Isotropic Property: [ ]* 13.351515 a.u." $log | wc -l` 
+CRIT10=`$GREP "Property anisotropy invariant:  [ ]* 17.257241 a.u." $log | wc -l` 
+CRIT11=`$GREP "1       ( |0)\.557663..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
+CRIT12=`$GREP "2       ( |0)\.00000000     ( |0)\.557663..     ( |0)\.00000000" $log | wc -l`
+CRIT13=`$GREP "3       ( |0)\.00000000     ( |0)\.00000000    -1\.115327.." $log | wc -l`
+CRIT14=`$GREP " O [ ]* 17    Vx =       ( |0)\.323762    \-1\.945939    ( -|-0)\.694360" $log | wc -l`
+CRIT15=`$GREP " O [ ]* 17    Vy =       ( |0)\.323762    \-1\.945939    ( -|-0)\.694360" $log | wc -l`
+CRIT16=`$GREP " O [ ]* 17    Vz =      ( -|-0)\.647524     3\.891878     1\.388719" $log | wc -l`
+TEST[2]=`expr $CRIT0  \+ $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4 \+ \
+              $CRIT5  \+ $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9 \+ \
+              $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 + $CRIT14 \+ \
+              $CRIT15 \+ $CRIT16`
+CTRL[2]=17
+ERROR[2]="RELAXED CCS FIRST-ORDER PROPERTIES NOT CORRECT"
+
+# RELAXED CCSD FOPs:
+CRIT0=`$GREP "z [ ]* ( -|-0)\.034980.. [ ]* ( -|-0)\.088913.." $log | wc -l`
+CRIT1=`$GREP " 1       ( |0)\.811176..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
+CRIT2=`$GREP " 2       ( |0)\.00000000     ( |0)\.811176..     ( |0)\.00000000" $log | wc -l`
+CRIT3=`$GREP " 3       ( |0)\.00000000     ( |0)\.00000000    \-1\.622352.." $log | wc -l`
+CRIT4=`$GREP " 1       7\.657371..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l` 
+CRIT5=`$GREP " 2       ( |0)\.00000000     7\.657371..     ( |0)\.00000000" $log | wc -l` 
+CRIT6=`$GREP " 3       ( |0)\.00000000     ( |0)\.00000000    24\.867196.." $log | wc -l` 
+CRIT7=`$GREP "Alfa\*\*2 Invariant:  [ ]* 179.398694" $log | wc -l` 
+CRIT8=`$GREP "Beta\*\*2 Invariant:  [ ]* 296.178072" $log | wc -l` 
+CRIT9=`$GREP "Isotropic Property: [ ]* 13.393980 a.u." $log | wc -l` 
+CRIT10=`$GREP "Property anisotropy invariant:  [ ]* 17.209825 a.u." $log | wc -l` 
+CRIT11=`$GREP "1       ( |0)\.463810..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
+CRIT12=`$GREP "2       ( |0)\.00000000     ( |0)\.463810..     ( |0)\.00000000" $log | wc -l`
+CRIT13=`$GREP "3       ( |0)\.00000000     ( |0)\.00000000    ( -|-0)\.927621.." $log | wc -l`
+CRIT14=`$GREP " O [ ]* 17    Vx =       ( |0)\.334718    \-2\.011788    ( -|-0)\.717856" $log | wc -l`
+CRIT15=`$GREP " O [ ]* 17    Vy =       ( |0)\.334718    \-2\.011788    ( -|-0)\.717856" $log | wc -l`
+CRIT16=`$GREP " O [ ]* 17    Vz =      ( -|-0)\.669436     4\.023576     1\.435712" $log | wc -l`
+TEST[3]=`expr $CRIT0  \+ $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4 \+ \
+              $CRIT5  \+ $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9 \+ \
+              $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 + $CRIT14 \+ \
+              $CRIT15 \+ $CRIT16`
+CTRL[3]=17
+ERROR[3]="RELAXED CCSD FIRST-ORDER PROPERTIES NOT CORRECT"
+
+# RELAXED CCS ONE-ELECTRON DPT:
+CRIT1=`$GREP "DPTONE:[ ]*( -|-0)\.1512993.." $log | wc -l`
+CRIT2=`$GREP "DPTREO:[ ]*( |0)\.0423795.." $log | wc -l`
+TEST[4]=`expr $CRIT1  \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="RELAXED CCS ONE-ELECTRON FIRST-ORDER DPT CORRECTIONS NOT CORRECT"
+
+# RELAXED CCS TWO-ELECTRON DPT:
+CRIT1=`$GREP "DPTTWO:[ ]*( |0)\.0376404.." $log | wc -l`
+TEST[5]=`expr $CRIT1`
+CTRL[5]=1
+ERROR[5]="RELAXED CCS TWO-ELECTRON FIRST-ORDER DPT CORRECTIONS NOT CORRECT"
+
+
+# RELAXED CCS BREIT-PAULI:
+CRIT1=`$GREP "[1-elec.]* Darwin term:[ ]* ( |0)\.258406" $log | wc -l`
+CRIT2=`$GREP "Mass-Velocity term: [ ]*( -|-0)\.324948" $log | wc -l`
+CRIT3=`$GREP "Mass-Velocity \+ 1\-elec. Darwin terms:[ ]* ( -|-0)\.066541" $log | wc -l`
+CRIT4=`$GREP "2\-elec\. Darwin term:[ ]* ( -|-0)\.004738" $log | wc -l`
+CRIT5=`$GREP "Total relativistic correction:[ ]* ( -|-0)\.071280" $log | wc -l`
+TEST[6]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4 \+ $CRIT5`
+CTRL[6]=5
+ERROR[6]="RELAXED CCS FIRST-ORDER BREIT-PAULI CORRECTIONS NOT CORRECT"
+
+
+# RELAXED CCSD ONE-ELECTRON DPT:
+CRIT1=`$GREP "DPTONE:[ ]*( -|-0)\.1515889.." $log | wc -l`
+CRIT2=`$GREP "DPTREO:[ ]*( |0)\.0426567.." $log | wc -l`
+TEST[7]=`expr $CRIT1  \+ $CRIT2`
+CTRL[7]=2
+ERROR[7]="RELAXED CCSD ONE-ELECTRON FIRST-ORDER DPT CORRECTIONS NOT CORRECT"
+
+# RELAXED CCSD TWO-ELECTRON DPT:
+CRIT1=`$GREP "DPTTWO:[ ]*( |0)\.0374903.." $log | wc -l`
+TEST[8]=`expr $CRIT1`
+CTRL[8]=1
+ERROR[8]="RELAXED CCSD TWO-ELECTRON FIRST-ORDER DPT CORRECTIONS NOT CORRECT"
+
+
+# RELAXED CCSD BREIT-PAULI:
+CRIT1=`$GREP "[1-elec.]* Darwin term:[ ]* ( |0)\.258435" $log | wc -l`
+CRIT2=`$GREP "Mass-Velocity term: [ ]*( -|-0)\.325357" $log | wc -l`
+CRIT3=`$GREP "Mass-Velocity \+ 1\-elec. Darwin terms:[ ]* ( -|-0)\.066921" $log | wc -l`
+CRIT4=`$GREP "2\-elec\. Darwin term:[ ]* ( -|-0)\.004565" $log | wc -l`
+CRIT5=`$GREP "Total relativistic correction:[ ]* ( -|-0)\.071487" $log | wc -l`
+TEST[9]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4 \+ $CRIT5`
+CTRL[9]=5
+ERROR[9]="RELAXED CCSD FIRST-ORDER BREIT-PAULI CORRECTIONS NOT CORRECT"
+
+
+# Total DPT corrections:
+CRIT1=`$GREP "Total first\-order DPT correction:[ ]*( -|-0)\.0712793.." $log | wc -l`
+CRIT2=`$GREP "Total first\-order DPT correction:[ ]*( -|-0)\.0714418.." $log | wc -l`
+TEST[10]=`expr $CRIT1  \+ $CRIT2`
+CTRL[10]=2
+ERROR[10]="CCS OR CCSD TOTAL FIRST-ORDER DPT CORRECTION NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+' > dpt.check
+chmod +x dpt.check
+#######################################################################

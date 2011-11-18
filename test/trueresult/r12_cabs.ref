@@ -1,0 +1,1631 @@
+
+
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
+
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
+
+ --------------------------------------------------------------------------------
+
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
+
+ --------------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Wed Mar 16 19:12:04 2011 
+     Host name              : fe6                                     
+
+ * Work memory size             :   100000000 =  762.94 megabytes.
+ + memory for in-core integrals :    50000000
+
+ * Directories for basis set searches:
+   1) /people/disk2/hjj/prog/svnDalton_trunk/test/2011-03-16T17_41-testjob-pid-22499
+   2) /people/disk2/hjj/prog/svnDalton_trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+
+
+ INFO : "*READIN" is deprecated, use instead "*MOLBAS"
+
+
+
+ Changes of defaults for *MOLBAS:
+ --------------------------------
+
+ Print level in molecule setup (READIN):    1
+
+ .R12AUX: Reading auxiliary basis sets from .mol file for R12
+
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Methane                                                                 
+ 2:                                                                         
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    1
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    1
+
+  Atomic type no.    3
+  --------------------
+  Nuclear charge:   0.00000
+  Number of symmetry independent centers:    1
+  This is an auxiliary basis for R12, MBSI:    2
+
+  Atomic type no.    4
+  --------------------
+  Nuclear charge:   0.00000
+  Number of symmetry independent centers:    4
+  This is an auxiliary basis for R12, MBSI:    2
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:  98.841 %
+
+ Center-of-mass coordinates (a.u.):    1.090000   -0.120000    7.289010
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    4
+  Total number of atoms:   10
+
+  label  basis   atoms  charge   prim  cont     basis
+  ------------------------------------------------------------------------------
+  C        1       1    6.0000    29    14      [11s6p|5s3p]                                       
+  H        1       4    1.0000     5     3      [5s|3s]                                            
+  C        2       1    0.0000     5     5      [1d|1d]                                            
+  H        2       4    0.0000     3     3      [1p|1p]                                            
+  ------------------------------------------------------------------------------
+  total:          10   10.0000    66    43
+  ------------------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   30
+  C       :     1  x   1.0900000000    2  y  -0.1200000000    3  z   7.2890100000
+  H       :     4  x   2.8715308320    5  y   0.1736528345    6  z   8.5657410000
+  H       :     7  x  -0.6915308320    8  y  -0.4136528345    9  z   8.5657410000
+  H       :    10  x   0.7963471655   11  y   1.6615308320   12  z   6.0122790000
+  H       :    13  x   1.3836528345   14  y  -1.9015308320   15  z   6.0122790000
+  C       :    16  x   1.0900000000   17  y  -0.1200000000   18  z   7.2890100000
+  H       :    19  x   2.8715308320   20  y   0.1736528345   21  z   8.5657410000
+  H       :    22  x  -0.6915308320   23  y  -0.4136528345   24  z   8.5657410000
+  H       :    25  x   0.7963471655   26  y   1.6615308320   27  z   6.0122790000
+  H       :    28  x   1.3836528345   29  y  -1.9015308320   30  z   6.0122790000
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           H           H           H           H           C     
+            ------      ------      ------      ------      ------      ------
+ C     :    0.000000
+ H     :    1.170203    0.000000
+ H     :    1.170203    1.910933    0.000000
+ H     :    1.170203    1.910933    1.910933    0.000000
+ H     :    1.170203    1.910933    1.910933    1.910933    0.000000
+ C     :    0.000000    1.170203    1.170203    1.170203    1.170203    0.000000
+ H     :    1.170203    0.000000    1.910933    1.910933    1.910933    1.170203
+ H     :    1.170203    1.910933    0.000000    1.910933    1.910933    1.170203
+ H     :    1.170203    1.910933    1.910933    0.000000    1.910933    1.170203
+ H     :    1.170203    1.910933    1.910933    1.910933    0.000000    1.170203
+
+            H           H           H           H     
+            ------      ------      ------      ------
+ H     :    0.000000
+ H     :    1.910933    0.000000
+ H     :    1.910933    1.910933    0.000000
+ H     :    1.910933    1.910933    1.910933    0.000000
+
+
+  Max interatomic separation is    1.9109 Angstrom (    3.6111 Bohr)
+  between atoms    3 and    2, "H     " and "H     ".
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+  bond distance:  H          C            1.170203
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+  bond angle:     H          C          H            109.471
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       3.680240          1.000000    0.000000    0.000000
+   IB       3.680240          0.000000    1.000000    0.000000
+   IC       3.680240          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         137322.2814         137322.2814         137322.2814 MHz
+            4.580578            4.580578            4.580578 cm-1
+
+
+@  Nuclear repulsion energy :   12.514560078913
+
+  Number of main orbitals in each symmetry:          26
+  Number of auxiliary functions in each symmetry:    17
+
+  Number of floating/multiple basis set orbitals :    5
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - Cartesian multipole moment integrals of orders 2 and lower
+
+ Center of mass  (bohr):      1.090000000000     -0.120000000000      7.289010000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ >>>> Detected R12 input:
+ Direct Fock matrix formation switched on!
+ Scale factors for CC excitations manifolds:
+ for bra states (projection manifold):  1.00000000000000000     
+ for ket states (operator manifold)  :  1.00000000000000000     
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Mar 16 19:12:04 2011 
+     Host name              : fe6                                     
+
+ Title lines from ".mol" input file:
+     Methane                                                                 
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a restricted, closed shell Hartree-Fock calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART H1DIAG" input option.
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+     For the wave function of type :      >>>          <<<
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                       --- |  ---
+     Occupied SCF orbitals               5 |    5
+     Secondary orbitals                 21 |   21
+     Total number of orbitals           26 |   26
+     Number of basis functions          43 |   43
+
+     Optimization information
+     ========================
+     Number of configurations                 1
+     Number of orbital rotations            105
+     ------------------------------------------
+     Total number of variables              106
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+  
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   1    -29.2237640128        1.32931D+01   -2.92D+01    1
+      Virial theorem: -V/T =      1.454438
+      MULPOP  C      -4.22; H       1.05; H       1.05; H       1.05; H       1.05; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   2    -34.8133409878        5.65026D+00   -5.59D+00    2
+      Virial theorem: -V/T =      2.081911
+      MULPOP  C       9.91; H      -2.48; H      -2.48; H      -2.48; H      -2.48; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   3    -39.2350220243        4.08977D+00   -4.42D+00    3
+      Virial theorem: -V/T =      1.896390
+      MULPOP  C      -1.67; H       0.42; H       0.42; H       0.42; H       0.42; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   4    -40.0919659962        1.08782D+00   -8.57D-01    4
+      Virial theorem: -V/T =      1.985113
+      MULPOP  C      -0.74; H       0.18; H       0.18; H       0.18; H       0.18; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   5    -40.1716432040        5.00889D-02   -7.97D-02    5
+      Virial theorem: -V/T =      2.011824
+      MULPOP  C      -0.48; H       0.12; H       0.12; H       0.12; H       0.12; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   6    -40.1718284304        1.75429D-02   -1.85D-04    6
+      Virial theorem: -V/T =      2.011418
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   7    -40.1718499949        1.24952D-03   -2.16D-05    7
+      Virial theorem: -V/T =      2.010919
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   8    -40.1718502092        1.69026D-04   -2.14D-07    8
+      Virial theorem: -V/T =      2.010877
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, DIFDEN)  -20    F
+   9    -40.1718502132        7.40643D-06   -4.05D-09    9
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  10    -40.1718502132        1.07534D-06   -4.92D-12   10
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  11    -40.1718502132        5.54694D-08   -1.14D-13   10
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  12    -40.1718502132        4.64954D-09   -4.26D-14   10
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  13    -40.1718502132        1.42164D-10    4.26D-14   10
+      Virial theorem: -V/T =      2.010880
+      MULPOP  C      -0.51; H       0.13; H       0.13; H       0.13; H       0.13; 
+ -----------------------------------------------------------------------------
+  14  Screening settings (-IFTHRS, DIFDEN)  -20    F
+  14    -40.1718502132        5.97021D-12   -2.84D-14   10
+
+ *** DIIS converged in  14 iterations !
+   - total time used in SIRFCK :              0.41 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Hartree-Fock orbital energies
+
+  1    -11.24961569    -0.91566290    -0.52460189    -0.52460189    -0.52460189
+         0.14348326     0.22612728     0.22612728     0.22612728     0.32245767
+
+    E(LUMO) :     0.14348326 au (symmetry 1)
+  - E(HOMO) :    -0.52460189 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.66808515 au
+
+ >>> Writing SIRIFC interface file <<<
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1          26    26          17    17
+
+  Canonical primary and secondary basis sets
+  ISYM       NORB1 MBAS1       NORB2 MBAS2
+     1          26    26          17    17
+
+ Computation of exchange matrix done [5]
+
+ AUXILIARY BASIS LOW EIGENVALUES
+ ISYM         EIGENVALUE
+   1      0.000000000000
+ >>> Time used in R12AUX is   0.11 seconds
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -40.171850213221                 
+     Nuclear repulsion:            12.514560078913
+     Electronic energy:           -52.686410292134
+
+     Final gradient norm:           0.000000000006
+
+ 
+     Date and time (Linux)  : Wed Mar 16 19:12:05 2011 
+     Host name              : fe6                                     
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         8        9       10       11       12       13       14
+   1 C   :1s     0.0000   0.0000   0.0000   0.0000   0.0000  -0.0492  -0.0000
+   2 C   :1s     0.0000   0.0000   0.0000   0.0000   0.0000  -0.0875  -0.0000
+   3 C   :1s    -0.0000   0.0000   0.0000   0.0000   0.0000  -0.3605  -0.0000
+   4 C   :1s     0.0000  -0.0000  -0.0000  -0.0000  -0.0000   3.8384   0.0000
+   5 C   :1s    -0.0000   0.0000   0.0000   0.0000   0.0000 -12.3728   0.0000
+   6 C   :2px   -0.0931   0.0181   0.0006  -0.0542  -0.0807  -0.0000  -0.2976
+   7 C   :2py    0.0630  -0.1737   0.0958   0.0140  -0.0088  -0.0000  -0.0703
+   8 C   :2pz   -0.1563  -0.0808  -0.0165   0.0794  -0.0535   0.0000   0.0232
+   9 C   :2px   -0.0726   0.0141   0.0024  -0.2302  -0.3428  -0.0000  -1.1815
+  10 C   :2py    0.0491  -0.1355   0.4069   0.0597  -0.0372  -0.0000  -0.2791
+  11 C   :2pz   -0.1218  -0.0630  -0.0703   0.3376  -0.2272   0.0000   0.0922
+  12 C   :2px   -0.8571   0.1671  -0.0100   0.9448   1.4066   0.0000   1.7663
+  13 C   :2py    0.5799  -1.5996  -1.6698  -0.2449   0.1527   0.0000   0.4173
+  14 C   :2pz   -1.4386  -0.7443   0.2884  -1.3852   0.9325  -0.0000  -0.1379
+  15 H   :1s     0.0456   0.0160   0.0015   0.0017  -0.0400  -0.0094   0.0645
+  16 H   :1s    -0.0849  -0.0298   0.0238   0.0268  -0.6376   0.0162   1.1259
+  17 H   :1s     2.3159   0.8139   0.0117   0.0131  -0.3126   2.8637  -2.0263
+  18 H   :1s     0.0068   0.0111  -0.0094   0.0362   0.0146  -0.0094  -0.0718
+  19 H   :1s    -0.0128  -0.0207  -0.1493   0.5760   0.2318   0.0162  -1.2540
+  20 H   :1s     0.3481   0.5643  -0.0732   0.2824   0.1136   2.8637   2.2569
+  21 H   :1s    -0.0445   0.0278   0.0357  -0.0113   0.0143  -0.0094   0.0084
+  22 H   :1s     0.0830  -0.0518   0.5692  -0.1797   0.2269   0.0162   0.1459
+  23 H   :1s    -2.2637   1.4131   0.2791  -0.0881   0.1112   2.8637  -0.2626
+  24 H   :1s    -0.0079  -0.0549  -0.0279  -0.0266   0.0112  -0.0094  -0.0010
+  25 H   :1s     0.0147   0.1024  -0.4437  -0.4230   0.1789   0.0162  -0.0177
+  26 H   :1s    -0.4003  -2.7913  -0.2175  -0.2074   0.0877   2.8637   0.0319
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.55 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
+
+ 
+     Date and time (Linux)  : Wed Mar 16 19:12:05 2011 
+     Host name              : fe6                                     
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   NRHF   :      11
+   NRHFS  :      12
+   NORB1  :      26
+   NORB2  :      17
+
+ Number of primary orbitals             :           26
+ Number of secondary orbitals           :           17
+ Total number of orbitals               :           43
+ Total number of basis functions        :           43
+ Number of (i|p') integrals             :          473
+ Number of (i|u') integrals             :          473
+ Number of (Ip'|1/r12|jL) integrals     :          473
+ Number of (ip'|1/r12|jq') integrals    :       112101
+ Number of (ip'|r12|jq') integrals      :       112101
+ Number of (ip'|[T1,r12]|jq') integrals :       223729
+ Threshold for R12 contributions            =  0.00000    
+ Threshold for singular value decomposition = 0.100000E-11
+
+ Calculation with Gaussian-damped linear-r12 terms
+ Expansion coefficients and exponents:
+    1        0.388000000000000        0.066750000000000
+    2        0.318400000000000        0.375750000000000
+    3        0.176800000000000        1.982000000000000
+ The B matrix is transformed into an orthogonal basis
+ and inverted by diagonalization
+
+ ******************************************************************************
+ The MP2-R12/A and MP2-R12/B energies are computed as described in:
+ W. Klopper, J. Chem. Phys. 120, 10890-10895 (2004).
+ To avoid the hybride scheme, the keyword '.NO HYB'
+ must be specified in the Dalton input file.
+ ------------------------------------------------------------------------------
+ Ansaetze 1, 2, 3 are used and results are printed for approximations A and B.
+------------------------------------------------------------------------------
+ The Gaussian-damped R12 integrals are computed as described in:
+ C. C. M. Samson, W. Klopper and T. Helgaker,
+ Comp. Phys. Commun. 149, 1-10 (2002).
+ ******************************************************************************
+
+ Core memory required by CCSD_R12 :         725876  (double words)
+
+
+ Number of two-electron spin-orbit integrals written:     39510 (19.4%)
+ >>> Time used in TWOINT is   0.29 seconds
+
+ Number of two-electron spin-orbit integrals written:     70182 (19.2%)
+ >>> Time used in TWOINT is   0.24 seconds
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+ >>> Time used in TWOINT is   0.14 seconds
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+ >>> Time used in TWOINT is   0.14 seconds
+
+ Number of two-electron spin-orbit integrals written:     27084 (22.2%)
+ >>> Time used in TWOINT is   0.14 seconds
+
+ Number of two-electron spin-orbit integrals written:     27054 (22.2%)
+ >>> Time used in TWOINT is   0.14 seconds
+
+ Number of two-electron spin-orbit integrals written:        87 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        28 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        15 ( 0.0%)
+ Computation of (ik|[[f12,T1],f12]|jl) integrals done
+ >>> Time used in #6 [4] is   1.17 seconds
+
+ Number of two-electron spin-orbit integrals written:     39510 (19.4%)
+ >>> Time used in TWOINT is   0.24 seconds
+
+ Number of two-electron spin-orbit integrals written:     70182 (19.2%)
+ >>> Time used in TWOINT is   0.19 seconds
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+ >>> Time used in TWOINT is   0.12 seconds
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+ >>> Time used in TWOINT is   0.12 seconds
+
+ Number of two-electron spin-orbit integrals written:     27084 (22.2%)
+ >>> Time used in TWOINT is   0.12 seconds
+
+ Number of two-electron spin-orbit integrals written:     27054 (22.2%)
+ >>> Time used in TWOINT is   0.12 seconds
+
+ Number of two-electron spin-orbit integrals written:        87 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        28 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        15 ( 0.0%)
+ Computation of (ik|f12**2|jl) integrals done
+ >>> Time used in #4 [4] is   0.99 seconds
+
+ Number of two-electron spin-orbit integrals written:     39510 (19.4%)
+
+ Number of two-electron spin-orbit integrals written:     70182 (19.2%)
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+
+ Number of two-electron spin-orbit integrals written:     27084 (22.2%)
+
+ Number of two-electron spin-orbit integrals written:     27054 (22.2%)
+
+ Number of two-electron spin-orbit integrals written:        87 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        28 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        15 ( 0.0%)
+ Computation of (ik|f12/r12|jl) integrals done
+ >>> Time used in #2 [4] is   0.38 seconds
+
+ Number of two-electron spin-orbit integrals written:    118810 (58.4%)
+ >>> Time used in TWOINT is   0.37 seconds
+
+ Number of two-electron spin-orbit integrals written:    214881 (58.7%)
+ >>> Time used in TWOINT is   0.34 seconds
+
+ Number of two-electron spin-orbit integrals written:     78533 (64.4%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78532 (64.4%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78507 (64.3%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78477 (64.3%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     37881 (18.6%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27244 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27231 (22.3%)
+ Computation of (ip'|f12|jq') integrals done
+ >>> Time used in #3 [5] is   1.76 seconds
+
+ Number of two-electron spin-orbit integrals written:    118798 (58.4%)
+
+ Number of two-electron spin-orbit integrals written:    214881 (58.7%)
+
+ Number of two-electron spin-orbit integrals written:     78536 (64.4%)
+
+ Number of two-electron spin-orbit integrals written:     78536 (64.4%)
+
+ Number of two-electron spin-orbit integrals written:     78508 (64.3%)
+
+ Number of two-electron spin-orbit integrals written:     78478 (64.3%)
+
+ Number of two-electron spin-orbit integrals written:     37882 (18.6%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27244 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27231 (22.3%)
+ Computation of (ip'|1/r12|jq') integrals done
+ >>> Time used in #1 [5] is   0.39 seconds
+
+ Number of two-electron spin-orbit integrals written:     39510 (19.4%)
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Number of two-electron spin-orbit integrals written:     70182 (19.2%)
+ >>> Time used in TWOINT is   0.19 seconds
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+ >>> Time used in TWOINT is   0.12 seconds
+
+ Number of two-electron spin-orbit integrals written:     27108 (22.2%)
+ >>> Time used in TWOINT is   0.11 seconds
+
+ Number of two-electron spin-orbit integrals written:     27084 (22.2%)
+ >>> Time used in TWOINT is   0.11 seconds
+
+ Number of two-electron spin-orbit integrals written:     27054 (22.2%)
+ >>> Time used in TWOINT is   0.11 seconds
+
+ Number of two-electron spin-orbit integrals written:        87 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        54 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        28 ( 0.0%)
+
+ Number of two-electron spin-orbit integrals written:        15 ( 0.0%)
+ >>> Time used in #4 [4] is   0.97 seconds
+
+ Number of two-electron spin-orbit integrals written:    118810 (58.4%)
+ >>> Time used in TWOINT is   0.37 seconds
+
+ Number of two-electron spin-orbit integrals written:    214881 (58.7%)
+ >>> Time used in TWOINT is   0.34 seconds
+
+ Number of two-electron spin-orbit integrals written:     78533 (64.4%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78532 (64.4%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78507 (64.3%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78477 (64.3%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     37881 (18.6%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27244 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27231 (22.3%)
+ Computation of (i* p'|f12|jq') integrals done
+ >>> Time used in #3 [5] is   2.81 seconds
+
+ Number of two-electron spin-orbit integrals written:    118810 (58.4%)
+ >>> Time used in TWOINT is   0.38 seconds
+
+ Number of two-electron spin-orbit integrals written:    214881 (58.7%)
+ >>> Time used in TWOINT is   0.34 seconds
+
+ Number of two-electron spin-orbit integrals written:     78533 (64.4%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78532 (64.4%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78507 (64.3%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     78477 (64.3%)
+ >>> Time used in TWOINT is   0.18 seconds
+
+ Number of two-electron spin-orbit integrals written:     37881 (18.6%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27244 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27231 (22.3%)
+ Computation of (i'p|f12|jq') integrals done
+ >>> Time used in #3 [5] is   1.80 seconds
+
+ Number of two-electron spin-orbit integrals written:    115485 (56.8%)
+ >>> Time used in TWOINT is   0.99 seconds
+
+ Number of two-electron spin-orbit integrals written:    197763 (54.0%)
+ >>> Time used in TWOINT is   0.87 seconds
+
+ Number of two-electron spin-orbit integrals written:     75699 (62.0%)
+ >>> Time used in TWOINT is   0.42 seconds
+
+ Number of two-electron spin-orbit integrals written:     75699 (62.0%)
+ >>> Time used in TWOINT is   0.41 seconds
+
+ Number of two-electron spin-orbit integrals written:     75675 (62.0%)
+ >>> Time used in TWOINT is   0.41 seconds
+
+ Number of two-electron spin-orbit integrals written:     75645 (62.0%)
+ >>> Time used in TWOINT is   0.41 seconds
+
+ Number of two-electron spin-orbit integrals written:     37743 (18.6%)
+ >>> Time used in TWOINT is   0.14 seconds
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27270 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27244 (22.3%)
+
+ Number of two-electron spin-orbit integrals written:     27216 (22.3%)
+ Computation of (ip'|[T,f12]|jq') integrals done
+ >>> Time used in #5 [5] is   4.10 seconds
+
+
+                 +-----------------------------------------------+
+                 ! MP2-R12 ansatz := (1 - P1 - P2 + P1*P2) * R12 !
+                 +-----------------------------------------------+
+
+
+ SECOND-ORDER PAIR ENERGIES:
+
+                    1   -0.005748138    0.000000000
+                    2   -0.007417895   -0.003320678
+                    3   -0.011340117    0.000000000
+                    4   -0.007417895   -0.003320678
+                    5   -0.004701642   -0.005684684
+                    6   -0.011375041    0.000000000
+                    7   -0.007417895   -0.003320678
+                    8   -0.008911747   -0.005684684
+                    9   -0.008841899   -0.005684684
+                   10   -0.009269988    0.000000000
+
+ MP2 =   -0.109458345   -0.082442259   -0.027016086
+
+
+                            +-------------------------+
+                            ! Original MP2-R12 method !
+                            +-------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
+
+   1   -0.005748138   -0.011698239    0.000000000    0.000000000
+   2   -0.007417895   -0.018604064   -0.003320678   -0.002787367
+   3   -0.011340117   -0.017064038    0.000000000    0.000000000
+   4   -0.007417895   -0.018604064   -0.003320678   -0.002787367
+   5   -0.004701642   -0.006549165   -0.005684684   -0.002614011
+   6   -0.011375041   -0.017140571    0.000000000    0.000000000
+   7   -0.007417895   -0.018604064   -0.003320678   -0.002787367
+   8   -0.008911747   -0.015775256   -0.005684684   -0.002614011
+   9   -0.008841899   -0.015622191   -0.005684684   -0.002614011
+  10   -0.009269988   -0.012527525    0.000000000    0.000000000
+
+       -0.082442259   -0.152189178   -0.027016086   -0.016204132
+
+ Noninvariant MP2-R12/0   correlation energy =   -0.168393310
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.5070E-02 -0.4191E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.6094E+01  0.0000E+00
+   2 -0.8869E-02 -0.6552E-02  0.1000E+01 -0.6795E-03 -0.4851E-02  0.5000E+00  0.4983E+01  0.2631E+01
+   3 -0.5566E-02 -0.5407E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3754E+01  0.0000E+00
+   4 -0.8869E-02 -0.6552E-02  0.1000E+01 -0.6795E-03 -0.4851E-02  0.5000E+00  0.4983E+01  0.2631E+01
+   5 -0.2916E-02 -0.3985E-02  0.1000E+01  0.1254E-02 -0.7266E-02  0.5000E+00  0.2499E+01  0.1958E+01
+   6 -0.5590E-02 -0.5415E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3766E+01  0.0000E+00
+   7 -0.8869E-02 -0.6552E-02  0.1000E+01 -0.6795E-03 -0.4851E-02  0.5000E+00  0.4983E+01  0.2631E+01
+   8 -0.5899E-02 -0.4935E-02  0.1000E+01  0.1254E-02 -0.7266E-02  0.5000E+00  0.3925E+01  0.1958E+01
+   9 -0.5850E-02 -0.4919E-02  0.1000E+01  0.1254E-02 -0.7266E-02  0.5000E+00  0.3895E+01  0.1958E+01
+  10 -0.4099E-02 -0.4940E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3075E+01  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
+
+   1   -0.005748138   -0.011882886    0.000000000    0.000000000
+   2   -0.007417895   -0.019423531   -0.003320678   -0.003415850
+   3   -0.011340117   -0.017068677    0.000000000    0.000000000
+   4   -0.007417895   -0.019423531   -0.003320678   -0.003415850
+   5   -0.004701642   -0.006835706   -0.005684684   -0.005901201
+   6   -0.011375041   -0.017146242    0.000000000    0.000000000
+   7   -0.007417895   -0.019423531   -0.003320678   -0.003415850
+   8   -0.008911747   -0.015963643   -0.005684684   -0.005901201
+   9   -0.008841899   -0.015798193   -0.005684684   -0.005901201
+  10   -0.009269988   -0.012670749    0.000000000    0.000000000
+
+       -0.082442259   -0.155636690   -0.027016086   -0.027951153
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.183587843
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.5070E-02 -0.4191E-02  0.1210E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.6094E+01  0.0000E+00
+   2 -0.8869E-02 -0.6552E-02  0.1354E+01 -0.6795E-03 -0.4851E-02  0.1401E+00  0.4983E+01  0.2631E+01
+   3 -0.5566E-02 -0.5407E-02  0.1029E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3754E+01  0.0000E+00
+   4 -0.8869E-02 -0.6552E-02  0.1354E+01 -0.6795E-03 -0.4851E-02  0.1401E+00  0.4983E+01  0.2631E+01
+   5 -0.2916E-02 -0.3985E-02  0.7318E+00  0.1254E-02 -0.7266E-02 -0.1726E+00  0.2499E+01  0.1958E+01
+   6 -0.5590E-02 -0.5415E-02  0.1032E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3766E+01  0.0000E+00
+   7 -0.8869E-02 -0.6552E-02  0.1354E+01 -0.6795E-03 -0.4851E-02  0.1401E+00  0.4983E+01  0.2631E+01
+   8 -0.5899E-02 -0.4935E-02  0.1195E+01  0.1254E-02 -0.7266E-02 -0.1726E+00  0.3925E+01  0.1958E+01
+   9 -0.5850E-02 -0.4919E-02  0.1189E+01  0.1254E-02 -0.7266E-02 -0.1726E+00  0.3895E+01  0.1958E+01
+  10 -0.4099E-02 -0.4940E-02  0.8297E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3075E+01  0.0000E+00
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.005748138   -0.012265438    0.000000000   -0.000000000    0.232844        0.302998    
+   2   -0.007417895   -0.020924546   -0.003320678   -0.004266220    0.232844        0.302998    
+   3   -0.011340117   -0.020112922    0.000000000   -0.000000000    0.232844        0.302998    
+   4   -0.007417895   -0.020924546   -0.003320678   -0.004266220    0.232844        0.302998    
+   5   -0.004701642   -0.009651755   -0.005684684   -0.007514446    0.232844        0.302998    
+   6   -0.011375041   -0.020179988    0.000000000   -0.000000000    0.232844        0.302998    
+   7   -0.007417895   -0.020924546   -0.003320678   -0.004266220    0.232844        0.302998    
+   8   -0.008911747   -0.017736676   -0.005684684   -0.007514446    0.232844        0.302998    
+   9   -0.008841899   -0.017602543   -0.005684684   -0.007514446    0.232844        0.302998    
+  10   -0.009269988   -0.016137528    0.000000000   -0.000000000    0.232844        0.302998    
+
+       -0.082442259   -0.176460487   -0.027016086   -0.035341999
+
+              MP2-R12/A   correlation energy =   -0.211802486
+
+ SECOND-ORDER R12/A' PAIR ENERGIES:
+
+   1   -0.005748138   -0.011936552    0.000000000   -0.000000000     1.70825         1.68781    
+   2   -0.007417895   -0.020009143   -0.003320678   -0.003786826     1.31719         1.29675    
+   3   -0.011340117   -0.019879137    0.000000000   -0.000000000    0.926125        0.905690    
+   4   -0.007417895   -0.020009143   -0.003320678   -0.003786826     1.31719         1.29675    
+   5   -0.004701642   -0.008588538   -0.005684684   -0.006489497    0.926125        0.905690    
+   6   -0.011375041   -0.019951039    0.000000000   -0.000000000    0.926125        0.905690    
+   7   -0.007417895   -0.020009143   -0.003320678   -0.003786826     1.31719         1.29675    
+   8   -0.008911747   -0.017256445   -0.005684684   -0.006489497    0.926125        0.905690    
+   9   -0.008841899   -0.017112641   -0.005684684   -0.006489497    0.926125        0.905690    
+  10   -0.009269988   -0.015617086    0.000000000   -0.000000000    0.926125        0.905690    
+
+       -0.082442259   -0.170368868   -0.027016086   -0.030828971
+
+              MP2-R12/A'  correlation energy =   -0.201197839
+
+ SECOND-ORDER NONINVARIANT R12/B PAIR ENERGIES:
+
+   1   -0.005748138   -0.010535715    0.000000000    0.000000000
+   2   -0.007417895   -0.016652742   -0.003320678   -0.003382534
+   3   -0.011340117   -0.015617156    0.000000000    0.000000000
+   4   -0.007417895   -0.016652742   -0.003320678   -0.003382534
+   5   -0.004701642   -0.006138378   -0.005684684   -0.005820225
+   6   -0.011375041   -0.015686823    0.000000000    0.000000000
+   7   -0.007417895   -0.016652742   -0.003320678   -0.003382534
+   8   -0.008911747   -0.014182961   -0.005684684   -0.005820225
+   9   -0.008841899   -0.014033957   -0.005684684   -0.005820225
+  10   -0.009269988   -0.011702505    0.000000000    0.000000000
+
+       -0.082442259   -0.137855721   -0.027016086   -0.027608280
+
+ Noninvariant MP2-R12/B   correlation energy =   -0.165464000
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.5070E-02 -0.5370E-02  0.9442E+00  0.0000E+00  0.0000E+00  0.0000E+00
+   2 -0.8869E-02 -0.8518E-02  0.1041E+01 -0.6795E-03 -0.7464E-02  0.9103E-01
+   3 -0.5566E-02 -0.7242E-02  0.7685E+00  0.0000E+00  0.0000E+00  0.0000E+00
+   4 -0.8869E-02 -0.8518E-02  0.1041E+01 -0.6795E-03 -0.7464E-02  0.9103E-01
+   5 -0.2916E-02 -0.5919E-02  0.4927E+00  0.1254E-02 -0.1161E-01 -0.1081E+00
+   6 -0.5590E-02 -0.7248E-02  0.7713E+00  0.0000E+00  0.0000E+00  0.0000E+00
+   7 -0.8869E-02 -0.8518E-02  0.1041E+01 -0.6795E-03 -0.7464E-02  0.9103E-01
+   8 -0.5899E-02 -0.6602E-02  0.8935E+00  0.1254E-02 -0.1161E-01 -0.1081E+00
+   9 -0.5850E-02 -0.6591E-02  0.8876E+00  0.1254E-02 -0.1161E-01 -0.1081E+00
+  10 -0.4099E-02 -0.6906E-02  0.5935E+00  0.0000E+00  0.0000E+00  0.0000E+00
+
+ SECOND-ORDER R12/B PAIR ENERGIES:
+
+   1   -0.005748138   -0.010669996    0.000000000   -0.000000000     2.43363         2.40254    
+   2   -0.007417895   -0.017252075   -0.003320678   -0.003667436     2.04257         2.01148    
+   3   -0.011340117   -0.017874166    0.000000000   -0.000000000     1.65151         1.62042    
+   4   -0.007417895   -0.017252075   -0.003320678   -0.003667436     2.04257         2.01148    
+   5   -0.004701642   -0.007623043   -0.005684684   -0.006204341     1.65151         1.62042    
+   6   -0.011375041   -0.017936994    0.000000000   -0.000000000     1.65151         1.62042    
+   7   -0.007417895   -0.017252075   -0.003320678   -0.003667436     2.04257         2.01148    
+   8   -0.008911747   -0.015197001   -0.005684684   -0.006204341     1.65151         1.62042    
+   9   -0.008841899   -0.015071346   -0.005684684   -0.006204341     1.65151         1.62042    
+  10   -0.009269988   -0.014150015    0.000000000   -0.000000000     1.65151         1.62042    
+
+       -0.082442259   -0.150278786   -0.027016086   -0.029615330
+
+              MP2-R12/B   correlation energy =   -0.179894117
+
+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/0 PAIR ENERGIES WITH FIXED R12-COEFFICIENTS:
+
+   1   -0.005748138   -0.011134895    0.000000000    0.000000000
+   2   -0.007417895   -0.014125071   -0.003320678   -0.003926240
+   3   -0.011340117   -0.017210365    0.000000000    0.000000000
+   4   -0.007417895   -0.014125071   -0.003320678   -0.003926240
+   5   -0.004701642   -0.007306248   -0.005684684   -0.006504298
+   6   -0.011375041   -0.017269573    0.000000000    0.000000000
+   7   -0.007417895   -0.014125071   -0.003320678   -0.003926240
+   8   -0.008911747   -0.014443944   -0.005684684   -0.006504298
+   9   -0.008841899   -0.014325526   -0.005684684   -0.006504298
+  10   -0.009269988   -0.013700726    0.000000000    0.000000000
+
+       -0.082442259   -0.137766489   -0.027016086   -0.031291615
+
+ Noninvariant MP2-R12/0   correlation energy =   -0.169058104
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4625E-02 -0.3862E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.7124E+01  0.0000E+00
+   2 -0.5959E-02 -0.5210E-02  0.1000E+01 -0.1330E-02 -0.2896E-02  0.5000E+00  0.6544E+01  0.3863E+01
+   3 -0.5218E-02 -0.4567E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4934E+01  0.0000E+00
+   4 -0.5959E-02 -0.5210E-02  0.1000E+01 -0.1330E-02 -0.2896E-02  0.5000E+00  0.6544E+01  0.3863E+01
+   5 -0.2701E-02 -0.2798E-02  0.1000E+01 -0.1933E-02 -0.4455E-02  0.5000E+00  0.3457E+01  0.2684E+01
+   6 -0.5235E-02 -0.4576E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4947E+01  0.0000E+00
+   7 -0.5959E-02 -0.5210E-02  0.1000E+01 -0.1330E-02 -0.2896E-02  0.5000E+00  0.6544E+01  0.3863E+01
+   8 -0.4759E-02 -0.3987E-02  0.1000E+01 -0.1933E-02 -0.4455E-02  0.5000E+00  0.5364E+01  0.2684E+01
+   9 -0.4725E-02 -0.3967E-02  0.1000E+01 -0.1933E-02 -0.4455E-02  0.5000E+00  0.5329E+01  0.2684E+01
+  10 -0.4206E-02 -0.3982E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4156E+01  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A PAIR ENERGIES:
+
+   1   -0.005748138   -0.011285284    0.000000000    0.000000000
+   2   -0.007417895   -0.014232581   -0.003320678   -0.003931085
+   3   -0.011340117   -0.017303409    0.000000000    0.000000000
+   4   -0.007417895   -0.014232581   -0.003320678   -0.003931085
+   5   -0.004701642   -0.007309594   -0.005684684   -0.006523731
+   6   -0.011375041   -0.017364483    0.000000000    0.000000000
+   7   -0.007417895   -0.014232581   -0.003320678   -0.003931085
+   8   -0.008911747   -0.014593714   -0.005684684   -0.006523731
+   9   -0.008841899   -0.014470474   -0.005684684   -0.006523731
+  10   -0.009269988   -0.013713361    0.000000000    0.000000000
+
+       -0.082442259   -0.138738061   -0.027016086   -0.031364445
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.170102506
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4625E-02 -0.3862E-02  0.1197E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.7124E+01  0.0000E+00
+   2 -0.5959E-02 -0.5210E-02  0.1144E+01 -0.1330E-02 -0.2896E-02  0.4591E+00  0.6544E+01  0.3863E+01
+   3 -0.5218E-02 -0.4567E-02  0.1143E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4934E+01  0.0000E+00
+   4 -0.5959E-02 -0.5210E-02  0.1144E+01 -0.1330E-02 -0.2896E-02  0.4591E+00  0.6544E+01  0.3863E+01
+   5 -0.2701E-02 -0.2798E-02  0.9654E+00 -0.1933E-02 -0.4455E-02  0.4340E+00  0.3457E+01  0.2684E+01
+   6 -0.5235E-02 -0.4576E-02  0.1144E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4947E+01  0.0000E+00
+   7 -0.5959E-02 -0.5210E-02  0.1144E+01 -0.1330E-02 -0.2896E-02  0.4591E+00  0.6544E+01  0.3863E+01
+   8 -0.4759E-02 -0.3987E-02  0.1194E+01 -0.1933E-02 -0.4455E-02  0.4340E+00  0.5364E+01  0.2684E+01
+   9 -0.4725E-02 -0.3967E-02  0.1191E+01 -0.1933E-02 -0.4455E-02  0.4340E+00  0.5329E+01  0.2684E+01
+  10 -0.4206E-02 -0.3982E-02  0.1056E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4156E+01  0.0000E+00
+
+ SECOND-ORDER R12/A PAIR ENERGIES:
+
+   1   -0.005748138   -0.011472474    0.000000000   -0.000000000    0.237765        0.279287    
+   2   -0.007417895   -0.014434589   -0.003320678   -0.004399080    0.237765        0.279287    
+   3   -0.011340117   -0.018364843    0.000000000   -0.000000000    0.237765        0.279287    
+   4   -0.007417895   -0.014434589   -0.003320678   -0.004399080    0.237765        0.279287    
+   5   -0.004701642   -0.008309549   -0.005684684   -0.007457067    0.237765        0.279287    
+   6   -0.011375041   -0.018418482    0.000000000   -0.000000000    0.237765        0.279287    
+   7   -0.007417895   -0.014434589   -0.003320678   -0.004399080    0.237765        0.279287    
+   8   -0.008911747   -0.014775874   -0.005684684   -0.007457067    0.237765        0.279287    
+   9   -0.008841899   -0.014668595   -0.005684684   -0.007457067    0.237765        0.279287    
+  10   -0.009269988   -0.015185320    0.000000000   -0.000000000    0.237765        0.279287    
+
+       -0.082442259   -0.144498903   -0.027016086   -0.035568441
+
+              MP2-R12/A   correlation energy =   -0.180067345
+
+ SECOND-ORDER R12/A' PAIR ENERGIES:
+
+   1   -0.005748138   -0.011306771    0.000000000   -0.000000000     1.66176         1.63036    
+   2   -0.007417895   -0.014332780   -0.003320678   -0.004148526     1.27070         1.23930    
+   3   -0.011340117   -0.018354486    0.000000000   -0.000000000    0.879635        0.848240    
+   4   -0.007417895   -0.014332780   -0.003320678   -0.004148526     1.27070         1.23930    
+   5   -0.004701642   -0.007857740   -0.005684684   -0.007012397    0.879635        0.848240    
+   6   -0.011375041   -0.018411594    0.000000000   -0.000000000    0.879635        0.848240    
+   7   -0.007417895   -0.014332780   -0.003320678   -0.004148526     1.27070         1.23930    
+   8   -0.008911747   -0.014742141   -0.005684684   -0.007012397    0.879635        0.848240    
+   9   -0.008841899   -0.014627926   -0.005684684   -0.007012397    0.879635        0.848240    
+  10   -0.009269988   -0.014969393    0.000000000   -0.000000000    0.879635        0.848240    
+
+       -0.082442259   -0.143268389   -0.027016086   -0.033482768
+
+              MP2-R12/A'  correlation energy =   -0.176751157
+
+ SECOND-ORDER NONINVARIANT R12/B PAIR ENERGIES:
+
+   1   -0.005748138   -0.010211275    0.000000000    0.000000000
+   2   -0.007417895   -0.012979868   -0.003320678   -0.003771925
+   3   -0.011340117   -0.016089596    0.000000000    0.000000000
+   4   -0.007417895   -0.012979868   -0.003320678   -0.003771925
+   5   -0.004701642   -0.006652983   -0.005684684   -0.006278323
+   6   -0.011375041   -0.016147236    0.000000000    0.000000000
+   7   -0.007417895   -0.012979868   -0.003320678   -0.003771925
+   8   -0.008911747   -0.013480768   -0.005684684   -0.006278323
+   9   -0.008841899   -0.013364033   -0.005684684   -0.006278323
+  10   -0.009269988   -0.012715995    0.000000000    0.000000000
+
+       -0.082442259   -0.127601489   -0.027016086   -0.030150745
+
+ Noninvariant MP2-R12/B   correlation energy =   -0.157752234
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4625E-02 -0.4792E-02  0.9651E+00  0.0000E+00  0.0000E+00  0.0000E+00
+   2 -0.5959E-02 -0.6384E-02  0.9334E+00 -0.1330E-02 -0.3918E-02  0.3394E+00
+   3 -0.5218E-02 -0.5734E-02  0.9101E+00  0.0000E+00  0.0000E+00  0.0000E+00
+   4 -0.5959E-02 -0.6384E-02  0.9334E+00 -0.1330E-02 -0.3918E-02  0.3394E+00
+   5 -0.2701E-02 -0.3740E-02  0.7224E+00 -0.1933E-02 -0.6297E-02  0.3070E+00
+   6 -0.5235E-02 -0.5744E-02  0.9115E+00  0.0000E+00  0.0000E+00  0.0000E+00
+   7 -0.5959E-02 -0.6384E-02  0.9334E+00 -0.1330E-02 -0.3918E-02  0.3394E+00
+   8 -0.4759E-02 -0.4958E-02  0.9600E+00 -0.1933E-02 -0.6297E-02  0.3070E+00
+   9 -0.4725E-02 -0.4938E-02  0.9570E+00 -0.1933E-02 -0.6297E-02  0.3070E+00
+  10 -0.4206E-02 -0.5135E-02  0.8192E+00  0.0000E+00  0.0000E+00  0.0000E+00
+
+ SECOND-ORDER R12/B PAIR ENERGIES:
+
+   1   -0.005748138   -0.010247832    0.000000000   -0.000000000     2.38233         2.33916    
+   2   -0.007417895   -0.013095677   -0.003320678   -0.003957726     1.99127         1.94809    
+   3   -0.011340117   -0.016951378    0.000000000   -0.000000000     1.60021         1.55703    
+   4   -0.007417895   -0.013095677   -0.003320678   -0.003957726     1.99127         1.94809    
+   5   -0.004701642   -0.007230222   -0.005684684   -0.006725496     1.60021         1.55703    
+   6   -0.011375041   -0.017004482    0.000000000   -0.000000000     1.60021         1.55703    
+   7   -0.007417895   -0.013095677   -0.003320678   -0.003957726     1.99127         1.94809    
+   8   -0.008911747   -0.013631961   -0.005684684   -0.006725496     1.60021         1.55703    
+   9   -0.008841899   -0.013525754   -0.005684684   -0.006725496     1.60021         1.55703    
+  10   -0.009269988   -0.013803612    0.000000000   -0.000000000     1.60021         1.55703    
+
+       -0.082442259   -0.131682273   -0.027016086   -0.032049666
+
+              MP2-R12/B   correlation energy =   -0.163731939
+
+
+                 +-----------------------------------------------+
+                 ! MP2-R12 ansatz := (1 - O1 - O2 + O1*O2) * R12 !
+                 +-----------------------------------------------+
+
+
+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
+
+
+ SECOND-ORDER R12/0 PAIR ENERGIES:
+
+   1   -0.005748138   -0.011708706    0.000000000    0.000000000
+   2   -0.007417895   -0.016917373   -0.003320678   -0.004651453
+   3   -0.011340117   -0.017252127    0.000000000    0.000000000
+   4   -0.007417895   -0.016917373   -0.003320678   -0.004651453
+   5   -0.004701642   -0.007245618   -0.005684684   -0.004162509
+   6   -0.011375041   -0.017312920    0.000000000    0.000000000
+   7   -0.007417895   -0.016917373   -0.003320678   -0.004651453
+   8   -0.008911747   -0.014574287   -0.005684684   -0.004162509
+   9   -0.008841899   -0.014452702   -0.005684684   -0.004162509
+  10   -0.009269988   -0.013648585    0.000000000    0.000000000
+
+       -0.082442259   -0.146947064   -0.027016086   -0.026441888
+
+ Noninvariant MP2-R12/0   correlation energy =   -0.173388952
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4997E-02 -0.4034E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4028E+01  0.0000E+00
+   2 -0.7810E-02 -0.6120E-02  0.1000E+01 -0.2305E-02 -0.3899E-02  0.5000E+00  0.3857E+01  0.2231E+01
+   3 -0.5542E-02 -0.5172E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2655E+01  0.0000E+00
+   4 -0.7810E-02 -0.6120E-02  0.1000E+01 -0.2305E-02 -0.3899E-02  0.5000E+00  0.3857E+01  0.2231E+01
+   5 -0.3083E-02 -0.3622E-02  0.1000E+01 -0.9099E-04 -0.6453E-02  0.5000E+00  0.2010E+01  0.1583E+01
+   6 -0.5559E-02 -0.5180E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2658E+01  0.0000E+00
+   7 -0.7810E-02 -0.6120E-02  0.1000E+01 -0.2305E-02 -0.3899E-02  0.5000E+00  0.3857E+01  0.2231E+01
+   8 -0.5174E-02 -0.4685E-02  0.1000E+01 -0.9099E-04 -0.6453E-02  0.5000E+00  0.2518E+01  0.1583E+01
+   9 -0.5139E-02 -0.4667E-02  0.1000E+01 -0.9099E-04 -0.6453E-02  0.5000E+00  0.2509E+01  0.1583E+01
+  10 -0.4514E-02 -0.4649E-02  0.1000E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2422E+01  0.0000E+00
+
+ SECOND-ORDER NONINVARIANT R12/A   PAIR ENERGIES:
+
+   1   -0.005748138   -0.011938750    0.000000000    0.000000000
+   2   -0.007417895   -0.017383831   -0.003320678   -0.004683972
+   3   -0.011340117   -0.017278634    0.000000000    0.000000000
+   4   -0.007417895   -0.017383831   -0.003320678   -0.004683972
+   5   -0.004701642   -0.007325841   -0.005684684   -0.005685967
+   6   -0.011375041   -0.017340614    0.000000000    0.000000000
+   7   -0.007417895   -0.017383831   -0.003320678   -0.004683972
+   8   -0.008911747   -0.014625265   -0.005684684   -0.005685967
+   9   -0.008841899   -0.014500363   -0.005684684   -0.005685967
+  10   -0.009269988   -0.013652512    0.000000000    0.000000000
+
+       -0.082442259   -0.148813472   -0.027016086   -0.031109817
+
+ Noninvariant MP2-R12/A   correlation energy =   -0.179923289
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4997E-02 -0.4034E-02  0.1239E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.4028E+01  0.0000E+00
+   2 -0.7810E-02 -0.6120E-02  0.1276E+01 -0.2305E-02 -0.3899E-02  0.5913E+00  0.3857E+01  0.2231E+01
+   3 -0.5542E-02 -0.5172E-02  0.1072E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2655E+01  0.0000E+00
+   4 -0.7810E-02 -0.6120E-02  0.1276E+01 -0.2305E-02 -0.3899E-02  0.5913E+00  0.3857E+01  0.2231E+01
+   5 -0.3083E-02 -0.3622E-02  0.8512E+00 -0.9099E-04 -0.6453E-02  0.1410E-01  0.2010E+01  0.1583E+01
+   6 -0.5559E-02 -0.5180E-02  0.1073E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2658E+01  0.0000E+00
+   7 -0.7810E-02 -0.6120E-02  0.1276E+01 -0.2305E-02 -0.3899E-02  0.5913E+00  0.3857E+01  0.2231E+01
+   8 -0.5174E-02 -0.4685E-02  0.1104E+01 -0.9099E-04 -0.6453E-02  0.1410E-01  0.2518E+01  0.1583E+01
+   9 -0.5139E-02 -0.4667E-02  0.1101E+01 -0.9099E-04 -0.6453E-02  0.1410E-01  0.2509E+01  0.1583E+01
+  10 -0.4514E-02 -0.4649E-02  0.9709E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.2422E+01  0.0000E+00
+
+ SECOND-ORDER R12/A   PAIR ENERGIES:
+
+   1   -0.005748138   -0.012209577    0.000000000   -0.000000000    0.387868E-01    0.729272E-01
+   2   -0.007417895   -0.017989647   -0.003320678   -0.005195928    0.393221E-01    0.731977E-01
+   3   -0.011340117   -0.019154671    0.000000000   -0.000000000    0.400405E-01    0.735421E-01
+   4   -0.007417895   -0.017989647   -0.003320678   -0.005195928    0.393221E-01    0.731977E-01
+   5   -0.004701642   -0.008450909   -0.005684684   -0.007144009    0.400405E-01    0.735421E-01
+   6   -0.011375041   -0.019211283    0.000000000   -0.000000000    0.400405E-01    0.735421E-01
+   7   -0.007417895   -0.017989647   -0.003320678   -0.005195928    0.393221E-01    0.731977E-01
+   8   -0.008911747   -0.015275658   -0.005684684   -0.007144009    0.400405E-01    0.735421E-01
+   9   -0.008841899   -0.015162432   -0.005684684   -0.007144009    0.400405E-01    0.735421E-01
+  10   -0.009269988   -0.015798909    0.000000000   -0.000000000    0.400405E-01    0.735421E-01
+
+       -0.082442259   -0.159232381   -0.027016086   -0.037019812
+
+              MP2-R12/A   correlation energy =   -0.196252193
+
+ SECOND-ORDER R12/A'  PAIR ENERGIES:
+
+   1   -0.005748138   -0.011997371    0.000000000   -0.000000000    0.188160        0.365516    
+   2   -0.007417895   -0.017611296   -0.003320678   -0.004931548    0.163804        0.319681    
+   3   -0.011340117   -0.019156173    0.000000000   -0.000000000    0.139069        0.273397    
+   4   -0.007417895   -0.017611296   -0.003320678   -0.004931548    0.163804        0.319681    
+   5   -0.004701642   -0.008002385   -0.005684684   -0.006222727    0.139069        0.273397    
+   6   -0.011375041   -0.019215276    0.000000000   -0.000000000    0.139069        0.273397    
+   7   -0.007417895   -0.017611296   -0.003320678   -0.004931548    0.163804        0.319681    
+   8   -0.008911747   -0.015127349   -0.005684684   -0.006222727    0.139069        0.273397    
+   9   -0.008841899   -0.015009142   -0.005684684   -0.006222727    0.139069        0.273397    
+  10   -0.009269988   -0.015652795    0.000000000   -0.000000000    0.139069        0.273397    
+
+       -0.082442259   -0.156994379   -0.027016086   -0.033462824
+
+              MP2-R12/A'  correlation energy =   -0.190457203
+
+ SECOND-ORDER NONINVARIANT R12/A*  PAIR ENERGIES:
+
+   1   -0.005748138   -0.011742043    0.000000000    0.000000000
+   2   -0.007417895   -0.017220136   -0.003320678   -0.004717415
+   3   -0.011340117   -0.017380777    0.000000000    0.000000000
+   4   -0.007417895   -0.017220136   -0.003320678   -0.004717415
+   5   -0.004701642   -0.007354672   -0.005684684   -0.005687209
+   6   -0.011375041   -0.017444027    0.000000000    0.000000000
+   7   -0.007417895   -0.017220136   -0.003320678   -0.004717415
+   8   -0.008911747   -0.014799329   -0.005684684   -0.005687209
+   9   -0.008841899   -0.014671573   -0.005684684   -0.005687209
+  10   -0.009269988   -0.013685733    0.000000000    0.000000000
+
+       -0.082442259   -0.148738562   -0.027016086   -0.031213874
+
+ Noninvariant MP2-R12/A*  correlation energy =   -0.179952436
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4886E-02 -0.3982E-02  0.1227E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.3976E+01  0.0000E+00
+   2 -0.7723E-02 -0.6084E-02  0.1269E+01 -0.2318E-02 -0.3847E-02  0.6025E+00  0.3835E+01  0.2202E+01
+   3 -0.5558E-02 -0.5115E-02  0.1087E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2625E+01  0.0000E+00
+   4 -0.7723E-02 -0.6084E-02  0.1269E+01 -0.2318E-02 -0.3847E-02  0.6025E+00  0.3835E+01  0.2202E+01
+   5 -0.3088E-02 -0.3595E-02  0.8591E+00 -0.1274E-03 -0.6423E-02  0.1983E-01  0.1995E+01  0.1576E+01
+   6 -0.5576E-02 -0.5123E-02  0.1088E+01  0.0000E+00  0.0000E+00  0.0000E+00  0.2629E+01  0.0000E+00
+   7 -0.7723E-02 -0.6084E-02  0.1269E+01 -0.2318E-02 -0.3847E-02  0.6025E+00  0.3835E+01  0.2202E+01
+   8 -0.5221E-02 -0.4630E-02  0.1128E+01 -0.1274E-03 -0.6423E-02  0.1983E-01  0.2488E+01  0.1576E+01
+   9 -0.5186E-02 -0.4613E-02  0.1124E+01 -0.1274E-03 -0.6423E-02  0.1983E-01  0.2480E+01  0.1576E+01
+  10 -0.4510E-02 -0.4606E-02  0.9792E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.2400E+01  0.0000E+00
+
+ SECOND-ORDER R12/A*  PAIR ENERGIES:
+
+   1   -0.005748138   -0.012005634    0.000000000   -0.000000000    0.343474E-01    0.676111E-01
+   2   -0.007417895   -0.017678877   -0.003320678   -0.005215660    0.343474E-01    0.676111E-01
+   3   -0.011340117   -0.018906410    0.000000000   -0.000000000    0.343474E-01    0.676111E-01
+   4   -0.007417895   -0.017678877   -0.003320678   -0.005215660    0.343474E-01    0.676111E-01
+   5   -0.004701642   -0.008442930   -0.005684684   -0.007139768    0.343474E-01    0.676111E-01
+   6   -0.011375041   -0.018963212    0.000000000   -0.000000000    0.343474E-01    0.676111E-01
+   7   -0.007417895   -0.017678877   -0.003320678   -0.005215660    0.343474E-01    0.676111E-01
+   8   -0.008911747   -0.015290468   -0.005684684   -0.007139768    0.343474E-01    0.676111E-01
+   9   -0.008841899   -0.015176864   -0.005684684   -0.007139768    0.343474E-01    0.676111E-01
+  10   -0.009269988   -0.015539443    0.000000000   -0.000000000    0.343474E-01    0.676111E-01
+
+       -0.082442259   -0.157361591   -0.027016086   -0.037066282
+
+              MP2-R12/A*  correlation energy =   -0.194427873
+
+ SECOND-ORDER R12/A*' PAIR ENERGIES:
+
+   1   -0.005748138   -0.011773658    0.000000000   -0.000000000    0.168280        0.332885    
+   2   -0.007417895   -0.017407273   -0.003320678   -0.004969322    0.143956        0.287687    
+   3   -0.011340117   -0.018901047    0.000000000   -0.000000000    0.119311        0.242116    
+   4   -0.007417895   -0.017407273   -0.003320678   -0.004969322    0.143956        0.287687    
+   5   -0.004701642   -0.008044672   -0.005684684   -0.006303710    0.119311        0.242116    
+   6   -0.011375041   -0.018960574    0.000000000   -0.000000000    0.119311        0.242116    
+   7   -0.007417895   -0.017407273   -0.003320678   -0.004969322    0.143956        0.287687    
+   8   -0.008911747   -0.015220737   -0.005684684   -0.006303710    0.119311        0.242116    
+   9   -0.008841899   -0.015101683   -0.005684684   -0.006303710    0.119311        0.242116    
+  10   -0.009269988   -0.015372542    0.000000000   -0.000000000    0.119311        0.242116    
+
+       -0.082442259   -0.155596730   -0.027016086   -0.033819095
+
+              MP2-R12/A*' correlation energy =   -0.189415825
+
+ SECOND-ORDER NONINVARIANT R12/B   PAIR ENERGIES:
+
+   1   -0.005748138   -0.010673320    0.000000000    0.000000000
+   2   -0.007417895   -0.015251133   -0.003320678   -0.004294164
+   3   -0.011340117   -0.015894063    0.000000000    0.000000000
+   4   -0.007417895   -0.015251133   -0.003320678   -0.004294164
+   5   -0.004701642   -0.006550579   -0.005684684   -0.005685522
+   6   -0.011375041   -0.015952165    0.000000000    0.000000000
+   7   -0.007417895   -0.015251133   -0.003320678   -0.004294164
+   8   -0.008911747   -0.013303801   -0.005684684   -0.005685522
+   9   -0.008841899   -0.013186541   -0.005684684   -0.005685522
+  10   -0.009269988   -0.012516873    0.000000000    0.000000000
+
+       -0.082442259   -0.133830740   -0.027016086   -0.029939056
+
+ Noninvariant MP2-R12/B   correlation energy =   -0.163769796
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4997E-02 -0.5070E-02  0.9856E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.5063E+01  0.0000E+00
+   2 -0.7810E-02 -0.7787E-02  0.1003E+01 -0.2305E-02 -0.5460E-02  0.4222E+00  0.4908E+01  0.3125E+01
+   3 -0.5542E-02 -0.6744E-02  0.8217E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3462E+01  0.0000E+00
+   4 -0.7810E-02 -0.7787E-02  0.1003E+01 -0.2305E-02 -0.5460E-02  0.4222E+00  0.4908E+01  0.3125E+01
+   5 -0.3083E-02 -0.5141E-02  0.5997E+00 -0.9099E-04 -0.9879E-02  0.9211E-02  0.2853E+01  0.2424E+01
+   6 -0.5559E-02 -0.6752E-02  0.8234E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3465E+01  0.0000E+00
+   7 -0.7810E-02 -0.7787E-02  0.1003E+01 -0.2305E-02 -0.5460E-02  0.4222E+00  0.4908E+01  0.3125E+01
+   8 -0.5174E-02 -0.6095E-02  0.8489E+00 -0.9099E-04 -0.9879E-02  0.9211E-02  0.3275E+01  0.2424E+01
+   9 -0.5139E-02 -0.6079E-02  0.8454E+00 -0.9099E-04 -0.9879E-02  0.9211E-02  0.3268E+01  0.2424E+01
+  10 -0.4514E-02 -0.6275E-02  0.7193E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3270E+01  0.0000E+00
+
+ SECOND-ORDER R12/B   PAIR ENERGIES:
+
+   1   -0.005748138   -0.010707135    0.000000000   -0.000000000    0.199674        0.404797    
+   2   -0.007417895   -0.015420957   -0.003320678   -0.004496390    0.175748        0.359175    
+   3   -0.011340117   -0.017405026    0.000000000   -0.000000000    0.151719        0.313169    
+   4   -0.007417895   -0.015420957   -0.003320678   -0.004496390    0.175748        0.359175    
+   5   -0.004701642   -0.007248205   -0.005684684   -0.006091200    0.151719        0.313169    
+   6   -0.011375041   -0.017459385    0.000000000   -0.000000000    0.151719        0.313169    
+   7   -0.007417895   -0.015420957   -0.003320678   -0.004496390    0.175748        0.359175    
+   8   -0.008911747   -0.013801328   -0.005684684   -0.006091200    0.151719        0.313169    
+   9   -0.008841899   -0.013692609   -0.005684684   -0.006091200    0.151719        0.313169    
+  10   -0.009269988   -0.014182824    0.000000000   -0.000000000    0.151719        0.313169    
+
+       -0.082442259   -0.140759382   -0.027016086   -0.031762770
+
+              MP2-R12/B   correlation energy =   -0.172522152
+
+ SECOND-ORDER NONINVARIANT R12/B*  PAIR ENERGIES:
+
+   1   -0.005748138   -0.010529909    0.000000000    0.000000000
+   2   -0.007417895   -0.015141044   -0.003320678   -0.004317716
+   3   -0.011340117   -0.015988642    0.000000000    0.000000000
+   4   -0.007417895   -0.015141044   -0.003320678   -0.004317716
+   5   -0.004701642   -0.006577360   -0.005684684   -0.005686339
+   6   -0.011375041   -0.016047906    0.000000000    0.000000000
+   7   -0.007417895   -0.015141044   -0.003320678   -0.004317716
+   8   -0.008911747   -0.013460367   -0.005684684   -0.005686339
+   9   -0.008841899   -0.013340386   -0.005684684   -0.005686339
+  10   -0.009269988   -0.012550359    0.000000000    0.000000000
+
+       -0.082442259   -0.133918061   -0.027016086   -0.030012166
+
+ Noninvariant MP2-R12/B*  correlation energy =   -0.163930227
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4886E-02 -0.4992E-02  0.9788E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.4984E+01  0.0000E+00
+   2 -0.7723E-02 -0.7722E-02  0.1000E+01 -0.2318E-02 -0.5390E-02  0.4301E+00  0.4867E+01  0.3085E+01
+   3 -0.5558E-02 -0.6646E-02  0.8363E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3412E+01  0.0000E+00
+   4 -0.7723E-02 -0.7722E-02  0.1000E+01 -0.2318E-02 -0.5390E-02  0.4301E+00  0.4867E+01  0.3085E+01
+   5 -0.3088E-02 -0.5084E-02  0.6074E+00 -0.1274E-03 -0.9802E-02  0.1299E-01  0.2822E+01  0.2405E+01
+   6 -0.5576E-02 -0.6654E-02  0.8380E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3415E+01  0.0000E+00
+   7 -0.7723E-02 -0.7722E-02  0.1000E+01 -0.2318E-02 -0.5390E-02  0.4301E+00  0.4867E+01  0.3085E+01
+   8 -0.5221E-02 -0.5993E-02  0.8712E+00 -0.1274E-03 -0.9802E-02  0.1299E-01  0.3220E+01  0.2405E+01
+   9 -0.5186E-02 -0.5977E-02  0.8675E+00 -0.1274E-03 -0.9802E-02  0.1299E-01  0.3214E+01  0.2405E+01
+  10 -0.4510E-02 -0.6200E-02  0.7274E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.3231E+01  0.0000E+00
+
+ SECOND-ORDER R12/B*  PAIR ENERGIES:
+
+   1   -0.005748138   -0.010567478    0.000000000   -0.000000000    0.177773        0.367318    
+   2   -0.007417895   -0.015295934   -0.003320678   -0.004523626    0.153644        0.322072    
+   3   -0.011340117   -0.017278318    0.000000000   -0.000000000    0.129336        0.276603    
+   4   -0.007417895   -0.015295934   -0.003320678   -0.004523626    0.153644        0.322072    
+   5   -0.004701642   -0.007289458   -0.005684684   -0.006140806    0.129336        0.276603    
+   6   -0.011375041   -0.017333097    0.000000000   -0.000000000    0.129336        0.276603    
+   7   -0.007417895   -0.015295934   -0.003320678   -0.004523626    0.153644        0.322072    
+   8   -0.008911747   -0.013893174   -0.005684684   -0.006140806    0.129336        0.276603    
+   9   -0.008841899   -0.013783615   -0.005684684   -0.006140806    0.129336        0.276603    
+  10   -0.009269988   -0.014031239    0.000000000   -0.000000000    0.129336        0.276603    
+
+       -0.082442259   -0.140064181   -0.027016086   -0.031993295
+
+              MP2-R12/B*  correlation energy =   -0.172057476
+
+
+          +-------------------------------------------------------------+
+          ! MP2-R12 ansatz := (1 - V1*V2) * (1 - O1 - O2 + O1*O2) * R12 !
+          +-------------------------------------------------------------+
+
+
+
+                         +--------------------------------+
+                         ! Auxiliary-basis MP2-R12 method !
+                         +--------------------------------+
+
+
+ SECOND-ORDER NONINVARIANT R12/B   PAIR ENERGIES:
+
+   1   -0.005748138   -0.010673320    0.000000000    0.000000000
+   2   -0.007417895   -0.015251133   -0.003320678   -0.004294164
+   3   -0.011340117   -0.015894063    0.000000000    0.000000000
+   4   -0.007417895   -0.015251133   -0.003320678   -0.004294164
+   5   -0.004701642   -0.006550579   -0.005684684   -0.005685522
+   6   -0.011375041   -0.015952165    0.000000000    0.000000000
+   7   -0.007417895   -0.015251133   -0.003320678   -0.004294164
+   8   -0.008911747   -0.013303801   -0.005684684   -0.005685522
+   9   -0.008841899   -0.013186541   -0.005684684   -0.005685522
+  10   -0.009269988   -0.012516873    0.000000000    0.000000000
+
+       -0.082442259   -0.133830740   -0.027016086   -0.029939056
+
+ Noninvariant MP2-R12/B   correlation energy =   -0.163769796
+
+  IJ    V(IJ)       U(IJ)       C(IJ)       V(IJ)       U(IJ)       C(IJ)   
+
+   1 -0.4997E-02 -0.5070E-02  0.9856E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.8689E+01  0.0000E+00
+   2 -0.7810E-02 -0.7787E-02  0.1003E+01 -0.2305E-02 -0.5460E-02  0.4222E+00  0.7140E+01  0.4939E+01
+   3 -0.5542E-02 -0.6744E-02  0.8217E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.5618E+01  0.0000E+00
+   4 -0.7810E-02 -0.7787E-02  0.1003E+01 -0.2305E-02 -0.5460E-02  0.4222E+00  0.7140E+01  0.4939E+01
+   5 -0.3083E-02 -0.5141E-02  0.5997E+00 -0.9099E-04 -0.9879E-02  0.9211E-02  0.4147E+01  0.3353E+01
+   6 -0.5559E-02 -0.6752E-02  0.8234E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.5633E+01  0.0000E+00
+   7 -0.7810E-02 -0.7787E-02  0.1003E+01 -0.2305E-02 -0.5460E-02  0.4222E+00  0.7140E+01  0.4939E+01
+   8 -0.5174E-02 -0.6095E-02  0.8489E+00 -0.9099E-04 -0.9879E-02  0.9211E-02  0.5943E+01  0.3353E+01
+   9 -0.5139E-02 -0.6079E-02  0.8454E+00 -0.9099E-04 -0.9879E-02  0.9211E-02  0.5907E+01  0.3353E+01
+  10 -0.4514E-02 -0.6275E-02  0.7193E+00  0.0000E+00  0.0000E+00  0.0000E+00  0.4806E+01  0.0000E+00
+
+ SECOND-ORDER R12/B   PAIR ENERGIES:
+
+   1   -0.005748138   -0.010707135    0.000000000   -0.000000000     2.42027         2.41425    
+   2   -0.007417895   -0.015420957   -0.003320678   -0.004496390     2.02732         2.02146    
+   3   -0.011340117   -0.017405026    0.000000000   -0.000000000     1.63367         1.62823    
+   4   -0.007417895   -0.015420957   -0.003320678   -0.004496390     2.02732         2.02146    
+   5   -0.004701642   -0.007248205   -0.005684684   -0.006091200     1.63367         1.62823    
+   6   -0.011375041   -0.017459385    0.000000000   -0.000000000     1.63367         1.62823    
+   7   -0.007417895   -0.015420957   -0.003320678   -0.004496390     2.02732         2.02146    
+   8   -0.008911747   -0.013801328   -0.005684684   -0.006091200     1.63367         1.62823    
+   9   -0.008841899   -0.013692609   -0.005684684   -0.006091200     1.63367         1.62823    
+  10   -0.009269988   -0.014182824    0.000000000   -0.000000000     1.63367         1.62823    
+
+       -0.082442259   -0.140759382   -0.027016086   -0.031762770
+
+              MP2-R12/B   correlation energy =   -0.172522152
+ >>> Time used in E(R12) is  2 minutes 28 seconds
+ Time for MP2-R12 part cpu:   162.72825801372528     
+ Time for MP2-R12 part wall:   171.00000000000000     
+
+NOAUXB with HERDIR not implemented
+
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                      0.00000000000000000000
+
+ *******************************************************************
+
+ requested model not yet implemented
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 43 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 52 seconds
+
+ 
+     Date and time (Linux)  : Wed Mar 16 19:14:56 2011 
+     Host name              : fe6                                     

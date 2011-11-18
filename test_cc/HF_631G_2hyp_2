@@ -1,0 +1,194 @@
+ 
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > HF_631G_2hyp_2.info <<%EOF%
+   HF_631G_2hyp_2
+   --------------
+   Molecule:         HF
+   Theory Level:     CC3 / 6-31G
+   Test Purpose:     freq.-dep. 2. hyperpolarizability using A densities
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > HF_631G_2hyp_2.mol <<%EOF%
+BASIS
+6-31G
+CC3 hyperpolarizability
+HF molecule
+    2    0  X  Y  Z   1.00D-15
+        9.0   1    2    1    1
+F     0.0000000000000000   0.000000000   0.08729478
+        1.0   1    1    1
+H     0.0000000000000000   0.000000000  -1.64558444
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > HF_631G_2hyp_2.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-12
+.NODIIS
+*ORBITAL INPUT
+.MOSTART
+.H1DIAG
+*CC INP
+.CC3
+.THRENR
+1.0D-12
+.THRLEQ
+1.0D-12
+*CCLR
+.OPERATOR
+ZDIPLEN ZDIPLEN
+XDIPLEN XDIPLEN
+.FREQUENCIES
+ 3
+0.00 0.10 0.20
+*CCQR
+.OPERATOR
+ZDIPLEN ZDIPLEN ZDIPLEN
+XDIPLEN XDIPLEN ZDIPLEN
+.PRINT
+  10
+.ORFREQ
+  2
+ 0.00 0.10
+.SHGFRE
+  1
+ 0.10
+*CCCR
+.OPERATOR
+ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
+XDIPLEN XDIPLEN XDIPLEN XDIPLEN
+ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN
+XDIPLEN XDIPLEN ZDIPLEN ZDIPLEN
+XDIPLEN ZDIPLEN ZDIPLEN XDIPLEN
+ZDIPLEN XDIPLEN XDIPLEN ZDIPLEN
+.PRINT
+  10
+.STATIC
+.DCKERR
+   1
+  0.10
+.ESHGFR
+   1
+  0.10
+*NODDY
+!.HMAT
+.GMAT
+.FAMAT
+.AAMAT
+.BMAT
+.FMAT
+.FNOALT
+.ETA
+.ETADEN
+.XI
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC3 energies:
+CRIT1=`$GREP "Total SCF   energy: * -99\.9834089624" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.1121032100" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.1153427965" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CC3 polarizability :
+CRIT1=`$GREP  "XDIPLEN  \(unrel\.\)  ( |0)\.0000   XDIPLEN  \(unrel\.\)  ( |0)\.0000     ( |0)\.68743748" $log | wc -l`
+CRIT2=`$GREP  "( -|-0)\.1000  * ( |0)\.1000     ( |0)\.70211317" $log | wc -l`
+CRIT3=`$GREP  "( -|-0)\.2000  * ( |0)\.2000     ( |0)\.75875833" $log | wc -l`
+
+TEST[2]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
+
+# CC3 first hyperpolarizability :
+CRIT1=`$GREP " ZDIPLEN  .unrel..  ( |0)\.0000   ZDIPLEN  .unrel..  ( |0)\.0000   ZDIPLEN  .unrel..  ( |0)\.0000      18\.41070255" $log | wc -l`
+CRIT2=`$GREP "  ( |0)\.0000    * ( |0)\.1000  * ( -|-0)\.1000  * 19\.40099255" $log | wc -l`
+CRIT3=`$GREP "( -|-0)\.2000    * ( |0)\.1000  *   ( |0)\.1000  * 21\.65740486" $log | wc -l`
+CRIT4=`$GREP " XDIPLEN  .unrel..  ( |0)\.0000   XDIPLEN  .unrel..  ( |0)\.0000   ZDIPLEN  .unrel..  ( |0)\.0000     ( |0)\.9848186754" $log | wc -l`
+CRIT5=`$GREP "  ( |0)\.0000    * ( |0)\.1000  * ( -|-0)\.1000  * 1\.052900731" $log | wc -l`
+CRIT6=`$GREP "( -|-0)\.2000    * ( |0)\.1000  *   ( |0)\.1000  * 1\.510502945" $log | wc -l`
+
+TEST[3]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+$CRIT5 \+$CRIT6`
+CTRL[3]=6
+ERROR[3]="CC3 QUADRATIC RESPONSE FUNCTION NOT CORRECT"
+
+
+# CC3 second hyperpolarizability :
+CRIT1=`$GREP  "ZDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000     -127\.2882159" $log | wc -l`
+CRIT2=`$GREP  "( -|-0)\.1000  * ( |0)\.0000  * ( |0)\.0000   * ( |0)\.1000     -139.3207845" $log | wc -l`
+CRIT3=`$GREP  "( -|-0)\.2000  * ( |0)\.1000  * ( |0)\.1000   * ( |0)\.0000     -168.2700247" $log | wc -l`
+CRIT4=`$GREP  "XDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000     -1\.722112415" $log | wc -l`
+CRIT5=`$GREP  "( -|-0)\.1000  * ( |0)\.0000  * ( |0)\.0000   * ( |0)\.1000     -1.853536897" $log | wc -l`
+CRIT6=`$GREP  "( -|-0)\.2000  * ( |0)\.1000  * ( |0)\.1000   * ( |0)\.0000     -2.197420327" $log | wc -l`
+CRIT7=`$GREP  "ZDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000     -9\.721816975" $log | wc -l`
+CRIT8=`$GREP  "( -|-0)\.1000  * ( |0)\.0000  * ( |0)\.0000   * ( |0)\.1000     -11.02595950" $log | wc -l`
+CRIT9=`$GREP  "( -|-0)\.2000  * ( |0)\.1000  * ( |0)\.1000   * ( |0)\.0000     -13.19306675" $log | wc -l`
+CRIT10=`$GREP "XDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000     -9\.721816975" $log | wc -l`
+CRIT11=`$GREP "( -|-0)\.1000  * ( |0)\.0000  * ( |0)\.0000   * ( |0)\.1000     -11.02595950" $log | wc -l`
+CRIT12=`$GREP "( -|-0)\.2000  * ( |0)\.1000  * ( |0)\.1000   * ( |0)\.0000     -20.41278115" $log | wc -l`
+CRIT13=`$GREP "XDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000     -9\.721816975" $log | wc -l`
+CRIT14=`$GREP "( -|-0)\.1000  * ( |0)\.0000  * ( |0)\.0000   * ( |0)\.1000     -12.96477261" $log | wc -l`
+CRIT15=`$GREP "( -|-0)\.2000  * ( |0)\.1000  * ( |0)\.1000   * ( |0)\.0000     -15.24159830" $log | wc -l`
+CRIT16=`$GREP "ZDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000   XDIPLEN  ( |0)\.0000   ZDIPLEN  ( |0)\.0000     -9\.721816975" $log | wc -l`
+CRIT17=`$GREP "( -|-0)\.1000  * ( |0)\.0000  * ( |0)\.0000   * ( |0)\.1000     -10.48883630" $log | wc -l`
+CRIT18=`$GREP "( -|-0)\.2000  * ( |0)\.1000  * ( |0)\.1000   * ( |0)\.0000     -12.03513441" $log | wc -l`
+
+TEST[4]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+$CRIT5 \+$CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+$CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18`
+CTRL[4]=20
+ERROR[4]="CC3 CUBIC RESPONSE FUNCTION NOT CORRECT"
+
+
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > HF_631G_2hyp_2.check
+#######################################################################

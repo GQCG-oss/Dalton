@@ -1,0 +1,91 @@
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{R12 methods: \Sec{R12}}\label{sec:r12}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\index{R12 theory!Coupled Cluster}
+\index{R12 theory!MP2-R12 method}
+\index{Coupled Cluster!R12 theory}
+\index{MP2-R12 method}
+\index{cusp correction!R12 theory}
+
+The calculation of MP2-R12 energy corrections is requested. Note that an
+integral-direct calculation must be carried out and that the
+key \Key{R12} must be specified in the \Sec{*INTEGRALS} section.
+
+\begin{center}
+\fbox{ \parbox[h][\height][l]{12cm}{\small\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item W.~Klopper and C.~C.~M.~Samson,
+\newblock {\em J.~Chem.~Phys.\/} {\bf 116}, 6397 (2002).
+\item C.~C.~M.~Samson, W.~Klopper and T.~Helgaker,
+\newblock {\em Comp.~Phys.~Commun.\/} {\bf 149}, 1 (2002).
+\end{list} }} \end{center}
+
+\begin{description}
+
+\item[\Key{NO 1}]
+
+Results for Ansatz 1 of the MP2-R12 method are not computed.
+
+\item[\Key{NO 2}]
+
+Results for Ansatz 2 of the MP2-R12 method are not computed.
+
+\item[\Key{NO A}]
+
+Results for approximation A of the MP2-R12 method are not printed.
+
+\item[\Key{NO A'}]
+
+Results for approximation A$^\prime$ of the MP2-R12 method are not printed.
+
+\item[\Key{NO B}]
+
+Results for approximation B are not computed and not printed.
+
+\item[\Key{NO RXR}]
+
+Those extra terms are ignored, which occur in approximation B when an auxiliary basis set
+is invoked for the resolution-of-identity (RI) approximation. If they are included, 
+the results are marked as B$^\prime$.
+
+\item[\Key{NO HYB}]
+
+The default MP2-R12 calculation implemented in the Dalton program
+avoids two-electron integrals that involve
+two or more basis functions of the auxiliary basis (of course, only
+if such a basis is employed). This approach is denoted
+as hybrid scheme between approximations A and B. To obtain the
+full MP2-R12 energy in approximation B, the keyword \verb|.NO HYB| must
+be specified. Then, two-electron integrals with up to two
+auxiliary basis functions are calculated but the calculation becomes 
+more time-consuming.
+
+\item[\Key{R12DIA}]
+The MP2-R12 equations are solved by diagonalizing the matrix representation 
+of the Fock operator in the basis of R12 double replacements. If 
+negative eigenvalues occur,
+a warning is issued. When this happens, the results should not be trusted,
+since the RI approximation appears to be insufficiently accurate.
+This diagonalizing is the default.
+
+\item[\Key{R12SVD}]
+The MP2-R12 equations are solved by single value decomposition
+(the use of this keyword is not recommended).
+
+\item[\Key{R12XXL}]
+
+All possible output from the MP2-R12 approach is generated (the 
+use of this keyword is not recommended).
+
+\item[\Key{SVDTHR}]  \verb| | \newline
+\verb|READ (LUCMD,*) SVDTHR|\newline
+Threshold for singular value decomposition (default = $10^{-12}$).
+
+\item[\Key{VCLTHR}]  \verb| | \newline
+\verb|READ (LUCMD,*) SVDTHR|\newline
+Threshold for neglect of R12 terms (default = 0, neglecting nothing).
+
+\end{description}

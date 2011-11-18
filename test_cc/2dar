@@ -1,0 +1,226 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+
+cat > 2dar.info <<%EOF%
+   2dar
+   ----
+   Molecule:       CO in D2h
+   Wave Function:  CCS, MP2, CCSD
+   Test Purpose:   first-order one-electron properties,
+                   two-electron Darwin term
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > 2dar.mol <<%EOF%
+BASIS
+STO-3G
+first order property calculation on CO
+dunning-basis
+    2    2  X  Y  Z   1.00D-15
+        6.0   1    3    1    1    1
+C     0.0000000000000000  0.0000000000000000 1.21824313000000000       *
+        8.0   1    3    1    1    1
+O     0.0000000000000000  0.0000000000000000 -.91397310000000000       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > 2dar.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.THETA
+.EFGCAR
+.SECMOM
+.DARWIN
+.MASSVELO
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+.DOUBLY OCCUPIED
+ 5 1 1 0
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.CCS
+.MP2
+.CCSD
+.PRINT
+ 4
+.THRENR
+1.0D-10
+.THRLEQ
+1.0D-07
+*CCFOP
+.ALLONE
+.2ELDAR
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Final *HF energy: * -111\.22459161" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy: * -111\.353187" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy: * -111\.355472" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=5
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CCS first order properties :
+CRIT1=`$GREP  " z  * -0*\.0660727. * -0*\.16794" $log | wc -l`
+CRIT2=`$GREP  " 1  * 1\.125591(1|2). * 0*\.00000000  * 0*\.0000000" $log | wc -l`
+CRIT3=`$GREP  " 2  * 0*\.0000000. * 1\.125591(1|2).  * 0*\.0000000" $log | wc -l`
+CRIT4=`$GREP  " 3  * 0*\.0000000. * 0*\.0000000.  * -2\.251182." $log | wc -l`
+CRIT5=`$GREP  " 1  * 6\.467115(0|1). * 0*\.0000000.  * 0*\.0000000" $log | wc -l`
+CRIT6=`$GREP  " 2  * 0*\.0000000. * 6\.467115(0|1).  * 0*\.0000000" $log | wc -l`
+CRIT7=`$GREP  " 3  * 0*\.0000000. * 0*\.0000000.  * 24\.3057700" $log | wc -l`
+CRIT8=`$GREP  "Alfa\*\*2 Invariant: * 154\.09084" $log | wc -l`
+CRIT9=`$GREP  "Beta\*\*2 Invariant: * 318\.21761" $log | wc -l`
+CRIT10=`$GREP "Isotropic Property:  * 12\.41333. a\.u\." $log | wc -l`
+CRIT11=`$GREP "Property anisotropy invariant: * 17\.83865. a\.u\." $log | wc -l`
+CRIT12=`$GREP " 1 * ( |0)\.2211985.  *( |0)\.0000000. *( |0)\.0000000" $log | wc -l`
+CRIT13=`$GREP " 2 * ( |0)\.0000000.  *( |0)\.2211985. *( |0)\.0000000" $log | wc -l`
+CRIT14=`$GREP " 3 * ( |0)\.0000000.  *( |0)\.0000000. *( -|-0)\.4423970" $log | wc -l`
+CRIT15=`$GREP " 1 * ( -|-0)\.0341545. *( |0)\.0000000. *( |0)\.0000000" $log | wc -l`
+CRIT16=`$GREP " 2 * ( |0)\.0000000.  *( -|-0)\.0341545. *( |0)\.0000000" $log | wc -l`
+CRIT17=`$GREP " 3 * ( |0)\.0000000.  *( |0)\.0000000. *( |0)\.0683091" $log | wc -l`
+CRIT18=`$GREP "O      17    Vx =      ( -|-0)\.03415.     ( |0)\.20528.     ( |0)\.07333" $log | wc -l`
+CRIT19=`$GREP "O      17    Vy =      ( -|-0)\.03415.     ( |0)\.20528.     ( |0)\.07333" $log | wc -l`
+CRIT20=`$GREP "O      17    Vz =       ( |0)\.06830.    ( -|-0)\.41056.    ( -|-0)\.14667" $log | wc -l`
+CRIT21=`$GREP "   1-elec. Darwin term: *( |0)\.1690587" $log | wc -l`
+CRIT22=`$GREP "   Mass-Velocity term: *-( |0)\.2171631" $log | wc -l`
+CRIT23=`$GREP "   Mass-Velocity \+ 1-elec. Darwin terms: *-( |0)\.0481043" $log | wc -l`
+CRIT24=`$GREP "   2-elec. Darwin term: *-( |0)\.0046272" $log | wc -l`
+CRIT25=`$GREP "   Total relativistic correction: *-( |0)\.0527316" $log | wc -l`
+CRIT26=`$GREP "Ecorr = * -111\.22459161590" $log | wc -l`
+
+TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
+              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
+              $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
+              $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ \
+              $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ \
+              $CRIT26`
+CTRL[2]=26
+ERROR[2]="CCS FIRST ORDER PROPERTIES NOT CORRECT $TEST[2]"
+
+
+# MP2 first order properties :
+CRIT1=`$GREP  "   z  *( -|-0)\.3116065.  *( -|-0)\.79202" $log | wc -l`
+CRIT2=`$GREP  "   1  *1\.0834266.  *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT3=`$GREP  "   2  *( |0)\.0000000. *1\.0834266.  *( |0)\.0000000" $log | wc -l`
+CRIT4=`$GREP  "   3  *( |0)\.0000000. *( |0)\.0000000.  *-2\.1668532" $log | wc -l`
+CRIT5=`$GREP  "   1  *6\.5369740. *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT6=`$GREP  "   2  *( |0)\.0000000. *6\.5369740.  *( |0)\.0000000" $log | wc -l`
+CRIT7=`$GREP  "   3  *( |0)\.0000000. *( |0)\.0000000. *24\.2912998" $log | wc -l`
+CRIT8=`$GREP  "Alfa\*\*2 Invariant: * 155\.12908" $log | wc -l`
+CRIT9=`$GREP  "Beta\*\*2 Invariant: * 315\.21608" $log | wc -l`
+CRIT10=`$GREP "Isotropic Property:  * 12\.45508. a\.u\." $log | wc -l`
+CRIT11=`$GREP "Property anisotropy invariant: * 17\.75432. a\.u\." $log | wc -l`
+CRIT12=`$GREP "   1  *( |0)\.1237637.  *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT13=`$GREP "   2  *( |0)\.0000000.  *( |0)\.1237637.  *( |0)\.0000000" $log | wc -l`
+CRIT14=`$GREP "   3  *( |0)\.0000000.  *( |0)\.0000000.  *( -|-0)\.2475274" $log | wc -l`
+CRIT15=`$GREP "   1  *( |0)\.1106995.  *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT16=`$GREP "   2  *( |0)\.0000000.  *( |0)\.1106995.  *( |0)\.0000000" $log | wc -l`
+CRIT17=`$GREP "   3  *( |0)\.0000000.  *( |0)\.0000000.  *( -|-0)\.2213991" $log | wc -l`
+CRIT18=`$GREP "O  *17  *Vx =  *( |0)\.11070.  *( -|-0)\.66534. *( -|-0)\.23768" $log | wc -l`
+CRIT19=`$GREP "O  *17  *Vy =  *( |0)\.11070.  *( -|-0)\.66534. *( -|-0)\.23768" $log | wc -l`
+CRIT20=`$GREP "O  *17  *Vz =  *( -|-0)\.22139.  *1\.33069.  *( |0)\.47537" $log | wc -l`
+CRIT21=`$GREP "   1-elec. Darwin term: *( |0)\.1691380" $log | wc -l`
+CRIT22=`$GREP "   Mass-Velocity term: *-( |0)\.2172833" $log | wc -l`
+CRIT23=`$GREP "   Mass-Velocity \+ 1-elec. Darwin terms: *-( |0)\.0481453" $log | wc -l`
+CRIT24=`$GREP "   2-elec. Darwin term: *-( |0)\.00461962" $log | wc -l`
+CRIT25=`$GREP "   Total relativistic correction: *-( |0)\.0527649" $log | wc -l`
+CRIT26=`$GREP "Ecorr = * -111\.35318774552" $log | wc -l`
+
+TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
+              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
+              $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
+              $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ \
+              $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ \
+              $CRIT26`
+CTRL[3]=26
+ERROR[3]="MP2 FIRST ORDER PROPERTIES NOT CORRECT"
+
+# CCSD first order properties
+CRIT1=`$GREP  " z  *-( |0)\.2568378.  *( -|-0)\.65281662" $log | wc -l`
+CRIT2=`$GREP  " 1  *1\.0859352.  *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT3=`$GREP  " 2  *( |0)\.0000000.  *1\.0859352.  *( |0)\.0000000" $log | wc -l`
+CRIT4=`$GREP  " 3  *( |0)\.0000000.  *( |0)\.0000000.  *-2\.1718704" $log | wc -l`
+CRIT5=`$GREP  " 1  *6.5228832.   *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT6=`$GREP  " 2  *( |0)\.0000000.  *6\.5228832.  *( |0)\.0000000" $log | wc -l`
+CRIT9=`$GREP  "Beta\*\*2 Invariant:  * 315\.39426" $log | wc -l`
+CRIT10=`$GREP "Isotropic Property:   * 12\.44266. a\.u\." $log | wc -l`
+CRIT11=`$GREP "Property anisotropy invariant: * 17\.759343 a\.u\." $log | wc -l`
+CRIT12=`$GREP " 1  *( |0)\.1373680.  *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT13=`$GREP " 2  *( |0)\.0000000.  *( |0)\.1373680.  *( |0)\.0000000" $log | wc -l`
+CRIT14=`$GREP " 3  *( |0)\.0000000.  *( |0)\.0000000.  *( -|-0)\.2747360" $log | wc -l`
+CRIT15=`$GREP " 1  *( |0)\.0799674.  *( |0)\.0000000.  *( |0)\.0000000" $log | wc -l`
+CRIT16=`$GREP " 2  *( |0)\.0000000.  *( |0)\.0799674.  *( |0)\.0000000" $log | wc -l`
+CRIT17=`$GREP " 3  *( |0)\.0000000.  *( |0)\.0000000.  *( -|-0)\.1599348" $log | wc -l`
+CRIT18=`$GREP "O      17    Vx =       ( |0)\.07996.    ( -|-0)\.48063.    ( -|-0)\.17170" $log | wc -l`
+CRIT19=`$GREP "O      17    Vy =       ( |0)\.07996.    ( -|-0)\.48063.    ( -|-0)\.17170" $log | wc -l`
+CRIT20=`$GREP "O      17    Vz =      ( -|-0)\.15993.     ( |0)\.96127.     ( |0)\.34340" $log | wc -l`
+CRIT21=`$GREP "    1-elec. Darwin term: *( |0)\.1691018" $log | wc -l`
+CRIT22=`$GREP "    Mass-Velocity term: *( -|-0)\.2172302" $log | wc -l`
+CRIT23=`$GREP "    Mass-Velocity \+ 1-elec. Darwin terms: *( -|-0)\.0481283" $log | wc -l`
+CRIT24=`$GREP "    2-elec. Darwin term: *( -|-0)\.00461914" $log | wc -l`
+CRIT25=`$GREP "    Total relativistic correction: *( -|-0)\.0527475" $log | wc -l`
+CRIT26=`$GREP "Ecorr = * -111\.35547274090" $log | wc -l`
+
+TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
+              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
+              $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
+              $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ \
+              $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ \
+              $CRIT26`
+CTRL[4]=26
+ERROR[4]="CCSD FIRST ORDER PROPERTIES NOT CORRECT"
+
+
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > 2dar.check
+chmod +x 2dar.check
+#######################################################################

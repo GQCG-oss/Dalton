@@ -1,0 +1,3158 @@
+
+ DALTON: default work memory size used.
+
+ Work memory size (LMWORK) :    10000000 =   76.29 megabytes.
+
+ User supplied basis set directory :
+        /home/christof/dalton/basis/                                
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.0, 1997) 
+
+                          Principal authors:
+
+            Trygve Helgaker,     University of Oslo,        Norway 
+            Hans Joergen Jensen, University of Odense,      Denmark
+            Poul Joergensen,     Aarhus University,         Denmark
+            Jeppe Olsen,         University of Lund,        Sweden 
+            Kenneth Ruud,        University of Oslo,        Norway 
+            Hans Aagren,         University of Linkoeping,  Sweden 
+
+                          Contributors:
+
+            Torgeir Andersen,    University of Oslo,        Norway 
+            Keld L. Bak,         UNI-C,                     Denmark
+            Vebjoern Bakken,     University of Oslo,        Norway 
+            Ove Christiansen,    Aarhus University,         Denmark
+            Paal Dahle,          University of Oslo,        Norway 
+            Erik K. Dalskov,     University of Lund,        Denmark
+            Thomas Enevoldsen,   University of Odense,      Denmark
+            Berta Fernandez,     U.of Santiago de Compostela,Spain 
+            Hanne Heiberg,       University of Oslo,        Norway 
+            Hinne Hettema,       University of Auckland,    NZ     
+            Dan Jonsson,         University of Linkoeping,  Sweden 
+            Sheela Kirpekar,     University of Odense,      Denmark
+            Rika Kobayashi,      Aarhus University,         Denmark
+            Henrik Koch,         Aarhus University,         Denmark
+            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
+            Patrick Norman,      University of Linkoeping,  Sweden 
+            Martin J. Packer,    University of Sheffield,   UK     
+            Trond Saue,          University of Oslo,        Norway 
+            Peter R.Taylor,      San Diego Superc. Center,  USA    
+            Olav Vahtras,        University of Linkoeping,  Sweden 
+
+                                             Release Date:  February 1997
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is not to be reproduced for further
+     distribution without the written permission of the authors or
+     their representatives
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H. J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, T. Andersen, K. L. Bak, V. Bakken, O. Christiansen
+     P. Dahle, E. K. Dalskov, T. Enevoldsen, B. Fernandez,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer, T. Saue,
+     P. R. Taylor, and O. Vahtras:
+     "Dalton release 1.0 (1997), an electronic structure program"
+
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ The following one-electron property integrals are calculated:
+
+          - overlap integrals
+          - dipole length integrals
+
+ In this run  precalculated two-electron integrals are transformed
+ to P-supermatrix elements.
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Hydrogen flourid                                                        
+  small test basis                                                        
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: Cs 
+
+   * The point group was generated by:
+
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   Oxz
+   -----+----------
+     E  |  E 
+    Oxz | Oxz   E 
+
+   * Character table
+
+        |  E   Oxz
+   -----+----------
+    A'  |   1    1
+    A"  |   1   -1
+
+   * Direct product table
+
+        | A'   A" 
+   -----+----------
+    A'  | A' 
+    A"  | A"   A' 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  F           1       9      27      14      [10s4p1d|3s2p1d]                       
+  H           1       1       7       5      [4s1p|2s1p]                            
+  ----------------------------------------------------------------------
+  ----------------------------------------------------------------------
+  total:      2      10      34      19
+
+  Spherical harmonic basis used.
+  Threshold for integrals:  1.00E-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   F        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.7632000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   4  2
+
+
+  Symmetry 1
+
+   1   F     x    1
+   2   F     z    3
+   3   H     x    4
+   4   H     z    6
+
+
+  Symmetry 2
+
+   5   F     y    2
+   6   H     y    5
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            F           H   
+
+   F       0.000000
+   H       0.933045    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          F                              0.933045
+
+
+  Nuclear repulsion energy :    5.104355716878
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         14   5
+
+
+  Symmetry  A' ( 1)
+
+    1     F        1s         1
+    2     F        1s         2
+    3     F        1s         3
+    4     F        2px        4
+    5     F        2pz        6
+    6     F        2px        7
+    7     F        2pz        9
+    8     F        3d0       12
+    9     F        3d1+      13
+   10     F        3d2+      14
+   11     H        1s        15
+   12     H        1s        16
+   13     H        2px       17
+   14     H        2pz       19
+
+
+  Symmetry  A" ( 2)
+
+   15     F        2py        5
+   16     F        2py        8
+   17     F        3d2-      10
+   18     F        3d1-      11
+   19     H        2py       18
+
+  Symmetries of electric field:  A' (1)  A" (2)  A' (1)
+
+  Symmetries of magnetic field:  A" (2)  A' (1)  A" (2)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.04 seconds
+
+
+ >>> Time used in OVERLA is   0.02 seconds
+
+
+ >>> Time used in DIPLEN is   0.02 seconds
+
+
+
+ ************************************************************************
+ ************************** Output from TWOINT **************************
+ ************************************************************************
+
+
+ Number of two-electron integrals written:      4125 (22.7%)
+ Kilobytes written:                               51
+
+
+
+ >>> Time used in TWOINT is   0.41 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00E-15
+
+    TIME IN SORT  :     0.01 SEC.
+
+    TIME IN SUP1  :     0.00 SEC.
+
+    TIME IN SUP   :     0.01 SEC.
+
+    TOTAL TIME    :     0.02 SEC.
+
+ >>> Time used in FRMSUP is   0.02 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.50 seconds
+ >>>> Total wall time used in HERMIT:   2.67 seconds
+
+- End of Integral Section
+@@     Starting Wave-Function Section -
+
+ CC_5RINP> 1ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN 
+ CC_5RINP> 2ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN 
+ CC_5RINP> 3ZDIPLEN ZDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN 
+ CC_5RINP> 4XDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN XDIPLEN 
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+
+ Title     :   third & fourth hyperpolarizability for the HF molecule    
+               for a CCSD wavefunction compute                           
+
+ Title lines from integral program:
+     Hydrogen flourid                                                        
+     small test basis                                                        
+
+ Print level on unit LUW6 =   6 is   0
+ Print level on unit LUW4 =   6 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 19
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Total number of orbitals          14   5
+     Number of basis functions         14   5
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               4   1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00E-12
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -99.550539165110   4.64E+00  -9.96E+01    4  1
+   2    -99.960317692128   1.12E+00  -4.10E-01    4  1
+   3   -100.002098990272   4.00E-01  -4.18E-02    4  1
+   4   -100.008745843367   5.71E-02  -6.65E-03    4  1
+   5   -100.008919811957   1.43E-03  -1.74E-04    4  1
+   6   -100.008919917688   1.60E-04  -1.06E-07    4  1
+   7   -100.008919920751   4.46E-05  -3.06E-09    4  1
+   8   -100.008919920979   5.23E-06  -2.29E-10    4  1
+   9   -100.008919920982   3.40E-07  -2.50E-12    4  1
+  10   -100.008919920982   4.20E-08  -1.33E-14    4  1
+  11   -100.008919920982   3.44E-09   8.88E-16    4  1
+  12   -100.008919920982   2.92E-10   8.88E-16    4  1
+  13   -100.008919920982   1.32E-11  -1.33E-14    4  1
+  14   -100.008919920982   1.71E-12   8.88E-16    4  1
+  15   -100.008919920982   1.95E-13   1.51E-14    4  1
+ DIIS converged in  15 iterations !
+1
+
+
+        SIRIUS QC-HF optimization (SIROPT)
+ ================================================
+
+
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = ONLYFD
+
+
+
+ <<< MACRO ITERATION  1 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -100.008919920981825       (MACRO    1)
+
+ Norm of total gradient   :        0.000000000000
+ -    of CI gradient      :        0.000000000000
+ -    of orbital gradient :        0.000000000000
+
+ *** Optimization control: MCSCF converged ***
+     Number of macro iterations used            1
+     Number of micro iterations used            0
+     Total number of CPU seconds used         0.03
+
+
+ *** HF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    4    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -26.27306679    -1.57292660    -0.73710507    -0.62549530     0.21639317
+         1.01969776     1.48848731     1.53899981     1.89379535
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.62549530     1.48848731     1.89379535     2.15801855     3.02038756
+
+    E(LUMO) :     0.21639317 au (symmetry 1)
+  - E(HOMO) :    -0.62549530 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.84188847 au
+1
+
+               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+
+ 
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    0   -100.008919920982   0.0000000000  0.000000   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1      0    0.000000    0.000000     22    0.000000    0.000000    0.000000
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     0     0     0      0.03      0.00      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1   -105.113275637860      0.000000000000   -100.008919920982
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      0.00000000  0.00000000      0.000000000000      0.700000000000
+1
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -100.008919920982
+     Nuclear repulsion:             5.104355716878
+     Electronic energy:          -105.113275637860
+
+     Final gradient norm:           0.000000000000
+
+ 
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4
+   1  F   1s     0.9955  -0.2308  -0.0555   0.0000
+   2  F   1s     0.0212   0.5025   0.1234   0.0000
+   3  F   1s    -0.0052   0.5082   0.2358   0.0000
+   4  F   2px    0.0000   0.0000   0.0000   0.6587
+   5  F   2pz   -0.0013  -0.0602   0.5496   0.0000
+   6  F   2px    0.0000   0.0000   0.0000   0.4859
+   7  F   2pz    0.0009  -0.0224   0.3522   0.0000
+   8  F   3d0    0.0000   0.0004  -0.0068   0.0000
+   9  F   3d1+   0.0000   0.0000   0.0000  -0.0223
+  10  F   3d2+   0.0000   0.0000   0.0000   0.0000
+  11  H   1s     0.0001   0.1311  -0.2709   0.0000
+  12  H   1s     0.0013   0.0073  -0.1255   0.0000
+  13  H   2px    0.0000   0.0000   0.0000   0.0198
+  14  H   2pz   -0.0006   0.0312  -0.0288   0.0000
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  F   2py    0.6587
+   2  F   2py    0.4859
+   3  F   3d2-   0.0000
+   4  F   3d1-  -0.0223
+   5  H   2py    0.0198
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.14 seconds
+ >>>> Total wall time used in SIRIUS :      2.02 seconds
+
+ 
+
+@@- End of Wave-Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      14       5
+   IBAS   :       0      14
+   NRHF   :       4       1
+   NVIR   :      10       4
+   NRHFS  :       4       1
+   NVIRS  :      10       4
+   NRHFFR :       0       0
+   NVIRFR :       0       0
+   NORBTS :      19
+   NORBT  :      19
+   N2BAST :     221
+   N2BASX :     361
+   NNBASX :     190
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        44
+          Number of t2 amplitudes                 :      1341
+          Total number of amplitudes in ccsd      :      1385
+
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936626104499481
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1943060937368983
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1971586187656129
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977954797598755
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977971019988303
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977935971735008
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977919096362513
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977908787495153
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909429049731
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909398037525
+
+ CCSD  energy converged to within   0.10E-07 is   -100.197790940
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089199210
+
+            Total MP2   energy:                  -100.1936626104
+
+            Total CCSD  energy:                  -100.1977909398
+
+
+
+
+                  +-------------------------------------+
+                  ! Calculating Intermediates for CCLR  !
+                  +-------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+     Start vector generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       1         0.00     0.48E+00
+      2       1         0.00     0.11E+00
+      3       1         0.00     0.22E-01
+      4       1         0.00     0.50E-02
+      5       1         0.00     0.10E-02
+      6       1         0.00     0.29E-03
+      7       1         0.00     0.61E-04
+      8       1         0.00     0.13E-04
+      9       1         0.00     0.20E-05
+     10       1         0.00     0.32E-06
+     11       1         0.00     0.46E-07
+     12       1         0.00     0.74E-08
+    --------------------------------------
+    converged in 12 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.04
+         CCRED               0.01
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.05
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ Analysis of the undifferentiated Lagrangian multipliers: 
+ --------------------------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.3110 %
+
+          Double Excitation Contribution :              99.6890 %
+
+          ||T1||/||T2||                  :               0.0559
+
+          Tau1 diagnostic                :               0.0070
+
+          Norm of Total Amplitude Vector :               0.3993
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       3     |       21          |              |   -0.013143  |
+ | 1   1   |   4       3     |       24          |              |   -0.005609  |
+ | 1   1   |   8       3     |       28          |              |    0.009270  |
+ | 1   1   |   3       4     |       33          |              |    0.007165  |
+ | 2   2   |   1       1     |       41          |              |    0.007165  |
+ +-----------------------------------------------------------------------------+
+ | 2 1 2 1 |   1   3   1   4 |       41       33 |          853 |   -0.114781  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1165
+
+
+          Printed all single excitations greater than 0.005577
+
+
+          Printed all double excitations greater than 0.099844
+  
+  leaving sort
+ CC_5RIND> put on the list:ZDIPLEN (  0.),  ZDIPLEN (  0.),  ZDIPLEN (  0.),  
+ ZDIPLEN (  0.),  ZDIPLEN (  0.),  ZDIPLEN (  0.)
+ CC_5RIND> put on the list:ZDIPLEN (  0.),  ZDIPLEN (  0.),  ZDIPLEN (  0.),  
+ ZDIPLEN (  0.),  XDIPLEN (  0.),  XDIPLEN (  0.)
+ CC_5RIND> put on the list:ZDIPLEN (  0.),  ZDIPLEN (  0.),  XDIPLEN (  0.),  
+ XDIPLEN (  0.),  XDIPLEN (  0.),  XDIPLEN (  0.)
+ CC_5RIND> put on the list:XDIPLEN (  0.),  XDIPLEN (  0.),  XDIPLEN (  0.),  
+ XDIPLEN (  0.),  XDIPLEN (  0.),  XDIPLEN (  0.)
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   XDIPLEN     1    1
+    2   ZDIPLEN     1    1
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   XDIPLEN   F    1     0.000000E+00
+    2   ZDIPLEN   F    1     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   XDIPLEN     1     0.000000E+00
+    2   ZDIPLEN     1     0.000000E+00
+
+ LIST OF REQUIRED SECOND-ORDER XKSI VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   ZDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    3   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+
+ LIST OF REQUIRED SECOND-ORDER ETA VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   ZDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    3   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+
+ LIST OF REQUIRED SECOND-ORDER T VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   ZDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    3   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+
+ LIST OF REQUIRED SECOND-ORDER ZETA VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   ZDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    3   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+
+ LIST OF REQUIRED THIRD-ORDER XKSI VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+    3   XDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+    4   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+
+ LIST OF REQUIRED THIRD-ORDER T VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+    3   XDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+    4   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+
+ LIST OF REQUIRED THIRD-ORDER ETA VECTORS:
+    1   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00  1
+    2   XDIPLEN   1     0.000000E+00   XDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+    3   XDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+    4   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00   ZDIPLEN   1     0.000000E+00  1
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O2  |    3   |  second-order amplitude equations                    |
+ |  X2  |    3   |  second-order multipliers equations                  |
+ |  O3  |    4   |  third-order amplitude equations                     |
+ |  X3  |    4   |  third-order multiplier equations                    |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    2   |  first-order amplitude response                      |
+ |  L1  |    2   |  first-order multiplier response                     |
+ |  R2  |    3   |  second-order amplitude response                     |
+ |  L2  |    3   |  second-order multiplier response                    |
+ |  R3  |    4   |  third-order amplitude response                      |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    2   |  first-order amplitude response (R1) vector          |
+ |  F2  |    3   |  second-order amplitude response (R2) vector         |
+ +======================================================================+
+
+
+
+     R1  start vector nr.  1 of symmetry  1 generated from gradient
+     R1  start vector nr.  2 of symmetry  1 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       2         0.01     0.46E+00
+      2       2         0.01     0.14E+00
+      3       2         0.01     0.40E-01
+      4       2         0.01     0.12E-01
+      5       2         0.01     0.26E-02
+      6       2         0.01     0.44E-03
+      7       2         0.01     0.65E-04
+      8       2         0.01     0.96E-05
+      9       2         0.01     0.13E-05
+     10       2         0.01     0.19E-06
+     11       2         0.01     0.30E-07
+     12       2         0.01     0.41E-08
+    --------------------------------------
+    converged in 12 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.08
+         CCRED               0.02
+         CCNEX               0.01
+         ---------------------------
+         Total time          0.11
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |          (result is written to file)             |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  2 sets of right inter.:      0.05 secs.|
+ | time for  2 sets of 2. ord. int.:      0.20 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0   No. |  R1  No. |   F1   No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      1       |       0.06  |
+ |     0    |     2    |      2       |       0.07  |
+ +--------------------------------------------------+
+ | total time for   2 F transforms.:      0.55 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      5.45      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      1.82      |
+ |  % of time used in (**|k del)   :      3.64      |
+ |  % of time used in BF term      :      5.45      |
+ |  % of time used in C term       :      3.64      |
+ |  % of time used in D term       :      5.45      |
+ |  % of time used in I/O          :     16.36      |
+ +==================================================+
+
+
+     L1  start vector nr.  1 of symmetry  1 generated from gradient
+     L1  start vector nr.  2 of symmetry  1 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       2         0.01     0.75E+00
+      2       2         0.01     0.16E+00
+      3       2         0.01     0.56E-01
+      4       2         0.01     0.16E-01
+      5       2         0.01     0.31E-02
+      6       2         0.01     0.59E-03
+      7       2         0.01     0.95E-04
+      8       2         0.01     0.13E-04
+      9       2         0.01     0.18E-05
+     10       2         0.01     0.25E-06
+     11       2         0.01     0.40E-07
+     12       2         0.01     0.50E-08
+    --------------------------------------
+    converged in 12 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.08
+         CCRED               0.03
+         CCNEX               0.01
+         ---------------------------
+         Total time          0.11
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  3 2th.-order amplitude rhs vectors "O2".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   3 B matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   6 A{O} matrix transformations 
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        B MATRIX TRANSFORMATION SECTION           |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  2 sets of 1. ord. int.:      0.10 secs.|
+ | time for  3 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | R vector | R vector |    result    |             |
+ | R1[  No. |  R1[ No. |   O2S  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.10  |
+ |     2    |     1    |      2       |       0.10  |
+ |     2    |     2    |      3       |       0.11  |
+ +--------------------------------------------------+
+ | total time for   3 B transforms.:      0.57 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      1.75      |
+ |  % of time used in Fock interm. :      1.75      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      1.75      |
+ |  % of time used in (**|k del)   :      1.75      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :      8.77      |
+ |  % of time used in BF term      :     14.04      |
+ |  % of time used in F term       :     15.79      |
+ |  % of time used in E term       :      5.26      |
+ |  % of time used in C term       :     19.30      |
+ |  % of time used in D term       :     14.04      |
+ |  % of time used in I/O          :     12.28      |
+ +==================================================+
+
+
+     R2  start vector nr.  1 of symmetry  1 generated from gradient
+     R2  start vector nr.  2 of symmetry  1 generated from gradient
+     R2  start vector nr.  3 of symmetry  1 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       3         0.01     0.47E+00
+      2       3         0.01     0.12E+00
+      3       3         0.01     0.30E-01
+      4       3         0.01     0.61E-02
+      5       3         0.01     0.12E-02
+      6       3         0.01     0.20E-03
+      7       3         0.01     0.24E-04
+      8       3         0.01     0.31E-05
+      9       3         0.01     0.55E-06
+     10       3         0.01     0.78E-07
+     11       3         0.01     0.13E-07
+     12       2         0.01     0.49E-08
+    --------------------------------------
+    converged in 12 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.11
+         CCRED               0.03
+         CCNEX               0.01
+         ---------------------------
+         Total time          0.15
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+ -------------------------------------------------------------------
+ |                 OUTPUT FROM ETA/RHS VECTOR SECTION              |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  3 X2 eta  vectors
+         -   0 H matrix transformations 
+         -   3 G matrix transformations 
+         -   0 generalized G matrix transformations 
+         -   6 generalized F matrix transformations 
+         -   6 F{O} matrix transformations 
+         -   0 generalized F{O} matrix transformations 
+         -   6 generalized ETA{O} vector calculations 
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        G MATRIX TRANSFORMATION SECTION           |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  result  |            |
+ | L0  No.| R1  No.| R1  No.|  X2  No. | time/secs  |
+ +--------------------------------------------------+
+ |     0  |     1  |     1  |      1  |       0.09  |
+ |     0  |     2  |     1  |      2  |       0.16  |
+ |     0  |     2  |     2  |      3  |       0.10  |
+ +--------------------------------------------------+
+ | total time for   3 G transforms.:      0.37 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCTRBT       :      5.41      |
+ |  % of time used in CCG_21CD     :     29.73      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      2.70      |
+ |  % of time used in 21 CCSD part :     29.73      |
+ |  % of time used in doubles part :     29.73      |
+ |  % of time used in I/O          :      0.00      |
+ +==================================================+
+
+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  2 sets of left interm.:      0.06 secs.|
+ | time for  2 sets of right inter.:      0.09 secs.|
+ | time for  4 sets of 2. ord. int.:      0.33 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R1  No. |   X2   No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ |     1    |     1    |      1       |       0.06  |
+ |     2    |     1    |      2       |       0.06  |
+ |     1    |     2    |      2       |       0.06  |
+ |     2    |     2    |      3       |       0.06  |
+ |     2    |     2    |      3       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   6 F transforms.:      0.98 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      5.10      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      1.02      |
+ |  % of time used in (**|k del)   :      3.06      |
+ |  % of time used in BF term      :      8.16      |
+ |  % of time used in C term       :      2.04      |
+ |  % of time used in D term       :      4.08      |
+ |  % of time used in I/O          :      6.12      |
+ +==================================================+
+
+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |          (result is written to file)             |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  3 sets of right inter.:      0.13 secs.|
+ | time for  3 sets of 2. ord. int.:      0.28 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0   No. |  R2  No. |   F2   No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      1       |       0.07  |
+ |     0    |     2    |      2       |       0.07  |
+ |     0    |     3    |      3       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   3 F transforms.:      0.73 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      2.74      |
+ |  % of time used in Fock interm. :      1.37      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      2.74      |
+ |  % of time used in BF term      :      8.22      |
+ |  % of time used in C term       :      6.85      |
+ |  % of time used in D term       :      4.11      |
+ |  % of time used in I/O          :     12.33      |
+ +==================================================+
+
+
+     L2  start vector nr.  1 of symmetry  1 generated from gradient
+     L2  start vector nr.  2 of symmetry  1 generated from gradient
+     L2  start vector nr.  3 of symmetry  1 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       3         0.01     0.77E+00
+      2       3         0.01     0.16E+00
+      3       3         0.01     0.49E-01
+      4       3         0.01     0.11E-01
+      5       3         0.01     0.22E-02
+      6       3         0.01     0.37E-03
+      7       3         0.01     0.54E-04
+      8       3         0.01     0.88E-05
+      9       3         0.01     0.15E-05
+     10       3         0.01     0.25E-06
+     11       3         0.01     0.40E-07
+     12       2         0.01     0.71E-08
+    --------------------------------------
+    converged in 12 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.11
+         CCRED               0.04
+         CCNEX               0.01
+         ---------------------------
+         Total time          0.15
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  4 3th.-order amplitude rhs vectors "O3".
+         -   0 D matrix transformations 
+         -   4 C matrix transformations 
+         -  12 B matrix transformations 
+         -  12 B{O} matrix transformations 
+         -  12 A{O} matrix transformations 
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        B MATRIX TRANSFORMATION SECTION           |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  5 sets of 1. ord. int.:      0.21 secs.|
+ | time for  6 sets of 2. ord. int.:      0.13 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | R vector | R vector |    result    |             |
+ | R2R  No. |  R1[ No. |   O3R  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.11  |
+ |     1    |     1    |      1       |       0.10  |
+ |     1    |     1    |      1       |       0.10  |
+ |     1    |     2    |      2       |       0.11  |
+ |     2    |     1    |      2       |       0.11  |
+ |     2    |     1    |      2       |       0.10  |
+ |     2    |     2    |      3       |       0.10  |
+ |     2    |     2    |      3       |       0.11  |
+ |     3    |     1    |      3       |       0.10  |
+ |     3    |     2    |      4       |       0.10  |
+ |     3    |     2    |      4       |       0.10  |
+ |     3    |     2    |      4       |       0.10  |
+ +--------------------------------------------------+
+ | total time for  12 B transforms.:      1.69 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      1.78      |
+ |  % of time used in Fock interm. :      0.59      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.59      |
+ |  % of time used in (**|k del)   :      1.18      |
+ |  % of time used in singles part :      1.78      |
+ |  % of time used in A term       :     15.98      |
+ |  % of time used in BF term      :     13.61      |
+ |  % of time used in F term       :      8.88      |
+ |  % of time used in E term       :      3.55      |
+ |  % of time used in C term       :     19.53      |
+ |  % of time used in D term       :     18.93      |
+ |  % of time used in I/O          :     10.06      |
+ +==================================================+
+
+
+     R3  start vector nr.  1 of symmetry  1 generated from gradient
+     R3  start vector nr.  2 of symmetry  1 generated from gradient
+     R3  start vector nr.  3 of symmetry  1 generated from gradient
+     R3  start vector nr.  4 of symmetry  1 generated from gradient
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+      1       4         0.01     0.50E+00
+      2       4         0.01     0.11E+00
+      3       4         0.01     0.26E-01
+      4       4         0.01     0.54E-02
+      5       4         0.01     0.97E-03
+      6       4         0.01     0.15E-03
+      7       4         0.01     0.26E-04
+      8       4         0.01     0.38E-05
+      9       4         0.01     0.75E-06
+     10       4         0.01     0.13E-06
+     11       4         0.01     0.17E-07
+     12       1         0.00     0.76E-08
+    --------------------------------------
+    converged in 12 iterations
+    threshold:    0.10E-07
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.14
+         CCRED               0.05
+         CCNEX               0.01
+         ---------------------------
+         Total time          0.20
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+ -------------------------------------------------------------------
+ |                 OUTPUT FROM ETA/RHS VECTOR SECTION              |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  4 X3 eta  vectors
+         -   4 H matrix transformations 
+         -  12 G matrix transformations 
+         -  12 generalized G matrix transformations 
+         -  24 generalized F matrix transformations 
+         -  12 F{O} matrix transformations 
+         -  24 generalized F{O} matrix transformations 
+         -  12 generalized ETA{O} vector calculations 
+   will be performed.
+
+
+
+
+ +==================================================+
+ |        G MATRIX TRANSFORMATION SECTION           |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  result  |            |
+ | L0  No.| R2  No.| R1  No.|  X3  No. | time/secs  |
+ +--------------------------------------------------+
+ |     0  |     1  |     1  |      1  |       0.17  |
+ |     0  |     1  |     1  |      1  |       0.14  |
+ |     0  |     1  |     1  |      1  |       0.15  |
+ |     0  |     1  |     2  |      2  |       0.16  |
+ |     0  |     2  |     1  |      2  |       0.15  |
+ |     0  |     2  |     1  |      2  |       0.13  |
+ |     0  |     2  |     2  |      3  |       0.19  |
+ |     0  |     2  |     2  |      3  |       0.14  |
+ |     0  |     3  |     1  |      3  |       0.17  |
+ |     0  |     3  |     2  |      4  |       0.15  |
+ |     0  |     3  |     2  |      4  |       0.15  |
+ |     0  |     3  |     2  |      4  |       0.17  |
+ +--------------------------------------------------+
+ | total time for  12 G transforms.:      1.88 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCTRBT       :      5.32      |
+ |  % of time used in CCG_21CD     :     34.04      |
+ |  % of time used in Fock interm. :      1.06      |
+ |  % of time used in CCS part     :      0.53      |
+ |  % of time used in 21 CCSD part :     33.51      |
+ |  % of time used in doubles part :     22.34      |
+ |  % of time used in I/O          :      3.19      |
+ +==================================================+
+
+
+
+
+ +==================================================+
+ |    GENERALIZED G MATRIX TRANSFORMATION SECTION   |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  result  |            |
+ | L1  No.| R1  No.| R1  No.|  X3  No. | time/secs  |
+ +--------------------------------------------------+
+ |     1  |     1  |     1  |      1  |       0.15  |
+ |     1  |     1  |     1  |      1  |       0.09  |
+ |     1  |     1  |     1  |      1  |       0.07  |
+ |     1  |     1  |     2  |      2  |       0.14  |
+ |     1  |     1  |     2  |      2  |       0.19  |
+ |     2  |     1  |     1  |      2  |       0.07  |
+ |     1  |     2  |     2  |      3  |       0.09  |
+ |     2  |     1  |     2  |      3  |       0.20  |
+ |     2  |     1  |     2  |      3  |       0.16  |
+ |     2  |     2  |     2  |      4  |       0.06  |
+ |     2  |     2  |     2  |      4  |       0.06  |
+ |     2  |     2  |     2  |      4  |       0.15  |
+ +--------------------------------------------------+
+ | total time for  12 G transforms.:      1.44 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCTRBT       :      4.17      |
+ |  % of time used in CCG_21CD     :     31.25      |
+ |  % of time used in Fock interm. :      0.69      |
+ |  % of time used in CCS part     :      0.69      |
+ |  % of time used in 21 CCSD part :     28.47      |
+ |  % of time used in doubles part :     28.47      |
+ |  % of time used in I/O          :      4.86      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTL:L1 
+ [debug] CCQR_FDRV> LISTB:R2 
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> NFTRAN: 12
+
+
+ +==================================================+
+ |    GENERALIZED F MATRIX TRANSFORMATION SECTION   |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | L vector | R vector | result vector |            |
+ |  L1  No. |  R2  No. |    X3  No.    | time/secs  |
+ +--------------------------------------------------+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.02 secs.|
+ | time for  1 sets of 2. ord. int.:      0.11 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      5.88      |
+ |  % of time used in Fock interm. :      5.88      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      8.82      |
+ |  % of time used in BF term      :      5.88      |
+ |  % of time used in C term       :      2.94      |
+ |  % of time used in D term       :      2.94      |
+ |  % of time used in I/O          :     17.65      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 1
+ |     1    |     1    |      1        |      0.36  |
+ [debug] CCQR_FDRV> wrote X3 : 1 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.0592015961
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      5.88      |
+ |  % of time used in Fock interm. :      2.94      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      8.82      |
+ |  % of time used in (**|k del)   :      8.82      |
+ |  % of time used in BF term      :      5.88      |
+ |  % of time used in C term       :      8.82      |
+ |  % of time used in D term       :      2.94      |
+ |  % of time used in I/O          :     14.71      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 1
+ |     1    |     1    |      1        |      0.34  |
+ [debug] CCQR_FDRV> wrote X3 : 1 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.0592015961
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.37      |
+ |  % of time used in Fock interm. :      3.12      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.12      |
+ |  % of time used in (**|k del)   :     12.50      |
+ |  % of time used in BF term      :      6.25      |
+ |  % of time used in C term       :      9.37      |
+ |  % of time used in D term       :      3.12      |
+ |  % of time used in I/O          :     15.63      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 1
+ |     1    |     1    |      1        |      0.32  |
+ [debug] CCQR_FDRV> wrote X3 : 1 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.0592015961
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.03 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.06      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.03      |
+ |  % of time used in (**|k del)   :      9.09      |
+ |  % of time used in BF term      :     15.15      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 2
+ |     2    |     1    |      2        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 2 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.409560992
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.25      |
+ |  % of time used in Fock interm. :      3.12      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.25      |
+ |  % of time used in BF term      :     12.50      |
+ |  % of time used in C term       :      9.37      |
+ |  % of time used in D term       :      3.12      |
+ |  % of time used in I/O          :     12.50      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 2
+ |     1    |     2    |      2        |      0.32  |
+ [debug] CCQR_FDRV> wrote X3 : 2 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   2.26041337
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.06 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.06      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.03      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :      9.09      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      9.09      |
+ |  % of time used in I/O          :     15.15      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 2
+ |     1    |     2    |      2        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 2 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   2.26041337
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.06 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:     11.76      |
+ |  % of time used in Fock interm. :      2.94      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     11.76      |
+ |  % of time used in BF term      :     14.71      |
+ |  % of time used in C term       :      2.94      |
+ |  % of time used in D term       :      2.94      |
+ |  % of time used in I/O          :     11.76      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 3
+ |     2    |     2    |      3        |      0.35  |
+ [debug] CCQR_FDRV> wrote X3 : 3 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   3.46919637
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.10 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.06      |
+ |  % of time used in Fock interm. :      6.06      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :      6.06      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      6.06      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 3
+ |     2    |     2    |      3        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 3 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   3.46919637
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.06 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     3    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :     15.15      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      9.09      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 3
+ |     1    |     3    |      3        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 3 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   6.50165861
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     3    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.03      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :      6.06      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      6.06      |
+ |  % of time used in I/O          :     18.18      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 4
+ |     2    |     3    |      4        |      0.34  |
+ [debug] CCQR_FDRV> wrote X3 : 4 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   104.323239
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     3    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.35 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      8.57      |
+ |  % of time used in Fock interm. :      2.86      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      2.86      |
+ |  % of time used in (**|k del)   :      5.71      |
+ |  % of time used in BF term      :     11.43      |
+ |  % of time used in C term       :      5.71      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     17.14      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 4
+ |     2    |     3    |      4        |      0.36  |
+ [debug] CCQR_FDRV> wrote X3 : 4 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   104.323239
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1   No. |  R2  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     3    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      5.88      |
+ |  % of time used in Fock interm. :      2.94      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      5.88      |
+ |  % of time used in (**|k del)   :      8.82      |
+ |  % of time used in BF term      :      5.88      |
+ |  % of time used in C term       :      8.82      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     14.71      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 4
+ |     2    |     3    |      4        |      0.34  |
+ [debug] CCQR_FDRV> wrote X3 : 4 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   104.323239
+ +--------------------------------------------------+
+ | total time for  12 F transforms.:      4.06 secs.|
+ +==================================================+
+
+
+
+ [debug] CCQR_FDRV> LISTL:L2 
+ [debug] CCQR_FDRV> LISTB:R1 
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> NFTRAN: 12
+
+
+ +==================================================+
+ |    GENERALIZED F MATRIX TRANSFORMATION SECTION   |
+ |     (result is added to a vector on file)        |
+ +--------------------------------------------------+
+ | L vector | R vector | result vector |            |
+ |  L2  No. |  R1  No. |    X3  No.    | time/secs  |
+ +--------------------------------------------------+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.06 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.03 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.37      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     15.63      |
+ |  % of time used in BF term      :      9.37      |
+ |  % of time used in C term       :      3.12      |
+ |  % of time used in D term       :      3.12      |
+ |  % of time used in I/O          :     12.50      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 1
+ |     1    |     1    |      1        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 1 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.20362198
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.06 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.05  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.35 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      8.57      |
+ |  % of time used in Fock interm. :      2.86      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     11.43      |
+ |  % of time used in BF term      :     17.14      |
+ |  % of time used in C term       :      5.71      |
+ |  % of time used in D term       :      2.86      |
+ |  % of time used in I/O          :     11.43      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 1
+ |     1    |     1    |      1        |      0.35  |
+ [debug] CCQR_FDRV> wrote X3 : 1 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.20362198
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.37      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      3.13      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.25      |
+ |  % of time used in BF term      :     15.63      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      3.13      |
+ |  % of time used in I/O          :     15.62      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 1
+ |     1    |     1    |      1        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 1 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.20362198
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.03 secs.|
+ | time for  1 sets of 2. ord. int.:      0.10 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:     12.12      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      9.09      |
+ |  % of time used in BF term      :      6.06      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      3.03      |
+ |  % of time used in I/O          :     18.18      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 2
+ |     1    |     2    |      2        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 2 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   0.522046709
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.06 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.31 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.45      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     16.13      |
+ |  % of time used in BF term      :      6.45      |
+ |  % of time used in C term       :      9.68      |
+ |  % of time used in D term       :      3.23      |
+ |  % of time used in I/O          :      9.68      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 2
+ |     2    |     1    |      2        |      0.32  |
+ [debug] CCQR_FDRV> wrote X3 : 2 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   2.19365449
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      9.09      |
+ |  % of time used in BF term      :     12.12      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      3.03      |
+ |  % of time used in I/O          :     15.15      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 2
+ |     2    |     1    |      2        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 2 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   2.19365449
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.06      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      6.06      |
+ |  % of time used in (**|k del)   :      9.09      |
+ |  % of time used in BF term      :     12.12      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      6.06      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 3
+ |     2    |     2    |      3        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 3 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   6.09430069
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.06 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.35 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      2.86      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      5.71      |
+ |  % of time used in BF term      :      8.57      |
+ |  % of time used in C term       :      5.71      |
+ |  % of time used in D term       :      8.57      |
+ |  % of time used in I/O          :     22.86      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 3
+ |     2    |     2    |      3        |      0.36  |
+ [debug] CCQR_FDRV> wrote X3 : 3 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   6.09430069
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.06 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     1    |      1       |       0.07  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     12.12      |
+ |  % of time used in BF term      :     12.12      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      3.03      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 3
+ |     3    |     1    |      3        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 3 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   6.12390974
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     2    |      1       |       0.07  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      6.06      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.03      |
+ |  % of time used in (**|k del)   :      3.03      |
+ |  % of time used in BF term      :     15.15      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      3.03      |
+ |  % of time used in I/O          :     18.18      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 4
+ |     3    |     2    |      4        |      0.33  |
+ [debug] CCQR_FDRV> wrote X3 : 4 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   75.3278624
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.31 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      3.23      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.23      |
+ |  % of time used in (**|k del)   :     16.13      |
+ |  % of time used in BF term      :     12.90      |
+ |  % of time used in C term       :      3.23      |
+ |  % of time used in D term       :      6.45      |
+ |  % of time used in I/O          :     12.90      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 4
+ |     3    |     2    |      4        |      0.31  |
+ [debug] CCQR_FDRV> wrote X3 : 4 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   75.3278624
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2   No. |  R1  No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      8.82      |
+ |  % of time used in Fock interm. :      5.88      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      8.82      |
+ |  % of time used in BF term      :     14.71      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      5.88      |
+ |  % of time used in I/O          :     17.65      |
+ +==================================================+
+
+
+ [debug] CCQR_FDRV> LISTC:X3 
+ [debug] CCQR_FDRV> IFILE: 4
+ |     3    |     2    |      4        |      0.35  |
+ [debug] CCQR_FDRV> wrote X3 : 4 to disk.
+ [debug] CCQR_FDRV> NORM^2 =   75.3278624
+ +--------------------------------------------------+
+ | total time for  12 F transforms.:      4.00 secs.|
+ +==================================================+
+
+
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUARTIC RESPONSE  >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested   3 quartic response functions 
+         -   4 H^0 matrix transformations 
+         -   5 H^A matrix transformations 
+         -   5 G^0 matrix transformations 
+         -   6 G^A matrix transformations 
+         -   6 G^AB matrix transformations 
+         -   5 F^A matrix transformations 
+         -   6 F^AB matrix transformations 
+         -   5 F^0{O} matrix transformations 
+         -   8 F^A{O} matrix transformations 
+         -   9 F^AB{O} matrix transformations 
+         -   6 ETA^AB{O} vector calculations 
+   will be performed.
+
+
+ H^0 transformations completed.
+ H^1 transformations completed.
+
+
+ +==================================================+
+ |        G MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L0H No.| R2R No.| R1L No.| with R2R | time/secs  |
+ +--------------------------------------------------+
+ |     0  |     3  |     2  |      2  |       0.16  |
+ |     0  |     2  |     2  |      1  |       0.14  |
+ |     0  |     3  |     1  |      1  |       0.18  |
+ |     0  |     1  |     2  |      1  |       0.14  |
+ |     0  |     2  |     1  |      1  |       0.14  |
+ +--------------------------------------------------+
+ | total time for   5 G transforms.:      0.78 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      1.28      |
+ |  % of time used in CCTRBT       :      5.13      |
+ |  % of time used in CCG_21CD     :     33.33      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      0.00      |
+ |  % of time used in 21 CCSD part :     32.05      |
+ |  % of time used in doubles part :     25.64      |
+ |  % of time used in I/O          :      2.56      |
+ +==================================================+
+
+
+ G^0 transformations completed.
+
+
+ +==================================================+
+ |    GENERALIZED G MATRIX TRANSFORMATION SECTION   |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L1H No.| R1L No.| R1L No.| with R2R | time/secs  |
+ +--------------------------------------------------+
+ |     2  |     2  |     2  |      2  |       0.09  |
+ |     2  |     1  |     1  |      2  |       0.07  |
+ |     2  |     2  |     1  |      1  |       0.20  |
+ |     1  |     2  |     2  |      1  |       0.09  |
+ |     1  |     2  |     1  |      2  |       0.14  |
+ |     1  |     1  |     1  |      1  |       0.11  |
+ +--------------------------------------------------+
+ | total time for   6 G transforms.:      0.71 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      1.41      |
+ |  % of time used in CCTRBT       :      7.04      |
+ |  % of time used in CCG_21CD     :     28.17      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      1.41      |
+ |  % of time used in 21 CCSD part :     28.17      |
+ |  % of time used in doubles part :     30.99      |
+ |  % of time used in I/O          :      2.82      |
+ +==================================================+
+
+
+ G^1 transformations completed.
+
+
+ +==================================================+
+ |    GENERALIZED G MATRIX TRANSFORMATION SECTION   |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L2G No.| R1L No.| R1L No.| with R1L | time/secs  |
+ +--------------------------------------------------+
+ |     3  |     2  |     2  |      1  |       0.11  |
+ |     3  |     2  |     1  |      1  |       0.12  |
+ |     2  |     2  |     1  |      1  |       0.20  |
+ |     1  |     2  |     2  |      1  |       0.08  |
+ |     2  |     1  |     1  |      1  |       0.11  |
+ |     1  |     1  |     1  |      1  |       0.08  |
+ +--------------------------------------------------+
+ | total time for   6 G transforms.:      0.71 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      1.41      |
+ |  % of time used in CCTRBT       :      4.23      |
+ |  % of time used in CCG_21CD     :     30.99      |
+ |  % of time used in Fock interm. :      1.41      |
+ |  % of time used in CCS part     :      0.00      |
+ |  % of time used in 21 CCSD part :     30.99      |
+ |  % of time used in doubles part :     28.17      |
+ |  % of time used in I/O          :      1.41      |
+ +==================================================+
+
+
+ G^2 transformations completed.
+ [debug] CCQR_FDRV> LISTL:L1H
+ [debug] CCQR_FDRV> LISTB:R2R
+ [debug] CCQR_FDRV> LISTC:R2R
+ [debug] CCQR_FDRV> NFTRAN: 5
+
+
+ +==================================================+
+ |    GENERALIZED F MATRIX TRANSFORMATION SECTION   |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vector | R vector | # dot prod.   |            |
+ |  L1H No. |  R2R No. |   with R2R    | time/secs  |
+ +--------------------------------------------------+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.07 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1H  No. |  R2R No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     3    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.06      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      9.09      |
+ |  % of time used in BF term      :     15.15      |
+ |  % of time used in C term       :      6.06      |
+ |  % of time used in D term       :      6.06      |
+ |  % of time used in I/O          :     15.15      |
+ +==================================================+
+
+
+ |     2    |     3    |      2        |      0.33  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.10 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1H  No. |  R2R No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.06      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.03      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :     21.21      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ |     2    |     2    |      1        |      0.33  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.03 secs.|
+ | time for  1 sets of 2. ord. int.:      0.10 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1H  No. |  R2R No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     3    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.03      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :      6.06      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      3.03      |
+ |  % of time used in I/O          :     21.21      |
+ +==================================================+
+
+
+ |     1    |     3    |      1        |      0.33  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.06 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1H  No. |  R2R No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      8.82      |
+ |  % of time used in Fock interm. :      2.94      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      2.94      |
+ |  % of time used in (**|k del)   :      5.88      |
+ |  % of time used in BF term      :      8.82      |
+ |  % of time used in C term       :      5.88      |
+ |  % of time used in D term       :      5.88      |
+ |  % of time used in I/O          :     14.71      |
+ +==================================================+
+
+
+ |     2    |     1    |      1        |      0.35  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.07 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.07 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L1H  No. |  R2R No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.25      |
+ |  % of time used in Fock interm. :      6.25      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     12.50      |
+ |  % of time used in BF term      :      9.37      |
+ |  % of time used in C term       :      3.12      |
+ |  % of time used in D term       :      6.25      |
+ |  % of time used in I/O          :     15.62      |
+ +==================================================+
+
+
+ |     1    |     2    |      1        |      0.32  |
+ +--------------------------------------------------+
+ | total time for   5 F transforms.:      1.66 secs.|
+ +==================================================+
+
+
+ Results for F matrix transformations:
+
+[debug] CCQR_FDRV>     2    3    3  0.800339244300E+01
+[debug] CCQR_FDRV>     2    3    1  0.505221784803E+00
+
+[debug] CCQR_FDRV>     2    2    2  -.338784618958E-01
+
+[debug] CCQR_FDRV>     1    3    2  0.591989678164E+00
+
+[debug] CCQR_FDRV>     2    1    1  0.525162566819E-02
+
+[debug] CCQR_FDRV>     1    2    1  0.668902167482E-01
+
+ F^1 transformations completed.
+ [debug] CCQR_FDRV> LISTL:L2G
+ [debug] CCQR_FDRV> LISTB:R1L
+ [debug] CCQR_FDRV> LISTC:R2R
+ [debug] CCQR_FDRV> NFTRAN: 6
+
+
+ +==================================================+
+ |    GENERALIZED F MATRIX TRANSFORMATION SECTION   |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vector | R vector | # dot prod.   |            |
+ |  L2G No. |  R1L No. |   with R2R    | time/secs  |
+ +--------------------------------------------------+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2G  No. |  R1L No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     2    |      1       |       0.07  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     12.12      |
+ |  % of time used in BF term      :      9.09      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      6.06      |
+ |  % of time used in I/O          :     12.12      |
+ +==================================================+
+
+
+ |     3    |     2    |      2        |      0.33  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2G  No. |  R1L No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:     11.76      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     11.76      |
+ |  % of time used in BF term      :      5.88      |
+ |  % of time used in C term       :      5.88      |
+ |  % of time used in D term       :      5.88      |
+ |  % of time used in I/O          :     14.71      |
+ +==================================================+
+
+
+ |     1    |     2    |      2        |      0.34  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.06 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2G  No. |  R1L No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     2    |      1       |       0.05  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.25      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     15.62      |
+ |  % of time used in BF term      :     15.62      |
+ |  % of time used in C term       :      6.25      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     12.50      |
+ +==================================================+
+
+
+ |     2    |     2    |      1        |      0.32  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.03 secs.|
+ | time for  1 sets of 2. ord. int.:      0.08 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2G  No. |  R1L No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:     12.50      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      3.13      |
+ |  % of time used in (**|k del)   :     12.50      |
+ |  % of time used in BF term      :     12.50      |
+ |  % of time used in C term       :      3.13      |
+ |  % of time used in D term       :      3.13      |
+ |  % of time used in I/O          :      9.38      |
+ +==================================================+
+
+
+ |     3    |     1    |      1        |      0.32  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2G  No. |  R1L No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     2    |     1    |      1       |       0.05  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.25      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.25      |
+ |  % of time used in BF term      :     12.50      |
+ |  % of time used in C term       :      9.37      |
+ |  % of time used in D term       :      3.13      |
+ |  % of time used in I/O          :     15.63      |
+ +==================================================+
+
+
+ |     2    |     1    |      2        |      0.32  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.04 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.02 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L2G  No. |  R1L No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     1    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      8.82      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      2.94      |
+ |  % of time used in (**|k del)   :     11.76      |
+ |  % of time used in BF term      :      5.88      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      2.94      |
+ |  % of time used in I/O          :     17.65      |
+ +==================================================+
+
+
+ |     1    |     1    |      1        |      0.36  |
+ +--------------------------------------------------+
+ | total time for   6 F transforms.:      1.99 secs.|
+ +==================================================+
+
+
+ Results for F matrix transformations:
+
+[debug] CCQR_FDRV>     3    2    3  0.127327998124E+02
+[debug] CCQR_FDRV>     3    2    1  0.804423347160E+00
+
+[debug] CCQR_FDRV>     1    2    3  0.124676203462E+00
+[debug] CCQR_FDRV>     1    2    1  0.147858945572E-01
+
+[debug] CCQR_FDRV>     2    2    2  0.120374729182E+01
+
+[debug] CCQR_FDRV>     3    1    2  0.147848960522E+00
+
+[debug] CCQR_FDRV>     2    1    3  0.138252101251E+01
+[debug] CCQR_FDRV>     2    1    1  0.148909013241E+00
+
+[debug] CCQR_FDRV>     1    1    2  0.148731385451E+00
+
+ F^2 transformations completed.
+ F^0{O} transformations completed.
+ F^1{O} transformations completed.
+ F^2{O} transformations completed.
+ E^2{O} calculations completed.
+
+
++-----------------------------------------------------------------------------+
+!           FINAL CCSD RESULTS FOR THE THIRD HYPERPOLARIZABILITIES            !
++-----------------------------------------------------------------------------+
+
+
+  A operator      B operator      C operator      D operator      E operator         delta
+--------------------------------------------------------------------------------------
+
+ ZDIPLEN 0.0000  ZDIPLEN 0.0000  ZDIPLEN 0.0000  ZDIPLEN 0.0000  ZDIPLEN 0.0000    -615.92845    
+
+ ZDIPLEN 0.0000  ZDIPLEN 0.0000  ZDIPLEN 0.0000  XDIPLEN 0.0000  XDIPLEN 0.0000    -83.070766    
+
+ ZDIPLEN 0.0000  XDIPLEN 0.0000  XDIPLEN 0.0000  XDIPLEN 0.0000  XDIPLEN 0.0000     4.0353360    
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<  OUTPUT FROM COUPLED CLUSTER PENTIC RESPONSE  >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested   4 pentic response functions 
+         -   8 H^0 matrix transformations 
+         -   8 H^A matrix transformations 
+         -   5 G^0 matrix transformations 
+         -  10 G^A matrix transformations 
+         -  10 F^A{O} matrix transformations 
+         -   5 D matrix transformations 
+         -   9 C matrix transformations 
+         -   6 B matrix transformations 
+         -  12 B{O} matrix transformations 
+         -   4 F^0 matrix transformations 
+         -   4 dot products with chi3 vectors
+   will be performed.
+
+
+ H^0 transformations completed.
+ H^1 transformations completed.
+
+
+ +==================================================+
+ |        G MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L0H No.| R2R No.| R2R No.| with R2R | time/secs  |
+ +--------------------------------------------------+
+ |     0  |     3  |     3  |      2  |       0.08  |
+ |     0  |     3  |     2  |      1  |       0.14  |
+ |     0  |     3  |     1  |      1  |       0.17  |
+ |     0  |     2  |     2  |      1  |       0.12  |
+ |     0  |     1  |     1  |      1  |       0.11  |
+ +--------------------------------------------------+
+ | total time for   5 G transforms.:      0.62 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCTRBT       :      9.68      |
+ |  % of time used in CCG_21CD     :     29.03      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      1.61      |
+ |  % of time used in 21 CCSD part :     30.65      |
+ |  % of time used in doubles part :     27.42      |
+ |  % of time used in I/O          :      1.61      |
+ +==================================================+
+
+
+ G^0 transformations completed.
+
+
+ +==================================================+
+ |    GENERALIZED G MATRIX TRANSFORMATION SECTION   |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vec. | R vec. | R vec. |  # prod. |            |
+ | L1H No.| R2R No.| R1L No.| with R2R | time/secs  |
+ +--------------------------------------------------+
+ |     2  |     3  |     2  |      2  |       0.18  |
+ |     2  |     2  |     2  |      1  |       0.14  |
+ |     2  |     3  |     1  |      1  |       0.15  |
+ |     1  |     3  |     2  |      1  |       0.15  |
+ |     1  |     3  |     1  |      2  |       0.17  |
+ |     2  |     1  |     2  |      1  |       0.14  |
+ |     2  |     2  |     1  |      1  |       0.16  |
+ |     1  |     2  |     2  |      1  |       0.17  |
+ |     1  |     2  |     1  |      1  |       0.16  |
+ |     1  |     1  |     1  |      1  |       0.12  |
+ +--------------------------------------------------+
+ | total time for  10 G transforms.:      1.55 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCTRBT       :      3.87      |
+ |  % of time used in CCG_21CD     :     35.48      |
+ |  % of time used in Fock interm. :      0.65      |
+ |  % of time used in CCS part     :      0.65      |
+ |  % of time used in 21 CCSD part :     32.90      |
+ |  % of time used in doubles part :     22.58      |
+ |  % of time used in I/O          :      1.29      |
+ +==================================================+
+
+
+ G^1 transformations completed.
+ F^1{O} transformations completed.
+ D transformations completed.
+ C transformations completed.
+
+
+ +==================================================+
+ |        B MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.02 secs.|
+ | time for  3 sets of 1. ord. int.:      0.16 secs.|
+ | time for  6 sets of 2. ord. int.:      0.12 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | R vector | R vector |  # products  |             |
+ |  R2R No. |  R2R No. |   with L2D   |  time/secs  |
+ +--------------------------------------------------+
+ |     3    |     3    |      2       |       0.11  |
+ |     3    |     1    |      2       |       0.10  |
+ |     2    |     2    |      2       |       0.10  |
+ |     3    |     2    |      1       |       0.10  |
+ |     1    |     1    |      2       |       0.11  |
+ |     2    |     1    |      1       |       0.10  |
+ +--------------------------------------------------+
+ | total time for   6 B transforms.:      0.98 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      1.02      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      2.04      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :     12.24      |
+ |  % of time used in BF term      :     14.29      |
+ |  % of time used in F term       :     13.27      |
+ |  % of time used in E term       :      5.10      |
+ |  % of time used in C term       :     21.43      |
+ |  % of time used in D term       :     20.41      |
+ |  % of time used in I/O          :      5.10      |
+ +==================================================+
+
+
+ B transformations completed.
+ B{O} transformations completed.
+ [debug] CCQR_FDRV> LISTL:L0H
+ [debug] CCQR_FDRV> LISTB:R3F
+ [debug] CCQR_FDRV> LISTC:R3F
+ [debug] CCQR_FDRV> NFTRAN: 4
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ |    (result used to calculate dot products)       |
+ +--------------------------------------------------+
+ | L vector | R vector | # dot prod.   |            |
+ |  L0H No. |  R3F No. |   with R3F    | time/secs  |
+ +--------------------------------------------------+
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.05 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.06 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0H  No. |  R3F No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     4    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.32 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      6.25      |
+ |  % of time used in Fock interm. :      3.13      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :     12.50      |
+ |  % of time used in BF term      :      9.37      |
+ |  % of time used in C term       :      3.13      |
+ |  % of time used in D term       :      9.37      |
+ |  % of time used in I/O          :     12.50      |
+ +==================================================+
+
+
+ |     0    |     4    |      2        |      0.32  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.03 secs.|
+ | time for  1 sets of 2. ord. int.:      0.10 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0H  No. |  R3F No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     3    |      1       |       0.07  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:     12.12      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :     15.15      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     15.15      |
+ +==================================================+
+
+
+ |     0    |     3    |      2        |      0.33  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.03 secs.|
+ | time for  1 sets of right inter.:      0.05 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0H  No. |  R3F No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     2    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.34 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      8.82      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      8.82      |
+ |  % of time used in BF term      :     11.76      |
+ |  % of time used in C term       :      2.94      |
+ |  % of time used in D term       :      5.88      |
+ |  % of time used in I/O          :     17.65      |
+ +==================================================+
+
+
+ |     0    |     2    |      1        |      0.34  |
+
+
+ +==================================================+
+ |        F MATRIX TRANSFORMATION SECTION           |
+ +--------------------------------------------------+
+ | time for zero order intermediat.:      0.03 secs.|
+ | time for  1 sets of left interm.:      0.04 secs.|
+ | time for  1 sets of right inter.:      0.04 secs.|
+ | time for  1 sets of 2. ord. int.:      0.09 secs.|
+ | intermediates calculated in   1 batches          |
+ +--------------------------------------------------+
+ | L vector | R vector |    result    |             |
+ | L0H  No. |  R3F No. |   CC_  No.   |  time/secs  |
+ +--------------------------------------------------+
+ |     0    |     1    |      1       |       0.06  |
+ +--------------------------------------------------+
+ | total time for   1 F transforms.:      0.33 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      9.09      |
+ |  % of time used in Fock interm. :      3.03      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in (**|k del)   :      6.06      |
+ |  % of time used in BF term      :     12.12      |
+ |  % of time used in C term       :      3.03      |
+ |  % of time used in D term       :      6.06      |
+ |  % of time used in I/O          :     15.15      |
+ +==================================================+
+
+
+ |     0    |     1    |      1        |      0.33  |
+ +--------------------------------------------------+
+ | total time for   4 F transforms.:      1.32 secs.|
+ +==================================================+
+
+
+ Results for F matrix transformations:
+
+[debug] CCQR_FDRV>     0    4    4  0.162499794152E+02
+[debug] CCQR_FDRV>     0    4    2  0.287411309480E+00
+
+[debug] CCQR_FDRV>     0    3    3  0.378780071754E+00
+[debug] CCQR_FDRV>     0    3    1  0.840449924625E-01
+
+[debug] CCQR_FDRV>     0    2    2  -.107449811873E-01
+
+[debug] CCQR_FDRV>     0    1    1  0.202667620558E-01
+
+ F^0 transformations completed.
+ chi3 dot products completed.
+
+
++-----------------------------------------------------------------------------+
+!           FINAL CCSD RESULTS FOR THE FOURTH HYPERPOLARIZABILITIES           !
++-----------------------------------------------------------------------------+
+
+
+  A operator      B operator      C operator      D operator      E operator      F operator         epsilon
+--------------------------------------------------------------------------------------------------------------
+
+ ZDIPLEN  0.0000 ZDIPLEN  0.0000 ZDIPLEN  0.0000 ZDIPLEN  0.0000 ZDIPLEN  0.0000 ZDIPLEN  0.0000    2784.1917    
+
+ ZDIPLEN  0.0000 ZDIPLEN  0.0000 ZDIPLEN  0.0000 ZDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000   -1035.4839    
+
+ ZDIPLEN  0.0000 ZDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000    79.504359    
+
+ XDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000 XDIPLEN  0.0000   -8.9650862    
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0089199210                
+            Total MP2   energy:                  -100.1936626104                
+            Total CCSD  energy:                  -100.1977909398                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:  1 minute  14 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 13 seconds
+STOP *** End of DALTON calculation *** statement executed

@@ -1,0 +1,142 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_geopt_ccpt_h2o.info <<%EOF%
+   cc_geopt_ccpt_h2o
+   -----------------
+   Molecule:         H2O, C2v 
+   Wave Function:    CCSD(T) / cc-pVDZ
+   Test Purpose:     CCSD(T) geometry optimization
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_geopt_ccpt_h2o.mol <<%EOF%
+BASIS
+cc-pVDZ
+Geometry optimization calculations
+for H2O
+    2    2  X  Y  Z   1.00D-15
+        1.0   1
+H     0.0000000000000000  1.427450200000000   0.986437000000000       *
+        8.0   1
+O     0.0000000000000000  0.000000000000000   -0.1243090000000        *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_geopt_ccpt_h2o.dal <<%EOF%
+**DALTON
+.OPTIMIZE
+**INTEGRAL
+.DIPLEN
+.DEROVL
+.DERHAM
+**WAVE FUNCTION
+.TITLE
+   test case for CCSD(T) geometry optimization
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.CC(T)
+.THRENR
+ 1.0d-08
+.THRLEQ
+ 1.0d-08
+.PRINT
+ 2
+.NSYM
+ 4
+.FROIMP
+1 0 0 0
+0 0 0 0
+.ETAPTI
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+
+#SCF, MP2, CCSD and CCSD(T) energies of 0 iteration:
+CRIT1=`$GREP "Final *HF energy: * -76\.026804804" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -76\.228449905" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * -76\.238013267" $log | wc -l`
+CRIT4=`$GREP "Total energy CCSD\(T\): * -76\.241049324" $log | wc -l`
+CRIT5=`$GREP " H * 1 * ( |0)\.0000000000 *  1\.4278639058 * ( |0)\.9925124277" $log | wc -l`
+CRIT6=`$GREP " H * 2 * ( |0)\.0000000000 * -1\.4278639058 * ( |0)\.9925124277" $log | wc -l`
+CRIT7=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.1364598553" $log | wc -l` 
+CRIT8=`$GREP "Energy at this geometry is * : * -76\.241049" $log | wc -l`
+CRIT9=`$GREP "Norm of gradient * : * ( |0)\.019470" $log | wc -l`
+CRIT0=`$GREP "Norm of step * : * ( |0)\.022560" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT0`
+CTRL[1]=13
+ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
+
+
+#SCF, MP2, CCSD and CCSD(T) energies of 1 iteration:
+CRIT1=`$GREP "Final *HF energy: * -76\.026439905" $log | wc -l`
+CRIT2=`$GREP "Total RSTAR energy: * -76\.237666054" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * -76\.238170068" $log | wc -l`
+CRIT4=`$GREP "Total energy CCSD\(T\): * -76\.241243949" $log | wc -l`
+CRIT5=`$GREP " H * 1 * ( |0)\.0000000000 *  1\.4220617485 * ( |0)\.9984099069" $log | wc -l`
+CRIT6=`$GREP " H * 2 * ( |0)\.0000000000 * -1\.4220617485 * ( |0)\.9984099069" $log | wc -l`
+CRIT7=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.1482548139" $log | wc -l`
+CRIT8=`$GREP "Energy at this geometry is * : * -76\.241244" $log | wc -l`
+CRIT9=`$GREP "Norm of gradient * : * ( |0)\.007542" $log | wc -l`
+CRIT0=`$GREP "Norm of step * : * ( |0)\.021231" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT0`
+CTRL[2]=13
+ERROR[2]="FIRST ITERATION IS ALREADY NOT CORRECT"
+#
+# Final summary:
+CRIT1=`$GREP " H * 1 * ( |0)\.0000000000 *  1\.4181899233 * ( |0)\.9995988644" $log | wc -l`
+CRIT2=`$GREP " H * 2 * ( |0)\.0000000000 * -1\.4181899233 * ( |0)\.9995988644" $log | wc -l`
+CRIT3=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.1506327288" $log | wc -l`
+CRIT4=`$GREP "Geometry converged in * 6 *iterations" $log | wc -l`
+CRIT5=`$GREP "Energy at final geometry is * : * -76\.241305 " $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[3]=14
+ERROR[3]="FINAL SUMMARY IS NOT CORRECT"
+#
+PASSED=1
+for i in 1 2 3
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > cc_geopt_ccpt_h2o.check
+#######################################################################

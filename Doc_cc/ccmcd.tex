@@ -1,0 +1,127 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Magnetic circular dichroism: \Sec{CCMCD}}\label{sec:ccmcd}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This Section deals with the calculation of the 
+${\cal{B}}(o\!\to\!f)$ term of magnetic circular dichroism,
+for a dipole-allowed transition between the ground state $n$ and 
+the excited state $f$.
+The ${\cal{B}}(o\to f)$ term results from an appropriate combination of
+products of electric dipole one-photon transition moments 
+and mixed electric dipole-magnetic dipole
+two-photon transition moments,
+or, more precisely, a combination of transition strengths
+$S_{AB,C}^{of}(0)$.
+These are related to the single residues of the (linear and) 
+quadratic response functions~\cite{MCDRSP,MOACC,SC:PHD}:
+\[
+{\cal{B}}(o\to f) = \varepsilon_{\alpha\beta\gamma} ETC
+\]
+%
+%re corresponds to an appropriate 
+%combination of single residues of quadratic response functions, 
+%or, more precisely, a combination of transition strengths
+%$S_{AB,C}^{of}(0.0)$.
+\noindent
+Within \Sec{CCMCD} we specify the keywords needed in order
+to compute the individual 
+contributions for each chosen transition $(o\to f)$ to the
+${\cal{B}}(o\to f)$ term. \Sec{CCMCD} has to be used in 
+connection with \Sec{CCEXCI} for the calculation of 
+excited states.
+The calculation is implemented for the models CCS, CC2 and CCSD.
+
+\noindent Publications that report results obtained by this module
+should cite Ref.\ \cite{MOACC}.
+
+\begin{description}
+\item[\Key{OPERAT}] \verb| |\newline
+\verb|READ (LUCMD,'(3A)') LABELA, LABELB, LABELC|\newline
+\verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
+\verb|  READ (LUCMD,'(3A)') LABELA, LABELB, LABELC|\newline
+\verb|END DO|
+%
+
+Manually select the triple of operator labels defining the operator
+cartesian components involved in the ${\cal B}$ term. 
+%, or, in general, in the $S^of_AB,C(0)$ strength.
+The first two operators \verb+(LABELA,LABELB)+
+are those that enter the two-photon moment.
+The third operator \verb+(LABELC)+ 
+is the one that enters the one-photon 
+moment. They could be any of the (one-electron)
+operators for which integrals are available in 
+\Sec{*INTEGRALS}.
+Specifically for the B term, \verb+LABELA+
+corresponds to any component of the electric dipole 
+moment operator, \verb+LABELB+ a component of the
+angular momentum (magnetic dipole) and
+\verb+LABELC+ to a component of the electric dipole.
+Operator triples which do not correspond to symmetry allowed
+combination will be ignored during the calculation.
+
+%In case we need to specify relaxed/derivative operators
+%the \Key{OPERAT} input is slightly different:
+%\item[\Key{OPERAT}] \verb| |\newline
+%\verb|READ (LUCMD'(3A)') LABELA, LABELB, LABELC|\newline
+%\verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
+%\verb|  READ (LUCMD'(3A)') (UNREL), (RELAX), (UNREL)|\newline
+%\verb|  READ (LUCMD'(3A)') LABELA,  LABELB,  LABELC|\newline
+%\verb|END DO|
+%where \verb+(UNREL)+ refers to unrelaxed operators and 
+%      \verb+(RELAX)+to relaxed operators.
+%
+\item[\Key{MCD   }] 
+All six triples of operators obtained from the
+permutations of 3 simultaneously different 
+cartesian components of the 3 operators 
+\verb+LABELA,LABELB,LABELC+ are automatically specified.
+Operator triples which do not correspond to symmetry allowed
+combination will be ignored during the calculation.
+Default.
+
+%\item[\Key{MCDLAO}] 
+%
+% This keyword turns on the calculation of the B term components
+% using London atomic orbitals or the relaxed angular momentum 
+% operator. Unfinished.
+%
+%\item[\Key{NO2N+1}] 
+%
+%Disable the use of the $\bar{M}^f$ vectors in the one-photon transition
+%moment part (does not use $2n+1$ rule).
+%Disabled
+\item[\Key{PRINT }] \verb| |\newline
+\verb|READ (LUCMD,*) IPRINT |\newline
+Sets the print level in the \Sec{MCDCAL} section. Default is \verb+IPRINT=0+.
+%
+\item[\Key{SELSTA}] \verb| |\newline 
+\verb|READ (LUCMD,'(A70)') LABHELP|\newline
+\verb|DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')|\newline
+\verb|   READ(LABHELP,*) IXSYM,IXST|\newline
+\verb|END DO|
+
+Manually select one or more given excited states $f$ (among those specified
+in \Sec{CCEXCI}). 
+%The maximum number of states that can be selected is
+%set in the ccmcd.h common block.
+The symmetry (\verb+IXSYM+) and state number (\verb+IXST+)
+within that symmetry are then given,
+one pair (\verb|IXSYM,IXST|) per line.
+Default is all dipole allowed states for all symmetries 
+specified in \Sec{CCEXCI}.
+%
+%\item[\Key{RELAXE}] 
+%
+% Disabled
+%
+%\item[\Key{UNRELA}] 
+%
+% Disabled
+%
+%\item[\Key{USEPL1}] 
+%
+%To be used in connection with LAO-relaxed angular momentum operators.
+%
+\end{description}

@@ -1,0 +1,146 @@
+\chapter{Generalized Active Space CI calculation with {\lucita}}\label{ch:lucita}
+
+\section{General}\label{sec:lucita-general}
+
+{\lucita} is a Generalized Active Space CI module written by Jeppe Olsen, 
+which has been adapted to \dalton\ as well as fully parallelized 
+based on the message passing interface (MPI) paradigm 
+by Stefan Knecht and Hans J{\o}rgen Aagaard Jensen \cite{knecht08}.
+It is integrated in \dalton\ as a part of the wave function/density computation code 
+and can be activated via the keyword {\Key{GASCI}} in the **WAVE FUNCTIONS 
+input section:\\[2ex]
+\begin{inputex} \begin{verbatim}
+**WAVE FUNCTIONS
+.GASCI
+\end{verbatim} \end{inputex}
+\vspace{2ex}
+
+{\lucita} is a string-based Hamiltonian-direct configuration interaction (CI) program, based on the LUCIA code \cite{olsen90}. 
+For high efficiency the code takes advantage of point group symmetry of D$_{2h}$\ and it's subgroups.
+
+A central feature of the program is the Generalized Active Space (GAS) concept \cite{fleig_gasci2}, 
+in which the underlying total orbital space is subdivided 
+into a basically arbitrary number (save for an upper limit) 
+of subspaces with arbitrary occupation constraints. 
+This is the most general approach to orbital space subdivisions and allows one to do 
+efficient CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI, 
+and MRCI. The program uses orbitals from either a closed- or an open-shell calculation.
+
+The technical limitations are roughly set by several 100 million determinants 
+in the CI expansion on desktop PCs and several billions of determinants 
+on common computing clusters and supercomputers with ample memory.
+
+If desired, the program also computes 1- and 2-particle densities from optimized CI wave functions. 
+The density matrices may be printed along with natural orbital occupations 
+and the corresponding eigenvectors (NOs).
+
+\section{\Sec{LUCITA} directives}\label{sec:lucita-inp}
+
+          The following \Sec{LUCITA}\ directives for a succesful GAS-CI calculation 
+are subdivided into {\bf{compulsory}} (Section \ref{sec:lucita-inp-mand}) 
+and {\bf{optional keywords}} (Section \ref{sec:lucita-inp-opt}). 
+
+\subsection{Mandatory keywords of \Sec{LUCITA}}\label{sec:lucita-inp-mand}
+
+\begin{description}
+\item[\Key{INIWFC}] Initial wave function type, either closed-shell (``HF\_SCF'') or open-shell (``RASSCF'') 
+\verb|READ(LUCMD,*) lucita_cfg_ini_wavef |
+
+\item[\Key{CITYPE}] Type of CI calculation. Allowed values are ``GASCI'' and ``RASCI'' \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_ci_type |
+
+\item[\Key{MULTIP}] Spin state multiplicity (singlett: 1, triplett: 3, etc.) \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_is_spin_multiplett |
+
+
+\vspace{0.75cm}
+
+\noindent {\bf{\large{``RASCI''\ specific input (i.e. if \Key{CITYPE} == ``RASCI''):}}}
+
+\item[\Key{NACTEL}] Number of active electrons \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_nr_active_e |
+
+\item[\Key{RAS1}] RAS1 specification and maximum number of holes. 
+First line with orbitals per point group irrep separated by white spaces, 
+followed by a line with the maximum number of holes in RAS1 \verb| |\newline
+\verb|READ(LUCMD,*) (nas1_lucita(i), i = 1, #point_group_irreps) |\\
+\verb|READ(LUCMD,*) lucita_cfg_max_holes_ras1 |
+
+\item[\Key{RAS2}] RAS2 specification. A line with orbitals per point group irrep separated by white spaces \verb| |\newline
+\verb|READ(LUCMD,*) (nas2_lucita(i), i = 1, #point_group_irreps) |
+
+\item[\Key{RAS3}] RAS3 specification and maximum number of electrons. 
+First line with orbitals per point group irrep separated by white spaces, 
+followed by a line with the maximum number of electrons in RAS3 \verb| |\newline
+\verb|READ(LUCMD,*) (nas3_lucita(i), i = 1, #point_group_irreps) |\\
+\verb|READ(LUCMD,*) lucita_cfg_max_e_ras3 |
+
+\newpage
+\noindent {\bf{\large{``GASCI''\ specific input (i.e. if \Key{CITYPE} == ``GASCI''):}}}
+
+\item[\Key{GAS SHELLS}] Number and specification of GAS shell excitation constraints and orbital occupations. 
+A integer value (NGAS) in the first line specifies the number of GA spaces to be used (minimum 1; maximum 6). 
+The next NGAS lines comprise one line per GAS with the minimum resp. maximum number of 
+accumulated electrons after this GAS followed by (after the ``/'') the number 
+of orbitals per point group irrep, separated by white spaces \verb| |\newline
+\verb|READ(LUCMD,*) NGAS |\\
+\verb|READ(LUCMD,*) (ngso_lucita(1,i), i=1,2)/(ngsh_lucita(1,i), i=1,#point_group_irreps) |\\
+\verb|READ(LUCMD,*) (ngso_lucita(2,i), i=1,2)/(ngsh_lucita(2,i), i=1,#point_group_irreps) |\\
+\verb|READ(LUCMD,*) (ngso_lucita(3,i), i=1,2)/(ngsh_lucita(3,i), i=1,#point_group_irreps) |\\
+\verb|READ(LUCMD,*) until ``j'' = NGAS for ngso_lucita(j,*) and ngsh_lucita(j,*) |
+
+\end{description}
+\subsection{Optional keywords of \Sec{LUCITA}}\label{sec:lucita-inp-opt}
+
+\begin{description}
+\item[\Key{TITLE}] One line with a title of the CI calculation \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_run_title |
+
+\item[\Key{SYMMET}] State symmetry. This is the point-group irrep label 
+referring to an irrep ordering as defined by the group generators (default: 1, e.g. totally symmetric irrep)  \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_ptg_symmetry |
+
+\item[\Key{INACTI}] Inactive doubly orbitals per point group irrep, 
+separated by white spaces. (default: all orbitals active) \verb| |\newline
+\verb|READ(LUCMD,*) (nish_lucita(i), i = 1, #point_group_irreps) |
+
+\item[\Key{NROOTS}] number of eigenstates to be calculated (default: 1) \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_nr_roots |
+
+\item[\Key{MAXITR}] maximum number of Davidson CI iterations (default: 30) \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_max_nr_dav_ci_iter |
+
+\item[\Key{MXCIVE}] maximum dimension of Davidson subspace Hamiltonian (default: 3 $\times$\ \Key{NROOTS})\newline
+\verb|READ(LUCMD,*)  lucita_cfg_max_dav_subspace_dim|
+
+If the number of eigenstates to be calculated (\Key{NROOTS}) is ``5''\ 
+the default will be\\ ``3 $\times$ 5'' == ``15''. A typical value will 
+be given as a multiple $m$\ of the number of eigenstates where $m \geq 3$.
+
+\item[\Key{ANALYZ}] analyze the composition of the final CI wave function \newline
+
+\item[\Key{DENSI}]  Level of computed density matrices, ``1''\ means one-particle density only, ``2'' computes one- and two-particle density matrices (default: 1) \verb| |\newline
+\verb|READ(LUCMD,*)  lucita_cfg_density_calc_lvl |
+
+If set to ``1'', \lucita\ will calculate and print natural orbital occupation numbers which are a useful tool to further analyze 
+your final CI wave function together with the composition of leading determinants (obtained via the keyword \Key{ANALYZ}).
+
+\item[\Key{NATORB}] \lucita\ will calculate and print natural orbital occupation numbers (alias for \Key{DENSI} with input ``1'').\verb| |\newline
+
+\item[\Key{RSTART}] restart option if set to ``1'' (default: 0, no restart) \verb| |\newline
+\verb|READ(LUCMD,*) lucita_cfg_restart_ci |
+
+Allows the restart of the CI calculation from coefficients obtained 
+in a preceding calculation which are read from the file LUCITA\_CIVECS.``SYM''. 
+The file ending ``SYM''\ is a single character in the range [a-h] and 
+corresponds to the symmetry as specified via the input keyword \Key{SYMMET}, e.g., 
+for symmetry 1\ the correct ending is ``a'', for symmetry 2\ we have to specify ``b'', etc.
+
+\item[\Key{DISTRT}] Specifies vector block distribution routine to be used in a {\bf{parallel calculation}}; the keyword will be ignored in a serial run. (default: 2) \verb| |\newline
+\verb|READ(LUCMD,*) lucipar_cfg_ttss_dist_strategy |
+
+A simple distribution routine useful in small calculations 
+can be activated by setting the variable to ``1''. A more advanced and in particular for large CI expansions most 
+efficient distribution is activated by setting the parameter to ``2'' (default).
+
+\end{description}

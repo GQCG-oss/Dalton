@@ -1,0 +1,121 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > r12_damped.info <<'%EOF%'
+   r12_damped
+   ----------
+   Molecule:         Water (H2O)
+   Wave Function:    MP2-R12 / 6-31G*
+   Test Purpose:     Check R12 method with Gaussian damping
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > r12_damped.mol <<'%EOF%'
+BASIS
+6-31G* 6-31G(3df,3pd)
+Direct Gaussian-damped MP2-R12 calculation using symmetry
+
+    4    1  X
+ 1      8.    1
+O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 1      1.    1
+H      1.427450200000000    .000000000000000   0.986437000000000       *
+ 2      8.    1
+O       .000000000000000    .000000000000000  -0.124309000000000       *
+ 2      1.    1
+H      1.427450200000000    .000000000000000   0.986437000000000       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > r12_damped.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+.DIRECT
+**INTEGRALS
+.R12RGG
+1
+1. .123
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESHOLD
+ 1D-10
+*CC INPUT
+.MP2
+.PRINT
+ 3
+.FROIMP
+ 1 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+*ORBITALS
+.MOSTART
+ EHT
+**END OF DALTON INPUT
+%EOF%
+
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >r12_damped.check
+cat >>r12_damped.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+#                       ! Improved MP2-R12 method !
+#             MP2-R12/A   correlation energy =   -0.258319361
+#             MP2-R12/B   correlation energy =   -0.243280497
+CRIT1=`$GREP "MP2-R12/B   correlation energy =   (-0| -)\.24328049" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
+
+PASSED=1
+for i in 1 
+do 
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

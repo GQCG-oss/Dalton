@@ -1,0 +1,141 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > triplet2.info <<%EOF%
+   triplet2
+   --------
+   Molecule:       CH
+   Wave Function:  CCS, CC2, CCSD
+   Test Purpose:   integral-direct calculation of triplet excitation
+                   energies
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > triplet2.mol <<%EOF%
+BASIS
+cc-pVDZ
+C2H2 in cc-pVDZ basis set
+Exp. geo. from Baldacci et al.
+    2    3  X  Y  Z 1.00D-18
+        6.    1
+C1    .000000  .000000  1.136264
+        1.    1
+H1    .000000  .000000  3.143437        
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > triplet2.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+.DIRECT
+**WAVE FUNCTIONS
+.TITLE
+  Triplet excitation energies
+.CC
+*ORBITALS 
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 1.0D-10
+*CC INPUT 
+.CCS
+.CC2
+.CCSD
+.THRENR
+ 1.0d-10
+.PRINT
+  1
+.NSYM
+  8
+.HERDIR
+.NSIMLE
+  1
+*CCEXCI
+.NCCEXCI
+ 1 0 0 0 1 0 0 0 
+ 2 0 0 1 0 0 0 0
+.THREXC
+ 1.0D-10
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-76.82577561" | wc -l`
+CRIT2=`$GREP "Total MP2   energy:                   \-77.08583480" $log | wc -l`
+CRIT3=`$GREP "Total CC2   energy:                   \-77.08936011" $log | wc -l`
+CRIT4=`$GREP "Total CCSD  energy:                   \-77.10253064" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=7
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CCS excitation energies:
+CRIT1=`$GREP "1Ag  \|    1   \|     ( |0)\.628157[0-9]  \|      17\.0930[0-9]  \|    137864\.[0-9][0-9][0-9]  \| 100\.00" $log | wc -l`
+CRIT2=`$GREP "3Ag  \|    2   \|     ( |0)\.643891[0-9]  \|      17\.5211[0-9]  \|    141317\.[0-9][0-9][0-9]  \| 100\.00" $log | wc -l`
+CRIT3=`$GREP "3B1g \|    1   \|     ( |0)\.679396[0-9]  \|      18\.4873[0-9]  \|    149110\.[0-9][0-9][0-9]  \| 100\.00" $log | wc -l`
+CRIT5=`$GREP "1B1u \|    1   \|     ( |0)\.253096[0-9]  \|       6\.887[0-1][0-9]  \|     55548\.[0-9][0-9][0-9]  \| 100\.00" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT5`
+CTRL[2]=4
+ERROR[2]="CCS EXCITATION ENERGIES NOT CORRECT"
+
+
+# CC2 excitation energies:
+CRIT1=`$GREP "1Ag  \|    1   \|     ( |0)\.599132.  \|      16\.3032.  \|    131494\....  \|  95\.79" $log | wc -l`
+CRIT2=`$GREP "3Ag  \|    2   \|     ( |0)\.630165.  \|      17\.1476.  \|    138305\....  \|  96\.60" $log | wc -l`
+CRIT5=`$GREP "3B1g \|    1   \|     ( |0)\.710410.  \|      19\.3312.  \|    155916\....  \|  99\.29" $log | wc -l`
+CRIT6=`$GREP "1B1u \|    1   \|     ( |0)\.2974(8|9)..  \|       8\.0951.  \|     65291\....  \|  98\.08" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT5 \+ $CRIT6`
+CTRL[3]=4
+ERROR[3]="CC2 EXCITATION ENERGIES NOT CORRECT"
+
+
+# CCSD excitation energies:
+CRIT1=`$GREP "1Ag  \|    1   \|     ( |0)\.557391.  \|      15\.167(3|4).  \|    122333\....  \|   2\.01" $log | wc -l`
+CRIT2=`$GREP "3Ag  \|    1   \|     ( |0)\.523580.  \|      14\.2473.  \|    114912\....  \|  98\.93" $log | wc -l`
+CRIT3=`$GREP "3B1g \|    1   \|     ( |0)\.566998.  \|      15\.4288.  \|    124441\....  \|   ( |0)\.85" $log | wc -l`
+CRIT4=`$GREP "1B1u \|    1   \|     ( |0)\.294725.  \|       8\.0198.  \|     64684\....  \|  97\.23" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[4]=4
+ERROR[4]="CCSD EXCITATION ENERGIES NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+' > triplet2.check
+chmod +x triplet2.check
+#######################################################################

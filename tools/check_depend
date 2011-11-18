@@ -1,0 +1,45 @@
+#!/bin/sh
+# (c) Multiple contributors.
+# Rewritten by pawsa to contain only one awk invocation per processed file.
+#
+ORI=`pwd`
+DIR='/tmp'
+
+dirlist=`echo '.' $* | sed -e 's/-WF//g' -e 's/-I//g' -e 's/,/ /g' `
+
+echo 'BEGIN{FS="[\"<>]";r=f;sub(/.[^.]$/,"",r);
+      printf("%s.o %s.i : %s",r,r,f);'  > $DIR/awk.tmp$$
+for dir in $dirlist; do
+  cd $dir
+  list=`find . -name "*.h" -print | sed -e 's/\.\///g'`
+  for file in $list; do
+    echo 'dir["'$file'"]="'$dir'/";'  >> $DIR/awk.tmp$$
+  done
+  cd $ORI
+done
+echo ' n = 3 }'  >> $DIR/awk.tmp$$
+
+cat >> $DIR/awk.tmp$$ <<!
+/^ *# *include/{ inc[\$2]++}
+
+END {
+  n=3;
+  for(i in inc) {
+    sub(".*/","",i); path = dir[i];
+    if(path) {
+      if ( n < 3 ) {printf("  %s%s",path,i); n++  }
+      else  {printf(" \\\\\n  %s%s",path,i); n = 1}
+    }
+  }
+  printf "\n\n\n";
+}
+!
+
+# search all Fortran and C source files for includes
+for file in *.F *.F90 *.f *.c *.cc; do
+    if [ -f "$file" ]; then
+        awk -v f=$file -f $DIR/awk.tmp$$ $file || exit 1
+    fi
+done
+
+rm -f $DIR/awk.tmp$$

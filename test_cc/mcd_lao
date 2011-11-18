@@ -1,0 +1,144 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > mcd_lao.info <<%EOF%
+   mcd_lao
+   -------
+   Molecule:       H3+ in C1
+   Wave Function:  CCSD (FCI)
+   Test Purpose:   B-term (components) of MCD with London orbitals
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > mcd_lao.mol <<%EOF%
+BASIS
+STO-3G
+B term (MCD) components of H3+ with LAOs
+
+    2  1 0  X  Z      1.00D-15
+        1.0   1
+HC     0.000000          -0.224905893        0.000000
+        1.0   2
+HL     1.000000           0.899623572        0.000000
+HL    -1.000000           0.899623572        0.000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > mcd_lao.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+ 0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITAL
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+  1.0d-12
+*CC INPUT
+.CCSD
+.THRENR
+ 1.0d-9
+.THRLEQ
+ 1.0d-7
+.THRLDPHF
+ 1.0d-12
+.CONNECTION
+NATURAL
+!*DERIVATIVES
+*CCFOP
+.DIPMOM
+*CCEXCI
+.NCCEXCI
+ 1
+.THREXC
+ 1.0d-9
+*CCMCD
+.OPERATOR
+(UNREL) (UNREL) (UNREL)
+YDIPLEN ZANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+YDIPLEN ZANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+YDIPLEN dh/dBZ  XDIPLEN
+.USEPL1
+**END OF DALTON
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+#
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Total SCF   energy: * \-1\.225131947[0-9]" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * \-1\.242129615[0-9]" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * \-1\.249292611[0-9]" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
+#
+# Unrelaxed CCSD B term components:
+CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B term contribution \(au\)\: * \-1\.161889(39|40|41|42) \(antisym\)" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2`  
+CTRL[2]=5
+ERROR[2]="UNRELAXED CCSD B TERM COMPONENTS NOT CORRECT"
+#
+# Relaxed MCD-Bterm components:
+CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B term contribution \(au\)\: * \-1\.161889(39|40|41|42) \(antisym\)" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2`  
+CTRL[3]=5
+ERROR[3]="RELAXED CCSD B TERM COMPONENTS NOT CORRECT"
+#
+# LAO+Relaxed MCD-Bterm components:
+CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B term contribution \(au\)\: * \-1\.42531056 \(antisym\)" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2`  
+CTRL[4]=4
+ERROR[4]="LAO+RELAXED CCSD B TERM COMPONENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+#
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > mcd_lao.check
+
+chmod +x mcd_lao.check
+#######################################################################

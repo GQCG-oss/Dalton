@@ -1,0 +1,177 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > Vlao_h2o2.info <<%EOF%
+   Vlao_h2o2
+   ---------
+   Molecule:       H2O2
+   Wave Function:  CCSD
+   Test Purpose:   Verdet constant with London orbitals (C_2 symm)
+%EOF%
+
+#####################################################################
+#  INTEGRAL INPUT
+#####################################################################
+cat > Vlao_h2o2.mol <<%EOF%
+BASIS
+DZ(Dunning)
+Verdet constant of H2O2
+    start geom from "the book". Dihedric angle 111.93
+    2    1 XY 
+        8.    1
+O      1.3700514471    0.000000000    -0.4999836957
+        1.    1
+H      1.6850730466   -1.4805134201   0.4999836950
+%EOF%
+
+####################################################################
+#  DALTON INPUT
+####################################################################
+cat > Vlao_h2o2.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITALS
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 5.0d-11
+.DOUBLY OCCUPIED
+ 5 4
+*CC INPUT
+.CCSD
+.NSYM
+ 2
+.THRENR
+ 1.0d-9
+.THRLEQ
+ 1.0d-6
+.MAXRED
+250
+.CONNECTION
+NATURAL
+*CCFOP
+.DIPMOM
+*CCQR
+.OPERAT
+(UNREL) (UNREL) (UNREL)
+XDIPLEN YDIPLEN ZANGMOM
+ZDIPLEN XDIPLEN YANGMOM
+YDIPLEN ZDIPLEN XANGMOM
+YDIPLEN XDIPLEN ZANGMOM
+XDIPLEN ZDIPLEN YANGMOM
+ZDIPLEN YDIPLEN XANGMOM
+!
+(UNREL) (UNREL) (RELAX)
+XDIPLEN YDIPLEN ZANGMOM
+ZDIPLEN XDIPLEN YANGMOM
+YDIPLEN ZDIPLEN XANGMOM
+YDIPLEN XDIPLEN ZANGMOM
+XDIPLEN ZDIPLEN YANGMOM
+ZDIPLEN YDIPLEN XANGMOM
+!
+(UNREL) (UNREL) (RELAX)
+XDIPLEN YDIPLEN dh/dBZ
+ZDIPLEN XDIPLEN dh/dBY
+YDIPLEN ZDIPLEN dh/dBX
+YDIPLEN XDIPLEN dh/dBZ
+XDIPLEN ZDIPLEN dh/dBY
+ZDIPLEN YDIPLEN dh/dBX
+!
+.MIXFRE
+1
+0.11391
+0.0
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+
+# SCF, MP2 and CCSD energies
+CRIT1=`$GREP "Total SCF * energy\: * \-15(0| )\.7547008696" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-151\.0268782344" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-151\.0371293407" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 or CCSD ENERGY NOT CORRECT"
+
+# CCSD (unrelaxed) Verdet constant components:
+CRIT1=`$GREP "(0| )\.1139 * ZANGMOM * \(unrel\.\) * (0| )\.0000 * 1\.5695199" $log | wc -l`
+CRIT2=`$GREP "(0| )\.1139 * YANGMOM * \(unrel\.\) * (0| )\.0000 * (0| )\.33595393" $log | wc -l`
+CRIT3=`$GREP "(0| )\.1139 * XANGMOM * \(unrel\.\) * (0| )\.0000 * 2\.9236745" $log | wc -l`
+CRIT4=`$GREP "(0| )\.1139 * ZANGMOM * \(unrel\.\) * (0| )\.0000 * \-1\.5695199" $log | wc -l`
+CRIT5=`$GREP "(0| )\.1139 * YANGMOM * \(unrel\.\) * (0| )\.0000 * (\-0| \-)\.33595393" $log | wc -l`
+CRIT6=`$GREP "(0| )\.1139 * XANGMOM * \(unrel\.\) * (0| )\.0000 * \-2\.9236745" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[2]=6
+ERROR[2]="UNRELAXED CCSD VERDET CONSTANT COMPONENTS NOT CORRECT"
+
+# CCSD (relaxed) Verdet constant components:
+CRIT1=`$GREP "(0| )\.1139 * ZANGMOM * \(relax\.\) * (0| )\.0000 * 1\.6573696" $log | wc -l`
+CRIT2=`$GREP "(0| )\.1139 * YANGMOM * \(relax\.\) * (0| )\.0000 * (0| )\.40461152" $log | wc -l`
+CRIT3=`$GREP "(0| )\.1139 * XANGMOM * \(relax\.\) * (0| )\.0000 * 2\.9186528" $log | wc -l`
+CRIT4=`$GREP "(0| )\.1139 * ZANGMOM * \(relax\.\) * (0| )\.0000 * \-1\.6573696" $log | wc -l`
+CRIT5=`$GREP "(0| )\.1139 * YANGMOM * \(relax\.\) * (0| )\.0000 * (\-0| \-)\.40461152" $log | wc -l`
+CRIT6=`$GREP "(0| )\.1139 * XANGMOM * \(relax\.\) * (0| )\.0000 * \-2\.9186528" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[3]=6
+ERROR[3]="RELAXED CCSD VERDET CONSTANT COMPONENTS NOT CORRECT"
+
+# CCSD (LAO+relaxed) Verdet constant components:
+CRIT1=`$GREP "(0| )\.1139 * dh\/dBZ * \(relax\.\) * (0| )\.0000 * 1\.7532413" $log | wc -l`
+CRIT2=`$GREP "(0| )\.1139 * dh\/dBY * \(relax\.\) * (0| )\.0000 * 1\.1022158" $log | wc -l`
+CRIT3=`$GREP "(0| )\.1139 * dh\/dBX * \(relax\.\) * (0| )\.0000 * 2\.0397973" $log | wc -l`
+CRIT4=`$GREP "(0| )\.1139 * dh\/dBZ * \(relax\.\) * (0| )\.0000 * \-1\.7532413" $log | wc -l`
+CRIT5=`$GREP "(0| )\.1139 * dh\/dBY * \(relax\.\) * (0| )\.0000 * \-1\.1022158" $log | wc -l`
+CRIT6=`$GREP "(0| )\.1139 * dh\/dBX * \(relax\.\) * (0| )\.0000 * \-2\.0397973" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[4]=6
+ERROR[4]="LAO+RELAXED CCSD VERDET CONSTANT NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > Vlao_h2o2.check
+chmod +x Vlao_h2o2.check
+#######################################################################
+

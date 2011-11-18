@@ -1,0 +1,180 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > mcdlaodir_c2h4tw.info <<%EOF%
+   mcdlaodir_c2h4tw
+   ----------------
+   Molecule:       TWISTED C2H4
+   Wave Function:  CCSD
+   Test Purpose:   B term of MCD with DIRECT LAOs (D2 symm)
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > mcdlaodir_c2h4tw.mol <<%EOF%
+BASIS
+DZ(Dunning)
+LAO B term of MCD of twisted ethene
+    start geom from CPL 288 (1998) 371-376
+    2    2 YZ XZ
+        6.    1
+C1     1.26613          .000000         .000000
+        1.    1
+H1     2.29605         1.77708         .155470
+%EOF%
+#######################################################################
+#  DALTON INPUT 
+#######################################################################
+cat > mcdlaodir_c2h4tw.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+.DIRECT
+**INTEGRAL
+.THETA
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+ 0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITAL
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 1.0d-10
+*CC INPUT
+.CCSD
+.NSYM
+ 4
+.THRENR
+ 1.0d-10
+.THRLEQ
+ 1.0d-10
+.CONNECTION
+NATURAL
+*CCFOP
+.DIPMOM
+*CCEXCI
+.NCCEXCI
+ 1 1 1 1
+.THREXC
+ 1.0d-9
+*CCLRSD
+.DIPOLE
+*CCMCD
+.OPERATOR
+(UNREL) (UNREL) (UNREL)
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+(UNREL) (RELAX) (UNREL)
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+(UNREL) (RELAX) (UNREL)
+YDIPLEN dh/dBZ  XDIPLEN
+ZDIPLEN dh/dBY  XDIPLEN
+ZDIPLEN dh/dBX  YDIPLEN
+XDIPLEN dh/dBZ  YDIPLEN
+XDIPLEN dh/dBY  ZDIPLEN
+YDIPLEN dh/dBX  ZDIPLEN
+.USEPL1
+.SELSTA
+ 3 1
+**END OF DALTON
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 AND CCSD ENERGIES
+CRIT1=`$GREP "Total SCF * energy\: * \-78\.0082400957" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-78\.2060939663" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-78\.2355212262" $log | wc -l`
+TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 OR CCSD ENERGY CORRECT"
+
+# Unrelaxed B contributions
+CRIT1=`$GREP "For transition \|o> \-> \|f\( * (0| )\.31573\)>\, of symm\. 3" $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.07247180 \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.11850910 \(antisym\) " $log | wc -l`
+TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=8
+ERROR[2]="UNRELAXED B(0 -> ^1B3) CONTRIBUTIONS NOT CORRECT"
+
+# Relaxed B contributions
+CRIT1=`$GREP "For transition \|o> \-> \|f\( * (0| )\.31573\)>\, of symm\. 3" $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.06035477 \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.16040016 \(antisym\) " $log | wc -l`
+TEST[3]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=8
+ERROR[3]="RELAXED B(0 -> ^1B3) CONTRIBUTIONS NOT CORRECT"
+
+# LAO+Relaxed B contributions
+CRIT1=`$GREP "For transition \|o> \-> \|f\( * (0| )\.31573\)>\, of symm\. 3" $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.13858764 \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.79457426 \(antisym\) " $log | wc -l`
+TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=8
+ERROR[4]="LAO+RELAXED B(0 -> ^1B3) CONTRIBUTIONS NOT CORRECT"
+
+# Excitation energies
+CRIT1=`$GREP "\^1A * \| * 1 * \| * (0| )\.4413636" $log | wc -l`
+CRIT2=`$GREP "\^1B2 * \| * 1 * \| * (0| )\.3769760 " $log | wc -l`
+CRIT3=`$GREP "\^1B3 * \| * 1 * \| * (0| )\.3157254" $log | wc -l`
+CRIT4=`$GREP "\^1B1 * \| * 1 * \| * (0| )\.3938346" $log | wc -l`
+TEST[5]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="EXCITATION ENERGIES NOT CORRECT"
+
+# Strengths
+CRIT1=`$GREP "\^1A * \| * 1 * \| * (0| )\.0000000 * \| * (0| )\.0000000 * \| * \-" $log | wc -l`
+CRIT2=`$GREP "\^1B2 * \| * 1 * \| * (0| )\.0000630 * \| * (0| )\.0000158 * \| * Y" $log | wc -l`
+CRIT3=`$GREP "\^1B3 * \| * 1 * \| * (0| )\.7332522 * \| * (0| )\.1543376 * \| * X" $log | wc -l`
+CRIT4=`$GREP "\^1B1 * \| * 1 * \| * (0| )\.0010940 * \| * (0| )\.0002872 * \| * Z" $log | wc -l`
+TEST[6]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[6]=4
+ERROR[6]="DIPOLE AND OSCILLATOR STRENGTHS NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4 5 6
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > mcdlaodir_c2h4tw.check
+#######################################################################

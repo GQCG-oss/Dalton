@@ -1,0 +1,160 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > alpha_relax.info <<%EOF%
+   alpha_relax
+   -----------
+   Molecule:       HF in C1
+   Wave Function:  CCSD / 6-31G**
+   Test Purpose:   orbital-relaxed polarizabilities
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > alpha_relax.mol <<%EOF%
+BASIS
+6-31G**
+Hydrogen flourid
+small test basis
+    2    0            1.00D-15
+        9.0   1    
+F     0.0000000000000000  0.0000000000000000 1.76320000000000000      
+        1.0   1
+H     0.0000000000000000  0.0000000000000000 0.00000000000000000      
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > alpha_relax.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.THETA
+**WAVE FUNCTIONS
+.TITLE
+  linear dipole-dipole and quadrupole-magnetic dipole
+  polarizabilities for the HF molecule
+  for CCS and CCSD wavefunctions
+.CC
+*ORBITALS 
+.NOSUPSYM
+*SCF INPUT 
+.THRESH
+ 1.0d-12
+*CC INPUT 
+.CCSD
+.THRENR
+ 1.0d-14
+.THRLEQ
+ 1.0d-12
+.PRINT
+  1
+*CCFOP
+.DIPMOM
+*CCLR
+.OLD_LR
+.PRINT
+  5
+!------------
+.RELAXED
+!------------
+.AVERAGE
+ALPHA_ANI
+LINEAR
+.OPERATOR
+ZZTHETA ZZTHETA
+!------------
+.UNRELAXED
+!------------
+.AVERAGE
+ALPHA_ANI
+LINEAR
+.OPERATOR
+ZZTHETA ZZTHETA
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Total SCF * energy:  * \-100.008919" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy:  * \-100.193662" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy: * \-100.197790" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# SCF polarizabilities
+CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  4.380925" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = *  1.893372" $log | wc -l`
+CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * 29.685500" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[2]=3
+ERROR[2]="SCF POLARIZABILITIES NOT CORRECT"
+
+# unrelaxed CCSD polarizabilities
+CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  -4\.51542" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = *  -1\.91674" $log | wc -l`
+CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * -30\.1147" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="UNRELAXED CCSD POLARIZABILITIES NOT CORRECT"
+
+
+# relaxed CCSD polarizabilities
+CRIT1=`$GREP "<<ZDIPLEN ,ZDIPLEN >>\( ..000000\) = *  -4.57091" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,XDIPLEN >>\( ..000000\) = *  -1.93065" $log | wc -l`
+CRIT3=`$GREP "<<ZZTHETA ,ZZTHETA >>\( ..000000\) = * -30.3826" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="RELAXED CCSD POLARIZABILITIES NOT CORRECT"
+
+# symmetry of the polarizabilities
+CRIT1=`$GREP "<<XDIPLEN ,ZDIPLEN >>\( ..000000\) = * -*0*\.0000000" $log | wc -l`
+TEST[5]=`expr $CRIT1`
+CTRL[5]=3
+ERROR[5]="SYMMETRY OF POLARIZABILITY TENSORS NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4 5
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > alpha_relax.check
+chmod +x alpha_relax.check
+#######################################################################

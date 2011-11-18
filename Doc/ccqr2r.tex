@@ -1,0 +1,77 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Transition moments between two excited states: \Sec{CCQR2R}}
+\label{sec:ccqr2r}
+\index{Coupled Cluster!quadratic response}
+\index{quadratic response}
+\index{response!quadratic}
+\index{oscillator strength!excited states!Coupled Cluster}
+\index{transition moment!excited states!Coupled Cluster}
+\index{transition strength!excited states!Coupled Cluster}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In the \Sec{CCQR2R} section the input that is
+specific for coupled cluster response calculation of excited state--excited state
+electronic transition properties is read in.
+This section includes presently for example calculation of excited state
+oscillator strength.
+The transition properties are available for the models CCS, CC2 and CCSD,
+but only for singlet states.
+%Publications that report results obtained with this CC module should cite Ref.\ \cite{Christiansen:CCLR}.
+The theoretical background for the implementation is 
+detailed in Ref.\ \cite{Christiansen:CCLR,Christiansen:QEL}.
+This section has to be used in connection with \Sec{CCEXCI} for the 
+calculation of excited states.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item O.~Christiansen, A.~Halkier, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}2801, (1998).
+\end{list}
+}}
+\end{center}
+
+\begin{description}
+
+\item[\Key{DIPOLE}]
+%
+Calculate the ground state--excited state dipole (length) transition properties including
+the oscillator strength.
+%
+\item[\Key{DIPVEL}]
+%
+Calculate the excited state--excited state dipole-velocity  transition properties including
+the oscillator strength in the dipole-velocity form. (The dipole length form is recommended
+for standard calculations).
+%
+\item[\Key{NO2N+1}]
+%
+Use an alternative, and normally less efficient, formulation for calculating
+the transition matrix elements (involving solution of response equations for
+all operators instead of solving for the so-called $N$ vectors which is the default).
+%
+\item[\Key{OPERAT}]\verb| |  \newline
+\verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
+%
+Read pairs of operator labels for which the residue of the linear response
+function is desired.
+Can be used to calculate the transition property for a given operator
+by specifying that operator twice. The operator can be any of the one-electron
+operators for which integrals are available in the \Sec{*INTEGRALS} input part.
+%
+\item[\Key{SELEXC}] \verb| | \newline
+\verb|READ(LUCMD,*) IXSYM1,IXST1,IXSYM2,IXST2|\newline 
+%
+Select which excited states the calculation of transition properties
+are carried out for. The default is all states according to the CCEXCI input section
+(the program takes into account symmetry). For calculating selected states only,
+provide a list of symmetry and state numbers (order after increasing energy in
+each symmetry class) for state one and for state two.
+This list is read until next input label is found.
+
+\end{description}
+

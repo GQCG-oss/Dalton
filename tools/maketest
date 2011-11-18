@@ -1,0 +1,399 @@
+: # *-*-perl-*-*
+  eval 'exec perl -S $0 ${1+"$@"}'
+    if 0;
+################################################
+#                                              #
+#   Script to create new testjobs for Dalton   #
+#   NOTE: Requires Perl 5                      #
+#                                              #
+################################################
+
+sub print_help() {
+#
+# Calling the script with -h displays help message
+#
+    print "\nmaketest - script to help set up automatic Dalton test jobs.\n\n";
+    print "Usage: $progname [-h] [-d dal-file] [-i filename] [-m mol-file] [-o filename]\n\n";
+    print "-h\tDisplay this help screen, then quit.\n";
+    print "-d\tSpecify .dal file, will be included in test script.\n";
+    print "-i\tSpecify modified input file (see comments below).\n";
+    print "\tIf no file is given, the program will ask the user for the filename.\n";
+    print "-m\tSpecify .mol file, will be included in test script.\n";
+    print "-o\tSpecify output file.\n";
+    print "\tIf no file is given, the file daltest will be used.\n\n";
+    print "The input file should contain all the results to be tested and\n";
+    print "nothing else. Lines grouped together will make up a single set of\n";
+    print "test criteria. Different sets should be separated by a blank line.\n\n";
+    print "In the input file, you can replace the last decimal(s) of a number\n";
+    print "with '_'. These characters will then be replaced by '[0-9]' which\n";
+    print "of course means 'any number' (to avoid problems with precision).\n\n";
+    print "Example:\n--------\n\n** Input file **\n";
+    print "     Total energy       -224.5107485162 au (Hartrees)\n";
+    print "                           -589452.8863 kJ/mol\n\n";
+    print "@ gamma(Z;Z,Z,Z)        207.46__\n";
+    print "@ gamma(Z;Z,Z,Z)        214.81__\n\n";
+    print "** Translates into **\n";
+    print "CRIT1=`".chr(36)."GREP ".chr(34)."Total energy * ".chr(92)."-224".chr(92).".5107485162 au ".chr(92)."(Hartrees".chr(92).")".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "CRIT2=`".chr(36)."GREP ".chr(34)."".chr(92)."-589452".chr(92).".8863 kJ".chr(92)."/mol".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "TEST[1]=`expr	".chr(36)."CRIT1 ".chr(92)."+ ".chr(36)."CRIT2`\n\n";
+    print "CRIT1=`".chr(36)."GREP ".chr(34)."".chr(92)."@ gamma".chr(92)."(Z".chr(92).";Z".chr(92).",Z".chr(92).",Z".chr(92).") * 207".chr(92).".46[0-9][0-9]".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "CRIT2=`".chr(36)."GREP ".chr(34)."".chr(92)."@ gamma".chr(92)."(Z".chr(92).";Z".chr(92).",Z".chr(92).",Z".chr(92).") * 214".chr(92).".81[0-9][0-9]".chr(34)." ".chr(36)."log | wc -l`\n";
+    print "TEST[2]=`expr	".chr(36)."CRIT1 ".chr(92)."+ ".chr(36)."CRIT2`\n\n";
+    exit;
+}
+
+sub write_header($) {
+#
+# Writes header of test script including check for shells
+#
+    my $testfile = shift;
+    print $testfile "#!/bin/sh\n";
+    print $testfile "#\n";
+    print $testfile "# This is the script for generating files for a specific Dalton test job.\n";
+    print $testfile "#\n";
+    print $testfile "# For the .check file ksh or bash is preferred, otherwise use sh\n";
+    print $testfile "# (and hope it is not the old Bourne shell, which will not work)\n";
+    print $testfile "#\n";
+    print $testfile "if [ -x /bin/ksh ]; then\n";
+    print $testfile "   CHECK_SHELL='#!/bin/ksh'\n";
+    print $testfile "elif [ -x /bin/bash ]; then\n";
+    print $testfile "   CHECK_SHELL='#!/bin/bash'\n";
+    print $testfile "else\n";
+    print $testfile "   CHECK_SHELL='#!/bin/sh'\n";
+    print $testfile "fi\n\n\n";
+}
+
+sub write_desc($$) {
+#
+# Writes test description part
+#
+    my $testfile = shift; my $testname = shift;
+    $numchar = length($testname);
+    print $testfile "#######################################################################\n";
+    print $testfile "#  TEST DESCRIPTION                                                   #\n";
+    print $testfile "#######################################################################\n";
+    print $testfile "cat > $testname.info <<'%EOF%'\n";
+    print $testfile "   $testname\n   ";
+    for ($i = 1; $i <= $numchar; $i++) { print $testfile "-" }
+    print $testfile "\n";
+    print $testfile "   Molecule:         ?\n";
+    print $testfile "   Wave Function:    ?\n";
+    print $testfile "   Test Purpose:     ?\n";
+    print $testfile "%EOF%\n\n";
+}
+
+sub write_mol($$$$) {
+#
+# Writes molecule input part
+#
+    my $testfile = shift; my $molfile = shift; my $testname = shift; my $nomol = shift;
+    print $testfile "#######################################################################\n";
+    print $testfile "#  MOLECULE INPUT                                                     #\n";
+    print $testfile "#######################################################################\n";
+    print $testfile "cat > $testname.mol <<'%EOF%'\n";
+    if ($nomol == 1) { print $testfile "!!!!!   INSERT .MOL-FILE HERE   !!!!!\n"}
+    else { while (<$molfile>) { print $testfile $_ } }
+    print $testfile "%EOF%\n\n";
+}
+
+sub write_dal($$$$) {
+#
+# Writes Dalton input part
+#
+    my $testfile = shift; my $dalfile = shift; my $testname = shift; my $nodal = shift;
+    print $testfile "#######################################################################\n";
+    print $testfile "#  DALTON INPUT                                                       #\n";
+    print $testfile "#######################################################################\n";
+    print $testfile "cat > $testname.dal <<'%EOF%'\n";
+    if ($nomol == 1) { print $testfile "!!!!!   INSERT .DAL-FILE HERE   !!!!!\n"}
+    else { while (<$dalfile>) { print $testfile $_ } }
+    print $testfile "%EOF%\n\n";
+}
+
+sub write_check($$$) {
+#
+# Process and write the check script part of the test
+#
+    my $testfile = shift; my $inpfile = shift; my $testname = shift;
+    print $testfile "#######################################################################\n";
+    print $testfile "#  CHECK SCRIPT                                                       #\n";
+    print $testfile "#######################################################################\n";
+    print $testfile "echo \$CHECK_SHELL > $testname.check\n";
+    print $testfile "cat >> $testname.check <<'%EOF%'\n";
+    print $testfile "log=\$1\n\n";
+    print $testfile "if [ `uname` = Linux ]; then\n";
+    print $testfile "   GREP=\"egrep -a\"\n";
+    print $testfile "else\n";
+    print $testfile "   GREP=\"egrep\"\n";
+    print $testfile "fi\n";
+
+# Read in tests set by set
+    $iset = 0; $icrit = 0;
+    while (<$inpfile>) {
+	$readline = $_;
+
+# Loop over non-empty lines, blank lines separate sets of criteria
+	if ($readline ne "\n") {
+	    $chkline = substr($readline,0,length($readline)-1);
+	    ($chkline,@args) = process_line($chkline);
+	    $icrit++;
+
+# New set of criteria, print comment line
+	    if ($icrit == 1) { print $testfile "\n# ?\n"; }
+
+# Print one new subtest (one criterium)
+	    write_crit($testfile,$icrit,$ielm,@args);
+	}
+
+# Unless last line also was empty, this is the end of a set of criterias
+# Print test expression, control sum and error message
+	else {
+	    if ($icrit > 0) {
+		$iset++;
+		write_set($testfile,$iset,$icrit);
+		$icrit = 0;
+	    }
+	}
+    }
+
+# Output for the last set of criteria
+    if ($icrit > 0) {
+	$iset++;
+	write_set($testfile,$iset,$icrit);
+    }
+
+# Check result of test
+    write_summary($testfile,$iset);
+    print $testfile "\n%EOF%\n";
+}
+
+sub process_line($) {
+#
+# Process a single line from the input file
+#
+    my $inline = shift;
+    $lenline = length($inline);
+
+# Remove leading whitespace
+    $char = substr($inline,0,1);
+    $pos = 0;
+    while ($char eq " " && $pos < $lenline-1) {
+	$pos++;
+	$char = substr($inline,$pos,1);
+    }
+    $outline = substr($inline,$pos,$lenline-$pos);
+    $lenline = length($outline);
+
+# Process each character
+    $ielm = 0; $pos = 0;
+    while ($pos <= $lenline) {
+	$char = substr($outline,$pos,1);
+	if ($char ne " ") {
+	    $ielm++;
+	    @items = split(/  +/,substr($outline,$pos,$lenline-$pos));
+
+# Go through element searching for special characters
+	    $args[$ielm] = ""; $pos2 = 0;
+	    while ($pos2 < length($items[0])) {
+		$_ = substr($items[0],$pos2,1);
+
+# Characters, numbers and space are kept unchanged
+		if (/\w/ || / / || /</ || />/) {
+		    $args[$ielm] = $args[$ielm].$_;
+		}
+
+# Special characters get an extra '\' in front of them
+# The character "'" is very special and should just be replaced with
+# a period (interpreted as any character).
+		elsif (/'/) {
+		    $args[$ielm] = $args[$ielm].chr(46);
+		}
+		else {
+		    $args[$ielm] = $args[$ielm].chr(92).$_;
+		}
+		$pos2++;
+	    }
+
+# Scientific notation requires special attention
+	    $_ = $args[$ielm];
+	    if (/\dD.-\d/ || /\dD\d/ || /\dD.+\d/ || /\_D.-\d/ ||
+		/\_D\d/ || /\_D.+\d/) {
+		s/D/(D|E)/;
+		$args[$ielm] = $_;
+	    }
+	    elsif (/\dE.-\d/ || /\dE\d/ || /\dE.+\d/ || /\_E.-\d/ ||
+		   /\_E\d/ || /\_E.+\d/) {
+		s/E/(D|E)/;
+		$args[$ielm] = $_;
+	    }
+
+# Check numbers for trailing '_'s indicating precision
+	    $_ = substr($args[$ielm],0,2);
+	    if (/.-/ || /\d/) {
+		$_ = $args[$ielm];
+		s/_/[0-9]/g;
+		$args[$ielm] = $_;
+	    }
+
+# Some computers prints .123 and -.456 instead of 0.123 and -0.456.
+# This has to be dealt with
+	    $_ = $args[$ielm];
+	    if (/\\\-0\\\.\d/) {
+		s/\\\-0\\\./\(\\\-0\| \\\-\)\\\./g;
+		$args[$ielm] = $_;
+	    }
+	    if (/0\\\.\d/) {
+		s/0\\\./\(0\| \)\\\./g;
+		$args[$ielm] = $_;
+	    }
+
+# Special exceptions
+	    $_ = $args[$ielm];
+	    if (/\d iterations\\\!/) {
+		s/ iterations\\\!/\( \|  \)iterations\\\!/;
+		$args[$ielm] = $_;
+	    }
+
+# Check if there's more stuff on this line
+	    if ($items[1] eq "") {
+		$pos = $lenline + 1;
+	    }
+	    else {
+		$pos = $pos + length($items[0]);
+		while ($pos <= $lenline &&
+		       substr($outline,$pos,1) eq " " ) {
+		    $pos++;
+		    $char = substr($outline,$pos,1);
+		}
+	    }
+	}  
+	else {
+	    $pos++;
+	    $char = substr($outline,$pos,1);
+	}
+    }
+    ($outline,@args);
+}
+
+sub write_crit($$@) {
+#
+# Writes a single criteria
+#
+    my $testfile = shift; my $icrit = shift; my $args = @_;
+    print $testfile "CRIT$icrit=`".chr(36)."GREP ".chr(34);
+    if ($ielm > 1) {
+	for ($i = 1; $i < $ielm; $i++) {
+	    print $testfile "$args[$i] * ";
+	}
+    }
+    print $testfile "$args[$ielm]";
+    print $testfile chr(34)." ".chr(36)."log | wc -l`\n";
+}
+
+sub write_set($$$) {
+#
+# Writes control structure for a set of criterias
+#
+    my $testfile = shift; my $numset = shift; my $numcrit = shift;
+    print $testfile "TEST[$iset]=`expr\t";
+    $nbatch = int $icrit/6; $num = 1;
+    if ($icrit%6 == 0) { $nbatch--; }
+    
+# Print all full lines first
+    for ($i = 1; $i <= $nbatch; $i++) {
+	for ($j = $num; $j <= $num+4; $j++) {
+	    print $testfile chr(36)."CRIT$j ".chr(92)."+ ";
+	}
+	print $testfile chr(36)."CRIT$j ".chr(92)."+ ".chr(92)."\n\t\t";
+	$num = $num + 6;
+    }
+    
+# Then last line of criteria
+    for ($i = $num; $i < $icrit; $i++) {
+	print $testfile chr(36)."CRIT$i ".chr(92)."+ ";
+    }
+    print $testfile chr(36)."CRIT$icrit`\n";
+    
+# Print control sum and error messages
+    print $testfile "CTRL[$iset]=$icrit\n";
+    print $testfile "ERROR[$iset]=".chr(34)."? NOT CORRECT".chr(34)."\n";
+}
+
+sub write_summary($$) {
+#
+# Write structure to summarize the whole test job
+#
+    my $testfile = shift; my $numsets = shift;
+    print $testfile "\nPASSED=1\n";
+    print $testfile "for i in";
+    for ($i = 1; $i <= $numsets; $i++) { print $testfile " $i"; }
+    print $testfile "\ndo\n";
+
+    print $testfile "   if [ \${TEST[i]} -lt \${CTRL[i]} ]; then\n";
+    print $testfile "      echo \"\${ERROR[i]} ( test = \${TEST[i]}; control = \${CTRL[i]} );\"\n";
+    print $testfile "      PASSED=0\n";
+    print $testfile "   fi\n";
+    print $testfile "done\n\n";
+    print $testfile "if [ \$PASSED -eq 1 ]\n";
+    print $testfile "then\n";
+    print $testfile "   echo TEST ENDED PROPERLY\n";
+    print $testfile "   exit 0\n";
+    print $testfile "else\n";
+    print $testfile "   echo THERE IS A PROBLEM\n";
+    print $testfile "   exit 1\n";
+    print $testfile "fi\n";
+}
+
+####################
+#   Main program   #
+####################
+use Getopt::Std;
+getopts('hd:i:m:o:');
+$nodal = 1; $nomol = 1;
+
+#
+# Calling the script with -h displays help message
+#
+if ($opt_h == 1) { print_help() }
+
+#
+# Determine and open input file
+# If no input file is given with -i, ask user for filename
+#
+$filename = $opt_i."\n";
+if ($opt_i eq "") {
+    print "Enter name of input file: ";
+    $filename = <STDIN>;
+}
+open(INPFILE,$filename) || die "\nSorry, cannot open file $filename\n";
+
+#
+# Check if .dal and/or .mol-file has been specified
+#
+if ($opt_d ne "") {
+    open(DALFILE,$opt_d) || die "\nSorry, cannot open file $opt_d\n\n";
+    $nodal = 0;
+}
+if ($opt_m ne "") {
+    open(MOLFILE,$opt_m) || die "\nSorry, cannot open file $opt_m\n\n";
+    $nomol = 0;
+}
+
+#
+# Check if name of test script has been specified
+#
+$outfile = $opt_o;
+if ($opt_o eq "") {
+    $outfile = "daltest";
+}
+open(OUTFILE,">$outfile") || die "\nSorry, cannot open output file $outfile\n\n";
+
+#
+# Write all the different parts to the test script
+#
+write_header(\*OUTFILE);
+write_desc(\*OUTFILE,$outfile);
+write_mol(\*OUTFILE,\*MOLFILE,$outfile,$nomol); close(MOLFILE);
+write_dal(\*OUTFILE,\*DALFILE,$outfile,$nodal); close(DALFILE);
+write_check(\*OUTFILE,\*INPFILE,$outfile); close(INPFILE);
+close(OUTFILE);

@@ -1,0 +1,148 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dipgra_relaxb.info <<%EOF%
+   dipgra_relaxb
+   -------------
+   Molecule:       HeH+ C2v
+   Wave Function:  FCI / 6-31G**
+   Test Purpose:   geometrical derivatives of dipole moment
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################   
+cat > dipgra_relaxb.mol <<%EOF%
+BASIS
+6-31G**
+test job    
+He-H+, 6-31G** basis set, with symmetry
+    2  1 2  X  Y  Z   1.00D-15
+        2.0   1    
+He    0.0000000000000000  0.0000000000000000   0.00000000000
+        1.0   1    
+H     0.0000000000000000  0.0000000000000000   2.00000000000
+%EOF%
+
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################  
+cat > dipgra_relaxb.dal <<%EOF%
+**DALTON
+.RUN PROPERTIES
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.THETA
+**WAVE FUNCTIONS
+.HF
+.MP2
+.MCSCF
+*CONFIGURATION INPUT
+.SPIN MULTIPLICITY
+  1
+.SYMMETY
+  1
+.INACTIVE ORBITALS
+  0   0   0   0 
+.CAS SPACE
+  5   1   1   0   
+.ELECTRONS
+  2   0   0   0 
+*OPTIMIZATION
+.THRESHOLD
+ 1.0d-10
+*SCF INPUT
+.DOUBLY OCCUPIED
+  1   0   0   0
+.THRESHOLD
+ 1.0d-10
+*ORBITALS
+.NOSUPSYM
+**PROPERTIES
+.POLARI
+.VIBANA
+.DIPGRA      
+.PRINT
+  1
+**END OF DALTON
+%EOF%
+
+############################################################
+
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >dipgra_relaxb.check
+cat >>dipgra_relaxb.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# MCSCF energy:
+CRIT1=`$GREP "Final MCSCF energy: *-2.93846678" $log | wc -l`
+TEST[1]=`expr $CRIT1` 
+CTRL[1]=1
+ERROR[1]="MCSCF ENERGY NOT CORRECT"
+
+
+# MCSCF polarizabilities & dipole gradients:
+CRIT1=`$GREP "Ex   *( |0)\.406811    ( |0)\.000000    ( |0)\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey   *( |0)\.000000    ( |0)\.406811    ( |0)\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez   *( |0)\.000000    ( |0)\.000000    2.326166" $log | wc -l`
+CRIT4=`$GREP "He * z  *( -|-0)\.1858013" $log | wc -l`
+CRIT5=`$GREP "H  * z  *1.1858013" $log | wc -l`
+CRIT6=`$GREP "He * x  *( |0)\.4071749" $log | wc -l`
+CRIT7=`$GREP "H  * x  *( |0)\.5928250" $log | wc -l`
+CRIT8=`$GREP "He * y  *( |0)\.4071749" $log | wc -l`
+CRIT9=`$GREP "H  * y  *( |0)\.5928250" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
+              $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
+CTRL[2]=14
+ERROR[2]="MCSCF DIPOLE GRADIENTS NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+chmod +x dipgra_relaxb.check
+#######################################################################

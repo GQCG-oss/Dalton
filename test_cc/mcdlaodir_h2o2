@@ -1,0 +1,271 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > mcdlaodir_h2o2.info <<%EOF%
+   mcdlaodir_h2o2
+   --------------
+   Molecule:       H2O2
+   Wave Function:  CCSD
+   Test Purpose:   MCD B term with London orbitals, DIRECT
+%EOF%
+
+#####################################################################
+#  INTEGRAL INPUT
+#####################################################################
+cat > mcdlaodir_h2o2.mol <<%EOF%
+BASIS
+DZ(Dunning)
+B term of H2O2
+    start geom from "the book". Dihedric angle 111.93
+    2    1 XY 
+        8.    1
+O      1.3700514471    0.000000000    -0.4999836957
+        1.    1
+H      1.6850730466   -1.4805134201   0.4999836950
+%EOF%
+
+####################################################################
+#  DALTON INPUT
+####################################################################
+cat > mcdlaodir_h2o2.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+.DIRECT
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITALS
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 5.0d-11
+.DOUBLY OCCUPIED
+ 5 4
+*CC INPUT
+.CCSD
+.NSYM
+ 2
+.THRENR
+ 1.0d-9
+.THRLEQ
+ 1.0d-6
+.MAXRED
+250
+.CONNECTION
+NATURAL
+*CCFOP
+.DIPMOM
+*CCEXCI
+.NCCEXCI
+ 1 1
+.THREXC
+ 1.0d-9
+*CCLRSD
+.DIPOLE
+*CCMCD
+!.MCD
+.SELSTA
+ 2 1
+.OPERATOR
+(UNREL) (UNREL) (UNREL)
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+XDIPLEN dh/dBY  ZDIPLEN
+YDIPLEN dh/dBZ  XDIPLEN
+ZDIPLEN dh/dBX  YDIPLEN
+XDIPLEN dh/dBZ  YDIPLEN
+YDIPLEN dh/dBX  ZDIPLEN
+ZDIPLEN dh/dBY  XDIPLEN
+.USEPL1
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies
+CRIT1=`$GREP "Total SCF * energy\: * \-15(0| )\.7547008696" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-151\.0268782344" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-151\.0371293407" $log | wc -l`
+TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 or CCSD ENERGY NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: YDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 2" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: ZANGMOM \(unrel\.\)\( * (0| )\.00000\)\, symm\. 1" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: XDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.15024322 \(antisym\) " $log | wc -l`
+TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[2]=12
+ERROR[2]="UNRELAXED B_YZX CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: ZDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: XANGMOM \(unrel\.\)\( * (0| )\.00000\)\, symm\. 2" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: YDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.00415747 \(antisym\) " $log | wc -l`
+TEST[3]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=14
+ERROR[3]="UNRELAXED B_ZXY CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: XDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 2" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: ZANGMOM \(unrel\.\)\( * (0| )\.00000\)\, symm\. 1" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: YDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.28543041 \(antisym\) " $log | wc -l`
+TEST[4]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[4]=12
+ERROR[4]="UNRELAXED B_XZY CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: ZDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: YANGMOM \(unrel\.\)\( * (0| )\.00000\)\, symm\. 2" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: XDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.04840739 \(antisym\) " $log | wc -l`
+TEST[5]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=14
+ERROR[5]="UNRELAXED B_ZYX CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: YDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 2" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: ZANGMOM \(relax\.\)\( * (0| )\.00000\)\, symm\. 1" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: XDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.15244209 \(antisym\) " $log | wc -l`
+TEST[6]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[6]=12
+ERROR[6]="RELAXED B_YZX CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: ZDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: XANGMOM \(relax\.\)\( * (0| )\.00000\)\, symm\. 2" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: YDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.00435416 \(antisym\) " $log | wc -l`
+TEST[7]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[7]=14
+ERROR[7]="RELAXED B_ZXY CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: XDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 2" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: ZANGMOM \(relax\.\)\( * (0| )\.00000\)\, symm\. 1" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: YDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.28369485 \(antisym\) " $log | wc -l`
+TEST[8]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[8]=12
+ERROR[8]="RELAXED B_XZY CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: ZDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: YANGMOM \(relax\.\)\( * (0| )\.00000\)\, symm\. 2" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: XDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.04970364 \(antisym\) " $log | wc -l`
+TEST[9]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[9]=14
+ERROR[9]="RELAXED B_ZYX CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: YDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 2" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: dh\/dBZ * \(relax\.\)\( * (0| )\.00000\)\, symm\. 1" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: XDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.06768242 \(antisym\) " $log | wc -l`
+TEST[10]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[10]=12
+ERROR[10]="LAO+RELAXED B_YZX CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: ZDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: dh\/dBX * \(relax\.\)\( * (0| )\.00000\)\, symm\. 2" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: YDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.00269916 \(antisym\) " $log | wc -l`
+TEST[11]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[11]=14
+ERROR[11]="LAO+RELAXED B_ZXY CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: XDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 2" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: dh\/dBZ * \(relax\.\)\( * (0| )\.00000\)\, symm\. 1" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: YDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.11685156 \(antisym\) " $log | wc -l`
+TEST[12]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[12]=12
+ERROR[12]="LAO+RELAXED B_XZY CONTRIBUTION NOT CORRECT"
+
+# MCD contribution
+CRIT1=`$GREP "A oper\.\: ZDIPLEN \(unrel\.\)\( (\-0| \-)\.27481\)\, symm\. 1" $log | wc -l`
+CRIT2=`$GREP "B oper\.\: dh\/dBY * \(relax\.\)\( * (0| )\.00000\)\, symm\. 2" $log | wc -l`
+CRIT3=`$GREP "C oper\.\: XDIPLEN \(unrel\.\)\( * (0| )\.27481\)\, symm\. 2" $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.01773236 \(antisym\) " $log | wc -l`
+TEST[13]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[13]=14
+ERROR[13]="LAO+RELAXED B_ZYX CONTRIBUTION NOT CORRECT"
+
+# Excitation energies, transitions strengths
+CRIT1=`$GREP "\| \^1A * \| * 1 * \| * (0| )\.2321690 * \| * 6\.31764 * \| * 50955\.206 * \| * 94\.86 * \|" $log | wc -l`
+CRIT2=`$GREP "\| \^1B * \| * 1 * \| * (0| )\.2748092 * \| * 7\.47794 * \| * 60313\.641 * \| * 93\.12 * \|" $log | wc -l`
+CRIT3=`$GREP "\| \^1A * \| * 1 * \| * (0| )\.0018662 * \| * (0| )\.0002888 * \| * Z * \|" $log | wc -l`
+CRIT4=`$GREP "\| \^1B * \| * 1 * \| * (0| )\.0561623 * \| * (0| )\.0102893 * \| * \(X\,Y\) * \|" $log | wc -l`
+TEST[14]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[14]=4
+ERROR[14]="EXCITATION ENERGIES AND TRANSITION STRENGTHS NOT CORRECT"
+
+# Dummy check that it was a direct calculation
+CRIT1=`$GREP "AO-direct calculation" $log | wc -l`
+TEST[15]=`expr $CRIT1`
+CTRL[15]=1
+ERROR[15]="DIRECT MCD_LAO WAS NOT RUN DIRECT"
+
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > mcdlaodir_h2o2.check
+chmod +x mcdlaodir_h2o2.check
+#######################################################################
+

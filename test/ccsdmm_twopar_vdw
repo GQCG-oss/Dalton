@@ -1,0 +1,257 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > ccsdmm_twopar_vdw.info <<%EOF%
+   ccsdmm_twopar_vdw
+   ---------------
+   Molecule:            Water (QM) and 10 water molecules (MM)
+   Wave Function:       CCSD / 3-21G
+   Molecular Mechanics: SPCE01 model: Point charges and isotropic
+                        polarizability introduced in the optimization of 
+                        the CC wave function. OLDTG=.TRUE. meaning that
+                        point charge relaxed HF orbitals are used.
+   Test Purpose:        Run checks energy, dipole moment and the SHG
+                        first hyper polarizability.
+                        Test the use of twobody van der Wall
+                        parameters and calculation of beta
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > ccsdmm_twopar_vdw.mol <<%EOF%
+ATOMBASIS
+QM/MM H2O(QM)+127H2O(MM)
+------------------------
+    4    0         1 1.00D-15
+        8.0   1    Bas=3-21G
+O           0.000000        0.000000        0.000000   0   1
+        1.0   2    Bas=3-21G
+H          -0.756799        0.000000        0.586007   0   2
+H           0.756799        0.000000        0.586007   0   3
+   -0.669   10     Bas=MM
+O           0.604942       -1.464902       -2.080125   1   1
+O           2.365069       -0.266593        1.169946   2   1
+O          -2.759906       -0.379311        1.045437   3   1
+O           0.733903       -1.884401        2.723730   4   1
+O           2.460561        1.944952       -2.002151   5   1
+O          -3.133168       -1.603974       -1.328620   6   1
+O          -2.626900        2.287818       -1.724587   7   1
+O          -0.660918       -3.692339       -1.551068   8   1
+O          -2.868308        1.938360        2.370089   9   1
+O           3.156437        2.388549        1.959717  10   1
+   0.3345    20    Bas=MM
+H           1.560922       -1.471653       -2.033169   1   2
+H           0.332598       -0.920447       -1.341521   1   3
+H           2.261479       -1.103382        1.622925   2   2
+H           3.132239       -0.390013        0.611059   2   3
+H          -3.112587       -0.718384        0.222763   3   2
+H          -3.082963       -0.985077        1.712387   3   3
+H           1.246666       -1.505809        3.437785   4   2
+H           1.195918       -2.691958        2.498932   4   3
+H           2.807099        1.143747       -2.394746   5   2
+H           1.799290        1.640651       -1.380644   5   3
+H          -3.059022       -2.413515       -1.833877   6   2
+H          -3.287608       -0.924951       -1.985298   6   3
+H          -3.317520        2.941969       -1.618379   7   2
+H          -1.815685        2.765653       -1.552094   7   3
+H          -1.258556       -3.490347       -0.831234   8   2
+H          -0.112653       -2.912107       -1.633436   8   3
+H          -3.427665        2.515559        1.850371   9   2
+H          -2.796111        1.140017        1.847043   9   3
+H           2.774429        1.622566        1.531355  10   2
+H           2.506254        2.646944        2.612892  10   3
+%EOF%
+#######################################################################
+#  QM/MM INTERACTION INPUT
+#######################################################################
+cat > ccsdmm_twopar_vdw.pot <<%EOF%
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC_E01
+.CHARGS
+ 3
+ -0.669
+ 0.3345
+ 0.3345
+.ALPISO
+ 1
+ 9.718
+*******
+.TYPE
+ 1-10
+.MODEL
+ SPC_E01
+.ALPISO
+ 1
+ 9.718
+*******
+**TWOIA                # reading in two-body sigma_ij and epsilon_ij parameters
+.SIGEPS                # The order is: sys_typ_i, sys_atom_i, sys_typ_j, sys_atom_j,
+ 15                    # sigma_ij, epsilon_ij
+ 0 1 1 1 0.3250 700.1  # In next line we have:
+ 0 1 1 2 0.2016 600.2  # TYP 0=QM, ATOM 1=Oxygen, TYP 1=MM (SPCE01), ATOM 2=Hydrogen, sig_OH=0.2016, eps_OH=600.2
+ 0 1 1 3 0.2016 600.2  #-----------------------------------------------------------------------------------------
+ 0 2 1 1 0.2016 600.2  # (i,j=0,1,2,...,N; if i=0 then j.neq.0; i,j runs over atom types!)
+ 0 2 1 2 0.1250 500.3
+ 0 2 1 3 0.1250 500.3
+ 0 3 1 1 0.2016 600.2
+ 0 3 1 2 0.1250 500.3
+ 0 3 1 3 0.1250 500.3
+ 1 1 1 1 0.3250 700.1
+ 1 1 1 2 0.2016 600.2
+ 1 1 1 3 0.2016 600.2
+ 1 2 1 2 0.1250 500.3
+ 1 2 1 3 0.1250 500.3
+ 1 3 1 3 0.1250 500.3
+**END OF
+%EOF%
+#
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > ccsdmm_twopar_vdw.dal <<%EOF%
+**DALTON
+.RUN WAVEFUNCTION
+*QM3
+.QM3
+.THRDIP
+ 1.0D-10
+.MAXDIP
+ 40
+.OLDTG
+.ATMVDW
+ TWOPAR
+**INTEGRALS
+.DIPLEN
+.NUCPOT
+.NELFLD
+.THETA
+.SECMOM
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESH
+1.0D-11
+*CC INP
+.CCSD
+.THRLEQ
+ 1.0D-9
+.THRENR
+ 1.0D-9
+.MAX IT
+ 90
+.MXLRV
+ 180
+*CCSLV
+.CCMM
+.ETOLSL
+ 1.0D-8
+.TTOLSL
+ 1.0D-8
+.LTOLSL
+ 1.0D-8
+.MXSLIT
+ 200
+.MXINIT
+ 4 4
+*CCFOP
+.DIPMOM
+.NONREL
+*CCQR
+.AVANEW  # This calculates beta_i = sum_j(beta_ijj + beta_jij + beta_jji)
+.DIPOLE  # and the dot product of beta nad the dipole moment.
+.SHGFRE
+ 1
+ 0.0428
+**END OF
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >ccsdmm_twopar_vdw.check
+cat >>ccsdmm_twopar_vdw.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# MM/MM interaction energy compared:
+CRIT1=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/\|R_n - R_s\| \]        \| * (\-|\-0)\.03220417" $log | wc -l`
+CRIT2=`$GREP "Epol  \= - 1\/2\*Sum_a\[ Pind_a\*E\^site_a \]          \| * (\-|\-0)\.00995104" $log | wc -l`
+CRIT3=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma\|\^12 - B_ma\/\|R_ma\|\^6 \] \| * (\-|\-0)\.00165340" $log | wc -l`
+CRIT4=`$GREP "E\(MM\/MM\) \= Eelec \+ Epol \+ Evdw                  \| * (\-|\-0)\.04380861" $log | wc -l`
+CRIT5=`$GREP "Eelec \= Sum_n,s\[ \(Q_n\*Q_s\)\/|R_n - R_s\| \]        \| * ( |0)\.02490604" $log | wc -l`
+CRIT6=`$GREP "Epol  \= - 1\/2\*Sum_a\[ Pind_a\*E\^\(QMclassic\)_a \]   \| * (\-|\-0)\.00328719" $log | wc -l`
+CRIT7=`$GREP "Evdw  \= Sum_a\[ A_ma\/\|R_ma|\^12 - B_ma\/\|R_ma\|\^6 \] \| * (\-|\-0)\.00112491" $log | wc -l`
+CRIT8=`$GREP "E\(\"QM\"\/MM\) \= Eelec \+ Epol \+ Evdw                \| * (\-|\-0)\.02931814" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
+CTRL[1]=14
+ERROR[1]="THE CLASSICAL MM/MM ENERGY NOT CORRECT"
+
+# QM/MM interaction energy compared:
+CRIT1=` $GREP "Epol  \= - 1\/2\*Sum_a\[ MYind_a\*E\^site_a \]         \| * (\-|\-0)\.00996948" $log | wc -l`
+CRIT2=` $GREP "(\-|\-0)\.03649460.. \| * (\-|\-0)\.00513187.. \| * (\-|\-0)\.00112490.. \| * (\-|\-0)\.04275138.." $log | wc -l`
+CRIT3=` $GREP "\-75\.71192136.. \|  \-75\.75467274.. \| * (\-|\-0)\.00001844.. \|   ( |0)\.00000000.." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="THE QM/MM ENERGY TERMS ARE NOT CORRECT"
+
+# Dipole moment components compared:
+CRIT1=` $GREP "x * (\-|\-0)\.01770972 * (\-|\-0)\.04501360" $log | wc -l`
+CRIT2=` $GREP "y * ( |0)\.00528971 * ( |0)\.01344510" $log | wc -l`
+CRIT3=` $GREP "z * 1\.05419854 * 2\.67950524" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=5
+ERROR[3]="DIPOLE MOMENT COMPONENTS ARE NOT CORRECT"
+
+# Second harmonic generation first hyperpolarizability averages compared:
+CRIT1=` $GREP "beta_x   \| * (\-|\-0)\.0856 \|   ( |0)\.0428 \|   ( |0)\.0428 \|  \-1\.3780" $log | wc -l`
+CRIT2=` $GREP "beta_y   \| * (\-|\-0)\.0856 \|   ( |0)\.0428 \|   ( |0)\.0428 \|   ( |0)\.2244" $log | wc -l`
+CRIT3=` $GREP "beta_z   \| * (\-|\-0)\.0856 \|   ( |0)\.0428 \|   ( |0)\.0428 \| \-30\.4267" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="THE FIRST HYPERPOLARIZABILITY VECTOR COMPONENTS ARE NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do 
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

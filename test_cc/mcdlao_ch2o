@@ -1,0 +1,321 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > mcdlao_ch2o.info <<%EOF%
+   mcdlao_ch2o
+   -----------
+   Molecule:       CH2O
+   Wave Function:  CCSD
+   Test Purpose:   B term of MCD with LAOs (C2v symm), two step test
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > mcdlao_ch2o.mol <<%EOF%
+BASIS
+DZ(Dunning)
+ch2o--formaldeide (on XZ plane)
+This is a two step test. Test gauge independence of LAO results
+    3    2  X  Y      1.00D-15
+        8.0   1
+O     0.0000000000000000  0.0000000000000000  -1.135379230000000       *
+        6.0   1
+C     0.0000000000000000  0.0000000000000000  1.1379617800000000       *
+        1.0   1
+H     1.7657146600000000  0.0000000000000000  2.2348856500000000       *
+%EOF%
+#######################################################################
+#  DALTON INPUT 1: Gauge origin in (0,0,0)
+#######################################################################
+cat > mcdlao_ch2o__1.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.THETA
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+ 0.0 0.0 0.0
+**SIRIUS
+.CC
+*ORBITAL
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 1.0d-10
+*CC INPUT
+.CCSD
+.NSYM
+ 4
+.THRENR
+ 1.0d-10
+.THRLEQ
+ 1.0d-10
+.CONNECTION
+NATURAL
+*CCFOP
+.DIPMOM
+*CCEXCI
+.NCCEXCI
+ 0 2 1 1
+.THREXC
+ 1.0d-9
+*CCMCD
+.OPERATOR
+(UNREL) (UNREL) (UNREL)
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+XDIPLEN dh/dBY  ZDIPLEN
+YDIPLEN dh/dBZ  XDIPLEN
+ZDIPLEN dh/dBX  YDIPLEN
+XDIPLEN dh/dBZ  YDIPLEN
+YDIPLEN dh/dBX  ZDIPLEN
+ZDIPLEN dh/dBY  XDIPLEN
+.USEPL1
+**END OF DALTON
+%EOF%
+#######################################################################
+#  DALTON INPUT 2: Gauge origin in (0,0,25)
+#######################################################################
+cat > mcdlao_ch2o__2.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.THETA
+.DIPLEN
+.ANGMOM
+.MAGMOM
+.CM-1
+XYZ-ALL
+.S1MAGR
+.GAUGEO
+ 0.0 0.0 25.0
+**SIRIUS
+.CC
+*ORBITAL
+.NOSUPSYM
+*SCF INPUT
+.THRESH
+ 1.0d-10
+*CC INPUT
+.CCSD
+.NSYM
+ 4
+.THRENR
+ 1.0d-10
+.THRLEQ
+ 1.0d-10
+.CONNECTION
+NATURAL
+*CCFOP
+.DIPMOM
+*CCEXCI
+.NCCEXCI
+ 0 2 1 1
+.THREXC
+ 1.0d-9
+*CCMCD
+.OPERATOR
+(UNREL) (UNREL) (UNREL)
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+XDIPLEN YANGMOM ZDIPLEN
+YDIPLEN ZANGMOM XDIPLEN
+ZDIPLEN XANGMOM YDIPLEN
+XDIPLEN ZANGMOM YDIPLEN
+YDIPLEN XANGMOM ZDIPLEN
+ZDIPLEN YANGMOM XDIPLEN
+(UNREL) (RELAX) (UNREL)
+XDIPLEN dh/dBY  ZDIPLEN
+YDIPLEN dh/dBZ  XDIPLEN
+ZDIPLEN dh/dBX  YDIPLEN
+XDIPLEN dh/dBZ  YDIPLEN
+YDIPLEN dh/dBX  ZDIPLEN
+ZDIPLEN dh/dBY  XDIPLEN
+.USEPL1
+**END OF DALTON
+%EOF%
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 AND CCSD ENERGIES
+CRIT1=`$GREP "Total SCF * energy\: * \-113\.8301047880" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-114\.0644813708" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-114\.0764651765" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 OR CCSD ENERGY CORRECT"
+
+# Unrelaxed B contributions
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3086629[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3529912[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.5767602[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0970105[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.3534981[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-3(0| )\.5261616[0-9] \(antisym\) " $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[2]=6
+ERROR[2]="UNRELAXED B CONTRIBUTIONS AT GAUGE (0,0,0) NOT CORRECT"
+
+# Relaxed B contributions
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.31809619 \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37619167 \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.50906654 \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.11252879 \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.43360432 \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-32\.79994281 \(antisym\) " $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[3]=6
+ERROR[3]="RELAXED B CONTRIBUTIONS AT GAUGE (0,0,0) NOT CORRECT"
+
+# LAO+Relaxed B contributions
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0853996[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3747935[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.2520003[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0704547[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.4099336[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.8651422[0-9] \(antisym\) " $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[4]=6
+ERROR[4]="LAO+RELAXED B CONTRIBUTIONS AT GAUGE (0,0,0) NOT CORRECT"
+
+# Excitation energies
+CRIT1=`$GREP "\^1B1 * \| * 1 * \| * (0| )\.3804241" $log | wc -l`
+CRIT2=`$GREP "\^1B1 * \| * 2 * \| * (0| )\.3931917 " $log | wc -l`
+CRIT3=`$GREP "\^1B2 * \| * 1 * \| * (0| )\.3422652 " $log | wc -l`
+CRIT4=`$GREP "\^1A2 * \| * 1 * \| * (0| )\.1445501 " $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="EXCITATION ENERGIES NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > mcdlao_ch2o__1.check
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 AND CCSD ENERGIES
+CRIT1=`$GREP "Total SCF * energy\: * \-113\.8301047880" $log | wc -l`
+CRIT2=`$GREP "Total MP2 * energy\: * \-114\.0644813708" $log | wc -l`
+CRIT3=`$GREP "Total CCSD * energy\: * \-114\.0764651765" $log | wc -l`
+TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=6
+ERROR[1]="SCF, MP2 OR CCSD ENERGY CORRECT"
+
+# Unrelaxed B contributions
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.30866294 \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.35299128 \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * 3\.10260741 \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.09701056 \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * \-5\.05658383 \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * 5\.17955892 \(antisym\) " $log | wc -l`
+TEST[2]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[2]=6
+ERROR[2]="UNRELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
+
+# Relaxed B contributions
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.31809619 \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37619167 \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * 2\.78603805 \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.11252879 \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * \-2\.61306102 \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * 16\.40807168 \(antisym\) " $log | wc -l`
+TEST[3]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[3]=6
+ERROR[3]="RELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
+
+# LAO+Relaxed B contributions
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0853996[0-9] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3747935[0-9] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.2520003[0-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0704547[0-9] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.4099336[0-9] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.8651422[0-9] \(antisym\) " $log | wc -l`
+TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[4]=6
+ERROR[4]="LAO+RELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
+
+# Excitation energies
+CRIT1=`$GREP "\^1B1 * \| * 1 * \| * (0| )\.3804241" $log | wc -l`
+CRIT2=`$GREP "\^1B1 * \| * 2 * \| * (0| )\.3931917 " $log | wc -l`
+CRIT3=`$GREP "\^1B2 * \| * 1 * \| * (0| )\.3422652 " $log | wc -l`
+CRIT4=`$GREP "\^1A2 * \| * 1 * \| * (0| )\.1445501 " $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="EXCITATION ENERGIES NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+' > mcdlao_ch2o__2.check
+#######################################################################

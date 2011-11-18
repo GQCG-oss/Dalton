@@ -1,0 +1,170 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc2_r12_aux_n2_gamma.info <<'%EOF%'
+   cc2_r12_aux_n2_gamma
+   ------------
+   Molecule:         N2 in D2h
+   Wave Function:    CC2-R12/A/1  cc-pVDZ/cc-pVDZ
+   Test Purpose:     Second hyperpolarizabilities (cubic response):
+                     - for CC2-R12 (Ansatz 1) 
+                     - Check frozen core 
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc2_r12_aux_n2_gamma.mol <<'%EOF%'
+BASIS
+cc-pVDZ cc-pVDZ
+N2        
+
+    2  0 3  X  Y  Z  0.10D-14
+ 1      7.    1
+N        0.0000000000000     0.0000000000000     1.0371572000000       *
+ 2      7.    1
+N        0.0000000000000     0.0000000000000     1.0371572000000       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc2_r12_aux_n2_gamma.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+*MOLBAS
+.R12AUX
+**INTEGRALS
+.R12
+.DIPLEN
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESHOLD
+ 1D-10
+*ORBITALS
+.MOSTART
+ H1DIAG
+*CC INPUT
+.CC2
+.PRINT
+ 3
+.FREEZE
+ 2 0
+.THRENR
+ 1.0D-14
+.THRLEQ
+ 1.0D-12
+.MAX IT
+ 100
+*CCCR
+.DIPOLE
+*R12 INP
+.CC2
+ 1A
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc2_r12_aux_n2_gamma.check
+cat >>cc2_r12_aux_n2_gamma.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+#           Total SCF   energy:                  -108.9541307667
+#           Total MP2-R12/A energy:              -109.3671238978
+#           Total CC2-R12/A energy:              -109.3693042691
+#
+#----------------------------------------------------------------------------+
+#           FINAL CC2 RESULTS FOR THE SECOND HYPERPOLARIZABILITIES           !
+#----------------------------------------------------------------------------+
+#
+#
+# A operator        B operator        C operator        D operator           gamma
+#-------------------------------------------------------------------------------------
+#
+#XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000      19.943229    
+#XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000      6.6477429    
+#XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000      3.2718327    
+#XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000      6.6477429    
+#XDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000      6.6477429    
+#XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000      3.2718327    
+#XDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000      3.2718327    
+#YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000      6.6477429    
+#YDIPLEN  0.0000   XDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000      6.6477429    
+#YDIPLEN  0.0000   YDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000      6.6477429    
+#YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000      19.943229    
+#YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000      3.2718327    
+#YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000      3.2718327    
+#YDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   XDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   YDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   ZDIPLEN  0.0000   XDIPLEN  0.0000   XDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   ZDIPLEN  0.0000   YDIPLEN  0.0000   YDIPLEN  0.0000      3.2718327    
+#ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000   ZDIPLEN  0.0000     -37.554902    
+#-------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+
+CRIT1=`$GREP "Total CC2-R12/A energy: *\-109\.369304269." $log | wc -l`
+TEST[1]=`expr $CRIT1` 
+CTRL[1]=2
+ERROR[1]="CC2-R12/A ENERGY NOT CORRECT"
+
+CRIT2=`$GREP "XDIPLEN .*19\.943229" $log | wc -l`
+CRIT3=`$GREP "YDIPLEN .*19\.943229" $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN .*\-37\.554902" $log | wc -l`
+CRIT5=`$GREP "XDIPLEN .*6\.6477429" $log | wc -l`
+CRIT6=`$GREP "ZDIPLEN .*3\.2718327" $log | wc -l`
+TEST[2]=`expr $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6`
+CTRL[2]=21
+ERROR[2]="CC2-R12/A SECOND HYPERPOLARIZABILITY  NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+%EOF%
+#######################################################################

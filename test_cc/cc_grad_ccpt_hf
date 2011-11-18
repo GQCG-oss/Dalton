@@ -1,0 +1,144 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc_grad_ccpt_hf.info <<%EOF%
+   cc_grad_ccpt_hf
+   --------------
+   Molecule:         HF, C2v 
+   Wave Function:    CCSD(T) / DunningDZ
+   Test Purpose:     CCSD(T) gradient
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > cc_grad_ccpt_hf.mol <<%EOF%
+BASIS
+DunningDZ
+GRADIENT calculations
+for HF in CM coor. system
+    2    2  X  Y  Z   1.00D-15
+        1.0   1
+H     0.0000000000000000  0.000000000000000   0.000000000000000       *
+        9.0   1
+F     0.0000000000000000  0.000000000000000   1.76320000000000        *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc_grad_ccpt_hf.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.DEROVL
+.DERHAM
+**WAVE FUNCTION
+.TITLE
+   test case for CCSD(T) gradient calculation
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-10
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.CC(T)
+.THRENR
+ 1.0d-08
+.THRLEQ
+ 1.0d-08
+.PRINT
+ 2
+.NSYM
+ 4
+.FROIMP
+1 0 0 0
+0 0 0 0
+!*CCFOP
+!.DIPMOM
+.ETAPTI
+*DERIVA
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2, CCSD and CCSD(T) energies:
+CRIT1=`$GREP "Final *HF energy: * -100\.021777804782" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.144398588" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * -100\.146380195" $log | wc -l`
+CRIT4=`$GREP "Total energy CCSD\(T\): * -100\.147683363" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4` 
+CTRL[1]=7
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CCSD(T) nuclear electron gradient :
+CRIT1=`$GREP "H * ( |0)\.0000000000 * ( |0)\.0000000000 *  2\.8949385872" $log | wc -l`
+CRIT2=`$GREP "F * ( |0)\.0000000000 * ( |0)\.0000000000 * -2\.8949385872" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2` 
+CTRL[2]=2
+ERROR[2]="NUCLEAR REPULSION GRADIENT NOT CORRECT"
+# CCSD(T) one electron gradient :
+CRIT1=`$GREP "H * ( |0)\.0000000000 * ( |0)\.0000000000 * -5\.8903393053" $log | wc -l`
+CRIT2=`$GREP "F * ( |0)\.0000000000 * ( |0)\.0000000000 *  5\.8903393053" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2` 
+CTRL[3]=2
+ERROR[3]="CCSD(T) ONE-ELECTRON INTEGRAL GRADIENT NOT CORRECT"
+# CCSD(T) two electron gradient :
+CRIT1=`$GREP "H * ( |0)\.0000000000 * ( |0)\.0000000000 *  2\.659591152" $log | wc -l`
+CRIT2=`$GREP "F * ( |0)\.0000000000 * ( |0)\.0000000000 * -2\.659591152" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2` 
+CTRL[4]=2
+ERROR[4]="CCSD(T) TWO-ELECTRON INTEGRAL GRADIENT NOT CORRECT"
+# CCSD(T) reorthonormalization gradient :
+CRIT1=`$GREP "H * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.3531780815" $log | wc -l`
+CRIT2=`$GREP "F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( -|-0)\.3531780815" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2` 
+CTRL[5]=2
+ERROR[5]="CCSD(T) REORTHONORMALIZATION GRADIENT NOT CORRECT"
+# CCSD(T) molecular gradient :
+CRIT1=`$GREP "H * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.0173685154" $log | wc -l`
+CRIT2=`$GREP "F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( -|-0)\.0173685154" $log | wc -l`
+TEST[6]=`expr $CRIT1 \+ $CRIT2` 
+CTRL[6]=2
+ERROR[6]="CCSD(T) MOLECULAR GRADIENT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > cc_grad_ccpt_hf.check
+#######################################################################

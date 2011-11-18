@@ -1,0 +1,76 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Ground state first-order properties: \Sec{CCFOP}}
+\label{sec:ccfop}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In this Section, the calculation of ground-state first-order
+(one-electron) properties is described. The calculation
+is evoked with the \Sec{CCFOP} flag followed by the appropriate
+keywords as described in the list below. Note that \Sec{CCFOP}
+assumes that the proper integrals are written on the
+AOPROPER file, and one therefore has to set the correct property
+integral keyword(s) in the \Sec{*INTEGRAL} input Section. For properties
+that have both an electronic and a nuclear contribution, these will
+be printed separately with a print level of 10 or above.
+
+The calculation of first order properties is implemented for the 
+coupled cluster models CCS (which gives SCF first order properties),
+CC2, MP2 and CCSD.  
+By default, the chosen properties include orbital relaxation contributions,
+i.e. they are calculated from the relaxed CC (or MP) densities. 
+To disabilitate orbital relaxation for the CC2 and CCSD models, 
+see \Key{NONREL} below. Relaxation is always included for MP2. 
+Note also that the present implementation does not allow for CC2 relaxed first-order
+properties in the frozen core approximation (\Key{FROIMP}, see Sec.~\ref{chap:ccgeneral}).
+
+For details on the implementation, see 
+Refs.~\cite{Halkier:CCFOP,HalCor:CC2FOP}
+Publications that report results obtained with this module
+should cite Ref.\ \cite{Halkier:CCFOP}.
+
+\begin{description}
+\item[\Key{DIPMOM}] 
+        Calculate the permanent molecular electric dipole moment
+        (\verb+DIPLEN+ integrals).
+%
+\item[\Key{QUADRU}] 
+        Calculate the permanent traceless molecular electric
+        quadrupole moment (\verb+THETA+ integrals). Note that the
+        origin is the origin of the coordinate system specified
+        in the MOLECULE.INP file.
+%
+\item[\Key{NQCC  }] 
+        Calculate the electric field gradients at the nuclei
+        (\verb+EFGCAR+ integrals).
+%
+\item[\Key{SECMOM}] 
+        Calculate the electronic second moment of charge
+        (\verb+SECMOM+ integrals).
+%
+\item[\Key{RELCOR}] 
+        Calculate scalar-relativistic one-electron
+        corrections to the ground-state
+        energy (\verb+DARWIN+ and \verb+MASSVELO+ integrals).
+%
+\item[\Key{ALLONE}] 
+        Calculate all of the above-mentioned properties (all the
+        above-mentioned property integrals are needed).
+%
+\item[\Key{DAR2EL}] 
+        Calculate relativistic two-electron Darwin term.
+%
+\item[\Key{OPERAT}] \verb| |\newline
+\verb|READ (LUCMD,'(1X,A8)') LABPROP|\newline
+        Calculate the electronic contribution to the property defined
+        by the operator label \verb+LABPROP+ (corresponding 
+        \verb+LABPROP+ integrals needed).
+%
+\item[\Key{NONREL}] 
+        Compute the properties using the unrelaxed CC densities instead
+        of the default relaxed densities.
+%
+\item[\Key{TSTDEN}] 
+        Calculate the CC energy using the two-electron CC density.
+        Programmers keyword used for debugging purposes---Do not use.
+%
+\end{description}

@@ -1,0 +1,149 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LIH_431G_hyp_noddy.info <<%EOF%
+   LIH_431G_hyp_noddy
+   -----------
+   Molecule:         LiH 
+   Theory Level:     CC3 / 4-31G
+   Test Purpose:     Temporary check for NODDY code for first 
+                     hyperpolarizability (includes also polarizability)
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > LIH_431G_hyp_noddy.mol <<%EOF%
+BASIS
+4-31G
+blubber
+blubber
+    2    0  X  Y      1.00D-15
+        3.0   1    1    1
+Li    0.0000000000000000   0.000000000   1.30000000
+        1.0   1    1    1
+H     0.0000000000000000   0.000000000   0.00000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LIH_431G_hyp_noddy.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.DIPVEL
+.ANGMOM
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-12
+.DOUBLY OCCUPIED
+ 2
+.NODIIS
+*ORBITAL INPUT
+*CC INP
+.NSIMLE
+  1
+.CC3
+.RESTART
+.PRINT
+ 2
+.THRENR
+1.0D-14
+.THRLEQ
+1.0D-14
+.MXLRV
+  1000
+.MAX IT
+  1000
+#############
+*NODDY
+.XI
+.ETA
+!.XIDEN
+.ETADEN
+.FMAT
+#############
+*CCLR
+.OPERATOR
+ZDIPLEN ZDIPLEN
+.FREQUENCIES
+  1
+ 0.00 0.1120058274
+.ASYMSD
+*CCQR
+.NOBMAT
+.OPERATOR
+ZDIPLEN ZDIPLEN ZDIPLEN
+!ZDIPLEN ZDIPLEN XDIPLEN
+!ZDIPLEN XDIPLEN XDIPLEN
+.SHGFRE
+  1
+ 0.00 0.1120058274
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC3 energies:
+CRIT1=`$GREP "Total SCF   energy: * -7\.5755889298" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -7\.5941367749" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -7\.6021077782" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CC3 polarizability :
+CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\)  ( |0)\.0000   ZDIPLEN  \(unrel\.\)  ( |0)\.0000      12\.955911" $log | wc -l`
+
+TEST[2]=$CRIT1
+CTRL[2]=1
+ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
+
+# CC3 hyperpolarizability :
+CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\)  ( |0)\.0000   ZDIPLEN  \(unrel\.\)  ( |0)\.0000   ZDIPLEN  \(unrel\.\)  ( |0)\.0000     -1040\.6450" $log | wc -l`
+
+TEST[3]=$CRIT1
+CTRL[3]=1
+ERROR[3]="CC3 HYPERPOLARIZABILITY NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > LIH_431G_hyp_noddy.check
+#######################################################################
