@@ -30,6 +30,8 @@
 parent_path=`pwd`
 mkdir -p $parent_path/modules
 
+cpp='-DMOD_SRDFT'
+
 
 # defaults section for quick config
 do_quick_config=n
@@ -406,10 +408,10 @@ fi
 #
 # Test for the existence of the compiler
 #
-$ECHO "\n   Checking for Fortran compiler ..."
+$ECHO "\n   Searching for Fortran compiler ..."
 $ECHO   "   from this list: $complist \n"
 
-get_yes_or_no "Do you want to replace this with your own Fortran compiler search list?" n
+get_yes_or_no "Do you want to replace this with your own Fortran compiler search list (example: you want to use gfortran-4.6)?" n
 if [ $answer = 'y' ]; then
    $ECHO   "OK, please enter it : \c "
    read complist
@@ -492,10 +494,10 @@ else
 fi
 
 #
-$ECHO "\n   Checking for C compiler ..."
+$ECHO "\n   Searching for C compiler ..."
 $ECHO   "   from this list: $ccmplist \n"
 
-get_yes_or_no "Do you want to replace this with your own C compiler search list?" n
+get_yes_or_no "Do you want to replace this with your own C compiler search list (example: you want to use gcc-4.6)?" n
 if [ $answer = 'y' ]; then
    $ECHO   "OK, please enter it : \c "
    read ccmplist
@@ -600,7 +602,7 @@ for testlib in $liblist; do
                          blas3="true";;
             lib[cd]xml.a) LIB='-ldxml'
                        blas3="true"; lapack="true"
-                       cpp='-DVAR_DXML';;
+                       cpp="$cpp -DVAR_DXML";;
             libblas.a) LIB='-lblas'
                        if nm $testdir/$testlib | grep "gemm" > /dev/null
                        then
@@ -767,7 +769,7 @@ curr=`pwd`
 $ECHO '\n-->Current directory is '$curr'\n'
 
 INSTALL_DIR=./bin
-get_yes_or_no 'Use default $INSTALL_DIR as installation directory for DALTON binaries and scripts?' y
+get_yes_or_no "Use default $INSTALL_DIR as installation directory for DALTON binaries and scripts?" y
 
 while [ "$answer" = "n" ]
 do
@@ -874,7 +876,7 @@ case "$WHICH" in
     rs6000)
           case $opsys in
           2)
-             cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+             cpp="-w -P -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
              if [ $splitfiles = 'true' ] ; then
                 cpp="$cpp -DVAR_SPLITFILES"
              fi
@@ -889,7 +891,7 @@ case "$WHICH" in
              inc='-I../include'
              cpp=${cpp}" -DIMPLICIT_NONE";;
           *)
-             cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$work_memory_words',-D'INSTALL_MMWORK=$incore_memory_words'"
+             cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$work_memory_words',-D'INSTALL_MMWORK=$incore_memory_words',$cpp"
              if [ $splitfiles = 'true' ] ; then
                 cpp="$cpp,-DVAR_SPLITFILES"
              fi
@@ -917,7 +919,7 @@ case "$WHICH" in
              cpp=${cpp}",-DVAR_INT64"
           fi;;
     iris4d)
-          cpp="-DSYS_IRIX -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="-DSYS_IRIX -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           case $opsys in
                IRIX64)  opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0 -woff 2290'
                        copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0'
@@ -941,7 +943,7 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     cray)
-          cpp="-DSYS_CRAY -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' -DVAR_VECTOR"
+          cpp="-DSYS_CRAY -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' -DVAR_VECTOR $cpp"
           if [ "$mesp" != "dummy" ]; then
                 cpp="$cpp $parop"
           fi
@@ -950,7 +952,7 @@ case "$WHICH" in
           opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='cray.x';;
     cray_t90)
-          cpp="-DSYS_T90 -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' -DVAR_VECTOR"
+          cpp="-DSYS_T90 -DVAR_INT64 -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' -DVAR_VECTOR $cpp"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp $parop"
           fi
@@ -959,7 +961,7 @@ case "$WHICH" in
           opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
           def='t90.x';;
     cray_t3e)
-          cpp="-DSYS_T3D -DVAR_INT64 -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="-DSYS_T3D -DVAR_INT64 -DVAR_MFDS -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
           fi
@@ -969,7 +971,7 @@ case "$WHICH" in
           def='t3d.x'
           LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
     nec)
-          cpp="-DSYS_NEC DVAR_INT64 D'INSTALL_WRKMEM=$work_memory_words' D'INSTALL_MMWORK=$incore_memory_words' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR"
+          cpp="-DSYS_NEC DVAR_INT64 D'INSTALL_WRKMEM=$work_memory_words' D'INSTALL_MMWORK=$incore_memory_words' USX DVAR_MFDS DVAR_REAL DVAR_VECTOR $cpp"
           if [ "$mesp" = "dummy" ]; then
              cpp="-cpp $cpp"
           else
@@ -979,7 +981,7 @@ case "$WHICH" in
           cpp=${cpp}" DIMPLICIT_NONE"
           opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
     alpha)
-          cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ "$mesp" != "dummy" ]; then
              cpp="$cpp -D$parop"
              set_parallel_def $mesp
@@ -988,7 +990,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           opt='-fast -fpe3 -warn nouncalled';;
     sun4)
-          cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ $splitfiles = 'true' ] ; then
               cpp="$cpp -DVAR_SPLITFILES"
           fi
@@ -1000,7 +1002,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           opt='-fast';;
     hp)
-          cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
@@ -1033,7 +1035,7 @@ case "$WHICH" in
           copt=${copt}" -AC99"
           cpp=${cpp}$;;
     linux-alpha)
-          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_INT64 -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_def $mesp
@@ -1046,7 +1048,7 @@ case "$WHICH" in
           cpp=${cpp}" -DIMPLICIT_NONE"
           copt='-fast';;
     linux|cygwin) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ $splitfiles = 'true' ] ; then
              cpp="$cpp -DVAR_SPLITFILES"
           else
@@ -1160,7 +1162,7 @@ case "$WHICH" in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE";;
     darwin) 
-          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words'"
+          cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$work_memory_words' -D'INSTALL_MMWORK=$incore_memory_words' $cpp"
           if [ "$mesp" != "dummy" ]; then
               cpp="$cpp -D$parop"
               set_parallel_def $mesp
