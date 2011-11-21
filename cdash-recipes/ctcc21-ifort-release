@@ -10,7 +10,7 @@ mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 
 cd $TMP_DIR
-./setup --fc=ifort --cc=icc --scratch=$SCRATCH_DIR -D BUILDNAME="release-branch-ubuntu10.04-i686-ifort12.0-int32"
+./setup --fc=ifort --cc=icc -D SCRATCH_DIR=$SCRATCH_DIR -D BUILDNAME="release-branch-ubuntu10.04-i686-ifort12.0-int32"
 
 cd $TMP_DIR/build
 make Nightly
