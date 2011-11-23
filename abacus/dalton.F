@@ -393,11 +393,9 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          END IF
 
 Cahs#ifdef THIS_IS_CMAKE_BUILD
-Cahs         write(lupri, *)
-Cahs         write(lupri, *)
-Cahs         write(lupri, '(a)') 'Compilation info'
-Cahs         write(lupri, '(a)') '----------------'
-Cahs         write(lupri, *)
+Cahs         write(lupri, '(//a/a/)')
+Cahs     &     'Compilation info',
+Cahs     &     '----------------'
 Cahs         call print_compilation_info()
 Cahs         call print_git_revision_info()
 Cahs#endif
