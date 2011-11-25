@@ -1,3 +1,4 @@
+#define DEBUG_RSPOLI
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -113,6 +114,10 @@ CSONIA SONIA SONIA
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA end control direct for kappabar of CCSD(T)
 CSONIA SONIA SONIA
+!
+! srDFT linear response
+#include <srdftlnr.h>   
+!
 C
 C -- local constants
 C
@@ -877,6 +882,14 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
 ! Manu test !!!!!!!!!!!
+!
+#ifdef MOD_SRDFT
+      NOSIM_SR=NOSIM
+      NCSIM_SR=NCSIM
+! ... so that NOSIM and NCSIM can be used in sirfck for computing the srHxc
+! Kernel contributions to the sigma vector       
+#endif      
+!
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
 #ifdef DEBUG_RSPOLI
