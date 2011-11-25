@@ -1,3 +1,4 @@
+#define SIRFCK_DEBUG
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -101,6 +102,9 @@ Cholesky
 Cholesky
 C
 #include <ibtfun.h>
+C
+C linear response SRDFT
+#include <srdftlnr.h>
 C
       LOGICAL SFIRST, PREHF, IOPTVP, DO_CHOINT
       SAVE SFIRST
@@ -369,20 +373,52 @@ C                  for Hartree SR term
                ELSE
                   JFMAT = 2
                END IF
-               DO I = 1,NSR_DMAT
+!
+!
+! Manu: introduced nosim_r and ncsim_r variables in the common block. 
+!       They correspond to nosim and ncsim in the linear response code 
+!
+#ifdef MOD_SRDFT
+#ifdef SIRFCK_DEBUG
+               write(lupri,*) 'nosim_sr =', NOSIM_SR 
+               write(lupri,*) 'ncsim_sr =', NCSIM_SR 
+#endif
+#endif
+!!!! new new code 
+!              
+               IF (NOSIM_SR.NE.0) THEN  
+                  DO IOSIM=1,NOSIM_SR
+                     CALL DAXPY(N2BASX,D1,DMAT(1,IOSIM+NOSIM_SR),1,
+     &                          DMAT(1,IOSIM),1)
+                  END DO
+                      IF (NCSIM_SR.NE.0) THEN
+                         DO ICSIM=1,NCSIM_SR
+                            CALL DAXPY(N2BASX,D1,DMAT(1,
+     &                                 2*NOSIM_SR+NCSIM_SR+ICSIM),1,
+     &                                 DMAT(1,2*NOSIM_SR+ICSIM),1)
+                          END DO
+                      END IF 
+               ELSE
+                   DO ICSIM=1,NCSIM_SR
+                      CALL DAXPY(N2BASX,D1,DMAT(1,ICSIM+NCSIM_SR),1,
+     &                           DMAT(1,ICSIM),1)
+                   END DO
+
+               END IF     
 !!! new code !!!
+!>>>>>>        DO I = 1,NSR_DMAT
 C
-                  CALL DAXPY(N2BASX,D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
+!>>>>>>           CALL DAXPY(N2BASX,D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
 C                 ... add DV(I) to DC(I)
+!>>>>>>        END DO
 !
 ! Manu: the core one-index transformed and transition density matrices
 !       now contains the total ones 
-
+!
 !!!!! inital code !!!
 !                 CALL DAXPY(N2BASX,D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
 C                 ... add DV(I) to DC(I)
 !!!!!!!!!!!!!!!!!!!!!
-               END DO
             ELSE
 C              ... total DMAT = DC when NASHT.eq.0 or CISRDFT
                JFMAT   = 1
@@ -415,7 +451,7 @@ C              remove any "do exchange" bits
             write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
             write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
          do i = 1,ndmat+1
-            write(lupri,*) 'SIRFCK: DMAT no.',i,' out of',ndmat
+            write(lupri,*) 'SIRFCK: DMAT no.',i,' out of',ndmat+1
             call output(DMAT(1,i),1,nbast,1,nbast,nbast,nbast,-1,lupri)
          end do
 #endif
@@ -482,6 +518,8 @@ C
 C
 #ifdef SIRFCK_DEBUG
                 write(lupri,*) 'JFMAT =', JFMAT
+                write(lupri,*) 'nsr_dmat = ', NSR_DMAT
+                write(lupri,*) 'nosim_sr+ncsim_sr = ', NOSIM_SR+NCSIM_SR
 #endif 
                    KDMAT = KLAST
                    KLAST = KDMAT + NSR_DMAT*N2BASX
@@ -489,13 +527,40 @@ C
                    IF (KLAST.GT.LWORK)
      &             CALL STOPIT('SIRFCK sr direct','DMAT',KLAST,LWORK)
 C
-                   DO ISRMAT = 1, NSR_DMAT
-                      IDMAT = JFMAT*(ISRMAT-1) +1
-                      KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
-                      CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
-!                     CALL DAXPY(N2BASX,D1,DMAT(1,IDMAT+1),1,
-!    &                              WRK(KIDMAT),1)
-                   END DO 
+C Manu: new code for many roots ...
+C Manu: Note that I did not consider spin polarization (should we use
+C JMAT instead of "2" in ISRMAT=2*NOSIM_SR+ICDMAT ?)
+C
+                IF (NOSIM_SR.NE.0) THEN  
+                   DO IODMAT=1,NOSIM_SR
+                      KODMAT=KDMAT+(IODMAT-1)*N2BASX 
+                      CALL DCOPY(N2BASX,DMAT(1,IODMAT),1,WRK(KODMAT),1)
+                   END DO
+                   IF (NCSIM_SR.NE.0) THEN
+                      DO ICDMAT=1,NCSIM_SR
+                         ISRMAT=2*NOSIM_SR+ICDMAT
+                         KCDMAT=KDMAT+(NOSIM_SR+ICDMAT-1)*N2BASX
+                         CALL DCOPY(N2BASX,DMAT(1,ISRMAT),1,
+     &                              WRK(KCDMAT),1)
+                       END DO
+                   END IF 
+               ELSE
+                   DO ICDMAT=1,NCSIM_SR
+                      KCDMAT=KDMAT+(ICDMAT-1)*N2BASX 
+                      CALL DCOPY(N2BASX,DMAT(1,ICDMAT),1,WRK(KCDMAT),1)
+                   END DO
+
+               END IF     
+C
+!!! initial code >>>>>>>>>
+!>>>               DO ISRMAT = 1, NSR_DMAT
+!>>>                  IDMAT = JFMAT*(ISRMAT-1) +1
+!>>>                  KIDMAT = KDMAT +(ISRMAT-1)*N2BASX 
+!>>>                  CALL DCOPY(N2BASX,DMAT(1,IDMAT),1,WRK(KIDMAT),1)
+C                     CALL DAXPY(N2BASX,D1,DMAT(1,IDMAT+1),1,
+C    &                              WRK(KIDMAT),1)
+!>>>               END DO 
+!!! end initial code <<<<<<<<                    
 
 C
                if (atomdf .AND. CHIVAL .LT. D0) then
@@ -531,18 +596,49 @@ C
                CALL DAXPY(NSR_DMAT*N2BASX,D1,WRK(KFSRAO),1,FMAT,1)
             ELSE
 C
+!
+!
+! Manu: probably needs to be modified when more than one root ...
+! initial code >>>>>
                DO I = 1,NSR_DMAT
                   JFSRAO = KFSRAO + (I-1)*N2BASX
                   JF = JFMAT*(I-1)+ 1
                   CALL DAXPY(N2BASX,D1,WRK(JFSRAO),1,FMAT(1,JF),1)
                END DO
+! end initial code <<<<<
             END IF
             SRINTS = .FALSE.
             IF (NASHT.GT.0) THEN
-               DO I = 1,NSR_DMAT
-!!!! new code !!!!!!
-                 CALL DAXPY(N2BASX,-D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
+!!!! new new code 
+!              
+               IF (NOSIM_SR.NE.0) THEN  
+                  DO IOSIM=1,NOSIM_SR
+                     CALL DAXPY(N2BASX,-D1,DMAT(1,IOSIM+NOSIM_SR),1,
+     &                          DMAT(1,IOSIM),1)
+                  END DO
+                      IF (NCSIM_SR.NE.0) THEN
+                         DO ICSIM=1,NCSIM_SR
+                            CALL DAXPY(N2BASX,-D1,DMAT(1,
+     &                                 2*NOSIM_SR+NCSIM_SR+ICSIM),1,
+     &                                 DMAT(1,2*NOSIM_SR+ICSIM),1)
+                          END DO
+                      END IF 
+               ELSE
+                   DO ICSIM=1,NCSIM_SR
+                      CALL DAXPY(N2BASX,-D1,DMAT(1,ICSIM+NCSIM_SR),1,
+     &                           DMAT(1,ICSIM),1)
+                   END DO
+
+               END IF     
+!
+!
+!
+!!!! new code !!!
+!>>>>>         DO I = 1,NSR_DMAT
+!               
+!>>>>>           CALL DAXPY(N2BASX,-D1,DMAT(1,2*I),1,DMAT(1,2*I-1),1)
 C                 ... restore DC(I) = DTOT(I) -  DV(I)
+!>>>>>         END DO
 !
 ! Manu: the core one-index transformed and transition density matrices
 !       are now restored. 
@@ -551,7 +647,6 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
 C                CALL DAXPY(N2BASX,-D1,DMAT(1,NSR_DMAT+I),1,DMAT(1,I),1)
 C                 ... restore DC(I) = DTOT(I) -  DV(I)
 !!!!!!!!!!!!!!!!!!!!!!!
-               END DO
             END IF
          ENDIF
          DO I = 1,NDMAT
@@ -798,81 +893,211 @@ C              DT, DXT
             END IF
          END IF
 C
-C        loop over NSRMAT output matrices (later do the loop inside SRDFT for
-C        efficiency!!!!!) /hjaaj June 2009
-C
-         DO JSRMAT = 1, NSR_DMAT
-          JDMAT = NDOFF*(JSRMAT-1) + 1
-          IF (DOATR) THEN
+!
+! Manu november 2011: rewrote specific code for MCSCF-srDFT linear
+!                     response when we need to compute srxc Kernel
+!                     contributions for more than one root. In this case
+!                     DMAT looks like
+!
+!  DXCAO1 DXCAO2 ... DXVAO1 DXVAO2 ... DTCAO1 DTCAO2 ... DTVAO1 DTVAO2 ... DTOT 
+!  <---------------> <---------------> <---------------> <--------------->
+!      NOSIM              NOSIM             NCSIM             NCSIM         1
+!                     
+!  where NOSIM > 1 or NCSIM > 1 
+!
+! Note: spin polarization and LSRHYBR option are not considered. Should be done
+! later on ...
+!
+         IF ((DOATR).AND.(NASHT.GT.0).AND.
+     &      ((NOSIM_SR.GT.1).OR.(NCSIM_SR.GT.1))) THEN
+!     
+C           IF (NSR_DMAT.NE.(NOSIM_SR+NCSIM_SR)) THEN
+C              call quit('NSR_DMAT differs from nosim+ncsim !!!') 
+C           END IF
+!
+!>>>>>>>>>>>>>>> Start "more than one root" code >>>>>>>>>>>>>         
+!
+            IF (NOSIM_SR.NE.0) THEN
+
+               DO JOMAT = 1, NOSIM_SR
+C we need the symmetric part of DXTOTAO in DMAT(1,JDXAO) for SRDFT :
+                  CALL DCOPY(N2BASX,DMAT(1,JOMAT),1,DMAT(1,JDXAO),1)
+                  CALL DAXPY(N2BASX,D1,DMAT(1,JOMAT+NOSIM_SR),1,
+     &                       DMAT(1,JDXAO),1)
+C                 ... DXTOTAO = DXCAO + DXVAO
+                  CALL DGETSI(NBAST,DMAT(1,JDXAO),DMAT(1,JDXAO))
+C                 ... extract symmetric component (matrix is assumed
+C                 symmetric in SRDFT, and it will in general not have any
+C                 matrix symmetry e.g. when SIRFCK is called from RSPOLI)
 #ifdef SIRFCK_DEBUG
-              write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
-              write(lupri,*) 'JDMAT = ', JDMAT
-              write(lupri,*) 'JDXAO = ', JDXAO
-              WRITE(LUPRI,*) 'DMAT(1,JDMAT)'
-              call output(DMAT(1,JDMAT),1,NBAST,1,NBAST,NBAST,
-     &                    NBAST,-1,lupri)
-              WRITE(LUPRI,*) 'DMAT(1,JDMAT+1)'
-              call output(DMAT(1,JDMAT+1),1,NBAST,1,NBAST,NBAST,
-     &                NBAST,-1,lupri)
+                  write(lupri,*) 'NOSIM not zero, JOMAT = ', JOMAT
+                  WRITE(LUPRI,*) 'DMAT(1,JDXAO), JDXA0 =',JDXAO
+                  call output(DMAT(1,JDXAO),1,NBAST,1,NBAST,NBAST,
+     &                        NBAST,-1,lupri)
+#endif
+C                 SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+                  CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
+                  CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,
+     &              DOERG,.FALSE.,DOATR,WRK(KLAST),LWRK,IPRSRDFT)
+C                 IF (DOATR)
+C    &            ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
+C                 ... for MCSRDFT csf sigma-vectors : - 2 ESRLTR cref(i)
+C                 NOT NEEDED because we project out CREF component in sigma vectors
+C
+                  CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JOMAT),1)
+!
+               END DO ! JOMAT = 1, NOSIM_SR
+!               
+               IF (NCSIM_SR.NE.0) THEN
+
+                  DO JCMAT = 1, NCSIM_SR
+                     JCDMAT = 2*NOSIM_SR+JCMAT
+C we need the symmetric part of DTTOTAO in DMAT(1,JDXAO) for SRDFT :
+                     CALL DCOPY(N2BASX,DMAT(1,JCDMAT),1,DMAT(1,JDXAO),1)
+                     CALL DAXPY(N2BASX,D1,DMAT(1,JCDMAT+NCSIM_SR),1,
+     &                          DMAT(1,JDXAO),1)
+C                    ... DTTOTAO = DTCAO + DTVAO
+                     CALL DGETSI(NBAST,DMAT(1,JDXAO),DMAT(1,JDXAO))
+#ifdef SIRFCK_DEBUG
+                     write(lupri,*) 'NOSIM and NCSIM not zero, JCMAT =
+     &                              ', JCMAT
+                     WRITE(LUPRI,*) 'DMAT(1,JDXAO), JDXA0 =',JDXAO
+                     call output(DMAT(1,JDXAO),1,NBAST,1,NBAST,NBAST,
+     &                           NBAST,-1,lupri)
+#endif
+C                 SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+                     CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
+                     CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,DOERG,
+     &                          .FALSE.,DOATR,WRK(KLAST),LWRK,
+     &                          IPRSRDFT)
+C
+                     CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,
+     &                          FMAT(1,JCDMAT),1)
+!
+                  END DO ! JCMAT = 1, NCSIM_SR
+
+               END IF ! IF (NCSIM_SR.NE.0) 
+
+            ELSE   
+                
+                 DO JCMAT = 1, NCSIM_SR
+C we need the symmetric part of DTTOTAO in DMAT(1,JDXAO) for SRDFT :
+                    CALL DCOPY(N2BASX,DMAT(1,JCMAT),1,DMAT(1,JDXAO),1)
+                    CALL DAXPY(N2BASX,D1,DMAT(1,JCMAT+NCSIM_SR),1,
+     &                          DMAT(1,JDXAO),1)
+C                   ... DTTOTAO = DTCAO + DTVAO
+                    CALL DGETSI(NBAST,DMAT(1,JDXAO),DMAT(1,JDXAO))
+#ifdef SIRFCK_DEBUG
+                    write(lupri,*) 'NOSIM=0 and NCSIM not zero, JCMAT =
+     &                              ', JCMAT
+                    WRITE(LUPRI,*) 'DMAT(1,JDXAO), JDXA0 =',JDXAO
+                    call output(DMAT(1,JDXAO),1,NBAST,1,NBAST,NBAST,
+     &                           NBAST,-1,lupri)
+#endif
+C                 SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+                    CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
+                    CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,DOERG,
+     &                         .FALSE.,DOATR,WRK(KLAST),LWRK,IPRSRDFT)
+C
+                     CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JCMAT),1)
+!
+                 END DO ! JCMAT = 1, NCSIM_SR
+                
+!              
+            END IF !IF (NOSIM_SR.NE.0)  
+C
+!<<<<<<<<<<<<<< End of "more than one root" code <<<<<<<<<<<<<<<<<
+!
+!        Regular one root problem to solve (wave function optimization
+!        of one root linear response) 
+!
+         ELSE
+!
+C            loop over NSRMAT output matrices (later do the loop inside SRDFT for
+C            efficiency!!!!!) /hjaaj June 2009
+C
+             DO JSRMAT = 1, NSR_DMAT
+                JDMAT = NDOFF*(JSRMAT-1) + 1
+                IF (DOATR) THEN
+#ifdef SIRFCK_DEBUG
+                    write(lupri,*) 'DOATR in sirfck: ndoff =', ndoff
+                    write(lupri,*) 'JDMAT = ', JDMAT
+                    write(lupri,*) 'JDXAO = ', JDXAO
+                    WRITE(LUPRI,*) 'DMAT(1,JDMAT)'
+                    call output(DMAT(1,JDMAT),1,NBAST,1,NBAST,NBAST,
+     &                          NBAST,-1,lupri)
+                    WRITE(LUPRI,*) 'DMAT(1,JDMAT+1)'
+                    call output(DMAT(1,JDMAT+1),1,NBAST,1,NBAST,NBAST,
+     &                      NBAST,-1,lupri)
 #endif
 C           we need the symmetric part of DXTOTAO in DMAT(1,JDXAO) for SRDFT :
-            IF (NDOFF .EQ. 1) THEN
+                    IF (NDOFF .EQ. 1) THEN
 C              closed shell SCF case
-               CALL DGETSI(NBAST,DMAT(1,JDMAT),DMAT(1,JDXAO))
-            ELSE
-               CALL DCOPY(N2BASX,DMAT(1,JDMAT),1,DMAT(1,JDXAO),1)
-               CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,
+                       CALL DGETSI(NBAST,DMAT(1,JDMAT),DMAT(1,JDXAO))
+                    ELSE
+                       CALL DCOPY(N2BASX,DMAT(1,JDMAT),1,
+     &                            DMAT(1,JDXAO),1)
+                       CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,
      &                              DMAT(1,JDXAO),1)
 C              ... DXTOTAO = DXCAO + DXVAO
-               CALL DGETSI(NBAST,DMAT(1,JDXAO),DMAT(1,JDXAO))
+                       CALL DGETSI(NBAST,DMAT(1,JDXAO),DMAT(1,JDXAO))
 C              ... extract symmetric component (matrix is assumed
 C              symmetric in SRDFT, and it will in general not have any
 C              matrix symmetry e.g. when SIRFCK is called from RSPOLI)
-               IF (DO_SPINDNS) THEN
-                  CALL DGETSI(NBAST,DMAT(1,JDMAT+2),DMAT(1,JDXSAO))
+                       IF (DO_SPINDNS) THEN
+                          CALL DGETSI(NBAST,DMAT(1,JDMAT+2),
+     &                                DMAT(1,JDXSAO))
 C              ... extract symmetric component of DXSAO
-               END IF
-               IF (LSRHYBR) THEN
-                  CALL DGETSI(NBAST,DMAT(1,JDMAT+1),DMAT(1,JDXAO+1))
+                       END IF
+                       IF (LSRHYBR) THEN
+                          CALL DGETSI(NBAST,DMAT(1,JDMAT+1),
+     &                                DMAT(1,JDXAO+1))
 C                 ... copy symmetric part of DXVAO
-               END IF
-            END IF
-          ELSE
-            JDAO = JDMAT
-            IF (NDOFF.NE.1)
-     &      CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,DMAT(1,JDAO),1)
+                       END IF
+                    END IF
+                ELSE
+                    JDAO = JDMAT
+                    IF (NDOFF.NE.1)
+     &              CALL DAXPY(N2BASX,D1,DMAT(1,JDMAT+1),1,
+     &                         DMAT(1,JDAO),1)
 C           ... get total DMAT = DC + DV if NASHT .gt. 0
-          END IF
+                END IF
 C         SRDFT(NDMAT,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
 #ifdef SIRFCK_DEBUG
-          WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
-          WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
-          call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,lupri)
-          WRITE(LUPRI,*) 'DMAT(1,JDAO+1), JDAO+1 =',JDAO+1
-          call output(DMAT(1,JDAO+1),1,NBAST,1,NBAST,NBAST,
-     &                NBAST,-1,lupri)
-          WRITE(LUPRI,*) 'SIRFCK: DFT_SPINDNS = ', DFT_SPINDNS, 
+                WRITE(LUPRI,*) 'SIRFCK: calling SRDFT, DOERG',DOERG  !JT
+                WRITE(LUPRI,*) 'DMAT(1,JDAO), JDAO =',JDAO
+                call output(DMAT(1,JDAO),1,NBAST,1,NBAST,NBAST,NBAST,
+     &                      -1,lupri)
+                WRITE(LUPRI,*) 'DMAT(1,JDAO+1), JDAO+1 =',JDAO+1
+                call output(DMAT(1,JDAO+1),1,NBAST,1,NBAST,NBAST,
+     &                      NBAST,-1,lupri)
+                WRITE(LUPRI,*) 'SIRFCK: DFT_SPINDNS = ', DFT_SPINDNS, 
      &                   'BEFORE SRDFT'
 #endif
-          CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
-          DFT_SPINDNS_SAVE = DFT_SPINDNS
-          DFT_SPINDNS = DO_SPINDNS 
-          CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,
-     &              DOERG,.FALSE.,DOATR,WRK(KLAST),LWRK,IPRSRDFT)
-          DFT_SPINDNS = DFT_SPINDNS_SAVE
+                CALL DZERO(WRK(KSRAO),NSRAO*N2BASX)
+                DFT_SPINDNS_SAVE = DFT_SPINDNS
+                DFT_SPINDNS = DO_SPINDNS 
+                CALL SRDFT(1,WRK(KSRAO),DMAT(1,JDAO),EDFT,
+     &                     DOERG,.FALSE.,DOATR,WRK(KLAST),
+     &                     LWRK,IPRSRDFT)
+                DFT_SPINDNS = DFT_SPINDNS_SAVE
 C         IF (DOATR)
 C    &      ESRLTR = ESRLTR + DDOT(N2BASX,WRK(KSRAO),1,DMAT(1,JDAO),1)
 C           ... for MCSRDFT csf sigma-vectors : - 2 ESRLTR cref(i)
 C               NOT NEEDED because we project out CREF component in sigma vectors
 C
-          CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JDMAT),1)
-          IF (DO_SPINDNS)
-     &    CALL DAXPY(N2BASX,D1,WRK(KSRAO+N2BASX),1,FMAT(1,JDMAT+2),1)
+                CALL DAXPY(N2BASX,D1,WRK(KSRAO),1,FMAT(1,JDMAT),1)
+                IF (DO_SPINDNS)
+     &             CALL DAXPY(N2BASX,D1,WRK(KSRAO+N2BASX),1,
+     &                        FMAT(1,JDMAT+2),1)
 
-          IF (LSRHYBR) CALL DCOPY(N2BASX,
-     &        WRK(KSRAO+N2BASX),1,FMAT(1,JDMAT+1),1)
+                IF (LSRHYBR) 
+     &             CALL DCOPY(N2BASX,WRK(KSRAO+N2BASX),1,
+     &                        FMAT(1,JDMAT+1),1)
 C
-         END DO  ! JSRMAT = 1, NSR_DMAT
+            END DO  ! JSRMAT = 1, NSR_DMAT
+!         
+         END IF  ! IF MCSCF-srDFT linear response with more than one root ...
 C
 C
          IF (DOERG) THEN
