@@ -700,8 +700,8 @@ C
 C
             CALL CC3_TROCC(WORK(KINTOC),WORK(KOFF1),WORK(KLAMDP),
      *                     WORK(KEND2),LWRK2,ISINTR2)
-            !Close and delete the file for T1B-transformed occupied integrals
-            CALL WCLOSE2(LUCKJDR,FNCKJDR,'DELETE')
+            !Close and keep the file for T1B-transformed occupied integrals
+            CALL WCLOSE2(LUCKJDR,FNCKJDR,'KEEP') !it was deleted before, but apparently it is needed (filip)
 C
          END DO !MCAU
 C
@@ -1031,14 +1031,18 @@ C
                         !Close and keep the file for C1-transformed virt int
                         !...or delte it if you don't need it anymore
 
-                        IF (      (ISYMD.EQ.NSYM) .AND. (ISYMB.EQ.NSYM)
-     *                      .AND. (D.EQ.NVIR(ISYMD))
-     *                      .AND. (B.EQ.NVIR(ISYMB))) THEN
-C
-                               CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
-                        ELSE
-                               CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
-                        END IF
+*                       IF (      (ISYMD.EQ.NSYM) .AND. (ISYMB.EQ.NSYM)
+*    *                      .AND. (D.EQ.NVIR(ISYMD))
+*    *                      .AND. (B.EQ.NVIR(ISYMB))) THEN
+*
+*                              CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
+*                       ELSE
+*                              CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
+*                       END IF
+
+                        !It actually seems thath the file for C1-transformed virt int
+                        !is needed all the way through (filip)
+                        CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
 C
                      END DO !MCAU
 C
