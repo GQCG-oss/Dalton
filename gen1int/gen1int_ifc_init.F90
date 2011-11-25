@@ -1,3 +1,4 @@
+#define GEN1INT_DEBUG
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -39,6 +40,7 @@
   !> \brief initializes the data used in Gen1Int interface before any calculation
   !> \author Bin Gao
   !> \date 2010-12-06
+  !> \param num_comp is the number of components
   !> \param num_atom_type is the number of atomic types
   !> \param num_sym_atom contains the number of symmetry independent centers of atomic types
   !> \param ang_numbers contains the angular momentum (1=s, 2=p, 3=d, ...)
@@ -47,25 +49,26 @@
   !> \param num_contr contains the number of contracted functions
   !> \param exponents contains the exponents of primitive shells
   !> \param ucontr_coefs contains the unnormalized contraction coefficients
-  subroutine gen1int_ifc_init(num_atom_type, KATOM, num_sym_atom, ang_numbers,    &
-                              NBLCK, KANG, num_cgto, KBLOCK, num_prim, num_contr, &
-                              KPRIM, exponents, ucontr_coefs)
+  subroutine gen1int_ifc_init(num_comp, num_atom_type, KATOM, num_sym_atom, &
+                              ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
+                              num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
     ! AO sub-shells
     use gen1int_shell
     implicit none
+    integer, intent(in) :: num_comp
     integer, intent(in) :: num_atom_type
     integer, intent(in) :: KATOM
     integer, intent(in) :: num_sym_atom(KATOM)
-    integer, intent(in) :: ang_numbers(KATOM)
-    integer, intent(in) :: NBLCK(KATOM)
+    integer, intent(in) :: ang_numbers(KATOM,num_comp)
+    integer, intent(in) :: NBLCK(KATOM,num_comp)
     integer, intent(in) :: KANG
-    integer, intent(in) :: num_cgto(KANG,KATOM)
+    integer, intent(in) :: num_cgto(KANG,KATOM,num_comp)
     integer, intent(in) :: KBLOCK
-    integer, intent(in) :: num_prim(KBLOCK)
-    integer, intent(in) :: num_contr(KBLOCK)
+    integer, intent(in) :: num_prim(KBLOCK,num_comp)
+    integer, intent(in) :: num_contr(KBLOCK,num_comp)
     integer, intent(in) :: KPRIM
-    real(REALK), intent(in) :: exponents(KPRIM,KBLOCK)
-    real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK)
+    real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
+    real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
 #ifdef BUILD_GEN1INT
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -74,6 +77,7 @@
 #ifdef GEN1INT_DEBUG
 #include "priunit.h"
 #endif
+    integer icomp      !incremental recorder over components
     integer IDX_CENT   !index of symmetry independent center
     integer IDX_BLOCK  !
     integer ITYP       !incremental recorder over number of atomic types
@@ -92,79 +96,85 @@
     ! gets the number of AO sub-shells and kind of GTOs
     num_ao_shells = 0
     is_sgto = .false.
-    ! number of atomic types
-    do ITYP = 1, num_atom_type
-      ! number of symmetry independent centers of this type
-      do ICENT = 1, num_sym_atom(ITYP)
-        ! angular momentum 1=s, 2=p, 3=d, etc.
-        do IANG = 1, ang_numbers(ITYP)
-          num_ao_shells = num_ao_shells+1
-          if (SPH(IANG)) is_sgto = .true.
-        end do
-       end do
+    ! loops over components of basis sets
+    do icomp = 1, num_comp
+      ! number of atomic types
+      do ITYP = 1, num_atom_type
+        ! number of symmetry independent centers of this type
+        do ICENT = 1, num_sym_atom(ITYP)
+          ! angular momentum 1=s, 2=p, 3=d, etc.
+          do IANG = 1, ang_numbers(ITYP,icomp)
+            num_ao_shells = num_ao_shells+1
+            if (SPH(IANG)) is_sgto = .true.
+          end do
+         end do
+      end do
     end do
     ! initializes the AO sub-shells
     allocate(ao_shells(num_ao_shells), stat=ierr)
     if (ierr/=0) call QUIT("gen1int_ifc_init>> failed to allocate ao_shells!")
-    IDX_CENT = 0
-    IDX_BLOCK = 0
     ishell = 0
-    ! number of atomic types
-    do ITYP = 1, num_atom_type
-      ! number of symmetry independent centers of this type
-      do ICENT = 1, num_sym_atom(ITYP)
-        IDX_CENT = IDX_CENT+1
-        KBCH = IDX_BLOCK
-        ! angular momentum 1=s, 2=p, 3=d, etc.
-        do IANG = 1, ang_numbers(ITYP)
-          ! next block
-          KBCH = KBCH+1
-          ! gets the contraction coefficients
-          allocate(contr_coef(num_contr(KBCH),num_prim(KBCH)), stat=ierr)
-          if (ierr/=0) call QUIT("gen1int_ifc_init>> failed to allocate contr_coef!")
-          do iprim = 1, num_prim(KBCH)
-            do icontr = 1, num_contr(KBCH)
-              contr_coef(icontr,iprim) = ucontr_coefs(iprim,icontr,KBCH)
+    ! loops over components of basis sets
+    do icomp = 1, num_comp
+      IDX_BLOCK = 0
+      IDX_CENT = 0
+      ! number of atomic types
+      do ITYP = 1, num_atom_type
+        ! number of symmetry independent centers of this type
+        do ICENT = 1, num_sym_atom(ITYP)
+          IDX_CENT = IDX_CENT+1
+          KBCH = IDX_BLOCK
+          ! angular momentum 1=s, 2=p, 3=d, etc.
+          do IANG = 1, ang_numbers(ITYP,icomp)
+            ! next block
+            KBCH = KBCH+1
+            ! gets the contraction coefficients
+            allocate(contr_coef(num_contr(KBCH,icomp),num_prim(KBCH,icomp)), stat=ierr)
+            if (ierr/=0) call QUIT("gen1int_ifc_init>> failed to allocate contr_coef!")
+            do iprim = 1, num_prim(KBCH,icomp)
+              do icontr = 1, num_contr(KBCH,icomp)
+                contr_coef(icontr,iprim) = ucontr_coefs(iprim,icontr,KBCH,icomp)
+              end do
             end do
+            ! normalizes the contraction coefficients
+            ang_num = IANG-1
+            !-if (SPH(IANG)) then
+            if (is_sgto) then
+              call norm_contr_sgto(ang_num, num_prim(KBCH,icomp),                &
+                                   exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
+                                   num_contr(KBCH,icomp), contr_coef)
+            else
+              call norm_contr_cgto(ang_num, num_prim(KBCH,icomp),                &
+                                   exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
+                                   num_contr(KBCH,icomp), contr_coef)
+            end if
+            !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
+            ishell = ishell+1
+            if (ishell>1) then
+              !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
+              call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,     &
+                     coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,         &
+                     num_prim=num_prim(KBCH,icomp),                          &
+                     exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
+                     num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef, &
+                     last_shell=ao_shells(ishell-1), ao_shell=ao_shells(ishell))
+            ! sets the first AO sub-shell
+            else
+              !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
+              call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT,     &
+                     coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,         &
+                     num_prim=num_prim(KBCH,icomp),                          &
+                     exponents=exponents(1:num_prim(KBCH,icomp),KBCH,icomp), &
+                     num_contr=num_contr(KBCH,icomp), contr_coef=contr_coef, &
+                     ao_shell=ao_shells(ishell))
+            end if
+            deallocate(contr_coef)
+            ! skips other CGTOs in this AO block for this angular momentum
+            KBCH = KBCH+num_cgto(IANG,ITYP,icomp)-1
           end do
-          ! normalizes the contraction coefficients
-          ang_num = IANG-1
-          !-if (SPH(IANG)) then
-          if (is_sgto) then
-            call norm_contr_sgto(ang_num, num_prim(KBCH),          &
-                                 exponents(1:num_prim(KBCH),KBCH), &
-                                 num_contr(KBCH), contr_coef)
-          else
-            call norm_contr_cgto(ang_num, num_prim(KBCH),          &
-                                 exponents(1:num_prim(KBCH),KBCH), &
-                                 num_contr(KBCH), contr_coef)
-          end if
-          !-ISTBNU(IDX_CENT)  !stabiliser: basic sym. op. that do not move center
-          ishell = ishell+1
-          if (ishell>1) then
-            !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
-            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT, &
-                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,     &
-                   num_prim=num_prim(KBCH),                            &
-                   exponents=exponents(1:num_prim(KBCH),KBCH),         &
-                   num_contr=num_contr(KBCH), contr_coef=contr_coef,   &
-                   last_shell=ao_shells(ishell-1), ao_shell=ao_shells(ishell))
-          ! sets the first AO sub-shell
-          else
-            !-call gen1int_shell_set(is_sgto=SPH(IANG), idx_cent=IDX_CENT,  &
-            call gen1int_shell_set(is_sgto=is_sgto, idx_cent=IDX_CENT, &
-                   coord_cent=CORD(1:3,IDX_CENT), ang_num=ang_num,     &
-                   num_prim=num_prim(KBCH),                            &
-                   exponents=exponents(1:num_prim(KBCH),KBCH),         &
-                   num_contr=num_contr(KBCH), contr_coef=contr_coef,   &
-                   ao_shell=ao_shells(ishell))
-          end if
-          deallocate(contr_coef)
-          ! skips other CGTOs in this AO block for this angular momentum
-          KBCH = KBCH+num_cgto(IANG,ITYP)-1
         end do
+        IDX_BLOCK = IDX_BLOCK+NBLCK(ITYP,icomp)
       end do
-      IDX_BLOCK = IDX_BLOCK+NBLCK(ITYP)
     end do
 #ifdef GEN1INT_DEBUG
     call gen1int_shell_dump(num_ao_shells, ao_shells, LUPRI)
