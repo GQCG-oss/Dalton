@@ -19,26 +19,26 @@ module ttss_block_module
 ! type definition
   type ttss_block_structure
 
-    integer ::               &
-      mx_nr_ttss,            &             ! max number of ttss blocks in all symmetry irreps
-      nr_ptg_irreps,         &             ! number of point group irreps
-      nr_ci_spaces,          &             ! number of CI spaces (currently always 1)
-      present_sym_irrep,     &             ! current active symmetry irrep in use
-      present_ci_space,      &             ! current active CI space in use (currently always 1, see above)
-      total_present_vec,     &             ! vector length for the present_sym_irrep and active CI space in use (the latter currently always 1)
-      total_present_ttss                   ! current total number of ttss blocks for the present_sym_irrep
+    integer ::                  &
+      mx_nr_ttss,               &             ! max number of ttss blocks in all symmetry irreps
+      nr_ptg_irreps,            &             ! number of point group irreps
+      nr_ci_spaces,             &             ! number of CI spaces (currently always 1)
+      present_sym_irrep,        &             ! current active symmetry irrep in use
+      present_ci_space,         &             ! current active CI space in use (currently always 1, see above)
+      total_present_vec,        &             ! vector length for the present_sym_irrep and active CI space in use (the latter currently always 1)
+      total_present_ttss                      ! current total number of ttss blocks for the present_sym_irrep
 
-    logical ::               &
-      ttss_info_init = .false.             ! status of ttss block type
+    logical ::                  &
+      ttss_info_init = .false.                ! status of ttss block type
 
 !   real(8), pointer ::  &
 !     xxx(:),            & ! 
 !     xxx(:,:,:)           !
 
     integer, pointer ::         &
-      ttss_block_length(:,:,:), &          ! length of each ttss block per symmetry irrep and CI space (the latter currently always 1)
-      ttss_block_nr(:,:),       &          ! total number of ttss blocks per symmetry irrep and CI space (the latter currently always 1)
-      ttss_vec_length(:,:)                 ! total vector lenght per symmetry irrep and CI space (the latter currently always 1)
+      ttss_block_length(:,:,:), &             ! length of each ttss block per symmetry irrep and CI space (the latter currently always 1)
+      ttss_block_nr(:,:),       &             ! total number of ttss blocks per symmetry irrep and CI space (the latter currently always 1)
+      ttss_vec_length(:,:)                    ! total vector length per symmetry irrep and CI space (the latter currently always 1)
 
   end type ttss_block_structure
 

@@ -130,6 +130,7 @@ contains
       call dalton_mpi_bcast(lucita_cfg_timing_par,          0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_natural_orb_occ_nr,  0, mpi_comm_world)
       call dalton_mpi_bcast(lucita_cfg_transition_densm,    0, mpi_comm_world)
+      call dalton_mpi_bcast(lucita_cfg_initialize_cb,       0, mpi_comm_world)
 !     integer
 !       a. general definitions/settings
       call dalton_mpi_bcast(lucita_cfg_el_operator_level,   0, mpi_comm_world)

@@ -130,12 +130,6 @@
 !     release marker on incoming work space
       call memrel('lucita.done',wrk_dalton,kfrsav,kfrsav,kfree,lfree)
       
-#ifdef VAR_MPI
-!     return the co-workers to the general menu routine
-!     -------------------------------------------------
-      IF (LUCI_NMPROC .GT. 1) call lucita_end_cw
-#endif
-
 #ifdef LUCI_DEBUG
 !     print info on matrix multiplier
       call pr_matml_stat
@@ -221,8 +215,6 @@
       integer, allocatable   :: par_dist_block_list(:)
       integer, allocatable   :: block_list(:)
 !------------------------------------------------------------------------------
-      logical                :: set_common_blocks ! not yet an input parameter
-!------------------------------------------------------------------------------
 
       CALL QENTER('LUCITA_MASTER')
 
@@ -246,13 +238,10 @@
       proclist  = -1
       grouplist = -1
 
-!     todo: make it flexible via ci/mcscf input
-      set_common_blocks = .true. !  control variable for invoking the setup procedure inside setup_lucita_orbital_string_cb
-
 !     set LUCITA internal orbital and string common block information 
 !     ---------------------------------------------------------------
-      call setup_lucita_orbital_string_cb(set_common_blocks,iprorb)
-
+      call setup_lucita_orbital_string_cb(lucita_cfg_initialize_cb,     &
+                                          iprorb)
 !     initialize LUCITA work space
 !     ----------------------------
       call setup_lucita_initialize_work_space(wrk_dalton,               &
@@ -381,35 +370,6 @@
       end
 !**********************************************************************
 
-      subroutine lucita_end_cw
-!
-!     release the co-workers if we run in parallel
-!
-!     adaption of the corresponding RELCCSD routine
-!     written by Luuk Visscher, August 1997
-!     LUCITA version by Stefan Knecht, Feb. 06
-!
-!***********************************************************************
-#include "implicit.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#include "maxorb.h"
-#include "infpar.h"
-#include "parluci.h"
-!
-!     Find the co-workers and release them
-      NTEST = -1
-      DO I = 1,LUCI_NMPROC-1
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,        &
-                        MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,my_STATUS,IERR)
-         CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,                  &
-                        MPI_COMM_WORLD,IERR)
-      ENDDO
- 
-      END
-!***********************************************************************
-
       subroutine lucita_coworker_main(work_dalton,lwork_dalton)
 !
 !     LUCITA routine (DALTON interface) for the co-workers
@@ -434,13 +394,11 @@
       real(8), intent(inout) :: work_dalton(lwork_dalton)
       character(len=20)      :: lucitabasf
       character(len=24)      :: lucifiln
-      logical                :: luend
       integer                :: outfile_node
       integer                :: k1, kfree, kfrsav, lfree
       integer                :: kcref, khc, kresolution_mat 
       integer                :: kint1_or_rho1, kint2_or_rho2
       integer                :: lupri_save, lufil, print_lvl
-      integer                :: ntest, ireq, ierr
 !----------------------------------------------------------------------
 
       call qenter('lucita_coworker_main')
@@ -530,19 +488,6 @@
 
       close(outfile_node,status='KEEP')
 
-!     the co-workers have finished, waiting for the master
-      LUEND = .FALSE.
-      CALL MPI_ISEND(LUCI_MYPROC,1,my_MPI_INTEGER,LUCI_MASTER,20,       &
-                    MPI_COMM_WORLD,IREQ,IERR)
-    1    CONTINUE
-         CALL SLEEP(1)
-         CALL MPI_IPROBE(LUCI_MASTER,30,MPI_COMM_WORLD,                 &
-                         LUEND,my_STATUS,IERR)
-         IF (.NOT.LUEND) GOTO 1
-
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,LUCI_MASTER,30,              &
-                     MPI_COMM_WORLD,my_STATUS,IERR)
-!
       call qexit('lucita_coworker_main')
 
       END

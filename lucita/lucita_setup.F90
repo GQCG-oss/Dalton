@@ -23,6 +23,8 @@ module lucita_setup
 
   private
 
+#include "priunit.h"
+
 contains
 
   subroutine setup_lucita_orbital_string_cb(set_common_blocks,              &
@@ -51,8 +53,9 @@ contains
           call syminf(print_level)
 !         calculate the number of 1e- and 2e-integrals
           call intdim(print_level)
+          call flshfo(lupri)
         case (.false.)
-          print *, ' note: setup_lucita_orbital_string_cb: no set/reset of orbital and string common blocks.'
+!         do nothing...
       end select
 
   end subroutine setup_lucita_orbital_string_cb
@@ -202,7 +205,7 @@ contains
 #include "maxorb.h"
 #include "infinp.h"
 !*******************************************************************************
-      integer :: i, j 
+      integer :: i, j, ntoob_local
       integer :: mxelr1, mxelr2, nimx, nimn, nemn, nemx, namx, namn
       integer :: ispin1, ispin2 ! these variables are not active yet...
 !-------------------------------------------------------------------------------
@@ -546,13 +549,15 @@ contains
                   ' electrons does not match total number of electrons in active spaces.')
       end if
 
-      ntoob = 0
-      do i = 1, nirrep
-        ntoob = ntoob + nmos_lucita(i)
+      ntoob_local = 0
+      do i = 1, ngas
+        do j = 1, nirrep
+          ntoob_local = ntoob_local + NGSSH(j,i)
+        end do
       end do
 
-      if(LUCI_NACTEL > 2*ntoob)then
-        write(lupri,*) 'Number of active electrons exceeds the orbital space:',LUCI_NACTEL,'>',2*NTOOB
+      if(LUCI_NACTEL > 2*ntoob_local)then
+        write(lupri,*) 'Number of active electrons exceeds the orbital space:',LUCI_NACTEL,'>',2*NTOOB_local
         write(lupri,*) 'Consider Pauli´s famous principle and restart!'
         call quit('*** error in setup_lucita_cb_interface: Number of active electrons exceeds the orbital space.')
       end if

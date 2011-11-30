@@ -1410,7 +1410,6 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
       ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
 !       sirius or dirac integral format
         GTIJKL = GMIJKL(I,J,K,L,WORK(KINT2),WORK(KPINT2))
-!       write(lupri,*) '(IJ|KL) =',I,J,K,L,GTIJKL
       END IF
 
       END
@@ -1461,6 +1460,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
         WRITE(lupri,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
         WRITE(lupri,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
         WRITE(lupri,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
+        call flshfo(lupri)
       END IF
 *
       If ( jSm.gt.iSm .or. ( iSm.eq.jSm .and. JABS.gt.IABS)) Then
@@ -1511,6 +1511,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
       If(Ntest .ge. 100 ) then
         write(lupri,*) ' i j k l ',i,j,k,l
         write(lupri,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
+        call flshfo(lupri)
       End if
 *
 *  Define offset for given symmetry block
@@ -1557,8 +1558,12 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       Else
         ijkl=ij+(kl-1)*ijPairs
       End If
-      If( ntest .ge. 100 )
-     & write(lupri,*) ' ijkl ', ijkl
+      If( ntest .ge. 100 )then
+        write(lupri,*) ' ijkl ', ijkl
+        write(lupri,*) ' iblOff       ', iblOff
+        write(lupri,*) ' iblOff-1+ijkl', iblOff-1+ijkl
+        call flshfo(lupri)
+      end if
 *
       GMIJKL = Intlst(iblOff-1+ijkl)
       If( ntest .ge. 100 )
@@ -1566,7 +1571,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
       END
 ***********************************************************************
-      SUBROUTINE GTJK(RJ,RK,NTOOB,SCR,IREOTS)
+      SUBROUTINE GTJK(RJ,RK,NTOOB)
 *
 * Interface routine for obtaining Coulomb (RJ) and
 * Exchange integrals (RK)
@@ -1579,12 +1584,8 @@ C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,NP1,NP2,NQ,INCORE,MXCIV,ICISTR,
 C    &            NOCSF,IDIAG
 #include "mxpdim.inc"
 #include "crun.inc"
-*.Input
-      DIMENSION IREOTS(*)
 *.Output
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
-*.Scratch
-      DIMENSION SCR(2*NTOOB ** 2)
 
       IF(INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
 *. Interface to SIRIUS
@@ -1640,11 +1641,14 @@ C    &            NOCSF,IDIAG
 * from complete integral list stored in core
 *
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
       REAL*8           J(NORB,NORB),K(NORB,NORB)
 *
       DO 200 IORB = 1, NORB
         DO 100 JORB = 1, NORB
+!         write(lupri,*) 'iorb,jorb ==> j',iorb,jorb
           J(IORB,JORB) = GTIJKL(IORB,IORB,JORB,JORB)
+!         write(lupri,*) 'iorb,jorb ==> k',iorb,jorb
           K(IORB,JORB) = GTIJKL(IORB,JORB,JORB,IORB)
   100   CONTINUE
   200 CONTINUE
@@ -1914,8 +1918,10 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !     pointers for symmetry blocks of integrals
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
      &            WORK(KPINT2),WORK(KLSM2))
+
 !     pointer for orbital indices for symmetry blocked matrices
       CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
+
 !
 !     load one-electron integrals and two-electron integrals
       if(citask_id.eq.'return CIdia' .or. 
@@ -1986,7 +1992,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 
 #ifdef LUCI_DEBUG
         if(luci_myproc.eq.luci_master)then
-          write(lupri,'(/2x,e15.8)') 'Updated core energy: ',ECORE
+          write(lupri,'(/2x,a,e15.8)') 'Updated core energy: ',ECORE
         end if
 #endif
       else

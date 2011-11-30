@@ -116,8 +116,10 @@ contains
 
 !     b. select pre-process task
       select case(run_type)
-        case('return CIdim', 'return CIdia')
+        case('return CIdia')
 !         do nothing
+        case('return CIdim')
+          call mcscf_pre_lucita_setci(print_lvl)
         case('initial ci  ')
           call mcscf_pre_lucita_cistart(print_lvl)
         case('Xp-density m')
@@ -327,6 +329,27 @@ contains
       vector_update_mc2lu(exchange_type1) = .false.
 
   end subroutine mcscf_pre_lucita_rotate_cref
+!*******************************************************************************
+
+  subroutine mcscf_pre_lucita_setci(print_lvl)
+!*******************************************************************************
+!
+!    purpose: pre-LUCITA processing for CI task: return CIdim 
+!              
+!
+!*******************************************************************************
+! lucita
+  use lucita_cfg
+#include "priunit.h"
+! sirius
+      integer,   intent(in)    :: print_lvl
+!
+!-------------------------------------------------------------------------------
+
+!     turn on common block (re-)initialization
+      lucita_cfg_initialize_cb = .true.
+      
+  end subroutine mcscf_pre_lucita_setci
 !*******************************************************************************
 
 
@@ -566,6 +589,8 @@ contains
 !              
 !
 !*******************************************************************************
+! lucita
+  use lucita_cfg
 #include "priunit.h"
 ! sirius
 #include "ciinfo.h"
@@ -577,6 +602,10 @@ contains
 !-------------------------------------------------------------------------------
       integer                  :: i
 !-------------------------------------------------------------------------------
+
+!     turn off common block (re-)initialization
+      lucita_cfg_initialize_cb = .false. 
+!debuglucita_cfg_initialize_cb = .true. 
       
       mxndt = 0
       do i = 1, mxpirr

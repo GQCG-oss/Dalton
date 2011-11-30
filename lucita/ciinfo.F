@@ -818,6 +818,7 @@ C    &            NMXOCCLS,IPHGAS(MXPNGAS),IHPVGAS(MXPNGAS)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
+#include "priunit.h"
 * =====
 *.Input
 * =====
