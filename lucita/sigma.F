@@ -6206,7 +6206,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
                   I12_local = 1
                   IF(IDOH2.EQ.1) I12_local = 2
 *. RHO1, Rho2
-                  IF(NTEST.GE.10) THEN
+!                 IF(NTEST.GE.10) THEN
                     WRITE(luwrt,*) ' RSDNBB will be called for '
                     WRITE(luwrt,*) ' L block : '
                     WRITE(luwrt,'(A,5I5)')
@@ -6218,7 +6218,7 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &                JASM,JBSM,JATP,JBTP
                     WRITE(luwrt,*) ' IOFF,JOFF ', ISOFF,ICOFF
                     WRITE(luwrt,*) ' SCLFAC = ', xfac
-                  END IF
+!                 END IF
 
                   CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
      &                         rhotype,IASM,IATP,IBSM,IBTP,
@@ -6238,10 +6238,10 @@ C?   &                         IPTSPC,JPTSPC,IJOP
      &                         IPRNT,NACOB,RHO1S,XFAC,
      &                         S2_TERM1,IUSE_PH,IPHGAS,
      &                         MXTSOB)
-                  IF(NTEST.GE.100) THEN
+!                 IF(NTEST.GE.100) THEN
                     write(luwrt,*) ' Updated rho1 '
                     call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
-                  END IF
+!                 END IF
 
                 END IF
 

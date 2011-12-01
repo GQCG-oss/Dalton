@@ -1965,7 +1965,7 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 !       sk - nov 2011: take care of the transpose procedure: 
 !                      a. regular DM run (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
 !                      b. TDMs in MCSCF  (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
-        if(rhotype .gt. 1)then
+        if(rhotype .eq. 0 .or. rhotype .gt. 1)then
 #ifdef LUCI_DEBUG
           WRITE(lupri,*) ' SB before          transpose'
           call wrtmatmn(sb,nia,nib,nia,nib,lupri)
