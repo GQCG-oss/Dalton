@@ -30,13 +30,13 @@ module gasci_input_cfg
   logical, public :: gasci_input_ras3_set             =  .false.
   logical, public :: gasci_input_analyze_cvec         =  .false.
   logical, public :: gasci_input_timing_par           =  .false.
-  logical, public :: gasci_input_natural_orb_occ_nr   =  .false.
+  logical, public :: gasci_input_natural_orb_occ_nr   =  .true.
 
 ! double precision block
 
   real(8), public :: gasci_input_accepted_truncation = 1.0d-10
-  real(8), public :: gasci_input_convergence_thr     = 1.0d-7
-  real(8), public :: gasci_input_aux_convergence_thr = 1.0d-7
+  real(8), public :: gasci_input_convergence_thr     = 2.0d-04
+  real(8), public :: gasci_input_aux_convergence_thr = 2.0d-04
   real(8), public :: gasci_input_core_energy         = 0.0d0
 
 ! integer block
@@ -51,7 +51,7 @@ module gasci_input_cfg
   integer, public :: gasci_input_nr_ptg_irreps        =  0
   integer, public :: gasci_input_max_holes_ras1       =  0
   integer, public :: gasci_input_max_e_ras3           =  0
-  integer, public :: gasci_input_density_calc_lvl     =  1
+  integer, public :: gasci_input_density_calc_lvl     =  0
   integer, public :: gasci_input_restart_ci           =  0
   integer, public :: gasci_input_max_dav_subspace_dim =  0
   integer, public :: gasci_input_max_nr_dav_ci_iter   =  30

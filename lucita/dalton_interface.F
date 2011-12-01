@@ -1961,10 +1961,10 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
           end if
 #ifdef VAR_MPI
           if(luci_nmproc .gt. 1)then
-!           synchronize the co-workers with the 1-/2-electron integrals
-            call sync_coworkers_cfg(3,work(kint1),work(kint2))
 !           set sync_ctrl option
-            sync_ctrl_array(3) = .false.
+            sync_ctrl_array(3) = .true.
+!           synchronize the co-workers with the 1-/2-electron integrals
+            call sync_coworkers_cfg(work(kint1),work(kint2))
 
 #ifdef LUCI_DEBUG
             if(luci_myproc .eq. luci_master+1)then

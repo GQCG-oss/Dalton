@@ -613,7 +613,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       END
 ***********************************************************************
 
-      SUBROUTINE GASANA(C,NBLOCK,IBLOCK,IBLTP,LUC,ICISTR)
+      SUBROUTINE GASANA(minblock_l,NBLOCK,IBLOCK,IBLTP,LUC,ICISTR)
 *
 *
 *
@@ -625,7 +625,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
 *           String occupations added, Feb. 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KNCPMT, KWCPMT, KLASTR, KLBSTR, KLOCCLS
+      INTEGER*8 KNCPMT, KWCPMT, KLASTR, KLBSTR, KLOCCLS, KMINBLOCKC
 !               for addressing of WORK
 * =====
 *.Input
@@ -646,6 +646,7 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
 #include "cprnt.inc"
 *
       DIMENSION IBLOCK(8,NBLOCK),IBLTP(*)
+      integer, intent(in) :: minblock_l
       CALL QENTER('ANACI')
       CALL MEMMAN(KLOFF,DUMMY,'MARK  ',DUMMY,'GASANA')
 *
@@ -712,15 +713,17 @@ C       CALL WRTMT_LU(VECIN,1,NCOMBIN,1,NCOMBIN)
       CALL MEMMAN(KNCPMT,LENGTH,'ADDL  ',1,'KNCPMT')
       CALL MEMMAN(KWCPMT,LENGTH,'ADDL  ',2,'KWCPMT')
 *
+      CALL MEMMAN(KMINBLOCKC,minblock_l,'ADDL  ',2,'anablo')
 *. Occupation of strings of given sym and supergroup
-      CALL GASANAS(C,LUC,WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
-     &            NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
-     &            NBLOCK,IBLOCK,
-     &            THRES,MAXTRM,NAEL,NBEL,
-     &            WORK(KLASTR),WORK(KLBSTR),
-     &            IBLTP,NSMST,IUSLAB,
-     &            IDUMMY,WORK(KNCPMT),WORK(KWCPMT),NELFSPGP,
-     &            NOCCLS,NGAS,WORK(KLOCCLS),ICISTR,NTOOB,IPRNCIV)
+      CALL GASANAS(work(KMINBLOCKC),LUC,
+     &             WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
+     &             NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
+     &             NBLOCK,IBLOCK,
+     &             THRES,MAXTRM,NAEL,NBEL,
+     &             WORK(KLASTR),WORK(KLBSTR),
+     &             IBLTP,NSMST,IUSLAB,
+     &             IDUMMY,WORK(KNCPMT),WORK(KWCPMT),NELFSPGP,
+     &             NOCCLS,NGAS,WORK(KLOCCLS),ICISTR,NTOOB,IPRNCIV)
 
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'GASANA')
       CALL QEXIT('ANACI')
@@ -821,7 +824,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
         IBTP = IBLOCK(2,JBLOCK)
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
-        IOFF = IBLOCK(6,JBLOCK)
+
 *. Obtain alpha strings of sym IASM and type IATP
         IDUM = 0
         CALL GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
@@ -844,8 +847,8 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
-          CALL FRMDSC_LUCI(C(IOFF),IDET,-1,LUC,IMZERO,IAMPACK)
-C?        WRITE(6,*) ' Number of elements readin ',IDET
+          CALL FRMDSC_LUCI(C,IDET,-1,LUC,IMZERO,IAMPACK)
+!         WRITE(lupri,*) ' Number of elements readin ',IDET
           IDET = 0
         END IF
         IF(IMZERO.NE.1) THEN
@@ -864,13 +867,13 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
             IF(ILOOP .EQ. 1 ) NCIVAR = NCIVAR + 1
             IDET = IDET + 1
-            IOFF = IOFF + IDET - 1
-            IF( XMAX .GE. ABS(C(IOFF)) .AND.
-     &      ABS(C(IOFF)).GT. XMIN ) THEN
+            IF( XMAX .GE. ABS(C(IDET)) .AND.
+     &      ABS(C(IDET)).GT. XMIN ) THEN
               ITRM = ITRM + 1
               IIDET = IIDET + 1
               IF( ITRM .LE. MAXTRM ) THEN
-                CNORM = CNORM + C(IOFF) ** 2
+                CNORM = CNORM + C(IDET) ** 2
+
                 if(iprint_hline.gt.0)then
                   WRITE(lupri,'(A )')
      &            '                  =================== '
@@ -879,7 +882,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 *
                 WRITE(lupri,'(A,I8,A,E14.8)')
      &          '   Coefficient of combination ',IDET,' is ',
-     &          C(IOFF)
+     &          C(IDET)
                 WRITE(lupri,'(A)')
      &          '   Corresponding alpha - and beta string '
                 IF(IUSLAB.EQ.0) THEN
@@ -921,7 +924,6 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
         IBTP = IBLOCK(2,JBLOCK)
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
-        IOFF = IBLOCK(6,JBLOCK)
 *
         IF(IBLTP(IASM).EQ.2) THEN
           IRESTR = 1
@@ -947,7 +949,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
         IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
-          CALL FRMDSC_LUCI(C(IOFF),IDET,-1,LUC,IMZERO,IAMPACK)
+          CALL FRMDSC_LUCI(C,IDET,-1,LUC,IMZERO,IAMPACK)
           IDET = 0
         END IF
         IF(IMZERO.EQ.0) THEN
@@ -960,12 +962,11 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
           END IF
           DO IA = MINIA,IABAS+NIA-1
             IDET = IDET + 1
-            IOFF = IOFF + IDET - 1
             DO IPOT = 1, ipot_max
-              IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IOFF)).AND.
-     &           ABS(C(IOFF)).GT. 10.0D0 ** ( - IPOT )) THEN
+              IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IDET)).AND.
+     &           ABS(C(IDET)).GT. 10.0D0 ** ( - IPOT )) THEN
                  NCPMT(IPOT,JOCCLS)= NCPMT(IPOT,JOCCLS)+ 1
-                 WCPMT(IPOT,JOCCLS)= WCPMT(IPOT,JOCCLS)+ C(IOFF) ** 2
+                 WCPMT(IPOT,JOCCLS)= WCPMT(IPOT,JOCCLS)+ C(IDET) ** 2
               END IF
             END DO
 *           ^ End of loop over powers of ten

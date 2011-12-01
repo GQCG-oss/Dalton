@@ -335,7 +335,7 @@ contains
 
 
           call rewino(lusc_vector_file)
-          call gasana(cref,num_blocks,work(klcibt),work(klcbltp),lusc_vector_file,icistr)
+          call gasana(l0block,num_blocks,work(klcibt),work(klcbltp),lusc_vector_file,icistr)
         end do
       end if
 
@@ -406,6 +406,7 @@ contains
       integer                          :: luhc_vector_file
       integer                          :: twopart_densdim
       integer                          :: rhotype
+      integer                          :: rhotype_local
       integer                          :: idum
       integer(8)                       :: kdum
       integer(8)                       :: k_dens2_scratch
@@ -588,18 +589,22 @@ contains
         call memman(idum,idum,'MARK  ',idum,'Xpden1')
         call memman(k_dens2_scratch,nacob**4,'ADDL  ',2,'PVfull')
 
+!       lucita-internal routines for natorbs expects an unpacked density matrix
+        rhotype_local = rhotype
+        if(lucita_cfg_natural_orb_occ_nr) rhotype_local = 0
+
 !       activate for MCSCF/improved CI
         if(integrals_from_mcscf_env)then
           call lucita_putdens_generic(work(krho1),work(krho2),int1_or_rho1,int2_or_rho2,             &
-                                      work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+                                      work(k_dens2_scratch),i12,isigden,rhotype_local,eigen_state_id)
         else
           twopart_densdim = 0
           if(i12 > 1) twopart_densdim = (nacob*(nacob+1)/2)**2
-          call memman(k_scratch1     ,(nacob*(nacob+1)/2),'ADDL  ',2,'scrat1')
+          call memman(k_scratch1     ,nacob**2           ,'ADDL  ',2,'scrat1')
           call memman(k_scratch2     ,twopart_densdim    ,'ADDL  ',2,'scrat2')
 
           call lucita_putdens_generic(work(krho1),work(krho2),work(k_scratch1),work(k_scratch2),     &
-                                      work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+                                      work(k_dens2_scratch),i12,isigden,rhotype_local,eigen_state_id)
         end if
 !
         call memman(kdum ,idum,'FLUSM ',2,'Xpden1')

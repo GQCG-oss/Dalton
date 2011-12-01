@@ -210,17 +210,6 @@ contains
       integer :: ispin1, ispin2 ! these variables are not active yet...
 !-------------------------------------------------------------------------------
       
-#ifdef VAR_MPI
-      if(luci_nmproc > 1)then
-
-!       TODO: split the lucita_cfg module into static and dynamic...
-        sync_ctrl_array(1) = .true.
-!       synchronize (if applicable) co-workers with ci/mcscf input data
-        call sync_coworkers_cfg(1)
-
-      end if
-#endif
-
 !     set internal print units (luwrt on common block in parluci.h)
       luwrt     = lupri
 !     initialize point group D2H and its subgroups
@@ -414,8 +403,7 @@ contains
       ICLSSEL = 0
       if(idiag == 2) ICLSSEL = 1
 
-!     calculation of density matrices TODO: control here the setting via
-!     mcscf input for density matrix calculations
+!     calculation of density matrices
       idensi = lucita_cfg_density_calc_lvl
 
 !     perturbation expansion of EKT, default is no

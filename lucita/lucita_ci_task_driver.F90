@@ -95,19 +95,22 @@
       lucita_ci_run_id = run_id
  
 #ifdef VAR_MPI
-!     control variable for synchronizing ci-run id with co-workers
-      sync_ctrl_array(6) = .true.
-      sync_ctrl_array(2) = .true.
 
-
-!     summon the co-workers, who are waiting in the general menu routine
-!     ------------------------------------------------------------------
       IF (LUCI_NMPROC .GT. 1) then 
+!       summon the co-workers, who are waiting in the general menu routine
         call lucita_start_cw
-!       synchronize ci-run id with co-workers
-        call sync_coworkers_cfg(6)
-!       synchronize MC/CI array lengths with co-workers
-        call sync_coworkers_cfg(2)
+
+!       control variables for synchronizing co-workers
+!       ----------------------------------------------
+!       b. synchronize co-workers with ci/mcscf input data: dynamic and static (the latter only if required)
+        sync_ctrl_array(1) = .true.
+!       c. synchronize MC/CI array lengths with co-workers
+        sync_ctrl_array(2) = .true.
+!       a. synchronize ci-run id with co-workers
+        sync_ctrl_array(6) = .true.
+
+!       start synchronization process
+        call sync_coworkers_cfg()
       end if
 #endif
  
@@ -419,12 +422,17 @@
       print *, '*** co-worker: priunit =',lupri,'***'
 #endif
 
-!     synchronize ci-run id with co-workers
-      sync_ctrl_array(6) = .true.
-      call sync_coworkers_cfg(6)
-!     synchronize MC/CI array lengths with co-workers
+!     control variables for synchronizing co-workers
+!     ----------------------------------------------
+!     b. synchronize co-workers with ci/mcscf input data: dynamic and static (the latter only if required)
+      sync_ctrl_array(1) = .true.
+!     c. synchronize MC/CI array lengths with co-workers
       sync_ctrl_array(2) = .true.
-      call sync_coworkers_cfg(2)
+!     a. synchronize ci-run id with co-workers
+      sync_ctrl_array(6) = .true.
+
+!     start synchronization process
+      call sync_coworkers_cfg()
 
 !     create a node-unique filename as output file. Important on
 !     shared file systems. Otherwise all the output gets mingled in one

@@ -646,7 +646,8 @@ C
 !     norm   
       THRQC  = THRES_E
 !     energy change
-      THRQE  = THRES_E * 1.0d-08
+!     THRQE  = THRES_E * 1.0d-08
+      THRQE  = THRES_E * THRES_E
 C
 C     ===================
 C      Initial iteration

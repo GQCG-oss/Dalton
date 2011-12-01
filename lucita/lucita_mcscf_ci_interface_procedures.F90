@@ -346,7 +346,7 @@ contains
 !
 !-------------------------------------------------------------------------------
 
-!     turn on common block (re-)initialization
+!     turn on common block (re-)initialization + co-worker synchronization of static lucita variables 
       lucita_cfg_initialize_cb = .true.
       
   end subroutine mcscf_pre_lucita_setci
@@ -603,9 +603,9 @@ contains
       integer                  :: i
 !-------------------------------------------------------------------------------
 
-!     turn off common block (re-)initialization
-      lucita_cfg_initialize_cb = .false. 
-!debuglucita_cfg_initialize_cb = .true. 
+!     turn off common block (re-)initialization + co-worker synchronization of static lucita variables 
+      lucita_cfg_initialize_cb        = .false. 
+!debuglucita_cfg_initialize_cb        = .true. 
       
       mxndt = 0
       do i = 1, mxpirr

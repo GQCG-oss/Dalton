@@ -10,7 +10,7 @@
       integer :: NRESP, MAXORD_OP, MXITLE,N_AVE_OP,IROOTHOMING,IUSE_PH
       integer :: IADVICE,ITRACI, IUSE_PA,IPTFOCK,ITRANS ,NSXE,NDXEE 
       integer :: N_CC_AMP, I_RESTRT_CC,LAST_CC_SPC,LAST_CC_RUN
-      integer :: IRELAX, LBLOCK, lsingle_resolution_block
+      integer :: IRELAX, LBLOCK, L0BLOCK, lsingle_resolution_block
       real(8) :: THRES_E, THRES_E_aux, E_THRE,C_THRE, E_CONV,C_CONV
       real(8) :: E0READ, RESP_W, XLAMBDA
       COMMON/CRUN/MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,       &
@@ -30,7 +30,7 @@
      &            MXITLE,N_AVE_OP,IROOTHOMING,IUSE_PH,IADVICE,ITRACI ,  &
      &            IUSE_PA,IPTFOCK,ITRANS ,NSXE,NDXEE,N_CC_AMP,          &
      &            I_RESTRT_CC,LAST_CC_SPC,LAST_CC_RUN,                  &
-     &            IRELAX,LBLOCK,THRES_E, XLAMBDA, E_THRE,C_THRE,        &
+     &            IRELAX,LBLOCK,L0BLOCK,THRES_E, XLAMBDA, E_THRE,C_THRE,&
      &            E_CONV,C_CONV, THRES_E_aux, E0READ, RESP_W(20)
       CHARACTER*6 PROPER,ENVIRO
       CHARACTER*2 PADDY
