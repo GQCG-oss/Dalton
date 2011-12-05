@@ -34,6 +34,9 @@ C  /* Deck excinp */
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <cbiexc.h>
+CPFP....
+#include <soppinf.h>
+Cend-PFP
 C
 #include <gnrinf.h>
 #include <abainf.h>
@@ -42,7 +45,10 @@ C
 #include <nuclei.h>
 #include <symmet.h>
       DATA TABLE /'.SKIP  ', '.INTPRI','.MAX IT','.THRESH',
-     *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
+CPFP
+C    *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
+     *            '.MAXRED', '.MAXPHP','.TRIPLE','.MAGPRP',
+Cend-PFP
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
      *            '.ROTVEL', '.FNAC  ','.STOP  ','.SUMRUL'/
 C
@@ -101,7 +107,11 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
     8          CONTINUE
-               GO TO 100
+CPFP
+                  MAGPRP = .TRUE.
+                  ICHANG = ICHANG + 1
+                  GO TO 100
+Cend-PFP
     9          CONTINUE
                   OOTV   = .TRUE.
                   ICHANG = ICHANG + 1
@@ -206,6 +216,9 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <cbiexc.h>
+CPFP
+#include <soppinf.h>
+Cend-PFP
 #include <abainf.h>
 C
       IPR1IN = IPRDEF
@@ -266,20 +279,36 @@ C
 C
       IPRRSP = IPREXC
 C
-      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+CPFP
+C      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+      IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+Cend-PFP
 CSPAS:23/5-11: second and third moment sum rules
 C        CALL SO_EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,SECMAT,EXENG,
 C    &                  WORK,LWORK)
+CPFP***
+         WRITE(LUPRI,*) 'In EXCITA 1.1'
+Cend-PFP
+
          CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
      &                  BSRLON,SECMAT,EXENG,WORK,LWORK)
+CPFP***
+         WRITE(LUPRI,*) 'In EXCITA 1.2'
+Cend-PFP
 CKeinSPASmehr
       ELSE
 CSPAS:23/5-11: second and third moment sum rules
+CPFP***
+         WRITE(LUPRI,*) 'In EXCITA 2.1'
+Cend-PFP
 C        CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,
          CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,
 CKeinSPASmehr
      &               TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &               WORK,LWORK)
+CPFP***
+         WRITE(LUPRI,*) 'In EXCITA 2.2'
+Cend-PFP
       END IF
 C
       CALL TIMER ('EXCITA',TIMEIN,TIMOUT)
@@ -306,6 +335,9 @@ CKeinSPASmehr
 #include <iratdef.h>
 #include <priunit.h>
 #include <cbiexc.h>
+CPFP
+#include <soppinf.h>
+Cend-PFP
 #include <inforb.h>
 #include <nuclei.h>
 #include <inflin.h>
@@ -892,6 +924,9 @@ CKeinSPASmehr
 #include <codata.h>
 #include <gnrinf.h>
 #include <cbiexc.h>
+CPFP
+#include <soppinf.h>
+Cend-PFP
 #include <inforb.h>
 #include <nuclei.h>
 #include <abainf.h>
@@ -1811,6 +1846,9 @@ C
       DIMENSION WORK(LWORK), EXVAL(NEXENG)
 C
 #include <cbiexc.h>
+CPFP
+#include <soppinf.h>
+Cend-PFP
 #include <infvar.h>
 #include <inforb.h>
 C

@@ -32,6 +32,18 @@ C------------------
 C
       CALL QENTER('SO_GETT2')
 C
+CPFP  In the subroutine which call this one the number LT2AM was enlarged,
+C     for the triplet case, by a factor of 2 so here it is reduced
+C
+         LT2AMH   = LT2AM
+C         IF (EXCTRP)
+         IF (TRIPLET) LT2AMH = INT(LT2AM/2)
+C
+      CALL DZERO(T2AM,LT2AM)
+      CALL DZERO(DENSAI,LDENSAI)
+      CALL DZERO(DENSAB,LDENSAB)
+Cend-PFP
+C
       IF ( KEY(1:3) .EQ. 'MP2' ) THEN
 C
 C-----------------------------------------
@@ -73,8 +85,12 @@ C     Calculate the density matrices D(ij) and D(ab).
 C----------------------------------------------------
 C
       DTIME     = SECOND()
+CPFP
+C      CALL SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+C     &             T2AM,LT2AM,WORK,LWORK)
       CALL SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &             T2AM,LT2AM,WORK,LWORK)
+     &             T2AM,LT2AMH,WORK,LWORK)
+Cend-PFP
       DTIME     = SECOND()  - DTIME
       SOTIME(4) = SOTIME(4) + DTIME
 C
@@ -84,7 +100,10 @@ C     (2 * coulomb - exchange of T2-amplitudes).
 C------------------------------------------------------
 C
       DTIME     = SECOND()
+CPFP Check out the second argument
+C      CALL SO_T2MP(T2AM,LT2AMH)
       CALL SO_T2MP(T2AM,LT2AM)
+Cend-PFP
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME
 C

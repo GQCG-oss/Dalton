@@ -72,6 +72,19 @@ C
       TIMTOT  = DTIME
       CALL GETTIM (DUMMY,WTIME)
       TIMWTO  = WTIME
+CPFP 2009-Jun
+C
+C---------------------------------------------------------
+C     Initialize TRIPLET keyword used inside SOPPA module.
+C---------------------------------------------------------
+C
+      IF (EXCTRP) THEN
+        TRIPLET = .TRUE.
+      ELSE
+        TRIPLET = .FALSE.
+      END IF
+C
+Cend-PFP
 C
 C-------------------------------------------
 C     Initializes memory statistics routine.
@@ -111,8 +124,18 @@ C
       KFOCKD  = 1
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
+CPFP
+         LT2AM   = NT2AMX
 C
-      IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
+C     IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
+      IF (AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+Cend-PFP
+CPFP     NT2AMX is enlarged a factor of 2 for triplet because
+C        there are two kappas for A and B correlated matrices !!!
+C
+C         IF (EXCTRP) THEN
+         IF (TRIPLET) LT2AM = NT2AMX*2
+Cend-PFP
 C
          LT2AM   = NT2AMX
          LDENSIJ = NIJDEN(1)
@@ -291,14 +314,20 @@ C
 C
                MODEL = 'DCRPA'
 C
-               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+C               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
                   WRITE(LUPRI,'(1X,A,4(/A,I8))') 'RPA(D):',
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+CPFP   2009-Jun
+C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
                END IF
@@ -368,6 +397,104 @@ C
             END IF
 C
 C======================================
+C           For HIRPA do the following.
+C======================================
+C
+CPFP   This conditional for AOHRP should be moved up above DCRPA
+C      Etentially it is the same as SOPPA but the 2p-2h part was removed !!!
+C
+            IF (AOHRP) THEN
+CPFP   The number of variables must be the same as for RPA
+C              NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT  = 2*NT1AM(ISYM)
+C
+               IF (IPRSOP .GE. 3) THEN
+                  WRITE(LUPRI,9000)
+                  WRITE(LUPRI,'(1X,A)') 'HIGHRPA:'
+C                 WRITE(LUPRI,'(3(A,I8,/),A,I8)')
+                  WRITE(LUPRI,'(2(A,I8,/),A,I8)')
+     &            ' Perturbation symmetry     :',ISYM,
+     &            ' p-h variables.            :',2*NT1AM(ISYM),
+C    &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' Total number of variables :',NVARPT
+                  WRITE(LUPRI,9001)
+               END IF
+C
+               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
+C
+               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
+                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
+     &            'NOTICE: The number of excitations are reduced to '
+     &            ,NEXCI,'as this is the full dimension of the '//
+     &            'excitation space'
+               END IF
+Cend-PFP
+C
+C-----------------------------------------------------
+C              Get T2 amplitudes and density matrices.
+C-----------------------------------------------------
+C
+               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
+CPFP
+     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
+C     &                       KEND2)
+Cend-PFP
+C
+C--------------------------------
+C              Initialize DENSAI.
+C--------------------------------
+C
+               CALL DZERO(WORK(KDENSAI),LDENSAI)
+C
+C-------------------------------------------------------------------
+C              Determine HIGHRPA excitation energies and excitation
+C              vectors. The excitation vectors are written to file.
+C-------------------------------------------------------------------
+C
+               CALL HR_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
+     &                        LT2AM,WORK(KFOCKD),LFOCKD,
+CPFP
+C     &                        WORK(KEND2),LWORK2,KEND2)
+     &                        WORK(KEND2),LWORK2)
+Cend-PFP
+C
+C-------------------------------------------------------
+C              Copy HIGHRPA exciation energies to EXENG.
+C-------------------------------------------------------
+C
+               DO 30 IEXVAL = 1,NEXCI
+                  IF (IEXVAL .LE. MXNEXI)
+     &               EXENG(ISYM,IEXVAL,3) = WORK(KEXVAL-1+IEXVAL)
+                  IF (IEXVAL .GT. MXNEXI)
+     &               WRITE(LUPRI,*)
+     &                    'WARNING: IEXVAL greater than MXNEXI.'
+   30          CONTINUE
+C
+C---------------------------------------------------
+C              Determine HIGHRPA transition moments.
+C---------------------------------------------------
+C
+               CALL HR_TRMOM(ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
+     &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                       TRLEN(1,1,1,3),TRVEL(1,1,1,3),
+     &                       TRLON(1,1,1,3),TRMAG(1,1,1,3),
+     &                       BSRLON(1,1,1,3),EXENG(1,1,3),
+C     &                       WORK(KEND2),LWORK2,KEND2)
+     &                       WORK(KEND2),LWORK2)
+CPFP
+C      SUBROUTINE HR_TRMOM(ISYMTR,NLBTOT,NEXCI,T2AM,LT2AM,DENSIJ,
+C     &                    LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
+C     &                    TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,
+C     &                    WORK,LWORK)
+Cend-PFP
+            END IF
+Cend-PFP
+C
+C======================================
 C           For SOPPA do the following.
 C======================================
 C
@@ -375,7 +502,10 @@ C
 C
                MODEL = 'AOSOP'
 C
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+C               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+Cend-PFP
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
@@ -383,7 +513,10 @@ C
                   WRITE(LUPRI,'(3(A,I8,/),A,I8)')
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+CPFP   2009-Jun
+C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
                END IF
@@ -426,13 +559,13 @@ C-----------------------------------------------------
 C              Copy SOPPA exciation energies to EXENG.
 C-----------------------------------------------------
 C
-               DO 30 IEXVAL = 1,NEXCI
+               DO 40 IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
      &               EXENG(ISYM,IEXVAL,3) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*) 
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-   30          CONTINUE
+   40          CONTINUE
 C
 C-------------------------------------------------
 C              Determine SOPPA transition moments.
@@ -460,7 +593,11 @@ C
 C
                MODEL = 'AOSOC'
 C
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+C               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
+Cend-PFP
+
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
@@ -468,7 +605,10 @@ C
                   WRITE(LUPRI,'(3(A,I8,/),A,I8)')
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+CPFP   2009-Jun
+C     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
+     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
+Cend-PFP
      &            ' Total number of variables :',NVARPT
                   WRITE(LUPRI,9001)
                END IF
@@ -505,13 +645,13 @@ C-----------------------------------------------------------
 C              Copy SOPPA(CCSD) exciation energies to EXENG.
 C-----------------------------------------------------------
 C
-               DO 40 IEXVAL = 1,NEXCI
+               DO 50 IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
      &               EXENG(ISYM,IEXVAL,4) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*) 
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-   40          CONTINUE
+   50          CONTINUE
 C
 C-------------------------------------------------------
 C              Determine SOPPA(CCSD) transition moments.

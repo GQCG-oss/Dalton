@@ -66,7 +66,9 @@ rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
 rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s"
-LOCAL="spin_local"
+LOCAL="spin_local local_spnspn_01 local_spnspn_02 local_spnspn_03 local_spnspn_04 \
+local_spnspn_05 local_spnspn_06"
+#
 AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa prop_exci_aosoppcc"
 SHORTNOCC="$SHORT_ENERGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \

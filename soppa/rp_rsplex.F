@@ -93,6 +93,21 @@ C     Calculate p-h and h-p weight in excitation operator
 C     and write to output together with excitation energies.
 C-----------------------------------------------------------
 C
+CPFP  To write down the energies, to check also.
+      WRITE(LUPRI,9010)
+C      IF (EXCTRP) THEN
+      IF (TRIPLET) THEN
+         WRITE(LUPRI,9011)
+      ELSE
+         WRITE(LUPRI,9012)
+      END IF
+      WRITE(LUPRI,9010)
+      DO 100 IEXCI = 1,NEXCI
+         WRITE(LUPRI,9013) IEXCI,EXVAL(IEXCI)
+ 100  CONTINUE
+      WRITE(LUPRI,9010)
+Cend-PFP
+
       IF ( IPRSOP .GE. 1 ) THEN
 C
          DO IEXCI = 1,NEXCI
@@ -163,4 +178,12 @@ C
       CALL QEXIT('RP_RSPLEX')
 C
       RETURN
+C
+CPFP  Related with the above statement
+ 9010 FORMAT(25X,'----------------------------------')
+ 9011 FORMAT(25X,' Triplet  Excitation  Energy (au) ')
+ 9012 FORMAT(25X,' Singlet  Excitation  Energy (au) ')
+ 9013 FORMAT(26X,I5,2X,F15.8)
+Cend-PFP
+C
       END

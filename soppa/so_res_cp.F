@@ -462,12 +462,36 @@ C
                   CALL SO_READ(WORK(KDENS),LDENS,LUDENS,FNDENS,INEWTR)
                   CALL SO_READ(WORK(KFOCK),LFOCK,LUFOCK,FNFOCK,INEWTR)
 C
-                  DTIME      = SECOND()
-                  CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
-     &                           WORK(KEND5),LWORK5,IDEL,ISYMD,.FALSE.,
-     &                           DUMMY,ISYMTR)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(11) = SOTIME(11) + DTIME
+CPFP  Here must be the keyword to calculate Triplet or Singlet.
+C     excitation energies.
+C                  IF (EXCTRP) THEN
+                  IF (TRIPLET) THEN
+C
+                    DTIME      = SECOND()
+                    CALL CC_AOFOCKT(WORK(KXINT),WORK(KDENS),
+     &                              WORK(KFOCK),WORK(KEND5),
+     &                              LWORK5,IDEL,ISYMD,ISYMTR)
+                    DTIME      = SECOND()   - DTIME
+                    SOTIME(11) = SOTIME(11) + DTIME
+C
+                  ELSE
+C
+                    DTIME      = SECOND()
+C                    CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
+C     &                             WORK(KFOCK),WORK(KEND5),
+C     &                             LWORK5,IDEL,ISYMD,ISYMTR)
+                    CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
+     &                             WORK(KFOCK),WORK(KEND5),
+     &                             LWORK5,IDEL,ISYMD,.FALSE.,
+     &                             DUMMY,ISYMTR)
+                    DTIME      = SECOND()   - DTIME
+                    SOTIME(11) = SOTIME(11) + DTIME
+C
+                  END IF
+Cend-PFP
+C
+
+
 C
                   CALL SO_WRITE(WORK(KFOCK),LFOCK,LUFOCK,FNFOCK,INEWTR)
 C
@@ -507,14 +531,31 @@ c    &                          NEXCI+INEWTR)
 c                  CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,
 c    &                          NEXCI+INEWTR)
 C
-                  DTIME      = SECOND()
-                  CALL SO_RES_TCB(RES1E,LRES1E,RES1D,
+CPFP  2009-Jun Bifurcation added.
+                  IF (TRIPLET) THEN
+C
+                    DTIME      = SECOND()
+                    CALL SO_RES_TCBT(RES1E,LRES1E,RES1D,
      &                            LRES1D,TR2E,LTR2E,
      &                            TR2D,LTR2D,WORK(KDSRHF),LDSRHF,
      &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                            ISYMTR,WORK(KEND5),LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(29) = SOTIME(29) + DTIME
+                    DTIME      = SECOND()   - DTIME
+                    SOTIME(29) = SOTIME(29) + DTIME
+C
+                  ELSE
+C
+                    DTIME      = SECOND()
+                    CALL SO_RES_TCB(RES1E,LRES1E,RES1D,
+     &                            LRES1D,TR2E,LTR2E,
+     &                            TR2D,LTR2D,WORK(KDSRHF),LDSRHF,
+     &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                            ISYMTR,WORK(KEND5),LWORK5)
+                    DTIME      = SECOND()   - DTIME
+                    SOTIME(29) = SOTIME(29) + DTIME
+C
+                  END IF
+Cend-PFP
 C
 c                  CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,
 c    &                           NEXCI+INEWTR)
@@ -535,16 +576,33 @@ c    &                          NEXCI+INEWTR)
                   CALL SO_READ(WORK(KBTJ1E),LBTJ1E,LUBJ1E,FNBJ1E,INEWTR)
                   CALL SO_READ(WORK(KBTJ1D),LBTJ1D,LUBJ1D,FNBJ1D,INEWTR)
 C
-                  DTIME      = SECOND()
-                  CALL SO_RES_CB(RES2E,LRES2E,RES2D,
-     &                          LRES2D,
-     &                          WORK(KDSRHF),LDSRHF,WORK(KBTR1E),LBTR1E,
-     &                          WORK(KBTR1D),LBTR1D,WORK(KBTJ1E),LBTJ1E,
-     &                          WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                          IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                          LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(15) = SOTIME(15) + DTIME
+CPFP  2009-Jun Bifurcation added
+                  IF (TRIPLET) THEN
+C
+                    DTIME      = SECOND()
+                    CALL SO_RES_CBT(RES2E,LRES2E,RES2D,LRES2D,
+     &                              WORK(KDSRHF),LDSRHF,WORK(KBTR1E),
+     &                              LBTR1E,WORK(KBTR1D),LBTR1D,
+     &                              WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),
+     &                              LBTJ1D,WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                              ISYDIS,ISYMTR,WORK(KEND5),LWORK5)
+                    DTIME      = SECOND()   - DTIME
+                    SOTIME(15) = SOTIME(15) + DTIME
+C
+                  ELSE
+C
+                    DTIME      = SECOND()
+                    CALL SO_RES_CB(RES2E,LRES2E,RES2D,LRES2D,
+     &                             WORK(KDSRHF),LDSRHF,WORK(KBTR1E),
+     &                             LBTR1E,WORK(KBTR1D),LBTR1D,
+     &                             WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),
+     &                             LBTJ1D,WORK(KCMO),LCMO,IDEL,ISYMD,
+     &                             ISYDIS,ISYMTR,WORK(KEND5),LWORK5)
+                    DTIME      = SECOND()   - DTIME
+                    SOTIME(15) = SOTIME(15) + DTIME
+C
+                  END IF
+Cend-PFP
 C
 c                  CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,
 c     &                          NEXCI+INEWTR)

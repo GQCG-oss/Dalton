@@ -1448,9 +1448,16 @@ C *** FORMAT statements
 C
  2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
      &       /' ------------------------------------------')
- 2600 FORMAT(/'    Orbital ',7I9)
- 2620 FORMAT( '    Sup.sym.',7I9)
- 2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
+CPFP: useful to disign/modify basis sets
+C
+C 2600 FORMAT(/' Orbital  ',7I9)
+C 2620 FORMAT( ' Sup.sym. ',7I9)
+C 2800 FORMAT(1X,I3,2X,2A4,7F9.4)
+C
+ 2600 FORMAT(/' Orbital  ',5I17)
+ 2620 FORMAT( ' Sup.sym. ',5I17)
+ 2800 FORMAT(1X,I3,2X,2A4,5F17.12)
+Cend-PFP
 C
 C *** Print molecular orbitals
 C
@@ -1490,7 +1497,10 @@ C
          ISTORB = IORB(ISYM)
   100       IST =IEND+1
             ISTMO=IEND*NBASI+ICMOI
-            IEND=IEND+7
+CPFP Useful to disign/modify basis sets
+C            IEND=IEND+7
+            IEND=IEND+5
+Cend-PFP
             IF(IEND.GT.NENDI) IEND=NENDI
             IEMO=NBASI*(IEND-1)+ICMOI
             WRITE(IOUT,2600) (I,I=IST,IEND)

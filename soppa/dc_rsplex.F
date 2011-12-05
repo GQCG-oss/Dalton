@@ -66,8 +66,12 @@ C
       LTR1D   = NT1AM(ISYMTR)
       LRESO1E = NT1AM(ISYMTR)
       LRESO1D = NT1AM(ISYMTR)
-      LTR2E   = NT2AM(ISYMTR)
-      LTR2D   = NT2AM(ISYMTR)
+CPFP   2009-Jun
+C      LTR2E   = NT2AM(ISYMTR)
+C      LTR2D   = NT2AM(ISYMTR)
+      LTR2E   = N2P2HOP(ISYMTR)
+      LTR2D   = N2P2HOP(ISYMTR)
+Cend-PFP
 C
       KTR1E   = 1
       KTR1D   = KTR1E   + LTR1E
@@ -95,12 +99,20 @@ C     Calculate p-h and 2p-2h weight in excitation operator
 C     and write to output together with excitation energies.
 C-----------------------------------------------------------
 C
+CPFP  To write down the energies, also useful to check.
       WRITE(LUPRI,9010)
-      WRITE(LUPRI,9011)
+C      IF (EXCTRP) THEN
+      IF (TRIPLET) THEN
+         WRITE(LUPRI,9011)
+      ELSE
+         WRITE(LUPRI,9012)
+      END IF
       WRITE(LUPRI,9010)
       DO 100 IEXCI = 1,NEXCI
-         WRITE(LUPRI,9012) IEXCI,EXVAL(IEXCI)
+C         WRITE(LUPRI,9012) IEXCI,EXVAL(IEXCI)
+         WRITE(LUPRI,9013) IEXCI,EXVAL(IEXCI)
  100  CONTINUE
+Cend-PFP
       WRITE(LUPRI,9010)
 C
       IF ( IPRSOP .GE. 1 ) THEN
@@ -228,8 +240,15 @@ C
 C
       RETURN
 C
- 9010 FORMAT(25X,'------------------------')
- 9011 FORMAT(25X,'Excitation   Energy (au)')
- 9012 FORMAT(26X,I5,2X,F15.8)
+CPFP  Related with the above statement
+ 9010 FORMAT(25X,'----------------------------------')
+ 9011 FORMAT(25X,' Triplet  Excitation  Energy (au) ')
+ 9012 FORMAT(25X,' Singlet  Excitation  Energy (au) ')
+ 9013 FORMAT(26X,I5,2X,F15.8)
+C
+C 9010 FORMAT(25X,'------------------------')
+C 9011 FORMAT(25X,'Excitation   Energy (au)')
+C 9012 FORMAT(26X,I5,2X,F15.8)
+Cend-PFP
 C
       END

@@ -79,12 +79,17 @@ C-------------------------------------
 C           Allocation of work space.
 C-------------------------------------
 C
-            LGPVC1  = 2 * NT1AM(ISYMTR) 
-            LGPVC2  = 2 * NT2AM(ISYMTR) 
-            LGPVC1H = NT1AM(ISYMTR) 
-            LGPVC2H = NT2AM(ISYMTR) 
+CPFP   2009-Jun
+            LGPVC1  = 2 * NT1AM(ISYMTR)
+C            LGPVC2  = 2 * NT2AM(ISYMTR)
+            LGPVC2  = 2 * N2P2HOP(ISYMTR)
+            LGPVC1H = NT1AM(ISYMTR)
+C            LGPVC2H = NT2AM(ISYMTR)
+            LGPVC2H = N2P2HOP(ISYMTR)
             LTR1    = NT1AM(ISYMTR)
-            LTR2    = NT2AM(ISYMTR)
+C            LTR2    = NT2AM(ISYMTR)
+            LTR2    = N2P2HOP(ISYMTR)
+Cend-PFP
             LTRMOM  = NEXCI
             LTRM1E  = NEXCI
             LTRM1D  = NEXCI
