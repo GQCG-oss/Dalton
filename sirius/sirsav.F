@@ -457,7 +457,6 @@ C
          KY    = KBVEC + NCONF
          NSIM  = (LFREE/NCONF)-1
          NSIM  = MIN(NSIM,NRS)
-         write(lupri,*) 'nrs,nsim,nredl',nrs,nsim,nredl
          JOFF  = 0
          if(ci_program .eq. 'SIRIUS-CI')then
  5100      CONTINUE

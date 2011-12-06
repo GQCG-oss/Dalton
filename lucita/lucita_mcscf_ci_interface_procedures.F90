@@ -605,6 +605,7 @@ contains
 
 !     turn off common block (re-)initialization + co-worker synchronization of static lucita variables 
       lucita_cfg_initialize_cb        = .false. 
+!     lucita_cfg_initialize_cb        = .true. 
 !debuglucita_cfg_initialize_cb        = .true. 
       
       mxndt = 0

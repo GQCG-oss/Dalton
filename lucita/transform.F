@@ -61,17 +61,17 @@
       IDUM  = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACIC')
 *
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      WRITE(luwrt,*)
       WRITE(luwrt,*) ' Welcome to TRACI_CTL'
       WRITE(luwrt,*) ' ===================='
-      WRITE(luwrt,*)
+      call flshfo(luwrt)
 #endif
 
 *. Copy of one-electron integrals
       CALL MEMMAN(KLH1SAVE,NTOOB**2,'ADDL  ',2,'H1SAVE')
 *. We are going to mess with the one-electron integrals, take a copy
-      CALL COPVEC(WORK(KINT1),WORK(KLH1SAVE),NTOOB*NTOOB)
+      call dcopy(NTOOB*NTOOB,WORK(KINT1),1,WORK(KLH1SAVE),1)
 *
       CALL REWINE(LUC,-1)
       CALL REWINE(luhc,-1)
@@ -202,7 +202,6 @@
       CALL ZBLTP_IDC(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTPx))
 
 #ifdef LUCI_DEBUG
-      write(luwrt,*) 'ntoob is ==> ',ntoob
       IF(NTEST.GE.1000) THEN
         WRITE(luwrt,*) ' input vector to ntoob loop'
         CALL WRTVCD(VEC1,lucin,1,-1)
@@ -260,20 +259,24 @@
         CALL SIGDEN_CI(VEC1,VEC2,C2,LUSC1,lusc2,
      &                 cdummy,sdummy,ISIGDEN,-1)
 
+#ifdef LUCI_DEBUG
         IF(NTEST.GE.1000) THEN
           WRITE(luwrt,*) ' Correction vector'
           CALL WRTVCD(VEC1,lusc2,1,-1)
         END IF
+#endif
 
         CALL VECSMD(VEC1,VEC2,1.0d0,0.5d0,lucin,lusc2,LUSC1,1,-1)
 
 !       transfer back to LUSC1
         CALL COPVCD(LUSC1,lucin,VEC1,1,-1)
 
+#ifdef LUCI_DEBUG
         IF(NTEST.GE.1000) THEN
           WRITE(luwrt,*) ' Updated vector'
           CALL WRTVCD(VEC1,lucin,1,-1)
         END IF
+#endif
       END DO
 
 #ifdef LUCI_DEBUG
@@ -397,12 +400,11 @@
 *. Scratch block, must hold a batch of blocks
       DIMENSION C(*)
 *
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      NTEST = 100
-      IF(NTEST.GE.100) THEN
-        WRITE(lupri,*) ' T_TO_NK_VEC speaking '
-        WRITE(lupri,*) ' ISM, ISPC = ', ISM,ISPC
-      END IF
+      WRITE(lupri,*) ' T_TO_NK_VEC speaking '
+      WRITE(lupri,*) ' ISM, ISPC = ', ISM,ISPC
+      call flshfo(lupri)
 #endif
 
       IATP = 1
@@ -422,6 +424,7 @@
       KKORB = IREOST(KORB)
 #ifdef LUCI_DEBUG
       write(lupri,*) 'korb, kkorb ==> ',korb, kkorb
+      call flshfo(lupri)
 #endif
 
       CALL T_TO_NK_VECS(T,KKORB,C,LUCIN,LUCOUT,
@@ -468,6 +471,7 @@
       CALL REWINE(LUCIN,-1)
       CALL REWINE(LUCOUT,-1)
 *
+!
       T2 = T**2
       DO JBLOCK = 1, NBLOCK
         IATP = IBLOCK(1,JBLOCK)
@@ -475,9 +479,19 @@
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
 
+        if(iatp.eq.0)then
+          IF( ICISTR.GE.2 ) THEN
+!           Read in a Type-Type-symmetry block
+            CALL IFRMDS(LDET,1,-1,LUCIN)
+            CALL FRMDSC_LUCI(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
+          END IF
+          goto 999
+        END IF
+
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IATP IBTP IASM IBSM ', IATP,IBTP,IASM,IBSM
         WRITE(lupri,*) ' IBLTP(IASM)         ', IBLTP(IASM) 
+        call flshfo(lupri)
 #endif
 
 !       obtain alpha strings of sym IASM and type IATP
@@ -496,6 +510,7 @@
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IKAOCC array '
         CALL IWRTMAMN(IKAOCC,1,NASTR1,1,NASTR1,lupri)
+        call flshfo(lupri)
 #endif
 
 !       Obtain Beta  strings of sym IBSM and type IBTP
@@ -513,6 +528,7 @@
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IKBOCC array '
         CALL IWRTMAMN(IKBOCC,1,NBSTR1,1,NBSTR1,lupri)
+        call flshfo(lupri)
 #endif
 
         IF(IBLTP(IASM).EQ.2) THEN
@@ -550,6 +566,7 @@
               WRITE(lupri,*) ' KABOCC, C(IDET), T, T**2',
      &                         KABOCC, C(IDET), T, T**2
               WRITE(lupri,*) ' IA IB IDET',IA,IB,IDET
+      call flshfo(lupri)
 #endif
 
               IF(KABOCC.EQ.1) THEN
@@ -565,7 +582,7 @@
         END IF
 *       ^ End of if statement for nonvanishing blocks
 *. Save result on LUCOUT
-        CALL ITODS(LDET,1,-1,LUCOUT)
+999     CALL ITODS(LDET,1,-1,LUCOUT)
         CALL TODSC_LUCI(C,LDET,-1,LUCOUT)
       END DO
 *     ^ End of loop over blocks

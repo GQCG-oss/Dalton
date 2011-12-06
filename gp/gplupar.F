@@ -65,25 +65,26 @@ C     Output
       INTEGER I1BATCH(*)
       INTEGER IBATCH(8,*)
 *
-      NTEST = 0000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) '    PART_CIV_PAR1   '
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) ' IDC = ', IDC
-        WRITE(6,*)
-        WRITE(6,*) ' IOCOC Array '
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
-        if (NTEST.ge.500) then
-          WRITE(6,*) ' NSSOA array ( input ) '
-          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
-          WRITE(6,*) ' NSSOB array ( input ) '
-          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
-          write(6,*) ' IBLTP array: '
-          call iwrtma(IBLTP,1,NSMST,1,NSMST)
-        end if
-      END IF
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' ==================='
+      WRITE(luwrt,*) '    PART_CIV_PAR1   '
+      WRITE(luwrt,*) ' ==================='
+      WRITE(luwrt,*) ' IDC = ', IDC
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' IOCOC Array '
+      CALL IWRTMAmn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,luwrt)
+      if (NTEST.ge.500) then
+        WRITE(luwrt,*) ' NSSOA array ( input ) '
+        CALL IWRTMAmn(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,luwrt)
+        WRITE(luwrt,*) ' NSSOB array ( input ) '
+        CALL IWRTMAmn(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,luwrt)
+        write(luwrt,*) ' IBLTP array: '
+        call iwrtmamn(IBLTP,1,NSMST,1,NSMST,luwrt)
+      end if
+      WRITE(luwrt,*) ' Iblockd Array '
+      CALL IWRTMAmn(iblockd,1,ndim,1,ndim,luwrt)
+#endif
 *
 *. block zero
 *
@@ -134,7 +135,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         IBLOCK = IBLOCK + 1
         LBATCH(NBATCH) = LBATCH(NBATCH)+1
         IBATCH(1,IBLOCK) = IA
-C       only s-blocks corresponding to distribution
+C       only blocks corresponding to distribution
         IF( IBLOCKD(IBLOCK) .ne. LUCI_MYPROC ) IBATCH(1,IBLOCK) = 0
         IBATCH(2,IBLOCK) = IB
         IBATCH(3,IBLOCK) = ISM
@@ -149,11 +150,12 @@ C       only s-blocks corresponding to distribution
         GOTO 1000
       ELSE IF(ICOMP.EQ.0.AND.
      &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
-        WRITE(6,*) ' Not enough scratch space to include a single Block'
-        WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV_PAR1'
-        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
-        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        WRITE(luwrt,*) 
+     &  ' Not enough scratch space to include a single Block'
+        WRITE(luwrt,*) ' Since I cannot procede I will stop '
+        WRITE(luwrt,*) ' Insufficient buffer detected in PART_CIV_PAR1'
+        write(luwrt,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(luwrt,*) ' Alter GAS space of raise Buffer from ', MXLNG
         call quit( ' Insufficient buffer space in PART_CIV_PAR1. ' )
       ELSE
 *. This batch is finished, goto next batch
@@ -161,23 +163,23 @@ C       only s-blocks corresponding to distribution
       END IF
  2002 CONTINUE
 *
-      IF(NTEST.NE.0) THEN
-        WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
-        WRITE(luwrt,*) '========================='
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
+      WRITE(luwrt,*) '========================='
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' Number of batches ', NBATCH
+      DO JBATCH = 1, NBATCH
         WRITE(luwrt,*)
-        WRITE(luwrt,*) ' Number of batches ', NBATCH
-        DO JBATCH = 1, NBATCH
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Info on batch ', JBATCH
-          WRITE(luwrt,*) ' *********************** '
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
-          WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
-          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
-          END DO
+        WRITE(luwrt,*) ' Info on batch ', JBATCH
+        WRITE(luwrt,*) ' *********************** '
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
+        WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
+        DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+          WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
         END DO
-      END IF
+      END DO
+#endif
 *
       END
 ***********************************************************************

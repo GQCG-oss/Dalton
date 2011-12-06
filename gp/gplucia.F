@@ -5093,6 +5093,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *.Input
 C     INTEGER NOOS(NOCTPA,NOCTPB,NSMST)
 C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
@@ -5106,44 +5107,43 @@ C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
       INTEGER I1BATCH(*)
       INTEGER IBATCH(8,*)
 *
-      NTEST = 0000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' =================='
-        WRITE(6,*) '     PART_CIV2     '
-        WRITE(6,*) ' =================='
-        WRITE(6,*) ' IDC = ', IDC
-        WRITE(6,*)
-        WRITE(6,*) ' IOCOC Array '
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
-        if (NTEST.ge.500) then
-          WRITE(6,*) ' NSSOA array ( input ) '
-          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
-          WRITE(6,*) ' NSSOB array ( input ) '
-          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
-          write(6,*) ' IBLTP array: '
-          call iwrtma(IBLTP,1,NSMST,1,NSMST)
-        end if
-      END IF
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' =================='
+      WRITE(lupri,*) '     PART_CIV2     '
+      WRITE(lupri,*) ' =================='
+      WRITE(lupri,*) ' IDC = ', IDC
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' IOCOC Array '
+      CALL IWRTMAmn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,lupri)
+      if (NTEST.ge.500) then
+        WRITE(lupri,*) ' NSSOA array ( input ) '
+        CALL IWRTMAmn(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,lupri)
+        WRITE(lupri,*) ' NSSOB array ( input ) '
+        CALL IWRTMAmn(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,lupri)
+        write(lupri,*) ' IBLTP array: '
+        call iwrtmamn(IBLTP,1,NSMST,1,NSMST,lupri)
+      end if
+#endif
 *
 *. block zero
 *
-      IB = 1
-      IA = 1
-      ISM = 1
-      IFRST = 1
+      IB     = 1
+      IA     = 1
+      ISM    = 1
+      IFRST  = 1
       NBATCH = 0
       IBLOCK = 0
-      IFINI = 0
+      IFINI  = 0
 *. Loop over batches of blocks
  2000 CONTINUE
-      NBATCH = NBATCH + 1
-      LBATCH(NBATCH) = 0
+      NBATCH          = NBATCH + 1
+      LBATCH(NBATCH)  = 0
       I1BATCH(NBATCH) = IBLOCK  + 1
-      LENGTH = 0
-      LENGTHP= 0
-      NBLOCK = 0
-      IFRST = 1
+      LENGTH          = 0
+      LENGTHP         = 0
+      NBLOCK          = 0
+      IFRST           = 1
 *. Loop over blocks in batch
  1000 CONTINUE
       IF(IFRST.EQ.0) THEN
@@ -5184,11 +5184,12 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         GOTO 1000
       ELSE IF(ICOMP.EQ.0.AND.
      &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
-        WRITE(6,*) ' Not enough scratch space to include a single Block'
-        WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV2'
-        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
-        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        WRITE(lupri,*) 
+     &  ' Not enough scratch space to include a single Block'
+        WRITE(lupri,*) ' Since I cannot procede I will stop '
+        WRITE(lupri,*) ' Insufficient buffer detected in PART_CIV2'
+        write(lupri,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(lupri,*) ' Alter GAS space of raise Buffer from ', MXLNG
         call quit( ' Insufficient buffer space in PART_CIV2. ' )
       ELSE
 *. This batch is finished, goto next batch
@@ -5196,23 +5197,21 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       END IF
  2002 CONTINUE
 *
-      IF(NTEST.NE.0) THEN
-C?      WRITE(6,*) 'Output from PART_CIV'
-C?      WRITE(6,*) '====================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of batches ', NBATCH
-        DO JBATCH = 1, NBATCH
-          WRITE(6,*)
-          WRITE(6,*) ' Info on batch ', JBATCH
-          WRITE(6,*) ' *********************** '
-          WRITE(6,*)
-          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
-          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
-          END DO
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' Number of batches ', NBATCH
+      DO JBATCH = 1, NBATCH
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Info on batch ', JBATCH
+        WRITE(lupri,*) ' *********************** '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Number of blocks included ', LBATCH(JBATCH)
+        WRITE(lupri,*) ' TTSS and offsets and lenghts of each block '
+        DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+          WRITE(lupri,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
         END DO
-      END IF
+      END DO
+#endif
 *
       END
 ***********************************************************************

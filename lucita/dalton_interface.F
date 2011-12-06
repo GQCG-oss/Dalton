@@ -1997,8 +1997,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #endif
       else
 
-!       write(lupri,*) ' no integrals read in ==> pointers generated'
-
       end if ! citask_id switch
 
       END

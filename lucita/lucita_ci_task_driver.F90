@@ -232,6 +232,7 @@
 !     ------------------------------------------------------------------------
       call setup_lucita_cb_interface()
 
+
 !     print header
       if(lucita_ci_run_id == 'standard ci ') call hello_dalton_lucita
 
