@@ -12,6 +12,9 @@ C              in eqs. (34) and (35).
 C
 #include <implicit.h>
 #include <priunit.h>
+CPFP
+#include <soppinf.h>
+Cend-PFP
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E),   RES1D(LRES1D), SIGDA1(LSIGDA1)
@@ -46,13 +49,30 @@ C        to get fourth contributions to RES1E and RES1D in eqs. (34) and
 C        (35).
 C-----------------------------------------------------------------------
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISDEL),
-     &              ONE,SIGDA1(KOFF1),NTOTDL,CMO(KOFF2),NTOTDL,
-     &              ONE,RES1E(KOFF3),NTOTA)
+CPFP It was changed the sign of the D and E part
+C         IF (EXCTRP) THEN
+         IF (TRIPLET) THEN
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISDEL),
-     &              -ONE,SIGDA2(KOFF1),NTOTDL,CMO(KOFF2),NTOTDL,
-     &              ONE,RES1D(KOFF3),NTOTA)
+           CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISDEL),
+     &                -ONE,SIGDA1(KOFF1),NTOTDL,CMO(KOFF2),NTOTDL,
+     &                ONE,RES1E(KOFF3),NTOTA)
+C
+           CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISDEL),
+     &                ONE,SIGDA2(KOFF1),NTOTDL,CMO(KOFF2),NTOTDL,
+     &                ONE,RES1D(KOFF3),NTOTA)
+C
+         ELSE
+C
+           CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISDEL),
+     &                ONE,SIGDA1(KOFF1),NTOTDL,CMO(KOFF2),NTOTDL,
+     &                ONE,RES1E(KOFF3),NTOTA)
+C
+           CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISDEL),
+     &                -ONE,SIGDA2(KOFF1),NTOTDL,CMO(KOFF2),NTOTDL,
+     &                ONE,RES1D(KOFF3),NTOTA)
+C
+         END IF
+Cend-PFP
 C
   100 CONTINUE
 C

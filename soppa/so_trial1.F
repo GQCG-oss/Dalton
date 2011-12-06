@@ -42,7 +42,10 @@ C     Open files for storing of trialvectors.
 C--------------------------------------------
 C
       LTR1 = NT1AM(ISYMTR)
-      LTR2 = NT2AM(ISYMTR)
+CPFP   2009-Jun
+C      LTR2 = NT2AM(ISYMTR)
+      LTR2 = N2P2HOP(ISYMTR)
+Cend-PFP
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1)

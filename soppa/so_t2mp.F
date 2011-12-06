@@ -24,6 +24,10 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+CPFP Together with the AOHRP conditional are temporary until.
+C    triplet excitation energies be implemented.
+#include <soppinf.h>
+Cend-PFP
 C
 C------------------------------
 C     Statement function INDEX.
@@ -36,6 +40,18 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_T2MP')
+C
+CPFP  Must be paid attention because this changes for all approximations.
+C     Of course, when implemented there would not be the need of the
+C     conditional on AOHRP.
+C     This implementation consume more memory but is faster than other
+C     options
+       LT2AMH   = LT2AM
+       IF (TRIPLET) THEN
+         IF (AOHRP) LT2AMH = INT(LT2AM/2)
+C       LT2AMH = INT(LT2AM/2)
+       END IF
+Cend-PFP
 C
 C---------------------------------------------------
 C     Loop over T2-amplitudes for a =< b and i =< j.
@@ -104,6 +120,16 @@ C
      &                           - ONE * T2AM(NAJBI)
                            T2MP2 = TWO * T2AM(NAJBI)
      &                           - ONE * T2AM(NAIBJ)
+C
+CPFP  It should be correct to use LT2AM ?
+C
+                           IF (TRIPLET) THEN
+C
+                              T2AM(LT2AMH+NAJBI) = T2AM(NAIBJ)
+                              T2AM(LT2AMH+NAIBJ) = T2AM(NAJBI)
+C
+                           END IF
+Cend-PFP
 C
                            T2AM(NAIBJ) = T2MP1
                            T2AM(NAJBI) = T2MP2

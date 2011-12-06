@@ -43,7 +43,10 @@ C     Allocation of work space.
 C------------------------------
 C
       LDIAG1 = NT1AM(ISYMTR)
-      LDIAG2 = NT2AM(ISYMTR)
+CPFP   2009-Jun
+C      LDIAG2 = NT2AM(ISYMTR)
+      LDIAG2 = N2P2HOP(ISYMTR)
+Cend-PFP
 C
       KDIAG1  = 1
       KDIAG2  = KDIAG1 + LDIAG1
