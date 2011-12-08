@@ -1185,10 +1185,12 @@ C
      *         ,' FOR VECTOR ',ICSIM
             CALL OUTPUT(FVTD(1,1,ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-            WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc total contribution'
+            IF (DOMCSRDFT) THEN
+                WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc total contribution'
      *         ,' FOR VECTOR ',ICSIM
-            CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
+               CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+            END IF
  1014       CONTINUE
          END IF
          IF (HSROHF.OR.DODFT) THEN
@@ -1203,7 +1205,7 @@ C
 C
             CALL DSCAL(KZYVAR,DM1,EVECS,1)
          ELSE
-C           (FVTD(1,1,NCSIM+1) contains the V[2c]xcsr for srDFT,
+C           (FVTD(1,1,NCSIM+1:NCSIM+NCSIM) contains the V[2c]xcsr for srDFT,
 C            it is NOT used when normal MCSCF)
             CALL RSPORB(.FALSE.,NCSIM,FC,FVTD(1,1,NCSIM+1),FVTD,
      *                  QATD,QBTD,WRK(KDTV),EVECS,DUMMY)
