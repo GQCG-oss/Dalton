@@ -43,10 +43,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-CPFP
-C      PARAMETER (NTABLE = 12)
-      PARAMETER (NTABLE = 13)
-Cend-PFP
+      PARAMETER (NTABLE = 12)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       LOGICAL LNEXC2
 #include <abainf.h>
@@ -56,10 +53,7 @@ Cend-PFP
 C
       DATA TABLE /'.HIRPA ', '.SOPW4 ', '.DIRECT', '.AORPA ', '.DCRPA ',
      &            '.AOSOP ', '.AOSOC ', '.SOPCHK', '.AOTEST', '.NSAVMX',
-CPFP
-C     &            '.NEXCI2', '.THREX2'/
-     &            '.NEXCI2', '.THREX2', '.AOHRP '/
-Cend-PFP
+     &            '.NEXCI2', '.THREX2'/
 C     
 C------------------
 C     Set defaults.
@@ -73,9 +67,6 @@ C
       AOSOC  = .FALSE.
       SOPCHK = .FALSE.
       AOTEST = .FALSE.
-CPFP
-      AOHRP = .FALSE.
-Cend-PFP
 C
       NSAVMX = 3
       NSAVMXORIG = 3
@@ -97,10 +88,7 @@ C
          ICHANG = ICHANG + 1
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-CPFP
-C               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
-Cend-PFP
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   200    CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -155,11 +143,6 @@ C           NSYM is set to 8 since NSYM has not yet been set !!
    12    CONTINUE
             READ (LUCMD,*) THREX2
             GOTO 100
-CPFP
-   13    CONTINUE
-            AOHRP  = .TRUE.
-            GOTO 100
-Cend-PFP
       ELSE IF (PROMPT .EQ. '*') THEN
          GOTO 300
       ELSE
@@ -183,10 +166,6 @@ C
      &       '    (Ref.: O. Christiansen, K. L. Bak, H. Koch and',
      &       ' S. P. A. Sauer',
      &       '     Chem. Phys. Lett. 284, 47-62 (1998))'
-CPFP
-         IF (AOHRP)  WRITE(LUPRI,'(A)')
-     &       ' AO integral driven High RPA :'
-Cend-PFP
          IF (AOSOP)  WRITE(LUPRI,'(A/,A,A,/,A)')
      &       ' AO integral driven SOPPA :',
      &       '    (Ref.: K. L. Bak, H. Koch, J. Oddershede,',

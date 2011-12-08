@@ -351,25 +351,9 @@ C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
                   DTIME      = SECOND()
-CPFP
-                  IF (TRIPLET) THEN
-C
-                     CALL CC_AOFOCKT(WORK(KXINT),WORK(KDENS),
-     &                               WORK(KFOCK),WORK(KEND4),
-     &                               LWORK4,IDEL,ISYMD,ISYMTR)
-C
-                  ELSE
-C
-C                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
-C     &                              WORK(KFOCK),WORK(KEND4),
-C     &                              LWORK4,IDEL,ISYMD,ISYMTR)
-                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
-     &                              WORK(KFOCK),WORK(KEND4),
-     &                              LWORK4,IDEL,ISYMD,.FALSE.,
-     &                              DUMMY,ISYMTR)
-C
-                  END IF
-Cend-PFP
+                  CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
+     &                           WORK(KEND4),LWORK4,IDEL,ISYMD,.FALSE.,
+     &                           DUMMY,ISYMTR)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
 C

@@ -122,13 +122,6 @@ Chj1     IDENT8 = IDENT//BLANK8
 Chj1     QNAMES(LEVELQ) = IDENT8
 Chj1 980824-hjaaj: these string operations take too long time!
          QNAMES(LEVELQ) = IDENT
-CPFP
-CSPAS:24/11-2003:debugging AO-SOPPA *** CPFP
-c         write(lupri,*)
-c     &   'entering    ',('  ',i=1,levelq),levelq,' ',IDENT
-c          call flshfo(lupri)
-CKeinSPASmehr
-Cend-PFP
       END IF
       RETURN
 C
@@ -138,13 +131,6 @@ Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
       ICHECK = MIN(12,LEN(IDENT))
       IF (QNAMES(LEVELQ) .EQ. IDENT(1:ICHECK)) THEN
          LEVELQ = LEVELQ - 1
-CPFP
-CSPAS:24/11-2003:debugging AO-SOPPA *** CPFP
-c         write(lupri,*)
-c     &   'exiting-----',('--',i=1,levelq+1),levelq+1,' ',IDENT
-c         call flshfo(lupri)
-CKeinSPASmehr
-Cend-PFP
       ELSE
          WRITE (LUPRI,'(//A/A,I6,2(/2A),//A)')
      *      ' QEXIT error, exit ID does not match entry ID',

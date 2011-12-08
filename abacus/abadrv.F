@@ -344,39 +344,6 @@ C     ****************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (ABALNR) THEN
-
-         IF (.NOT. PASLNR) THEN
-CPFP
-            IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-C
-C
-C     Added an extra dimension to keep complex numbers in case of
-C     absorption, panor+kr-02
-C
-         KPOLDD = KLAST
-C         KPOLDQ = KPOLDD + 2*9*MXFR
-C         KPOLDL = KPOLDQ + 2*27*MXFR
-C         KPOLDA = KPOLDL + 2*9*MXFR
-C         KPOLVL = KPOLDA + 2*9*MXFR
-C         KPOLVV = KPOLVL + 2*9*MXFR
-C         KFOVIB = KPOLVV + 2*9*MXFR
-         KPOLDQ = KPOLDD + 2*9*NFRVAL*NMODEL
-         KPOLDL = KPOLDQ + 2*27*NFRVAL*NMODEL
-         KPOLDA = KPOLDL + 2*9*NFRVAL*NMODEL
-         KLOLVL = KPOLDA + 2*9*NFRVAL*NMODEL
-C In principle these two are not necesary
-C check out that the number of arguments are different
-         KLOLVV = KPOLVL + 2*9*NFRVAL*NMODEL
-         KLOVIB = KPOLVV + 2*9*NFRVAL*NMODEL
-CSPAS:6/10-08: trying to add mass independent vibrational g-factor
-C        KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
-         KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
-CKeinSPASmehr
-         LWRK1  = LWORK - KLST1 + 1
-C
-               CALL SO_LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
-     &                        WORK(KPOLDA),WORK(KLST1),LWRK1,PASLNR)
-            ELSE
 C
 C     Added an extra dimension to keep complex numbers in case of
 C     absorption, panor+kr-02
@@ -393,12 +360,10 @@ C        KLST1  = KFOVIB + 3*NATOMS*3*NATOMS*NSYM*MXFR
          KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
 CKeinSPASmehr
          LWRK1  = LWORK - KLST1 + 1
-C
-               CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
-     &                     WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
-     &                     WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
-            END IF
-Cend-PFP
+         IF (.NOT. PASLNR) THEN
+            CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
+     &                  WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
+     &                  WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
             IF (PASLNR) CALL ABAWRITRS
             CALL FLSHFO(LUPRI)
          END IF
@@ -440,11 +405,7 @@ C
       CALL GETTIM(TIMSTR,TIMDUM)
 CSPAS : 6/11-2009 AO-SOPPA included
       NMODEL = 1
-CPFP 2009-Jun NMODEL increased from 4 to 5
-C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
-         IF (AORPA .OR. AOHRP .OR. DCRPA
-     &             .OR. AOSOP .OR. AOSOC) NMODEL = 5
-Cend-PFP
+      IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) NMODEL = 4
 CKeinSPASmehr
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
@@ -2566,35 +2527,18 @@ C
 C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
-CPFP  check out the arguments in SO_LNROUT
-C      IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
-C     &                        IPRDEF,WORK,LWORK)
-         IF (ABALNR) THEN
-C            IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-            IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-               CALL SO_LNROUT(POLDD,POLDL,POLDA,IPRDEF)
-            ELSE
-               CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
+      IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                        IPRDEF,WORK,LWORK)
-            END IF
-         END IF
-CKeinSPASmehr
-
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
       IF (DOEXCI) THEN
-CPFP
-C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
-Cend-PFP
+         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
 CSPAS:23/5-11: second and third moment sum rules
-CPFP check out the arguments in SO_EXCOUT
 C           CALL SO_EXCOUT(TRLEN,TRVEL,TRMAG,TRLON,BSRLON,EXENG,
 C    &                     FONAC,FONA2,SECMAT,WORK,LWORK)
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
      &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
-C
 CKeinSPASmehr
          ELSE
             CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,

@@ -12,9 +12,6 @@ C              in eqs. (34) and (35).
 C
 #include <implicit.h>
 #include <priunit.h>
-CPFP
-#include <soppinf.h>
-Cend-PFP
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E),   RES1D(LRES1D), SIGAI1(LSIGAI1)
@@ -49,30 +46,13 @@ C        to get third contributions to RES1E and RES1D in eqs. (34) and
 C        (35).
 C----------------------------------------------------------------------
 C
-CPFP
-C           IF (EXCTRP) THEN
-           IF (TRIPLET) THEN
+         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
+     &              -ONE,CMO(KOFF1),NTOTAL,SIGAI1(KOFF2),NTOTAL,
+     &              ONE,RES1E(KOFF3),NTOTA)
 C
-             CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
-     &                  ONE,CMO(KOFF1),NTOTAL,SIGAI1(KOFF2),NTOTAL,
-     &                  ONE,RES1E(KOFF3),NTOTA)
-C
-             CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
-     &                  -ONE,CMO(KOFF1),NTOTAL,SIGAI2(KOFF2),NTOTAL,
-     &                  ONE,RES1D(KOFF3),NTOTA)
-C
-           ELSE
-C
-             CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
-     &                 -ONE,CMO(KOFF1),NTOTAL,SIGAI1(KOFF2),NTOTAL,
-     &                  ONE,RES1E(KOFF3),NTOTA)
-C
-             CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
-     &                  ONE,CMO(KOFF1),NTOTAL,SIGAI2(KOFF2),NTOTAL,
-     &                  ONE,RES1D(KOFF3),NTOTA)
-C
-           END IF
-Cend-PFP
+         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
+     &              ONE,CMO(KOFF1),NTOTAL,SIGAI2(KOFF2),NTOTAL,
+     &              ONE,RES1D(KOFF3),NTOTA)
 C
   100 CONTINUE
 C
