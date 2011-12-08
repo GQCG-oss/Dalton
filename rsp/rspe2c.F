@@ -2644,6 +2644,8 @@ C
 C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
       IF (SOPPA) KTOUSE = KTOUSE - KZCONF
       MAXSIM = MIN(MAXVEC,(KTOUSE-100)/KMAXVE)
+      write(lupri,*) 'DEBUG maxsim reset to 1 from',maxsim
+      maxsim = 1
       IF (IPRRSP.GT.37 .OR. MAXSIM.LE.0) THEN
          WRITE(LUPRI,*)
      *     ' KLIDEN,KUSE,KMAXVE,LBINTM,NORBT,NASHT,KZYVAR,LWRK '
