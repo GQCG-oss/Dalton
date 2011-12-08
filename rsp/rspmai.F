@@ -1434,10 +1434,10 @@ c              selected excited states
                   TRPLET = .TRUE.
                   TRPFLG = .TRUE.
                GO TO 100
- 48            CONTINUE
+ 48            CONTINUE ! .NSIMUL
                   READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)
                GO TO 100
- 49            CONTINUE
+ 49            CONTINUE ! .NSTART
                   READ (LUCMD,*) (NPPSTV(J),J=1,NSYM)
                GO TO 100
  50            CONTINUE
