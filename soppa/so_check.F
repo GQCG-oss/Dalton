@@ -1,13 +1,6 @@
 C  /* Deck so_check */
-CPFP
-C      SUBROUTINE SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
-C     &                    FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
-      SUBROUTINE SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &                    T2MP,LT2MP,
-C     &                    FOCKD,LFOCKD,ISYMTR,WORK,LWORK,MEMEND)
+      SUBROUTINE SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
      &                    FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
-Cend-PFP
-
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -33,9 +26,6 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_CHECK')
-CPFP***
-c         WRITE(LUPRI,*) 'In SO_CHECK 1.0'
-Cend-PFP
 C
       CHKTIM = SECOND()
       RESTIM = ZERO
@@ -45,22 +35,14 @@ C     Work space allocation for E[2] and S[2] matrices
 C     and trial vectors.
 C-----------------------------------------------------
 C
-CPFP   2009-Jun
-C      NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
-      NVAR   = 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))
-Cend-PFP
-
+      NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
 C
       LE2MAT = NVAR * NVAR
       LS2MAT = NVAR * NVAR
       LTR1E  = NT1AM(ISYMTR)
       LTR1D  = NT1AM(ISYMTR)
-CPFP   2009-Jun
-C      LTR2E  = NT2AM(ISYMTR)
-C      LTR2D  = NT2AM(ISYMTR)
-      LTR2E  = N2P2HOP(ISYMTR)
-      LTR2D  = N2P2HOP(ISYMTR)
-Cend-PFP
+      LTR2E  = NT2AM(ISYMTR)
+      LTR2D  = NT2AM(ISYMTR)
 C
       KE2MAT  = 1
       KS2MAT  = KE2MAT + LE2MAT
@@ -88,20 +70,12 @@ C
          LS2MAT  = (ICOL - 1) * NVAR
          LRES1E  = NT1AM(ISYMTR)
          LRES1D  = NT1AM(ISYMTR)
-CPFP   2009-Jun
-C         LRES2E  = NT2AM(ISYMTR)
-C         LRES2D  = NT2AM(ISYMTR)
-         LRES2E  = N2P2HOP(ISYMTR)
-         LRES2D  = N2P2HOP(ISYMTR)
-Cend-PFP
+         LRES2E  = NT2AM(ISYMTR)
+         LRES2D  = NT2AM(ISYMTR)
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
-CPFP   2009-Jun
-C         LRESO2E = NT2AM(ISYMTR)
-C         LRESO2D = NT2AM(ISYMTR)
-         LRESO2E = N2P2HOP(ISYMTR)
-         LRESO2D = N2P2HOP(ISYMTR)
-Cend-PFP
+         LRESO2E = NT2AM(ISYMTR)
+         LRESO2D = NT2AM(ISYMTR)
 C
          KRES1E  = KE2MAT  + LE2MAT
          KRES1D  = KRES1E  + LRES1E
@@ -149,22 +123,8 @@ C
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-CActual
-C      SUBROUTINE SO_ERES(MODEL,  NOLDTR, NNEWTR,  DENSIJ,  LDENSIJ, 
-C     &                   DENSAB, LDENSAB, T2MP,    LT2MP,   FOCKD,
-C     &                   LFOCKD, DENSAI,  LDENSAI, NIT,     ISYMTR,
-C     &                   WORK,   LWORK)
-COLD
-C         CALL SO_SRES('AOSOP',0,1,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-CPFP
-C     &                ISYMTR,WORK(KEND1),LWORK1, MEMEND1)
-C     &                ISYMTR,WORK(KEND1),LWORK1)
-Cend-PFP
-         CALL SO_ERES('AOSOP',0,1,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-CPFP
-C     &               T2MP,LT2MP,FOCKD,LFOCKD,ISYMTR,
-     &               T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,NIT,ISYMTR,
-Cend-PFP
+         CALL SO_ERES('AOSOP',0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
+     &               T2MP, LT2MP,  FOCKD,   LFOCKD, ISYMTR,
      &               WORK(KEND1), LWORK1)
          ETIME      = SECOND()   - DTIME
          SOTIME(35) = SOTIME(35) + ETIME
@@ -210,34 +170,6 @@ C
 C
       WRITE(LUPRI,'(A,I2,A,I8)')' SYMMETRY :',ISYMTR,'  DIMENSION ',NVAR
       CALL OUTPUT(WORK(KE2MAT),1,NVAR,1,NVAR,NVAR,NVAR,1,LUPRI)
-C
-CPFP 2009-Aug  Write the C matrices
-C
-      CALL AROUND('Ce1[2] Matrix')
-      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
-     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
-      CALL OUTPUT(WORK(KE2MAT),(2*LRESO1E+1),(2*LRESO1E+LRESO2E),
-     &                         1,LRESO1D,NVAR,NVAR,1,LUPRI)
-C
-      CALL AROUND('~Cd1[2] Matrix')
-      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
-     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
-      CALL OUTPUT(WORK(KE2MAT),1,LRESO1E,(2*LRESO1D+1),
-     &            (2*LRESO1E+LRESO2E),NVAR,NVAR,1,LUPRI)
-C
-      CALL AROUND('Ce2[2] Matrix')
-      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
-     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
-      CALL OUTPUT(WORK(KE2MAT),(2*LRESO1E+LRESO2E+1),NVAR,(LRESO1D+1),
-     &            (2*LRESO1D),NVAR,NVAR,1,LUPRI)
-C
-      CALL AROUND('~Cd2[2] Matrix')
-      WRITE(LUPRI,'(A,I2,A,5I8)')' SYMMETRY :',ISYMTR,
-     &            '  DIMENSIONS ',LRESO1E,LRESO1D,LRESO2E,LRESO2D,NVAR
-      CALL OUTPUT(WORK(KE2MAT),(LRESO1E+1),(2*LRESO1E),
-     &            (2*LRESO1D+LRESO2D+1),NVAR,NVAR,NVAR,1,LUPRI)
-C
-Cend-PFP
 C
       CALL AROUND('S[2] Matrix')
 C

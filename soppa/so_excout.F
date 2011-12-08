@@ -197,48 +197,13 @@ C    &               EXENG(1,1,2),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
 CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 350 ISYM = 1, NSYM
-C
-            NEXCIT(ISYM) = NEXCTX(ISYM)
-C
-  350    CONTINUE
-C
-      END IF
-C
-C===================================================
-C     Write calculated HIGHRPA properties to output.
-C===================================================
-C
-CPFP Probably it should change a little for a proper implementation.
-C    of other properties.
-      IF (AOHRP) THEN
-C
          DO 400 ISYM = 1, NSYM
 C
-            NEXCTX(ISYM) = NEXCIT(ISYM)
-CPFP   2009-Jun  NT2AM or N2P2HOP should not appear here.
-C            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
-Cend-PFP
-  400    CONTINUE
-C
-         WRITE(LUPRI,9000)
-         WRITE(LUPRI,'(30X,A)') 'HIGH-RPA results:'
-         WRITE(LUPRI,9001)
-C
-         CALL EXCOUT(TRLEN(1,1,1,3),TRVEL(1,1,1,3),TRMAG(1,1,1,3),
-     &               TRLON(1,1,1,3),BSRLON(1,1,1,3),EXENG(1,1,3),
-     &               FONAC,FONA2,WORK,LWORK)
-C
-         DO 450 ISYM = 1, NSYM
-C
             NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-  450    CONTINUE
+  400    CONTINUE
 C
       END IF
-C
-Cend-PFP
 C
 C=================================================
 C     Write calculated SOPPA properties to output.
@@ -249,10 +214,7 @@ C
          DO 500 ISYM = 1, NSYM
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
-CPFP   2009-Jun
-C            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
-Cend-PFP
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
 C
   500    CONTINUE
 C
@@ -271,11 +233,11 @@ C    &               EXENG(1,1,3),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
 CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 550 ISYM = 1, NSYM
+         DO 600 ISYM = 1, NSYM
 C
             NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-  550    CONTINUE
+  600    CONTINUE
 C
       END IF
 C
@@ -285,15 +247,12 @@ C=======================================================
 C
       IF (AOSOC) THEN
 C
-         DO 600 ISYM = 1, NSYM
+         DO 700 ISYM = 1, NSYM
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
-CPFP   2009-Jun
-C            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
-Cend-PFP
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
 C
-  600    CONTINUE
+  700    CONTINUE
 C
          WRITE(LUPRI,9000)
          WRITE(LUPRI,'(30X,A)') 'SOPPA(CCSD) results:'
@@ -310,11 +269,11 @@ C    &               EXENG(1,1,4),FONAC,FONA2,DUMMY,DUMMY,DUMMY,DUMMY,
 CKeinSPASmehr
      &               DUMMY,DUMMY,DUMMY,DUMMY,WORK,LWORK)
 C
-         DO 650 ISYM = 1, NSYM
+         DO 800 ISYM = 1, NSYM
 C
             NEXCIT(ISYM) = NEXCTX(ISYM)
 C
-  650    CONTINUE
+  800    CONTINUE
 C
       END IF
 C

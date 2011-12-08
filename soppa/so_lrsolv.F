@@ -41,21 +41,10 @@ C     For checking, calculate E[2] and S[2] matrices explicitly
 C     by using unit vectors as trial vectors.
 C==============================================================
 C
-CPFP***
-c         WRITE(LUPRI,*) 'In SO_SRLOLV 1.0'
-Cend-PFP
       IF (SOPCHK) THEN
 C
-CPFP
-C
-c         CALL SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
-c     &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
-C
-         CALL SO_CHECK(DENSIJ,  LDENSIJ, DENSAB, LDENSAB, DENSAI,
-     &                 LDENSAI, T2MP,    LT2MP,  FOCKD,   LFOCKD,
-     &                 ISYMTR,  WORK,    LWORK)
-C
-Cend-PFP
+         CALL SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
+     &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
 C
       END IF
 C
@@ -186,21 +175,18 @@ C
          CALL GETTIM (DUMMY,WTIMEE)
          SOWTIM(2)  = SOWTIM(2)  + WTIMEE - WTIMES
 C
-CPFP  It is commented by now, is necessary to get in and see
-C     how to modify it for the triplet case.
-C         IF ( AOTEST ) THEN
-CC
-CC--------------------------------------------------------------------
-CC           Test orthonormality of trial vectors and check the linear
-CC           transformed trial vectors.
-CC--------------------------------------------------------------------
-CC
-C            CALL SO_TEST(NOLDTR,NNEWTR,ISYMTR,DENSIJ,LDENSIJ,DENSAB,
-C     &                   LDENSAB,T2MP,LT2MP,FOCKD,LFOCKD,WORK(KEND1),
-C     &                   LWORK1)
-CC
-C         END IF
-Cend-PFP
+         IF ( AOTEST ) THEN
+C
+C--------------------------------------------------------------------
+C           Test orthonormality of trial vectors and check the linear
+C           transformed trial vectors.
+C--------------------------------------------------------------------
+C
+            CALL SO_TEST(NOLDTR,NNEWTR,ISYMTR,DENSIJ,LDENSIJ,DENSAB,
+     &                   LDENSAB,T2MP,LT2MP,FOCKD,LFOCKD,WORK(KEND1),
+     &                   LWORK1 )
+C
+         END IF
 C
 C--------------------------------------------------------
 C        Set up and solve the reduced eigenvalue problem.
@@ -337,5 +323,4 @@ C
  9010 FORMAT(12X,'--------------------------------------------------')
  9011 FORMAT(12X,'Excitation   Energy (au)     Residual    Converged')
  9012 FORMAT(13X,I5,2X,F15.8,1X,1P,D14.4,6X,A)
-C
       END

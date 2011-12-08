@@ -38,9 +38,6 @@ C
 CSPAS:23/5-11: second and third moment sum rules
       LOGICAL     LTHIRDM
 CKeinSPASmehr
-CPFP
-      LOGICAL     LDSO, LPSO, LSPNDIP, LFERMIC, LSDFC
-Cend-PFP
       LOGICAL     EXTST   , OPENED
 C
 C------------------
@@ -83,13 +80,6 @@ CSPAS:23/5-11: second and third moment sum rules
       LTHIRDM  = .FALSE.
 CKeinSPASmehr
       LTHETA   = .FALSE.
-CPFP
-C     LDSO     = .FALSE.
-C     LPSO     = .FALSE.
-C     LSPNDIP  = .FALSE.
-      LFERMIC  = .FALSE.
-C     LSDFC    = .FALSE.
-Cend-PFP
 C
 C-----------------------------------------------
 C     For the calculation of excitation energies
@@ -122,13 +112,6 @@ CKeinSPASmehr
 cKeld      IF ( ROTSTR .AND. NODIFC ) LHBDO   = .TRUE.
          IF ( ROTVEL )              LDIPVEL = .TRUE.
          IF ( ROTVEL )              LANGMOM = .TRUE.
-CPFP The first LDSO should not be here... I guess.
-C        IF ( MAGPRP )              LDSO    = .TRUE.
-C        IF ( MAGPRP )              LPSO    = .TRUE.
-C        IF ( MAGPRP )              LSPNDIP = .TRUE.
-         IF ( MAGPRP )              LFERMIC = .TRUE.
-C        IF ( MAGPRP )              LSDFC   = .TRUE.
-Cend-PFP
 C
 C
 C------------------------------------------------------
@@ -324,31 +307,6 @@ C
 C
       END IF
 CKeinSPASmehr
-CPFP
-C
-C-----------------------------------------------------
-C     Determine a sort of magnetic property integrals.
-C     In principle Fermi Contact
-C-----------------------------------------------------
-C
-      IF ( MAGPRP ) THEN
-C
-         NCOMP  = 0
-         NPATOM = 0
-CPFP taken from TRPRH1.
-c        CALL GET1IN(DUMMY,'FERMI C',NCOMP,WORK,LWORK,FCLAB,
-c    &               IFCREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-c    &               INTPRI)
-C
-         CALL GET1IN(DUMMY,'FERMI C',NCOMP,WORK(KEND1),LWORK1,
-     &               WORK(KDLAB),WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
-C
-         NLAB = NATM
-         CALL LABCOP(NLAB,NLBTOT,WORK(KDLAB),WORK(KIDSYM),LABAPP,LABSYM)
-C
-      END IF
-Cend-PFP
 C
 C-----------------------
 C     Remove from trace.

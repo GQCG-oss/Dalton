@@ -144,11 +144,8 @@ C
       KAOG  = KAOAB + (N2BASX     + 1)/IRAT + 1
       KEND1 = KAOG  + (NBAST*NSYM + 1)/IRAT + 1
       LWRK1 = LWORK - KEND1
-CPFP
-C      IF (LWRK1 .LT. 0) CALL QUIT('Insufficient work space in CCRDAO')
-            WRITE(LUPRI,*) 'In CCSD_SORTAO LWRK1 is', LWRK1
-      IF (LWRK1 .LT. 0) CALL QUIT('Insufficient work space in SORTAO.1')
-Cend-PFP
+C
+      IF (LWRK1 .LT. 0) CALL QUIT('Insufficient work space in CCRDAO')
 C
 C------------------------------------------------------
 C     Calculate in the index arrays needed in the sort.
@@ -194,12 +191,8 @@ C
          NUMBAT = MIN(NTOTD,LWRK1/LENGTH)
 C
          IF (NUMBAT .EQ. 0) THEN
-            WRITE(LUPRI,*) 'In CCSD_SORTAO NUMBAT is zero',NUMBAT
-CPFP
-C            CALL QUIT('Insufficient work space in CCRDAO')
-            CALL SO_MEMMAX ('SORTAO.2',NUMBAT)
-            CALL QUIT('Insufficient work space in SORTAO.2')
-Cend-PFP
+            WRITE(LUPRI,*) 'In CCSD_SORTAO NUMBAT is zero'
+            CALL QUIT('Insufficient work space in CCRDAO')
          ENDIF
 C
          ITOTBA = (NTOTD-1)/NUMBAT + 1
@@ -271,7 +264,6 @@ C-------------------------------------
 C     Close integral files and delete.
 C-------------------------------------
 C
-CPFP In theory this works also for ao_rpa, otherwise only keep it
       IF (KEEPAOTWO .EQ. 0) THEN
          CALL GPCLOSE(LUINTA,'DELETE')
       ELSE

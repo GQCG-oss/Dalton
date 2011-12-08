@@ -33,10 +33,7 @@ C     1. allocation of work space.
 C---------------------------------
 C
       LEDIA1 = NT1AM(ISYMTR)
-CPFP   2009-Jun
-C      LEDIA2 = NT2AM(ISYMTR)
-      LEDIA2 = N2P2HOP(ISYMTR)
-Cend-PFP
+      LEDIA2 = NT2AM(ISYMTR)
       LSDIA1 = NT1AM(ISYMTR)
 C
       KEDIA1  = 1

@@ -3480,122 +3480,6 @@ C
 C
       RETURN
       END
-CPFP
-  /* Deck cc_aofockt */
-      SUBROUTINE CC_AOFOCKT(XINT,DENSIT,FOCK,WORK,LWORK,IDEL,
-     *                      ISYMD,ISYDEN)
-C
-C     Written by Asger Halkier and Henrik Koch 27-4-95.
-C
-C     Debugged Ove Christiansen august 1995
-C
-C     PFP: Added for calculation of triplet excitation energies 2003.
-C          Although probably it excists already.
-C
-C     Purpose: Calculate the two electron contribution to the
-C              AO-fock matrix using matrix vector routines.
-C
-C     Obs: It can be done as F(g>=d) = G(a>=b) I(a>=b,g,d) where
-C          G(a>=b) = D(a,b) + D(b,a), the diagonal properly scaled
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION XINT(*),DENSIT(*)
-      DIMENSION FOCK(*),WORK(LWORK)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
-C
-      CALL QENTER('CC_AOFOCKT')
-C
-      ISYDIS = MULD2H(ISYMD,ISYMOP)
-C
-      DO 100 ISYMG = 1,NSYM
-C
-         IF (NBAS(ISYMG) .EQ. 0) GOTO 100
-C
-         ISYMAB = MULD2H(ISYMG,ISYDIS)
-C
-         NDISTG = MIN(LWORK/N2BST(ISYMAB),NBAS(ISYMG))
-
-         IF (NDISTG .LT. 1) THEN
-            CALL QUIT('Insufficient work space in CC_AOFOCKT1')
-         ENDIF
-C
-         NBATCH = (NBAS(ISYMG) - 1)/NDISTG + 1
-C
-C-------------------------------------
-C        Start the loops over batches.
-C-------------------------------------
-C
-         DO 110 IBATCH = 1,NBATCH
-C
-            NUMG = NDISTG
-            IF (IBATCH .EQ. NBATCH) THEN
-               NUMG = NBAS(ISYMG) - NDISTG*(NBATCH - 1)
-            ENDIF
-C
-            IG1 = NDISTG*(IBATCH - 1) + 1
-            IG2 = NDISTG*(IBATCH - 1) + NUMG
-C
-            KOFF2 = 1
-            DO 120 IG = IG1,IG2
-C
-               KOFF1 = IDSAOG(ISYMG,ISYDIS)
-     *               + (IG - 1)*NNBST(ISYMAB) + 1
-C
-               CALL CCSD_SYMSQ(XINT(KOFF1),ISYMAB,WORK(KOFF2))
-C
-               KOFF2 = KOFF2 + N2BST(ISYMAB)
-C
-  120       CONTINUE
-CPFP To set zero the first coeficient is equivalent to comment 
-C    all this in order to save useles operations
-C            IF (ISYMAB .EQ. ISYDEN) THEN
-CC
-C               KGD = IAODIS(ISYMG,ISYMD)
-C     *             + (IDEL-IBAS(ISYMD) - 1)*NBAS(ISYMG) + IG1
-CC
-C               NTOBST = MAX(N2BST(ISYMAB),1)
-CC
-C               CALL DGEMV('T',N2BST(ISYMAB),NUMG,ZERO,WORK,NTOBST,
-C     *                    DENSIT,1,ONE,FOCK(KGD),1)
-CC
-CC               CALL DGEMV('T',N2BST(ISYMAB),NUMG,TWO,WORK,NTOBST,
-CC     *                    DENSIT,1,ONE,FOCK(KGD),1)
-CC
-C            ENDIF
-Cend-PFP
-            ISYMA = MULD2H(ISYMD,ISYDEN)
-            ISYMB = MULD2H(ISYMA,ISYMAB)
-C
-            KAD = IAODIS(ISYMA,ISYMD)
-     *          + NBAS(ISYMA)*(IDEL - IBAS(ISYMD) - 1) + 1
-C
-            DO 130 IG = IG1,IG2
-C
-               KOFF1 = (IG - IG1)*N2BST(ISYMAB)
-     *               + IAODIS(ISYMA,ISYMB) + 1
-               KGB   = IAODIS(ISYMG,ISYMB) + IG
-C
-               NTOTA = MAX(NBAS(ISYMA),1)
-               NTOTG = MAX(NBAS(ISYMG),1)
-C
-               CALL DGEMV('T',NBAS(ISYMA),NBAS(ISYMB),-ONE,WORK(KOFF1),
-     *                    NTOTA,DENSIT(KAD),1,ONE,FOCK(KGB),NTOTG)
-C
-  130       CONTINUE
-C
-  110    CONTINUE
-  100 CONTINUE
-C
-      CALL QEXIT('CC_AOFOCKT')
-C
-      RETURN
-      END
-Cend-PFP
 C  /* Deck ccrhs_d */
       SUBROUTINE CCRHS_D(XINT,DSRHF,OMEGA2,T2AM,ISYMT2,
      *                   XLAMDP,XLAMIP,XLAMDH,
@@ -5834,10 +5718,6 @@ C
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
-CPFP
-         CALL SO_MEMMAX ('CCRDAO.2',LWRK2)
-         PRINT*,LWRK2
-Cend-PFP
          CALL QUIT('Insufficient work space in CCRDAO')
       ENDIF
 C

@@ -59,11 +59,6 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('DC_ERES')
-CPFP-feb/05 EXCTRP should change due to ccsdinp.h and cbiexc.h are incompatible
-      LT2MPH = LT2MP
-C      IF (EXCTRP) LT2MPH = INT(LT2MP/2)
-      IF (TRIPLET) LT2MPH = INT(LT2MP/2)
-Cend-PFP-feb/05
 C
 cKeld      sonod  = .true.
       sonod  = .false.
@@ -106,20 +101,12 @@ C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
       LTR1D   = NT1AM(ISYMTR)
-CPFP   2009-Jun
-C      LTR2E   = NT2AM(ISYMTR)
-C      LTR2D   = NT2AM(ISYMTR)
-      LTR2E   = N2P2HOP(ISYMTR)
-      LTR2D   = N2P2HOP(ISYMTR)
-Cend-PFP
+      LTR2E   = NT2AM(ISYMTR)
+      LTR2D   = NT2AM(ISYMTR)
       LRES1E  = NT1AM(ISYMTR)
       LRES1D  = NT1AM(ISYMTR)
-CPFP  2009-Jun
-C      LRES2E  = NT2AM(ISYMTR)
-C      LRES2D  = NT2AM(ISYMTR)
-      LRES2E  = N2P2HOP(ISYMTR)
-      LRES2D  = N2P2HOP(ISYMTR)
-Cend-PFP
+      LRES2E  = NT2AM(ISYMTR)
+      LRES2D  = NT2AM(ISYMTR)
       LFOCK   = N2BST(ISYRES)
       LDENS   = N2BST(ISYMTR)
       LBTR1E  = NT1AO(ISYMTR)
@@ -461,27 +448,9 @@ C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
                   DTIME      = SECOND()
-CPFP
-C                  IF (EXCTRP) THEN
-                  IF (TRIPLET) THEN
-C
-                    CALL CC_AOFOCKT(WORK(KXINT),WORK(KDENS),
-     &                              WORK(KFOCK),WORK(KEND5),
-     &                              LWORK5,IDEL,ISYMD,ISYMTR)
-C
-                  ELSE
-CPFP What the .FALSE. is ??? and also a DUMMY ???
-C                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
-C     &                              WORK(KFOCK),WORK(KEND5),
-C     &                              LWORK5,IDEL,ISYMD,ISYMTR)
-                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
-     &                               WORK(KFOCK),WORK(KEND5),
-     &                               LWORK5,IDEL,ISYMD,.FALSE.,
-     &                               DUMMY,ISYMTR)
-
-C
-                  END IF
-Cend-PFP
+                  CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
+     &                           WORK(KEND5),LWORK5,IDEL,ISYMD,.FALSE.,
+     &                           DUMMY,ISYMTR)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
 C
@@ -501,145 +470,51 @@ C
                   DTIME      = SECOND()   - DTIME
                   SOTIME(14) = SOTIME(14) + DTIME
 C
-CPFP  2009-Jun Added SO_RES_CBT and TRIPLET
-C                  IF (EXCTRP) THEN
-                  IF (TRIPLET) THEN
-C
 C----------------------------------------------------------------------
 C                 Construct C-contribution to 2p2h result vectors RES2E
 C                 and RES2D.
 C----------------------------------------------------------------------
 C
-                    DTIME      = SECOND()
-                    CALL SO_RES_CBT(WORK(KRES2E),LRES2E,WORK(KRES2D),
-     &                              LRES2D, WORK(KDSRHF),LDSRHF,
-     &                              WORK(KBTR1E),LBTR1E,WORK(KBTR1D),
-     &                              LBTR1D,WORK(KBTJ1E),LBTJ1E,
-     &                              WORK(KBTJ1D),LBTJ1D,WORK(KCMO),
-     &                              LCMO,IDEL,ISYMD,ISYDIS,ISYMTR,
-     &                              WORK(KEND5),LWORK5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(15) = SOTIME(15) + DTIME
-C
-C------------------------------------------------------------
-C                 Construct the partially back-transformed T2
-C                 MP-amplitudes for the triplet case.
-C------------------------------------------------------------
-C
-                    DTIME      = SECOND()
-                    CALL SO_T2M1(WORK(KT2M1),   LT2M1,
-     &                           T2MP(LT2MPH+1),LT2MPH,
-     &                           WORK(KCMO),    LCMO,
-     &                           IDEL,ISYMD,ISYDIS,
-     &                           WORK(KEND5),LWORK5,MEMEND5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(12) = SOTIME(12) + DTIME
+                  DTIME      = SECOND()
+                  CALL SO_RES_CB(WORK(KRES2E),LRES2E,WORK(KRES2D),
+     &                          LRES2D,
+     &                          WORK(KDSRHF),LDSRHF,WORK(KBTR1E),LBTR1E,
+     &                          WORK(KBTR1D),LBTR1D,WORK(KBTJ1E),LBTJ1E,
+     &                          WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                          IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
+     &                          LWORK5)
+                  DTIME      = SECOND()   - DTIME
+                  SOTIME(15) = SOTIME(15) + DTIME
 C
 C--------------------------------------------------------------------
 C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
 C                 are used in SO_RES_B.
 C--------------------------------------------------------------------
 C
-                    DTIME      = SECOND()
-                    CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
-     &                            WORK(KSIGAI2),LSIGAI2,
-     &                            WORK(KT2M1),  LT2M1,
-     &                            WORK(KXINT),  LXINT,
-     &                            WORK(KBTR1E), LBTR1E,
-     &                            WORK(KBTR1D), LBTR1D,
-     &                            WORK(KBTJ1E), LBTJ1E,
-     &                            WORK(KBTJ1D), LBTJ1D,
-     &                            WORK(KCMO),   LCMO,
-     &                            ISYMD,ISYDIS,ISYRES,ISYMTR,
-     &                            WORK(KEND5),LWORK5,MEMEND5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(16) = SOTIME(16) + DTIME
-C
-C--------------------------------------------------------------------
-C                 Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
-C                 are used in SO_RES_C.
-C--------------------------------------------------------------------
-C
-                    DTIME      = SECOND()
-                    CALL SO_SIGDA(WORK(KSIGDA1), LSIGDA1,
-     &                            WORK(KSIGDA2), LSIGDA2,
-     &                            T2MP(LT2MPH+1),LT2MPH,
-     &                            WORK(KDSRHF),  LDSRHF,
-     &                            WORK(KBTR1E),  LBTR1E,
-     &                            WORK(KBTR1D),  LBTR1D,
-     &                            WORK(KBTJ1E),  LBTJ1E,
-     &                            WORK(KBTJ1D),  LBTJ1D,
-     &                            WORK(KCMO),    LCMO,
-     &                            IDEL,ISYMD,ISYDIS,ISYRES,ISYMTR,
-     &                            WORK(KEND5),LWORK5,MEMEND5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(17) = SOTIME(17) + DTIME
-C
-                  ELSE
-C
-C----------------------------------------------------------------------
-C                 Construct C-contribution to 2p2h result vectors RES2E
-C                 and RES2D.
-C----------------------------------------------------------------------
-C
-CPFP  2009-Aug This subroutine was moved here from outside
-C              of the conditional
-C
-                    DTIME      = SECOND()
-                    CALL SO_RES_CB(WORK(KRES2E),LRES2E,
-     &                             WORK(KRES2D),LRES2D,
-     &                             WORK(KDSRHF),LDSRHF,
-     &                             WORK(KBTR1E),LBTR1E,
-     &                             WORK(KBTR1D),LBTR1D,
-     &                             WORK(KBTJ1E),LBTJ1E,
-     &                             WORK(KBTJ1D),LBTJ1D,
-     &                             WORK(KCMO),  LCMO,
-     &                             IDEL,ISYMD,ISYDIS,ISYMTR,
-     &                             WORK(KEND5), LWORK5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(15) = SOTIME(15) + DTIME
-Cend-PFP
-C
-C--------------------------------------------------------------------
-C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
-C                 are used in SO_RES_B.
-C--------------------------------------------------------------------
-C
-                    DTIME      = SECOND()
-                    CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
-     &                            WORK(KSIGAI2),LSIGAI2,
-     &                            WORK(KT2M1),  LT2M1,
-     &                            WORK(KXINT),  LXINT,
-     &                            WORK(KBTR1E), LBTR1E,
-     &                            WORK(KBTR1D), LBTR1D,
-     &                            WORK(KBTJ1E), LBTJ1E,
-     &                            WORK(KBTJ1D), LBTJ1D,
-     &                            WORK(KCMO),   LCMO,
-     &                            ISYMD,ISYDIS,ISYRES,ISYMTR,
-     &                            WORK(KEND5),  LWORK5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(16) = SOTIME(16) + DTIME
+                  DTIME      = SECOND()
+                  CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
+     &                          LSIGAI2,WORK(KT2M1),LT2M1,WORK(KXINT),
+     &                          LXINT,WORK(KBTR1E),LBTR1E,WORK(KBTR1D),
+     &                          LBTR1D,WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),
+     &                          LBTJ1D,WORK(KCMO),LCMO,ISYMD,ISYDIS,
+     &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+                  DTIME      = SECOND()   - DTIME
+                  SOTIME(16) = SOTIME(16) + DTIME
 C
 C--------------------------------------------------------------------
 C                 Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
 C                 are used SO_RES_C.
 C--------------------------------------------------------------------
 C
-                    DTIME      = SECOND()
-                    CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
-     &                            WORK(KSIGDA2),LSIGDA2,T2MP,LT2MP,
-     &                            WORK(KDSRHF), LDSRHF,
-     &                            WORK(KBTR1E), LBTR1E,
-     &                            WORK(KBTR1D), LBTR1D,
-     &                            WORK(KBTJ1E), LBTJ1E,
-     &                            WORK(KBTJ1D), LBTJ1D,
-     &                            WORK(KCMO),   LCMO,
-     &                            IDEL,ISYMD,ISYDIS,ISYRES,ISYMTR,
-     &                            WORK(KEND5),LWORK5)
-                    DTIME      = SECOND()   - DTIME
-                    SOTIME(17) = SOTIME(17) + DTIME
-C
-                  END IF
+                  DTIME      = SECOND()
+                  CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),
+     &                          LSIGDA2,T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
+     &                          WORK(KBTR1E),LBTR1E,WORK(KBTR1D),LBTR1D,
+     &                          WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),LBTJ1D,
+     &                          WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+                  DTIME      = SECOND()   - DTIME
+                  SOTIME(17) = SOTIME(17) + DTIME
 C
   230          CONTINUE
 C

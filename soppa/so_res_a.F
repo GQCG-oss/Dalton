@@ -27,10 +27,6 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-CPFP
-#include <soppinf.h>
-Cend-PFP
-
 C
 C------------------
 C     Add to trace.
@@ -197,22 +193,9 @@ C
                KOFF6  = IT1AM(ISYMA,ISYMJ) + 1
                KOFF7  = KSCR2 + IT1AM(ISYMD,ISYMJ)
 C
-CPFP
-C               IF (EXCTRP) THEN
-               IF (TRIPLET) THEN
-C
-                 CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
-     &                      -ONE,TR1E(KOFF6),NTOTA,WORK(KOFF7),NTOTD,
-     &                      ZERO,WORK(KSCR4),NTOTA)
-C
-               ELSE
-C
-                 CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
-     &                      ONE,TR1E(KOFF6),NTOTA,WORK(KOFF7),NTOTD,
-     &                      ZERO,WORK(KSCR4),NTOTA)
-C
-               END IF
-Cend-PFP
+               CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
+     &                    ONE,TR1E(KOFF6),NTOTA,WORK(KOFF7),NTOTD,
+     &                    ZERO,WORK(KSCR4),NTOTA)
 C
 C---------------------------------------------------------------
 C              MO-integrals times trial-vector to get 2. part of 
@@ -225,22 +208,9 @@ C
                KOFF8  = KSCR2 + IT1AM(ISYMA,ISYMJ)
                KOFF9  = IT1AM(ISYMD,ISYMJ) + 1
 C
-CPFP
-C               IF (EXCTRP) THEN
-               IF (TRIPLET) THEN
-C
-                 CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
-     &                      ONE,WORK(KOFF8),NTOTA,TR1D(KOFF9),NTOTD,
-     &                      ONE,WORK(KSCR4),NTOTA)
-C
-               ELSE
-C
-                 CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
-     &                      -ONE,WORK(KOFF8),NTOTA,TR1D(KOFF9),NTOTD,
-     &                      ONE,WORK(KSCR4),NTOTA)
-C
-               END IF
-Cend-PFP
+               CALL DGEMM('N','T',NVIR(ISYMA),NVIR(ISYMD),NRHF(ISYMJ),
+     &                    -ONE,WORK(KOFF8),NTOTA,TR1D(KOFF9),NTOTD,
+     &                    ONE,WORK(KSCR4),NTOTA)
 C
 C--------------------------------------------------
 C                         ~ ~
@@ -253,22 +223,9 @@ C
      &                + IT1AM(ISYMD,ISYMI) + 1
                KOFF11 = IT1AM(ISYMA,ISYMI) + 1
 C
-CPFP
-C               IF (EXCTRP) THEN
-               IF (TRIPLET) THEN
-C
-                 CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                      NVIR(ISYMD),ONE,WORK(KSCR4),NTOTA,
-     &                      T2M1(KOFF10),NTOTD,ONE,RES1E(KOFF11),NTOTA)
-C
-               ELSE
-C
-                 CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                      NVIR(ISYMD),-ONE,WORK(KSCR4),NTOTA,
-     &                      T2M1(KOFF10),NTOTD,ONE,RES1E(KOFF11),NTOTA)
-C
-               END IF
-Cend-PFP
+               CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                    NVIR(ISYMD),-ONE,WORK(KSCR4),NTOTA,
+     &                    T2M1(KOFF10),NTOTD,ONE,RES1E(KOFF11),NTOTA)
 C
 C==================================
 C              2. term in Eq. (34):
@@ -356,22 +313,9 @@ C
                KOFF17 = IT1AM(ISYMD,ISYMJ) + 1
                KOFF18 = KSCR2 + IT1AM(ISYMA,ISYMJ)
 C
-CPFP
-C               IF (EXCTRP) THEN
-               IF (TRIPLET) THEN
-C
-                 CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
-     &                      -ONE,TR1E(KOFF17),NTOTD,WORK(KOFF18),NTOTA,
-     &                      ZERO,WORK(KSCR4),NTOTD)
-C
-               ELSE
-C
-                 CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
-     &                      ONE,TR1E(KOFF17),NTOTD,WORK(KOFF18),NTOTA,
-     &                      ZERO,WORK(KSCR4),NTOTD)
-C
-               END IF
-Cend-PFP
+               CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
+     &                    ONE,TR1E(KOFF17),NTOTD,WORK(KOFF18),NTOTA,
+     &                    ZERO,WORK(KSCR4),NTOTD)
 C
 C---------------------------------------------------------------
 C              MO-integrals times trial-vector to get 2. part of
@@ -384,22 +328,9 @@ C
                KOFF19 = KSCR2 + IT1AM(ISYMD,ISYMJ)
                KOFF20 = IT1AM(ISYMA,ISYMJ) + 1
 C
-CPFP
-C               IF(EXCTRP) THEN
-               IF(TRIPLET) THEN
-C
-                 CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
-     &                      ONE,WORK(KOFF19),NTOTD,TR1D(KOFF20),NTOTA,
-     &                      ONE,WORK(KSCR4),NTOTD)
-C
-               ELSE
-C
-                 CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
-     &                      -ONE,WORK(KOFF19),NTOTD,TR1D(KOFF20),NTOTA,
-     &                      ONE,WORK(KSCR4),NTOTD)
-C
-               END IF
-Cend-PFP
+               CALL DGEMM('N','T',NVIR(ISYMD),NVIR(ISYMA),NRHF(ISYMJ),
+     &                    -ONE,WORK(KOFF19),NTOTD,TR1D(KOFF20),NTOTA,
+     &                    ONE,WORK(KSCR4),NTOTD)
 C
 C--------------------------------------------------
 C                         ~ ~
@@ -411,22 +342,9 @@ C
                KOFF21 = IT2BCD(ISYMDI,ISYMK) + NT1AM(ISYMDI)*(K-1)
      &                + IT1AM(ISYMD,ISYMI) + 1
 C
-CPFP
-C               IF (EXCTRP) THEN
-               IF (TRIPLET) THEN
-C
-                 CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                      NVIR(ISYMD),-ONE,WORK(KSCR4),NTOTD,
-     &                      T2M1(KOFF21),NTOTD,ONE,RES1D(KOFF11),NTOTA)
-C
-               ELSE
-C
-                 CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
-     &                      NVIR(ISYMD),ONE,WORK(KSCR4),NTOTD,
-     &                      T2M1(KOFF21),NTOTD,ONE,RES1D(KOFF11),NTOTA)
-C
-               END IF
-Cend-PFP
+               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
+     &                    NVIR(ISYMD),ONE,WORK(KSCR4),NTOTD,
+     &                    T2M1(KOFF21),NTOTD,ONE,RES1D(KOFF11),NTOTA)
 C
 C==================================
 C              2. term in Eq. (35):
