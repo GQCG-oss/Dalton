@@ -2566,8 +2566,10 @@ C Used from common blocks:
 C  /WRKRSP/: ??
 C  /INFPRI/: LUERR
 C
+#include <maxorb.h>
 #include <priunit.h>
 #include <inforb.h>
+#include <infinp.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
 #include <infdim.h>
@@ -2644,8 +2646,12 @@ C
 C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
       IF (SOPPA) KTOUSE = KTOUSE - KZCONF
       MAXSIM = MIN(MAXVEC,(KTOUSE-100)/KMAXVE)
-      write(lupri,*) 'DEBUG maxsim reset to 1 from',maxsim
-      maxsim = 1
+! Manu + Hjj: for linear response MCSCF-srDFT (we still need to fix bugs for
+!             simultaneous calculation of many roots)       /Dec 2011
+      IF (DOMCSRDFT .OR. DOHFSRDFT) THEN
+         maxsim = MIN(MAXSIM,1)
+      END IF
+!      
       IF (IPRRSP.GT.37 .OR. MAXSIM.LE.0) THEN
          WRITE(LUPRI,*)
      *     ' KLIDEN,KUSE,KMAXVE,LBINTM,NORBT,NASHT,KZYVAR,LWRK '
@@ -2657,7 +2663,7 @@ C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
      *     ' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS:',MAXSIM
 C
       IF (MAXSIM.LE.0) THEN
-         WRITE (LUPRI ,8000) LWRK,(100+KMAXVE-KTOUSE)
+         WRITE (LUPRI,8000) LWRK,(100+KMAXVE-KTOUSE)
          WRITE (LUERR,8000) LWRK,(100+KMAXVE-KTOUSE)
          CALL QTRACE(LUERR)
          CALL QUIT('RSPCTL: INSUFFICIENT MEMORY ALLOCATION')
