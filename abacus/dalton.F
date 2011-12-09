@@ -392,15 +392,15 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
                END IF
          END IF
 
-#ifdef THIS_IS_CMAKE_BUILD
-         write(lupri, *)
-         write(lupri, *)
-         write(lupri, '(a)') 'Compilation info'
-         write(lupri, '(a)') '----------------'
-         write(lupri, *)
-         call print_compilation_info()
-         call print_git_revision_info()
-#endif
+Cahs#ifdef THIS_IS_CMAKE_BUILD
+Cahs         write(lupri, *)
+Cahs         write(lupri, *)
+Cahs         write(lupri, '(a)') 'Compilation info'
+Cahs         write(lupri, '(a)') '----------------'
+Cahs         write(lupri, *)
+Cahs         call print_compilation_info()
+Cahs         call print_git_revision_info()
+Cahs#endif
 
 #ifdef VAR_OMP
          write(lupri,'(//A,I5)')
