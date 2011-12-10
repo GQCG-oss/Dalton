@@ -24,12 +24,13 @@
 
 !**********************************************************************
 
-      SUBROUTINE TRACI_CTL(vec1,vec2,c2,mo2mo_mat,par_dist_block_list)
+      SUBROUTINE TRACI_CTL(vec1,vec2,c2,mo2mo_mat,par_dist_block_list,
+     &                     block_list,rcctos,grouplist,proclist)
 *
-* Master routine for transforming CI vectors to new orbital basis
+* Master routine for transforming a CI vector to new orbital basis
 *
-* Input vectors on LUC
-* output vectors delivered on LUHC
+* Input vector on LUC
+* output vector delivered on LUHC
 * (LUSC1,LUSC2) used as scratch files
 *
 * Jeppe Olsen, January 98
@@ -43,6 +44,10 @@
       real(8), intent(inout) :: c2(*)
       real(8), intent(inout) :: mo2mo_mat(*)
       integer, intent(in)    :: par_dist_block_list(*)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: proclist(*)
+      integer, intent(in)    :: grouplist(*)
+      integer, intent(in)    :: rcctos(*)
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
@@ -53,6 +58,13 @@
 #include "parluci.h"
       integer, parameter  :: isigden = 2
       real(8)             :: cdummy(2), sdummy(2)
+      integer             :: my_in_fh, my_out_fh, my_sc1_fh, my_sc2_fh
+      integer             :: len_ilu1
+      integer             :: len_ilu2
+      integer             :: len_iluc
+      integer(kind=8)     :: my_in_off
+      integer(kind=8)     :: my_out_off
+      integer(kind=8)     :: my_scr_off
 *
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
@@ -72,58 +84,61 @@
       CALL MEMMAN(KLH1SAVE,NTOOB**2,'ADDL  ',2,'H1SAVE')
 *. We are going to mess with the one-electron integrals, take a copy
       call dcopy(NTOOB*NTOOB,WORK(KINT1),1,WORK(KLH1SAVE),1)
-*
-      CALL REWINE(LUC,-1)
-      CALL REWINE(luhc,-1)
 
-      DO JROOT = 1, NROOT
-!
-!       stefan - nov 2011: the mo2mo transformation matrix is provided from the outer 
-!                          CI/MCSCF environment - the following two steps are therefore commented out. 
-!
-!       step 1: get PV for state JROOT
-!       ------------------------------
-!       call rewine(lusc1,-1)
-!       CALL COPVCD(lusc1,lusc2,VEC1,0,-1)
-!       call rewine(lusc1,-1)
-!       call rewine(lusc2,-1)
-!       CALL SIGDEN_CI(VEC1,VEC2,C2,LUSC1,LUSC2,
-!    &                 cdummy,sdummy,ISIGDEN,1)
-!       write(luwrt,*) ' density matrix generated '
-!       call dcopy(NTOOB**2,mo2mo_mat,1,WORK(KRHO1),1)
-!       write(luwrt,*) ' density matrix copied '
-!       call wrtmatmn(WORK(KRHO1),1,NTOOB**2,1,NTOOB**2,luwrt)
 
-!       step 2: Obtain MO-MO transformation matrix 
-!       ------------------------------------------
-!       CALL GET_CMOMO(mo2mo_mat)
-*
-*. Transform CI vector : Input on lusc1, output on luhc
-        call rewine(lusc1,-1)
-        CALL COPVCD(LUC,lusc1,VEC1,0,-1)
-        call rewine(lusc1,-1)
+      len_ilu1   = 0
+      len_ilu2   = 0
+      len_iluc   = 0
+      my_in_off  = 0
+      my_out_off = 0
+      my_scr_off = 0
+#ifdef VAR_MPI
+      my_in_fh   = ilu1
+      my_out_fh  = ilu1
+      my_sc1_fh  = ilu2
+      my_sc2_fh  = ilu2
+      my_in_off  = 0
+      my_out_off = 0
+      my_scr_off = 0
 
-        CALL TRACID(mo2mo_mat,lusc1,luhc,LUSC2,LUSC3,
-     &              VEC1,VEC2,C2,par_dist_block_list)
+      len_ilu1   = iall_lu1
+      len_ilu2   = iall_lu2
+      len_iluc   = iall_luc
+#else
+      my_in_fh   = lusc1
+      my_out_fh  = luhc
+      my_sc1_fh  = lusc2
+      my_sc2_fh  = lusc3
 
-      END DO ! loop over roots
+      call copvcd(luc,my_in_fh,vec1,1,-1)
+      call rewine(my_in_fh,-1)
+      CALL rewine(my_out_fh,-1)
+#endif
+      lu_ref     = luc
+      lu_refout  = luhc
+
+!     transform CI vector
+      call tracid(mo2mo_mat,work(kint1),lu_ref,lu_refout,
+     &            my_in_fh,my_out_fh,
+     &            my_sc1_fh,my_sc2_fh,
+     &            vec1,vec2,c2,par_dist_block_list,block_list,
+     &            rcctos,grouplist,proclist,
+     &            len_ilu1,len_ilu2,len_iluc,
+     &            my_in_off,my_out_off,my_scr_off)
 
 #ifdef LUCI_DEBUG
-      CALL REWINE(luhc,-1)
-      IF(NTEST.GE.100) THEN
-        DO JROOT = 1, NROOT
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Analysis of rotated state number ', JROOT
-          WRITE(luwrt,*) ' ====================================='
-          WRITE(luwrt,*)
-          CALL WRTVCD(VEC1,luhc,0,-1)
-        END DO
-      END IF
+      if(luci_myproc .eq. luci_master)then
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Analysis of rotated state'
+        WRITE(luwrt,*) ' ========================='
+        WRITE(luwrt,*)
+        CALL WRTVCD(VEC1,luhc,1,-1)
+      end if
 #undef LUCI_DEBUG
 #endif
 
 !     clean up time : restore 1-e integrals
-      CALL COPVEC(WORK(KLH1SAVE),WORK(KINT1),NTOOB*NTOOB)
+      CALL dcopy(NTOOB*NTOOB,WORK(KLH1SAVE),1,WORK(KINT1),1)
 
 !     release local memory
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACIC')
@@ -131,8 +146,11 @@
       END
 !**********************************************************************
 
-      SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,
-     &                  VEC1,VEC2,C2,par_dist_block_list)
+      SUBROUTINE TRACID(T,H,lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,
+     &                  VEC1,VEC2,C2,par_dist_block_list,block_list,
+     &                  rcctos,grouplist,proclist,
+     &                  len_ilu_inout,len_ilu_scr,len_iluc,
+     &                  my_in_off,my_out_off,my_scr_off)
 *
 * Transform CI vector on LUCIN with T matrix after
 * Docent Malmquist's recipe. Place result as next vector on LUOUT
@@ -145,13 +163,21 @@
 *
 * with Sn'n = T(n'n)/Tnn
 *
-* each transformation is
+      use lucita_file_list_pointer
+#ifdef VAR_MPI
+      use par_mcci_io
+#ifndef VAR_USE_MPIF
+      use mpi
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLCLBTx, KLCLEBTx, KLCI1BTx, KLCIBTx, KLCBLTPx
+#else
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "mpif.h"
+#endif
+#endif
+      INTEGER*8 KLCBLTPx
 !               for addressing of WORK
+#include "parluci.h"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
 #include "oper.inc"
 #include "intform.inc"
 #include "lucinp.inc"
@@ -159,16 +185,35 @@
 #include "csm.inc"
 #include "cicisp.inc"
 #include "cstate.inc"
-#include "parluci.h"
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       REAL*8 INPRDD
 *. Input
-      DIMENSION T(*)
-      integer, intent(in) :: par_dist_block_list(*)
-      integer, parameter  :: isigden = 1
-      real(8)             :: cdummy(2), sdummy(2)
-*. Scratch blocks ( three of them)
-      DIMENSION VEC1(*),VEC2(*), C2(*)
+      real(8), intent(inout)      :: T(*)
+      real(8), intent(inout)      :: H(*)
+      real(8), intent(inout)      :: VEC1(*)
+      real(8), intent(inout)      :: VEC2(*)
+      real(8), intent(inout)      :: C2(*)
+      integer, intent(in)         :: par_dist_block_list(*)
+      integer, intent(in)         :: block_list(*)
+      integer, intent(in)         :: proclist(*)
+      integer, intent(in)         :: grouplist(*)
+      integer, intent(in)         :: rcctos(*)
+      integer, intent(in)         :: len_ilu_inout
+      integer, intent(in)         :: len_ilu_scr
+      integer, intent(in)         :: len_iluc
+      integer(kind=8)             :: my_in_off
+      integer(kind=8)             :: my_out_off
+      integer(kind=8)             :: my_scr_off
+      integer, parameter          :: isigden = 1
+      real(8)                     :: cdummy(2), sdummy(2)
+      integer, allocatable        :: lu_inoutlst(:)
+      integer, allocatable        :: lu_scrlst(:)
+      integer, allocatable        :: lu_clst(:)
+      integer, allocatable        :: blocks_per_batch(:)
+      integer, allocatable        :: batch_length(:)
+      integer, allocatable        :: block_offset_batch(:)
+      integer, allocatable        :: block_info_batch(:,:)
+      integer, allocatable        :: blocktype(:)
 
 !     NTEST = 1000 ! debug
       NTEST = 0000 ! default
@@ -180,116 +225,264 @@
       IH1FORM  = 2
 
 !     set up block and batch structure of vector
-      IDUM     = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACID')
 
-      CALL MEMMAN(KLCLBTx ,  MXNTTS,'ADDL  ',1,'CLBTx ')
-      CALL MEMMAN(KLCLEBTx,  MXNTTS,'ADDL  ',1,'CLEBTx')
-      CALL MEMMAN(KLCI1BTx,  MXNTTS,'ADDL  ',1,'CI1BTx')
-      CALL MEMMAN(KLCIBTx ,8*MXNTTS,'ADDL  ',1,'CIBTx ')
+      allocate(lu_inoutlst(len_ilu_inout))
+      allocate(lu_scrlst(len_ilu_scr))
+      allocate(lu_clst(len_iluc))
+      allocate(blocks_per_batch(mxntts))
+      allocate(batch_length(mxntts))
+      allocate(block_offset_batch(mxntts))
+      allocate(block_info_batch(8,mxntts))
+      allocate(blocktype(nsmst))
+
+      lu_inoutlst        = 0
+      lu_scrlst          = 0
+      lu_clst            = 0
+      blocks_per_batch   = 0
+      batch_length       = 0
+      block_offset_batch = 0
+      block_info_batch   = 0
+      blocktype          = 0
 
       IATP     = 1
       IBTP     = 2
-      CALL Z_BLKFO_partitioning_parallel(ISSPC,ISSM,iatp,ibtp,
-     &                                   work(KLCLBTx),
-     &                                   work(KLCLEBTx),
-     &                                   work(KLCI1BTx),
-     &                                   work(KLCIBTx),
+      CALL Z_BLKFO_partitioning_parallel(ICSPC,ICSM,iatp,ibtp,
+     &                                   blocks_per_batch,
+     &                                   batch_length,  
+     &                                   block_offset_batch,
+     &                                   block_info_batch,
      &                                   NBATCH,NBLOCK,
      &                                   par_dist_block_list)
 
-      CALL MEMMAN(KLCBLTPx,       NSMST,'ADDL  ',2,'CBLTPA')
-      CALL ZBLTP_IDC(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTPx))
+      CALL ZBLTP_IDC(ISMOST(1,ICSM),NSMST,IDC,blocktype)
 
 #ifdef LUCI_DEBUG
-      IF(NTEST.GE.1000) THEN
-        WRITE(luwrt,*) ' input vector to ntoob loop'
-        CALL WRTVCD(VEC1,lucin,1,-1)
-      END IF
+#ifndef VAR_MPI
+      WRITE(luwrt,*) ' input vector to ntoob loop'
+      CALL WRTVCD(VEC1,lucin,1,-1)
+      call rewine(lucin,-1)
+      call flshfo(luwrt)
+#endif
 #endif
 
-      call rewine(lucin,-1)
+#ifdef VAR_MPI
+      if(luci_nmproc > 1)then
+
+!       sequential --> MPI I/O
+!       ----------------------
+        call rewino(lu_ref)
+!       step 1: the rhs vector
+        call mcci_cp_vcd_mpi_2_seq_io_interface(vec1,lu_ref,lucin,
+     &                                          my_in_off,
+     &                                          LU_inoutlst,
+     &                                          par_dist_block_list,
+     &                                          block_list,
+     &                                          MPI_COMM_WORLD,
+     &                                          NUM_BLOCKS,1,1,1)
+      end if
+#endif
 
 !     transform each orbital separately
       DO K = 1, NTOOB
 
 !       place (T(P,K)/S(K,K) in one-electron integral list work(kint1)
-        CALL T_ROW_TO_H(T,WORK(KINT1),K,TKK)
+        CALL T_ROW_TO_H(T,H,K,TKK)
 
 !       scale elements with T_{kk}^Nk depending on occupation type Nk (Nk=0,1,2)
-        CALL T_TO_NK_VEC(TKK,K,ISSM,ISSPC,lucin,LUSC1,VEC1,
-     &                   work(KLCIBTx),work(KLCBLTPx),nblock)
+        CALL T_TO_NK_VEC(TKK,K,ICSM,ICSPC,lucin,LUSC1,VEC1,
+     &                   block_info_batch,blocktype,nblock,
+     &                   my_in_off,LU_inoutlst)
 
-        CALL COPVCD(LUSC1,lucin,VEC1,1,-1)
-
-#ifdef LUCI_DEBUG
-        IF(NTEST.GE.1000) THEN
-          WRITE(luwrt,*) ' output from T_TO_NK'
-          CALL WRTVCD(VEC1,lucin,1,-1)
-        END IF
-#endif
-        call rewine(lucin,-1)
-        call rewine(lusc1,-1)
 !       for each orbital calculate (1+T+1/2 T^2)|0>
 !       step 1: + T
-        CALL SIGDEN_CI(VEC1,VEC2,C2,lucin,LUSC1,
-     &                 cdummy,sdummy,ISIGDEN,-1)
-        
-#ifdef LUCI_DEBUG
-        IF(NTEST.GE.1000) THEN
-          WRITE(luwrt,*) ' Correction vector'
-          CALL WRTVCD(VEC1,LUSC1,1,-1)
-        END IF
+!       -------------------------------------------
+#ifdef VAR_MPI
+        if(luci_nmproc .gt. 1)then
+          CALL MPI_BARRIER(MYNEW_COMM,IERR)
+!
+!         reset LUCLIST
+          call izero(lu_clst,len_iluc)
+
+          call mcci_cp_vcd_batch(lucin,iluc,vec1,
+     &                           nbatch,blocks_per_batch,
+     &                           batch_length,  
+     &                           block_offset_batch,
+     &                           block_info_batch,
+     &                           block_list,my_in_off,my_luc_off,
+     &                           LU_inoutlst,lu_clst,
+     &                           my_vec2_ioff,my_act_blk2,0)
+!         set offset for sigma-file
+          JVEC_SF = 0
+
+          lusc_vector_file = iluc
+          luhc_vector_file = lusc1
+        end if
+#else
+        call copvcd(lusc1,lucin,vec1,1,-1)
+        call rewine(lucin,-1)
+        call rewine(lusc1,-1)
+
+        lusc_vector_file = lucin
+        luhc_vector_file = lusc1
 #endif
 
+        CALL SIGDEN_CI(VEC1,VEC2,C2,lusc_vector_file,lusc1,
+     &                 cdummy,sdummy,ISIGDEN,-1
+#ifdef VAR_MPI
+     &                 ,lu_clst,LU_scrlst,block_list,
+     &                 par_dist_block_list,rcctos,grouplist,proclist
+#endif
+     &                 )
+        
+#ifdef VAR_MPI
+        if(luci_nmproc .gt. 1)then
+
+          CALL VECSUM_PP_B_RL(VEC1,VEC2,
+     &                        LU_scrlst,  
+     &                        LU_inoutlst,
+     &                        NBATCH,blocks_per_batch,
+     &                        batch_length,
+     &                        block_offset_batch,
+     &                        block_info_batch,
+     &                        my_scr_off,
+     &                        my_in_off,
+     &                        1,
+     &                        lusc1,
+     &                        lucin,
+     &                        1.0d0,
+     &                        1.0d0)
+        end if
+#else
+
+!       y (lusc2) := 1.0d0*lucin + 1.0d0*lusc1
         CALL VECSMD(VEC1,VEC2,1.0d0,1.0d0,lucin,LUSC1,lusc2,1,-1)
         CALL COPVCD(lusc2,lucin,VEC1,1,-1)
-
-#ifdef LUCI_DEBUG
-        IF(NTEST.GE.1000) THEN
-          WRITE(luwrt,*) ' Updated vector'
-          CALL WRTVCD(VEC1,lucin,1,-1)
-        END IF
-#endif
-
         CALL rewine(lusc2,-1)
         CALL rewine(lusc1,-1)
 
-!       step 2: + 1/2 T^2
-        CALL SIGDEN_CI(VEC1,VEC2,C2,LUSC1,lusc2,
-     &                 cdummy,sdummy,ISIGDEN,-1)
-
 #ifdef LUCI_DEBUG
-        IF(NTEST.GE.1000) THEN
-          WRITE(luwrt,*) ' Correction vector'
-          CALL WRTVCD(VEC1,lusc2,1,-1)
-        END IF
+        CALL WRTVCD(VEC1,lucin,1,-1)
+        call rewine(lucin,-1)
 #endif
 
+#endif
+
+!       step 2: + 1/2 T^2
+!       -----------------
+
+#ifdef VAR_MPI
+        if(luci_nmproc .gt. 1)then
+          CALL MPI_BARRIER(MYNEW_COMM,IERR)
+!
+!         reset LUCLIST
+          call izero(lu_clst,len_iluc)
+
+          call mcci_cp_vcd_batch(lusc1,iluc,vec1,
+     &                           NBATCH,blocks_per_batch,
+     &                           batch_length,
+     &                           block_offset_batch,
+     &                           block_info_batch,
+     &                           block_list,my_scr_off,my_luc_off,
+     &                           LU_scrlst,lu_clst,
+     &                           my_vec2_ioff,my_act_blk2,0)
+!         set offset for sigma-file
+          JVEC_SF = 0
+
+          lusc_vector_file = iluc
+          luhc_vector_file = lusc1
+        end if
+#else
+        lusc_vector_file = lusc1
+        luhc_vector_file = lusc2
+#endif
+
+        CALL SIGDEN_CI(VEC1,VEC2,C2,lusc_vector_file,luhc_vector_file,
+     &                 cdummy,sdummy,ISIGDEN,-1
+#ifdef VAR_MPI
+     &                 ,lu_clst,LU_scrlst,block_list,
+     &                 par_dist_block_list,rcctos,grouplist,proclist
+#endif
+     &           )
+
+#ifdef VAR_MPI
+        if(luci_nmproc .gt. 1)then
+          CALL VECSUM_PP_B_RL(VEC1,VEC2,
+     &                        LU_scrlst,
+     &                        LU_inoutlst,
+     &                        NBATCH,blocks_per_batch,
+     &                        batch_length,
+     &                        block_offset_batch,
+     &                        block_info_batch,
+     &                        my_scr_off,
+     &                        my_out_off,
+     &                        1,
+     &                        lusc1,
+     &                        lucout,
+     &                        0.5d0,
+     &                        1.0d0)
+        end if
+#else
+
+!       y (lusc1) := 1.0d0*lucin + 0.5d0*lusc2
         CALL VECSMD(VEC1,VEC2,1.0d0,0.5d0,lucin,lusc2,LUSC1,1,-1)
 
-!       transfer back to LUSC1
-        CALL COPVCD(LUSC1,lucin,VEC1,1,-1)
-
 #ifdef LUCI_DEBUG
-        IF(NTEST.GE.1000) THEN
-          WRITE(luwrt,*) ' Updated vector'
-          CALL WRTVCD(VEC1,lucin,1,-1)
-        END IF
+        WRITE(luwrt,*) ' 2nd vecsmd: in 1'
+        CALL WRTVCD(VEC1,lucin,1,-1)
+        WRITE(luwrt,*) ' 2nd vecsmd: in 2'
+        CALL WRTVCD(VEC1,lusc2,1,-1)
+        WRITE(luwrt,*) ' 2nd vecsmd: out'
+        CALL WRTVCD(VEC1,lusc1,1,-1)
+        call rewine(lusc1,-1)
+        call flshfo(luwrt)
 #endif
+
+!       transfer back to lucin
+        CALL COPVCD(LUSC1,lucin,VEC1,1,-1)
+        CALL rewine(lucin,-1)
+#endif
+
       END DO
 
-#ifdef LUCI_DEBUG
-      CNORM = INPRDD(VEC1,VEC2,lucin,lucin,1,-1)
-      WRITE(luwrt,*) ' Norm of transformed vector', CNORM
+#ifdef VAR_MPI
+      if(luci_nmproc > 1)then
+
+!       collect the rotated vector
+!       --------------------------
+        call rewine(lu_refout,-1)
+
+!       the lhs vector
+        call mcci_cp_vcd_mpi_2_seq_io_interface(vec2,lu_refout,
+     &                                          lucout,
+     &                                          my_out_off,
+     &                                          LU_inoutlst,
+     &                                          par_dist_block_list,
+     &                                          block_list,
+     &                                          MPI_COMM_WORLD,
+     &                                          num_blocks,1,1,2)
+
+      end if ! luci_nmproc > 1
+#else
+
+!     transfer rotated vector to lu_refout
+      CALL COPVCD(lucin,lu_refout,VEC1,1,-1)
 #endif
 
-!     transfer rotated vector to LUCOUT
-      CALL REWINE(lucin,-1)
-      CALL COPVCD(lucin,LUCOUT,VEC1,0,-1)
+#ifdef LUCI_DEBUG
+      if(luci_myproc .eq. luci_master)then
+        CNORM = INPRDD(VEC1,VEC2,lu_refout,lu_refout,1,-1)
+        WRITE(luwrt,*) ' Norm of transformed vector', CNORM
+      end if
+#endif
 
-!     release local memory
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACID')
+      deallocate(lu_inoutlst)
+      deallocate(lu_scrlst)
+      deallocate(lu_clst)
+      deallocate(blocks_per_batch)
+      deallocate(batch_length)
+      deallocate(block_offset_batch)
+      deallocate(block_info_batch)
+      deallocate(blocktype)
 
       END
 !**********************************************************************
@@ -328,11 +521,13 @@
 !     symmetry offset in full 1e-matrix block
       IOFF = IFRMR(WORK(KPGINT1A(1)),1,KSM)
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       write(luwrt,*) 'ioff in T and H ==> ',IOFF+(KREL-1)*NK
       write(luwrt,*) 'NK elements     ==> ',NK
       write(luwrt,*) 'absolute ioff   ==> ',ioff
       write(luwrt,*) 'krel, ksm       ==> ',krel,ksm
+      call flshfo(luwrt)
 #endif
 !     copy orbital block with symmetry ksm
       CALL DCOPY(NK,T(IOFF+(KREL-1)*NK),1,H(IOFF+(KREL-1)*NK),1)
@@ -362,7 +557,8 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C,
-     &                       block_info,block_type_info,nblock)
+     &                       block_info,block_type_info,nblock,
+     &                       my_in_off,LU_inoutlst)
 *
 * Evaluate T**(NK_operator) times vector on file LUIN
 * to yield vector on file LUOUT
@@ -393,9 +589,11 @@
 #include "gasstr.inc"
 #include "crun.inc"
 #include "csm.inc"
-      integer, intent(in) :: nblock
-      integer, intent(in) :: block_type_info(*)
-      integer, intent(in) :: block_info(8,nblock)
+      integer, intent(in)         :: nblock
+      integer, intent(in)         :: block_type_info(*)
+      integer, intent(in)         :: block_info(8,nblock)
+      integer(kind=8), intent(in) :: my_in_off
+      integer, intent(inout)      :: lu_inoutlst(*)
 
 *. Scratch block, must hold a batch of blocks
       DIMENSION C(*)
@@ -432,7 +630,8 @@
      &                  NBLOCK,block_info,
      &                  NAEL,NBEL,WORK(KLASTR),WORK(KLBSTR),
      &                  block_type_info,NSMST,
-     &                  ICISTR,NTOOB,WORK(KLKAOC),WORK(KLKBOC))
+     &                  ICISTR,NTOOB,WORK(KLKAOC),WORK(KLKBOC),
+     &                  my_in_off,lu_inoutlst)
 
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'T_TO_N')
 *
@@ -446,7 +645,8 @@
       SUBROUTINE T_TO_NK_VECS(T,KORB,C,LUCIN,LUCOUT,NSSOA,NSSOB,
      &                        NBLOCK,IBLOCK,
      &                        NAEL,NBEL,IASTR,IBSTR,IBLTP,NSMST,
-     &                        ICISTR,NORB,IKAOCC,IKBOCC)
+     &                        ICISTR,NORB,IKAOCC,IKBOCC,
+     &                        my_in_off,lu_inoutlst)
 *
 * Multiply Vector in LUCIN with t **NK_op to yield vector on LUCOUT
 *
@@ -456,7 +656,21 @@
 * Jeppe Olsen, Feb. 1998
 *
 
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+      use mpi
       IMPLICIT REAL*8(A-H,O-Z)
+#else
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "mpif.h"
+#endif
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#else
+      IMPLICIT REAL*8(A-H,O-Z)
+#endif
+#include "maxorb.h"
+#include "infpar.h"
+#include "parluci.h"
 #include "priunit.h"
 *. General input
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
@@ -467,32 +681,52 @@
 *. Specific input
       DIMENSION IBLOCK(8,NBLOCK)
       DIMENSION IBLTP(*)
+      integer, intent(in)         :: nblock
+      integer, intent(inout)      :: lu_inoutlst(*)
+      integer(kind=8), intent(in) :: my_in_off
+
+      integer(kind=8)             :: my_internal_in_off
+      integer                     :: my_active_block
 *
+#ifdef VAR_MPI
+      my_internal_in_off = 0
+      my_internal_in_off = my_internal_in_off + my_in_off
+      my_active_block    = 0
+#else
       CALL REWINE(LUCIN,-1)
       CALL REWINE(LUCOUT,-1)
+#endif
 *
 !
       T2 = T**2
       DO JBLOCK = 1, NBLOCK
+
         IATP = IBLOCK(1,JBLOCK)
         IBTP = IBLOCK(2,JBLOCK)
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
 
-        if(iatp.eq.0)then
-          IF( ICISTR.GE.2 ) THEN
-!           Read in a Type-Type-symmetry block
-            CALL IFRMDS(LDET,1,-1,LUCIN)
-            CALL FRMDSC_LUCI(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
-          END IF
-          goto 999
-        END IF
-
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IATP IBTP IASM IBSM ', IATP,IBTP,IASM,IBSM
         WRITE(lupri,*) ' IBLTP(IASM)         ', IBLTP(IASM) 
         call flshfo(lupri)
+#undef LUCI_DEBUG
 #endif
+
+        if(iatp.eq.0)then
+          if(luci_nmproc .gt. 1)then
+            cycle
+          else
+            IF(ICISTR .GE. 2)THEN
+!             Read in a Type-Type-symmetry block
+              CALL IFRMDS(LDET,1,-1,LUCIN)
+              CALL FRMDSC_LUCI(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
+            END IF
+            goto 999
+          end if
+        end if
+
 
 !       obtain alpha strings of sym IASM and type IATP
         IDUM = 0
@@ -543,11 +777,30 @@
 !       WRITE(lupri,*) ' NIA NIB ', NIA,NIB
 
         IMZERO = 0
-        IF( ICISTR.GE.2 ) THEN
+        if(luci_nmproc .gt. 1)then
+#ifdef VAR_MPI
+          my_active_block = my_active_block + 1
+
+          if(lu_inoutlst(my_active_block) .eq. 0)then
+            imzero = 1
+            ldet   = 0
+          else
+            imzero = 0
+            ldet   = iblock(7,jblock)
+            CALL MPI_FILE_READ_AT(LUCIN,my_internal_in_off,C,LDET,
+     &                            MPI_REAL8,my_STATUS,IERR)
+!           new offset (not yet...)
+            my_internal_in_off = my_internal_in_off
+          end if
+#endif
+        else
+          IF(ICISTR .GE. 2)THEN
 *. Read in a Type-Type-symmetry block
-          CALL IFRMDS(LDET,1,-1,LUCIN)
-          CALL FRMDSC_LUCI(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
-        END IF
+            CALL IFRMDS(LDET,1,-1,LUCIN)
+            CALL FRMDSC_LUCI(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
+          END IF
+        end if
+
         IF(IMZERO.NE.1) THEN
 *
           IDET = 0
@@ -566,7 +819,7 @@
               WRITE(lupri,*) ' KABOCC, C(IDET), T, T**2',
      &                         KABOCC, C(IDET), T, T**2
               WRITE(lupri,*) ' IA IB IDET',IA,IB,IDET
-      call flshfo(lupri)
+              call flshfo(lupri)
 #endif
 
               IF(KABOCC.EQ.1) THEN
@@ -581,13 +834,27 @@
 *
         END IF
 *       ^ End of if statement for nonvanishing blocks
-*. Save result on LUCOUT
-999     CALL ITODS(LDET,1,-1,LUCOUT)
-        CALL TODSC_LUCI(C,LDET,-1,LUCOUT)
+
+ 999    if(luci_nmproc .gt. 1)then
+
+#ifdef VAR_MPI
+          CALL MPI_FILE_WRITE_AT(LUCIN,my_internal_in_off,C,LDET,
+     &                           MPI_REAL8,my_STATUS,IERR)
+#endif
+!         new offset (now...)
+          my_internal_in_off = my_internal_in_off + ldet
+        else
+          CALL ITODS(LDET,1,-1,LUCOUT)
+          CALL TODSC_LUCI(C,LDET,-1,LUCOUT)
+        end if
+
       END DO
 *     ^ End of loop over blocks
+
+#ifndef VAR_MPI
 *. This is the end, the end of every file my friend, the end
-       CALL ITODS(-1,1,-1,LUCOUT)
+      CALL ITODS(-1,1,-1,LUCOUT)
+#endif
 
       END
 ***********************************************************************

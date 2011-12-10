@@ -4772,6 +4772,122 @@ C
       END DO
 C
       END
+***********************************************************************
+
+      SUBROUTINE VECSUM_PP_B_RL(VEC1,VEC2,LUINLIST,LUOUTLIST,
+     &                          NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                          MY_IOFF_LUIN,MY_IOFF_LUOUT,
+     &                          IROOT,LUIN,LUOUT,fac1,fac2)
+C
+C**********************************************************************
+C
+C     scale vector from file LUIN and LUOUT batchwise and write result 
+C     of vector summation to luin
+C
+C     NOTE: IROOT = IROOT
+C
+C     active blocks on the MPI-files are flagged by a nonzero list entry
+!
+************************************************************************
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#include "parluci.h"
+      DIMENSION VEC1(*), VEC2(*)
+      DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
+      DIMENSION LUINLIST(*), LUOUTLIST(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER NUM_BLK
+      real(8) :: fac1, fac2
+C
+C     initialize scratch offsets
+      NUM_BLK           = 0
+      IOFFSET_SCRATCH   = 0
+      IOFFSET_IN_LUIN   = 0
+      IOFFSET_LUOUT     = 0
+      IOFFSET_INT_IN    = 0
+      IOFFSET_INT_LUOUT = 0
+C
+C
+      DO ISBATCH = 1, NBATCH
+C
+C       offset for batch ISBATCH w.r.t JOFF
+C
+        CALL DZERO(VEC1,LEBATCH(ISBATCH))
+C
+C       set new offset
+C
+C       position in file is at the end of vector IROOT - 1
+C
+        IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
+     &                   ( IROOT - 1 )   * MY_VEC1_IOFF
+        IOFFSET_INT_IN   = 1 + NUM_BLK  +
+     &                   ( IROOT - 1 )   * MY_ACT_BLK1
+C
+CSK         WRITE(LUWRT,*) 'This is my OFFSET for LUIN',
+CSK     &                   IOFFSET_IN_LUIN
+C
+        CALL RDVEC_BATCH_DRV4(LUIN,VEC1,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_IN_LUIN,IOFFSET_INT_IN,
+     &                        LUINLIST,NUM_ACTIVE_BATCH)
+
+        IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH + 
+     &                        ( IROOT - 1 ) * MY_VEC1_IOFF
+C
+        IOFFSET_INT_LUOUT  = 1 + NUM_BLK    +
+     &                        ( IROOT - 1 ) * MY_ACT_BLK1
+
+        CALL RDVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
+C
+#ifdef LUCI_DEBUG
+        WRITE(LUWRT,*) 'initial VEC1 on LUIN'
+        CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+     &                LUWRT)
+        WRITE(LUWRT,*) 'initial VEC2 on luout'
+        CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+     &                LUWRT)
+#endif
+
+!       y := a*x + b*y
+!       call daxpby(LEBATCH(ISBATCH), fac1, vec1, 1, fac2, vec2, 1)
+        call dscal(LEBATCH(ISBATCH), fac2, vec2, 1)
+        call daxpy(LEBATCH(ISBATCH), fac1, vec1, 1, vec2, 1)
+
+        IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH + 
+     &                        ( IROOT - 1 ) * MY_VEC1_IOFF
+        IOFFSET_INT_LUOUT  = 1 + NUM_BLK    +
+     &                        ( IROOT - 1 ) * MY_ACT_BLK1
+
+#ifdef LUCI_DEBUG
+        WRITE(LUWRT,*) 'scaled VEC2 on luout'
+        CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+     &                LUWRT)
+        WRITE(LUWRT,*) 'luout, luin, offset ',
+     &                  luout,luin,IOFFSET_LUOUT,IOFFSET_INT_LUOUT
+#endif
+
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
+C
+C       keep track of correct offset
+        IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
+        NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
+C
+      END DO
+C
+      END
 #else
 ***********************************************************************
 *                                                                     *

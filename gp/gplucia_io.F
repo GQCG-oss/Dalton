@@ -43,6 +43,7 @@ C        .le. 0 : LBL (length of next record) is read from LUIN
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN

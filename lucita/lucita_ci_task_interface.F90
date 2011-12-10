@@ -106,7 +106,8 @@ contains
                                      rcctos,grouplist,proclist,                                   &
                                      cref,hc,resolution_mat,int1_or_rho1,int2_or_rho2)
           case ('return rotVC')
-            call traci_ctl(cref,hc,resolution_mat,int1_or_rho1,par_dist_block_list)
+            call traci_ctl(cref,hc,resolution_mat,int1_or_rho1,par_dist_block_list,               &
+                           block_list,rcctos,grouplist,proclist)
           case ('report CIana')
             call report_CI_vector_analysis(cref,print_lvl)
           case ('return densM')
@@ -783,7 +784,7 @@ contains
 #ifdef VAR_MPI
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
-          call mpi_barrier(mynew_comm,ierr) ! probably not needed if collection of densities is in action
+          call mpi_barrier(mynew_comm,ierr) 
           luclist = 0
           call mcci_cp_vcd_batch(ilu1,iluc,hc,nbatch_par,blocks_per_batch,                 &
                                  batch_length,block_offset_batch,block_info_batch,         &

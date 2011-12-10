@@ -53,6 +53,7 @@
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       INTEGER*8 IST8NULL
 *
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cicisp.inc"
@@ -112,15 +113,11 @@
      &     NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
      &     WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
 
-      IF(I12.EQ.2) THEN
+      IDOH2 = 0
+      MXEXC = 1
+      IF(I12.EQ.2)THEN
         IDOH2 = 1
-      ELSE
-        IDOH2 = 0
-      END IF
-      IF(IDOH2.EQ.1) THEN
-        MXEXC  = 2
-      ELSE
-        MXEXC = 1
+        MXEXC = 2
       END IF
 * Info for this internal space
 *. alpha and beta strings with an electron removed
@@ -168,37 +165,26 @@
                       
 *
 *. Initialize SCALFAC as it should look like after a few iterations ...
+      CALL DZERO(SCALFAC,NBLOCK)
       DO II = 1, NBLOCK
-        LBL = IBLINF(II)
-        IF(LBL.NE.0) THEN 
-          SCALFAC(II) = 1.0D0
-        ELSE
-          SCALFAC(II) = 0.0D0
-        END IF
-      ENDDO
-CSK      IF(LUCI_MYPROC.EQ.LUCI_MASTER) CALL WRTMT_LU(SCALFAC,1,NBLOCK,1,NBLOCK)
+        IF(IBLINF(II) .gt. 0) SCALFAC(II) = 1.0D0
+      END DO
+
 *. start the search for the INTERACT-MATRIX...
       CALL FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,ICWEIGHTF,
      &                      IDC,WORK(KSVST),WORK(KCONSPA),WORK(KCONSPB),
      &                      WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
      &                      NOCTPA,NOCTPB,WORK(KLIBT),WORK(KLSIBT),
      &                      PSSIGN,MXEXC,NSMST)
-      NTEST = 100
-CSK      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-        IF(NTEST.GE.100)THEN
-           IF(NTEST.GE.500.AND.LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-             WRITE(6,*)'CONNECTION MATRIX BETWEEN C- AND SIGMA-BLOCKS'
-             CALL IWRTMAS(ICCTOS,NBLOCK,NBLOCK,NBLOCK,NBLOCK)
-           END IF
-          CALL PRINT_BATCH_INFO(NCBATCH,WORK(KLLBT),WORK(KLLEBT),
-     &         WORK(KLI1BT),WORK(KLIBT),ICCTOS,ICWEIGHT,NBLOCK,IBTOTW,
-     &         ICWEIGHTF,IABSOLUTE_WEIGHT)
-        END IF
-CSK        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-CSK          WRITE(6,*)'CONNECTION FACTOR MATRIX'
-CSK          CALL IWRTMA(ICWEIGHTF,1,NBLOCK,1,NBLOCK)
-CSK        END IF
-CSK      ENDIF
+#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*)'CONNECTION MATRIX BETWEEN C- AND SIGMA-BLOCKS'
+      CALL IWRTMAS(ICCTOS,NBLOCK,NBLOCK,NBLOCK,NBLOCK)
+      CALL PRINT_BATCH_INFO(NCBATCH,WORK(KLLBT),WORK(KLLEBT),
+     &                      WORK(KLI1BT),WORK(KLIBT),ICCTOS,ICWEIGHT,
+     &                      NBLOCK,IBTOTW,ICWEIGHTF,IABSOLUTE_WEIGHT)
+#undef LUCI_DEBUG
+#endif
 *. Set SCALFAC back to default 
       CALL DZERO(SCALFAC,NBLOCK)
 *. Eliminate local memory
@@ -219,6 +205,7 @@ CSK      ENDIF
 * written by S. Knecht  - Feb. 2007
 *
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
@@ -232,12 +219,20 @@ CSK      ENDIF
       INTEGER NSSOA(NSMST ,*),NSSOB(NSMST ,*)
       INTEGER NTEST
       NTEST = 0
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) 'scaling matrix... ',nblock
+      call wrtmatmn(SCALFAC,1,NBLOCK,1,NBLOCK,lupri)
+#endif
       
       DO JBLOCK = 1, NBLOCK
 C
         INTERACT = 0
         JJJ = 0
 C
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'SCALFAC(JBLOCK)... ',SCALFAC(JBLOCK)
+#endif
         IF(SCALFAC(JBLOCK).EQ. 1.0D0) THEN
           JATP = ICBLOCK(1,JBLOCK)
           JBTP = ICBLOCK(2,JBLOCK)
@@ -246,6 +241,7 @@ C
           JOFF = ICBLOCK(5,JBLOCK)
           CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
      &                LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
+
           DO IPERM = 1, NPERM
             LLASM = LASM(IPERM)
             LLBSM = LBSM(IPERM)
@@ -253,6 +249,9 @@ C
             LLBTP = LBTP(IPERM)
 C           loop over Sigma blocks in batch
             DO JSBLOCK = 1, NBLOCK
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'ISBLOCK(JSBLOCK)... ',ISBLOCK(1,JSBLOCK)
+#endif
               IF(ISBLOCK(1,JSBLOCK).GT.0) THEN
                 INTERACT = 0
                 IATP = ISBLOCK(1,JSBLOCK)
@@ -261,22 +260,34 @@ C           loop over Sigma blocks in batch
                 IBSM = ISBLOCK(4,JSBLOCK)
                 NIA = NSSOA(IASM,IATP)
                 NIB = NSSOB(IBSM,IBTP)
+#ifdef LUCI_DEBUG
+        write(lupri,*) 'NIA, NIB, prod... ',NIA,NIB, NIA*NIB,MXEXC
+#endif
                 IF(NIA*NIB.NE.0) THEN        
+
 C                 are the two blocks connected by allowed excitation?
-                  IF(MXEXC.EQ.2) THEN
+                  IF(MXEXC.EQ.1) THEN
+                    IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
+     &                 (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
+     &                  IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
+                       INTERACT = 1
+                    END IF
+                  ELSE IF(MXEXC.EQ.2) THEN
                     IF((ICONSPA(IATP,LLATP).LE.1.AND.
-     &                  ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
-     &                 (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
-     &                  IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
-     &                 (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
-     &                  IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
-                           INTERACT = 1
+     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
+     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
+     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
+     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
+     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+                        INTERACT = 1
                     END IF
                   END IF
+
                   IF(INTERACT.NE.0) THEN
-                   JJJ = JJJ + 1
+                   JJJ                    = JJJ + 1
                    ICCTOS(JSBLOCK,JBLOCK) = 1
-                   ICWEIGHT(JJJ) = JSBLOCK
+                   ICWEIGHT(JJJ)          = JSBLOCK
                   END IF
                 END IF
               END IF
@@ -285,11 +296,14 @@ C           ^ loop over s-blocks
           END DO
 C         ^loop over nperm
         END IF
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.JJJ.GT.0.AND.NTEST.GE.100)THEN
-          WRITE(6,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
+#ifdef LUCI_DEBUG
+        IF(JJJ.GT.0.AND.NTEST.GE.100)THEN
+          WRITE(lupri,'(A,1X,I5,1X,A,1X,I5,1X,A)') 
      & 'C BLOCK',JBLOCK,'IS CONNECTING TO',JJJ,'S-BLOCKS:'
-          CALL IWRTMA(ICWEIGHT,1,JJJ,1,JJJ)
+          CALL IWRTMAMN(ICWEIGHT,1,JJJ,1,JJJ,lupri)
         END IF
+#undef LUCI_DEBUG
+#endif
       END DO 
 C     ^loop over c-blocks
 C

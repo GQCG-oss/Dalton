@@ -5107,6 +5107,7 @@ C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
       INTEGER I1BATCH(*)
       INTEGER IBATCH(8,*)
 *
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(lupri,*)
       WRITE(lupri,*) ' =================='
@@ -5211,6 +5212,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
           WRITE(lupri,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
         END DO
       END DO
+#undef LUCI_DEBUG
 #endif
 *
       END
