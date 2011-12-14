@@ -134,9 +134,6 @@ C
       ROKS = NASHT.GT.0 .AND. DODFT
 C
       IF (SOPPA) THEN
-         IF (DIRFCK) THEN
-           CALL QUIT('RSPOLI: SOPPA not implemented for direct Fock!')
-         ENDIF
          NEEDMU(4) = 1
 C        exclude virt-virt contributions to B(2) matrix
 C        for .OPTORB iterations from ORPCTL
@@ -248,9 +245,10 @@ C
 C If DIRFCK compute Fock matrices in AO basis
 C If also single determinant, then nothing to do in MO part
 C
-      IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
-      IF (DODFT) GO TO 1000
+      !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
+      !IF (DODFT) GO TO 1000
 C     ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
+      IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000 ! new test Dec. 2011, also for SOPPA and DIRFCK  /hjaaj
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
@@ -460,9 +458,11 @@ C
 C
 C   **********************************************************
 C
-C ADD CONTRIBUTIONS  FROM DIRAC INTEGRAL DISTRIBUTIONS
+C   ADD CONTRIBUTIONS  FROM DIRAC INTEGRAL DISTRIBUTIONS
 C
 C   *********************************************************
+C
+      IF (SOPPA .AND. DIRFCK) GO TO 1095
 C
 C ALLOCATE WORK SPACE FOR DIRAC DISTRIBUTION
 C

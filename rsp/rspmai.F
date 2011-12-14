@@ -231,7 +231,11 @@ C
          READ (LUSIFC)
          READ (LUSIFC)
          CALL READT (LUSIFC,NCMOT,WRK(KCMO))
-         IF ( .NOT. RSPCI ) USEDRC = .TRUE.
+         IF ( RSPCI .OR. (SOPPA .AND. DIRFCK) ) THEN
+            USEDRC = .FALSE.
+         ELSE
+            USEDRC = .TRUE.
+         END IF
          IF (SOPPA.OR.HYPCAL.OR.SOMOM.OR.EXMOM.OR.
      &       CRCAL.OR.TOMOM.OR.TPAMP) THEN
             JTRLVL = -10
@@ -698,8 +702,7 @@ C
      *      '@PROMPT "',PROMPT,'" ILLEGAL OR OUT OF ORDER.'
          CALL QUIT(' PROGRAM STOPPED IN RSPREA, ERROR IN PROMPT')
       END IF
- 2    WORD = '*RESPON'
-      CALL RSPINP(WORD)
+ 2    CALL RSPINP(WORD)
       GO TO 200
  3    CALL LINEAR(WORD)
       GO TO 200
@@ -739,7 +742,7 @@ C *** END OR RSPREA
 C
       END
 C  /* Deck rspinp */
-      SUBROUTINE RSPINP(WORD)
+      SUBROUTINE RSPINP(WORD1)
 C
 C     Read general ".xxx" input options for "**RESPONSE"
 C
@@ -786,10 +789,9 @@ C
          N1AVTOT = 0
          N2AVTOT = 0
       END IF
-      NEWDEF = (WORD .EQ. '*RESPON')
+      NEWDEF = (WORD1 .EQ. '**RESPO')
       ICHANG = 0
       IF (NEWDEF) THEN
-      WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
             CALL UPCASE(WORD)
@@ -807,8 +809,8 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN RSPINP.'
+               WRITE (LUPRI,'(/4A/)') '@KEYWORD "',WORD,
+     *            '" NOT RECOGNIZED FOR ',WORD1
                CALL QUIT(' ILLEGAL KEYWORD IN RSPINP ')
     1          CONTINUE
                   INPTES = .TRUE.
@@ -901,6 +903,7 @@ C              .PROP2Average
             END IF
       END IF
   300 CONTINUE
+      IF (SOPPA) NOITRA = .FALSE. ! need 2-electron integrals in MO basis for SOPPA
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('CHANGES OF DEFAULTS FOR RSPINP:',0)
          IF (INPTES) WRITE(LUPRI,'(/A,L1)')
@@ -920,10 +923,10 @@ C              .PROP2Average
          END IF
          IF (DIRFCK) THEN
             WRITE(LUPRI,'(/A)')
-     *      ' AO-DIRECT FOCK MATRIX CALCULATIONS.'
+     *      ' AO-Direct Fock matrix calculations.'
          ELSE IF (NOITRA) THEN
             WRITE(LUPRI,'(/2A,L1)')
-     *      ' MO INTEGRALS FOR RESPONSE ARE ALREADY AVAILABLE.'
+     *      ' MO integrals for RESPONSE are already available.'
      *      ,'  NOITRA = ',NOITRA
          END IF
          IF (TRPFLG) WRITE(LUPRI,'(/2A,L1,A,L1)')
