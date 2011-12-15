@@ -742,7 +742,7 @@ C *** END OR RSPREA
 C
       END
 C  /* Deck rspinp */
-      SUBROUTINE RSPINP(WORD1)
+      SUBROUTINE RSPINP(WORD)
 C
 C     Read general ".xxx" input options for "**RESPONSE"
 C
@@ -789,6 +789,7 @@ C
          N1AVTOT = 0
          N2AVTOT = 0
       END IF
+      WORD1  = WORD
       NEWDEF = (WORD1 .EQ. '**RESPO')
       ICHANG = 0
       IF (NEWDEF) THEN
@@ -897,8 +898,8 @@ C              .PROP2Average
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
-     &            '" NOT RECOGNIZED IN RSPINP.'
+               WRITE (LUPRI,'(/4A/)') '@PROMPT "',WORD,
+     &            '" NOT RECOGNIZED FOR ',WORD1
                CALL QUIT(' ILLEGAL PROMPT IN RSPINP ')
             END IF
       END IF

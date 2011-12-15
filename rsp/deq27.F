@@ -82,12 +82,6 @@ C
 C
       CALL QENTER('DEQ27')
 C
-C     MAERKE 931116; mjp+hjaaj
-      IF (SOPPA) THEN
-         CALL QDUMP(6)
-         CALL QUIT('DEQ27 fatal error: SOPPA not implemented yet!')
-      END IF
-C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -191,7 +185,7 @@ C **  this symmetry block finished
 C
 C subtract D_II from  D-I
          CALL DAXPY(N2BASX,DM1,WRK(KDXAO2),1,DXVAO,1)
-      END IF
+      END IF ! NASHT .gt. 0
 C
 C     DXVAO finished, now DXCAO, if nisht.gt.0:
 C
@@ -273,7 +267,7 @@ C do the subtraction in eq.27.
 C
          CALL DAXPY(N2BASX,DM1,WRK(KDXAO2),1,DXCAO,1)
 C
-      END IF
+      END IF ! NISHT .gt. 0
 C
       CALL MEMREL('DEQ27',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DEQ27')
