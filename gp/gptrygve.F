@@ -747,6 +747,14 @@ C
          CALL IZERO(IUNTAB,99)
          FIRST = .FALSE.
       END IF
+
+      IF (MYNUM .GT. 999) CALL QUIT(
+     &   'ERROR, subroutine GPOPEN can only handle up to 999 nodes')
+!
+!     To have more than 999 nodes: add one more digit to the slave file names
+!     below (search for MYNUM to find the places to modify the code).
+!
+
 C
 C
 #ifdef SYS_LINUX
@@ -822,10 +830,7 @@ C
 C     This avoids us writing to unit 7 of HP-systems (which corresponds to
 C     standard error on this machine)
 C
-         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6) .OR. (LUNIT .EQ. 7))
-     &      GOTO 9002
-#else
-         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6)) GOTO 9002
+         IF ( LUNIT .EQ. 7 ) GOTO 9002
 #endif
          IF (IUNTAB(LUNIT) .EQ. 1) GOTO 9003
       END IF
@@ -1323,6 +1328,8 @@ C
 C
       FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN
+         IF (MYNUM .GT. 999) CALL QUIT(
+     &   'ERROR, subroutine GPINQ can only handle up to 999 nodes')
          FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
      &                        '#'//CHRNOS(MYNUM/100)//
      &                        CHRNOS(MOD(MYNUM,100)/10)//
