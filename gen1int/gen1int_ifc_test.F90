@@ -172,8 +172,9 @@
       call QUIT("gen1int_ifc_test>> Gen1Int interface is not properly initialized!")
     ! gets the number of orbitals
     call gen1int_shell_idx_orb(ao_shells(num_ao_shells), ierr, num_orb)
-    write(io_std,100) "threshold of error", ERR_THRSH
-    write(io_std,110) "threshold of ratio to the referenced result", RATIO_THRSH
+    write(io_std,100) "number of orbitals", num_orb
+    write(io_std,110) "threshold of error", ERR_THRSH
+    write(io_std,120) "threshold of ratio to the referenced result", RATIO_THRSH
     ! sets artifical AO density matrices
     dim_tri_dens = num_orb*(num_orb+1)/2
     dim_sq_dens = num_orb*num_orb
@@ -577,8 +578,9 @@
     ! performed in abacus/dalton.F (Dalton), main/dirac.F(Dirac)
     call QEXIT("gen1int_ifc_test")
     return
-100 format("gen1int_ifc_test>> ",A,Es16.6)
-110 format("gen1int_ifc_test>> ",A,Es16.6,"-->",Es16.6)
+100 format("gen1int_ifc_test>> ",A,I8)
+110 format("gen1int_ifc_test>> ",A,Es16.6)
+120 format("gen1int_ifc_test>> ",A,Es16.6,"-->",Es16.6)
 995 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", SYM>>",F18.12)
 996 format("gen1int_ifc_test>> ",A,".EXP(",I6,")>> SQUARE>>",F18.12,", ANTI>>",F18.12)
 #if !defined (PRG_DIRAC)

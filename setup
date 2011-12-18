@@ -202,8 +202,11 @@ def gen_cmake_command():
             command += ' -DMATH_ROOT="%s"' % options.mathdir
 
     if (options.fc and options.cc):
-        fc_starts_with_mp = (options.fc[:2] == 'mp' or options.fc[:2] == 'MP')
-        cc_starts_with_mp = (options.cc[:2] == 'mp' or options.cc[:2] == 'MP')
+        # it is possible to call compilers with long paths
+        fc_first_two = os.path.basename(options.fc)[:2].lower()
+        cc_first_two = os.path.basename(options.cc)[:2].lower()
+        fc_starts_with_mp = (fc_first_two == 'mp')
+        cc_starts_with_mp = (cc_first_two == 'mp')
         # if both fc and cc start with 'mp' turn on mpi
         if (fc_starts_with_mp and cc_starts_with_mp):
             command += ' -DENABLE_MPI=ON'
