@@ -340,6 +340,7 @@ contains
 !*******************************************************************************
 ! lucita
   use lucita_cfg
+  use parallel_task_distribution_type_module
 #include "priunit.h"
 ! sirius
       integer,   intent(in)    :: print_lvl
@@ -348,6 +349,9 @@ contains
 
 !     turn on common block (re-)initialization + co-worker synchronization of static lucita variables 
       lucita_cfg_initialize_cb = .true.
+!     free parallel distribution object and thereby turn on (re-)calculation of static task list distribution
+      call parallel_task_distribution_free_lucipar(ptask_distribution)
+      
       
   end subroutine mcscf_pre_lucita_setci
 !*******************************************************************************
