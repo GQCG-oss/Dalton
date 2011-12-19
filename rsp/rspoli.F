@@ -1,4 +1,4 @@
-#define DEBUG_RSPOLI
+#define noDEBUG_RSPOLI
 !
 !...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -834,16 +834,11 @@ C     Change IFCTYP for all Fa matrices
       END IF
       DFTADX = DFTADD
       DFTADD = .FALSE.
-#ifdef DEBUG_RSPOLI
-      write(lupri,*) 'RSPOLI: before calling sirfck'
-      write(lupri,*) 'RSPOLI: '
-#endif
 ! Manu test !!!!!!!!!!!
 !     IFCTYP(1)=1  
 !     IFCTYP(3)=1  
 !     ISYMDM(1)=5 
 #ifdef DEBUG_RSPOLI
-      print *, 'just called SIRFCK'
       write(lupri,*) 'before call sirfck in rspoli'
       IF (DOFXC.AND.NOSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFXCAO)='
@@ -893,7 +888,6 @@ C     Change IFCTYP for all Fa matrices
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
 #ifdef DEBUG_RSPOLI
-      print *, 'just called SIRFCK'
       write(lupri,*) 'after call sirfck in rspoli'
       IF (DOFXC.AND.NOSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFXCAO)='
