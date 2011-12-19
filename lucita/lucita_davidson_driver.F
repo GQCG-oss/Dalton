@@ -37,7 +37,6 @@
       use par_mcci_io
 #endif
       use lucita_file_list_pointer
-      use lucita_vector_partitioning_pointer
       use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"

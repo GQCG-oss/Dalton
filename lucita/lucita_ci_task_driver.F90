@@ -160,9 +160,10 @@
       use lucita_cfg
       use lucita_setup
       use lucita_file_list_pointer
-      use lucita_vector_partitioning_pointer
       use lucita_ci_task_interface
       use lucita_energy_types
+      use ttss_block_module
+      use communicator_type_module
 !     parallel lucita
 #ifdef VAR_MPI
       use parallel_setup
@@ -175,10 +176,6 @@
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
 #include "files.inc"
 ! parameters for dimensioning
@@ -211,12 +208,9 @@
 !------------- end of optional input depending on MCSCF/CI run -----------------
       integer                :: files_to_close
       integer                :: fh_offset
-      integer, allocatable   :: proclist(:)
-      integer, allocatable   :: grouplist(:)
       integer, allocatable   :: rcctos(:)
       integer, allocatable   :: fh_array(:)
       integer, allocatable   :: par_dist_block_list(:)
-      integer, allocatable   :: block_list(:)
 !------------------------------------------------------------------------------
 
       CALL QENTER('LUCITA_MASTER')
@@ -236,11 +230,6 @@
 !     print header
       if(lucita_ci_run_id == 'standard ci ') call hello_dalton_lucita
 
-!     allocate process-id and grouplist-id arrays
-      allocate(proclist(luci_nmproc))
-      allocate(grouplist(luci_nmproc))
-      proclist  = -1
-      grouplist = -1
 
 !     set LUCITA internal orbital and string common block information 
 !     ---------------------------------------------------------------
@@ -263,23 +252,17 @@
 
 !     information about largest vector block and block structure ==> memory for partitioning of C vector
 !     --------------------------------------------------------------------------------------------------
-      iatp   = 1
-      ibtp   = 2
-      call z_blkfo(icspc,icsm,iatp,ibtp,klclbt,klclebt,                 &
-                   klci1bt,klcibt,klcbltp,nbatch,nblock)
+      call z_blkfo(icspc,icsm,1,2,nbatch,nblock)
 
 !     allocate arrays for:
-!      a. block length
 !      b. block distribution among cpu's (parallel run)
 !      c. the c to sigma connections     (parallel run)
 !      d. storing file handles           (parallel run)
-      allocate(         block_list(nblock))
       allocate(par_dist_block_list(nblock))
       allocate(             rcctos(nblock))
       allocate(           fh_array(nr_files))
 
 !     initialize
-      call icopy(nblock,work(klci1bt),1,block_list,1)
       par_dist_block_list = -2
       rcctos              =  0
       fh_array            =  0
@@ -294,8 +277,10 @@
 !         4. file offset calculation
 !         5. file list pointers creation
 !       --------------------------------------------------------------
-        call lucita_setup_parallel_model(block_list,par_dist_block_list,&
-                                         grouplist,proclist,nblock,     &
+        call lucita_setup_parallel_model(ttss_info%ttss_block_length(1, &
+                                         icsm,1),                       &
+                                         par_dist_block_list,           &
+                                         nblock,                        &
                                          rcctos,kiluclist,              &
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
@@ -303,7 +288,9 @@
 #endif
       else
         call setup_lucita_par_dist_in_seq(par_dist_block_list,          &
-                                          block_list,nblock)
+                                          ttss_info%ttss_block_length(1,&
+                                          icsm,1),                      &
+                                          nblock)
       end if
 
 !     ----------------------------------------------------------------------------
@@ -315,9 +302,12 @@
                                   resolution_mat,                       &
                                   int1_or_rho1,                         &
                                   int2_or_rho2,                         &
-                                  block_list,                           &
-                                  par_dist_block_list,proclist,         &
-                                  grouplist,fh_array,rcctos,nbatch,     &
+                                  ttss_info%ttss_block_length(1,icsm,1),&
+                                  par_dist_block_list,                  &
+                                  communicator_info%total_process_list, &
+                                  communicator_info%                    &
+                                  intra_node_group_list,                &
+                                  fh_array,rcctos,nbatch,               &
                                   nblock,iprorb)
 !     ----------------------------------------------------------------------------------
 !      end of branching point for MCSCF/CI tasks (controlled by entries in ci_task_list)
@@ -329,8 +319,7 @@
 !         1. parallel file(s) / file handle(s)
 !         2. communication model
         call lucita_close_parallel_model(nr_files,lucita_ci_run_id,     &
-                                         fh_array,mynew_comm,icomm,     &
-                                         mynew_comm_sm, mynew_comm_sm_c)
+                                         fh_array)
       end if
 #endif
 
@@ -338,9 +327,6 @@
       deallocate(fh_array)
       deallocate(rcctos)
       deallocate(par_dist_block_list)
-      deallocate(block_list)
-      deallocate(grouplist)
-      deallocate(proclist)
      
       write(lupri,'(/a)')                                               &
       '   ----------------------------------------------------------'
@@ -390,8 +376,6 @@
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
-#include "mpif.h"
-      DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 !----------------------------------------------------------------------
       integer, intent(in)    :: lwork_dalton
@@ -483,8 +467,8 @@
                                             len_int2_or_rho2_mc2lu,     &
                                             print_lvl)
 
-!     enter the LUCITA driver -- joining with the master
-!     --------------------------------------------------
+!     enter the LUCITA driver -- joining the master
+!     ---------------------------------------------
       call lucita_driver(work_dalton(kfree),lfree,                      &
                          work_dalton(kcref),                            &
                          work_dalton(khc),                              &

@@ -1047,6 +1047,11 @@ C?    CALL MEMCHK
         call ttss_init(ttss_info,max_ttss_blocks_all,nsmci,1)
 
       end do
+
+!     all information gathered - switch now to the present symmetry
+      if(ttss_info%ttss_info_init)then 
+        call ttss_switch(ttss_info,current_sym,ci_space)
+      end if
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
@@ -3309,14 +3314,13 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       END
 ***********************************************************************
 
-      SUBROUTINE Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
-     &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
+      SUBROUTINE Z_BLKFO(ISPC,ISM,IATP,IBTP,NBATCH,NBLOCK)
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM,IATP,IBTP.
 *
-* Output is given in the form of pointers to vectors in WORK
-* where the info is stored :
+* intermediate output is given in the form of pointers to vectors in WORK
+* where the info is stored:
 *
 * KPCLBT : Length of each Batch ( in blocks)
 * KPCLEBT : Length of each Batch ( in elements)
@@ -3329,6 +3333,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *
 * Jeppe Olsen, Feb. 98
 *
+      use ttss_block_module
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KPCLBT, KPCLEBT, KPCI1BT, KPCIBT, KPCBLTP
       INTEGER*8 KLCIOIO
@@ -3375,7 +3380,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       WRITE(LUWRT,*) ' but I am just a dumb program, so I will stop'
       WRITE(LUWRT,*)
       WRITE(LUWRT,*) ' Z_BLKFO : Vanishing number of parameters '
-      call quit(' Z_BLKFO : Vanishing number of parameters ')
+        call quit(' Z_BLKFO : Vanishing number of parameters ')
       end if
 
 !     save # of determinants on common block in parluci.h
@@ -3423,17 +3428,16 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 !
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
-!     pointers to output arrays
+
+      IDUM = 0
+      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'Z_BLKF')
+
+!     pointers to intermediate output arrays
       NTTS = MXNTTS
       CALL MEMMAN(KPCLBT ,  MXNTTS,'ADDL  ',1,'CLBT  ')
       CALL MEMMAN(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBT ')
       CALL MEMMAN(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BT ')
-      CALL MEMMAN(KPCIBT ,8*MXNTTS,'ADDL  ',1,'CIBT  ')
-      CALL MEMMAN(KPCBLTP,   NSMST,'ADDL  ',2,'CBLTP ')
-!     These should be preserved after exit so put mark for flushing here
 
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'Z_BLKF')
 !. Info needed for generation of block info
       CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
       CALL IAIBCM(ISPC,WORK(KLCIOIO))
@@ -3442,7 +3446,8 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
         CALL SIGVST(isyms_dummy,NSMST)
       END IF
-      CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KPCBLTP),isyms_dummy)
+      CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,ttss_info%ttss_block_type,
+     &           isyms_dummy)
       deallocate(isyms_dummy)
  
       IF(NTEST.GE.10) THEN
@@ -3452,20 +3457,18 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
  
 !     batches  of C vector
       ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
+      CALL PART_CIV2(IDC,ttss_info%ttss_block_type,WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
      &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
      &              ISMOST(1,ISM),
      &              NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &              WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-
-!     total number of BLOCKS
-      NBLOCK = IFRMR(WORK(KPCI1BT),1,NBATCH)
-     &       + IFRMR(WORK(KPCLBT),1,NBATCH) - 1
+     &              WORK(KPCI1BT),ttss_info%ttss_vec_split,
+     &              0,ITTSS_ORD)
 
 !     transfer to common block in parluci.h
-      NUM_BLOCKS  = NBLOCK
-      NUM_BLOCKS2 = NUM_BLOCKS
+      NBLOCK      = ttss_info%total_present_ttss
+      NUM_BLOCKS  = ttss_info%total_present_ttss
+      NUM_BLOCKS2 = ttss_info%total_present_ttss
 
       WRITE(LUWRT,'(/a,i22)')
      &     '  @@ total number of TTSS-blocks: ',NBLOCK
@@ -3474,18 +3477,13 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
      &     ' @@ total number of vector batches',NBATCH
       END IF
 
-!     length of each block
-!     note: this step destroys the initial purpose (inside PART_CIV2) of KPCI1BT 
-!     ==> block offset for each batch
-      CALL EXTRROW(WORK(KPCIBT),8,8,NBLOCK,WORK(KPCI1BT))
-
 !     calculate length of half of the resolution block
 
 !     Largest block of strings in zero order space
       MXSTBL0 = MXNSTR
-!     type of alpha and beta strings
-      IATP = 1
-      IBTP = 2
+!     type of alpha and beta strings (INPUT!!!)
+!     IATP = 1
+!     IBTP = 2
 !     alpha and beta strings with an electron removed
       IATPM1 = 3
       IBTPM1 = 4

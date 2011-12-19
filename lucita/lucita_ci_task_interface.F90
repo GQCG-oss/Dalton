@@ -199,8 +199,8 @@ contains
                                    block_list,                   &
                                    par_dist_block_list)
 
-  use lucita_vector_partitioning_pointer
   use lucita_energy_types
+  use ttss_block_module
 
 #ifdef VAR_MPI
   use par_mcci_io
@@ -222,8 +222,6 @@ contains
       integer, intent(in)      :: block_list(num_blocks)
       integer, intent(in)      :: par_dist_block_list(num_blocks)
 !-------------------------------------------------------------------------------
-      real(8)                  :: work
-#include "wrkspc.inc"
 #ifdef VAR_MPI
 #include "maxorb.h"
 #include "infpar.h"
@@ -241,8 +239,8 @@ contains
       if(idiag == 2)  ludia = lusc1
       if(icistr >= 2) call rewino(ludia)
 
-      call gasdiat(cref,ludia,ecore_orig-ecore,icistr,i12,       &
-                   work(klcbltp),num_blocks,work(klcibt),        &
+      call gasdiat(cref,ludia,ecore_orig-ecore,icistr,i12,                         &
+                   ttss_info%ttss_block_type,num_blocks,ttss_info%ttss_vec_split,  &
                    par_dist_block_list)
 
       if(nocsf == 1 .and. icistr == 1)then
@@ -296,7 +294,7 @@ contains
 
   subroutine report_CI_vector_analysis(cref,print_lvl)
 
-  use lucita_vector_partitioning_pointer
+  use ttss_block_module
 
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -307,8 +305,6 @@ contains
       real(8), intent(inout)   :: cref(*)
       integer, intent(in)      :: print_lvl
 !-------------------------------------------------------------------------------
-      real(8)                  :: work
-#include "wrkspc.inc"
       integer                  :: eigen_state_id
       integer                  :: imzero, iampack
       integer                  :: lusc_vector_file
@@ -336,7 +332,7 @@ contains
 
 
           call rewino(lusc_vector_file)
-          call gasana(l0block,num_blocks,work(klcibt),work(klcbltp),lusc_vector_file,icistr)
+          call gasana(l0block,num_blocks,ttss_info%ttss_vec_split,ttss_info%ttss_block_type,lusc_vector_file,icistr)
         end do
       end if
 

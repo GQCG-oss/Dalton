@@ -11,6 +11,7 @@ module parallel_setup
 !
 !           written by sknecht, may 2011 for DALTON LUCITA.
 
+  use communicator_type_module
   use communication_model
   use file_io_model
 #ifndef VAR_USE_MPIF
@@ -37,7 +38,7 @@ module parallel_setup
 contains
 
   subroutine lucita_setup_parallel_model(block_list,par_dist_block_list,&
-                                         grouplist,proclist,nblock,     &
+                                         nblock,                        &
                                          rcctos,kiluclist,              &
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
@@ -52,8 +53,6 @@ contains
      integer,    intent(in)                    :: nblock
      integer,    intent(inout)                 :: block_list(nblock)
      integer,    intent(inout)                 :: par_dist_block_list(nblock)
-     integer,    intent(inout)                 :: grouplist(*)
-     integer,    intent(inout)                 :: proclist(*)
      integer   , intent(inout)                 :: rcctos(nblock)
      integer(8), intent(inout)                 :: kiluclist, kilu1list, kilu2list, kilu3list
      integer(8), intent(inout)                 :: kilu4list, kilu5list, kilu6list, kilu7list
@@ -71,6 +70,7 @@ contains
  
       allocate(grouplist_shared_mem(luci_nmproc))
       grouplist_shared_mem = -1
+
       
 !     all important variables (input parameters to module) 
 !     are stored on common block /LUPARGROUP/
@@ -82,8 +82,6 @@ contains
                                      shared_m,                        &
                                      it_shl,                          &
                                      ic_shl,                          &
-                                     grouplist,                       &
-                                     proclist,                        &
                                      grouplist_shared_mem,            &
                                      luci_myproc,                     &
                                      luci_nmproc,                     &
@@ -142,7 +140,7 @@ contains
       allocate(tmp_block_scaling_fac(nblock))
       call block_distr_drv(nblock,block_list,par_dist_block_list,           &
                            rcctos,tmp_block_scaling_fac,                    &
-                           l_combi,proclist)
+                           l_combi,communicator_info%total_process_list)
       deallocate(tmp_block_scaling_fac)
 
 !     step 4: organize MPI file I/O offsets with the following ordering: 
@@ -176,21 +174,21 @@ contains
       file_offset_fac(8) = file_offset_fac_i4(8)
       file_offset_fac(9) = file_offset_fac_i4(9)
       
-      call set_file_io_offset(nr_files,                          &
-                              file_offset_off,                   &
-                              file_offset_array,                 &
-                              file_offset_fac,                   &
-                              my_vec1_ioff,                      &
-                              my_vec2_ioff,                      &
-                              my_act_blk1,                       &
-                              my_act_blk2,                       &
-                              my_act_blk_all,                    &
-                              .false.,                           &
-                              luci_myproc,                       &
-                              num_blocks2,                       &
-                              newcomm_proc,                      &
-                              grouplist,                         &
-                              par_dist_block_list,               &
+      call set_file_io_offset(nr_files,                                 &
+                              file_offset_off,                          &
+                              file_offset_array,                        &
+                              file_offset_fac,                          &
+                              my_vec1_ioff,                             &
+                              my_vec2_ioff,                             &
+                              my_act_blk1,                              &
+                              my_act_blk2,                              &
+                              my_act_blk_all,                           &
+                              .false.,                                  &
+                              luci_myproc,                              &
+                              num_blocks2,                              &
+                              newcomm_proc,                             &
+                              communicator_info%intra_node_group_list,  &
+                              par_dist_block_list,                      &
                               block_list)
 
 !     save output in common block variables
@@ -234,8 +232,7 @@ contains
 !*******************************************************************************
 
   subroutine lucita_close_parallel_model(nr_files,lucita_ci_run_id,         &
-                                         fh_array,mynew_comm,icomm,         &
-                                         mynew_comm_sm, mynew_comm_sm_c)
+                                         fh_array)
 !******************************************************************************
 !
 !    purpose: close down the parallel model
@@ -246,10 +243,6 @@ contains
      integer,            intent(in)    :: nr_files
      character (len=72), intent(in)    :: lucita_ci_run_id
      integer,            intent(inout) :: fh_array(nr_files)
-     integer,            intent(inout) :: mynew_comm
-     integer,            intent(inout) :: icomm
-     integer,            intent(inout) :: mynew_comm_sm
-     integer,            intent(inout) :: mynew_comm_sm_c
 !-------------------------------------------------------------------------------
      integer                           :: files_to_close
      integer                           :: fh_offset
@@ -262,12 +255,6 @@ contains
                                fh_offset,                                   &
                                fh_array)
 
-!     step 2: reset all communication groups
-      call close_communication_model(mynew_comm,                            &
-                                     icomm,                                 &
-                                     mynew_comm_sm,                         &
-                                     mynew_comm_sm_c)
- 
   end subroutine lucita_close_parallel_model
 !*******************************************************************************
 #else

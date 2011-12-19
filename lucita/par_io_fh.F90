@@ -60,7 +60,7 @@ contains
 !    for a detailed description of the I/O model see references:
 !    S. Knecht, H. J. Aa. Jensen, and T. Fleig
 !       JCP, 128, 014108 (2008)
-!       JCP, 132, 014108 (2008)
+!       JCP, 132, 014108 (2010)
 !
 !*******************************************************************************
      integer,           intent(in)    :: communicator_io_group

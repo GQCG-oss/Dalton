@@ -60,6 +60,7 @@ C
       use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
       use lucita_mcscf_ci_interface_procedures
       use ttss_block_module
+      use communicator_type_module
 
 #include <implicit.h>
 C
@@ -831,6 +832,8 @@ C
 
 !     possibly free ttss-type used in LUCITA/MCSCF-LUCITA
       call ttss_free(ttss_info)
+!     possibly free communicator type used in LUCITA/MCSCF-LUCITA
+      call communicator_free_lucipar(communicator_info)
 C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR

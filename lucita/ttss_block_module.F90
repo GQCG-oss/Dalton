@@ -34,9 +34,10 @@ module ttss_block_module
 !   real(8), pointer ::  &
 !     xxx(:),            & ! 
 !     xxx(:,:,:)           !
-
-    integer, pointer ::         &
+    integer, allocatable ::     &
       ttss_block_length(:,:,:), &             ! length of each ttss block per symmetry irrep and CI space (the latter currently always 1)
+      ttss_vec_split(:,:),      &             ! vector split into ttss blocks for a given symmetry and CI space
+      ttss_block_type(:),       &             ! ttss block type in a given symmetry
       ttss_block_nr(:,:),       &             ! total number of ttss blocks per symmetry irrep and CI space (the latter currently always 1)
       ttss_vec_length(:,:)                    ! total vector length per symmetry irrep and CI space (the latter currently always 1)
 
@@ -57,10 +58,6 @@ contains
 !   reset old type information
     call ttss_free(A)
 
-    nullify(A%ttss_block_length)
-    nullify(A%ttss_block_nr)
-    nullify(A%ttss_vec_length)
-
     A%ttss_info_init     = .true.
     A%mx_nr_ttss         = mx_ttss
     A%nr_ptg_irreps      = nirreps
@@ -73,6 +70,8 @@ contains
     allocate(A%ttss_block_length(A%mx_nr_ttss,A%nr_ptg_irreps,A%nr_ci_spaces))
     allocate(A%ttss_block_nr(A%nr_ptg_irreps,A%nr_ci_spaces))
     allocate(A%ttss_vec_length(A%nr_ptg_irreps,A%nr_ci_spaces))
+    allocate(A%ttss_vec_split(8,A%mx_nr_ttss))
+    allocate(A%ttss_block_type(A%nr_ptg_irreps))
 
   end subroutine ttss_init
 
@@ -85,12 +84,11 @@ contains
     if(.not. A%ttss_info_init) return
 
     A%ttss_info_init = .false.
+    deallocate(A%ttss_block_type)
+    deallocate(A%ttss_vec_split)
     deallocate(A%ttss_vec_length)
     deallocate(A%ttss_block_length)
     deallocate(A%ttss_block_nr)
-    nullify(A%ttss_vec_length)
-    nullify(A%ttss_block_length)
-    nullify(A%ttss_block_nr)
 
   end subroutine ttss_free
 
