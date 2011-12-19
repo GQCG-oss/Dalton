@@ -954,6 +954,7 @@ C  /* Deck nodedriver */
 C
       use ttss_block_module
       use communicator_type_module
+      use parallel_task_distribution_type_module
 #include <implicit.h>
 #include <priunit.h>
 #include <mtags.h>
@@ -1071,6 +1072,7 @@ C
 !       possibly free ttss-type used in LUCITA/MCSCF-LUCITA
         call ttss_free(ttss_info)
         call communicator_free_lucipar(communicator_info)
+        call parallel_task_distribution_free_lucipar(ptask_distribution)
       end if
 C
       CALL QEXIT('NODEDRIVER')

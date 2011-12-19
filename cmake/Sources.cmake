@@ -721,6 +721,7 @@ lucita/lucita_mcscf_vector_exchange.F90
 lucita/lucita_mcscf_ci_cfg.F90
 lucita/par_sync_cw.F90
 lucita/communicator_type_module.F90
+lucita/parallel_task_distribution_type_module.F90
 lucita/par_communication_model.F90
 lucita/lucita_orbitalspaces.F90
 lucita/lucita_energy_types.F90

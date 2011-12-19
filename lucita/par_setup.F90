@@ -12,6 +12,7 @@ module parallel_setup
 !           written by sknecht, may 2011 for DALTON LUCITA.
 
   use communicator_type_module
+  use parallel_task_distribution_type_module
   use communication_model
   use file_io_model
 #ifndef VAR_USE_MPIF
@@ -38,8 +39,7 @@ module parallel_setup
 contains
 
   subroutine lucita_setup_parallel_model(block_list,par_dist_block_list,&
-                                         nblock,                        &
-                                         rcctos,kiluclist,              &
+                                         rcctos,nblock,kiluclist,       &
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
                                          kilu7list,fh_array,mxciv,nroot)
@@ -53,7 +53,7 @@ contains
      integer,    intent(in)                    :: nblock
      integer,    intent(inout)                 :: block_list(nblock)
      integer,    intent(inout)                 :: par_dist_block_list(nblock)
-     integer   , intent(inout)                 :: rcctos(nblock)
+     integer,    intent(inout)                 :: rcctos(nblock)
      integer(8), intent(inout)                 :: kiluclist, kilu1list, kilu2list, kilu3list
      integer(8), intent(inout)                 :: kilu4list, kilu5list, kilu6list, kilu7list
      integer,    intent(inout)                 :: fh_array(nr_files)
@@ -136,12 +136,16 @@ contains
 !     -----------------------------------
 !     block_list          == list of all blocks containing their length
 !     par_dist_block_list == list of all blocks containing their assigned CPU
+!     rcctos              == list of bvec <--> sigma connections
 
-      allocate(tmp_block_scaling_fac(nblock))
-      call block_distr_drv(nblock,block_list,par_dist_block_list,           &
-                           rcctos,tmp_block_scaling_fac,                    &
-                           l_combi,communicator_info%total_process_list)
-      deallocate(tmp_block_scaling_fac)
+      if(.not.ptask_distribution%parallel_task_distribution_set)then
+        allocate(tmp_block_scaling_fac(nblock))
+        call block_distr_drv(nblock,block_list,par_dist_block_list,            &
+                             rcctos,tmp_block_scaling_fac,l_combi,             &
+                             communicator_info%total_process_list)
+        ptask_distribution%parallel_task_distribution_set = .true.
+        deallocate(tmp_block_scaling_fac)
+      end if
 
 !     step 4: organize MPI file I/O offsets with the following ordering: 
 !     ------------------------------------------------------------------
@@ -174,21 +178,21 @@ contains
       file_offset_fac(8) = file_offset_fac_i4(8)
       file_offset_fac(9) = file_offset_fac_i4(9)
       
-      call set_file_io_offset(nr_files,                                 &
-                              file_offset_off,                          &
-                              file_offset_array,                        &
-                              file_offset_fac,                          &
-                              my_vec1_ioff,                             &
-                              my_vec2_ioff,                             &
-                              my_act_blk1,                              &
-                              my_act_blk2,                              &
-                              my_act_blk_all,                           &
-                              .false.,                                  &
-                              luci_myproc,                              &
-                              num_blocks2,                              &
-                              newcomm_proc,                             &
-                              communicator_info%intra_node_group_list,  &
-                              par_dist_block_list,                      &
+      call set_file_io_offset(nr_files,                                                                      &
+                              file_offset_off,                                                               &
+                              file_offset_array,                                                             &
+                              file_offset_fac,                                                               &
+                              my_vec1_ioff,                                                                  &
+                              my_vec2_ioff,                                                                  &
+                              my_act_blk1,                                                                   &
+                              my_act_blk2,                                                                   &
+                              my_act_blk_all,                                                                &
+                              .false.,                                                                       &
+                              luci_myproc,                                                                   &
+                              num_blocks2,                                                                   &
+                              newcomm_proc,                                                                  &
+                              communicator_info%intra_node_group_list,                                       &
+                              par_dist_block_list,                                                           &
                               block_list)
 
 !     save output in common block variables

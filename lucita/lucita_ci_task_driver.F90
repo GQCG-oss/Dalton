@@ -156,7 +156,7 @@
 !-----------------------------------------------------------------------
 !
 !     dependencies on F90 modules
-!     common modules
+!     common modules / mixed parallel and sequential modules
       use lucita_cfg
       use lucita_setup
       use lucita_file_list_pointer
@@ -164,7 +164,8 @@
       use lucita_energy_types
       use ttss_block_module
       use communicator_type_module
-!     parallel lucita
+      use parallel_task_distribution_type_module
+!     pure parallel lucita
 #ifdef VAR_MPI
       use parallel_setup
       use communication_model
@@ -255,17 +256,14 @@
       call z_blkfo(icspc,icsm,1,2,nbatch,nblock)
 
 !     allocate arrays for:
-!      b. block distribution among cpu's (parallel run)
-!      c. the c to sigma connections     (parallel run)
 !      d. storing file handles           (parallel run)
-      allocate(par_dist_block_list(nblock))
-      allocate(             rcctos(nblock))
-      allocate(           fh_array(nr_files))
+      allocate(fh_array(nr_files))
+      fh_array =  0
 
-!     initialize
-      par_dist_block_list = -2
-      rcctos              =  0
-      fh_array            =  0
+      if(.not.ptask_distribution%parallel_task_distribution_init)then
+        call parallel_task_distribution_init_lucipar(ptask_distribution,&
+                                                     nblock,1)
+      end if
 
       if(luci_nmproc > 1)then
 #ifdef VAR_MPI
@@ -279,15 +277,23 @@
 !       --------------------------------------------------------------
         call lucita_setup_parallel_model(ttss_info%ttss_block_length(1, &
                                          icsm,1),                       &
-                                         par_dist_block_list,           &
-                                         nblock,                        &
-                                         rcctos,kiluclist,              &
+                                         ptask_distribution%            &
+                                         parallel_task_list(1,          &
+                                         ptask_distribution%active_csym)&
+                                         ,ptask_distribution%           &
+                                         c2s_connections(1,             &
+                                         ptask_distribution%active_csym)&
+                                         ,nblock,                       &
+                                         kiluclist,                     &
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
                                          kilu7list,fh_array,mxciv,nroot)
 #endif
       else
-        call setup_lucita_par_dist_in_seq(par_dist_block_list,          &
+        call setup_lucita_par_dist_in_seq(ptask_distribution%           &
+                                          parallel_task_list(1,         &
+                                          ptask_distribution%           &
+                                          active_csym),                 &
                                           ttss_info%ttss_block_length(1,&
                                           icsm,1),                      &
                                           nblock)
@@ -303,12 +309,15 @@
                                   int1_or_rho1,                         &
                                   int2_or_rho2,                         &
                                   ttss_info%ttss_block_length(1,icsm,1),&
-                                  par_dist_block_list,                  &
+                                  ptask_distribution%                   &
+                                  parallel_task_list(1,                 &
+                                  ptask_distribution%active_csym),      &
                                   communicator_info%total_process_list, &
                                   communicator_info%                    &
                                   intra_node_group_list,                &
-                                  fh_array,rcctos,nbatch,               &
-                                  nblock,iprorb)
+                                  fh_array,ptask_distribution%          &
+                                  c2s_connections(1,ptask_distribution% &
+                                  active_csym),nbatch,nblock,iprorb)
 !     ----------------------------------------------------------------------------------
 !      end of branching point for MCSCF/CI tasks (controlled by entries in ci_task_list)
 !     ----------------------------------------------------------------------------------
@@ -325,8 +334,6 @@
 
 !     free memory
       deallocate(fh_array)
-      deallocate(rcctos)
-      deallocate(par_dist_block_list)
      
       write(lupri,'(/a)')                                               &
       '   ----------------------------------------------------------'

@@ -341,7 +341,7 @@ C    *                MELMN3,NOSYM,ICSF,NCNSM,REFSPC)
      &                                    thrci,
      &                                    docino,
      &                                    .true.,
-     &                                    .false.,
+     &                                    .false., ! important for parallel runs: calculate static task distribution always with 2e-interaction!!!
      &                                    .false.,
      &                                    .false.,
      &                                    .false.,

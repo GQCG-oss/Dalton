@@ -61,6 +61,7 @@ C
       use lucita_mcscf_ci_interface_procedures
       use ttss_block_module
       use communicator_type_module
+      use parallel_task_distribution_type_module
 
 #include <implicit.h>
 C
@@ -834,6 +835,8 @@ C
       call ttss_free(ttss_info)
 !     possibly free communicator type used in LUCITA/MCSCF-LUCITA
       call communicator_free_lucipar(communicator_info)
+!     possibly free parallel task list distribution
+      call parallel_task_distribution_free_lucipar(ptask_distribution)
 C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR
