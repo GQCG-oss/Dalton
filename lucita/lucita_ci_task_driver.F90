@@ -379,6 +379,7 @@
       use lucita_mcscf_ci_cfg
       use lucita_cfg
       use lucita_setup
+      use parallel_task_distribution_type_module
       implicit none
 #include "priunit.h"
 #include "maxorb.h"
@@ -473,6 +474,11 @@
                                             len_int1_or_rho1_mc2lu,     &
                                             len_int2_or_rho2_mc2lu,     &
                                             print_lvl)
+
+!     check for (re-)initialization of the parallel task distribution arrays
+      if(lucita_cfg_initialize_cb)then
+        call parallel_task_distribution_free_lucipar(ptask_distribution)
+      end if     
 
 !     enter the LUCITA driver -- joining the master
 !     ---------------------------------------------
