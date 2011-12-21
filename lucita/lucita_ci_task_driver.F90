@@ -165,6 +165,7 @@
       use ttss_block_module
       use communicator_type_module
       use parallel_task_distribution_type_module
+      use file_type_module
 !     pure parallel lucita
 #ifdef VAR_MPI
       use parallel_setup
@@ -334,6 +335,10 @@
 
 !     free memory
       deallocate(fh_array)
+
+      if(file_info%file_type_init)then
+        call file_free_lucipar(file_info)
+      end if
      
       write(lupri,'(/a)')                                               &
       '   ----------------------------------------------------------'

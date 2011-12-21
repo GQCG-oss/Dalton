@@ -43,6 +43,7 @@ contains
   subroutine setup_file_io_model(communicator_io_group,          &
                                  nr_files,                       &
                                  fh_array,                       &
+                                 fh_offset,                      &
                                  group_id,                       &
                                  group_io_size,                  &
                                  file_identification,            &
@@ -66,13 +67,15 @@ contains
      integer,           intent(in)    :: communicator_io_group
      integer,           intent(in)    :: nr_files
      integer,           intent(inout) :: fh_array(nr_files)
+     integer,           intent(in)    :: fh_offset
      integer,           intent(in)    :: group_id
      integer,           intent(in)    :: group_io_size
      integer,           intent(in)    :: print_unit
      character (len=5), intent(in)    :: file_identification
 !-------------------------------------------------------------------------------
-     integer                          :: i  
-     integer                          :: j  
+     integer                          :: i
+     integer                          :: i_relative
+     integer                          :: j
      integer                          :: file_info_obj
      integer(kind=MPI_OFFSET_KIND)    :: displacement
      character (len=  4)              :: file_info_groupsz
@@ -101,8 +104,10 @@ contains
  
       do i = 1, nr_files
 
+        i_relative = i + fh_offset
+
 !       step a. setup individual file identifier
-        call int2char_converter(i,fstring)
+        call int2char_converter(i_relative,fstring)
 
 !       step b. determine full file name
         write(flabel,'(a5,a4,a1,a4)') file_identification,fstring,'.',gstring
@@ -110,9 +115,9 @@ contains
 !       step c. open the file
         call mpi_file_open(communicator_io_group,flabel(1:flabel_length),              &
                            MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE, &
-                           file_info_obj,fh_array(i),ierr)
+                           file_info_obj,fh_array(i_relative),ierr)
 !       step d. set fileview
-        call mpi_file_set_view(fh_array(i),displacement,MPI_REAL8,MPI_REAL8,           &
+        call mpi_file_set_view(fh_array(i_relative),displacement,MPI_REAL8,MPI_REAL8,  &
                                "native",file_info_obj,ierr)
       end do
 

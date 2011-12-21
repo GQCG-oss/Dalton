@@ -164,19 +164,13 @@
      &               0,ITTSS_ORD)
                       
 *
-*. Initialize SCALFAC as it should look like after a few iterations ...
-      CALL DZERO(SCALFAC,NBLOCK)
-      DO II = 1, NBLOCK
-        IF(IBLINF(II) .gt. 0) SCALFAC(II) = 1.0D0
-      END DO
-
 *. start the search for the INTERACT-MATRIX...
-      CALL FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,ICWEIGHTF,
+      CALL FIND_INTERACT_MAT(NBLOCK,IBLINF,ICCTOS,ICWEIGHT,ICWEIGHTF,
      &                      IDC,WORK(KSVST),WORK(KCONSPA),WORK(KCONSPB),
      &                      WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
      &                      NOCTPA,NOCTPB,WORK(KLIBT),WORK(KLSIBT),
-     &                      PSSIGN,MXEXC,NSMST)
-#define LUCI_DEBUG
+     &                      PSSIGN,MXEXC,NSMST,IABSOLUTE_WEIGHT)
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(lupri,*)'CONNECTION MATRIX BETWEEN C- AND SIGMA-BLOCKS'
       CALL IWRTMAS(ICCTOS,NBLOCK,NBLOCK,NBLOCK,NBLOCK)
@@ -185,8 +179,7 @@
      &                      NBLOCK,IBTOTW,ICWEIGHTF,IABSOLUTE_WEIGHT)
 #undef LUCI_DEBUG
 #endif
-*. Set SCALFAC back to default 
-      CALL DZERO(SCALFAC,NBLOCK)
+
 *. Eliminate local memory
       IDUM = 0
       CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'IMAT_S')
@@ -198,9 +191,11 @@
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE FIND_INTERACT_MAT(NBLOCK,SCALFAC,ICCTOS,ICWEIGHT,
-     &           ICWEIGHTF,IDC,ISTRFL,ICONSPA,ICONSPB,NSSOA,NSSOB,
-     &           NOCTPA,NOCTPB,ICBLOCK,ISBLOCK,PS,MXEXC,NSMST)
+      SUBROUTINE FIND_INTERACT_MAT(NBLOCK,active_block,ICCTOS,ICWEIGHT,
+     &                             ICWEIGHTF,IDC,ISTRFL,ICONSPA,ICONSPB,
+     &                             NSSOA,NSSOB,NOCTPA,NOCTPB,ICBLOCK,
+     &                             ISBLOCK,PS,MXEXC,NSMST,
+     &                             IABSOLUTE_WEIGHT)
 *
 * written by S. Knecht  - Feb. 2007
 *
@@ -211,29 +206,28 @@
 #include "mpif.h"
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      DIMENSION SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
+      DIMENSION ICCTOS(NBLOCK,NBLOCK)
+      integer, intent(in) :: active_block(*)
       DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
       DIMENSION ICONSPA(NOCTPA,NOCTPA),ICONSPB(NOCTPB,NOCTPB)
       DIMENSION LASM(4),LBSM(4),LATP(4),LBTP(4),LSGN(5),LTRP(5)
       DIMENSION ICBLOCK(8,*),ISBLOCK(8,*)
       INTEGER NSSOA(NSMST ,*),NSSOB(NSMST ,*)
       INTEGER NTEST
-      NTEST = 0
+      integer(8) :: IABSOLUTE_WEIGHT
 
-#ifdef LUCI_DEBUG
-      write(lupri,*) 'scaling matrix... ',nblock
-      call wrtmatmn(SCALFAC,1,NBLOCK,1,NBLOCK,lupri)
-#endif
-      
+      IABSOLUTE_WEIGHT = 0
+      NTEST            = 0
+
       DO JBLOCK = 1, NBLOCK
 C
         INTERACT = 0
         JJJ = 0
 C
 #ifdef LUCI_DEBUG
-        write(lupri,*) 'SCALFAC(JBLOCK)... ',SCALFAC(JBLOCK)
+        write(lupri,*) 'active_block(JBLOCK)... ',active_block(JBLOCK)
 #endif
-        IF(SCALFAC(JBLOCK).EQ. 1.0D0) THEN
+        IF(active_block(JBLOCK) .gt. 0) THEN
           JATP = ICBLOCK(1,JBLOCK)
           JBTP = ICBLOCK(2,JBLOCK)
           JASM = ICBLOCK(3,JBLOCK)
@@ -304,6 +298,8 @@ C         ^loop over nperm
         END IF
 #undef LUCI_DEBUG
 #endif
+        icweightf(JBLOCK) = jjj
+        IABSOLUTE_WEIGHT  = IABSOLUTE_WEIGHT + jjj*active_block(JBLOCK)
       END DO 
 C     ^loop over c-blocks
 C

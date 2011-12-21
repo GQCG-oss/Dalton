@@ -15,6 +15,7 @@ module parallel_setup
   use parallel_task_distribution_type_module
   use communication_model
   use file_io_model
+  use file_type_module
 #ifndef VAR_USE_MPIF
   use mpi
   implicit none
@@ -63,7 +64,6 @@ contains
      integer                                   :: file_offset_off
      integer,                      allocatable :: grouplist_shared_mem(:)
      real(8),                      allocatable :: tmp_block_scaling_fac(:)
-     integer,                      allocatable :: file_offset_fac_i4(:)
      integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_fac(:)
      integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_array(:)
 !-------------------------------------------------------------------------------
@@ -104,35 +104,11 @@ contains
                                      n_master_sm_c,                   &
                                      lupri)
      
-!     step 2: setup the file i/o model
-!     --------------------------------
-      call  setup_file_io_model(mynew_comm,                           &
-                                nr_files,                             &
-                                fh_array,                             &
-                                my_groupn,                            &
-                                newcomm_proc,                         &
-                                'parci',                              &
-                                lupri)
-  
-!     transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
-!     ILU1 has to be the last in the row because it is supposed to be
-!     closed after we have copied the final solution vector back to
-!     sequential format. Before doing that we want to free disk space by
-!     deleting all other MPI-I/O files.
-      IDIA = fh_array(1)
-      ILUC = fh_array(2)
-      ILU7 = fh_array(3)
-      ILU6 = fh_array(4)
-      ILU5 = fh_array(5)
-      ILU4 = fh_array(6)
-      ILU3 = fh_array(7)
-      ILU2 = fh_array(8)
-      ILU1 = fh_array(9)
   
 !     free currently unused shared-memory group list
       deallocate(grouplist_shared_mem)
 
-!     step 3: setup static load balancing
+!     step 2: setup static load balancing
 !     -----------------------------------
 !     block_list          == list of all blocks containing their length
 !     par_dist_block_list == list of all blocks containing their assigned CPU
@@ -147,37 +123,32 @@ contains
         deallocate(tmp_block_scaling_fac)
       end if
 
-!     step 4: organize MPI file I/O offsets with the following ordering: 
+!     step 3: organize MPI file I/O offsets with the following ordering: 
 !     ------------------------------------------------------------------
 !     idia, iluc, ilu[2-7], ilu1
 
-      allocate(file_offset_fac_i4(nr_files))
-      allocate(file_offset_fac(nr_files))
+      if(.not.file_info%file_type_init)then
+        call file_init_lucipar(file_info, 10, nblock)
+        file_info%file_type_init = .true.
+      end if
       allocate(file_offset_array(nr_files))
+      allocate(file_offset_fac(nr_files))
+
       file_offset_array = 0
       file_offset_fac   = 0
-      file_offset_off   = 0
 
-      file_offset_fac_i4(1) = 1
-      file_offset_fac_i4(2) = 0
-      file_offset_fac_i4(3) = mxciv + nroot
-      file_offset_fac_i4(4) = mxciv + nroot
-      file_offset_fac_i4(5) = mxciv + nroot
-      file_offset_fac_i4(6) = mxciv + nroot
-      file_offset_fac_i4(7) = 1
-      file_offset_fac_i4(8) = mxciv
-      file_offset_fac_i4(9) = nroot
+      file_offset_fac(1) = nroot
+      file_offset_fac(2) = mxciv + nroot
+      file_offset_fac(3) = mxciv + nroot
+      file_offset_fac(4) = mxciv + nroot
+      file_offset_fac(5) = mxciv + nroot
+      file_offset_fac(6) = 1
+      file_offset_fac(7) = mxciv
+      file_offset_fac(8) = 1
+      file_offset_fac(9) = 0
 
-      file_offset_fac(1) = file_offset_fac_i4(1)
-      file_offset_fac(2) = file_offset_fac_i4(2)
-      file_offset_fac(3) = file_offset_fac_i4(3)
-      file_offset_fac(4) = file_offset_fac_i4(4)
-      file_offset_fac(5) = file_offset_fac_i4(5)
-      file_offset_fac(6) = file_offset_fac_i4(6)
-      file_offset_fac(7) = file_offset_fac_i4(7)
-      file_offset_fac(8) = file_offset_fac_i4(8)
-      file_offset_fac(9) = file_offset_fac_i4(9)
-      
+      file_offset_off    = 0
+
       call set_file_io_offset(nr_files,                                                                      &
                               file_offset_off,                                                               &
                               file_offset_array,                                                             &
@@ -196,32 +167,30 @@ contains
                               block_list)
 
 !     save output in common block variables
-      my_dia_off = file_offset_array(1)
-      my_luc_off = file_offset_array(2)
-      my_lu2_off = file_offset_array(3)
-      my_lu3_off = file_offset_array(4)
-      my_lu4_off = file_offset_array(5)
-      my_lu5_off = file_offset_array(6)
-      my_lu6_off = file_offset_array(7)
-      my_lu7_off = file_offset_array(8)
-      my_lu1_off = file_offset_array(9)
+      my_lu1_off = file_offset_array(1)
+      my_lu2_off = file_offset_array(2)
+      my_lu3_off = file_offset_array(3)
+      my_lu4_off = file_offset_array(4)
+      my_lu5_off = file_offset_array(5)
+      my_lu6_off = file_offset_array(6)
+      my_lu7_off = file_offset_array(7)
+      my_dia_off = file_offset_array(8)
+      my_luc_off = file_offset_array(9)
+
+!     length for allocation of file arrays
+      iall_lu1   = file_offset_fac(1) * my_act_blk2
+      iall_lu2   = file_offset_fac(2) * my_act_blk2
+      iall_lu3   = file_offset_fac(3) * my_act_blk2
+      iall_lu4   = file_offset_fac(4) * my_act_blk2
+      iall_lu5   = file_offset_fac(5) * my_act_blk2
+      iall_lu6   = file_offset_fac(6) * my_act_blk2
+      iall_lu7   = file_offset_fac(7) * my_act_blk2
+      iall_luc   =         1          * num_blocks2
 
       deallocate(file_offset_array)
       deallocate(file_offset_fac)
 
-!     length for allocation of file arrays
-      iall_luc =         1             * num_blocks2
-      iall_lu2 = file_offset_fac_i4(3) * my_act_blk2
-      iall_lu3 = file_offset_fac_i4(4) * my_act_blk2
-      iall_lu4 = file_offset_fac_i4(5) * my_act_blk2
-      iall_lu5 = file_offset_fac_i4(6) * my_act_blk2
-      iall_lu6 = file_offset_fac_i4(7) * my_act_blk2
-      iall_lu7 = file_offset_fac_i4(8) * my_act_blk2
-      iall_lu1 = file_offset_fac_i4(9) * my_act_blk2
-
-      deallocate(file_offset_fac_i4)
-
-!     step 5: allocate file arrays - return pointers to calling subroutine
+!     step 4: allocate file arrays - return pointers to calling subroutine
 !     --------------------------------------------------------------------
       call memman(kiluclist,iall_luc,'ADDS  ',1,'LUCLST')
       call memman(kilu1list,iall_lu1,'ADDS  ',1,'LU1LST')
@@ -231,6 +200,28 @@ contains
       call memman(kilu5list,iall_lu5,'ADDS  ',1,'LU5LST')
       call memman(kilu6list,iall_lu6,'ADDS  ',1,'LU6LST')
       call memman(kilu7list,iall_lu7,'ADDS  ',1,'LU7LST')
+
+!     step 5: setup the file i/o model
+!     --------------------------------
+      call setup_file_io_model(mynew_comm,                           &
+                               nr_files,                             &
+                               fh_array,                             &
+                               0,                                    &
+                               my_groupn,                            &
+                               newcomm_proc,                         &
+                               'parci',                              &
+                               lupri)
+  
+!     transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
+      ILU1 = fh_array(1)
+      ILU2 = fh_array(2)
+      ILU3 = fh_array(3)
+      ILU4 = fh_array(4)
+      ILU5 = fh_array(5)
+      ILU6 = fh_array(6)
+      ILU7 = fh_array(7)
+      IDIA = fh_array(8)
+      ILUC = fh_array(9)
 
   end subroutine lucita_setup_parallel_model
 !*******************************************************************************

@@ -1635,6 +1635,8 @@ C
      &                  IABSOLUTE_WEIGHT)
 C
       IF(IDISTROUTE.EQ.1) THEN
+        call quit('dist strategy 1 disabled - not all variables are'//
+     &            ' set properly if PRINT_BATCH_INFO is disabled...')
         CALL DISTBLKND_1(NBLOCK,WORK(KCWEIGHTF),NBLOCKD,WORK(KIBTOTW),
      &                   WORK(KBLCKWT),NVAR,WORK(KICCTOS),IBLOCKL,
      &                   IPROCLIST,WORK(KCWEIGHT),IABSOLUTE_WEIGHT)

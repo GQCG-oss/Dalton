@@ -142,20 +142,20 @@
       IF(LUCI_NMPROC .GT. 1)THEN
 !       close (and re-open) parallel files that are no longer needed
 !       which will free disk space for copyig back the vectors...
-        call close_file_io_model(nr_files-1,0,fh_array)
+        call close_file_io_model(nr_files-1,1,fh_array)
 !       re-open
-        call  setup_file_io_model(mynew_comm,nr_files-1,fh_array,
-     &                            my_groupn,newcomm_proc,
-     &                            'parci',luwrt)
+        call setup_file_io_model(mynew_comm,nr_files-1,fh_array,1,
+     &                           my_groupn,newcomm_proc,
+     &                           'parci',luwrt)
 !       transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
-        IDIA = fh_array(1)
-        ILUC = fh_array(2)
-        ILU7 = fh_array(3)
-        ILU6 = fh_array(4)
+        ILU2 = fh_array(2)
+        ILU3 = fh_array(3)
+        ILU4 = fh_array(4)
         ILU5 = fh_array(5)
-        ILU4 = fh_array(6)
-        ILU3 = fh_array(7)
-        ILU2 = fh_array(8)
+        ILU6 = fh_array(6)
+        ILU7 = fh_array(7)
+        IDIA = fh_array(8)
+        ILUC = fh_array(9)
 
 !       copy c-vectors from nodes and master back to the master
         allocate(lu1list(iall_lu1))

@@ -145,7 +145,7 @@ C
 
 *. MCSCF reference vector
       LUMCREF            = 78
-      mcref_name_generic = "LUCITA_CREFS"
+      mcref_name_generic = "LUCITA_CEPVC"
       if(luci_myproc .gt. luci_master)then
         IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
           WRITE (mcref_name_full,'(A12,A1,I1)') 

@@ -16,25 +16,30 @@ module file_type_module
 
 
 ! type definition
-  type file_type_lucipar
+  type file_type
 
     integer ::                  &
-      active_nr_f_lucipar!      &             ! current active number of MPI files in lucita
+      active_nr_f_lucipar,      &             ! current active number of MPI files in lucita
+      current_file_fh_seqf1,    &             ! present non-parallel file handle for in/outgoing vector(s) #1
+      current_file_fh_seqf2                   ! present non-parallel file handle for in/outgoing vector(s) #2
 
     logical ::                  &
-      file_type_init = .false.                ! status of type file_type
+      file_type_init       = .false.          ! status of type file_type
     logical ::                  &
-      file_type_mc   = .false.                ! set file types for MCSCF
+      file_handle_seq_init = .false.          ! status of initialization of sequential file handle declaration
+    logical ::                  &
+      file_type_mc         = .false.          ! set file types for MCSCF
 
     integer, allocatable ::     &
       iluxlist(:,:),            &             ! file entry list for all active parallel MPI files
+      ilublist(:,:),            &             ! file entry list for all active parallel MPI files
       facofffl(:),              &             ! file offset factor list for all active parallel MPI files
       fh_lu(:)                                ! file handle list
 
     integer(8), allocatable ::  &
       file_offsets(:)
 
-  end type file_type_lucipar
+  end type file_type
 
 ! ttss block type object
   type(file_type), public     :: file_info
@@ -44,51 +49,57 @@ module file_type_module
 
 contains 
 
-  subroutine file_init_lucipar(A, mx_ttss, nirreps, sum_of_ci_spaces)
+  subroutine file_init_lucipar(A, number_of_active_ttss_blocks_per_process, number_of_ttss_blocks)
 
 !   ----------------------------------------------------------------------------
     type(file_type)      :: A
-    integer, intent(in)  :: mx_files, nirreps, sum_of_ci_spaces
+    integer, intent(in)  :: number_of_active_ttss_blocks_per_process
+    integer, intent(in)  :: number_of_ttss_blocks
 !   ----------------------------------------------------------------------------
 
 !   reset old type information
     call file_free_lucipar(A)
 
-    nullify(A%iluxlist)
-    nullify(A%facofffl)
-    nullify(A%fh_lu)
+    A%file_type_init        = .true.
+    A%file_handle_seq_init  = .false.
+    A%active_nr_f_lucipar   = -1     
+    A%current_file_fh_seqf1 = -1     
+    A%current_file_fh_seqf2 = -1     
 
-    A%file_type_init      = .true.
-    A%mx_nr_files_lucipar = mx_ttss
-    A%active_nr_f_lucipar = nirreps
-    A%nr_ci_spaces        = sum_of_ci_spaces
-    A%present_sym_irrep   = -1
-    A%present_ci_space    = -1
-    A%total_present_ttss  = -1 
-    A%total_present_vec   = -1 
+    if(A%file_type_mc)then
+      A%active_nr_f_lucipar = mx_nr_files_lucipar_mc 
+    else
+      A%active_nr_f_lucipar = mx_nr_files_lucipar_ci
+    end if
 
-    allocate(A%ttss_block_length(A%mx_nr_ttss,A%nr_ptg_irreps,A%nr_ci_spaces))
-    allocate(A%ttss_block_nr(A%nr_ptg_irreps,A%nr_ci_spaces))
-    allocate(A%ttss_vec_length(A%nr_ptg_irreps,A%nr_ci_spaces))
+    allocate(A%iluxlist(number_of_active_ttss_blocks_per_process,A%active_nr_f_lucipar-1))
+    allocate(A%ilublist(number_of_ttss_blocks,1))
+    allocate(A%facofffl(A%active_nr_f_lucipar))
+    allocate(A%fh_lu(A%active_nr_f_lucipar))
+    allocate(A%file_offsets(A%active_nr_f_lucipar))
 
-  end subroutine ttss_init
+  end subroutine file_init_lucipar
 
-  subroutine ttss_free(A)
+  subroutine file_free_lucipar(A)
 
 !   ----------------------------------------------------------------------------
     type(file_type) :: A
 !   ----------------------------------------------------------------------------
 
-    if(.not. A%ttss_info_init) return
+    if(.not. A%file_type_init) return
 
-    A%ttss_info_init = .false.
-    deallocate(A%ttss_vec_length)
-    deallocate(A%ttss_block_length)
-    deallocate(A%ttss_block_nr)
-    nullify(A%ttss_vec_length)
-    nullify(A%ttss_block_length)
-    nullify(A%ttss_block_nr)
+    A%file_type_init        = .false.
+    A%file_type_mc          = .false.
+    A%active_nr_f_lucipar   = -1
+    A%current_file_fh_seqf1 = -1
+    A%current_file_fh_seqf2 = -1
 
-  end subroutine ttss_free
+    deallocate(A%iluxlist)
+    deallocate(A%ilublist)
+    deallocate(A%facofffl)
+    deallocate(A%fh_lu)
+    deallocate(A%file_offsets)
+
+  end subroutine file_free_lucipar
 
 end module file_type_module
