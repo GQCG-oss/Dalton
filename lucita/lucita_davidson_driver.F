@@ -36,6 +36,7 @@
       use file_io_model
       use par_mcci_io
 #endif
+      use file_type_module
       use lucita_file_list_pointer
       use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
@@ -131,7 +132,7 @@
 #ifdef VAR_MPI
      &           ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
      &            WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILU6LIST),
-     &            WORK(KILU7LIST),WORK(KILUCLIST)
+     &            WORK(KILU7LIST),file_info%ilublist
 #endif
      &            )
  
@@ -142,20 +143,20 @@
       IF(LUCI_NMPROC .GT. 1)THEN
 !       close (and re-open) parallel files that are no longer needed
 !       which will free disk space for copyig back the vectors...
-        call close_file_io_model(nr_files-1,1,fh_array)
+        call close_file_io_model(nr_files-1,2,fh_array)
 !       re-open
-        call setup_file_io_model(mynew_comm,nr_files-1,fh_array,1,
+        call setup_file_io_model(mynew_comm,nr_files-2,fh_array,2,
      &                           my_groupn,newcomm_proc,
      &                           'parci',luwrt)
 !       transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
-        ILU2 = fh_array(2)
-        ILU3 = fh_array(3)
-        ILU4 = fh_array(4)
-        ILU5 = fh_array(5)
-        ILU6 = fh_array(6)
-        ILU7 = fh_array(7)
-        IDIA = fh_array(8)
-        ILUC = fh_array(9)
+        ILU2 = fh_array( 3)
+        IDIA = fh_array( 4)
+        ILUC = fh_array( 5)
+        ILU3 = fh_array( 6)
+        ILU4 = fh_array( 7)
+        ILU5 = fh_array( 8)
+        ILU6 = fh_array( 9)
+        ILU7 = fh_array(10)
 
 !       copy c-vectors from nodes and master back to the master
         allocate(lu1list(iall_lu1))

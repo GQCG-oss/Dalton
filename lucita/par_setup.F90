@@ -40,10 +40,10 @@ module parallel_setup
 contains
 
   subroutine lucita_setup_parallel_model(block_list,par_dist_block_list,&
-                                         rcctos,nblock,kiluclist,       &
+                                         rcctos,nblock,                 &
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
-                                         kilu7list,fh_array,mxciv,nroot)
+                                         kilu7list,mxciv,nroot)
 !******************************************************************************
 !
 !    purpose:  
@@ -55,17 +55,14 @@ contains
      integer,    intent(inout)                 :: block_list(nblock)
      integer,    intent(inout)                 :: par_dist_block_list(nblock)
      integer,    intent(inout)                 :: rcctos(nblock)
-     integer(8), intent(inout)                 :: kiluclist, kilu1list, kilu2list, kilu3list
+     integer(8), intent(inout)                 :: kilu1list, kilu2list, kilu3list
      integer(8), intent(inout)                 :: kilu4list, kilu5list, kilu6list, kilu7list
-     integer,    intent(inout)                 :: fh_array(nr_files)
      integer,    intent(in)                    :: mxciv
      integer,    intent(in)                    :: nroot
 !-------------------------------------------------------------------------------
      integer                                   :: file_offset_off
      integer,                      allocatable :: grouplist_shared_mem(:)
      real(8),                      allocatable :: tmp_block_scaling_fac(:)
-     integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_fac(:)
-     integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_array(:)
 !-------------------------------------------------------------------------------
  
       allocate(grouplist_shared_mem(luci_nmproc))
@@ -128,31 +125,16 @@ contains
 !     idia, iluc, ilu[2-7], ilu1
 
       if(.not.file_info%file_type_init)then
-        call file_init_lucipar(file_info, 10, nblock)
+        call file_init_lucipar(file_info, mxciv, nroot)
         file_info%file_type_init = .true.
       end if
-      allocate(file_offset_array(nr_files))
-      allocate(file_offset_fac(nr_files))
 
-      file_offset_array = 0
-      file_offset_fac   = 0
-
-      file_offset_fac(1) = nroot
-      file_offset_fac(2) = mxciv + nroot
-      file_offset_fac(3) = mxciv + nroot
-      file_offset_fac(4) = mxciv + nroot
-      file_offset_fac(5) = mxciv + nroot
-      file_offset_fac(6) = 1
-      file_offset_fac(7) = mxciv
-      file_offset_fac(8) = 1
-      file_offset_fac(9) = 0
-
-      file_offset_off    = 0
+      file_offset_off     = 0
 
       call set_file_io_offset(nr_files,                                                                      &
                               file_offset_off,                                                               &
-                              file_offset_array,                                                             &
-                              file_offset_fac,                                                               &
+                              file_info%file_offsets,                                                        &
+                              file_info%facofffl,                                                            &
                               my_vec1_ioff,                                                                  &
                               my_vec2_ioff,                                                                  &
                               my_act_blk1,                                                                   &
@@ -167,32 +149,33 @@ contains
                               block_list)
 
 !     save output in common block variables
-      my_lu1_off = file_offset_array(1)
-      my_lu2_off = file_offset_array(2)
-      my_lu3_off = file_offset_array(3)
-      my_lu4_off = file_offset_array(4)
-      my_lu5_off = file_offset_array(5)
-      my_lu6_off = file_offset_array(6)
-      my_lu7_off = file_offset_array(7)
-      my_dia_off = file_offset_array(8)
-      my_luc_off = file_offset_array(9)
+      my_lur_off = file_info%file_offsets( 1)
+      my_lu1_off = file_info%file_offsets( 2)
+      my_lu2_off = file_info%file_offsets( 3)
+      my_dia_off = file_info%file_offsets( 4)
+      my_luc_off = file_info%file_offsets( 5)
+      my_lu3_off = file_info%file_offsets( 6)
+      my_lu4_off = file_info%file_offsets( 7)
+      my_lu5_off = file_info%file_offsets( 8)
+      my_lu6_off = file_info%file_offsets( 9)
+      my_lu7_off = file_info%file_offsets(10)
+
+      call file_set_list_lucipar(file_info, my_act_blk2, num_blocks2)
 
 !     length for allocation of file arrays
-      iall_lu1   = file_offset_fac(1) * my_act_blk2
-      iall_lu2   = file_offset_fac(2) * my_act_blk2
-      iall_lu3   = file_offset_fac(3) * my_act_blk2
-      iall_lu4   = file_offset_fac(4) * my_act_blk2
-      iall_lu5   = file_offset_fac(5) * my_act_blk2
-      iall_lu6   = file_offset_fac(6) * my_act_blk2
-      iall_lu7   = file_offset_fac(7) * my_act_blk2
-      iall_luc   =         1          * num_blocks2
+      iall_lur   = file_info%max_list_length
+      iall_lu1   = file_info%max_list_length
+      iall_lu2   = file_info%max_list_length
+      iall_lu3   = file_info%max_list_length
+      iall_lu4   = file_info%max_list_length
+      iall_lu5   = file_info%max_list_length
+      iall_lu6   = file_info%max_list_length
+      iall_lu7   = file_info%max_list_length
+      iall_luc   = file_info%max_list_length_bvec
 
-      deallocate(file_offset_array)
-      deallocate(file_offset_fac)
 
 !     step 4: allocate file arrays - return pointers to calling subroutine
 !     --------------------------------------------------------------------
-      call memman(kiluclist,iall_luc,'ADDS  ',1,'LUCLST')
       call memman(kilu1list,iall_lu1,'ADDS  ',1,'LU1LST')
       call memman(kilu2list,iall_lu2,'ADDS  ',1,'LU2LST')
       call memman(kilu3list,iall_lu3,'ADDS  ',1,'LU3LST')
@@ -205,7 +188,7 @@ contains
 !     --------------------------------
       call setup_file_io_model(mynew_comm,                           &
                                nr_files,                             &
-                               fh_array,                             &
+                               file_info%fh_lu,                      &
                                0,                                    &
                                my_groupn,                            &
                                newcomm_proc,                         &
@@ -213,15 +196,16 @@ contains
                                lupri)
   
 !     transfer file handles to common block /LUCIAPFILE/ (in parluci.h)
-      ILU1 = fh_array(1)
-      ILU2 = fh_array(2)
-      ILU3 = fh_array(3)
-      ILU4 = fh_array(4)
-      ILU5 = fh_array(5)
-      ILU6 = fh_array(6)
-      ILU7 = fh_array(7)
-      IDIA = fh_array(8)
-      ILUC = fh_array(9)
+      ILUR = file_info%fh_lu( 1)
+      ILU1 = file_info%fh_lu( 2)
+      ILU2 = file_info%fh_lu( 3)
+      IDIA = file_info%fh_lu( 4)
+      ILUC = file_info%fh_lu( 5)
+      ILU3 = file_info%fh_lu( 6)
+      ILU4 = file_info%fh_lu( 7)
+      ILU5 = file_info%fh_lu( 8)
+      ILU6 = file_info%fh_lu( 9)
+      ILU7 = file_info%fh_lu(10)
 
   end subroutine lucita_setup_parallel_model
 !*******************************************************************************

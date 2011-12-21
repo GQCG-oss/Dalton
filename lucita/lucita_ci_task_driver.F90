@@ -211,7 +211,6 @@
       integer                :: files_to_close
       integer                :: fh_offset
       integer, allocatable   :: rcctos(:)
-      integer, allocatable   :: fh_array(:)
       integer, allocatable   :: par_dist_block_list(:)
 !------------------------------------------------------------------------------
 
@@ -256,11 +255,6 @@
 !     --------------------------------------------------------------------------------------------------
       call z_blkfo(icspc,icsm,1,2,nbatch,nblock)
 
-!     allocate arrays for:
-!      d. storing file handles           (parallel run)
-      allocate(fh_array(nr_files))
-      fh_array =  0
-
       if(.not.ptask_distribution%parallel_task_distribution_init)then
         call parallel_task_distribution_init_lucipar(ptask_distribution,&
                                                      nblock,1)
@@ -285,10 +279,9 @@
                                          c2s_connections(1,             &
                                          ptask_distribution%active_csym)&
                                          ,nblock,                       &
-                                         kiluclist,                     &
                                          kilu1list,kilu2list,kilu3list, &
                                          kilu4list,kilu5list,kilu6list, &
-                                         kilu7list,fh_array,mxciv,nroot)
+                                         kilu7list,mxciv,nroot)
 #endif
       else
         call setup_lucita_par_dist_in_seq(ptask_distribution%           &
@@ -316,7 +309,7 @@
                                   communicator_info%total_process_list, &
                                   communicator_info%                    &
                                   intra_node_group_list,                &
-                                  fh_array,ptask_distribution%          &
+                                  file_info%fh_lu,ptask_distribution%   &
                                   c2s_connections(1,ptask_distribution% &
                                   active_csym),nbatch,nblock,iprorb)
 !     ----------------------------------------------------------------------------------
@@ -329,12 +322,9 @@
 !         1. parallel file(s) / file handle(s)
 !         2. communication model
         call lucita_close_parallel_model(nr_files,lucita_ci_run_id,     &
-                                         fh_array)
+                                         file_info%fh_lu)
       end if
 #endif
-
-!     free memory
-      deallocate(fh_array)
 
       if(file_info%file_type_init)then
         call file_free_lucipar(file_info)

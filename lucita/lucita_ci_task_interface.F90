@@ -352,6 +352,7 @@ contains
                                       int1_or_rho1,                 &
                                       int2_or_rho2)
   use lucita_file_list_pointer
+  use file_type_module
   use lucita_cfg
   use lucita_mcscf_ci_cfg
 #ifdef VAR_MPI
@@ -411,9 +412,6 @@ contains
       integer(8)                       :: k_scratch3
       integer(8)                       :: k_scratch4
 #ifdef VAR_MPI
-      integer, allocatable             :: lu1list(:)
-      integer, allocatable             :: lu2list(:)
-      integer, allocatable             :: luclist(:)
       integer, allocatable             :: blocks_per_batch(:)
       integer, allocatable             :: batch_length(:)
       integer, allocatable             :: block_offset_batch(:)
@@ -442,10 +440,6 @@ contains
 
 !       sequential --> MPI I/O
 !       ----------------------
-
-        allocate(lu1list(iall_lu1))
-        allocate(lu2list(iall_lu2))
-        allocate(luclist(iall_luc))
         allocate(blocks_per_batch(mxntts))
         allocate(batch_length(mxntts))
         allocate(block_offset_batch(mxntts))
@@ -461,34 +455,44 @@ contains
                                            block_offset_batch,               &
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
-        lu1list  = 0
-        lu2list  = 0
+
+!       hardwired for now (ILU1 + ILU2)
+        file_info%current_file_nr_active1 = 2
+        file_info%current_file_nr_active2 = 3
+
+        call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
+                   file_info%max_list_length)
+        call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
+                   file_info%max_list_length)
 
         call rewino(luc)
 !       step 1: the rhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,LUC,ILU1,               &
-                                                MY_LU1_OFF,                  &
-                                                lu1list,                     &
-                                                par_dist_block_list,         &
-                                                block_list,                  &
-                                                MPI_COMM_WORLD,              &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,LUC,ILU1,                         &
+                                                MY_LU1_OFF,                            &
+                                                file_info%iluxlist(1,                  &
+                                                file_info%current_file_nr_active1),    &
+                                                par_dist_block_list,                   &
+                                                block_list,                            &
+                                                MPI_COMM_WORLD,                        &
                                                 NUM_BLOCKS,NROOT,1,1)
 
         if(lucita_cfg_transition_densm)then
           call rewino(luhc)
 !         step 2: the lhs vector
-          call mcci_cp_vcd_mpi_2_seq_io_interface(hc,LUHC,ILU2,              &
-                                                  MY_LU2_OFF,                &
-                                                  lu2list,                   &
-                                                  par_dist_block_list,       &
-                                                  block_list,                &
-                                                  MPI_COMM_WORLD,            &
+          call mcci_cp_vcd_mpi_2_seq_io_interface(hc,LUHC,ILU2,                        &
+                                                  MY_LU2_OFF,                          &
+                                                  file_info%iluxlist(1,                &
+                                                  file_info%current_file_nr_active2),  &
+                                                  par_dist_block_list,                 &
+                                                  block_list,                          &
+                                                  MPI_COMM_WORLD,                      &
                                                   NUM_BLOCKS,NROOT,1,1)
           luhc_vector_file = ilu2
         else
           luhc_vector_file = ilu1
           iall_lu2         = iall_lu1
-          call icopy(iall_lu2,lu1list,1,lu2list,1)
+          call icopy(file_info%max_list_length,file_info%iluxlist(1,file_info%current_file_nr_active1),1, &
+                                               file_info%iluxlist(1,file_info%current_file_nr_active2),1)
 !         save and temporarily re-set the file offset for ilu2 to ilu1 (ilu2 has the same offset as ilu4 which is used inside sigden_ci)
           my_lu4_off_tmp   = my_lu4_off
           my_lu4_off       = my_lu1_off
@@ -541,21 +545,23 @@ contains
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
           call mpi_barrier(mynew_comm,ierr) ! probably not needed if collection of densities is in action
-          luclist = 0
+          call izero(file_info%ilublist,file_info%max_list_length_bvec)
           call mcci_cp_vcd_batch(ilu1,iluc,cref,nbatch_par,blocks_per_batch,               &
                                  batch_length,block_offset_batch,block_info_batch,         &
-                                 block_list,my_lu1_off,my_luc_off,lu1list,luclist,         &
+                                 block_list,my_lu1_off,my_luc_off,file_info%iluxlist(1,    &
+                                 file_info%current_file_nr_active1),file_info%ilublist,    &
                                  my_vec2_ioff,my_act_blk2,eigen_state_id-1)
 !         offset in MPI I/O file for lhs-vector
           jvec_sf = eigen_state_id - 1
 #endif
         end if
 !
-        call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,           &
-                       cv_dummy,hcv_dummy,isigden,rhotype                                  &
+        call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                   &
+                       cv_dummy,hcv_dummy,isigden,rhotype                                          &
 #ifdef VAR_MPI
-                      ,luclist,lu2list,block_list,par_dist_block_list,                     &
-                       rcctos,grouplist,proclist                                           &
+                      ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2), &
+                       block_list,par_dist_block_list,                                             &
+                       rcctos,grouplist,proclist                                                   &
 #endif
                         )
         if(luci_nmproc > 1)then
@@ -635,9 +641,6 @@ contains
         deallocate(block_offset_batch)
         deallocate(batch_length)
         deallocate(blocks_per_batch)
-        deallocate(luclist)
-        deallocate(lu2list)
-        deallocate(lu1list)
       end if
 #endif
 
@@ -657,6 +660,7 @@ contains
                                  int1_or_rho1,                 &
                                  int2_or_rho2)
   use lucita_file_list_pointer
+  use file_type_module
   use lucita_cfg
   use lucita_mcscf_ci_cfg
 #ifdef VAR_MPI
@@ -702,9 +706,6 @@ contains
       integer                          :: luhc_vector_file
       integer, parameter               :: isigden = 1 ! sigma vector switch for sigden_ci
 #ifdef VAR_MPI
-      integer, allocatable             :: lu1list(:)
-      integer, allocatable             :: lu2list(:)
-      integer, allocatable             :: luclist(:)
       integer, allocatable             :: blocks_per_batch(:)
       integer, allocatable             :: batch_length(:)
       integer, allocatable             :: block_offset_batch(:)
@@ -724,9 +725,6 @@ contains
 !       sequential --> MPI I/O
 !       ----------------------
 
-        allocate(lu1list(iall_lu1))
-        allocate(lu2list(iall_lu2))
-        allocate(luclist(iall_luc))
         allocate(blocks_per_batch(mxntts))
         allocate(batch_length(mxntts))
         allocate(block_offset_batch(mxntts))
@@ -742,17 +740,24 @@ contains
                                            block_offset_batch,               &
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
-        lu1list = 0
-        lu2list = 0
+!       hardwired for now (ILU1 + ILU2)
+        file_info%current_file_nr_active1 = 2
+        file_info%current_file_nr_active2 = 3
+
+        call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
+                   file_info%max_list_length)
+        call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
+                   file_info%max_list_length)
 
         call rewino(luc)
 !       step 1: the rhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,LUC,ILU1,               &
-                                                MY_LU1_OFF,                  &
-                                                lu1list,                     &
-                                                par_dist_block_list,         &
-                                                block_list,                  &
-                                                MPI_COMM_WORLD,              &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,LUC,ILU1,                         &
+                                                MY_LU1_OFF,                            &
+                                                file_info%iluxlist(1,                  &
+                                                file_info%current_file_nr_active1),    &
+                                                par_dist_block_list,                   &
+                                                block_list,                            &
+                                                MPI_COMM_WORLD,                        &
                                                 NUM_BLOCKS,NROOT,1,1)
       end if
 #endif
@@ -781,10 +786,12 @@ contains
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
           call mpi_barrier(mynew_comm,ierr) 
-          luclist = 0
+          call izero(file_info%ilublist,file_info%max_list_length_bvec)
           call mcci_cp_vcd_batch(ilu1,iluc,hc,nbatch_par,blocks_per_batch,                 &
                                  batch_length,block_offset_batch,block_info_batch,         &
-                                 block_list,my_lu1_off,my_luc_off,lu1list,luclist,         &
+                                 block_list,my_lu1_off,my_luc_off,                         &
+                                 file_info%iluxlist(1,file_info%current_file_nr_active1),  &
+                                 file_info%ilublist,                                       &
                                  my_vec2_ioff,my_act_blk2,eigen_state_id-1)
 
           lusc_vector_file = iluc
@@ -795,13 +802,15 @@ contains
 #endif
         end if
 !
-        call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,           &
-                       cv_dummy,hcv_dummy,isigden,-1                                       &
+        call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                  &
+                       cv_dummy,hcv_dummy,isigden,-1                                              &
 #ifdef VAR_MPI
-                      ,luclist,lu2list,block_list,par_dist_block_list,                     &
-                       rcctos,grouplist,proclist                                           &
+                      ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2),&
+                       block_list,par_dist_block_list,                                            &
+                       rcctos,grouplist,proclist                                                  &
 #endif
                         )
+
 
       end do ! loop over eigen states
 
@@ -812,21 +821,19 @@ contains
         call rewino(luhc)
 
 !       the lhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc,luhc_vector_file,  &
-                                                my_lu2_off,                &
-                                                lu2list,                   &
-                                                par_dist_block_list,       &
-                                                block_list,                &
-                                                MPI_COMM_WORLD,            &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc,luhc_vector_file,            &
+                                                my_lu2_off,                          &
+                                                file_info%iluxlist(1,                &
+                                                file_info%current_file_nr_active2),  &
+                                                par_dist_block_list,                 &
+                                                block_list,                          &
+                                                MPI_COMM_WORLD,                      &
                                                 num_blocks,nroot,1,2)
 
         deallocate(block_info_batch)
         deallocate(block_offset_batch)
         deallocate(batch_length)
         deallocate(blocks_per_batch)
-        deallocate(luclist)
-        deallocate(lu2list)
-        deallocate(lu1list)
 #endif
       end if ! luci_nmproc > 1
 

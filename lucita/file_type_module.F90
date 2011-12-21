@@ -13,6 +13,7 @@ module file_type_module
   public file_type
   public file_init_lucipar
   public file_free_lucipar
+  public file_set_list_lucipar
 
 
 ! type definition
@@ -21,7 +22,12 @@ module file_type_module
     integer ::                  &
       active_nr_f_lucipar,      &             ! current active number of MPI files in lucita
       current_file_fh_seqf1,    &             ! present non-parallel file handle for in/outgoing vector(s) #1
-      current_file_fh_seqf2                   ! present non-parallel file handle for in/outgoing vector(s) #2
+      current_file_fh_seqf2,    &             ! present non-parallel file handle for in/outgoing vector(s) #2
+      current_file_nr_active1,  &             ! 
+      current_file_nr_active2,  &             ! 
+      max_list_length_fac,      &             ! 
+      max_list_length,          &             ! 
+      max_list_length_bvec                    !
 
     logical ::                  &
       file_type_init       = .false.          ! status of type file_type
@@ -49,22 +55,26 @@ module file_type_module
 
 contains 
 
-  subroutine file_init_lucipar(A, number_of_active_ttss_blocks_per_process, number_of_ttss_blocks)
+  subroutine file_init_lucipar(A, mx_vector, nr_eigenstates)
 
 !   ----------------------------------------------------------------------------
     type(file_type)      :: A
-    integer, intent(in)  :: number_of_active_ttss_blocks_per_process
-    integer, intent(in)  :: number_of_ttss_blocks
+    integer, intent(in)  :: mx_vector, nr_eigenstates
 !   ----------------------------------------------------------------------------
 
 !   reset old type information
     call file_free_lucipar(A)
 
-    A%file_type_init        = .true.
-    A%file_handle_seq_init  = .false.
-    A%active_nr_f_lucipar   = -1     
-    A%current_file_fh_seqf1 = -1     
-    A%current_file_fh_seqf2 = -1     
+    A%file_type_init          = .true.
+    A%file_handle_seq_init    = .false.
+    A%active_nr_f_lucipar     = -1     
+    A%current_file_fh_seqf1   = -1     
+    A%current_file_fh_seqf2   = -1     
+    A%current_file_nr_active1 = -1     
+    A%current_file_nr_active2 = -1     
+    A%max_list_length_fac     = -1     
+    A%max_list_length         = -1     
+    A%max_list_length_bvec    = -1     
 
     if(A%file_type_mc)then
       A%active_nr_f_lucipar = mx_nr_files_lucipar_mc 
@@ -72,13 +82,29 @@ contains
       A%active_nr_f_lucipar = mx_nr_files_lucipar_ci
     end if
 
-    allocate(A%iluxlist(number_of_active_ttss_blocks_per_process,A%active_nr_f_lucipar-1))
-    allocate(A%ilublist(number_of_ttss_blocks,1))
     allocate(A%facofffl(A%active_nr_f_lucipar))
     allocate(A%fh_lu(A%active_nr_f_lucipar))
     allocate(A%file_offsets(A%active_nr_f_lucipar))
 
+    call file_set_factors_lucipar(A, mx_vector, nr_eigenstates)
+
   end subroutine file_init_lucipar
+
+  subroutine file_set_list_lucipar(A, number_of_active_ttss_blocks_per_process, number_of_ttss_blocks)
+
+!   ----------------------------------------------------------------------------
+    type(file_type)      :: A
+    integer, intent(in)  :: number_of_active_ttss_blocks_per_process
+    integer, intent(in)  :: number_of_ttss_blocks
+!   ----------------------------------------------------------------------------
+
+    A%max_list_length      = number_of_active_ttss_blocks_per_process * A%max_list_length_fac
+    A%max_list_length_bvec = number_of_ttss_blocks
+
+    allocate(A%iluxlist(A%max_list_length,A%active_nr_f_lucipar-1))
+    allocate(A%ilublist(A%max_list_length_bvec,1))
+
+  end subroutine file_set_list_lucipar
 
   subroutine file_free_lucipar(A)
 
@@ -101,5 +127,39 @@ contains
     deallocate(A%file_offsets)
 
   end subroutine file_free_lucipar
+
+  subroutine file_set_factors_lucipar(A, mx_vector, nr_eigenstates)
+
+!   ----------------------------------------------------------------------------
+    type(file_type)      :: A
+    integer, intent(in)  :: mx_vector
+    integer, intent(in)  :: nr_eigenstates
+!   ----------------------------------------------------------------------------
+
+    if(A%file_type_mc)then
+      A%facofffl( 1)        = 1
+      A%facofffl( 2)        = 1
+      A%facofffl( 3)        = 1
+      A%facofffl( 4)        = 1
+      A%facofffl( 5)        = 0
+
+      A%max_list_length_fac = 1
+    else
+      A%facofffl( 1)        = 1
+      A%facofffl( 2)        = nr_eigenstates
+      A%facofffl( 3)        = nr_eigenstates + mx_vector
+      A%facofffl( 4)        = 1
+      A%facofffl( 5)        = 0
+      A%facofffl( 6)        = nr_eigenstates + mx_vector
+      A%facofffl( 7)        = nr_eigenstates + mx_vector
+      A%facofffl( 8)        = nr_eigenstates + mx_vector
+      A%facofffl( 9)        = 1
+      A%facofffl(10)        = mx_vector
+      
+      A%max_list_length_fac = nr_eigenstates + mx_vector
+    end if
+
+
+  end subroutine file_set_factors_lucipar
 
 end module file_type_module
