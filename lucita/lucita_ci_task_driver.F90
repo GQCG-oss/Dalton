@@ -159,7 +159,6 @@
 !     common modules / mixed parallel and sequential modules
       use lucita_cfg
       use lucita_setup
-      use lucita_file_list_pointer
       use lucita_ci_task_interface
       use lucita_energy_types
       use ttss_block_module
@@ -278,10 +277,7 @@
                                          ,ptask_distribution%           &
                                          c2s_connections(1,             &
                                          ptask_distribution%active_csym)&
-                                         ,nblock,                       &
-                                         kilu1list,kilu2list,kilu3list, &
-                                         kilu4list,kilu5list,kilu6list, &
-                                         kilu7list,mxciv,nroot)
+                                         ,nblock,mxciv,nroot)
 #endif
       else
         call setup_lucita_par_dist_in_seq(ptask_distribution%           &

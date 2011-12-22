@@ -732,7 +732,6 @@ lucita/par_io_fh.F90
 lucita/par_io.F90
 lucita/par_cfg.F90
 lucita/lucita_matmul_statistics.F90
-lucita/lucita_file_list_pointer.F90
 lucita/lucita_cfg.F90
 lucita/lucita_integral_density_interface.F90
 lucita/lucita_setup.F90

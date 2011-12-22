@@ -163,7 +163,6 @@
 *
 * with Sn'n = T(n'n)/Tnn
 *
-      use lucita_file_list_pointer
 #ifdef VAR_MPI
       use par_mcci_io
 #ifndef VAR_USE_MPIF

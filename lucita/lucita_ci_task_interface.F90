@@ -200,6 +200,7 @@ contains
                                    par_dist_block_list)
 
   use lucita_energy_types
+  use file_type_module
   use ttss_block_module
 
 #ifdef VAR_MPI
@@ -231,7 +232,6 @@ contains
       integer                  :: ierr
       integer                  :: isblk
       integer                  :: iproc
-      integer, allocatable     :: dialist(:)
 #endif
 !-------------------------------------------------------------------------------
 
@@ -252,18 +252,21 @@ contains
 #ifdef VAR_MPI
         rewind ludia
 
-        allocate(dialist(iall_lu1))
-        dialist = 1
+        call isetvc(file_info%iluxlist(1,file_info%current_file_nr_diag),1,         &
+                    file_info%max_list_length)
 
 !       collect H diagonal 
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,ludia,idia,            &
-                                                my_dia_off,                 &
-                                                dialist,                    &
-                                                par_dist_block_list,        &
-                                                block_list,                 &
-                                                MPI_COMM_WORLD,             &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,ludia,                         &
+                                                file_info%fh_lu(file_info%          &
+                                                current_file_nr_diag),              &
+                                                file_info%file_offsets(             &
+                                                file_info%current_file_nr_diag),    &
+                                                file_info%iluxlist(1,               &
+                                                file_info%current_file_nr_diag),    &
+                                                par_dist_block_list,                &
+                                                block_list,                         &
+                                                MPI_COMM_WORLD,                     &
                                                 num_blocks,1,1,2)
-       deallocate(dialist)
 #endif
       end if
 
@@ -272,13 +275,13 @@ contains
       if(print_lvl .ge. 10)then
 #ifdef VAR_MPI
         if(luci_nmproc > 1)then
-          offset = my_dia_off
+          offset = file_info%file_offsets(file_info%current_file_nr_diag)
           do isblk = 1, num_blocks
             call get_block_proc(par_dist_block_list,isblk,iproc)
             if(luci_myproc == iproc)then
               call get_block_length(block_list,isblk,block_length)
-              call mpi_file_read_at(idia,offset,cref,block_length,   &
-                                    MPI_REAL8,my_STATUS,ierr)
+              call mpi_file_read_at(file_info%fh_lu(file_info%current_file_nr_diag),&
+                                    offset,cref,block_length,MPI_REAL8,my_STATUS,ierr)
               write(luwrt,*) ' # of diagonal elements ==> ',block_length
               call wrtmatmn(cref,1,block_length,1,block_length,luwrt)
               offset = offset + block_length
@@ -351,7 +354,6 @@ contains
                                       resolution_mat,               &
                                       int1_or_rho1,                 &
                                       int2_or_rho2)
-  use lucita_file_list_pointer
   use file_type_module
   use lucita_cfg
   use lucita_mcscf_ci_cfg
@@ -467,8 +469,12 @@ contains
 
         call rewino(luc)
 !       step 1: the rhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,LUC,ILU1,                         &
-                                                MY_LU1_OFF,                            &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
+                                                LUC,                                   &
+                                                file_info%fh_lu(file_info%             &
+                                                current_file_nr_active1),              &
+                                                file_info%file_offsets(                &
+                                                file_info%current_file_nr_active1),    &
                                                 file_info%iluxlist(1,                  &
                                                 file_info%current_file_nr_active1),    &
                                                 par_dist_block_list,                   &
@@ -479,25 +485,30 @@ contains
         if(lucita_cfg_transition_densm)then
           call rewino(luhc)
 !         step 2: the lhs vector
-          call mcci_cp_vcd_mpi_2_seq_io_interface(hc,LUHC,ILU2,                        &
-                                                  MY_LU2_OFF,                          &
+          call mcci_cp_vcd_mpi_2_seq_io_interface(hc,                                  &
+                                                  LUHC,                                &
+                                                  file_info%fh_lu(file_info%           &
+                                                  current_file_nr_active2),            &
+                                                  file_info%file_offsets(              &
+                                                  file_info%current_file_nr_active2),  &
                                                   file_info%iluxlist(1,                &
                                                   file_info%current_file_nr_active2),  &
                                                   par_dist_block_list,                 &
                                                   block_list,                          &
                                                   MPI_COMM_WORLD,                      &
                                                   NUM_BLOCKS,NROOT,1,1)
-          luhc_vector_file = ilu2
+
+          luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active2)
         else
-          luhc_vector_file = ilu1
-          iall_lu2         = iall_lu1
+          luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active1)
+
           call icopy(file_info%max_list_length,file_info%iluxlist(1,file_info%current_file_nr_active1),1, &
                                                file_info%iluxlist(1,file_info%current_file_nr_active2),1)
 !         save and temporarily re-set the file offset for ilu2 to ilu1 (ilu2 has the same offset as ilu4 which is used inside sigden_ci)
           my_lu4_off_tmp   = my_lu4_off
-          my_lu4_off       = my_lu1_off
+          my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active1)
         end if
-        lusc_vector_file = iluc 
+        lusc_vector_file   = file_info%fh_lu(file_info%current_file_nr_bvec)
       end if
 #endif
 
@@ -546,10 +557,16 @@ contains
 !         -----------------------------------------------
           call mpi_barrier(mynew_comm,ierr) ! probably not needed if collection of densities is in action
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
-          call mcci_cp_vcd_batch(ilu1,iluc,cref,nbatch_par,blocks_per_batch,               &
+
+          call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
+                                 file_info%fh_lu(file_info%current_file_nr_bvec),          &
+                                 cref,nbatch_par,blocks_per_batch,                         &
                                  batch_length,block_offset_batch,block_info_batch,         &
-                                 block_list,my_lu1_off,my_luc_off,file_info%iluxlist(1,    &
-                                 file_info%current_file_nr_active1),file_info%ilublist,    &
+                                 block_list,                                               &
+                                 file_info%file_offsets(file_info%current_file_nr_active1),&
+                                 file_info%file_offsets(file_info%current_file_nr_bvec),   &
+                                 file_info%iluxlist(1,file_info%current_file_nr_active1),  &
+                                 file_info%ilublist,                                       &
                                  my_vec2_ioff,my_act_blk2,eigen_state_id-1)
 !         offset in MPI I/O file for lhs-vector
           jvec_sf = eigen_state_id - 1
@@ -659,7 +676,6 @@ contains
                                  resolution_mat,               &
                                  int1_or_rho1,                 &
                                  int2_or_rho2)
-  use lucita_file_list_pointer
   use file_type_module
   use lucita_cfg
   use lucita_mcscf_ci_cfg
@@ -740,6 +756,7 @@ contains
                                            block_offset_batch,               &
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
+
 !       hardwired for now (ILU1 + ILU2)
         file_info%current_file_nr_active1 = 2
         file_info%current_file_nr_active2 = 3
@@ -751,8 +768,12 @@ contains
 
         call rewino(luc)
 !       step 1: the rhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,LUC,ILU1,                         &
-                                                MY_LU1_OFF,                            &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
+                                                LUC,                                   &
+                                                file_info%fh_lu(file_info%             &
+                                                current_file_nr_active1),              &
+                                                file_info%file_offsets(                &
+                                                file_info%current_file_nr_active1),    &
                                                 file_info%iluxlist(1,                  &
                                                 file_info%current_file_nr_active1),    &
                                                 par_dist_block_list,                   &
@@ -787,15 +808,20 @@ contains
 !         -----------------------------------------------
           call mpi_barrier(mynew_comm,ierr) 
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
-          call mcci_cp_vcd_batch(ilu1,iluc,hc,nbatch_par,blocks_per_batch,                 &
+
+          call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
+                                 file_info%fh_lu(file_info%current_file_nr_bvec),          &
+                                 hc,nbatch_par,blocks_per_batch,                           &
                                  batch_length,block_offset_batch,block_info_batch,         &
-                                 block_list,my_lu1_off,my_luc_off,                         &
+                                 block_list,                                               &
+                                 file_info%file_offsets(file_info%current_file_nr_active1),&
+                                 file_info%file_offsets(file_info%current_file_nr_bvec),   &
                                  file_info%iluxlist(1,file_info%current_file_nr_active1),  &
                                  file_info%ilublist,                                       &
                                  my_vec2_ioff,my_act_blk2,eigen_state_id-1)
 
-          lusc_vector_file = iluc
-          luhc_vector_file = ilu2
+          lusc_vector_file = file_info%fh_lu(file_info%current_file_nr_bvec)
+          luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active2)
 
 !         offset in MPI I/O file for lhs-vector
           jvec_sf = eigen_state_id - 1
@@ -822,7 +848,8 @@ contains
 
 !       the lhs vector
         call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc,luhc_vector_file,            &
-                                                my_lu2_off,                          &
+                                                file_info%file_offsets(              &
+                                                file_info%current_file_nr_active2),  &
                                                 file_info%iluxlist(1,                &
                                                 file_info%current_file_nr_active2),  &
                                                 par_dist_block_list,                 &

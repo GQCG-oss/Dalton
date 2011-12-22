@@ -40,10 +40,7 @@ module parallel_setup
 contains
 
   subroutine lucita_setup_parallel_model(block_list,par_dist_block_list,&
-                                         rcctos,nblock,                 &
-                                         kilu1list,kilu2list,kilu3list, &
-                                         kilu4list,kilu5list,kilu6list, &
-                                         kilu7list,mxciv,nroot)
+                                         rcctos,nblock,mxciv,nroot)
 !******************************************************************************
 !
 !    purpose:  
@@ -55,8 +52,6 @@ contains
      integer,    intent(inout)                 :: block_list(nblock)
      integer,    intent(inout)                 :: par_dist_block_list(nblock)
      integer,    intent(inout)                 :: rcctos(nblock)
-     integer(8), intent(inout)                 :: kilu1list, kilu2list, kilu3list
-     integer(8), intent(inout)                 :: kilu4list, kilu5list, kilu6list, kilu7list
      integer,    intent(in)                    :: mxciv
      integer,    intent(in)                    :: nroot
 !-------------------------------------------------------------------------------
@@ -172,17 +167,6 @@ contains
       iall_lu6   = file_info%max_list_length
       iall_lu7   = file_info%max_list_length
       iall_luc   = file_info%max_list_length_bvec
-
-
-!     step 4: allocate file arrays - return pointers to calling subroutine
-!     --------------------------------------------------------------------
-      call memman(kilu1list,iall_lu1,'ADDS  ',1,'LU1LST')
-      call memman(kilu2list,iall_lu2,'ADDS  ',1,'LU2LST')
-      call memman(kilu3list,iall_lu3,'ADDS  ',1,'LU3LST')
-      call memman(kilu4list,iall_lu4,'ADDS  ',1,'LU4LST')
-      call memman(kilu5list,iall_lu5,'ADDS  ',1,'LU5LST')
-      call memman(kilu6list,iall_lu6,'ADDS  ',1,'LU6LST')
-      call memman(kilu7list,iall_lu7,'ADDS  ',1,'LU7LST')
 
 !     step 5: setup the file i/o model
 !     --------------------------------

@@ -25,6 +25,8 @@ module file_type_module
       current_file_fh_seqf2,    &             ! present non-parallel file handle for in/outgoing vector(s) #2
       current_file_nr_active1,  &             ! 
       current_file_nr_active2,  &             ! 
+      current_file_nr_bvec,     &      
+      current_file_nr_diag,     &      
       max_list_length_fac,      &             ! 
       max_list_length,          &             ! 
       max_list_length_bvec                    !
@@ -72,6 +74,8 @@ contains
     A%current_file_fh_seqf2   = -1     
     A%current_file_nr_active1 = -1     
     A%current_file_nr_active2 = -1     
+    A%current_file_nr_bvec    = -1
+    A%current_file_nr_diag    = -1
     A%max_list_length_fac     = -1     
     A%max_list_length         = -1     
     A%max_list_length_bvec    = -1     
@@ -159,6 +163,8 @@ contains
       A%max_list_length_fac = nr_eigenstates + mx_vector
     end if
 
+    A%current_file_nr_diag  = 4
+    A%current_file_nr_bvec  = 5
 
   end subroutine file_set_factors_lucipar
 

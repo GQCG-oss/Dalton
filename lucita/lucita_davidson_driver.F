@@ -37,7 +37,6 @@
       use par_mcci_io
 #endif
       use file_type_module
-      use lucita_file_list_pointer
       use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
@@ -66,9 +65,6 @@
       integer, intent(in)    :: block_list(nblock)
       integer, intent(in)    :: rcctos(nblock)
 !-----------------------------------------------------------------------
-#ifdef VAR_MPI
-      integer, allocatable   :: lu1list(:)
-#endif
       integer(8)             :: cvec_file_size
 !-----------------------------------------------------------------------
 
@@ -95,23 +91,21 @@
 !       update - might have changed because of the above (experimental) cross check
         call dalton_mpi_bcast(irestr,LUCI_MASTER,MPI_COMM_WORLD)
 
-        call izero(work(kilu1list),iall_lu1)
+        call izero(file_info%iluxlist(1,2),file_info%max_list_length)
 !       copy restart vector to MPI-file format
         IF(IRESTR .eq. 1)THEN
           WRITE(LUWRT,'(A)')
      &    '  restart file LUCITA_CVECS.x will be transformed'//
      &    ' to MPIs file-i/o format ...'
           IF( LUCI_MYPROC .eq. LUCI_MASTER ) CALL REWINE(LUC,-1)
-          allocate(lu1list(iall_lu1))
           call mcci_cp_vcd_mpi_2_seq_io_interface(VEC1,LUC,ILU1,
      &                                            MY_LU1_OFF,
-     &                                            lu1list,
+     &                                            file_info%
+     &                                            iluxlist(1,2),
      &                                            par_dist_block_list,
      &                                            block_list,
      &                                            MPI_COMM_WORLD,
      &                                            NUM_BLOCKS2,NROOT,1,1)
-          call icopy(iall_lu1,lu1list,1,WORK(KILU1LIST),1)
-          deallocate(lu1list)
           CALL REWINE(LUC,LBLK)
           WRITE(LUWRT,'(A)') '  ... done! '
         END IF
@@ -130,9 +124,10 @@
      &            ICSPC,block_list,par_dist_block_list,RCCTOS,
      &            PROCLIST,GROUPLIST
 #ifdef VAR_MPI
-     &           ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
-     &            WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILU6LIST),
-     &            WORK(KILU7LIST),file_info%ilublist
+     &           ,file_info%iluxlist(1,2), file_info%iluxlist(1,3),
+     &            file_info%iluxlist(1,5), file_info%iluxlist(1,6),
+     &            file_info%iluxlist(1,7), file_info%iluxlist(1,8),
+     &            file_info%iluxlist(1,9), file_info%ilublist
 #endif
      &            )
  
@@ -159,19 +154,15 @@
         ILU7 = fh_array(10)
 
 !       copy c-vectors from nodes and master back to the master
-        allocate(lu1list(iall_lu1))
-        call icopy(iall_lu1,WORK(KILU1LIST),1,lu1list,1)
         CALL REWINE(LUC,-1)
 
         call mcci_cp_vcd_mpi_2_seq_io_interface(VEC1,LUC,ILU1,
      &                                          MY_LU1_OFF,
-     &                                          lu1list,
+     &                                          file_info%iluxlist(1,2),
      &                                          par_dist_block_list,
      &                                          block_list,
      &                                          MPI_COMM_WORLD,
      &                                          NUM_BLOCKS2,NROOT,1,2)
-        deallocate(lu1list)
-
 #ifdef LUCI_DEBUG
         CALL REWINE(LUC,LBLK)
         IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
