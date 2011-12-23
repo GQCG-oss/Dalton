@@ -724,6 +724,8 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+embedding/get_Tk_integrals.F
+embedding/polarizable_embedding.f90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F
