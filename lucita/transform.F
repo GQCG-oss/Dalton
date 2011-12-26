@@ -36,6 +36,7 @@
 * Jeppe Olsen, January 98
 ! re-factored and parallelized by Stefan Knecht, November 2011
 *
+      use file_type_module
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLH1SAVE
 !               for addressing of WORK
@@ -59,19 +60,19 @@
       integer, parameter  :: isigden = 2
       real(8)             :: cdummy(2), sdummy(2)
       integer             :: my_in_fh, my_out_fh, my_sc1_fh, my_sc2_fh
+      integer             :: my_BVC_fh
       integer             :: len_ilu1
       integer             :: len_ilu2
       integer             :: len_iluc
       integer(kind=8)     :: my_in_off
       integer(kind=8)     :: my_out_off
       integer(kind=8)     :: my_scr_off
+      integer(kind=8)     :: my_BVC_off
 *
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
 !     NTEST = 1000 ! debug
       NTEST = 0    ! default
-      IDUM  = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRACIC')
 *
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
@@ -80,30 +81,36 @@
       call flshfo(luwrt)
 #endif
 
-*. Copy of one-electron integrals
-      CALL MEMMAN(KLH1SAVE,NTOOB**2,'ADDL  ',2,'H1SAVE')
-*. We are going to mess with the one-electron integrals, take a copy
-      call dcopy(NTOOB*NTOOB,WORK(KINT1),1,WORK(KLH1SAVE),1)
-
-
       len_ilu1   = 0
       len_ilu2   = 0
       len_iluc   = 0
       my_in_off  = 0
       my_out_off = 0
       my_scr_off = 0
+      my_BVC_off = 0
+      my_BVC_fh  = 0
 #ifdef VAR_MPI
-      my_in_fh   = ilu1
-      my_out_fh  = ilu1
-      my_sc1_fh  = ilu2
-      my_sc2_fh  = ilu2
-      my_in_off  = 0
-      my_out_off = 0
-      my_scr_off = 0
+!     hardwired for now (ILU1 + ILU2)
+      file_info%current_file_nr_active1 = 2
+      file_info%current_file_nr_active2 = 3
+      my_in_fh   = file_info%fh_lu(file_info%current_file_nr_active1)
+      my_out_fh  = file_info%fh_lu(file_info%current_file_nr_active1)
+      my_sc1_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
+      my_sc2_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
+      my_BVC_fh  = file_info%fh_lu(file_info%current_file_nr_bvec)
 
-      len_ilu1   = iall_lu1
-      len_ilu2   = iall_lu2
-      len_iluc   = iall_luc
+      my_in_off  = file_info%file_offsets(
+     &             file_info%current_file_nr_active1)
+      my_out_off = file_info%file_offsets(
+     &             file_info%current_file_nr_active1)
+      my_scr_off = file_info%file_offsets(
+     &             file_info%current_file_nr_active2)
+      my_BVC_off = file_info%file_offsets(
+     &             file_info%current_file_nr_bvec)
+
+      len_ilu1   = file_info%max_list_length
+      len_ilu2   = file_info%max_list_length
+      len_iluc   = file_info%max_list_length_bvec
 #else
       my_in_fh   = lusc1
       my_out_fh  = luhc
@@ -121,10 +128,17 @@
       call tracid(mo2mo_mat,work(kint1),lu_ref,lu_refout,
      &            my_in_fh,my_out_fh,
      &            my_sc1_fh,my_sc2_fh,
+     &            my_BVC_fh,
      &            vec1,vec2,c2,par_dist_block_list,block_list,
      &            rcctos,grouplist,proclist,
+     &            file_info%iluxlist(1,file_info%
+     &            current_file_nr_active1),
+     &            file_info%iluxlist(1,file_info%
+     &            current_file_nr_active2),
+     &            file_info%ilublist,
      &            len_ilu1,len_ilu2,len_iluc,
-     &            my_in_off,my_out_off,my_scr_off)
+     &            my_in_off,my_out_off,my_scr_off,
+     &            my_BVC_off)
 
 #ifdef LUCI_DEBUG
       if(luci_myproc .eq. luci_master)then
@@ -137,20 +151,16 @@
 #undef LUCI_DEBUG
 #endif
 
-!     clean up time : restore 1-e integrals
-      CALL dcopy(NTOOB*NTOOB,WORK(KLH1SAVE),1,WORK(KINT1),1)
-
-!     release local memory
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACIC')
-
       END
 !**********************************************************************
 
       SUBROUTINE TRACID(T,H,lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,
-     &                  VEC1,VEC2,C2,par_dist_block_list,block_list,
+     &                  BVC_fh,VEC1,VEC2,C2,par_dist_block_list,
+     &                  block_list,
      &                  rcctos,grouplist,proclist,
-     &                  len_ilu_inout,len_ilu_scr,len_iluc,
-     &                  my_in_off,my_out_off,my_scr_off)
+     &                  lu_inoutlst,lu_scrlst,lu_BVClst,
+     &                  len_ilu_inout,len_ilu_scr,len_iBVC,
+     &                  my_in_off,my_out_off,my_scr_off,my_BVC_off)
 *
 * Transform CI vector on LUCIN with T matrix after
 * Docent Malmquist's recipe. Place result as next vector on LUOUT
@@ -163,6 +173,7 @@
 *
 * with Sn'n = T(n'n)/Tnn
 *
+      use file_type_module
 #ifdef VAR_MPI
       use par_mcci_io
 #ifndef VAR_USE_MPIF
@@ -197,17 +208,19 @@
       integer, intent(in)         :: proclist(*)
       integer, intent(in)         :: grouplist(*)
       integer, intent(in)         :: rcctos(*)
+      integer, intent(in)         :: BVC_fh
       integer, intent(in)         :: len_ilu_inout
       integer, intent(in)         :: len_ilu_scr
-      integer, intent(in)         :: len_iluc
+      integer, intent(in)         :: len_iBVC
+      integer, intent(inout)      :: lu_inoutlst(*)
+      integer, intent(inout)      :: lu_scrlst(*)
+      integer, intent(inout)      :: lu_BVClst(*)
       integer(kind=8)             :: my_in_off
       integer(kind=8)             :: my_out_off
       integer(kind=8)             :: my_scr_off
+      integer(kind=8)             :: my_BVC_off
       integer, parameter          :: isigden = 1
       real(8)                     :: cdummy(2), sdummy(2)
-      integer, allocatable        :: lu_inoutlst(:)
-      integer, allocatable        :: lu_scrlst(:)
-      integer, allocatable        :: lu_clst(:)
       integer, allocatable        :: blocks_per_batch(:)
       integer, allocatable        :: batch_length(:)
       integer, allocatable        :: block_offset_batch(:)
@@ -225,18 +238,12 @@
 
 !     set up block and batch structure of vector
 
-      allocate(lu_inoutlst(len_ilu_inout))
-      allocate(lu_scrlst(len_ilu_scr))
-      allocate(lu_clst(len_iluc))
       allocate(blocks_per_batch(mxntts))
       allocate(batch_length(mxntts))
       allocate(block_offset_batch(mxntts))
       allocate(block_info_batch(8,mxntts))
       allocate(blocktype(nsmst))
 
-      lu_inoutlst        = 0
-      lu_scrlst          = 0
-      lu_clst            = 0
       blocks_per_batch   = 0
       batch_length       = 0
       block_offset_batch = 0
@@ -300,20 +307,23 @@
           CALL MPI_BARRIER(MYNEW_COMM,IERR)
 !
 !         reset LUCLIST
-          call izero(lu_clst,len_iluc)
+          call izero(lu_BVClst,len_iBVC)
 
-          call mcci_cp_vcd_batch(lucin,iluc,vec1,
+          call mcci_cp_vcd_batch(lucin,BVC_fh,vec1,
      &                           nbatch,blocks_per_batch,
      &                           batch_length,  
      &                           block_offset_batch,
      &                           block_info_batch,
-     &                           block_list,my_in_off,my_luc_off,
-     &                           LU_inoutlst,lu_clst,
+     &                           block_list,
+     &                           my_in_off,
+     &                           my_BVC_off,
+     &                           LU_inoutlst,
+     &                           lu_BVClst,
      &                           my_vec2_ioff,my_act_blk2,0)
 !         set offset for sigma-file
           JVEC_SF = 0
 
-          lusc_vector_file = iluc
+          lusc_vector_file = BVC_fh
           luhc_vector_file = lusc1
         end if
 #else
@@ -328,7 +338,9 @@
         CALL SIGDEN_CI(VEC1,VEC2,C2,lusc_vector_file,lusc1,
      &                 cdummy,sdummy,ISIGDEN,-1
 #ifdef VAR_MPI
-     &                 ,lu_clst,LU_scrlst,block_list,
+     &                 ,lu_BVClst,
+     &                 LU_scrlst,
+     &                 block_list,
      &                 par_dist_block_list,rcctos,grouplist,proclist
 #endif
      &                 )
@@ -374,20 +386,23 @@
           CALL MPI_BARRIER(MYNEW_COMM,IERR)
 !
 !         reset LUCLIST
-          call izero(lu_clst,len_iluc)
+          call izero(lu_BVClst,len_iBVC)
 
-          call mcci_cp_vcd_batch(lusc1,iluc,vec1,
+          call mcci_cp_vcd_batch(lusc1,BVC_fh,vec1,
      &                           NBATCH,blocks_per_batch,
      &                           batch_length,
      &                           block_offset_batch,
      &                           block_info_batch,
-     &                           block_list,my_scr_off,my_luc_off,
-     &                           LU_scrlst,lu_clst,
+     &                           block_list,
+     &                           my_scr_off,
+     &                           my_BVC_off,
+     &                           LU_scrlst,
+     &                           lu_BVClst,
      &                           my_vec2_ioff,my_act_blk2,0)
 !         set offset for sigma-file
           JVEC_SF = 0
 
-          lusc_vector_file = iluc
+          lusc_vector_file = BVC_fh
           luhc_vector_file = lusc1
         end if
 #else
@@ -398,7 +413,9 @@
         CALL SIGDEN_CI(VEC1,VEC2,C2,lusc_vector_file,luhc_vector_file,
      &                 cdummy,sdummy,ISIGDEN,-1
 #ifdef VAR_MPI
-     &                 ,lu_clst,LU_scrlst,block_list,
+     &                 ,lu_BVClst,
+     &                  LU_scrlst,
+     &                  block_list,
      &                 par_dist_block_list,rcctos,grouplist,proclist
 #endif
      &           )
@@ -474,9 +491,6 @@
       end if
 #endif
 
-      deallocate(lu_inoutlst)
-      deallocate(lu_scrlst)
-      deallocate(lu_clst)
       deallocate(blocks_per_batch)
       deallocate(batch_length)
       deallocate(block_offset_batch)
