@@ -32,6 +32,7 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
+      use parallel_models
 #include <implicit.h>
 #include <dummy.h>
 #include <mtags.h>
@@ -481,6 +482,10 @@ C     Send ending signal to slaves
 C
          IPRTYP = 0
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
+
+!        check for open parallel models (e.g. those that are used in lucita)
+         call check_parallel_models()
+
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUSTAT,'KEEP')
          CALL GPCLOSE(LUMOLDEN,'KEEP')

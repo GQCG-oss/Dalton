@@ -952,9 +952,7 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
-      use ttss_block_module
-      use communicator_type_module
-      use parallel_task_distribution_type_module
+      use parallel_models
 #include <implicit.h>
 #include <priunit.h>
 #include <mtags.h>
@@ -963,12 +961,9 @@ C infpar.h: MASTER,MYNUM
 #include <infpar.h>
 !     DIMENSION WORK(MWORK)
       DIMENSION WORK(0:MWORK)
-      logical :: lucita_done
 C
       CALL QENTER('NODEDRIVER')
 
-!     keep track of lucita/lucita-mcscf calls
-      lucita_done = .false.
 C
 C     Get calculation type (IPRTYP)
 C
@@ -1055,7 +1050,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL QMMMB2_S4(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP .EQ. 42) THEN
             call lucita_coworker_main(work(1),mwork)
-            lucita_done = .true.
+            lucita_models_enabled = .true.
          ELSE IF (IPRTYP .EQ. 43) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
          ELSE
@@ -1068,12 +1063,7 @@ C
          GO TO 100
       END IF
 
-      if(lucita_done)then
-!       possibly free ttss-type used in LUCITA/MCSCF-LUCITA
-        call ttss_free(ttss_info)
-        call communicator_free_lucipar(communicator_info)
-        call parallel_task_distribution_free_lucipar(ptask_distribution)
-      end if
+      call check_parallel_models()
 C
       CALL QEXIT('NODEDRIVER')
       RETURN

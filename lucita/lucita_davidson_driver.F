@@ -59,13 +59,14 @@
       real(8), intent(inout) :: c2(*)
       integer, intent(in)    :: proclist(luci_nmproc)
       integer, intent(in)    :: grouplist(luci_nmproc)
-      integer, intent(inout) :: fh_array(nr_files)
+      integer, intent(inout) :: fh_array(file_info%active_nr_f_lucipar)
 !     general information needed in parallel runs
       integer, intent(in)    :: par_dist_block_list(nblock)
       integer, intent(in)    :: block_list(nblock)
       integer, intent(in)    :: rcctos(nblock)
 !-----------------------------------------------------------------------
       integer(8)             :: cvec_file_size
+      integer                :: keep_nr_files
 !-----------------------------------------------------------------------
 
       NTEST = 0
@@ -138,9 +139,15 @@
       IF(LUCI_NMPROC .GT. 1)THEN
 !       close (and re-open) parallel files that are no longer needed
 !       which will free disk space for copyig back the vectors...
-        call close_file_io_model(nr_files-1,2,fh_array)
+        keep_nr_files = 2
+        call close_file_io_model(file_info%
+     &                           active_nr_f_lucipar-keep_nr_files,
+     &                           keep_nr_files,
+     &                           fh_array)
 !       re-open
-        call setup_file_io_model(mynew_comm,nr_files-2,fh_array,2,
+        call setup_file_io_model(mynew_comm,file_info%
+     &                           active_nr_f_lucipar-keep_nr_files,
+     &                           fh_array,keep_nr_files,
      &                           my_groupn,newcomm_proc,
      &                           'parci',luwrt)
 !       transfer file handles to common block /LUCIAPFILE/ (in parluci.h)

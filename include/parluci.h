@@ -50,10 +50,6 @@
      &                I_NZERO_LEN_C, IFERM_SYM_T,                       &
      &                LU_INFO
 
-!     currently we work with at most 10 scratch files
-!     -----------------------------------------------
-      integer, parameter :: nr_files = 10
-
 !     MPI file lists and MPI file handles
 !     --------------------------------------
       INTEGER IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC,ILUR

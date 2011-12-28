@@ -341,6 +341,7 @@ contains
 ! lucita
   use lucita_cfg
   use parallel_task_distribution_type_module
+  use parallel_models
 #include "priunit.h"
 ! sirius
       integer,   intent(in)    :: print_lvl
@@ -351,7 +352,8 @@ contains
       lucita_cfg_initialize_cb = .true.
 !     free parallel distribution object and thereby turn on (re-)calculation of static task list distribution
       call parallel_task_distribution_free_lucipar(ptask_distribution)
-      
+!     keep track of enabled parallel models in lucita
+      lucita_models_enabled = .true.
       
   end subroutine mcscf_pre_lucita_setci
 !*******************************************************************************

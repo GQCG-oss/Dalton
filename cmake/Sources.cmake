@@ -726,6 +726,7 @@ lucita/parallel_task_distribution_type_module.F90
 lucita/par_communication_model.F90
 lucita/lucita_orbitalspaces.F90
 lucita/lucita_energy_types.F90
+abacus/parallel_models.F90
 lucita/dalton_mpi.F90
 lucita/par_setup.F90
 lucita/par_io_fh.F90

@@ -165,13 +165,7 @@
       use communicator_type_module
       use parallel_task_distribution_type_module
       use file_type_module
-!     pure parallel lucita
-#ifdef VAR_MPI
       use parallel_setup
-      use communication_model
-      use file_io_model
-      use sync_coworkers
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -242,7 +236,7 @@
                                               lwrk_dalton,              &
                                               mxpwrd,                   &
                                               luci_nmproc,              &
-                                              nr_files,                 &
+                                              mx_nr_files_lucipar,      &
                                               luwrt)
  
 !     set LUCITA internal work space pointers 
@@ -270,7 +264,8 @@
 !         5. file list pointers creation
 !       --------------------------------------------------------------
         call lucita_setup_parallel_model(ttss_info%ttss_block_length(1, &
-                                         icsm,1),                       &
+                                         ptask_distribution%active_csym,&
+                                         1),                            &
                                          ptask_distribution%            &
                                          parallel_task_list(1,          &
                                          ptask_distribution%active_csym)&
@@ -285,8 +280,8 @@
                                           ptask_distribution%           &
                                           active_csym),                 &
                                           ttss_info%ttss_block_length(1,&
-                                          icsm,1),                      &
-                                          nblock)
+                                          ptask_distribution%active_csym&
+                                          ,1),nblock)
       end if
 
 !     ----------------------------------------------------------------------------
@@ -298,7 +293,8 @@
                                   resolution_mat,                       &
                                   int1_or_rho1,                         &
                                   int2_or_rho2,                         &
-                                  ttss_info%ttss_block_length(1,icsm,1),&
+                                  ttss_info%ttss_block_length(1,        &
+                                  ptask_distribution%active_csym,1),    &
                                   ptask_distribution%                   &
                                   parallel_task_list(1,                 &
                                   ptask_distribution%active_csym),      &
@@ -312,18 +308,20 @@
 !      end of branching point for MCSCF/CI tasks (controlled by entries in ci_task_list)
 !     ----------------------------------------------------------------------------------
 
-#ifdef VAR_MPI
-      if(luci_nmproc > 1)then
-!       close parallel model:
-!         1. parallel file(s) / file handle(s)
-!         2. communication model
-        call lucita_close_parallel_model(nr_files,lucita_ci_run_id,     &
-                                         file_info%fh_lu)
-      end if
-#endif
+!     reset parallel (only file-i/o --> .false.) model in case of an initial CI preceeding an MCSCF run (both for master and co-workers)
+!     for a default MCSCF: nroot == mxciv == 1 (last 2 integer entries in lucita_reset_parallel_model argument list)
+      if(lucita_ci_run_id == 'initial ci  ')then
 
-      if(file_info%file_type_init)then
-        call file_free_lucipar(file_info)
+        call lucita_reset_parallel_model(ttss_info%ttss_block_length(1, &
+                                         ptask_distribution%active_csym,&
+                                         1),                            &
+                                         ptask_distribution%            &
+                                         parallel_task_list(1,          &
+                                         ptask_distribution%active_csym)&
+                                         ,ptask_distribution%           &
+                                         c2s_connections(1,             &
+                                         ptask_distribution%active_csym)&
+                                         ,nblock,1,1,.false.,.true.)
       end if
      
       write(lupri,'(/a)')                                               &

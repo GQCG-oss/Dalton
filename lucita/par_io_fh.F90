@@ -127,7 +127,7 @@ contains
   end subroutine setup_file_io_model
 !*******************************************************************************
 
-  subroutine close_file_io_model(nr_files,                &
+  subroutine close_file_io_model(number_of_files,         &
                                  fh_offset,               &
                                  fh_array)                 
 !*******************************************************************************
@@ -135,14 +135,14 @@ contains
 !    purpose: close MPI-I/O files and "nullify" file handles.
 !
 !*******************************************************************************
-     integer, intent(in )   :: nr_files
+     integer, intent(in )   :: number_of_files
      integer, intent(in )   :: fh_offset
      integer, intent(inout) :: fh_array(*)!(nr_files+fh_offset)
 !-------------------------------------------------------------------------------
      integer                :: i
 !-------------------------------------------------------------------------------
 
-      do i = 1, nr_files
+      do i = 1, number_of_files
         call mpi_file_close(fh_array(i+fh_offset),ierr)
       end do
      

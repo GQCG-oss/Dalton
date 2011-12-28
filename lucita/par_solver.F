@@ -471,6 +471,7 @@ C
 *.    VMINTMP should be the lowest value w.r.t. ISEARCH 
       VMINLAST = VMINTMP
 *. test writing
+      NTEST = 11
       IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
      & WRITE(6,*)'VMINLAST',VMINLAST
       IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 

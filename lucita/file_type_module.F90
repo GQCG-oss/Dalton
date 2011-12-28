@@ -51,7 +51,7 @@ module file_type_module
 
 ! ttss block type object
   type(file_type), public     :: file_info
-  integer, parameter, private :: mx_nr_files_lucipar    = 10 ! max number of MPI files in lucita (general upper limit)
+  integer, parameter, public  :: mx_nr_files_lucipar    = 10 ! max number of MPI files in lucita (general upper limit)
   integer, parameter, private :: mx_nr_files_lucipar_ci = 10 ! max number of MPI files in lucita/ci
   integer, parameter, private :: mx_nr_files_lucipar_mc =  5 ! max number of MPI files in lucita/mcscf
 
@@ -124,11 +124,11 @@ contains
     A%current_file_fh_seqf1 = -1
     A%current_file_fh_seqf2 = -1
 
-    deallocate(A%iluxlist)
-    deallocate(A%ilublist)
-    deallocate(A%facofffl)
-    deallocate(A%fh_lu)
-    deallocate(A%file_offsets)
+    if(allocated(A%iluxlist))     deallocate(A%iluxlist)
+    if(allocated(A%ilublist))     deallocate(A%ilublist)
+    if(allocated(A%facofffl))     deallocate(A%facofffl)
+    if(allocated(A%fh_lu))        deallocate(A%fh_lu)
+    if(allocated(A%file_offsets)) deallocate(A%file_offsets)
 
   end subroutine file_free_lucipar
 
