@@ -1906,7 +1906,7 @@ C?              call prsym(rho2,NORB*NORB)
 *  beta contribution to RHO1
 * =============================
 *
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' GSBBD1 will be called (beta)'
         WRITE(lupri,*) ' no transpose: rhotype ==>   ',rhotype
@@ -1953,7 +1953,7 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 *  alpha contribution to RHO1
 * =============================
 *
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' GSBBD1 will be called (alpha)'
         WRITE(lupri,*) ' rhotype ==>                 ',rhotype

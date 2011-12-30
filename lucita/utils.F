@@ -112,65 +112,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE CHAR_TO_INTEGER_MOLUC(CHAR_X,INT_X)
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      CHARACTER*72 CHAR_X
-      INTEGER FLLNGTH
-      CHARACTER*10 SCRFLL
-      CHARACTER*6 SCRFL
-
-*
-#include "units.inc"
-#include "parluci.h"
-      
-
-*
-      NTESTL = 0
-      if (NTESTL.ge.1) then
-        write(6,*) ' INFO FROM CHAR_TO_INTEGER'
-        write(6,'(A)') ' CHARACTER INPUT ', CHAR_X
-      end if
-*
-      LU_INTERNAL = LUSC_INT
-      SCRFL ="LUSCDL"
-*
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',LUCI_MYPROC
-         FLLNGTH=8
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (SCRFLL,'(A6,A1,I2)') SCRFL,'.',LUCI_MYPROC
-         FLLNGTH=9
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (SCRFLL,'(A6,A1,I3)') SCRFL,'.',LUCI_MYPROC
-         FLLNGTH=10
-      ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-
-      Open(Unit=LU_INTERNAL,
-     &     File=SCRFLL(1:FLLNGTH),
-     &     Status='NEW',
-     &     Form='FORMATTED')
-*
-      REWIND(LU_INTERNAL)
-      WRITE(LU_INTERNAL,'(A)') CHAR_X
-      REWIND(LU_INTERNAL)
-      READ(LU_INTERNAL,*) INT_X
-*
-      Close(Unit=LU_INTERNAL,
-     &      Status='DELETE')
-*
-      if (NTESTL.ge.1) then
-        write(6,*) ' INTEGER OUTPUT ', INT_X
-      end if
-*
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE CHAR_TO_REAL(CHAR_X,REAL_X)
 
 *     Convert a real number given as a string into

@@ -1745,7 +1745,7 @@ C
 *SUBVAL: VALUE OF SORTED ELEMENTS
 
       IMPLICIT REAL*8           ( A-H,O-Z)
-      INTEGER*8 KGATHERA, KGATHERB, KGATHERC, KGATHERD, KGATHERE
+      INTEGER*8 KGATHERA, KGATHERB, KGATHERC, KGATHERD
 !               for addressing of WORK
 #include "maxorb.h"
 #include "infpar.h"
@@ -1833,8 +1833,8 @@ C
         END IF
         IOFF_SCR = IOFF_SCR + LBL
 C       set to lbl to true value
-        LBL = IBLOCKL(II)
-        IBASE = IBASE + LBL
+        LBL      = IBLOCKL(II)
+        IBASE    = IBASE + LBL
 C
  1000 CONTINUE
 *
@@ -1855,13 +1855,12 @@ C
       CALL MEMMAN(KGATHERB,LUCI_NMPROC*NSUBMX,'ADDL  ',2,'PARRA2')
       CALL MEMMAN(KGATHERC,LUCI_NMPROC*NSUBMX,'ADDL  ',1,'PARIA1')
       CALL MEMMAN(KGATHERD,LUCI_NMPROC*NSUBMX,'ADDL  ',1,'PARIA2')
-      CALL MEMMAN(KGATHERE,NSUBMX,'ADDL  ',1,'PARIA3')
 *. We gather all lowest values from each node 
 *. and build up a combined list of those
       CALL GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
      &                    WORK(KGATHERA),WORK(KGATHERB),
      &                    WORK(KGATHERC),WORK(KGATHERD),
-     &                    WORK(KGATHERE),NTESTG)
+     &                    NTESTG)
 *     update SCR1 and ISCR1
       CALL DCOPY(NSUBMX,SUBVAL,1,SCR,1)
       CALL ICOPVE(ISCAT,ISCR,NSUBMX)

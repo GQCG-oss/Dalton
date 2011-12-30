@@ -118,7 +118,7 @@
 !     ----------------------------------------
       CALL CIEIG5(IRESTR,VEC1,VEC2,C2,LUDIA,
      &            LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,LUSC41,
-     &            l_combi,NROOT,MXCIV,MAXIT,LUCIVI,
+     &            l_combi,NROOT,MXCIV,MAXIT,
      &            IPRNT,WORK(KSBEVC),0,WORK(KH0),WORK(KSBIDT),
      &            MXP1,MXP2,MXQ,WORK(KH0SCR),ECORE,ICISTR,LBLK,IDIAG,
      &            THRES_E,THRES_E_aux,INIDEG,LBLOCK,IROOTHOMING,NCISPC,
@@ -202,7 +202,7 @@
 
       SUBROUTINE CIEIG5(IRESTR,VEC1,VEC2,C2,LUDIA,LU1,LU2,LU3,
      &                  LU4,LU5,LU6,LU7,LU41,NDIM,NROOTSL,MAXVEC,
-     &                  MXCIIT,LUINCI,IPRT,PEIGVC,NPRDET,H0,IPNTR,
+     &                  MXCIIT,IPRT,PEIGVC,NPRDET,H0,IPNTR,
      &                  NP1,NP2,NQ,H0SCR,EIGSHF,ICISTR,LBLK,IDIAG,
      &                  THRES_E,THRES_E_aux,INIDEG,
      &                  MXLNG,IROOTHOMING,NSPC,ISPC,IBLOCKAR,

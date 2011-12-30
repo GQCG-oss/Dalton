@@ -177,7 +177,6 @@
 #include "mxpdim.inc"
 ! file numbers
 #include "clunit.inc"
-#include "units.inc"
 ! print flags
 #include "cprnt.inc"
 #include "lucinp.inc"

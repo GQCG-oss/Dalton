@@ -312,8 +312,7 @@ C
 ***********************************************************************
       SUBROUTINE GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
      &                          RECVARRAY,TESTARR,
-     &                          IRECVARRAY,ITESTARRAY,IRANKARR,
-     &                          NTESTG)
+     &                          IRECVARRAY,ITESTARRAY,NTESTG)
 *
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "maxorb.h"
@@ -322,18 +321,13 @@ C
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)
-      DIMENSION IRECVARRAY(*),ITESTARRAY(*),IRANKARR(NSUBMX)
+      DIMENSION IRECVARRAY(*),ITESTARRAY(*)
 *
       NTESTL = 0
-      NTEST = MAX(NTESTG,NTESTL)
-      NTEST = 0
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)'SUBROUTINE GATHER_LOW_PAR entered'
-      END IF        
-      VMAX = 1.0D99
-      VMIN = -1.0D99
-      IF(NTEST.GE.100) 
-     & WRITE(6,*)'SET VMAX TO 1.0D99 and VMIN TO -1.0D99',VMAX,VMIN
+      NTEST  = MAX(NTESTG,NTESTL)
+      NTEST  = 0
+      VMAX   =  1.0D99
+      VMIN   = -1.0D99
       CALL SETVEC(TESTARR,VMAX,NSUBMX*LUCI_NMPROC)
       CALL SETVEC(RECVARRAY,VMAX,NSUBMX*LUCI_NMPROC)
       CALL IZERO(IRECVARRAY,NSUBMX*LUCI_NMPROC)
@@ -343,30 +337,46 @@ C
         CALL SETVEC(SUBVAL,VMAX,NSUBMX)
         CALL IZERO(ISCAT,NSUBMX)
       END IF
-      ICOUNT = 1
-      DO IL = 1, NSUBMX
-        IRANKARR(IL) = ICOUNT
-        ICOUNT = ICOUNT + 1
-      ENDDO
+
+      do j = 1, LUCI_NMPROC
+        ICOUNT = 1
+        DO IL = 1, NSUBMX
+          ITESTARRAY(IL+((j-1)*NSUBMX)) = ICOUNT
+          ICOUNT                        = ICOUNT + 1
+        END DO
+      end do
 *
 *. gather lowest elements from nodes on all nodes - we need no master
+#ifdef sometimes_problematic_with_i8
       CALL MPI_ALLGATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
-     &                  MPI_REAL8,MPI_COMM_WORLD,IERR)
+     &                   MPI_REAL8,MPI_COMM_WORLD,IERR)
       CALL MPI_ALLGATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
-     &                  my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
-      CALL MPI_ALLGATHER(IRANKARR,NSUBMX,my_MPI_INTEGER,ITESTARRAY,
-     &                   NSUBMX,my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+     &                   my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
+#endif
+      CALL MPI_GATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
+     &                MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_GATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
+     &                my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+
+      CALL MPI_BCAST(RECVARRAY,NSUBMX*LUCI_NMPROC,
+     &               MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IRECVARRAY,NSUBMX*LUCI_NMPROC,
+     &               my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
 *
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10)THEN
-        WRITE(6,*)'before search: RECVARRAY and IRECVARRAY'
-        CALL WRTMT_LU(RECVARRAY,
-     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC)
-        CALL IWRTMA(IRECVARRAY,
-     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC)
-        WRITE(6,*)'before search: ITESTARRAY'
-        CALL IWRTMA(ITESTARRAY,
-     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC)
-      END IF
+#ifdef LUCI_DEBUG
+      write(luwrt,*) 'NSUBMX are ==> ',NSUBMX
+      WRITE(luwrt,*)'before search: RECVARRAY'
+        CALL WRTMATMN(RECVARRAY,
+     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC,luwrt)
+      WRITE(luwrt,*)'before search: IRECVARRAY'
+        CALL IWRTMAMN(IRECVARRAY,
+     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC,luwrt)
+      WRITE(luwrt,*)'before search: ITESTARRAY'
+        CALL IWRTMAMN(ITESTARRAY,
+     &     1,NSUBMX*LUCI_NMPROC,1,NSUBMX*LUCI_NMPROC,luwrt)
+      WRITE(luwrt,*)'before search: test print done'
+      call flshfo(luwrt)
+#endif
                     
 *. we need the NSUBMX lowest elements from all over the world - sorted
       ISEARCH = 0
@@ -470,21 +480,24 @@ C
       ISEARCH = ISEARCH + 1
 *.    VMINTMP should be the lowest value w.r.t. ISEARCH 
       VMINLAST = VMINTMP
+#ifdef LUCI_DEBUG
 *. test writing
-      NTEST = 11
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'VMINLAST',VMINLAST
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'PLACE FOR VMINLAST',IMINPLACE
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'NUMBER',IMINNUMB
-      IF(LUCI_MYPROC.EQ.LUCI_MASTER.AND.NTEST.GE.10) 
-     & WRITE(6,*)'IMINRANK',IMINRANK
+      WRITE(luwrt,*)'VMINLAST',VMINLAST
+      WRITE(luwrt,*)'PLACE FOR VMINLAST',IMINPLACE
+      WRITE(luwrt,*)'NUMBER',IMINNUMB
+      WRITE(luwrt,*)'IMINRANK',IMINRANK
+      WRITE(luwrt,*)'ISEARCH',ISEARCH
+      call flshfo(luwrt)
+      call flshfo(luwrt)
+      call flshfo(luwrt)
+#endif
+
+!     if(LUCI_MYPROC.EQ.LUCI_MASTER+2) call quit('bla bla')
 *. end of test writing
 *. put the result to permanent storage in memory
-      SUBVAL(ISEARCH) = VMINTMP
-      ISCAT(ISEARCH) = IMINPLACE 
-      RECVARRAY(IMINNUMB) = VMAX
+      SUBVAL(ISEARCH)      = VMINTMP
+      ISCAT(ISEARCH)       = IMINPLACE 
+      RECVARRAY(IMINNUMB)  = VMAX
       IRECVARRAY(IMINNUMB) = 0
       ITESTARRAY(IMINNUMB) = -1
 

@@ -24,139 +24,12 @@
 
 !**********************************************************************
 
-      SUBROUTINE TRACI_CTL(vec1,vec2,c2,mo2mo_mat,par_dist_block_list,
-     &                     block_list,rcctos,grouplist,proclist)
-*
-* Master routine for transforming a CI vector to new orbital basis
-*
-* Input vector on LUC
-* output vector delivered on LUHC
-* (LUSC1,LUSC2) used as scratch files
-*
-* Jeppe Olsen, January 98
-! re-factored and parallelized by Stefan Knecht, November 2011
-*
-      use file_type_module
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLH1SAVE
-!               for addressing of WORK
-      real(8), intent(inout) :: vec1(*)
-      real(8), intent(inout) :: vec2(*)
-      real(8), intent(inout) :: c2(*)
-      real(8), intent(inout) :: mo2mo_mat(*)
-      integer, intent(in)    :: par_dist_block_list(*)
-      integer, intent(in)    :: block_list(*)
-      integer, intent(in)    :: proclist(*)
-      integer, intent(in)    :: grouplist(*)
-      integer, intent(in)    :: rcctos(*)
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "clunit.inc"
-#include "crun.inc"
-#include "cstate.inc"
-#include "glbbas.inc"
-#include "orbinp.inc"
-#include "parluci.h"
-      integer, parameter  :: isigden = 2
-      real(8)             :: cdummy(2), sdummy(2)
-      integer             :: my_in_fh, my_out_fh, my_sc1_fh, my_sc2_fh
-      integer             :: my_BVC_fh
-      integer             :: len_ilu1
-      integer             :: len_ilu2
-      integer             :: len_iluc
-      integer(kind=8)     :: my_in_off
-      integer(kind=8)     :: my_out_off
-      integer(kind=8)     :: my_scr_off
-      integer(kind=8)     :: my_BVC_off
-*
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
-*
-!     NTEST = 1000 ! debug
-      NTEST = 0    ! default
-*
-!#define LUCI_DEBUG
-#ifdef LUCI_DEBUG
-      WRITE(luwrt,*) ' Welcome to TRACI_CTL'
-      WRITE(luwrt,*) ' ===================='
-      call flshfo(luwrt)
-#endif
-
-      len_ilu1   = 0
-      len_ilu2   = 0
-      len_iluc   = 0
-      my_in_off  = 0
-      my_out_off = 0
-      my_scr_off = 0
-      my_BVC_off = 0
-      my_BVC_fh  = 0
-#ifdef VAR_MPI
-!     hardwired for now (ILU1 + ILU2)
-      file_info%current_file_nr_active1 = 2
-      file_info%current_file_nr_active2 = 3
-      my_in_fh   = file_info%fh_lu(file_info%current_file_nr_active1)
-      my_out_fh  = file_info%fh_lu(file_info%current_file_nr_active1)
-      my_sc1_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
-      my_sc2_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
-      my_BVC_fh  = file_info%fh_lu(file_info%current_file_nr_bvec)
-
-      my_in_off  = file_info%file_offsets(
-     &             file_info%current_file_nr_active1)
-      my_out_off = file_info%file_offsets(
-     &             file_info%current_file_nr_active1)
-      my_scr_off = file_info%file_offsets(
-     &             file_info%current_file_nr_active2)
-      my_BVC_off = file_info%file_offsets(
-     &             file_info%current_file_nr_bvec)
-
-      len_ilu1   = file_info%max_list_length
-      len_ilu2   = file_info%max_list_length
-      len_iluc   = file_info%max_list_length_bvec
-#else
-      my_in_fh   = lusc1
-      my_out_fh  = luhc
-      my_sc1_fh  = lusc2
-      my_sc2_fh  = lusc3
-
-      call copvcd(luc,my_in_fh,vec1,1,-1)
-      call rewine(my_in_fh,-1)
-      CALL rewine(my_out_fh,-1)
-#endif
-      lu_ref     = luc
-      lu_refout  = luhc
-
-!     transform CI vector
-      call tracid(mo2mo_mat,work(kint1),lu_ref,lu_refout,
-     &            my_in_fh,my_out_fh,
-     &            my_sc1_fh,my_sc2_fh,
-     &            my_BVC_fh,
-     &            vec1,vec2,c2,par_dist_block_list,block_list,
-     &            rcctos,grouplist,proclist,
-     &            file_info%iluxlist(1,file_info%
-     &            current_file_nr_active1),
-     &            file_info%iluxlist(1,file_info%
-     &            current_file_nr_active2),
-     &            file_info%ilublist,
-     &            len_ilu1,len_ilu2,len_iluc,
-     &            my_in_off,my_out_off,my_scr_off,
-     &            my_BVC_off)
-
-#ifdef LUCI_DEBUG
-      if(luci_myproc .eq. luci_master)then
-        WRITE(luwrt,*)
-        WRITE(luwrt,*) ' Analysis of rotated state'
-        WRITE(luwrt,*) ' ========================='
-        WRITE(luwrt,*)
-        CALL WRTVCD(VEC1,luhc,1,-1)
-      end if
-#undef LUCI_DEBUG
-#endif
-
-      END
-!**********************************************************************
-
       SUBROUTINE TRACID(T,H,lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,
-     &                  BVC_fh,VEC1,VEC2,C2,par_dist_block_list,
-     &                  block_list,
+     &                  BVC_fh,VEC1,VEC2,C2,
+     &                  NBATCH,NBLOCK,blocks_per_batch,
+     &                  batch_length,block_offset_batch,
+     &                  block_info_batch,blocktype,
+     &                  par_dist_block_list,block_list,
      &                  rcctos,grouplist,proclist,
      &                  lu_inoutlst,lu_scrlst,lu_BVClst,
      &                  len_ilu_inout,len_ilu_scr,len_iBVC,
@@ -173,7 +46,6 @@
 *
 * with Sn'n = T(n'n)/Tnn
 *
-      use file_type_module
 #ifdef VAR_MPI
       use par_mcci_io
 #ifndef VAR_USE_MPIF
@@ -184,48 +56,46 @@
 #include "mpif.h"
 #endif
 #endif
-      INTEGER*8 KLCBLTPx
-!               for addressing of WORK
 #include "parluci.h"
 #include "mxpdim.inc"
 #include "oper.inc"
 #include "intform.inc"
-#include "lucinp.inc"
 #include "orbinp.inc"
-#include "csm.inc"
 #include "cicisp.inc"
 #include "cstate.inc"
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       REAL*8 INPRDD
 *. Input
-      real(8), intent(inout)      :: T(*)
-      real(8), intent(inout)      :: H(*)
-      real(8), intent(inout)      :: VEC1(*)
-      real(8), intent(inout)      :: VEC2(*)
-      real(8), intent(inout)      :: C2(*)
-      integer, intent(in)         :: par_dist_block_list(*)
-      integer, intent(in)         :: block_list(*)
-      integer, intent(in)         :: proclist(*)
-      integer, intent(in)         :: grouplist(*)
-      integer, intent(in)         :: rcctos(*)
-      integer, intent(in)         :: BVC_fh
-      integer, intent(in)         :: len_ilu_inout
-      integer, intent(in)         :: len_ilu_scr
-      integer, intent(in)         :: len_iBVC
-      integer, intent(inout)      :: lu_inoutlst(*)
-      integer, intent(inout)      :: lu_scrlst(*)
-      integer, intent(inout)      :: lu_BVClst(*)
-      integer(kind=8)             :: my_in_off
-      integer(kind=8)             :: my_out_off
-      integer(kind=8)             :: my_scr_off
-      integer(kind=8)             :: my_BVC_off
-      integer, parameter          :: isigden = 1
-      real(8)                     :: cdummy(2), sdummy(2)
-      integer, allocatable        :: blocks_per_batch(:)
-      integer, allocatable        :: batch_length(:)
-      integer, allocatable        :: block_offset_batch(:)
-      integer, allocatable        :: block_info_batch(:,:)
-      integer, allocatable        :: blocktype(:)
+      real(8), intent(inout) :: T(*)
+      real(8), intent(inout) :: H(*)
+      real(8), intent(inout) :: VEC1(*)
+      real(8), intent(inout) :: VEC2(*)
+      real(8), intent(inout) :: C2(*)
+      integer, intent(in)    :: nblock
+      integer, intent(in)    :: nbatch
+      integer, intent(in)    :: blocks_per_batch(*)
+      integer, intent(in)    :: batch_length(*)
+      integer, intent(in)    :: block_offset_batch(*)
+      integer, intent(in)    :: block_info_batch(8,*)
+      integer, intent(in)    :: blocktype(*)
+      integer, intent(in)    :: par_dist_block_list(*)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: proclist(*)
+      integer, intent(in)    :: grouplist(*)
+      integer, intent(in)    :: rcctos(*)
+      integer, intent(in)    :: BVC_fh
+      integer, intent(in)    :: len_ilu_inout
+      integer, intent(in)    :: len_ilu_scr
+      integer, intent(in)    :: len_iBVC
+      integer, intent(inout) :: lu_inoutlst(*)
+      integer, intent(inout) :: lu_scrlst(*)
+      integer, intent(inout) :: lu_BVClst(*)
+      integer(kind=8)        :: my_in_off
+      integer(kind=8)        :: my_out_off
+      integer(kind=8)        :: my_scr_off
+      integer(kind=8)        :: my_BVC_off
+      integer, parameter     :: isigden = 1
+      real(8)                :: cdummy(2), sdummy(2)
 
 !     NTEST = 1000 ! debug
       NTEST = 0000 ! default
@@ -235,32 +105,6 @@
 
 !     1-electron integrals in complete block form (NTOOB,NTOOB)
       IH1FORM  = 2
-
-!     set up block and batch structure of vector
-
-      allocate(blocks_per_batch(mxntts))
-      allocate(batch_length(mxntts))
-      allocate(block_offset_batch(mxntts))
-      allocate(block_info_batch(8,mxntts))
-      allocate(blocktype(nsmst))
-
-      blocks_per_batch   = 0
-      batch_length       = 0
-      block_offset_batch = 0
-      block_info_batch   = 0
-      blocktype          = 0
-
-      IATP     = 1
-      IBTP     = 2
-      CALL Z_BLKFO_partitioning_parallel(ICSPC,ICSM,iatp,ibtp,
-     &                                   blocks_per_batch,
-     &                                   batch_length,  
-     &                                   block_offset_batch,
-     &                                   block_info_batch,
-     &                                   NBATCH,NBLOCK,
-     &                                   par_dist_block_list)
-
-      CALL ZBLTP_IDC(ISMOST(1,ICSM),NSMST,IDC,blocktype)
 
 #ifdef LUCI_DEBUG
 #ifndef VAR_MPI
@@ -491,11 +335,6 @@
       end if
 #endif
 
-      deallocate(blocks_per_batch)
-      deallocate(batch_length)
-      deallocate(block_offset_batch)
-      deallocate(block_info_batch)
-      deallocate(blocktype)
 
       END
 !**********************************************************************
@@ -1297,9 +1136,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
         END DO
       END DO
 *     ^ End of loop over symmetries
-*. Dump integrals to file LU90
-      LU90 = 90
-      CALL DMPINT(LU90)
+      CALL DMPINT(90)
 *
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRA2_S')
 *

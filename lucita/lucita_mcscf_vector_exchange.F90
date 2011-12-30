@@ -18,7 +18,7 @@ module lucita_mcscf_vector_exchange
        present_sym_irrep,                &  ! current active symmetry irrep in use
        present_fh_lu,                    &  ! file handle for LUCITA file
        present_fh_mc,                    &  ! file handle for MCSCF  file
-       mc_offset,                        &  ! offset to mc types in exchange_files_generic ==> must be equal to max #/2 (1/2 == lucita; 1/2 == mcscf)
+       mc_offset,                        &  ! offset to mc types in exchange_files_generic ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
        push_pull_switch                     ! push or pull data to/from lucita i/o files (1 or 2)
 
      logical ::                          &
@@ -326,7 +326,7 @@ contains
     A%push_pull_switch              = -1
     A%mc_offset                     =  4 ! must be equal to the max number of generic files / 2 (1/2 == lucita; 1/2 == mcscf)
 
-    A%exchange_files_generic(1)     = 'LUCITA_CVECS.x'
+    A%exchange_files_generic(1)     = 'LUCITA_CEPVC.x'
     A%exchange_files_generic(2)     = 'LUCITA_CVECS.x'
     A%exchange_files_generic(3)     = 'LUCITA_HCVEC.x'
     A%exchange_files_generic(4)     = 'LUCITA_HDIAG.x'

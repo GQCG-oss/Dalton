@@ -35,7 +35,6 @@ C
 #include "parluci.h"
 #include "files.inc"
 #include "clunit.inc"
-#include "units.inc"
       integer irefsm
       INTEGER LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL, LUDMMY_MPIL
@@ -66,44 +65,8 @@ C
 *             (e.g. standalone, INS, MOLCAS etc.)
 *  ---------
 *
-*  Timo Fleig    Mar 28, 2002
-*==================================================
-*
-*  Old setup:
-*
-* All file with some kind of input information  :  10 - 19
-* All files containing final results            :  90 - 99
-* Scratch files                                 :  30 - 40
-* Internal files (retained through job)         :  20 - 29
-
       if(lucita_ci_run_id .eq. 'return CIdim') return
 *
-* =========================
-* Standard input and output
-* =========================
-*. Input file
-      LUIN = 5
-*. Special unit for input file from MOLCAS conversion routine
-*    Timo Fleig
-      LUCMOL = 91
-* =================
-* Input information
-* =================
-* Input file containing MO-AO transformation matrix
-      LUMOIN = 80
-*. Input file for CI-vectors
-*. restart from file 21 is assumed
-*. Input , two electron integrals - MOLCAS
-      LU2INT = 81
-*. Input , one electron integrals - MOLCAS
-      LU1INT = 82
-*. Input , property one-electron integral files
-      LUPRP  = 83
-*. Sirius interface file
-      LUSIR1 = 84
-*. File containing additional states for transition densities
-      LUEXC = 85
-
 * =================
 * Internal files
 * =================
@@ -307,30 +270,9 @@ C
      &     Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC41,File=NLUSC41_MPI(1:LUSC344_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
-* =================
-* Output files
-* =================
-*. output file for CI-vectors
-*. Not in use
-      LUCIVO = 86
-*. Natural orbitals in terms of input orbitals
-*.
-      LUMOUT = 87
-*     Open(Unit=LUMOUT,File='CIAORB',Status='UNKNOWN',Form='FORMATTED')
-*. Dumping 1- and 2- electron integrals in formatted form
-* ( LU90 just defined here, it is not exported )
-      LU90  = 88
+
 *. Dumping symmmetry info, MO-AO expansion matrix and property integral
       LU91     = 69
-      LUSC_INT = LU91
-*. CC amplitudes in formatted form
-      LU_CCAMP = 90
-* Input for LUCITA, converted
-      LUINP = 95
-* COMFILE from MOLCAS-SCF
-      LUCOM = LUSC36
-* JOBIPH file from MOLCAS-RASSCF
-      LUIPH = LUSC37
 *
       END
 ***********************************************************************

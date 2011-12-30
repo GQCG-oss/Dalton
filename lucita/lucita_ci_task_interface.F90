@@ -106,8 +106,9 @@ contains
                                      rcctos,grouplist,proclist,                                   &
                                      cref,hc,resolution_mat,int1_or_rho1,int2_or_rho2)
           case ('return rotVC')
-            call traci_ctl(cref,hc,resolution_mat,int1_or_rho1,par_dist_block_list,               &
-                           block_list,rcctos,grouplist,proclist)
+            call return_bvec_transformed_2_new_mo_basis(cref,hc,resolution_mat,int1_or_rho1,      &
+                                                        par_dist_block_list,block_list,           &
+                                                        rcctos,grouplist,proclist)
           case ('report CIana')
             call report_CI_vector_analysis(cref,print_lvl)
           case ('return densM')
@@ -865,6 +866,177 @@ contains
       end if ! luci_nmproc > 1
 
   end subroutine return_sigma_vector
+!**********************************************************************
+
+  subroutine return_bvec_transformed_2_new_mo_basis(vec1,vec2,c2,mo2mo_mat, &
+                                                    par_dist_block_list,    &
+                                                    block_list,rcctos,      &
+                                                    grouplist,proclist)
+!
+! purpose: master routine for transforming a CI vector to new orbital basis
+!
+! Jeppe Olsen, January 98
+! re-factored and parallelized by Stefan Knecht, November 2011
+!
+!-------------------------------------------------------------------------------
+ use file_type_module
+!-------------------------------------------------------------------------------
+#include "mxpdim.inc"
+#include "clunit.inc"
+#include "csm.inc"
+#include "crun.inc"
+#include "cstate.inc"
+#include "glbbas.inc"
+#include "orbinp.inc"
+#include "cicisp.inc"
+#include "cands.inc"
+#include "parluci.h"
+      real(8), intent(inout) :: vec1(*)
+      real(8), intent(inout) :: vec2(*)
+      real(8), intent(inout) :: c2(*)
+      real(8), intent(inout) :: mo2mo_mat(*)
+      integer, intent(in)    :: par_dist_block_list(*)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: proclist(*)
+      integer, intent(in)    :: grouplist(*)
+      integer, intent(in)    :: rcctos(*)
+!-------------------------------------------------------------------------------
+      real(8)                :: work
+#include "wrkspc.inc"
+      integer                :: my_in_fh, my_out_fh, my_sc1_fh, my_sc2_fh
+      integer                :: my_BVC_fh
+      integer                :: len_ilu1
+      integer                :: len_ilu2
+      integer                :: len_iluc
+      integer                :: iatp, ibtp
+      integer                :: nbatch, nblock
+      integer                :: lu_ref, lu_refout
+      integer(kind=8)        :: my_in_off
+      integer(kind=8)        :: my_out_off
+      integer(kind=8)        :: my_scr_off
+      integer(kind=8)        :: my_BVC_off
+
+      integer, allocatable   :: blocks_per_batch(:)
+      integer, allocatable   :: batch_length(:)
+      integer, allocatable   :: block_offset_batch(:)
+      integer, allocatable   :: block_info_batch(:,:)
+      integer, allocatable   :: blocktype(:)
+!-------------------------------------------------------------------------------
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*) ' Welcome to return_bvec_transformed_2_new_mo_basis'
+      WRITE(luwrt,*) ' ================================================='
+      call flshfo(luwrt)
+#endif
+
+      len_ilu1   = 0
+      len_ilu2   = 0
+      len_iluc   = 0
+      my_in_off  = 0
+      my_out_off = 0
+      my_scr_off = 0
+      my_BVC_off = 0
+      my_BVC_fh  = 0
+#ifdef VAR_MPI
+!     hardwired for now (ILU1 + ILU2)
+      file_info%current_file_nr_active1 = 2
+      file_info%current_file_nr_active2 = 3
+      my_in_fh   = file_info%fh_lu(file_info%current_file_nr_active1)
+      my_out_fh  = file_info%fh_lu(file_info%current_file_nr_active1)
+      my_sc1_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
+      my_sc2_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
+      my_BVC_fh  = file_info%fh_lu(file_info%current_file_nr_bvec)
+
+      my_in_off  = file_info%file_offsets(            &
+                   file_info%current_file_nr_active1)
+      my_out_off = file_info%file_offsets(            &
+                   file_info%current_file_nr_active1)
+      my_scr_off = file_info%file_offsets(            &
+                   file_info%current_file_nr_active2)
+      my_BVC_off = file_info%file_offsets(            &
+                   file_info%current_file_nr_bvec)
+
+      len_ilu1   = file_info%max_list_length
+      len_ilu2   = file_info%max_list_length
+      len_iluc   = file_info%max_list_length_bvec
+#else
+      my_in_fh   = lusc1
+      my_out_fh  = luhc
+      my_sc1_fh  = lusc2
+      my_sc2_fh  = lusc3
+
+      call copvcd(luc,my_in_fh,vec1,1,-1)
+      call rewine(my_in_fh,-1)
+      CALL rewine(my_out_fh,-1)
+#endif
+      lu_ref     = luc
+      lu_refout  = luhc
+
+!     set up block and batch structure of vector
+
+      allocate(blocks_per_batch(mxntts))
+      allocate(batch_length(mxntts))
+      allocate(block_offset_batch(mxntts))
+      allocate(block_info_batch(8,mxntts))
+      allocate(blocktype(nsmst))
+
+      blocks_per_batch   = 0
+      batch_length       = 0
+      block_offset_batch = 0
+      block_info_batch   = 0
+      blocktype          = 0
+
+      IATP     = 1
+      IBTP     = 2
+      CALL Z_BLKFO_partitioning_parallel(ICSPC,ICSM,iatp,ibtp,   &
+                                         blocks_per_batch,       &
+                                         batch_length,           &
+                                         block_offset_batch,     &
+                                         block_info_batch,       &
+                                         NBATCH,NBLOCK,          &
+                                         par_dist_block_list)
+
+      CALL ZBLTP_IDC(ISMOST(1,ICSM),NSMST,IDC,blocktype)
+
+!     transform CI vector
+      call tracid(mo2mo_mat,work(kint1),lu_ref,lu_refout,        &
+                  my_in_fh,my_out_fh,                            &
+                  my_sc1_fh,my_sc2_fh,                           &
+                  my_BVC_fh,                                     &
+                  vec1,vec2,c2,                                  &
+                  NBATCH,NBLOCK,blocks_per_batch,                &
+                  batch_length,block_offset_batch,               &
+                  block_info_batch,blocktype,                    &
+                  par_dist_block_list,block_list,                &
+                  rcctos,grouplist,proclist,                     &
+                  file_info%iluxlist(1,file_info%                &
+                  current_file_nr_active1),                      &
+                  file_info%iluxlist(1,file_info%                &
+                  current_file_nr_active2),                      &
+                  file_info%ilublist,                            &
+                  len_ilu1,len_ilu2,len_iluc,                    &
+                  my_in_off,my_out_off,my_scr_off,               &
+                  my_BVC_off)
+
+#ifdef LUCI_DEBUG
+      if(luci_myproc .eq. luci_master)then
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Analysis of rotated state'
+        WRITE(luwrt,*) ' ========================='
+        WRITE(luwrt,*)
+        CALL WRTVCD(VEC1,luhc,1,-1)
+      end if
+#undef LUCI_DEBUG
+#endif
+
+      deallocate(blocks_per_batch)
+      deallocate(batch_length)
+      deallocate(block_offset_batch)
+      deallocate(block_info_batch)
+      deallocate(blocktype)
+
+  end subroutine return_bvec_transformed_2_new_mo_basis
 !**********************************************************************
 
 end module
