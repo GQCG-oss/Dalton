@@ -1637,8 +1637,8 @@ C        ... determinant basis
             ILVERV = 1
          END IF
          if(ci_program .eq. 'LUCITA   ')then
-           call define_lucita_cfg_dynamic(ilsym,       ! rhs symmetry ! swap see subroutine below
-     &                                    irsym,       ! lhs symmetry ! swap see subroutine below
+           call define_lucita_cfg_dynamic(irsym,       ! rhs symmetry ! swap see subroutine below
+     &                                    ilsym,       ! lhs symmetry ! swap see subroutine below
      &                                    -1,          ! no istaci
      &                                    ispin1,      ! spin for operator
      &                                    ispin2,      ! spin for operator
@@ -1664,8 +1664,8 @@ C        ... determinant basis
            write(lupri,*) ' before dens run: cr'
            call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
 #endif
-!          cl == cref
-           call mcscf_lucita_interface(cl,cr,rho1,rho2,
+!          cl == cref                  rhs lhs
+           call mcscf_lucita_interface( cr, cl,rho1,rho2,
      &                                 'Xp-density m',
      &                                 work(kfree),lwrk,iprdns)
 
