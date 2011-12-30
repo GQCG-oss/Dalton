@@ -44,7 +44,7 @@
             ncomp = 6
             inttype = 'ELFGRDC'
         else if (k == 3) then
-            if (nwrk < 24* nints / 10 ) then
+            if (nwrk < (24 * nints / 10)) then
                 print *, 'Not enough work space for T^(3) integrals!'
             end if
             ncomp = 6
@@ -88,6 +88,7 @@
             Tk_ints(7*m+1:8*m) = work(2*i+1+3*m:2*i+1+4*m)
             Tk_ints(8*m+1:9*m) = work(2*i+1+4*m:2*i+1+5*m)
             Tk_ints(9*m+1:10*m) = work(2*i+1+5*m:2*i+1+6*m)
+            Tk_ints = -1.0d0 * Tk_ints
         end if
 
         runqm3 = .false.
