@@ -322,7 +322,15 @@ C
       IF (DOMCSRDFT) THEN
          CALL TITLER('MC-srDFT response calculation','*',103)
       ELSE IF (DOHFSRDFT) THEN
-         CALL TITLER('HF-srDFT response calculation','*',103)
+         IF (SOPPA) THEN
+            CALL TITLER('SOPPA-srDFT response calculation','*',103)
+         ELSE
+            CALL TITLER('HF-srDFT response calculation','*',103)
+         END IF
+      ELSE IF (CCPPA) THEN
+         CALL TITLER('SOPPA(CCSD) response calculation','*',103)
+      ELSE IF (SOPPA) THEN
+         CALL TITLER('SOPPA response calculation','*',103)
       ELSE IF (DODFT .AND. NASHT.GT.0) THEN
          CALL TITLER('High-spin DFT response calculation','*',103)
       ELSE IF (DODFT) THEN
@@ -331,10 +339,6 @@ C
          CALL TITLER('High-spin ROHF response calculation','*',103)
       ELSE IF (TDHF) THEN
          CALL TITLER('RHF response calculation (TDHF)','*',103)
-      ELSE IF (CCPPA) THEN
-         CALL TITLER('SOPPA(CCSD) response calculation','*',103)
-      ELSE IF (SOPPA) THEN
-         CALL TITLER('SOPPA response calculation','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
       END IF

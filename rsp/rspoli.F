@@ -246,9 +246,11 @@ C If DIRFCK compute Fock matrices in AO basis
 C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
-      !IF (DODFT) GO TO 1000
+      IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
+      ! new test Dec. 2011, also valid for SOPPA and DIRFCK
+      ! where TDHF true /hjaaj
+      IF (DODFT) GO TO 1000
 C     ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
-      IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000 ! new test Dec. 2011, also for SOPPA and DIRFCK  /hjaaj
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
