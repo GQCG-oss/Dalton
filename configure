@@ -30,7 +30,7 @@
 parent_path=`pwd`
 mkdir -p $parent_path/modules
 
-cpp='-DMOD_SRDFT'
+cpp='-DPRG_DALTON -DMOD_SRDFT'
 
 
 # defaults section for quick config
