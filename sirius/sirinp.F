@@ -463,8 +463,8 @@ C
       NELMX1 = 0
       NELMN3 = 0
       NELMX3 = 0
-      MULTS  = -2
-      MS2    = -2
+      MULTS  = -2     ! MULTS .lt. 0 is code for not set yet
+      MS2    = -12345 ! -12345 is code for not set by .MS2 option
 C
 C********** Default values section MP2INP *****
 C
@@ -1544,7 +1544,7 @@ C
             NELMN3 = 0
             NELMX3 = 2
             NACTEL = ICHARG - KCHARG - 2*NISHT
-            IF (MS2 .LT. 0) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
+            IF (MS2 .EQ. -12345) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
             IF (MULTS .LT. 0) MULTS = MS2 + 1
             ISPIN = MULTS
             IF (LSYM .LT. 0) LSYM = 1
@@ -1564,7 +1564,7 @@ C
             NELMN3 = 0
             NELMX3 = 0
             NACTEL = ICHARG - KCHARG - 2*NISHT
-            IF (MS2 .LT. 0) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
+            IF (MS2 .EQ. -12345) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
             IF (MULTS .LT. 0) MULTS = MS2 + 1
             ISPIN = MULTS
             IF (LSYM .LT. 0) LSYM = 1
@@ -2731,7 +2731,7 @@ C
 C *** Option 5 >SPIN M<  state spin multiplicity
 C                         SPIN QUANTUM NUMBER*2+1
   105 READ(LUCMD,*) MULTS
-      IF (MS2 .LT. 0) MS2 = MOD(MULTS-1,2)
+      IF (MS2 .EQ. -12345) MS2 = MOD(MULTS-1,2)
       ISPIN = MULTS
 C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
       GO TO 100

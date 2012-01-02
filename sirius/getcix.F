@@ -596,21 +596,26 @@ C           if RAS
 C
       IF (NEWCI) THEN
          NOCSF = FLAG(27)
-C. Ms component chosen as lowest possible component for CSF's
-CMAERKE-901019: make input option for MS2
          MULTS = ISPIN
-         IF (NOCSF) THEN
+
+         IF (DONEVPT .AND. MS2 .NE. MULTS-1) THEN
+            WRITE (LUPRI,'(/A)')
+     &      ' INFO: MS2 reset to max 2*MS value for NEVPT2'
             MS2 = MULTS - 1
-         ELSE
-c--renzo
-            IF (DONEVPT) THEN
+         END IF
+ 
+! Only set MS2 = 2 * MS value if not set in input, or out of bounds:
+         IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
+
+C. Ms component chosen as lowest possible component for CSF's
+            IF (NOCSF) THEN
                MS2 = MULTS - 1
             ELSE
-               MS2 = MOD(MULTS-1,2) !original statement
-            ENDIF
-c--renzo
+               MS2 = MOD(MULTS-1,2)
+            END IF
+
          END IF
-C
+
 C Input test:
 C
          NERR = 0
