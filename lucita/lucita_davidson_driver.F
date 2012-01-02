@@ -194,8 +194,21 @@
       close(unit=LUSC37,status='DELETE')
       close(unit=LUSC38,status='DELETE')
       close(unit=LUSC40,status='DELETE')
-      close(unit=LU91,  status='DELETE')
       close(unit=LUSC41,status='DELETE')
+      close(unit=LU91,  status='DELETE')
+      if(luci_myproc.eq.luci_master)
+     &close(unit=LUSC1, status='DELETE')
+
+!     re-open partially used scratch units (sequential run)
+!     -----------------------------------------------------
+      if(luci_myproc.eq.luci_master)then
+        open(unit=LUSC1,file="LUSC1.0",status='UNKNOWN',
+     &       form='UNFORMATTED')
+        open(unit=LUSC2,file="LUSC2.0",status='UNKNOWN',
+     &       form='UNFORMATTED')
+        open(unit=LUSC3,file="LUSC3.0",status='UNKNOWN',
+     &       form='UNFORMATTED')
+      end if
  
       END
 ***********************************************************************

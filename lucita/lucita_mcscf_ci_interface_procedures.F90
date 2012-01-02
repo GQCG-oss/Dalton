@@ -11,6 +11,7 @@ module lucita_mcscf_ci_interface_procedures
   use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
   use lucita_mcscf_vector_exchange, only : vector_exchange_driver
   use lucita_mcscf_ci_cfg
+  use file_type_module, only : file_info, file_type, file_sequential_fh_reset_lucipar
 
   implicit none
 
@@ -113,8 +114,10 @@ contains
 !     a. define allocations for a given CI runtype needed by slaves in parallel runs
       call setup_lucita_mcci_wrkspc_dimensions(run_type,         &
                                                print_lvl)
+!     b. initialize sequential file handles
+      call file_sequential_fh_reset_lucipar(file_info)
 
-!     b. select pre-process task
+!     c. select pre-process task
       select case(run_type)
         case('return CIdia')
 !         do nothing
@@ -165,6 +168,10 @@ contains
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 
+!     a. initialize sequential file handles
+      call file_sequential_fh_reset_lucipar(file_info)
+
+!     b. choose post-process task
       select case(run_type)
         case('Xp-density m', 'analyze Cvec')
 !         do nothing
@@ -203,14 +210,12 @@ contains
       integer                  :: exchange_type1
 !-------------------------------------------------------------------------------
       
-      exchange_type1                      = 2
+      exchange_type1                      = 1
       vector_update_mc2lu(exchange_type1) = .true. ! save the incoming rhs vector to LUCITA files
 
-      if(vector_update_mc2lu(exchange_type1))then
-!       rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
-        call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,         &
-                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
-      end if
+!     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
+      call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                         &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_mc2lu(exchange_type1),c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -242,7 +247,6 @@ contains
 !-------------------------------------------------------------------------------
       
       einact_mc2lu           = emy_ci ! inactive energy
-      vector_update_lu2mc(2) = .true. ! copy the final C-vectors from LUCITA files into the MCSCF input array  
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -274,11 +278,9 @@ contains
       exchange_type1                      = 2
       vector_update_mc2lu(exchange_type1) = .true. ! save the incoming rhs vector to LUCITA files
 
-      if(vector_update_mc2lu(exchange_type1))then
-!       rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
-        call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,         &
-                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
-      end if
+!     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
+      call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                         &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_mc2lu(exchange_type1),c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -313,11 +315,9 @@ contains
       exchange_type1                      = 2
       vector_update_mc2lu(exchange_type1) = .true. ! save the incoming rhs vector to LUCITA files
 
-      if(vector_update_mc2lu(exchange_type1))then
-!       rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
-        call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,         &
-                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
-      end if
+!     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
+      call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                         &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_mc2lu(exchange_type1),c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -380,21 +380,23 @@ contains
 !-------------------------------------------------------------------------------
       
       exchange_type1                      = 2
-      exchange_type2                      = 3
       vector_update_mc2lu(exchange_type1) = .true. ! save the incoming rhs vector to LUCITA files
-      vector_update_mc2lu(exchange_type2) = .true. ! save the incoming lhs vector to LUCITA files
 
-      if(vector_update_mc2lu(exchange_type1))then
-!       rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
-        call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,         &
-                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
+!     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
+      call vector_exchange_driver(2,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                          &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_mc2lu(exchange_type1),c_or_cr)
+
+      if(.not.lucita_cfg_transition_densm)then
+        exchange_type2                      = exchange_type1
+        vector_update_mc2lu(exchange_type2) = .false. ! do not save the incoming lhs vector to LUCITA files (identical to rhs!)
+      else
+        exchange_type2                      = 3
+        vector_update_mc2lu(exchange_type2) = .true. ! save the incoming lhs vector to LUCITA files
       end if
 
-      if(vector_update_mc2lu(exchange_type2) .and. lucita_cfg_transition_densm)then
-!       lhs vector (if transition density matrix) - otherwise we take care of it internally in lucita
-        call vector_exchange_driver(2,exchange_type2,lucita_cfg_nr_roots,lucita_cfg_hcsym,        &
-                                    io2io_vector_exchange_mc2lu_lu2mc,hc_or_cl)
-      end if
+!     lhs vector (if transition density matrix) - otherwise we take care of it internally in lucita
+      call vector_exchange_driver(2,exchange_type2,lucita_cfg_nr_roots,lucita_cfg_hcsym,                         &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_mc2lu(exchange_type2),hc_or_cl)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -426,7 +428,7 @@ contains
 !
 !-------------------------------------------------------------------------------
       integer                  :: i
-      integer                  :: exchange_type
+      integer                  :: exchange_type1
 !-------------------------------------------------------------------------------
       
       call dcopy(nroot,eroot,1,energy_root,1)
@@ -440,15 +442,16 @@ contains
         energy_root(i)            = energy_root(i) - einact_mc2lu
       end do
 
-      ncired = nfinal_vec 
+      ncired = nfinal_vec
 
 !     type 2 - put CI start vector/ vectors on file LUCITA_CVECS.x where x refers to the present symmetry id (a,b,c,...)
 !              to file luit3 if io2io_vector_exchange_mc2lu_lu2mc == .true. 
-      exchange_type = 2
-      if(vector_update_lu2mc(exchange_type))then
-!       (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(1,exchange_type,nroot,irefsm_c,io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
-      end if
+      exchange_type1                      = 2
+      vector_update_lu2mc(exchange_type1) = .true. ! copy the final C-vectors from LUCITA files into the MCSCF input array  
+
+!     (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+      call vector_exchange_driver(1,exchange_type1,nroot,irefsm_c,                                              &
+                                    io2io_vector_exchange_mc2lu_lu2mc,vector_update_lu2mc(exchange_type1),c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -463,7 +466,7 @@ contains
       end if
 
 !     reset
-      vector_update_lu2mc(exchange_type) = .false.
+      vector_update_lu2mc(exchange_type1) = .false.
 
   end subroutine mcscf_post_lucita_cistart
 !*******************************************************************************
@@ -485,18 +488,17 @@ contains
 !
 !-------------------------------------------------------------------------------
       integer                  :: i
-      integer                  :: exchange_type
+      integer                  :: exchange_type1
 !-------------------------------------------------------------------------------
       
 !     type 4 - pull H diag from lucita file LUCITA_HDIAG.x where x refers to the present symmetry id (a,b,c,...)
 !              to mcscf core memory 
-      exchange_type = 4
-      vector_update_lu2mc(exchange_type) = .true.
-      if(vector_update_lu2mc(exchange_type))then
-!       (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(1,exchange_type,lucita_cfg_nr_roots,lucita_cfg_csym,          &
-                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
-      end if
+      exchange_type1 = 4
+      vector_update_lu2mc(exchange_type1) = .true.
+
+!     (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+      call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                         &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_lu2mc(exchange_type1),c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -505,7 +507,7 @@ contains
       end if
 
 !     reset
-      vector_update_lu2mc(exchange_type) = .false.
+      vector_update_lu2mc(exchange_type1) = .false.
 
   end subroutine mcscf_post_lucita_hdiag
 !*******************************************************************************
@@ -531,11 +533,9 @@ contains
       exchange_type1                      = 3
       vector_update_lu2mc(exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 
-      if(vector_update_lu2mc(exchange_type1))then
-!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,        &
-                                    io2io_vector_exchange_mc2lu_lu2mc,hc_or_cl)
-      end if
+!     lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+      call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,                         &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_lu2mc(exchange_type1),hc_or_cl)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -570,11 +570,9 @@ contains
       exchange_type1                      = 3
       vector_update_lu2mc(exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 
-      if(vector_update_lu2mc(exchange_type1))then
-!       lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
-        call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,        &
-                                    io2io_vector_exchange_mc2lu_lu2mc,c_or_cr)
-      end if
+!     lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)
+      call vector_exchange_driver(1,exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,                        &
+                                  io2io_vector_exchange_mc2lu_lu2mc,vector_update_lu2mc(exchange_type1),c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'

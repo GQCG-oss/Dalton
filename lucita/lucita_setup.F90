@@ -472,86 +472,86 @@ contains
 !     default: complete operator (1e- + 2e-)
       i12 = lucita_cfg_el_operator_level
 
-!     generalized active space concept, define orbital spaces
-!     -------------------------------------------------------
-      ngas    = lucita_cfg_nr_gas_spaces 
-      if(lucita_cfg_ci_type(1:6).eq.'RASCI ') ngas = 3
-      do i = 1, ngas
-        do j = 1, nirrep
-          NGSSH(j,i) = ngsh_lucita(i,j)
-        end do
-      end do
-!     check for maximum number of orbitals per space and symmetry
-      do i = 1, NGAS 
-        do j = 1, NIRREP
-          if(NGSSH(j,i) > MXTSOB)then
-            print *, ' too many orbitals per space and symmetry!'
-            print *, ' my maximum is  ',MXTSOB
-            print *, ' please redefine your active spaces or if you are doing RASCI please use the GA setup.'
-            call quit('*** error in setup_lucita_cb_interface: too many orbitals per space and symmetry!')
-          end if
-        end do
-      end do
+      if(lucita_cfg_initialize_cb)then
 
-!     set orbital space occupations
-      select case(lucita_cfg_ci_type(1:6))
-!       ras
-        case('RASCI ')
-
-          mxelr1 = 0
-          mxelr2 = 0
-          do i = 1, nirrep
-            mxelr1 = mxelr1 + 2*ngsh_lucita(1,i)
-            mxelr2 = mxelr2 + 2*ngsh_lucita(2,i)
+!       generalized active space concept, define orbital spaces
+!       -------------------------------------------------------
+        ngas    = lucita_cfg_nr_gas_spaces 
+        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') ngas = 3
+        do i = 1, ngas
+          do j = 1, nirrep
+            NGSSH(j,i) = ngsh_lucita(i,j)
           end do
+        end do
+!       check for maximum number of orbitals per space and symmetry
+        do i = 1, NGAS 
+          do j = 1, NIRREP
+            if(NGSSH(j,i) > MXTSOB)then
+              print *, ' too many orbitals per space and symmetry!'
+              print *, ' my maximum is  ',MXTSOB
+              print *, ' please redefine your active spaces or if you are doing RASCI please use the GA setup.'
+              call quit('*** error in setup_lucita_cb_interface: too many orbitals per space and symmetry!')
+            end if
+          end do
+        end do
 
-          nimx = mxelr1 + 0
-          nimn = nimx - lucita_cfg_max_holes_ras1
-          nemn = LUCI_NACTEL + 0
-          nemx = LUCI_NACTEL + 0
-          namx = nemx
-          namn = namx - lucita_cfg_max_e_ras3
-          igsoccx(1,1,1) = nimn
-          igsoccx(1,2,1) = nimx
-          igsoccx(2,1,1) = namn
-          igsoccx(2,2,1) = namx
-          igsoccx(3,1,1) = nemn
-          igsoccx(3,2,1) = nemx
-!       gas
-        case('GASCI ')
-          do i = 1, ngas
-            do j = 1, 2
-              igsoccx(i,j,1) = ngso_lucita(i,j)
+!       set orbital space occupations
+        select case(lucita_cfg_ci_type(1:6))
+!         ras
+          case('RASCI ')
+
+            mxelr1 = 0
+            mxelr2 = 0
+            do i = 1, nirrep
+              mxelr1 = mxelr1 + 2*ngsh_lucita(1,i)
+              mxelr2 = mxelr2 + 2*ngsh_lucita(2,i)
             end do
+
+            nimx = mxelr1 + 0
+            nimn = nimx - lucita_cfg_max_holes_ras1
+            nemn = LUCI_NACTEL + 0
+            nemx = LUCI_NACTEL + 0
+            namx = nemx
+            namn = namx - lucita_cfg_max_e_ras3
+            igsoccx(1,1,1) = nimn
+            igsoccx(1,2,1) = nimx
+            igsoccx(2,1,1) = namn
+            igsoccx(2,2,1) = namx
+            igsoccx(3,1,1) = nemn
+            igsoccx(3,2,1) = nemx
+!         gas
+          case('GASCI ')
+            do i = 1, ngas
+              do j = 1, 2
+                igsoccx(i,j,1) = ngso_lucita(i,j)
+              end do
+            end do
+        end select
+
+        if(LUCI_NACTEL /= igsoccx(ngas,2,1)) then
+          write(lupri,*) 'Number of active electrons does not match total number of electrons in active spaces.'
+          call quit('*** error in setup_lucita_cb_interface: Number of active'//                  &
+                    ' electrons does not match total number of electrons in active spaces.')
+        end if
+
+        ntoob_local = 0
+        do i = 1, ngas
+          do j = 1, nirrep
+            ntoob_local = ntoob_local + NGSSH(j,i)
           end do
-      end select
-
-!     do i = 1, ngas
-!       write(lupri,*) 'min max occupation in ga space =', i, igsoccx(i,1,1), igsoccx(i,2,1)
-!     end do
-
-
-      if(LUCI_NACTEL /= igsoccx(ngas,2,1)) then
-        write(lupri,*) 'Number of active electrons does not match total number of electrons in active spaces.'
-        call quit('*** error in setup_lucita_cb_interface: Number of active'//                  &
-                  ' electrons does not match total number of electrons in active spaces.')
-      end if
-
-      ntoob_local = 0
-      do i = 1, ngas
-        do j = 1, nirrep
-          ntoob_local = ntoob_local + NGSSH(j,i)
         end do
-      end do
 
-      if(LUCI_NACTEL > 2*ntoob_local)then
-        write(lupri,*) 'Number of active electrons exceeds the orbital space:',LUCI_NACTEL,'>',2*NTOOB_local
-        write(lupri,*) 'Consider Pauli´s famous principle and restart!'
-        call quit('*** error in setup_lucita_cb_interface: Number of active electrons exceeds the orbital space.')
-      end if
+        if(LUCI_NACTEL > 2*ntoob_local)then
+          write(lupri,*) 'Number of active electrons exceeds the orbital space:',LUCI_NACTEL,'>',2*NTOOB_local
+          write(lupri,*) 'Consider Pauli´s famous principle and restart!'
+          call quit('*** error in setup_lucita_cb_interface: Number of active electrons exceeds the orbital space.')
+        end if
 
-!     set file handles for reading/writing, etc.
-      call set_file_handles(irefsm,lucita_ci_run_id)
+!       set file handles for reading/writing, etc.
+        call set_file_handles(irefsm)
+
+
+      end if ! lucita_cfg_initialize_cb check
 
 !     cross-check input and print LUCITA settings
       call setup_lucita_check_input(lucita_ci_run_id,igsoccx,ngssh,ngas)

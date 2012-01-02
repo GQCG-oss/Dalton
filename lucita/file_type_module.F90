@@ -14,6 +14,7 @@ module file_type_module
   public file_init_lucipar
   public file_free_lucipar
   public file_set_list_lucipar
+  public file_sequential_fh_reset_lucipar
 
 
 ! type definition
@@ -21,8 +22,7 @@ module file_type_module
 
     integer ::                  &
       active_nr_f_lucipar,      &             ! current active number of MPI files in lucita
-      current_file_fh_seqf1,    &             ! present non-parallel file handle for in/outgoing vector(s) #1
-      current_file_fh_seqf2,    &             ! present non-parallel file handle for in/outgoing vector(s) #2
+      current_file_fh_seqf(2),  &             ! present non-parallel file handle for in/outgoing vector(s) #1 and #2
       current_file_nr_active1,  &             ! 
       current_file_nr_active2,  &             ! 
       current_file_nr_bvec,     &      
@@ -50,7 +50,7 @@ module file_type_module
   end type file_type
 
 ! ttss block type object
-  type(file_type), public     :: file_info
+  type(file_type),    public  :: file_info
   integer, parameter, public  :: mx_nr_files_lucipar    = 10 ! max number of MPI files in lucita (general upper limit)
   integer, parameter, private :: mx_nr_files_lucipar_ci = 10 ! max number of MPI files in lucita/ci
   integer, parameter, private :: mx_nr_files_lucipar_mc =  5 ! max number of MPI files in lucita/mcscf
@@ -68,20 +68,17 @@ contains
     call file_free_lucipar(A)
 
     A%file_type_init          = .true.
-    A%file_handle_seq_init    = .false.
-    A%active_nr_f_lucipar     = -1     
-    A%current_file_fh_seqf1   = -1     
-    A%current_file_fh_seqf2   = -1     
-    A%current_file_nr_active1 = -1     
-    A%current_file_nr_active2 = -1     
+    A%active_nr_f_lucipar     = -1
+    A%current_file_nr_active1 = -1
+    A%current_file_nr_active2 = -1
     A%current_file_nr_bvec    = -1
     A%current_file_nr_diag    = -1
-    A%max_list_length_fac     = -1     
-    A%max_list_length         = -1     
-    A%max_list_length_bvec    = -1     
+    A%max_list_length_fac     = -1
+    A%max_list_length         = -1
+    A%max_list_length_bvec    = -1
 
     if(A%file_type_mc)then
-      A%active_nr_f_lucipar = mx_nr_files_lucipar_mc 
+      A%active_nr_f_lucipar = mx_nr_files_lucipar_mc
     else
       A%active_nr_f_lucipar = mx_nr_files_lucipar_ci
     end if
@@ -118,11 +115,9 @@ contains
 
     if(.not. A%file_type_init) return
 
-    A%file_type_init        = .false.
-    A%file_type_mc          = .false.
-    A%active_nr_f_lucipar   = -1
-    A%current_file_fh_seqf1 = -1
-    A%current_file_fh_seqf2 = -1
+    A%file_type_init          = .false.
+    A%file_type_mc            = .false.
+    A%active_nr_f_lucipar     = -1
 
     if(allocated(A%iluxlist))     deallocate(A%iluxlist)
     if(allocated(A%ilublist))     deallocate(A%ilublist)
@@ -168,4 +163,16 @@ contains
 
   end subroutine file_set_factors_lucipar
 
+  subroutine file_sequential_fh_reset_lucipar(A)
+
+!   ----------------------------------------------------------------------------
+    type(file_type) :: A
+!   ----------------------------------------------------------------------------
+
+    if(A%file_handle_seq_init) return
+    A%current_file_fh_seqf(1) = -1
+    A%current_file_fh_seqf(2) = -1
+
+  end subroutine file_sequential_fh_reset_lucipar
+ 
 end module file_type_module

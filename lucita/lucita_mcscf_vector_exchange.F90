@@ -6,6 +6,7 @@
 module lucita_mcscf_vector_exchange
 
    use ttss_block_module
+   use file_type_module, only : file_info, file_type
 
    implicit none
 
@@ -18,7 +19,6 @@ module lucita_mcscf_vector_exchange
        present_sym_irrep,                &  ! current active symmetry irrep in use
        present_fh_lu,                    &  ! file handle for LUCITA file
        present_fh_mc,                    &  ! file handle for MCSCF  file
-       mc_offset,                        &  ! offset to mc types in exchange_files_generic ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
        push_pull_switch                     ! push or pull data to/from lucita i/o files (1 or 2)
 
      logical ::                          &
@@ -38,6 +38,7 @@ module lucita_mcscf_vector_exchange
 
 
    private
+   integer, parameter, private :: mc_offset = 4 ! offset to mc types in exchange_f... ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
 
 !  print unit
 #include "priunit.h"
@@ -51,6 +52,7 @@ contains
                                      nr_vectors,                 &
                                      vector_symmetry,            &
                                      io2io_exchange,             &
+                                     do_vector_exchange,         &
                                      xmat,                       &
                                      ymat)
                                      
@@ -75,26 +77,28 @@ contains
       integer, intent(in)                 :: nr_vectors
       integer, intent(in)                 :: vector_symmetry
       logical, intent(in)                 :: io2io_exchange
+      logical, intent(in)                 :: do_vector_exchange
 !-------------------------------------------------------------------------------
 
-!     check for initialization of exchange_files_info
-      if(.not. exchange_f_info%exchange_file_init) call exchange_f_init(exchange_f_info)
-
-!     switch to ttss-block info for symmetry vector_symmetry in CI space 1
-      call ttss_switch(ttss_info,                                &
-                       vector_symmetry,                          &
-                       1)
 !     switch to exchange_files info for symmetry vector_symmetry
       call exchange_f_switch(exchange_f_info,                    &
+                             file_info,                          &
                              exchange_type,                      &
                              vector_symmetry,                    &
                              vector_type,                        &
                              io2io_exchange)
 
-       call push_pull_vector_exchange_driver(xmat,               &
-                                             nr_vectors,         &
-                                             exchange_f_info,    &
-                                             ttss_info)
+!     switch to ttss-block info for symmetry vector_symmetry in CI space 1
+      call ttss_switch(ttss_info,                                &
+                       vector_symmetry,                          &
+                       1)
+
+      if(do_vector_exchange)then
+        call push_pull_vector_exchange_driver(xmat,              &
+                                              nr_vectors,        &
+                                              exchange_f_info,   &
+                                              ttss_info)
+      end if
 
    end subroutine vector_exchange_driver
 !*******************************************************************************
@@ -324,7 +328,6 @@ contains
     A%present_fh_lu                 = -1
     A%present_fh_mc                 = -1
     A%push_pull_switch              = -1
-    A%mc_offset                     =  4 ! must be equal to the max number of generic files / 2 (1/2 == lucita; 1/2 == mcscf)
 
     A%exchange_files_generic(1)     = 'LUCITA_CEPVC.x'
     A%exchange_files_generic(2)     = 'LUCITA_CVECS.x'
@@ -348,6 +351,7 @@ contains
 !*******************************************************************************
 
   subroutine exchange_f_switch(A,                       &
+                               B,                       &
                                exchange_type,           &
                                vector_symmetry,         &
                                vector_type,             &
@@ -355,6 +359,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(exchange_files) :: A
+    type(file_type)      :: B
     integer, intent(in)  :: exchange_type
     integer, intent(in)  :: vector_symmetry
     integer, intent(in)  :: vector_type
@@ -362,6 +367,9 @@ contains
 !   ----------------------------------------------------------------------------
     integer              :: dummy
 !   ----------------------------------------------------------------------------
+
+    ! check for initialization of type exchange_files
+    if(.not. A%exchange_file_init) call exchange_f_init(A)
 
     A%present_sym_irrep     = vector_symmetry
     A%exchange_file_io2io   = io2io_exchange
@@ -386,16 +394,23 @@ contains
     end if
     rewind A%present_fh_lu
 
+!   set sequential file handle in type file_type to be potentially used inside LUCITA
+    if(B%current_file_fh_seqf(1) < 0)then
+       B%current_file_fh_seqf(1) = A%present_fh_lu
+    else
+       B%current_file_fh_seqf(2) = A%present_fh_lu
+    end if
+    
 !   step 2: MCSCF file
     if(A%exchange_file_io2io)then
 
-      inquire(opened=A%exchange_file_open(2),file=A%exchange_files_generic(vector_type+A%mc_offset), & 
+      inquire(opened=A%exchange_file_open(2),file=A%exchange_files_generic(vector_type+mc_offset), & 
               number=A%present_fh_mc)
 
       write(lupri,*) ' file found and status ==> ',A%present_fh_mc,A%exchange_file_open(2)
 
       if(.not. A%exchange_file_open(2))then
-        call gpopen(A%present_fh_mc,A%exchange_files_generic(vector_type+A%mc_offset),'OLD',' ','UNFORMATTED',    &
+        call gpopen(A%present_fh_mc,A%exchange_files_generic(vector_type+mc_offset),'OLD',' ','UNFORMATTED',    &
                     dummy,.FALSE.)
       end if
       rewind A%present_fh_mc

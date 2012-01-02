@@ -298,6 +298,7 @@ contains
 
   subroutine report_CI_vector_analysis(cref,print_lvl)
 
+  use file_type_module
   use ttss_block_module
 
 #include "parluci.h"
@@ -311,21 +312,26 @@ contains
 !-------------------------------------------------------------------------------
       integer                  :: eigen_state_id
       integer                  :: imzero, iampack
+      integer                  :: luc_vector_file
       integer                  :: lusc_vector_file
 !-------------------------------------------------------------------------------
 
-      call rewino(luc)
-
       if(luci_myproc == luci_master)then
+
+        luc_vector_file = luc
+        if(file_info%current_file_fh_seqf(1) > 0) luc_vector_file = file_info%current_file_fh_seqf(1)
+
+        call rewino(luc_vector_file)
+        
         do eigen_state_id = 1, nroot
 
           if(icistr == 1)then
-            call frmdsc_luci(cref,l_combi,l_combi,luc,imzero,iampack)
+            call frmdsc_luci(cref,l_combi,l_combi,luc_vector_file,imzero,iampack)
           else
-            lusc_vector_file = luc
+            lusc_vector_file = luc_vector_file
             if(nroot > 1)then
               call rewino(lusc1)
-              call copvcd(luc,lusc1,cref,0,-1)
+              call copvcd(luc_vector_file,lusc1,cref,0,-1)
               lusc_vector_file = lusc1
             end if
           end if

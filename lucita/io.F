@@ -28,7 +28,7 @@ C
 * parallelization by Stefan Knecht                                    *
 *                                                                     *
 ***********************************************************************
-      subroutine set_file_handles(irefsm,lucita_ci_run_id)
+      subroutine set_file_handles(irefsm)
 *
 #include "implicit.h"
 #include "priunit.h"
@@ -38,42 +38,23 @@ C
       integer irefsm
       INTEGER LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL, LUDMMY_MPIL
-      character (len=12), intent(in) :: lucita_ci_run_id
       character (len=12)             :: mcref_name_generic
       character (len=16)             :: mcref_name_full
+!
+!
+!  60 - 69 :  Important files retained (DIAG,C,HC etc.)
+!  ---------
+!       60 :    CI diagonal
+!       61 :    CI trial vector(s)
+!       62 :    CI sigma vector(s)
+!       63 :    CI/MCSCF reference vector
+!
+!  70 - 80 :  Scratch files
+!  ---------
 *
-* Assign logical unit numbers for LUCIA:
-*==================================================
-*  Complete revision motivated by MCSCF development
-*==================================================
-*
-*   1 -  9 :  Retained for I/O
-*  ---------
-*        5 :  Standard IN
-*        6 :  Standard OUT
-*
-*  60 - 69 :  Important files retained (DIAG,C,HC etc.)
-*  ---------
-*       60 :    CI diagonal
-*       61 :    CI reference vector
-*       62 :    CI sigma vector
-*
-*  70 - 79 :  Scratch files
-*  ---------
-*
-*  80 - 99 :  Files in use in different context
-*             (e.g. standalone, INS, MOLCAS etc.)
-*  ---------
-*
-      if(lucita_ci_run_id .eq. 'return CIdim') return
-*
-* =================
-* Internal files
-* =================
-*. CI diagonal
       LUDIA = 60
-*
       LUDIA_MPIN ="LUCITA_HDIAG"
+
       if(luci_myproc .gt. luci_master)then
         IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
           WRITE (NLUDIA_MPI,'(A12,A1,I1)') LUDIA_MPIN,'.',LUCI_MYPROC
@@ -102,38 +83,10 @@ C
         end if
         write(NLUDIA_MPI,'(a12,a1,a1)') LUDIA_MPIN,'.',symflabel
       end if
-*
+
       Open(Unit=LUDIA,File=NLUDIA_MPI(1:LUDIA_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 
-*. MCSCF reference vector
-      LUMCREF            = 78
-      mcref_name_generic = "LUCITA_CEPVC"
-      if(luci_myproc .gt. luci_master)then
-        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-          WRITE (mcref_name_full,'(A12,A1,I1)') 
-     &           mcref_name_generic,'_',LUCI_MYPROC
-          mcreflu_l = 14
-        ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-          WRITE (mcref_name_full,'(A12,A1,I2)')
-     &           mcref_name_generic,'_',LUCI_MYPROC
-          mcreflu_l = 15
-        ELSE                                ! MPI ID has three digits
-          WRITE (mcref_name_full,'(A12,A1,I3)')
-     &           mcref_name_generic,'_',LUCI_MYPROC
-          mcreflu_l = 16
-        ENDIF
-      else
-        mcreflu_l = 14
-!       on common block in parluci.h
-        symflabel = symflab_data(irefsm)
-!       write(lupri,*) ' symflabel is: ',symflabel
-        write(mcref_name_full,'(a12,a1,a1)') 
-     &        mcref_name_generic,'.',symflabel
-      end if
-      if(luci_myproc .eq. 0)
-     &Open(Unit=LUMCREF,File=mcref_name_full(1:mcreflu_l),
-     &     Status='UNKNOWN',Form='UNFORMATTED')
 
 *. CI vector
       LUC = 61
@@ -180,9 +133,41 @@ C
       if(luci_myproc.eq.0)
      &Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
+
+!     CI/MCSCF reference vector
+      LUMCREF            = 63
+      mcref_name_generic = "LUCITA_CEPVC"
+
+      if(luci_myproc .gt. luci_master)then
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+          WRITE (mcref_name_full,'(A12,A1,I1)') 
+     &           mcref_name_generic,'_',LUCI_MYPROC
+          mcreflu_l = 14
+        ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+          WRITE (mcref_name_full,'(A12,A1,I2)')
+     &           mcref_name_generic,'_',LUCI_MYPROC
+          mcreflu_l = 15
+        ELSE                                ! MPI ID has three digits
+          WRITE (mcref_name_full,'(A12,A1,I3)')
+     &           mcref_name_generic,'_',LUCI_MYPROC
+          mcreflu_l = 16
+        ENDIF
+      else
+        mcreflu_l = 14
+!       on common block in parluci.h
+        symflabel = symflab_data(irefsm)
+!       write(lupri,*) ' symflabel is: ',symflabel
+        write(mcref_name_full,'(a12,a1,a1)') 
+     &        mcref_name_generic,'.',symflabel
+      end if
+      if(luci_myproc .eq. 0)
+     &Open(Unit=LUMCREF,File=mcref_name_full(1:mcreflu_l),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+
 * =================
 * Scratch files
 * =================
+
       LUSC1 = 70
       LUSC1_MPIN ="LUSC1"
       LUSC2 = 71
@@ -223,9 +208,9 @@ C
       LUSC37_MPIN ="LUSC37"
       LUSC38 = 77
       LUSC38_MPIN ="LUSC38"
-      LUSC40 = 79
+      LUSC40 = 78
       LUSC40_MPIN ="LUSC40"
-      LUSC41 = 97
+      LUSC41 = 79
       LUSC41_MPIN ="LUSC41"
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC34_MPI,'(A6,A1,I1)') LUSC34_MPIN,'.',LUCI_MYPROC
@@ -272,7 +257,7 @@ C
      &     Status='UNKNOWN',Form='UNFORMATTED')
 
 *. Dumping symmmetry info, MO-AO expansion matrix and property integral
-      LU91     = 69
+      LU91     = 80
 *
       END
 ***********************************************************************
