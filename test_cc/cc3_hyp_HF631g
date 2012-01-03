@@ -86,15 +86,15 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -99\.8705134058" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -99\.9862039342" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -99\.9894612803" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -99\.8705133766" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -99\.9862038852" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -99\.9894612390" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CC3 hyperpolarizability :
-CRIT1=`$GREP  "XDIPLEN  \(unrel\.\) ( -|-0)\.2000   ZDIPLEN  \(unrel\.\)  ( |0)\.1000   XDIPLEN  \(unrel\.\)  ( |0)\.1000     -1\.7420601" $log | wc -l`
+CRIT1=`$GREP  "XDIPLEN  \(unrel\.\) ( -|-0)\.2000   ZDIPLEN  \(unrel\.\)  ( |0)\.1000   XDIPLEN  \(unrel\.\)  ( |0)\.1000     -1\.7420603" $log | wc -l`
 TEST[2]=$CRIT1
 CTRL[2]=1
 ERROR[2]="CC3 HYPERPOLARIZABILITY NOT CORRECT"

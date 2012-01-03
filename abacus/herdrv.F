@@ -228,7 +228,7 @@ C
 #ifdef BUILD_GEN1INT
 C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
       if (TEST_GEN1INT)
-     &  call gen1int_dal_test(LWORK, WORK, LUPRI, IPRDEF)
+     &  call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
 #endif
 
 C
@@ -1216,12 +1216,8 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GOTO 100
   239    CONTINUE
-#ifdef BUILD_GEN1INT
             TEST_GEN1INT = .true.
             goto 100
-#else
-            call QUIT("Gen1Int is not installed!")
-#endif
   240    CONTINUE
             ONEPRP = .TRUE.
             GO TO 100

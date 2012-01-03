@@ -609,7 +609,7 @@ C
 #ifdef BUILD_GEN1INT
 C...  added by Bin Gao, Oct. 2, 2011
 C...  cleans up for Gen1Int interface
-      call gen1int_dal_clean
+      call gen1int_ifc_clean
 #endif
       CALL QEXIT('DALTON main')
       END

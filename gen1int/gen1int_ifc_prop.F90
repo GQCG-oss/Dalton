@@ -51,19 +51,21 @@
   !> \param num_dens is the number of AO density matrices
   !> \param ao_dens contains the AO density matrices
   !> \param get_expt indicates if getting expectation values back
+  !> \param redunt_expt indicates if getting expectation values of redundant total
+  !>        geometric derivatives
   !> \param wrt_expt indicates if writing expectation values on file
   !> \param io_std is the IO unit of standard output
   !> \param level_print is the level of print
   !> \return val_ints contains the calculated integrals
   !> \return val_expt contains the calculated expectation values
-  subroutine gen1int_dal_prop(prop_name, is_lao, order_mom,  &
-                              base_geo_derv, num_cents,      &
-                              idx_cent, order_cent,          &
-                              is_triang, get_int, wrt_int,   &
-                              dim_int, val_ints,             &
-                              kind_dens, dim_dens, num_dens, &
-                              ao_dens, get_expt, wrt_expt,   &
-                              val_expt, io_std, level_print)
+  subroutine gen1int_ifc_prop(prop_name, is_lao, order_mom,   &
+                              base_geo_derv, num_cents,       &
+                              idx_cent, order_cent,           &
+                              is_triang, get_int, wrt_int,    &
+                              dim_int, val_ints,              &
+                              kind_dens, dim_dens, num_dens,  &
+                              ao_dens, get_expt, redunt_expt, &
+                              wrt_expt, val_expt, io_std, level_print)
     ! AO sub-shells
     use gen1int_shell
     implicit none
@@ -84,6 +86,7 @@
     integer, intent(in) :: num_dens
     real(REALK), intent(in) :: ao_dens(dim_dens,num_dens)
     logical, intent(in) :: get_expt
+    logical, intent(in) :: redunt_expt
     logical, intent(in) :: wrt_expt
     real(REALK), intent(inout) :: val_expt(num_dens,*)
     integer, intent(in) :: io_std
@@ -93,10 +96,12 @@
 #include "mxcent.h"
     ! uses \var(NUCDEP)
 #include "nuclei.h"
+    integer order_geo           !order of total geometric derivatives
     integer num_opt             !number of operators
     integer kind_int            !kind of integral matrices, 1 for symmetric, -1 for
                                 !anti-symmetric, others for square
     integer num_geo_derv        !number of total geometric derivatives
+    logical alloc_expt          !if allocating temporary expectation values
     real(REALK), allocatable :: tmp_expt(:,:,:)
                                 !temporary expectation values
     integer num_ao_orb          !total number of atomic orbitals
@@ -104,7 +109,7 @@
     type(shell_int_t) prop_int  !contracted property integrals between two AO sub-shells
     integer ishell, jshell      !incremental recorders over sub-shells
     integer ierr                !error information
-    call QENTER("gen1int_dal_prop")
+    call QENTER("gen1int_ifc_prop")
     ! computes the number of total geometric derivatives
     if (num_cents>0) then
       num_geo_derv = (order_cent(1)+1)*(order_cent(1)+2)/2
@@ -119,10 +124,15 @@
     ! gets the kind of integral matrices
     call gen1int_prop_attr(prop_name, is_lao, order_mom, 0, 0, NUCDEP, &
                            num_opt, kind_int)
-    ! only writes the expectation values but without returning
-    if (wrt_expt .and. .not.get_expt) then
+    ! gets the order of total geometric derivatives
+    order_geo = sum(order_cent)
+    ! only writes the expectation values but without returning, or gets the
+    ! expectation values of redundant total geometric derivatives (order>1)
+    alloc_expt = (wrt_expt .and. .not.get_expt) .or. &
+                 (get_expt .and. redunt_expt .and. order_geo>1)
+    if (alloc_expt) then
       allocate(tmp_expt(num_dens,num_opt,num_geo_derv), stat=ierr)
-      if (ierr/=0) call QUIT("gen1int_dal_prop>> failed to allocate tmp_expt!")
+      if (ierr/=0) call QUIT("gen1int_ifc_prop>> failed to allocate tmp_expt!")
       tmp_expt = 0.0_REALK
     end if
     ! gets the total number of atomic orbitals
@@ -151,7 +161,17 @@
             end if
           end if
           ! calculates the expectation values
-          if (get_expt) then
+          if (alloc_expt) then
+            if (ishell<jshell) then
+              call gen1int_shell_tr_tri_off(prop_int, 0, .true.,             &
+                                            num_ao_orb, kind_dens, dim_dens, &
+                                            num_dens, ao_dens, tmp_expt)
+            else
+              call gen1int_shell_tr_tri_diag(prop_int, 0, .true.,             &
+                                             num_ao_orb, kind_dens, dim_dens, &
+                                             num_dens, ao_dens, tmp_expt)
+            end if
+          else if (get_expt) then
             if (ishell<jshell) then
               call gen1int_shell_tr_tri_off(prop_int, base_geo_derv, .true., &
                                             num_ao_orb, kind_dens, dim_dens, &
@@ -161,29 +181,11 @@
                                              num_ao_orb, kind_dens, dim_dens, &
                                              num_dens, ao_dens, val_expt)
             end if
-          else if (wrt_expt) then
-            if (ishell<jshell) then
-              call gen1int_shell_tr_tri_off(prop_int, base_geo_derv, .true., &
-                                            num_ao_orb, kind_dens, dim_dens, &
-                                            num_dens, ao_dens, tmp_expt)
-            else
-              call gen1int_shell_tr_tri_diag(prop_int, base_geo_derv, .true., &
-                                             num_ao_orb, kind_dens, dim_dens, &
-                                             num_dens, ao_dens, tmp_expt)
-            end if
           end if
           ! cleans contracted property integrals
           call gen1int_shell_int_clean(prop_int)
         end do
       end do
-!FIXME
-      ! the path and dimension should already be created
-      if (wrt_expt) then
-        if (get_expt) then
-        else
-          deallocate(tmp_expt)
-        end if
-      end if
     ! anti-symmetric integral matrices (column- or ket-major, upper and diagonal parts)
     case(-1)
       ! loops over AO sub-shells on ket center
@@ -206,7 +208,18 @@
             end if
           end if
           ! calculates the expectation values
-          if (get_expt) then
+          if (alloc_expt) then
+            if (ishell<jshell) then
+              ! notice that the integrals in \var(prop_int) will be changed afterwards
+              call gen1int_shell_tr_tri_off(prop_int, 0, .false.,            &
+                                            num_ao_orb, kind_dens, dim_dens, &
+                                            num_dens, ao_dens, tmp_expt)
+            else
+              call gen1int_shell_tr_tri_diag(prop_int, 0, .false.,            &
+                                             num_ao_orb, kind_dens, dim_dens, &
+                                             num_dens, ao_dens, tmp_expt)
+            end if
+          else if (get_expt) then
             if (ishell<jshell) then
               ! notice that the integrals in \var(prop_int) will be changed afterwards
               call gen1int_shell_tr_tri_off(prop_int, base_geo_derv, .false., &
@@ -217,30 +230,11 @@
                                              num_ao_orb, kind_dens, dim_dens,  &
                                              num_dens, ao_dens, val_expt)
             end if
-          else if (wrt_expt) then
-            if (ishell<jshell) then
-              ! notice that the integrals in \var(prop_int) will be changed afterwards
-              call gen1int_shell_tr_tri_off(prop_int, base_geo_derv, .false., &
-                                            num_ao_orb, kind_dens, dim_dens,  &
-                                            num_dens, ao_dens, tmp_expt)
-            else
-              call gen1int_shell_tr_tri_diag(prop_int, base_geo_derv, .false., &
-                                             num_ao_orb, kind_dens, dim_dens,  &
-                                             num_dens, ao_dens, tmp_expt)
-            end if
           end if
           ! cleans contracted property integrals
           call gen1int_shell_int_clean(prop_int)
         end do
       end do
-!FIXME
-      ! the path and dimension should already be created
-      if (wrt_expt) then
-        if (get_expt) then
-        else
-          deallocate(tmp_expt)
-        end if
-      end if
     ! square integral matrices (column- or ket-major)
     case default
       if (is_triang) then
@@ -260,32 +254,41 @@
                                           wrt_int, val_ints)
           end if
           ! calculates the expectation values
-          if (get_expt) then
-            call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
-                                         kind_dens, dim_dens, num_dens, ao_dens, &
-                                         val_expt)
-          else if (wrt_expt) then
+          if (alloc_expt) then
             call gen1int_shell_tr_square(prop_int, 0, num_ao_orb, kind_dens, &
                                          dim_dens, num_dens, ao_dens,        &
                                          tmp_expt)
+          else if (get_expt) then
+            call gen1int_shell_tr_square(prop_int, base_geo_derv, num_ao_orb,    &
+                                         kind_dens, dim_dens, num_dens, ao_dens, &
+                                         val_expt)
           end if
           ! cleans contracted property integrals
           call gen1int_shell_int_clean(prop_int)
         end do
       end do
-!FIXME
-      ! the path and dimension should already be created
-      if (wrt_expt) then
-        if (get_expt) then
-        else
-          deallocate(tmp_expt)
-        end if
-      end if
     end select
-    call QEXIT("gen1int_dal_prop")
+    if (alloc_expt) then
+      ! puts the expectation values from Gen1Int into appropriate positions
+      if (get_expt) then
+        call geom_total_redundant_expt(num_cents, idx_cent, order_cent, NUCDEP,  &
+                                       num_dens*num_opt, num_geo_derv, tmp_expt, &
+                                       (3*NUCDEP)**order_geo, val_expt)
+      end if
+!FIXME: the path and dimensions of expectation values should already be created
+      ! writes \var(tmp_expt) into file
+      if (wrt_expt) then
+
+      end if
+      deallocate(tmp_expt)
+    ! writes parts of \var(val_expt) into file
+    else if (wrt_expt) then
+
+    end if
+    call QEXIT("gen1int_ifc_prop")
     return
-100 format("gen1int_dal_prop>> ",A,I10)
+100 format("gen1int_ifc_prop>> ",A,I10)
 #else
-    call QUIT("gen1int_dal_prop>> Gen1Int is not installed!")
+    call QUIT("gen1int_ifc_prop>> Gen1Int is not installed!")
 #endif
-  end subroutine gen1int_dal_prop
+  end subroutine gen1int_ifc_prop
