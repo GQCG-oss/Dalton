@@ -155,6 +155,12 @@ C
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
+      IF (NBAST .GT. 255 .AND. .NOT. NEWTRA) THEN
+         NEWTRA = .TRUE.
+         WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
+     &     /'integral transformation (from 1988 ;-) )',
+     &      'because more than 255 basis functions.'
+      END IF
       IF (NEWTRA) THEN
          CALL SIR_INTOPEN_NEWTRA
          RETURN
@@ -2241,6 +2247,9 @@ C
    45 CONTINUE
 C
       DST = SECOND()
+      IF (IPRTRA .GE. 0) THEN
+         CALL GETTIM(TCPU0,TWALL0)
+      END IF
 C
 C     900801-hjaaj: check if transformation already done
 C     971201-hjaaj: code moved to here (was too late)
@@ -2449,6 +2458,14 @@ C
       DTIM = DFIN - DSTTRA
       IF (IPRTRA .GT. 0) WRITE (LUPRI,49) DTIM
    49 FORMAT(' TOTAL TIME IN TRACD,SORTB,TRAAB',F10.2)
+      IF (IPRTRA .GE. 0) THEN
+         CALL GETTIM(TCPU,TWALL)
+         TCPU  = TCPU -TCPU0
+         TWALL = TWALL-TWALL0
+         WRITE(LUPRI,2200) TCPU, TWALL
+      END IF
+ 2200 FORMAT(/' Integral transformation: Total CPU and WALL times (sec)'
+     &       ,2F12.3)
 C
 C set JTER to 2 to suppress printing on next call of TRACTL_1/hj-840710
       IF (IPRTRA .LT. 10) JTER = 2
