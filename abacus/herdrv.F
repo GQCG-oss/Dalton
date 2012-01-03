@@ -434,7 +434,7 @@ C
 C
 C     *** Initialize ***
 C
-      ! CALL HERINI - Apr. 20011: HERINI now called in EXEHER /hjaaj
+      ! CALL HERINI - Apr. 2011: HERINI now called in EXEHER /hjaaj
       !               so Hermit variables are also initialized if only
       !               ABACUS
 
@@ -1626,8 +1626,8 @@ C
 !    &             '*QM3INP'/                                   ! TABDIR(9)
 
 C 302   CALL REAINP(WORD,RELCAL,TSTINP)
-  302   CALL QUIT('ERROR, *READIN has been moved to **DALTON section'//
-     &     ' as *MOLBAS')
+  302   CALL QUIT('Input ERROR, *READIN has been moved to **DALTON'//
+     &     ' section as *MOLBAS')
       GO TO 301
   303   CALL HR1INP(WORD)
       GO TO 301
@@ -2250,7 +2250,7 @@ C
 C        Contract any primitive Douglas-Kroll integrals if necessary
 C     
          IF (DKTRAN .AND. .NOT. PVPINT) THEN
-            CALL DKCONT(PROPRI,IPRONE,WORK,LWORK)
+            CALL DKH_CONT(PROPRI,IPRONE,WORK,LWORK)
          END IF
 C
 C        *****************************************
@@ -3823,16 +3823,6 @@ Cholesky
 C
       IF (.NOT. FIRST_CALL) RETURN
       FIRST_CALL = .FALSE.
-C
-C     HJAaJ June 2009: force NEWTRA if more than 255 basis functions
-C
-      IF (NBASIS .GT. 255 .AND. .NOT.NEWTRA) THEN
-         NEWTRA = .TRUE.
-         WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
-     &     /'integral transformation (from 1988 ;-) )',
-     &      'because more than 255 basis functions.'
-      END IF
-C
 C
 C     Initialize /CBIHER/
 C
