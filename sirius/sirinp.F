@@ -5411,12 +5411,12 @@ C     ... get total charge
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================')
  1002 FORMAT( 5X,'For the wave function of type :      >>> ',A,' <<<',
-     *       /5X,'Number of closed shell electrons',I11,
-     *       /5X,'Number of electrons in active shells',I7,
-     *       /5X,'Total charge of the molecule',I15,
-     *      //5X,'Spin multiplicity and 2 M_S',I16,I5,
-     *       /5X,'Total number of symmetries',I17,
-     *       /5X,'Reference state symmetry',I19)
+     *       /5X,'Number of closed shell electrons',I12,
+     *       /5X,'Number of electrons in active shells',I8,
+     *       /5X,'Total charge of the molecule',I16,
+     *      //5X,'Spin multiplicity and 2 M_S',I17,I10,
+     *       /5X,'Total number of symmetries',I18,
+     *       /5X,'Reference state symmetry',I20)
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T
