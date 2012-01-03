@@ -607,11 +607,12 @@ C
 ! Only set MS2 = 2 * MS value if not set in input, or out of bounds:
          IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
 
-C. Ms component chosen as lowest possible component for CSF's
             IF (NOCSF) THEN
                MS2 = MULTS - 1
+C. Ms component chosen as maximum possible value for determinants
             ELSE
                MS2 = MOD(MULTS-1,2)
+C. Ms component chosen as lowest possible component for CSF's for computational efficiency
             END IF
 
          END IF
