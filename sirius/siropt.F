@@ -2073,10 +2073,10 @@ C
       ELSE
          IF (DEPRED .NE. 0.0D0) THEN
            RATIO = DEACT / DEPRED
-           WRITE(LUW4,1110) DEACT, DEPRED, RATIO
+           WRITE(LUW4,1100) DEACT, DEPRED, RATIO
            WRITE(LUW4,'(A)') ' Close to convergence, ratio set to one.'
          ELSE
-           IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1110) DEACT,DEPRED
+           WRITE (LUW4,1110) DEACT,DEPRED
          END IF
          RATIO = D1
          ISTEP = -1

@@ -2779,9 +2779,10 @@ C     sufficient, as it will not stop duplication of AOs within a single
 C     block, as for instance may happen if you use Pople-type basis sets
 C     K.Ruud, Nov.-2006
 C
-         WRITE (LUPRI,*) ' >>> WARNING GTOINP: If primitive exponents'//
-     &        ' are duplicated in several blocks, ',
-     &        ' >>> Douglas-Kroll will not work correctly'
+         WRITE (LUPRI,'(//A/A/)')
+     &      ' WARNING GTOINP >>> If primitive exponents'//
+     &         ' are duplicated in several blocks,',
+     &      ' WARNING GTOINP >>> Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C

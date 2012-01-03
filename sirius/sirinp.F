@@ -227,7 +227,7 @@ C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
 C   PCMLOG : PCM
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
-C   SPINFO : MULTS; MS2
+C   SPINFO : MULTS, MS2
 C
 #include <gnrinf.h>
 #include <maxash.h>
@@ -462,8 +462,8 @@ C
       NELMX1 = 0
       NELMN3 = 0
       NELMX3 = 0
-      MULTS  = -2
-      MS2    = -2
+      MULTS  = -2     ! MULTS .lt. 0 is code for not set yet
+      MS2    = -12345 ! -12345 is code for not set by .MS2 option
 C
 C********** Default values section MP2INP *****
 C
@@ -1542,9 +1542,6 @@ C
             NELMN3 = 0
             NELMX3 = 2
             NACTEL = ICHARG - KCHARG - 2*NISHT
-            IF (MS2 .LT. 0) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
-            IF (MULTS .LT. 0) MULTS = MS2 + 1
-            ISPIN = MULTS
             IF (LSYM .LT. 0) LSYM = 1
          ELSE IF (DOFCI) THEN
             ! MCTYPE = 1 ! CAS (set in CI INPUT)
@@ -1562,9 +1559,6 @@ C
             NELMN3 = 0
             NELMX3 = 0
             NACTEL = ICHARG - KCHARG - 2*NISHT
-            IF (MS2 .LT. 0) MS2 = MOD(NACTEL,2) ! MS2 = 2*MS
-            IF (MULTS .LT. 0) MULTS = MS2 + 1
-            ISPIN = MULTS
             IF (LSYM .LT. 0) LSYM = 1
          END IF
       ELSE IF (DOSCF) THEN
@@ -1572,6 +1566,18 @@ C
          IF (THQKVA .LE. D0) THQKVA = 0.8D0
       END IF
 
+      IF (MS2 .EQ. -12345) THEN ! MS2 = 2*MS
+         IF (MULTS .LE. 0) MULTS = MOD(NACTEL,2) + 1
+         IF (FLAG(27)) THEN ! determinants
+            MS2 = MULTS - 1 ! MS = max value = S, to minimize risk of converging to wrong spin state
+         ELSE
+            MS2 = MOD(NACTEL,2) ! MS = 0 or 1/2, for most efficient code
+         END IF
+      ELSE
+         IF (MULTS .LE. 0) MULTS = abs(MS2) + 1
+      END IF
+      ISPIN = MULTS
+C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
 C
 C     Call AVESET to set up supersymmetry information
 C     (If SUPSYM false, then supersymmetry information
@@ -2673,13 +2679,12 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN WAVINP ')
+         CALL QUIT(' ILLEGAL KEYWORD for *CONFIG ')
 C
 C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
   101 CONTINUE
       IF (MCTYPE .EQ. 2) THEN
-         WRITE (LUPRI,*) 'Sirius WAVINP ERROR, both CAS and '//
-     &                   'RAS specified.'
+         WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          MCTYPE = 1
@@ -2705,19 +2710,27 @@ C *** Option 3 >ELECTR< Number of active electrons
   103 READ(LUCMD,*) NACTEL
       GO TO 100
 C
-C *** Option 4 >.MS2  <
+C *** Option 4 >MS2   < 2 * M_S value
   104 READ(LUCMD,*) MS2
-      IF (MULTS .LT. 0) MULTS = MS2 + 1
-      ISPIN = MULTS
-C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
+      IF (MULTS .GT. 0) THEN
+         IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
+            WRITE (LUPRI,'(/A,2I10/)')
+     &      ' *CONFIG error, .SPIN M and .MS2 not compatible:',MULTS,MS2
+            INPERR = INPERR + 1
+         END IF
+      END IF
       GO TO 100
 C
 C *** Option 5 >SPIN M<  state spin multiplicity
-C                         SPIN QUANTUM NUMBER*2+1
+C                        SPIN QUANTUM NUMBER*2 + 1
   105 READ(LUCMD,*) MULTS
-      IF (MS2 .LT. 0) MS2 = MOD(MULTS-1,2)
-      ISPIN = MULTS
-C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
+      IF (MS2 .NE. -12345) THEN
+         IF (MS2 .LT. -(MULTS-1) .OR. MS2 .GT. MULTS-1) THEN
+            WRITE (LUPRI,'(/A,2I10/)')
+     &      ' *CONFIG error, .SPIN M and .MS2 not compatible:',MULTS,MS2
+            INPERR = INPERR + 1
+         END IF
+      END IF
       GO TO 100
 C
 C *** Option 6 >SYMMET<  Space symmetry of MCSCF wave function
@@ -2728,7 +2741,7 @@ C *** Option 7 >RAS1 H< number of holes in RAS1
   107 CONTINUE
          IF (RAS1EL) THEN
             WRITE (LUPRI,'(/A/)')
-     *         ' WAVINP error, both .RAS1 H and .RAS1 E specified.'
+     *         ' *CONFIG error, both .RAS1 H and .RAS1 E specified.'
             INPERR = INPERR + 1
          END IF
          READ(LUCMD,*) NHL1MN,NHL1MX
@@ -2738,8 +2751,7 @@ C
 C *** Option 8 >RAS1 S<   RAS1 orbital space
   108 CONTINUE
       IF (MCTYPE .EQ. 1) THEN
-         WRITE (LUPRI,*) 'Sirius WAVINP ERROR, both CAS '//
-     &                   'and RAS specified.'
+         WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          MCTYPE = 2
@@ -2749,8 +2761,7 @@ C
 C *** Option 9 >RAS2 S<   RAS2 orbital space
   109 CONTINUE
       IF (MCTYPE .EQ. 1) THEN
-         WRITE (LUPRI,*) 'Sirius WAVINP ERROR, both CAS '//
-     &                   'and RAS specified.'
+         WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          MCTYPE = 2
@@ -2760,8 +2771,7 @@ C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
   110 CONTINUE
       IF (MCTYPE .EQ. 1) THEN
-         WRITE (LUPRI,*) 'Sirius WAVINP ERROR, both CAS '//
-     &                   'and RAS specified.'
+         WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
          MCTYPE = 2
@@ -2772,7 +2782,7 @@ C *** Option 11 >RAS1 E<   RAS1 electrons
   111 CONTINUE
          IF (RAS1EL) THEN
             WRITE (LUPRI,'(/A/)')
-     *         ' WAVINP error, both .RAS1 H and .RAS1 E specified.'
+     *         ' *CONFIG error, both .RAS1 H and .RAS1 E specified.'
             INPERR = INPERR + 1
          END IF
          READ(LUCMD,*) NELMN1,NELMX1
@@ -5032,6 +5042,7 @@ C
 #include <siripc.h>
 #include <gnrinf.h>
 #include <pcmlog.h>
+#include <spinfo.h>
 C
       CHARACTER*6 RDMOLB(12)
       CHARACTER*8  WFTYPE
@@ -5380,18 +5391,17 @@ C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)
 C     ... get total charge
-      IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) THEN
-         WRITE(IWUNIT,1002) WFTYPE,NINEL,NACTEL,ICHARG,ISPIN,NSYM,LSYM
-      END IF
+      IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) WRITE(IWUNIT,1002)
+     &   WFTYPE,NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================')
  1002 FORMAT( 5X,'For the wave function of type :      >>> ',A,' <<<',
-     *       /5X,'Number of closed shell electrons',I11,
-     *       /5X,'Number of electrons in active shells',I7,
-     *       /5X,'Total charge of the molecule',I15,
-     *      //5X,'Spin multiplicity',I26,
-     *       /5X,'Total number of symmetries',I17,
-     *       /5X,'Reference state symmetry',I19)
+     *       /5X,'Number of closed shell electrons',I12,
+     *       /5X,'Number of electrons in active shells',I8,
+     *       /5X,'Total charge of the molecule',I16,
+     *      //5X,'Spin multiplicity and 2 M_S',I17,I10,
+     *       /5X,'Total number of symmetries',I18,
+     *       /5X,'Reference state symmetry',I20)
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T

@@ -443,7 +443,7 @@ C  /* Deck soodso */
 C
 C      Stephan P. A. Sauer 22/12-1999
 C
-C      This routine allocates some non-real arrays and calls the SOODS1,
+C      This routine allocates some non-real arrays and calls the SOODSO_1,
 C      the routine which calculates contributions from individual occupied 
 C      orbitals to the diamagnetic spin orbit part of the 
 C      spin-spin coupling constants.
@@ -473,18 +473,17 @@ C------------------------------
 C     Allocation of work memory
 C------------------------------
 C
-      KDLAB  = 1
-      KIDSYM = KDLAB  + 9*MXCENT
+      KIDSYM = 1
       KIDADR = KIDSYM + (9*MXCENT + 1)/IRAT
       KWORK1 = KIDADR + (9*MXCENT + 1)/IRAT
       LWORK1 = LWORK  - KWORK1
 C
       IF (LWORK1 .LT. 0) THEN
-         WRITE(6,*) 'SOODSO.1: Need :',KWORK1,'  Available :',LWORK
+         WRITE(LUPRI,*) 'SOODSO.1: Need :',KWORK1,'  Available :',LWORK
          CALL QUIT('Insufficient memory in SOODSO.1')
       ENDIF
 C
-      CALL SOODS1(IPRSOS,NLOCC,CLOCO,SPNDSO,WORK(KDLAB),WORK(KIDSYM),
+      CALL SOODSO_1(IPRSOS,NLOCC,CLOCO,SPNDSO,WORK(KIDSYM),
      &            WORK(KIDADR),WORK(KWORK1),LWORK1)
 C
       CALL QEXIT('SOOSDO')
@@ -493,8 +492,8 @@ C
 C
       END
 C**********************************************************************
-C  /* Deck soods1 */
-      SUBROUTINE SOODS1(IPRSOS,NLOCC,CLOCO,SPNDSO,LABINT,INTREP,INTADR,
+C  /* Deck soodso_1 */
+      SUBROUTINE SOODSO_1(IPRSOS,NLOCC,CLOCO,SPNDSO,INTREP,INTADR,
      &                  WORK,LWORK)
 C
 C      Stephan P. A. Sauer 16/2-1999
@@ -517,9 +516,9 @@ C
       PARAMETER (D0 = 0.0D+00, D1 = 1.0D+00, D2 = 2.0D+00)
       DIMENSION   CLOCO(NOCCT,NLOCC)
       DIMENSION   SPNDSO(NLOCC,NLOCC,3*NUCDEP,3*NUCDEP)
-      CHARACTER   LABINT(9*MXCENT)*8
       DIMENSION   INTREP(9*MXCENT), INTADR(9*MXCENT)
       DIMENSION   WORK(LWORK)
+      CHARACTER*8 LABINT(9*MXCENT)
       CHARACTER*8 LABEL
       CHARACTER*4 DSONUM
 C
@@ -538,7 +537,7 @@ C
 #include <inflin.h>
 #include <inftap.h>
 C
-      CALL QENTER('SOODS1')
+      CALL QENTER('SOODSO_1')
 C
 C==========================
 C     Get the DSO integrals
@@ -564,7 +563,7 @@ C
       LWORK1 = LWORK  - KWORK1
 C
       IF (LWORK1 .LT. 0) THEN
-         WRITE(6,*) 'SOODS1.1: Need :',KWORK1,'  Available :',LWORK
+         WRITE(LUPRI,*) 'SOODSO_1.1: Need :',KWORK1,'  Available :',LWORK
          CALL QUIT('Insufficient memory in SOODSO.1')
       ENDIF
 C
@@ -796,7 +795,7 @@ C
 C
       END DO
 C
-      CALL QEXIT('SOODS1')
+      CALL QEXIT('SOODSO_1')
 C
       RETURN
 C

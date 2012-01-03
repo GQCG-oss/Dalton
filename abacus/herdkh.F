@@ -30,8 +30,8 @@ C Douglas-Kroll-Hess - in Dalton.
 C
 C Original implementation by Kenneth Ruud, September 2000.
 C
-C  /* Deck dkintF */
-      SUBROUTINE DKINTF(WORK,LWORK)
+C  /* Deck dkh_intF */
+      SUBROUTINE DKH_INTF(WORK,LWORK)
 C
 C     Driver for calculating Douglas-Kroll-Hess integrals in the primitive
 C     basis and transforming them to the appropriate form before 
@@ -45,7 +45,7 @@ C
 #include <maxorb.h>
 C
       DIMENSION WORK(LWORK)
-      LOGICAL HUCKELBKP
+      LOGICAL DOHUCKEL_BKP
 C
 #include <inftap.h>
 #include <cbiher.h>
@@ -56,21 +56,10 @@ C
 #include <gnrinf.h>
 #include <huckel.h>
 C
-      CALL QENTER('DKINTF')
+      CALL QENTER('DKH_INTF')
       CALL GETTIM(TIMHER,WALHER)
 C
-      CALL HERINI
-      HAMILT = .FALSE.
-      PVPINT = .TRUE.
-      POTENE = .TRUE.
-      KINENE = .TRUE.
-      PROPRI = .FALSE.
-      HUCKELBKP = DOHUCKEL
-      DOHUCKEL = .FALSE.
-      ONEPRP = .TRUE.
-      RUNONE = .TRUE.
-      RUNSUP = .FALSE.
-      RUNTWO = .FALSE.
+      CALL TITLER('Constructing DKH Hamiltonian','*',103)
 C
 C     Process basis set, although now as a decontracted set without
 C     normalization of the primitive orbitals (UNCONT .true.)
@@ -78,23 +67,41 @@ C     (READIN will be called again in HERINP and generate the
 C     proper contracted basis and the info necessary to
 C     transform Douglas-Kroll-Hess integrals to contracted basis)
 C      
-      CALL DKREIN(WORK,LWORK)
+      DOHUCKEL_BKP = DOHUCKEL
+      DOHUCKEL = .FALSE.
+      CALL DKH_READIN(WORK,LWORK)
+C
+      CALL HERINI
+      HAMILT = .FALSE.
+      PVPINT = .TRUE.
+      POTENE = .TRUE.
+      KINENE = .TRUE.
+      PROPRI = .FALSE.
+      ONEPRP = .TRUE.
+      RUNONE = .TRUE.
+      RUNSUP = .FALSE.
+      RUNTWO = .FALSE.
 C
       TIMSTR = SECOND()
       TIMINP = SECOND() - TIMSTR
       CALL FLSHFO(LUPRI)
-      CALL GPOPEN(LUPROP,'DKINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUPROP,'AODKHINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL HERINT(WORK,LWORK)
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUONEL,'DELETE')
       IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      HAMILT = .TRUE.
+      PVPINT = .FALSE.
+      POTENE = .FALSE.
+      KINENE = .FALSE.
+      ONEPRP = .FALSE.
 C
 C     We now calculate all the Douglas-Kroll-Hess quantities in the primitive
 C     basis
 C
-      CALL DKDRIV(WORK,LWORK,IPRDEF)
+      CALL DKH_DRIV(WORK,LWORK,IPRDEF)
 C
-      DOHUCKEL = HUCKELBKP
+      DOHUCKEL = DOHUCKEL_BKP
       RDINPC = .FALSE.
       RUNSUP = SUPMAT
       PVPINT = .FALSE.
@@ -103,13 +110,13 @@ C
       CALL GETTIM(TEND,WEND)
       TIMHER = TEND - TIMHER
       WALHER = WEND - WALHER
-      CALL TIMTXT('>>>> Total CPU  time used in DKINT:',TIMHER,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DKINT:',WALHER,LUPRI)
-      CALL QEXIT('DKINTF')
+      CALL TIMTXT('>>>> Total CPU  time used in DKH_INTF:',TIMHER,LUPRI)
+      CALL TIMTXT('>>>> Total wall time used in DKH_INTF:',WALHER,LUPRI)
+      CALL QEXIT('DKH_INTF')
       RETURN
       END
-C/* Deck dkrein */
-      SUBROUTINE DKREIN(WORK,LWORK)
+C/* Deck DKH_READIN */
+      SUBROUTINE DKH_READIN(WORK,LWORK)
 C
 C     Read specification of primitive basis (i.e. decontracted)
 C     for calculation of Douglas-Kroll-Hess integrals.
@@ -120,13 +127,13 @@ C
 
 #include <priunit.h>
       DIMENSION WORK(LWORK)
-      LOGICAL UNCONTBKP
+      LOGICAL   UNCONT_BKP
       CHARACTER*7 WORD
 #include <ccom.h>
 #include <mxsymm.h>
 #include <cbirea.h>
 C
-      CALL QENTER('DKREIN')
+      CALL QENTER('DKH_READIN')
 C
 C     Define cbirea.h for call of READIN below
 C
@@ -145,13 +152,14 @@ C
 C
 C     We also need two variables from cbiher.h
 C
+      IPREAD_BKP = IPREAD
       CALL READ_CBIHER(IPREAD, INPTST)
 C
 C     An important input for the READIN procedure is the number of primitives
 C     per block in the input file. First check if this has been reset.
 C
       MAXPRI = MAXPRD
-      LUTMP = LUCMD
+      LUCMD_input = LUCMD
       IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ',
      &     'FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
@@ -164,22 +172,23 @@ C
          GOTO 5000
       END IF
  5010 CONTINUE
-      IF (LUTMP .LE.0) CALL GPCLOSE(LUCMD,'KEEP')
+      IF (LUCMD_input .LE.0) CALL GPCLOSE(LUCMD,'KEEP')
 C
 C     Now call READIN to get the specification of the primitive basis.
 C     Note that UNCONT = .true., to force decontracted specification
 C     for Douglas-Kroll-Hess integrals.
 C
-      UNCONTBKP = UNCONT
+      UNCONT_BKP = UNCONT
       UNCONT = .TRUE.
       CALL READIN(WORK,LWORK,.TRUE.)
-      UNCONT = UNCONTBKP
+      UNCONT = UNCONT_BKP
+      IPREAD = IPREAD_BKP
       CALL SETDCH
-      CALL QEXIT('DKREIN')
+      CALL QEXIT('DKH_READIN')
       RETURN
       END
-C/* Deck dkdriv */
-      SUBROUTINE DKDRIV(WORK,LWORK,IPRINT)
+C/* Deck dkh_driv */
+      SUBROUTINE DKH_DRIV(WORK,LWORK,IPRINT)
 C
 C     Driver routine for calculation of the various Douglas-Kroll-Hess matrices
 C     in the primitive basis
@@ -197,9 +206,9 @@ C
 #include <inftap.h>
 #include <ibtfun.h>
 C
-      CALL QENTER('DKDRIV')
+      CALL QENTER('DKH_DRIV')
 C
-      CALL GPOPEN(LUPROP,'DKINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUPROP,'AODKHINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
       NBAST = 0
       DO 400 ISHELL = 1, KMAX
@@ -228,22 +237,24 @@ C
       KVMAT  = KWEWMT + N2BASX
       KPVPMT = KVMAT  + NNBASX
       KLAST  = KPVPMT + NNBASX
-      IF (KLAST .GT. LWORK) CALL STOPIT('DKDRIV','DKDRI1',KLAST,LWORK)
+      IF (KLAST .GT. LWORK)
+     &   CALL STOPIT('DKH_DRIV','DKH_DRI1',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
 C     Call the driver routine
 C     
-      CALL DKDRI1(WORK(KOVERL),WORK(KXMAT),WORK(KEIGVC),WORK(KSQMT1),
+      CALL DKH_DRI1(WORK(KOVERL),WORK(KXMAT),WORK(KEIGVC),WORK(KSQMT1),
      &            WORK(KSQMT2),WORK(KTRMT1),WORK(KTRMT2),WORK(KWEWMT),
      *            WORK(KE1),WORK(KA1),WORK(KEK),WORK(KD1),WORK(KVMAT),
      &            WORK(KPVPMT),WORK(KLAST),LWRK,NBAST,NNBASX,N2BASX,
      &            IPRINT)
 C
-      CALL QEXIT('DKDRIV')
+      CALL QEXIT('DKH_DRIV')
       RETURN
       END
-C/* Deck dkdri1 */
-      SUBROUTINE DKDRI1(OVERLP,XMAT,EIGVEC,SQMAT1,SQMAT2,TRMAT1,TRMAT2,
+C/* Deck dkh_dri1 */
+      SUBROUTINE DKH_DRI1(OVERLP,XMAT,EIGVEC,
+     &                  SQMAT1,SQMAT2,TRMAT1,TRMAT2,
      &                  WEWMAT,E1DIAG,A1DIAG,EKDIAG,D1DIAG,VMAT,PVPMAT,
      &                  WORK,LWORK,NBAST,NNBASX,N2BASX,IPRINT)
 C
@@ -274,20 +285,21 @@ C
       KSCR1 = 1
       KSCR2 = KSCR1 + N2BASX
       KLAST = KSCR2 + N2BASX
-      IF (KLAST .GT. LWORK) CALL STOPIT('DKDRI1','START ',KLAST,LWORK)
+      IF (KLAST .GT. LWORK) CALL STOPIT('DKH_DRI1','START ',KLAST,LWORK)
 C
 C     Read in overlap matrix
 C
       IF (FNDLAB('OVERLAP ',LUPROP)) THEN
          CALL READT(LUPROP,NNBASX,OVERLP)
          IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Overlap matrix read from LUPROP in DKDRI1',-1)
+            CALL HEADER(
+     &         'Overlap matrix read from AODKHINT in DKH_DRI1',-1)
             CALL OUTPAK(OVERLP,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: Overlap matrix'//
-     *      ' not found on LUPROP.'
-         CALL QUIT('HUCDR1 error: property not found on LUPROP')
+         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: Overlap matrix'//
+     *      ' not found on AODKHINT.'
+         CALL QUIT('DKH_DRI1 error: property not found on AODKHINT')
       END IF
 C
 C     Diagonalize the overlap matrix
@@ -300,7 +312,8 @@ C
       DO I = 1, NBAST
          II = I*(I + 1)/2
          IF (TRMAT1(II) .LT. 1.0D-6) THEN
-            WRITE (LUPRI,*) ' >>> ERROR DKDRIV: Linear dependency in '//
+            WRITE (LUPRI,*)
+     &      ' >>> ERROR DKH_DRIV: Linear dependency in '//
      &      'primitive basis used in Douglas-Kroll-Hess ', I, TRMAT1(II)
             write (lupri,*) 'The corresponding eigenvector:'
             call output(eigvec(1,i),1,1,1,nbast,1,nbast,-1,lupri)
@@ -329,14 +342,14 @@ C
       IF (FNDLAB('KINENERG',LUPROP)) THEN
          CALL READT(LUPROP,NNBASX,OVERLP)
          IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Kinetic energy matrix read from LUPROP '//
-     &                  'in DKDRI1',-1)
+            CALL HEADER('Kinetic energy matrix read from AODKHINT '//
+     &                  'in DKH_DRI1',-1)
             CALL OUTPAK(OVERLP,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: Kinetic energy'//
-     *      ' matrix not found on LUPROP.'
-         CALL QUIT('HUCDR1 error: property not found on LUPROP')
+         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: Kinetic energy'//
+     *      ' matrix not found on AODKHINT.'
+         CALL QUIT('DKH_DR1 error: property not found on AODKHINT')
       END IF
 C     
       CALL UTHU(OVERLP,TRMAT1,XMAT,WORK(KSCR1),NBAST,NBAST)
@@ -369,7 +382,7 @@ C
       END IF
 C
 C
-C     Read in nuclear attraction and pVp integrals from file LUPROP (DKINT)
+C     Read in nuclear attraction and pVp integrals from file LUPROP (AODKHINT)
 C     and transform to orthonormal basis. Then we transform them to the 
 C     diagonal basis of the kinetic operator.
 C
@@ -377,14 +390,14 @@ C
       IF (FNDLAB('POTENERG',LUPROP)) THEN
          CALL READT(LUPROP,NNBASX,VMAT)
          IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Potential energy matrix read from LUPROP '//
-     &                  'in DKDRI1',-1)
+            CALL HEADER('Potential energy matrix read from AODKHINT '//
+     &                  'in DKH_DRI1',-1)
             CALL OUTPAK(VMAT,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: potential energy'//
-     *      ' matrix not found on LUPROP.'
-         CALL QUIT('DKDRI1 error: property not found on LUPROP')
+         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: potential'//
+     *      ' energy matrix not found on AODKHINT.'
+         CALL QUIT('DKH_DRI1 error: property not found on AODKHINT')
       END IF
       CALL UTHU(VMAT,OVERLP,XMAT,WORK(KSCR1),NBAST,NBAST)
       CALL UTHU(OVERLP,VMAT,EIGVEC,WORK(KSCR1),NBAST,NBAST)
@@ -393,14 +406,14 @@ C
       IF (FNDLAB('pVpINTEG',LUPROP)) THEN
          CALL READT(LUPROP,NNBASX,PVPMAT)
          IF (IPRINT .GT. 6) THEN
-            CALL HEADER('pVp integrals read from LUPROP '//
-     &                  'in DKDRI1',-1)
+            CALL HEADER('pVp integrals read from AODKHINT '//
+     &                  'in DKH_DRI1',-1)
             CALL OUTPAK(PVPMAT,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKDRI1 error: pVp integral'//
-     *      ' matrix not found on LUPROP.'
-         CALL QUIT('DKDRI1 error: property not found on LUPROP')
+         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: pVp integral'//
+     *      ' matrix not found on AODKHINT.'
+         CALL QUIT('DKH_DRI1 error: property not found on AODKHINT')
       END IF
 C
       CALL UTHU(PVPMAT,WORK(KSCR2),XMAT,WORK(KSCR1),NBAST,NBAST)
@@ -499,7 +512,7 @@ C
       CALL DGEINV(NBAST,XMAT,SQMAT1,WORK(KSCR1),WORK(KSCR2),INFO)
       CALL UTHU(TRMAT1,TRMAT2,SQMAT1,WORK(KSCR1),NBAST,NBAST)
 C
-C     Write the final effective Hamiltonian to DKINT and keep until we
+C     Write the final effective Hamiltonian to AODKHINT and keep until we
 C     know what kind of contraction coefficients we have
 C
       IF (IPRINT .GT. 1) THEN
@@ -526,7 +539,7 @@ C
       CALL WRTPRO(TRMAT2,NNBASX,'DKINTPRI',RTNLBL)
       CALL GPCLOSE(LUPROP,'KEEP')
 C
-C     End of DKDRIV
+C     End of DKH_DRI1
 C     
       RETURN
       END
@@ -653,8 +666,8 @@ C     The entire matrix is now constructed in the diagonal T basis
 C
       RETURN
       END
-C/* Deck dkcont */
-      SUBROUTINE DKCONT(PROPRI,IPRINT,WORK,LWORK)
+C/* Deck dkh_cont */
+      SUBROUTINE DKH_CONT(PROPRI,IPRINT,WORK,LWORK)
 C
 C     This subroutine reads in the Douglas-Kroll-Hess potential in the primitive
 C     basis and contracts it with the contraction coefficients of the 
@@ -684,16 +697,17 @@ C
       KLAST  = KCONTC + NPRIM*NBAST
       KTMP   = KLAST + NPRIM*NPRIM
       LWRK   = LWORK - KLAST + 1
-      IF (KTMP .GT. LWORK) CALL STOPIT('DKCONT','PRI2CN',KLAST,LWORK)
+      IF (KTMP .GT. LWORK) CALL STOPIT('DKH_CONT','PRI2CN',KLAST,LWORK)
       LUDKIN = -9000
-      CALL GPOPEN(LUDKIN,'DKINT','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUDKIN,'AODKHINT','OLD',' ','UNFORMATTED',
+     &   IDUMMY,.FALSE.)
       IF (FNDLAB('DKINTPRI',LUDKIN)) THEN
-         IF (NNPRMX .GT. LWORK) CALL STOPIT('DKCONT','WMAT  ',
+         IF (NNPRMX .GT. LWORK) CALL STOPIT('DKH_CONT','WMAT  ',
      &                                      NNPRMX,LWORK)
          CALL READT(LUDKIN,NNPRMX,WORK(KWMAT))
          IF (IPRINT .GT. 6) THEN
             CALL HEADER('Primitive Douglas-Kroll-Hess integrals read '//
-     &                  'from LUDKIN in DKCONT',-1)
+     &                  'from LUDKIN in DKH_CONT',-1)
             CALL OUTPAK(WORK(KWMAT),NPRIM,1,LUPRI)
          END IF
          CALL DCOPY(NNPRMX,WORK(KWMAT),1,WORK(KLAST),1)
@@ -706,9 +720,9 @@ C
      &               LWRK,ANTI,NOPTYP,NBAST,NPRIM,LABINT,
      &               INTREP,PROPRI,IPRINT)
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKCONT error: Primitive Douglas'//
-     &      '-Kroll-Hess integrals not found on DKINT file.'
-         CALL QUIT('DKCONT error: Integrals not found on DKINT file')
+         WRITE (LUPRI,'(//3A)') ' >>> DKH_CONT ERROR: Primitive '//
+     &      'Douglas-Kroll-Hess integrals not found on AODKHINT file.'
+         CALL QUIT('DKH_CONT: Integrals not found on AODKHINT file')
       END IF
       CALL GPCLOSE(LUDKIN,'DELETE')
       RETURN
@@ -830,14 +844,14 @@ C
       IF (FNDLAB('DKPOTINT',LUPROP)) THEN
          CALL READT(LUPROP,NNBAST,STDER0)
          IF (IPRINT .GT. 6) THEN
-            CALL HEADER('Douglas-Kroll-Hess matrix read from LUPROP '//
-     &                  'in DKTRF',-1)
+            CALL HEADER('Douglas-Kroll-Hess matrix read from AODKHINT'//
+     &                  ' in DKTRF',-1)
             CALL OUTPAK(STDER0,NBAST,1,LUPRI)
          END IF
       ELSE
          WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll-Hess'//
-     &      ' integrals not found on LUPROP.'
-         CALL QUIT('DKTRF error: Integrals not found on LUPROP')
+     &      ' integrals not found on AODKHINT.'
+         CALL QUIT('DKTRF error: Integrals not found on AODKHINT')
       END IF
       RETURN
       END

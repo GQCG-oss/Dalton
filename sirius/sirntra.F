@@ -1252,7 +1252,7 @@ C
 C
 C     SET TIME AT START OF TRANSFORMATION
 C
-      IF (IPRTRA .GT. 0) THEN
+      IF (IPRTRA .GE. 0) THEN
          CALL GETTIM(TCPU0,TWALL0)
          TCPU1  = TCPU0
          TWALL1 = TWALL0
@@ -1513,14 +1513,14 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
   103  CONTINUE
   104 CONTINUE
 C
-      IF (IPRTRA .GT. 0) THEN
+      IF (IPRTRA .GE. 0) THEN
          CALL GETTIM(TCPU,TWALL)
          TCPU  = TCPU -TCPU0
          TWALL = TWALL-TWALL0
          WRITE(LUPRI,2200) TCPU, TWALL
       END IF
- 2200 FORMAT(/' TOTAL CPU  TIME (SEC)',F9.3,
-     &        ' TOTAL WALL TIME (SEC)',F9.3)
+ 2200 FORMAT(/' Integral transformation: Total CPU and WALL times (sec)'
+     &       ,2F12.3)
 C
 C     FINALLY save first free address on LUMINT in IADOUT(1,LIADUT) and
 C     WRITE OUT THE DAFILE ADDRESS LIST ON UNIT 13
