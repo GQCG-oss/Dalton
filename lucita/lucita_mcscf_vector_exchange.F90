@@ -73,11 +73,11 @@ contains
       real(8), intent(inout)              :: xmat(*)
       real(8), intent(inout), optional    :: ymat(*)         ! prepare for core-mem 2 core-mem + core-mem 2 i/o exchange in one shot...
       integer, intent(in)                 :: exchange_type
-      integer, intent(in)                 :: vector_type
+      integer, intent(inout)              :: vector_type
       integer, intent(in)                 :: nr_vectors
       integer, intent(in)                 :: vector_symmetry
       logical, intent(in)                 :: io2io_exchange
-      logical, intent(in)                 :: do_vector_exchange
+      logical, intent(inout)              :: do_vector_exchange
 !-------------------------------------------------------------------------------
 
 !     switch to exchange_files info for symmetry vector_symmetry
@@ -93,12 +93,20 @@ contains
                        vector_symmetry,                          &
                        1)
 
+      write(lupri,*) ' do_vector_exchange ==> ',do_vector_exchange
+      write(lupri,*) ' vector_type        ==> ',vector_type
+      write(lupri,*) ' nr_vectors         ==> ',nr_vectors
       if(do_vector_exchange)then
         call push_pull_vector_exchange_driver(xmat,              &
                                               nr_vectors,        &
                                               exchange_f_info,   &
                                               ttss_info)
+
       end if
+
+!     reset vector exchange control variables
+      do_vector_exchange = .false.
+      vector_type        = -1
 
    end subroutine vector_exchange_driver
 !*******************************************************************************

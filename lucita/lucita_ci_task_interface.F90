@@ -319,6 +319,7 @@ contains
       if(luci_myproc == luci_master)then
 
         luc_vector_file = luc
+!       MCSCF - CI task run: file handle set in MCSCF/CI interface routine
         if(file_info%current_file_fh_seqf(1) > 0) luc_vector_file = file_info%current_file_fh_seqf(1)
 
         call rewino(luc_vector_file)
@@ -411,6 +412,8 @@ contains
       integer                          :: imzero, iampack
       integer                          :: lusc_vector_file
       integer                          :: luhc_vector_file
+      integer                          :: luc_internal
+      integer                          :: luhc_internal
       integer                          :: twopart_densdim
       integer                          :: rhotype
       integer                          :: idum
@@ -440,6 +443,14 @@ contains
 !     remember: lucita-internal routines for natorbs expects an unpacked density matrix
       if(lucita_cfg_natural_orb_occ_nr) rhotype = 0
       if(lucita_cfg_transition_densm)   rhotype = 3
+
+!     MCSCF - CI task run: file handle set in MCSCF/CI interface routine
+      luc_internal  = luc
+      luhc_internal = luhc
+      if(file_info%current_file_fh_seqf(1) > 0) luc_internal  = file_info%current_file_fh_seqf(1)
+      if(file_info%current_file_fh_seqf(2) > 0) luhc_internal = file_info%current_file_fh_seqf(2)
+
+      write(lupri,*) 'dens: luc_internal, luhc_internal',luc_internal, luhc_internal
 
 #ifdef VAR_MPI
       if(luci_nmproc > 1)then
@@ -474,10 +485,10 @@ contains
         call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
                    file_info%max_list_length)
 
-        call rewino(luc)
+        call rewino(luc_internal)
 !       step 1: the rhs vector
         call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
-                                                LUC,                                   &
+                                                luc_internal,                          &
                                                 file_info%fh_lu(file_info%             &
                                                 current_file_nr_active1),              &
                                                 file_info%file_offsets(                &
@@ -490,10 +501,10 @@ contains
                                                 NUM_BLOCKS,NROOT,1,1)
 
         if(lucita_cfg_transition_densm)then
-          call rewino(luhc)
+          call rewino(luhc_internal)
 !         step 2: the lhs vector
           call mcci_cp_vcd_mpi_2_seq_io_interface(hc,                                  &
-                                                  LUHC,                                &
+                                                  luhc_internal,                       &
                                                   file_info%fh_lu(file_info%           &
                                                   current_file_nr_active2),            &
                                                   file_info%file_offsets(              &
@@ -519,8 +530,8 @@ contains
       end if
 #endif
 
-      call rewino(luhc)
-      call rewino(luc)
+      call rewino(luc_internal)
+      call rewino(luhc_internal)
 
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
@@ -536,26 +547,26 @@ contains
 
         if(luci_nmproc == 1)then
           if(icistr == 1)then
-            call frmdsc_luci(cref,l_combi,l_combi,luc,imzero,iampack)
+            call frmdsc_luci(cref,l_combi,l_combi,luc_internal,imzero,iampack)
             if(lucita_cfg_transition_densm)then
 !             transition density
-              call frmdsc_luci(hc,l_combi,l_combi,luhc,imzero,iampack)
+              call frmdsc_luci(hc,l_combi,l_combi,luhc_internal,imzero,iampack)
             else
               call dcopy(l_combi,cref,1,hc,1)
             end if
           else
             if(lucita_cfg_transition_densm)then
 !             transition density
-              lusc_vector_file = luc
-              luhc_vector_file = luhc
+              lusc_vector_file = luc_internal
+              luhc_vector_file = luhc_internal
             else
               call rewino(lusc1)
-              call copvcd(luc,lusc1,cref,0,-1)
-              call copvcd(lusc1,luhc,cref,1,-1)
+              call copvcd(luc_internal,lusc1,cref,0,-1)
+              call copvcd(lusc1,lusc2,cref,1,-1)
               call rewino(lusc1)
-              call rewino(luhc)
+              call rewino(lusc2)
               lusc_vector_file = lusc1
-              luhc_vector_file = luhc
+              luhc_vector_file = lusc2
             end if
           end if
         else
@@ -727,6 +738,8 @@ contains
       integer                          :: imzero, iampack
       integer                          :: lusc_vector_file
       integer                          :: luhc_vector_file
+      integer                          :: luc_internal
+      integer                          :: luhc_internal
       integer, parameter               :: isigden = 1 ! sigma vector switch for sigden_ci
 #ifdef VAR_MPI
       integer, allocatable             :: blocks_per_batch(:)
@@ -738,6 +751,11 @@ contains
       integer                          :: ierr
 #endif
 !-------------------------------------------------------------------------------
+
+!     MCSCF - CI task run: file handle set in MCSCF/CI interface routine
+      luc_internal  = luc
+      luhc_internal = luhc
+      if(file_info%current_file_fh_seqf(1) > 0) luc_internal  = file_info%current_file_fh_seqf(1)
 
 #ifdef VAR_MPI
       if(luci_nmproc > 1)then
@@ -773,10 +791,10 @@ contains
         call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
                    file_info%max_list_length)
 
-        call rewino(luc)
+        call rewino(luc_internal)
 !       step 1: the rhs vector
         call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
-                                                LUC,                                   &
+                                                luc_internal,                          &
                                                 file_info%fh_lu(file_info%             &
                                                 current_file_nr_active1),              &
                                                 file_info%file_offsets(                &
@@ -790,8 +808,8 @@ contains
       end if
 #endif
 
-      call rewino(luhc)
-      call rewino(luc)
+      call rewino(luhc_internal)
+      call rewino(luc_internal)
 
       do eigen_state_id = 1, nroot
 
@@ -801,14 +819,14 @@ contains
 
         if(luci_nmproc == 1)then
           if(icistr == 1)then
-            call frmdsc_luci(cref,l_combi,l_combi,luc,imzero,iampack)
+            call frmdsc_luci(cref,l_combi,l_combi,luc_internal,imzero,iampack)
           else
             call rewino(lusc1)
-            call copvcd(luc,lusc1,cref,0,-1)
+            call copvcd(luc_internal,lusc1,cref,0,-1)
             call rewino(lusc1)
           end if
           lusc_vector_file = lusc1
-          luhc_vector_file = luhc
+          luhc_vector_file = luhc_internal
         else
 #ifdef VAR_MPI
 !         MPI I/O --> MPI I/O node-master collection file
@@ -851,10 +869,10 @@ contains
 #ifdef VAR_MPI
 !       collect e2b vector(s)
 !       --------------------
-        call rewino(luhc)
+        call rewino(luhc_internal)
 
 !       the lhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc,luhc_vector_file,            &
+        call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc_internal,luhc_vector_file,   &
                                                 file_info%file_offsets(              &
                                                 file_info%current_file_nr_active2),  &
                                                 file_info%iluxlist(1,                &
@@ -917,6 +935,7 @@ contains
       integer                :: iatp, ibtp
       integer                :: nbatch, nblock
       integer                :: lu_ref, lu_refout
+      integer                :: luc_internal, luhc_internal
       integer(kind=8)        :: my_in_off
       integer(kind=8)        :: my_out_off
       integer(kind=8)        :: my_scr_off
@@ -935,6 +954,11 @@ contains
       WRITE(luwrt,*) ' ================================================='
       call flshfo(luwrt)
 #endif
+
+!     MCSCF - CI task run: file handle set in MCSCF/CI interface routine
+      luc_internal  = luc
+      luhc_internal = luhc
+      if(file_info%current_file_fh_seqf(1) > 0) luc_internal  = file_info%current_file_fh_seqf(1)
 
       len_ilu1   = 0
       len_ilu2   = 0
@@ -968,16 +992,16 @@ contains
       len_iluc   = file_info%max_list_length_bvec
 #else
       my_in_fh   = lusc1
-      my_out_fh  = luhc
+      my_out_fh  = luhc_internal
       my_sc1_fh  = lusc2
       my_sc2_fh  = lusc3
 
-      call copvcd(luc,my_in_fh,vec1,1,-1)
+      call copvcd(luc_internal,my_in_fh,vec1,1,-1)
       call rewine(my_in_fh,-1)
       CALL rewine(my_out_fh,-1)
 #endif
-      lu_ref     = luc
-      lu_refout  = luhc
+      lu_ref     = luc_internal
+      lu_refout  = luhc_internal
 
 !     set up block and batch structure of vector
 
@@ -1024,17 +1048,6 @@ contains
                   len_ilu1,len_ilu2,len_iluc,                    &
                   my_in_off,my_out_off,my_scr_off,               &
                   my_BVC_off)
-
-#ifdef LUCI_DEBUG
-      if(luci_myproc .eq. luci_master)then
-        WRITE(luwrt,*)
-        WRITE(luwrt,*) ' Analysis of rotated state'
-        WRITE(luwrt,*) ' ========================='
-        WRITE(luwrt,*)
-        CALL WRTVCD(VEC1,luhc,1,-1)
-      end if
-#undef LUCI_DEBUG
-#endif
 
       deallocate(blocks_per_batch)
       deallocate(batch_length)

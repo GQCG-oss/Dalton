@@ -88,6 +88,7 @@ C
 C  880528 hjaaj
 C
 !     module dependencies
+      use lucita_mcscf_ci_cfg
       use lucita_mcscf_ci_interface_procedures
       use mcscf_or_gasci_2_define_cfg, only :
      &    define_lucita_cfg_dynamic
@@ -151,6 +152,8 @@ C           ... use determinant expansion
      &                                    .false.,     ! calculate 2-particle density matrix
      &                                    .false.,     ! calculate transition density matrix
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+           vector_exchange_type1 = 1
 
            call mcscf_lucita_interface(c,dummy2,dummy2,dummy2,
      &                                 'analyze Cvec',

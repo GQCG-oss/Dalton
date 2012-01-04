@@ -14,12 +14,13 @@ module lucita_mcscf_ci_cfg
   save
 
 ! parameter list
-  integer, parameter,   public :: vector_exchange_types      = 4
+  integer, parameter,   public :: vector_exchange_types      =  4
 
 ! logical block
 
   logical,              public :: integrals_from_mcscf_env                     = .false.
   logical,              public :: io2io_vector_exchange_mc2lu_lu2mc            = .false.
+  logical,              public :: cref_is_active_bvec_for_sigma                = .false.
   logical,              public :: vector_update_mc2lu(1:vector_exchange_types) = .false. ! prepare for dynamic vector update, e.g., save and broadcast only if really necessary...
   logical,              public :: vector_update_lu2mc(1:vector_exchange_types) = .false. !
 
@@ -27,13 +28,16 @@ module lucita_mcscf_ci_cfg
 
 ! real(8) block
 
-  real(8),              public :: einact_mc2lu               = 0.0d0
+  real(8),              public :: einact_mc2lu               =  0.0d0
 
 ! integer block
 
-  integer,              public :: len_cref_mc2lu             = 0
-  integer,              public :: len_hc_mc2lu               = 0
-  integer,              public :: len_resolution_mat_mc2lu   = 0
-  integer,              public :: len_int1_or_rho1_mc2lu     = 0
-  integer,              public :: len_int2_or_rho2_mc2lu     = 0
+  integer,              public :: len_cref_mc2lu             =  0
+  integer,              public :: len_hc_mc2lu               =  0
+  integer,              public :: len_resolution_mat_mc2lu   =  0
+  integer,              public :: len_int1_or_rho1_mc2lu     =  0
+  integer,              public :: len_int2_or_rho2_mc2lu     =  0
+
+  integer,              public :: vector_exchange_type1      = -1
+  integer,              public :: vector_exchange_type2      = -1
 end module

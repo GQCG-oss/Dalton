@@ -59,6 +59,7 @@ C        =4 save MC information, after SIRCAN
 C        =5 save CI information, after CICTL
 C        =6 save MC optimization information, when N-R used.
 C
+      use lucita_mcscf_ci_cfg
 #include <implicit.h>
 C
       CHARACTER*(*) KEYWRD
@@ -653,6 +654,12 @@ C           search for "STARTVEC"
 C        ... case: one configuration
             WRK(KCVECS) = D1
          END IF
+!        set logical flag for new reference CI vector in WRK(KCREF) - 
+!        in the interface to lucita we use this info to save/broadcast the new
+!        reference vector on lucita internal sequential/parallel MPI-I/O files
+         vector_exchange_type1                      = 1
+         vector_update_mc2lu(vector_exchange_type1) = .true.
+
          IF (FLAG(48)) THEN
             CNOLBL = 'ONLYFD'
          ELSE IF (FLAG(46)) THEN

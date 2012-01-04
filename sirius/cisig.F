@@ -149,6 +149,7 @@ C            described in Chapter 8 Section D.5 of MOTECC-90
 C            "Counter Rotations of CI coefficients"
 C
 !     module dependencies
+      use lucita_mcscf_ci_cfg
       use lucita_mcscf_ci_interface_procedures
       use mcscf_or_gasci_2_define_cfg, only :
      &    define_lucita_cfg_dynamic
@@ -305,6 +306,11 @@ c
             write(lupri,*) ' before tra-ci run: sot-mat'
             call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
 #endif
+
+!           default: transform cref but in case we have a multi-root MCSCF switch to type #2
+            vector_exchange_type1               = 1
+            if(ncvec > 1) vector_exchange_type1 = 2
+
             call mcscf_lucita_interface(cvec(1,ivec),wrk(klc2),
      &                                  wrk(klsot),dummy2,
      &                                  'rotate  Cvec',
@@ -878,7 +884,8 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
-
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include <implicit.h>
       DIMENSION BCVECS(NCONST,*),FCAC(*),H2AC(*),SCVECS(LSCVEC,*)
       DIMENSION XNDXCI(*), WRK(LFREE)
@@ -926,6 +933,15 @@ C     ... singlet-singlet coupling of 2-electron integrals
 !       ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
       else if(ci_program .eq. 'LUCITA   ')then
         call dcopy(NNASHX,FCAC,1,WRK(KUFCAC),1)
+
+!       set vector exchange type: cref
+        if(cref_is_active_bvec_for_sigma)then 
+          vector_exchange_type1 = 1
+          cref_is_active_bvec_for_sigma = .false.
+        else
+!         set vector exchange type: bvec trial vector
+          vector_exchange_type1 = 2
+        end if
       end if
 
       DO isim = 1,nsim ! loop over sigma vectors to calculate
@@ -979,6 +995,7 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
+      use lucita_mcscf_ci_cfg
 #include <implicit.h>
       DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
       DIMENSION XNDXCI(*), WRK(LFREE)
@@ -1007,6 +1024,10 @@ C     Set spin couplings
 C
       ISPIN1 = 0
       ISPIN2 = 0
+
+!     set vector exchange type: cref
+      vector_exchange_type1 = 1
+
 C     ... singlet-singlet coupling of 2-electron integrals
       DO 100 ISIM = 1, NSIM
          CALL DZERO(SCVECS(1,ISIM),NCONST)
@@ -1046,6 +1067,7 @@ C        HC : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCVEC
 C
 C
 !     module dependencies
+      use lucita_mcscf_ci_cfg
       use lucita_mcscf_ci_interface_procedures
       use mcscf_or_gasci_2_define_cfg, only :
      &    define_lucita_cfg_dynamic
@@ -1421,6 +1443,8 @@ C Scratch:
 C   WRK work area containing :
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include <implicit.h>
 C
       DIMENSION CREF(NCONRF), SOVECS(NVARPT,NOSIM),EMYX(NOSIM),XNDXCI(*)
@@ -1472,6 +1496,8 @@ C
 C          ... unpack FXCAC using CALL DSPTSI(N,ASP,ASI)
          else if(ci_program .eq. 'LUCITA   ')then
            CALL DCOPY(NNASHX,FXCAC(1,IOSIM),1,WRK(KUFCAC),1)
+!          set vector exchange type: cref
+           vector_exchange_type1 = 1
          end if
          CALL DZERO(SOVECS(1,IOSIM),NCONST)
          CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,

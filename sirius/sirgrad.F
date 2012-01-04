@@ -60,6 +60,7 @@ C Externals:
 C   CISIGC
 C
 C
+      use lucita_mcscf_ci_cfg
 #include <implicit.h>
       DIMENSION CREF(*),FCAC(*),H2AC(*), INDXCI(*),GCI(*),WRK(*)
       PARAMETER ( D2 = 2.0D0 )
@@ -88,6 +89,7 @@ C
       write(lupri,*) 'ATTENTION bla bla - hardwired CREF READING!!!'
       call RDCREF(CREF)
 #endif
+      cref_is_active_bvec_for_sigma = .true.
       CALL CISIGC(1,CREF,GCI,NCONF,FCAC,H2AC,INDXCI,WRK,LFREE)
 C     CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,INDXCI,WRK,LFREE)
 #ifdef TESTTEST

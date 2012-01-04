@@ -1471,6 +1471,7 @@ C             =F  MS .ne. 0 for CL and/or CR or do not use symmetry
 C
 C
 !     module dependencies
+      use lucita_mcscf_ci_cfg
       use lucita_mcscf_ci_interface_procedures
       use mcscf_or_gasci_2_define_cfg, only :
      &    define_lucita_cfg_dynamic
@@ -1664,6 +1665,21 @@ C        ... determinant basis
            write(lupri,*) ' before dens run: cr'
            call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
 #endif
+!          set vector update scheme in mcscf_lucita_interface
+!          remember: cl == cref if MCSCF
+           if(rhotyp == 1)then
+             vector_exchange_type1 = 1
+             vector_exchange_type2 = vector_exchange_type1
+           else if(rhotyp == 2)then
+             vector_exchange_type1 = 2
+             vector_exchange_type2 = 3
+           else if(rhotyp == 3)then
+             vector_exchange_type1 = 2
+             vector_exchange_type2 = 1
+           end if
+!
+!          check the scheme above for response/MCSCF response!!! - stefan - jan 2012
+!
 !          cl == cref                  rhs lhs
            call mcscf_lucita_interface( cr, cl,rho1,rho2,
      &                                 'Xp-density m',
