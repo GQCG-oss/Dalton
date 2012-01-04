@@ -181,6 +181,7 @@ C
 #include <cbreor.h>
 #include <dummy.h>
       LOGICAL CSFEXP
+      integer :: xctype1, xctype2
 C
 C
       CSFEXP = .NOT.FLAG(27)
@@ -277,6 +278,11 @@ C         CSDTVC(CSFVEC,DETVEC,IWAY,DTOCMT,ICTSDT,IREFSM,ICOPY,NTEST)
 c
 c Rotate in DET expansion
 c
+!         default: transform cref but in case we have a multi-root MCSCF switch to xtype1 == 2
+          xctype2               = -1
+          xctype1               =  1
+          if(ncvec > 1) xctype1 =  2
+
           if(ci_program .eq. 'LUCITA   ')then
             call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry ! swap see subroutine below
      &                                     lsym,        ! lhs symmetry ! swap see subroutine below
@@ -297,6 +303,8 @@ c
      &                                     .true.,      ! integrals provided by / return density matrices to the MCSCF environment
      &                                     .false.,     ! calculate 2-particle density matrix
      &                                     .false.,     ! calculate transition density matrix
+     &                                     xctype1,     ! vector_exchange_type1
+     &                                     xctype2,     ! vector_exchange_type2
      &                                     .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
 #define LUCI_DEBUG
@@ -306,10 +314,6 @@ c
             write(lupri,*) ' before tra-ci run: sot-mat'
             call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
 #endif
-
-!           default: transform cref but in case we have a multi-root MCSCF switch to type #2
-            vector_exchange_type1               = 1
-            if(ncvec > 1) vector_exchange_type1 = 2
 
             call mcscf_lucita_interface(cvec(1,ivec),wrk(klc2),
      &                                  wrk(klsot),dummy2,
@@ -683,6 +687,8 @@ C *** Construct diagonal of CI matrix
      &                                 .true.,  ! integrals provided by / return density matrices to the MCSCF environment
      &                                 .false., ! calculate 2-particle density matrix
      &                                 .false., ! calculate transition density matrix
+     &                                      -1, ! vector exchange type 1
+     &                                      -1, ! vector exchange type 2
      &                                 .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
          call dzero(diagc,nconf)
@@ -1100,6 +1106,7 @@ C
 C
 C
       LOGICAL CSFEXP
+      integer :: xctype1, xctype2
 C
 C     Transfer spin-couplings to CBESPN
 C
@@ -1194,6 +1201,10 @@ C        .. change from CSf basis to determinant basis
 
         if(ci_program .eq. 'LUCITA   ')then
 
+!         vector_exchange_type1 is set in calling upper level routine
+          xctype1 = vector_exchange_type1 
+          xctype2 = -1
+
           call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
      &                                   ihcsym,  ! lhs symmetry
      &                                   -1,      ! no istaci
@@ -1213,6 +1224,8 @@ C        .. change from CSf basis to determinant basis
      &                                   .true.,  ! integrals provided by / return density matrices to the MCSCF environment
      &                                   .false., ! calculate 2-particle density matrix
      &                                   .false., ! calculate transition density matrix
+     &                                   xctype1, ! vector exchange type 1
+     &                                   xctype2, ! vector exchange type 2
      &                                   .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
 #define LUCI_DEBUG

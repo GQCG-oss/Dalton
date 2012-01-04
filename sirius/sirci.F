@@ -214,6 +214,7 @@ C     Local variables
 C
       logical           :: diskh2, natorb, moisno
       character (len=6) :: keywrd
+      integer           :: xctype1, xctype2
 C
 C
 C     *****************************************************************
@@ -366,6 +367,9 @@ C
 !       note for stefan/hjaaj: kcdiag is not used for lucita; we might want to NOT allocate it then above!!!
 !
         write(lupri,*) ' incoming thrcit ==> ',thrcit
+        xctype1 = -1
+        xctype2 = -1
+
         call define_lucita_cfg_dynamic(lsym,
      &                                 lsym,
      &                                 istaci,
@@ -387,6 +391,8 @@ C
      &                                 .true.,  ! integrals provided by the MCSCF environment
      &                                 .false., ! calculate 2-particle density matrix
      &                                 .false., ! calculate transition density matrix
+     &                                 xctype1, ! vector exchange type1
+     &                                 xctype2, ! vector exchange type2
      &                                 .true.)  ! vector exchange between lucita/mc using io2io, e.g. vectors are written to luit3
 
         call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),wrk(kfcac),

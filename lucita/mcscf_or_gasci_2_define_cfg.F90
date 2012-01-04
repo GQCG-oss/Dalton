@@ -188,6 +188,8 @@ contains
                                        mcscf_provides_ints,      &
                                        two_el_dens_matrix,       &
                                        calc_transition_densm,    &
+                                       xctype1,                  &
+                                       xctype2,                  &
                                        io2io_vector_exchange)
 
 #include "priunit.h"
@@ -201,6 +203,8 @@ contains
     integer             , intent(in) :: spin_multiplicity
     integer             , intent(in) :: nr_davidson_iterations
     integer             , intent(in) :: density_matrix_level
+    integer             , intent(in) :: xctype1
+    integer             , intent(in) :: xctype2
     integer             , intent(in) :: print_lvl
     real(8)             , intent(in) :: truncation_thr
     real(8)             , intent(in) :: convergence_thr
@@ -252,6 +256,13 @@ contains
 
 !     set for mcscf (if not set otherwise)
       if(lucita_cfg_max_dav_subspace_dim == 0) lucita_cfg_max_dav_subspace_dim = 16 * lucita_cfg_nr_roots
+
+!     integer/logical block in module lucita_mcscf_ci_cfg
+      vector_exchange_type1 = xctype1
+      vector_exchange_type2 = xctype2
+      if(vector_exchange_type1 > 1) vector_update_mc2lu(vector_exchange_type1) = .true.
+      if(vector_exchange_type2 > 1) vector_update_mc2lu(vector_exchange_type2) = .true.
+
 
   end subroutine define_lucita_cfg_dynamic
 

@@ -345,6 +345,8 @@ C    *                MELMN3,NOSYM,ICSF,NCNSM,REFSPC)
      &                                    .false.,
      &                                    .false.,
      &                                    .false.,
+     &                                    -1     ,     ! vector exchange type1
+     &                                    -1     ,     ! vector exchange type2
      &                                    .false.)
 !          step 2: static variables
            call define_lucita_cfg_static(1)

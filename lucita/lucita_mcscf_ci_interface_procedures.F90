@@ -117,9 +117,6 @@ contains
 !     b. initialize sequential file handles
       call file_sequential_fh_reset_lucipar(file_info)
 
-!     c. define vector exchange tasks arrays based on values for vector_exchange_typeX
-      call mcscf_lucita_interface_set_vector_update(vector_exchange_type1,vector_exchange_type2)
-
 !     d. select pre-process task
       select case(run_type)
         case('return CIdia')
@@ -568,28 +565,6 @@ contains
       end if
 
   end subroutine mcscf_post_lucita_setci
-!*******************************************************************************
-
-!*******************************************************************************
-  subroutine mcscf_lucita_interface_set_vector_update(generic_exchange_type1,  &
-                                                      generic_exchange_type2)
-!*******************************************************************************
-!
-!    purpose: set logical array for a dynamic vector update MCSCF --> LUCITA
-!             performing the various CI tasks during the MCSCF optimization
-!              
-!
-!             generic_exchange_typeX == 1 refers to CREF and it's handling is set directly at the start of each MACRO iteration
-!
-!*******************************************************************************
-  integer,   intent(in)    :: generic_exchange_type1
-  integer,   intent(in)    :: generic_exchange_type2
-!-------------------------------------------------------------------------------
-    
-     if(generic_exchange_type1 > 1) vector_update_mc2lu(generic_exchange_type1) = .true.
-     if(generic_exchange_type2 > 1) vector_update_mc2lu(generic_exchange_type2) = .true.
-
-  end subroutine mcscf_lucita_interface_set_vector_update
 !*******************************************************************************
 
 end module

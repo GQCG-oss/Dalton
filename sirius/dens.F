@@ -1499,6 +1499,7 @@ C
 #include <strnum.h>
 C
 #include <infpri.h>
+      integer :: xctype1, xctype2
 C
 C     work memory: WRK(KFRSAV:KFRSAV-1+LFRSAV)
 C
@@ -1638,6 +1639,22 @@ C        ... determinant basis
             ILVERV = 1
          END IF
          if(ci_program .eq. 'LUCITA   ')then
+
+!          set vector update scheme in mcscf_lucita_interface
+!          remember: cl == cref if MCSCF
+           if(rhotyp == 1)then
+             xctype1 = 1
+             xctype2 = xctype1
+           else if(rhotyp == 2)then
+             xctype1 = 2
+             xctype2 = 3
+           else if(rhotyp == 3)then
+             xctype1 = 2
+             xctype2 = 1
+           end if
+!
+!          check the scheme above for response/MCSCF response!!! - stefan - jan 2012
+!
            call define_lucita_cfg_dynamic(irsym,       ! rhs symmetry ! swap see subroutine below
      &                                    ilsym,       ! lhs symmetry ! swap see subroutine below
      &                                    -1,          ! no istaci
@@ -1657,6 +1674,8 @@ C        ... determinant basis
      &                                    .true.,      ! integrals provided by / return density matrices to the MCSCF environment
      &                                    .not.norho2, ! calculate 2-particle density matrix
      &                                    tdm,         ! calculate transition density matrix
+     &                                    xctype1,     ! vector_exchange_type1
+     &                                    xctype2,     ! vector_exchange_type2
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 #define LUCI_DEBUG
 #ifdef LUCI_DEBUG
@@ -1665,21 +1684,6 @@ C        ... determinant basis
            write(lupri,*) ' before dens run: cr'
            call wrtmatmn(cr,1,NrDET,1,NrDET,lupri)
 #endif
-!          set vector update scheme in mcscf_lucita_interface
-!          remember: cl == cref if MCSCF
-           if(rhotyp == 1)then
-             vector_exchange_type1 = 1
-             vector_exchange_type2 = vector_exchange_type1
-           else if(rhotyp == 2)then
-             vector_exchange_type1 = 2
-             vector_exchange_type2 = 3
-           else if(rhotyp == 3)then
-             vector_exchange_type1 = 2
-             vector_exchange_type2 = 1
-           end if
-!
-!          check the scheme above for response/MCSCF response!!! - stefan - jan 2012
-!
 !          cl == cref                  rhs lhs
            call mcscf_lucita_interface( cr, cl,rho1,rho2,
      &                                 'Xp-density m',

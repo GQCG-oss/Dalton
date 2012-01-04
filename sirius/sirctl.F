@@ -97,6 +97,7 @@ C
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
+      integer              :: xctype1, xctype2
  
 #include <sirbkd.h>
 C
@@ -739,6 +740,10 @@ C
 
 !       define LUCITA control variables and orbital spaces provided via GASCI input (irun_type == '2')
         irun_type =  2 
+
+        xctype1   = -1
+        xctype2   = -1
+
 !       step 1: dynamic variables
         call define_lucita_cfg_dynamic(gasci_input_ptg_symmetry,
      &                                 gasci_input_ptg_symmetry,
@@ -759,6 +764,8 @@ C
      &                                  .false.,
      &                                  .false.,
      &                                  .false.,
+     &                                  xctype1, ! vector exchange type1
+     &                                  xctype2, ! vector exchange type2
      &                                  .false.) ! no vector exchange between lucita/mc using io2io (here: no vector exchange at all...)
 !        step 2: static variables
          call define_lucita_cfg_static(irun_type)
