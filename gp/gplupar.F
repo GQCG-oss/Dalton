@@ -877,6 +877,183 @@ C
       END
 ***********************************************************************
 
+      subroutine copy_vector_mpi_2_mcmem(luin,vec1,
+     &                                   ivec,
+     &                                   my_ioff_luin,
+     &                                   luinlist,
+     &                                   par_dist_block_list,
+     &                                   block_list,
+     &                                   communicator_group,
+     &                                   nblock)
+C
+C     Written by  S. Knecht         - June 11 2007
+C
+C**********************************************************************
+C
+C     copy a given vector from MPI file LUIN to MC memory blockwise
+C
+C     active blocks on the MPI-files are flagged by a nonzero list entry
+C
+C     Last revision:     S. Knecht       - Jan 2012
+C
+************************************************************************
+      implicit none
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#include "parluci.h"
+      real(8), intent(inout) :: vec1(*) 
+      integer, intent(in)    :: ivec
+      integer, intent(in)    :: nblock
+      integer, intent(in)    :: par_dist_block_list(nblock)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: communicator_group
+      integer, intent(in)    :: luin
+      integer, intent(in)    :: luinlist(*)
+      INTEGER(KIND=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUIN
+!-------------------------------------------------------------------------------
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER NUM_BLK
+      integer IOFFSET_INT_IN
+      integer sender_id
+      integer xoffset
+      integer lbl
+      integer ii
+      integer isendtom
+      integer ierr
+!-------------------------------------------------------------------------------
+C
+C     initialize scratch offsets
+      NUM_BLK           = 0
+      IOFFSET_SCRATCH   = 0
+      IOFFSET_IN_LUIN   = 0
+      IOFFSET_INT_IN    = 0
+      xoffset           = 1
+C
+C     initialize co-worker tag 
+      sender_id = 0
+C
+C     ============
+C      real vector
+C     ============
+
+      IOFFSET_SCRATCH = 0
+      NUM_BLK         = 0
+C
+C     set new offset
+C
+C     position in file is at the end of vector ivec - 1
+C
+C     note: real vector: --> MY_VEC2_IOFF and MY_ACT_BLK2
+C
+      IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
+     &                 ( ivec - 1 )   * MY_VEC2_IOFF
+      IOFFSET_INT_IN   = 1 + NUM_BLK  +
+     &                 ( ivec - 1 )   * MY_ACT_BLK2
+C
+      DO II = 1, NBLOCK ! loop over vector blocks
+
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
+        LBL             = block_list(II)
+
+        IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers first ...
+
+          IF(par_dist_block_list(II) .ne. LUCI_MYPROC) GOTO 500
+
+        ELSE ! LUCI_MASTER
+
+!         receive block from co-worker sender_id
+          sender_id = par_dist_block_list(II)
+
+          if(abs(sender_id) .gt. 0)then
+
+!           block has zero length
+            if(sender_id .eq. -2) goto 500
+
+          else
+ 
+!           LUCI_MASTER block
+!           -----------------
+            IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
+C
+C             read block in
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1(xoffset),
+     &                              LBL,MPI_REAL8,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+              print *,'master - read-in: my vector piece'
+              call wrtmatmn(vec1(xoffset),1,lbl,1,lbl,luwrt)
+#endif
+            END IF
+C
+            IOFFSET_SCRATCH = LBL
+            NUM_BLK         = 1
+C
+            GOTO 500
+          END IF ! abs(sender_id) > 0?
+
+        END IF ! co-worker / master switch
+ 
+!       co-worker block
+!       ---------------
+ 
+        if(luci_myproc .ne. luci_master)then
+C
+          ISENDTOM = 0
+          ISENDTOM = LUINLIST(IOFFSET_INT_IN)
+C
+          CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
+     &                  communicator_group,IERR)
+C
+          IF(ISENDTOM .gt. 0)THEN
+C
+            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
+     &                            MPI_REAL8,my_STATUS,IERR)
+            CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,91,
+     &                    communicator_group,IERR)
+#ifdef LUCI_DEBUG
+            print *,'co-worker - read-in: my vector piece'
+            call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+#endif
+C
+          END IF
+          IOFFSET_SCRATCH = LBL
+          NUM_BLK         = 1
+
+        else ! LUCI_MASTER
+ 
+          ISENDTOM = 0
+          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,90,
+     &                  communicator_group,my_STATUS,IERR)
+C
+          IF(ISENDTOM .gt. 0)THEN
+C
+            CALL MPI_RECV(vec1(xoffset),LBL,MPI_REAL8,sender_id,91,
+     &                    communicator_group,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+            print *,'master- recieve: my vector piece'
+            call wrtmatmn(vec1(xoffset),1,lbl,1,lbl,luwrt)
+#endif
+          END IF
+          IOFFSET_SCRATCH = 0
+          NUM_BLK         = 0
+
+        end if ! co-worker / master switch
+
+ 500    CONTINUE
+        
+!       keep track of correct offset
+        xoffset         = xoffset + LBL
+        IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
+        IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
+
+      end do ! loop over vector blocks
+C
+      END
+!**********************************************************************
+
       SUBROUTINE COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
      &                                 ISCALFAC,ISCALFAC_GROUP,
      &                                 IBLOCKL,NBLOCK,JCOMM,
