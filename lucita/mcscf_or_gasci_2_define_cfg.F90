@@ -190,6 +190,7 @@ contains
                                        calc_transition_densm,    &
                                        xctype1,                  &
                                        xctype2,                  &
+                                       vec_xc_parallel,          &
                                        io2io_vector_exchange)
 
 #include "priunit.h"
@@ -216,6 +217,7 @@ contains
     logical             , intent(in) :: two_el_dens_matrix
     logical             , intent(in) :: calc_transition_densm
     logical             , intent(in) :: io2io_vector_exchange
+    logical             , intent(in) :: vec_xc_parallel
 !   ----------------------------------------------------------------------------
 
 !     set 'dynamic' variables
@@ -228,6 +230,7 @@ contains
 !     logical block in module lucita_mcscf_ci_cfg
       integrals_from_mcscf_env                     = mcscf_provides_ints
       io2io_vector_exchange_mc2lu_lu2mc            = io2io_vector_exchange
+      vector_exchange_mc2lu_lu2mc_active           = vec_xc_parallel
 
 !     real(8) block
       lucita_cfg_accepted_truncation               = truncation_thr

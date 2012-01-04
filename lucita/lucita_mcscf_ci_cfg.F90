@@ -21,6 +21,7 @@ module lucita_mcscf_ci_cfg
   logical,              public :: integrals_from_mcscf_env                     = .false.
   logical,              public :: io2io_vector_exchange_mc2lu_lu2mc            = .false.
   logical,              public :: cref_is_active_bvec_for_sigma                = .false.
+  logical,              public :: vector_exchange_mc2lu_lu2mc_active           = .false.
   logical,              public :: vector_update_mc2lu(1:vector_exchange_types) = .false. ! prepare for dynamic vector update, e.g., save and broadcast only if really necessary...
   logical,              public :: vector_update_lu2mc(1:vector_exchange_types) = .false. !
 

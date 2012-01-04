@@ -1676,6 +1676,7 @@ C        ... determinant basis
      &                                    tdm,         ! calculate transition density matrix
      &                                    xctype1,     ! vector_exchange_type1
      &                                    xctype2,     ! vector_exchange_type2
+     &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 #define LUCI_DEBUG
 #ifdef LUCI_DEBUG

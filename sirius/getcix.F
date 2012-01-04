@@ -347,6 +347,7 @@ C    *                MELMN3,NOSYM,ICSF,NCNSM,REFSPC)
      &                                    .false.,
      &                                    -1     ,     ! vector exchange type1
      &                                    -1     ,     ! vector exchange type2
+     &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                    .false.)
 !          step 2: static variables
            call define_lucita_cfg_static(1)

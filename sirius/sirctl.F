@@ -766,6 +766,7 @@ C
      &                                  .false.,
      &                                  xctype1, ! vector exchange type1
      &                                  xctype2, ! vector exchange type2
+     &                                  .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                  .false.) ! no vector exchange between lucita/mc using io2io (here: no vector exchange at all...)
 !        step 2: static variables
          call define_lucita_cfg_static(irun_type)

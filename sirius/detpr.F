@@ -158,6 +158,7 @@ C           ... use determinant expansion
      &                                    .false.,     ! calculate transition density matrix
      &                                    xctype1,     ! vector exchange type1
      &                                    xctype2,     ! vector exchange type2
+     &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
 
