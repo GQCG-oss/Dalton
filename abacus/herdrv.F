@@ -1657,7 +1657,8 @@ C
  1000 CONTINUE
 C
 C      IF (QMMM) CALL READMM(WORK,LWORK)
-      if (qmmm) call pe_read_input(work,lwork)
+      if (qmmm) call pe_read_input(cord, charge, natoms,
+     &                             work,lwork)
 
       CALL SETDCH
       CALL GPCLOSE(LUCMD,'KEEP')

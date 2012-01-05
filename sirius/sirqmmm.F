@@ -86,15 +86,8 @@ C     Modify the fock operator. Modification returned in FSOL.
 C     QMMM contribution to the energy returned in EQMMM.
 C      CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
 
-      do i = 1, natoms
-        new_charges(i) = charge(i)
-        do j = 1, 3
-          new_coords(i,j) = cord(j,i)
-        end do
-      end do
-
-      call pe_main(wrk(kdtao:nnbasx), fsol(1:nnbasx), eqmmm, new_coords,
-     &             new_charges, wrk(kend:lwrk1))
+      call pe_main(wrk(kdtao:nnbasx), fsol(1:nnbasx), eqmmm,
+     &             wrk(kend:lwrk1))
 
       CALL QEXIT('QMMMFCK')
       RETURN

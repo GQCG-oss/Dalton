@@ -12,17 +12,17 @@
 #include <priunit.h>
 
         character(8), dimension(9*mxcent) :: labint
-        integer, dimension(9*mxcent) :: intrep, intadr
+        integer*8, dimension(9*mxcent) :: intrep, intadr
 
         logical :: trimat
-        integer :: i, j, m
-        integer, intent(in) :: k, nints
+        integer*8 :: i, j, m
+        integer*8, intent(in) :: k, nints
         character(7) :: inttype
         character(*), intent(in) :: storage
-        real(8), dimension(nwrk), intent(inout) :: work
-        real(8), dimension(3), intent(in) :: coord
-        real(8), dimension(nints), intent(inout) :: Tk_ints
-        real(8), dimension(3) :: backup
+        real*8, dimension(nwrk), intent(inout) :: work
+        real*8, dimension(3), intent(in) :: coord
+        real*8, dimension(nints), intent(inout) :: Tk_ints
+        real*8, dimension(3) :: backup
 
         backup = diporg
         diporg = coord
