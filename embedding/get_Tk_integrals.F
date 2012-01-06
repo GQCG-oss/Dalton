@@ -15,8 +15,8 @@
         integer*8, dimension(9*mxcent) :: intrep, intadr
 
         logical :: trimat
-        integer*8 :: i, j, m
-        integer*8, intent(in) :: k, nints
+        integer :: i, j, m
+        integer, intent(in) :: k, nints
         character(7) :: inttype
         character(*), intent(in) :: storage
         real*8, dimension(nwrk), intent(inout) :: work

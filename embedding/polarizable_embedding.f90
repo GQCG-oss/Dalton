@@ -10,13 +10,13 @@ module polarizable_embedding
     integer, parameter :: i8 = selected_int_kind(18)
 
     ! number of centers and length of exclusion list
-    integer(i8), save :: ncents, nexlist
+    integer, save :: ncents, nexlist
     ! order of multipole moment expansion
-    integer(i8), save :: mulorder
+    integer, save :: mulorder
     ! type of polarization, i.e. 0: isotropic alpha, 1: alpha, 2: A, 3: C
-    integer(i8), save :: poltype
+    integer, save :: poltype
     ! nonlinear polarizabilities
-    integer(i8), save :: hypoltype
+    integer, save :: hypoltype
 
     ! thresholds
     real(r8), parameter :: zero = 1.0d-8
@@ -49,7 +49,7 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: C
 
     ! QM info: number of nuclei, nuclear charges and nuclear coordinates
-    integer(i8), save :: qmnucs
+    integer, save :: qmnucs
     real(r8), dimension(:), allocatable, save :: Zm
     real(r8), dimension(:,:), allocatable, save :: Rm
 
@@ -73,8 +73,8 @@ subroutine pe_read_input(cord, charge, natoms, work, nwrk)
     real(r8), dimension(3,natoms) :: cord
     real(r8), dimension(nwrk) :: work
 
-    integer(i8) :: i, j, s
-    integer(i8) :: lupot, nlines
+    integer :: i, j, s
+    integer :: lupot, nlines
 
     qmnucs = natoms
     allocate(Rm(qmnucs,3), Zm(qmnucs))
@@ -251,7 +251,7 @@ subroutine pe_electrostatic(density, fock, E_es, work)
     real(r8), dimension(:), intent(inout) :: fock, work
 
     logical :: lexist
-    integer(i8) :: lutemp
+    integer :: lutemp
     real(r8), dimension(0:3) :: E_el, E_nuc
 
     E_es = 0.0d0; E_el = 0.0d0; E_nuc = 0.0d0
@@ -265,18 +265,19 @@ subroutine pe_electrostatic(density, fock, E_es, work)
         close(lutemp)
         E_es = E_es + dot(density, fock)
     else
+        print *, 'q0'
         if (mulorder >= 0) then
             call es_monopoles(density, fock, E_el(0), E_nuc(0), work)
         end if
-
+        print *, 'q1'
         if (mulorder >= 1) then
             call es_dipoles(density, fock, E_el(1), E_nuc(1), work)
         end if
-
+        print *, 'q2'
         if (mulorder >= 2) then
             call es_quadrupoles(density, fock, E_el(2), E_nuc(2), work)
         end if
-
+        print *, 'q3'
         if (mulorder >= 3) then
             call es_octopoles(density, fock, E_el(3), E_nuc(3), work)
         end if
@@ -299,9 +300,9 @@ subroutine es_monopoles(density, fock, E_el, E_nuc, work)
     real(r8), dimension(:), intent(inout) :: fock, work
     real(r8), intent(out) :: E_el, E_nuc
 
-    integer(i8) :: nbas
-    integer(i8) :: i, j
-    integer(i8), parameter :: k = 0
+    integer :: nbas
+    integer :: i, j
+    integer, parameter :: k = 0
     real(r8), dimension(3) :: Rsm
     real(r8), dimension(1) :: Tsm
     real(r8), dimension(:,:), allocatable :: Q0_ints
@@ -319,7 +320,7 @@ subroutine es_monopoles(density, fock, E_el, E_nuc, work)
         call get_Qk_integrals(Q0_ints, k, Rs(i,:), Q0(i,:), work)
 
         ! nuclei - monopole interaction
-        do j = 1, size(Zm)
+        do j = 1, qmnucs
             Rsm = Rm(j,:) - Rs(i,:)
             call get_Tk_tensor(Tsm, k, Rsm)
             E_nuc = E_nuc + Q0(i,1) * Zm(j) * Tsm(1)
@@ -343,9 +344,9 @@ subroutine es_dipoles(density, fock, E_el, E_nuc, work)
     real(r8), dimension(:), intent(inout) :: fock, work
     real(r8), intent(out) :: E_el, E_nuc
 
-    integer(i8) :: nbas
-    integer(i8) :: i, j, l
-    integer(i8), parameter :: k = 1
+    integer :: nbas
+    integer :: i, j, l
+    integer, parameter :: k = 1
     real(r8), dimension(3) :: Rsm, Tsm
     real(r8), dimension(:,:), allocatable :: Q1_ints
 
@@ -362,7 +363,7 @@ subroutine es_dipoles(density, fock, E_el, E_nuc, work)
         call get_Qk_integrals(Q1_ints, k, Rs(i,:), Q1(i,:), work)
 
         ! nuclei - dipole interaction energy
-        do j = 1, size(Zm)
+        do j = 1, qmnucs
             Rsm = Rm(j,:) - Rs(i,:)
             call get_Tk_tensor(Tsm, k, Rsm)
             do l = 1, 3
@@ -390,9 +391,9 @@ subroutine es_quadrupoles(density, fock, E_el, E_nuc, work)
     real(r8), dimension(:), intent(inout) :: fock, work
     real(r8), intent(out) :: E_el, E_nuc
 
-    integer(i8) :: nbas
-    integer(i8) :: i, j, l
-    integer(i8), parameter :: k = 2
+    integer :: nbas
+    integer :: i, j, l
+    integer, parameter :: k = 2
     real(r8), dimension(3) :: Rsm
     real(r8), dimension(6) :: Tsm, factors
     real(r8), dimension(:,:), allocatable :: Q2_ints
@@ -410,7 +411,7 @@ subroutine es_quadrupoles(density, fock, E_el, E_nuc, work)
         call get_Qk_integrals(Q2_ints, k, Rs(i,:), Q2(i,:), work)
 
         ! nuclei - quadrupole interaction energy
-        do j = 1, size(Zm)
+        do j = 1, qmnucs
             Rsm = Rm(j,:) - Rs(i,:)
             call get_Tk_tensor(Tsm, k, Rsm)
             call get_symmetry_factors(factors, k)
@@ -440,9 +441,9 @@ subroutine es_octopoles(density, fock, E_el, E_nuc, work)
     real(r8), dimension(:), intent(inout) :: fock, work
     real(r8), intent(out) :: E_el, E_nuc
 
-    integer(i8) :: nbas
-    integer(i8) :: i, j, l
-    integer(i8), parameter :: k = 3
+    integer :: nbas
+    integer :: i, j, l
+    integer, parameter :: k = 3
     real(r8), dimension(3) :: Rsm
     real(r8), dimension(10) :: Tsm, factors
     real(r8), dimension(:,:), allocatable :: Q3_ints
@@ -489,8 +490,8 @@ subroutine pe_polarization(density, fock, E_ind, work)
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
-    integer(i8) :: npol
-    integer(i8) :: i, j
+    integer :: npol
+    integer :: i, j
     real(r8), dimension(:,:), allocatable :: Mu
 
     E_ind = 0.0d0
@@ -523,7 +524,7 @@ subroutine get_induced_dipoles(Mu, work)
     real(r8), dimension(:,:), intent(out) :: Mu
     real(r8), dimension(:), intent(inout) :: work
 
-    integer(i8) :: npol
+    integer :: npol
     real(r8), dimension(:,:), allocatable :: Ftot
 
     npol = size(Mu, 1)
@@ -545,8 +546,8 @@ subroutine get_electric_fields(Ftot, work)
     real(r8), dimension(:,:), intent(out) :: Ftot
     real(r8), dimension(:), intent(inout) :: work
 
-    integer(i8) :: i, j
-    integer(i8) :: npol
+    integer :: i, j
+    integer :: npol
     real(r8), dimension(:,:), allocatable :: Fel, Fnuc, Fmul
 
     npol = size(Ftot, 1)
@@ -570,14 +571,13 @@ subroutine get_electron_fields(F, work)
     real(r8), dimension(:,:), intent(out) :: F
     real(r8), dimension(:), intent(inout) :: work
 
-    integer(i8) :: i, j
+    integer :: i, j
 
     do i = 1, ncents
 
         print *, 'temp'
 
     end do
-
 
 end subroutine get_electron_fields
 
@@ -588,14 +588,13 @@ subroutine get_nuclear_fields(F, work)
     real(r8), dimension(:,:), intent(out) :: F
     real(r8), dimension(:), intent(inout) :: work
 
-    integer(i8) :: i, j
+    integer :: i, j
 
     do i = 1, ncents
 
         print *, 'temp'
 
     end do
-
 
 end subroutine get_nuclear_fields
 
@@ -607,16 +606,15 @@ subroutine get_multipole_fields(Fmul, work)
     real(r8), dimension(:), intent(inout) :: work
 
     logical :: skip
-    integer(i8) :: i, j
+    integer :: i, j, k
     real(r8) :: Rss
     real(r8), dimension(3) :: Fs
 
     do i = 1, ncents
         do j = 1, ncents
 
-            if (i == j) cycle
-
             ! check if j is allowed to polarize i
+            if (i == j) cycle
             skip = .false.
             do k = 1, nexlist
                 if (exlist(i,1) == exlist(j,k)) then
@@ -671,51 +669,131 @@ end subroutine get_multipole_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_monopole_field(Fa, Ra, Rb, monopole)
+subroutine get_monopole_field(Fa, Ra, Rb, Q0b)
 
     real(r8), dimension(3), intent(out) :: Fa
     real(r8), dimension(3), intent(in) :: Ra, Rb
-    real(r8), dimension(1), intent(in) :: monopole
+    real(r8), dimension(1), intent(in) :: Q0b
 
-    integer(i8) :: i, k
+    integer :: i
+    integer, parameter :: k = 1
     real(r8), dimension(3) :: Rab
-    real(r8), dimension(3) :: T
+    real(r8), dimension(3) :: Tab
 
     Rab = Rb - Ra
 
-    k = 1
-    call get_Tk_tensor(T, k, Rab)
+    call get_Tk_tensor(Tab, k, Rab)
+
+    Fa = 0.0d0
 
     do i = 1, 3
-        Fa(i) = - monopole(1) * T(i)
+        Fa(i) = - Q0b(1) * Tab(i)
     end do
 
 end subroutine get_monopole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_dipole_field(Fa, Ra, Rb, dipole)
+subroutine get_dipole_field(Fa, Ra, Rb, Q1b)
 
     real(r8), dimension(3), intent(out) :: Fa
-    real(r8), dimension(3), intent(in) :: Ra, Rb
-    real(r8), dimension(3), intent(in) :: dipole
+    real(r8), dimension(3), intent(in) :: Ra, Rb, Q1b
 
-    integer(i8) :: i, j, k
+    integer :: i, j
+    integer, parameter :: k = 2
     real(r8), dimension(3) :: Rab
-    real(r8), dimension(6) :: T
+    real(r8), dimension(6) :: Tab
+    real(r8), dimension(3,3) :: Tf
 
     Rab = Rb - Ra
 
-    k = 2
-    call get_Tk_tensor(T, k, Rab)
+    call get_Tk_tensor(Tab, k, Rab)
 
-!    do i = 1, 3
-!        do j = 1, 3
-!            Fi(i) = Tk(i)
-!        end do
-!    end do
+    call get_full_2nd_tensor(Tf, Tab)
+
+    Fa = 0.0d0
+
+    do i = 1, 3
+        do j = 1, 3
+            Fa(i) = Fa(i) + Tf(i,j) * Q1b(j)
+        end do
+    end do
+
+!    Fa = matmul(Tf, Q1b)
+
+!    Fa(1) = Tab(1) * Q1b(1) + Tab(2) * Q1b(2) + Tab(3) * Q1b(3)
+!    Fa(2) = Tab(2) * Q1b(1) + Tab(4) * Q1b(2) + Tab(5) * Q1b(3)
+!    Fa(3) = Tab(3) * Q1b(1) + Tab(5) * Q1b(2) + Tab(6) * Q1b(3)
 
 end subroutine get_dipole_field
+
+!------------------------------------------------------------------------------
+
+subroutine get_quadrupole_field(Fa, Ra, Rb, Q2b)
+
+    real(r8), dimension(3), intent(out) :: Fa
+    real(r8), dimension(3), intent(in) :: Ra, Rb, Q2b
+
+    integer :: i, j, l
+    integer, parameter :: k = 3
+    real(r8), dimension(3) :: Rab
+    real(r8), dimension(10) :: Tab
+    real(r8), dimension(3,3) :: Q2f
+    real(r8), dimension(3,3,3) :: Tf
+
+    Rab = Rb - Ra
+
+    call get_Tk_tensor(Tab, k, Rab)
+
+    call get_full_2nd_tensor(Q2f, Q2b)
+    call get_full_3rd_tensor(Tf, Tab)
+
+    Fa = 0.0d0
+
+    do i = 1, 3
+        do j = 1, 3
+            do l = 1,3
+                Fa(i) = Fa(i) + 0.5d0 * Tf(i,j,l) * Q2f(j,l)
+            end do
+        end do
+    end do
+
+end subroutine get_quadrupole_field
+
+!------------------------------------------------------------------------------
+
+subroutine get_octopole_field(Fa, Ra, Rb, Q3b)
+
+    real(r8), dimension(3), intent(out) :: Fa
+    real(r8), dimension(3), intent(in) :: Ra, Rb, Q3b
+
+    integer :: i, j, l, m
+    integer, parameter :: k = 4
+    real(r8), dimension(3) :: Rab
+    real(r8), dimension(15) :: Tab
+    real(r8), dimension(3,3,3) :: Q3f
+    real(r8), dimension(3,3,3,3) :: Tf
+
+    Rab = Rb - Ra
+
+    call get_Tk_tensor(Tab, k, Rab)
+
+    call get_full_3rd_tensor(Q3f, Q3b)
+    call get_full_4th_tensor(Tf, Tab)
+
+    Fa = 0.0d0
+
+    do i = 1, 3
+        do j = 1, 3
+            do l = 1,3
+                do m = 1, 3
+                    Fa(i) = Fa(i) + Tf(i,j,l,m) * Q3f(j,l,m) / 6.0d0
+                end do
+            end do
+        end do
+    end do
+
+end subroutine get_octopole_field
 
 !------------------------------------------------------------------------------
 
@@ -728,8 +806,8 @@ end subroutine get_dipole_field
 !   real(r8), dimension(:), intent(out) :: A
 !   real(r8), dimension(:), intent(inout) :: work
 
-!   integer(i8) :: i, j, k, l, m, n
-!   integer(i8) :: info, stat_alloc
+!   integer :: i, j, k, l, m, n
+!   integer :: info, stat_alloc
 !   real(r8), dimension(6) :: alpha
 !   real(r8) :: Rij, T2
 !   logical :: exclude
@@ -874,7 +952,7 @@ end subroutine get_dipole_field
 
 subroutine get_Tk_tensor(Tk, k, Rij)
 
-    integer(i8), intent(in) :: k
+    integer, intent(in) :: k
     real(r8), dimension(:), intent(out) :: Tk
     real(r8), dimension(3), intent(in) :: Rij
 
@@ -942,21 +1020,95 @@ end subroutine get_Tk_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine get_Qk_integrals(Qk_ints, k, coord, multipole, work)
+subroutine get_full_2nd_tensor(Tf, Ts)
+
+    real(r8), dimension(:), intent(in) :: Ts
+    real(r8), dimension(3,3), intent(out) :: Tf
+
+    Tf = 0.0d0
+
+    Tf(1,1) = Ts(1); Tf(1,2) = Ts(2); Tf(1,3) = Ts(3)
+    Tf(2,1) = Ts(2); Tf(2,2) = Ts(4); Tf(2,3) = Ts(5)
+    Tf(3,1) = Ts(3); Tf(3,2) = Ts(5); Tf(3,3) = Ts(6)
+
+end subroutine get_full_2nd_tensor
+
+!------------------------------------------------------------------------------
+
+subroutine get_full_3rd_tensor(Tf, Ts)
+
+    real(r8), dimension(:), intent(in) :: Ts
+    real(r8), dimension(3,3,3), intent(out) :: Tf
+
+    Tf = 0.0d0
+
+    Tf(1,1,1) = Ts(1); Tf(1,1,2) = Ts(2); Tf(1,1,3) = Ts(3)
+    Tf(1,2,1) = Ts(2); Tf(1,2,2) = Ts(4); Tf(1,2,3) = Ts(5)
+    Tf(1,3,1) = Ts(3); Tf(1,3,2) = Ts(5); Tf(1,3,3) = Ts(6)
+    Tf(2,1,1) = Ts(2); Tf(2,1,2) = Ts(4); Tf(2,1,3) = Ts(5)
+    Tf(2,2,1) = Ts(4); Tf(2,2,2) = Ts(7); Tf(2,2,3) = Ts(8)
+    Tf(2,3,1) = Ts(5); Tf(2,3,2) = Ts(8); Tf(2,3,3) = Ts(9)
+    Tf(3,1,1) = Ts(3); Tf(3,1,2) = Ts(5); Tf(3,1,3) = Ts(6)
+    Tf(3,2,1) = Ts(5); Tf(3,2,2) = Ts(8); Tf(3,2,3) = Ts(9)
+    Tf(3,3,1) = Ts(6); Tf(3,3,2) = Ts(9); Tf(3,3,3) = Ts(10)
+
+end subroutine get_full_3rd_tensor
+
+!------------------------------------------------------------------------------
+
+subroutine get_full_4th_tensor(Tf, Ts)
+
+    real(r8), dimension(:), intent(in) :: Ts
+    real(r8), dimension(3,3,3,3), intent(out) :: Tf
+
+    Tf = 0.0d0
+
+    Tf(1,1,1,1) = Ts(1); Tf(1,1,1,2) = Ts(2); Tf(1,1,1,3) = Ts(3)
+    Tf(1,1,2,1) = Ts(2); Tf(1,1,2,2) = Ts(4); Tf(1,1,2,3) = Ts(5)
+    Tf(1,1,3,1) = Ts(3); Tf(1,1,3,2) = Ts(5); Tf(1,1,3,3) = Ts(6)
+    Tf(1,2,1,1) = Ts(2); Tf(1,2,1,2) = Ts(4); Tf(1,2,1,3) = Ts(5)
+    Tf(1,2,2,1) = Ts(4); Tf(1,2,2,2) = Ts(7); Tf(1,2,2,3) = Ts(8)
+    Tf(1,2,3,1) = Ts(5); Tf(1,2,3,2) = Ts(8); Tf(1,2,3,3) = Ts(9)
+    Tf(1,3,1,1) = Ts(3); Tf(1,3,1,2) = Ts(5); Tf(1,3,1,3) = Ts(6)
+    Tf(1,3,2,1) = Ts(5); Tf(1,3,2,2) = Ts(8); Tf(1,3,2,3) = Ts(9)
+    Tf(1,3,3,1) = Ts(6); Tf(1,3,3,2) = Ts(9); Tf(1,3,3,3) = Ts(10)
+    Tf(2,1,1,1) = Ts(2); Tf(2,1,1,2) = Ts(4); Tf(2,1,1,3) = Ts(5)
+    Tf(2,1,2,1) = Ts(4); Tf(2,1,2,2) = Ts(7); Tf(2,1,2,3) = Ts(8)
+    Tf(2,1,3,1) = Ts(5); Tf(2,1,3,2) = Ts(8); Tf(2,1,3,3) = Ts(9)
+    Tf(2,2,1,1) = Ts(4); Tf(2,2,1,2) = Ts(7); Tf(2,2,1,3) = Ts(8)
+    Tf(2,2,2,1) = Ts(7); Tf(2,2,2,2) = Ts(11); Tf(2,2,2,3) = Ts(12)
+    Tf(2,2,3,1) = Ts(8); Tf(2,2,3,2) = Ts(12); Tf(2,2,3,3) = Ts(13)
+    Tf(2,3,1,1) = Ts(5); Tf(2,3,1,2) = Ts(8); Tf(2,3,1,3) = Ts(9)
+    Tf(2,3,2,1) = Ts(8); Tf(2,3,2,2) = Ts(12); Tf(2,3,2,3) = Ts(13)
+    Tf(2,3,3,1) = Ts(9); Tf(2,3,3,2) = Ts(13); Tf(2,3,3,3) = Ts(14)
+    Tf(3,1,1,1) = Ts(3); Tf(3,1,1,2) = Ts(5); Tf(3,1,1,3) = Ts(6)
+    Tf(3,1,2,1) = Ts(5); Tf(3,1,2,2) = Ts(8); Tf(3,1,2,3) = Ts(9)
+    Tf(3,1,3,1) = Ts(6); Tf(3,1,3,2) = Ts(9); Tf(3,1,3,3) = Ts(10)
+    Tf(3,2,1,1) = Ts(5); Tf(3,2,1,2) = Ts(8); Tf(3,2,1,3) = Ts(9)
+    Tf(3,2,2,1) = Ts(8); Tf(3,2,2,2) = Ts(12); Tf(3,2,2,3) = Ts(13)
+    Tf(3,2,3,1) = Ts(9); Tf(3,2,3,2) = Ts(13); Tf(3,2,3,3) = Ts(14)
+    Tf(3,3,1,1) = Ts(6); Tf(3,3,1,2) = Ts(9); Tf(3,3,1,3) = Ts(10)
+    Tf(3,3,2,1) = Ts(9); Tf(3,3,2,2) = Ts(13); Tf(3,3,2,3) = Ts(14)
+    Tf(3,3,3,1) = Ts(10); Tf(3,3,3,2) = Ts(14); Tf(3,3,3,3) = Ts(15)
+
+end subroutine get_full_4th_tensor
+
+!------------------------------------------------------------------------------
+
+subroutine get_Qk_integrals(Qk_ints, k, coord, Qk, work)
 
     external get_Tk_integrals
 
-    integer(i8), intent(in) :: k
+    integer, intent(in) :: k
     real(r8), dimension(:,:), intent(out) :: Qk_ints
-    real(r8), dimension(:), intent(in) :: multipole
+    real(r8), dimension(:), intent(in) :: Qk
     real(r8), dimension(3), intent(in) :: coord
     real(r8), dimension(:), intent(inout) :: work
 
-    real(r8), dimension(:), allocatable :: factors
+    integer :: i
+    integer :: ncomps, nbas
     real(r8) :: taylor
-    integer(i8) :: ncomps
-    integer(i8) :: nbas
-    integer(i8) :: i, j
+    real(r8), dimension(:), allocatable :: factors
 
     if (k == 0) then
         taylor = 1.0d0
@@ -983,7 +1135,7 @@ subroutine get_Qk_integrals(Qk_ints, k, coord, multipole, work)
 
     ! dot T^(k) integrals with multipole to get Q^(k) integrals
     do i = 1, ncomps
-        Qk_ints(:,i) = taylor * factors(i) * multipole(i) * Qk_ints(:,i)
+        Qk_ints(:,i) = taylor * factors(i) * Qk(i) * Qk_ints(:,i)
     end do
 
     deallocate(factors)
@@ -994,7 +1146,7 @@ end subroutine get_Qk_integrals
 
 subroutine get_symmetry_factors(factors, k)
 
-    integer(i8), intent(in) :: k
+    integer, intent(in) :: k
     real(r8), dimension(:), intent(out) :: factors
 
     factors = 0.0d0
@@ -1069,11 +1221,21 @@ end function dot
 
 !------------------------------------------------------------------------------
 
+!subroutine symm()
+
+!    real(r8), external :: dsymm
+!    real(r8) :: symm
+!    real(r8), dimension(:) :: 
+
+!end subroutine symm
+
+!------------------------------------------------------------------------------
+
 subroutine openfile(filename, lunit, stat, frmt)
 
     character(*), intent(in) :: filename, stat, frmt
-    integer(i8), intent(out) :: lunit
-    integer(i8) :: i
+    integer, intent(out) :: lunit
+    integer :: i
     logical :: lexist, lopen
 
     if (stat == 'old') then
