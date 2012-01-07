@@ -540,12 +540,14 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
             E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
 
+            print *, Mu(l:l+2)
+
             l = l + 3
 
         end do
 
         E_ind = E_el + E_nuc + E_mul
-        print *, E_ind, E_el, E_nuc, E_mul
+!        print *, E_ind, E_el, E_nuc, E_mul
 
         deallocate(Mu, Fel, Fnuc, Fmul)
 
@@ -608,6 +610,28 @@ subroutine get_electric_fields(Ftot, density, work)
     call get_multipole_fields(Fmul, work)
 
     Ftot = Fel + Fnuc + Fmul
+
+    print *, 'Electron field'
+    j = 0
+    do i = 1, n / 3
+        print *, Fel(i+j), Fel(i+j+1), Fel(i+j+2)
+        j = j + 3
+    end do
+
+    print *, 'Nuclear field'
+    j = 0
+    do i = 1, n / 3
+        print *, Fnuc(i+j), Fnuc(i+j+1), Fnuc(i+j+2)
+        j = j + 3
+    end do
+
+    print *, 'Multipole field'
+    j = 0
+    do i = 1, n / 3
+        print *, Fmul(i+j), Fmul(i+j+1), Fmul(i+j+2)
+        j = j + 3
+    end do
+
 
 end subroutine get_electric_fields
 
