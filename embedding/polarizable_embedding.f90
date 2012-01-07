@@ -40,13 +40,13 @@ module polarizable_embedding
 
     ! (hyper)polarizabilities
     ! dipole-dipole polarizability
-    real(r8), dimension(:,:), allocatable, save :: alpha
+    real(r8), dimension(:,:), allocatable, save :: alphas
     ! dipole-dipole-dipole polarizability / 1st hyperpolarizability
-    real(r8), dimension(:,:), allocatable, save :: beta
+    real(r8), dimension(:,:), allocatable, save :: betas
     ! dipole-quadrupole polarizability
-    real(r8), dimension(:,:), allocatable, save :: A
+    real(r8), dimension(:,:), allocatable, save :: As
     ! quadrupole-quadrupole polarizability
-    real(r8), dimension(:,:), allocatable, save :: C
+    real(r8), dimension(:,:), allocatable, save :: Cs
 
     ! QM info: number of nuclei, nuclear charges and nuclear coordinates
     integer, save :: qmnucs
@@ -54,6 +54,7 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! transpose to follow array element ordering
 ! cutoffs and damping
 ! memory management
 ! add error catching
@@ -147,57 +148,57 @@ subroutine pe_read_input(cord, charge, natoms, work, nwrk)
         end do
     end if
 
-    if (poltype >= 0) then
-        allocate(alpha(ncents,6))
-        alpha = 0.0d0
-        read(lupot,*) nlines
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) alpha(s,1)
-            alpha(s,4) = alpha(s,1)
-            alpha(s,6) = alpha(s,1)
-        end do
-    end if
+!    if (poltype >= 0) then
+!        allocate(alphas(ncents,6))
+!        alphas = 0.0d0
+!        read(lupot,*) nlines
+!        do i = 1, nlines
+!            read(lupot,*) s
+!            read(lupot,*) alphas(s,1)
+!            alphas(s,4) = alphas(s,1)
+!            alphas(s,6) = alphas(s,1)
+!        end do
+!    end if
 
     if (poltype >= 1) then
-        if (.not. allocated(alpha)) then
-            allocate(alpha(ncents,6))
-            alpha = 0.0d0
+        if (.not. allocated(alphas)) then
+            allocate(alphas(ncents,6))
+            alphas = 0.0d0
         end if
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (alpha(s,j), j = 1, 6)
+            read(lupot,*) (alphas(s,j), j = 1, 6)
         end do
     end if
 
     if (poltype >= 2) then
-        allocate(A(ncents,10))
-        A = 0.0d0
+        allocate(As(ncents,10))
+        As = 0.0d0
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (A(s,j), j = 1, 10)
+            read(lupot,*) (As(s,j), j = 1, 10)
         end do
     end if
 
     if (poltype >= 3) then
-        allocate(C(ncents,15))
-        C = 0.0d0
+        allocate(Cs(ncents,15))
+        Cs = 0.0d0
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (C(s,j), j = 1, 15)
+            read(lupot,*) (Cs(s,j), j = 1, 15)
         end do
     end if
 
-    if (poltype >= 1) then
-        allocate(beta(ncents,10))
-        beta = 0.0d0
+    if (hypoltype >= 1) then
+        allocate(betas(ncents,10))
+        betas = 0.0d0
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (beta(s,j), j = 1, 10)
+            read(lupot,*) (betas(s,j), j = 1, 10)
         end do
     end if
 
@@ -265,19 +266,18 @@ subroutine pe_electrostatic(density, fock, E_es, work)
         close(lutemp)
         E_es = E_es + dot(density, fock)
     else
-        print *, 'q0'
         if (mulorder >= 0) then
             call es_monopoles(density, fock, E_el(0), E_nuc(0), work)
         end if
-        print *, 'q1'
+
         if (mulorder >= 1) then
             call es_dipoles(density, fock, E_el(1), E_nuc(1), work)
         end if
-        print *, 'q2'
+
         if (mulorder >= 2) then
             call es_quadrupoles(density, fock, E_el(2), E_nuc(2), work)
         end if
-        print *, 'q3'
+
         if (mulorder >= 3) then
             call es_octopoles(density, fock, E_el(3), E_nuc(3), work)
         end if
@@ -490,28 +490,64 @@ subroutine pe_polarization(density, fock, E_ind, work)
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
-    integer :: npol
-    integer :: i, j
-    real(r8), dimension(:,:), allocatable :: Mu
+    integer :: npol, nbas
+    integer :: i, j, l
+    integer, parameter :: k = 1
+    real(r8) :: E_el, E_nuc, E_mul
+    real(r8), dimension(0:3) :: E_Qk
+    real(r8), dimension(:), allocatable :: Mu, Fel, Fnuc, Fmul
+    real(r8), dimension(:,:), allocatable :: Mu_ints
 
-    E_ind = 0.0d0
+    E_ind = 0.0d0; E_el = 0.0d0; E_nuc = 0.0d0; E_mul = 0.0d0; E_Qk = 0.0d0
 
     if (poltype >= 0) then
 
         npol = 0
         do i = 1, ncents
-            if (abs(maxval(alpha(i,:))) >= zero) then
+            if (abs(maxval(alphas(i,:))) >= zero) then
                 npol = npol + 1
             end if
         end do
 
-        allocate(Mu(npol,3))
+        allocate(Mu_ints(size(fock),3))
 
-        Mu = 0.0d0
+        Mu_ints = 0.0d0
 
-        call get_induced_dipoles(Mu, work)
+        allocate(Mu(3*npol), Fel(3*npol), Fnuc(3*npol), Fmul(3*npol))
 
-        deallocate(Mu)
+        Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
+
+        call get_induced_dipoles(Mu, density, work)
+
+        l = 1
+
+        do i = 1, ncents
+
+            if (abs(maxval(alphas(i,:))) <= zero) cycle
+
+            call get_Qk_integrals(Mu_ints, k, Rs(i,:), Mu(l:l+2), work)
+
+            do j = 1, 3
+                E_el = E_el - 0.5d0 * dot(density, Mu_ints(:,j))
+                fock = fock + Mu_ints(:,j)
+            end do
+
+            call get_nuclear_fields(Fnuc, work)
+
+            E_nuc = E_nuc - 0.5d0 * dot(Mu, Fnuc)
+
+            call get_multipole_fields(Fmul, work)
+
+            E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
+
+            l = l + 3
+
+        end do
+
+        E_ind = E_el + E_nuc + E_mul
+        print *, E_ind, E_el, E_nuc, E_mul
+
+        deallocate(Mu, Fel, Fnuc, Fmul)
 
     end if
 
@@ -519,82 +555,152 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine get_induced_dipoles(Mu, work)
+subroutine get_induced_dipoles(Mu, density, work)
 
-    real(r8), dimension(:,:), intent(out) :: Mu
+    real(r8), dimension(:), intent(out) :: Mu
+    real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
-    integer :: npol
-    real(r8), dimension(:,:), allocatable :: Ftot
+    integer :: i, j, n
+    real(r8), dimension(:), allocatable :: A
+    real(r8), dimension(:), allocatable :: Ftot
 
-    npol = size(Mu, 1)
+    n = size(Mu)
 
-    allocate(Ftot(npol,3))
+    allocate(A(int(n*(n+1)*0.5d0)), Ftot(n))
 
-    Ftot = 0.0d0
+    A = 0.0d0; Ftot = 0.0d0
     
-    call get_electric_fields(Ftot, work)
+    call get_electric_fields(Ftot, density, work)
 
-    deallocate(Ftot)
+    call get_response_matrix(A, .false., work)
+
+    Mu = Ftot
+
+    call solve(A, Mu)
+
+    deallocate(A, Ftot)
 
 end subroutine get_induced_dipoles
 
 !------------------------------------------------------------------------------
 
-subroutine get_electric_fields(Ftot, work)
+subroutine get_electric_fields(Ftot, density, work)
 
-    real(r8), dimension(:,:), intent(out) :: Ftot
+    real(r8), dimension(:), intent(out) :: Ftot
+    real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j
-    integer :: npol
-    real(r8), dimension(:,:), allocatable :: Fel, Fnuc, Fmul
+    integer :: n
+    real(r8), dimension(:), allocatable :: Fel, Fnuc, Fmul
 
-    npol = size(Ftot, 1)
+    n = size(Ftot)
 
-    allocate(Fel(npol,3), Fnuc(npol,3), Fmul(npol,3))
+    allocate(Fel(n), Fnuc(n), Fmul(n))
 
     Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
-    call get_electron_fields(Fel, work)
+    call get_electron_fields(Fel, density, work)
 
     call get_nuclear_fields(Fnuc, work)
 
     call get_multipole_fields(Fmul, work)
 
+    Ftot = Fel + Fnuc + Fmul
+
 end subroutine get_electric_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_electron_fields(F, work)
+subroutine get_electron_fields(Fel, density, work)
 
-    real(r8), dimension(:,:), intent(out) :: F
+    external get_Tk_integrals
+
+    real(r8), dimension(:), intent(out) :: Fel
+    real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
-    integer :: i, j
+    integer :: nbas
+    integer :: i, j, l
+    integer, parameter :: k = 1
+    real(r8), dimension(:,:), allocatable :: Fel_ints
+
+    nbas = size(density)
+
+    allocate(Fel_ints(nbas,3))
+
+    l = 0
 
     do i = 1, ncents
 
-        print *, 'temp'
+        if (abs(maxval(alphas(i,:))) <= zero) cycle
+
+        call get_Tk_integrals(Fel_ints, 3*nbas, k, 'packed', Rs(i,:),&
+                              work, size(work))
+
+        do j = 1, 3
+            Fel(l+j) = dot(density, Fel_ints(:,j))
+        end do
+
+        l = l + 3
 
     end do
+
+    deallocate(Fel_ints)
 
 end subroutine get_electron_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_nuclear_fields(F, work)
+subroutine get_nuclear_fields(Fnuc, work)
 
-    real(r8), dimension(:,:), intent(out) :: F
+    real(r8), dimension(:), intent(out) :: Fnuc
     real(r8), dimension(:), intent(inout) :: work
 
-    integer :: i, j
+    logical :: exclude, lexist
+    integer :: lutemp
+    integer :: i, j, l, m
+    integer, parameter :: k = 1
+    real(r8), dimension(3) :: Rms, Tms
 
-    do i = 1, ncents
+    inquire(file='pe_nuclear_field.bin', exist=lexist)
 
-        print *, 'temp'
+    if (lexist) then
+        call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
+        rewind(lutemp)
+        read(lutemp) Fnuc
+        close(lutemp)
+    else
 
-    end do
+        l = 0
+
+        do i = 1, ncents
+
+            if (abs(maxval(alphas(i,:))) <= zero) cycle
+
+            do j = 1, qmnucs
+
+                Rms = Rs(i,:) - Rm(j,:)
+
+                call get_Tk_tensor(Tms, k, Rms)
+
+                do m = 1, 3
+                    Fnuc(l+m) = - Zm(j) * Tms(m)
+                end do
+
+            end do
+
+            l = l + 3
+
+        end do
+
+        call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
+        rewind(lutemp)
+        write(lutemp) Fnuc
+        close(lutemp)
+
+    end if
 
 end subroutine get_nuclear_fields
 
@@ -602,68 +708,97 @@ end subroutine get_nuclear_fields
 
 subroutine get_multipole_fields(Fmul, work)
 
-    real(r8), dimension(:,:), intent(out) :: Fmul
+    real(r8), dimension(:), intent(out) :: Fmul
     real(r8), dimension(:), intent(inout) :: work
 
-    logical :: skip
-    integer :: i, j, k
-    real(r8) :: Rss
+    logical :: exclude, lexist
+    integer :: lutemp
+    integer :: i, j, k, l
+    real(r8) :: Rij
     real(r8), dimension(3) :: Fs
 
-    do i = 1, ncents
-        do j = 1, ncents
+    inquire(file='pe_multipole_field.bin', exist=lexist)
 
-            ! check if j is allowed to polarize i
-            if (i == j) cycle
-            skip = .false.
-            do k = 1, nexlist
-                if (exlist(i,1) == exlist(j,k)) then
-                    skip = .true.
-                    exit
+    if (lexist) then
+        call openfile('pe_multipole_field.bin', lutemp, 'old', 'unformatted')
+        rewind(lutemp)
+        read(lutemp) Fmul
+        close(lutemp)
+    else
+
+        l = 1
+
+        do i = 1, ncents
+
+            if (abs(maxval(alphas(i,:))) <= zero) cycle
+
+            do j = 1, ncents
+
+                ! check if j is allowed to polarize i
+                if (i == j) cycle
+
+                exclude = .false.
+
+                do k = 1, nexlist
+                    if (exlist(i,1) == exlist(j,k)) then
+                        exclude = .true.
+                        exit
+                    end if
+                end do
+
+                if (exclude) cycle
+
+                ! cutoff
+!                Rij = Rs(j,:) - Rs(i,:)
+
+                ! get electric field at i due to monopole at j
+                if (mulorder >= 0) then
+                    ! skip if monopole is 'zero'
+                    if (abs(maxval(Q0(j,:))) >= zero) then
+                        call get_monopole_field(Fs, Rs(i,:), Rs(j,:), Q0(j,:))
+                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                    end if
                 end if
+
+                ! get electric field at i due to dipole at j
+                if (mulorder >= 1) then
+                    ! skip if dipole is 'zero'
+                    if (abs(maxval(Q1(j,:))) >= zero) then
+                        call get_dipole_field(Fs, Rs(i,:), Rs(j,:), Q1(j,:))
+                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                    end if
+                end if
+
+                ! get electric field at i due to quadrupole at j
+                if (mulorder >= 2) then
+                    ! skip if quadrupole is 'zero'
+                    if (abs(maxval(Q2(j,:))) >= zero) then
+                        call get_quadrupole_field(Fs, Rs(i,:), Rs(j,:), Q2(j,:))
+                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                    end if
+                end if
+
+                ! get electric field at i due to octopole at j
+                if (mulorder >= 3) then
+                    ! skip if octopole is 'zero'
+                    if (abs(maxval(Q3(j,:))) >= zero) then
+                        call get_octopole_field(Fs, Rs(i,:), Rs(j,:), Q3(j,:))
+                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                    end if
+                end if
+
             end do
-            if (skip) cycle
 
-            ! cutoff
-!            Rij = Rs(j,:) - Rs(i,:)
+            l = l + 3
 
-            ! get electric field at i due to monopole at j
-            if (mulorder >= 0) then
-                ! skip if monopole is 'zero'
-                if (abs(maxval(Q0(j,:))) >= zero) then
-                    call get_monopole_field(Fs, Rs(i,:), Rs(j,:), Q0(j,:))
-                    Fmul(i,:) = Fmul(i,:) + Fs
-                end if
-            end if
-
-            ! get electric field at i due to dipole at j
-            if (mulorder >= 1) then
-                ! skip if dipole is 'zero'
-                if (abs(maxval(Q1(j,:))) >= zero) then
-                    call get_dipole_field(Fs, Rs(i,:), Rs(j,:), Q1(j,:))
-                    Fmul(i,:) = Fmul(i,:) + Fs
-                end if
-            end if
-
-            ! get electric field at i due to quadrupole at j
-!            if (mulorder >= 2) then
-!                ! skip if quadrupole is 'zero'
-!                if (abs(maxval(Q2(j,:))) >= zero) then
-!                    call get_quadrupole_field(F)
-!                    Fmul(i,:) = Fmul(i,:) + F
-!                end if
-!            end if
-
-            ! get electric field at i due to octopole at j
-!            if (mulorder >= 3) then
-!                ! skip if octopole is 'zero'
-!                if (abs(maxval(Q3(j,:))) >= zero) then
-!                    call get_octopole_field(F)
-!                    Fmul(i,:) = Fmul(i,:) + F
-!                end if
-!            end if
         end do
-    end do
+
+        call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')
+        rewind(lutemp)
+        write(lutemp) Fmul
+        close(lutemp)
+
+    end if
 
 end subroutine get_multipole_fields
 
@@ -677,8 +812,7 @@ subroutine get_monopole_field(Fa, Ra, Rb, Q0b)
 
     integer :: i
     integer, parameter :: k = 1
-    real(r8), dimension(3) :: Rab
-    real(r8), dimension(3) :: Tab
+    real(r8), dimension(3) :: Rab, Tab
 
     Rab = Rb - Ra
 
@@ -797,156 +931,138 @@ end subroutine get_octopole_field
 
 !------------------------------------------------------------------------------
 
-!ubroutine create_response_matrix(A, work)
+subroutine get_response_matrix(A, invert, work)
 
 ! TODO: Damping schemes
 !       Cutoff radius
 !       Check if A is allocated
 
-!   real(r8), dimension(:), intent(out) :: A
-!   real(r8), dimension(:), intent(inout) :: work
+    real(r8), dimension(:), intent(out) :: A
+    logical, intent(in) :: invert
+    real(r8), dimension(:), intent(inout) :: work
 
-!   integer :: i, j, k, l, m, n
-!   integer :: info, stat_alloc
-!   real(r8), dimension(6) :: alpha
-!   real(r8) :: Rij, T2
-!   logical :: exclude
+    logical :: exclude, lexist
+    integer :: info, lutemp
+    integer :: i, j, k, l, m, n
+    real(r8) :: R, R3, R5, T
+    real(r8), dimension(3) :: Rij
+    real(r8), dimension(6) :: alphainv
 
-!   
+    A = 0.0d0; R = 0.0d0; alphainv = 0.0d0
 
-! A = 0.0d0
-! alpha = 0.0d0
-! T2 = 0.0d0
-! exclude = .false.
+    inquire(file='pe_response_matrix.bin', exist=lexist)
 
-! m = 0
+    if (lexist) then
+        call openfile('pe_response_matrix.bin', lutemp, 'old', 'unformatted')
+        rewind(lutemp)
+        read(lutemp) A
+        close(lutemp)
+    else
 
-! do i = 1, ncents
+        m = 0
 
-!   if (zeropol(i) == -1) cycle
+        do i = 1, ncents
 
-!   ! Inverse of diagonal isotropic polarizability tensor
-!   if (poltype == 0) then
+            if (abs(maxval(alphas(i,:))) <= zero) cycle
 
-!     alpha(1) = 1.0d0/isoalpha(i)
-!     alpha(4) = 1.0d0/isoalpha(i)
-!     alpha(6) = 1.0d0/isoalpha(i)
+            alphainv = alphas(i,:)
 
-!   ! Inverse of symmetric and positive-definite polarizability tensor
-!   else if (poltype == 1) then
+            call invert_packed_matrix(alphainv, 'p', work)
 
-!     alpha = dipols(i,:)
+            do l = 3, 1, -1
 
-!     ! First we factorize
-!     call dpptrf('L', 3, alpha, info)
-!     if (info > 0) then
-!       print *, 'WARNING'
-!       print *, 'Non-positive-definite polarizability found.'
-!       print *, 'Offending polarizabilty is located at site no.: ', i
-!       print *, 'Polarizability (xx, xy, xz, yy, yz, zz) :'
-!       do k = 1, 6
-!         print *, '       ', dipdippols(i,k)
-!       end do
-!       print *, 'Skipping the polarizability at this site'
-!       cycle
-!     else if (info < 0) then
-!       print *, 'ERROR'
-!       print *, 'Illegal value in polarizability at site no.: ', i
-!       print *, 'Polarizability (xx, xy, xz, yy, yz, zz) :'
-!       do k = 1, 6
-!         print *, '       ', dipdippols(i,k)
-!       end do
-!       stop 'Quitting...'
-!     end if
+                do j = i, ncents
 
-!     ! and then we invert
-!     call dpptri('L', 3, alpha, info)
-!     if (info > 0 .or. info < 0) then
-!       print *, 'ERROR'
-!       print *, 'Inversion of polarizability tensor failed.'
-!       print *, 'Offending polarizabilty tensor is located at site no.: ', i
-!       print *, 'Polarizability (xx, xy, xz, yy, yz, zz) :'
-!       do k = 1, 6
-!         print *, '       ', dipdippols(i,k)
-!       end do
-!       stop 'Quitting...'
-!     end if
+                    if (abs(maxval(alphas(j,:))) <= zero) cycle
 
-!   end if
+                    if (j == i) then
 
-!   do l = 3, 1, -1
+                        if (l == 3) then
+                            do k = 1, l
+                                A(m+k) = alphainv(k)
+                            end do
+                        else if (l == 2) then
+                            do k = 1, l
+                                A(m+k) = alphainv(3+k)
+                            end do
+                        else if (l == 1) then
+                            do k = 1, l
+                                A(m+k) = alphainv(5+k)
+                            end do
+                        end if
 
-!     do j = i, nsites
+                        m = m + l
 
-!       if (zeropol(j) == -1) cycle
+                    else
 
-!       if (j == i) then
+! Remove manybody polarization
+!                        if (?) then
+!                            m = m + 3
+!                            cycle
+!                        end if
 
-!         if (l == 3) then
-!           do k = 1, l
-!             A(m+k) = alpha(k)
-!           end do
-!         else if (l == 2) then
-!           do k = 1, l
-!             A(m+k) = alpha(3+k)
-!           end do
-!         else if (l == 1) then
-!             A(m+1) = alpha(5+1)
-!         end if
-!         m = m + l
+                        exclude = .false.
+                        do k = 1, nexlist
+                            if (exlist(i,k) == exlist(j,1)) then
+                                exclude = .true.
+                                exit
+                            end if
+                        end do
 
-!       else
+                        if (exclude) then
+                            m = m + 3
+                            cycle
+                        end if
 
-!         R = 0.0d0
-!         do k = 1, 3
-!           R = R + (Rs(i,k) - Rs(j,k))**2
-!         end do
-!         R = sqrt(R)
+                        Rij = Rs(j,:) - Rs(i,:)
+                        R = nrm2(Rij)
+                        R3 = R**3
+                        R5 = R**5
 
-!         if (R > cutoff) then
-!           m = m + 3
-!           cycle
-!         end if
+! Implement cutoff
+!                        if (R > cutoff) then
+!                            m = m + 3
+!                            cycle
+!                        end if
 
-!         exclude = .false.
-!         do k = 1, nexclist
-!           if (exclist(i,k) == exclist(j,1)) exclude = .true.
-!         end do
+                        if (l == 3) then
+                            do k = 1, 3
+                                T = 3.0d0 * Rij(1) * Rij(k) / R5
+                                if (k == 1) T = T - 1.0d0/R3
+                                A(m+k) = - T
+                            end do
+                        else if (l == 2) then
+                            do k = 1, 3
+                                T = 3.0d0 * Rij(2) * Rij(k) / R5
+                                if (k == 2) T = T - 1.0d0/R3
+                                A(m+k) = - T
+                            end do
+                        else if (l == 1) then
+                            do k = 1, 3
+                                T = 3.0d0 * Rij(3) * Rij(k) / R5
+                                if (k == 3) T = T - 1.0d0/R3
+                                A(m+k) = - T
+                            end do
+                        end if
 
-!         if (exclude) then
-!           m = m + 3
-!           cycle
-!         end if
+                        m = m + 3
 
-!         if (l == 3) then
-!           do k = 1, 3
-!             T = (3.0d0*(Rs(i,1) - Rs(j,1))*(Rs(i,k) -
-!oords(j,k)))/R**5
-!             if (k == 1) T = T - 1.0d0/R**3
-!             A(m+k) = - T
-!           end do
-!         else if (l == 2) then
-!           do k = 1, 3
-!             T = (3.0d0*(Rs(i,2) - Rs(j,2))*(Rs(i,k) -
-!oords(j,k)))/R**5
-!             if (k == 2) T = T - 1.0d0/R**3
-!             A(m+k) = - T
-!           end do
-!         else if (l == 1) then
-!           do k = 1, 3
-!             T = (3.0d0*(Rs(i,3) - Rs(j,3))*(Rs(i,k) -
-!oords(j,k)))/R**5
-!             if (k == 3) T = T - 1.0d0/R**3
-!             A(m+k) = - T
-!           end do
-!         end if
-!         m = m + 3
-!       end if
-!     end do
-!   end do
-! end do
+                    end if
+                end do
+            end do
+        end do
 
-!nd subroutine create_response_matrix
+        call openfile('pe_response_matrix.bin', lutemp, 'new', 'unformatted')
+        rewind(lutemp)
+        write(lutemp) A
+        close(lutemp)
+    end if
+
+    if (invert) then
+        call invert_packed_matrix(A, 's', work)
+    end if
+
+end subroutine get_response_matrix
 
 !------------------------------------------------------------------------------
 
@@ -1095,14 +1211,14 @@ end subroutine get_full_4th_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine get_Qk_integrals(Qk_ints, k, coord, Qk, work)
+subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
 
     external get_Tk_integrals
 
     integer, intent(in) :: k
     real(r8), dimension(:,:), intent(out) :: Qk_ints
     real(r8), dimension(:), intent(in) :: Qk
-    real(r8), dimension(3), intent(in) :: coord
+    real(r8), dimension(3), intent(in) :: Rij
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i
@@ -1126,7 +1242,7 @@ subroutine get_Qk_integrals(Qk_ints, k, coord, Qk, work)
     ncomps = size(Qk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
-    call get_Tk_integrals(Qk_ints, ncomps*nbas, k, 'packed', coord,&
+    call get_Tk_integrals(Qk_ints, ncomps*nbas, k, 'packed', Rij,&
                           work, size(work))
 
     ! get symmetry factors
@@ -1221,13 +1337,63 @@ end function dot
 
 !------------------------------------------------------------------------------
 
-!subroutine symm()
+subroutine invert_packed_matrix(ap, sp, work)
 
-!    real(r8), external :: dsymm
-!    real(r8) :: symm
-!    real(r8), dimension(:) :: 
+    external dpptrf, dpptri, dsptrf, dsptri, xerbla
 
-!end subroutine symm
+    character(*), optional :: sp
+    real(r8), dimension(:), intent(inout) :: ap, work
+
+    integer :: n, info
+    integer, dimension(:), allocatable :: ipiv
+
+    n = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(ap), r8)) - 1.0d0))
+
+    if (.not. present(sp)) then
+        sp = 'p'
+    end if
+
+    if (sp == 'p') then
+        call dpptrf('L', n, ap, info)
+        if (info /= 0) call xerbla('pptrf', info)
+        call dpptri('L', n, ap, info)
+        if (info /= 0) call xerbla('pptri', info)
+    else if (sp == 's') then
+        if (size(work) < n) then
+            stop('Not enough work memory to invert matrix.')
+        end if
+        allocate(ipiv(n))
+        call dsptrf('L', n, ap, ipiv, info)
+        if (info /= 0) call xerbla('sptrf', info)
+        call dsptri('L', n, ap, ipiv, work, info)
+        if (info /= 0) call xerbla('sptri', info)
+        deallocate(ipiv)
+    end if
+
+end subroutine invert_packed_matrix
+
+!------------------------------------------------------------------------------
+
+subroutine solve(ap, b)
+
+    external dspsv
+
+    real(r8), dimension(:), intent(inout) :: ap, b
+
+    integer :: n, info
+    integer, dimension(:), allocatable :: ipiv
+
+    n = size(b)
+
+    allocate(ipiv(n))
+
+    info = 0
+
+    call dspsv('L', n, 1, ap, ipiv, b, n, info)
+
+    if (info /= 0) call xerbla('spsv', info)
+
+end subroutine solve
 
 !------------------------------------------------------------------------------
 
