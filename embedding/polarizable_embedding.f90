@@ -72,146 +72,144 @@ subroutine pe_read_input(cord, charge, natoms, work, nwrk)
     ! input parameters could be options given in dalton input
     ! so that cutoffs etc. are handled in here.
 
-    integer :: natoms, nwrk
-    real(r8), dimension(natoms) :: charge
-    real(r8), dimension(3,natoms) :: cord
-    real(r8), dimension(nwrk) :: work
+    integer, intent(in) :: natoms, nwrk
+    real(r8), dimension(natoms), intent(in) :: charge
+    real(r8), dimension(3,natoms), intent(in) :: cord
+    real(r8), dimension(nwrk), intent(inout) :: work
 
     integer :: i, j, s
     integer :: lupot, nlines
 
     qmnucs = natoms
-    allocate(Rm(qmnucs,3), Zm(qmnucs))
-    do i = 1, natoms
-        Zm(i) = charge(i)
-        do j = 1, 3
-            Rm(i,j) = cord(j,i)
-        end do
-    end do
+
+    allocate(Rm(3,qmnucs), Zm(qmnucs))
+
+    Rm = cord
+    Zm = charge
 
     call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
 
     read(lupot,*) mulorder, poltype, hypoltype
     read(lupot,*) ncents
 
-    allocate(elems(ncents), Rs(ncents,3))
+    allocate(elems(ncents), Rs(3,ncents))
     elems = 0.0d0; Rs = 0.0d0
 
     do i = 1, ncents
-        read(lupot,*) elems(i), (Rs(i,j), j = 1, 3)
+        read(lupot,*) elems(i), (Rs(j,i), j = 1, 3)
     end do
 
     if (mulorder >= 0) then
         read(lupot,*) nlines
-        allocate(Q0(ncents,1))
+        allocate(Q0(1,ncents))
         Q0 = 0.0d0
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) Q0(s,1)
+            read(lupot,*) Q0(1,s)
         end do
     end if
 
     if (mulorder >= 1) then
         read(lupot,*) nlines
-        allocate(Q1(ncents,3))
+        allocate(Q1(3,ncents))
         Q1 = 0.0d0
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (Q1(s,j), j = 1, 3)
+            read(lupot,*) (Q1(j,s), j = 1, 3)
         end do
     end if
 
     if (mulorder >= 2) then
         read(lupot,*) nlines
-        allocate(Q2(ncents,6))
+        allocate(Q2(6,ncents))
         Q2 = 0.0d0
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (Q2(s,j), j = 1, 6)
+            read(lupot,*) (Q2(j,s), j = 1, 6)
         end do
     end if
 
     if (mulorder >= 3) then
         read(lupot,*) nlines
-        allocate(Q3(ncents,10))
+        allocate(Q3(10,ncents))
         Q3 = 0.0d0
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (Q3(s,j), j = 1, 10)
+            read(lupot,*) (Q3(j,s), j = 1, 10)
         end do
     end if
 
     if (mulorder >= 4) then
         read(lupot,*) nlines
-        allocate(Q4(ncents,15))
+        allocate(Q4(15,ncents))
         Q4 = 0.0d0
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (Q4(s,j), j = 1, 15)
+            read(lupot,*) (Q4(j,s), j = 1, 15)
         end do
     end if
 
 !    if (poltype >= 0) then
-!        allocate(alphas(ncents,6))
+!        allocate(alphas(6,ncents))
 !        alphas = 0.0d0
 !        read(lupot,*) nlines
 !        do i = 1, nlines
 !            read(lupot,*) s
-!            read(lupot,*) alphas(s,1)
-!            alphas(s,4) = alphas(s,1)
-!            alphas(s,6) = alphas(s,1)
+!            read(lupot,*) alphas(1,s)
+!            alphas(4,s) = alphas(1,s)
+!            alphas(6,s) = alphas(1,s)
 !        end do
 !    end if
 
     if (poltype >= 1) then
         if (.not. allocated(alphas)) then
-            allocate(alphas(ncents,6))
+            allocate(alphas(6,ncents))
             alphas = 0.0d0
         end if
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (alphas(s,j), j = 1, 6)
+            read(lupot,*) (alphas(j,s), j = 1, 6)
         end do
     end if
 
     if (poltype >= 2) then
-        allocate(As(ncents,10))
+        allocate(As(10,ncents))
         As = 0.0d0
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (As(s,j), j = 1, 10)
+            read(lupot,*) (As(j,s), j = 1, 10)
         end do
     end if
 
     if (poltype >= 3) then
-        allocate(Cs(ncents,15))
+        allocate(Cs(15,ncents))
         Cs = 0.0d0
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (Cs(s,j), j = 1, 15)
+            read(lupot,*) (Cs(j,s), j = 1, 15)
         end do
     end if
 
     if (hypoltype >= 1) then
-        allocate(betas(ncents,10))
+        allocate(betas(10,ncents))
         betas = 0.0d0
         read(lupot,*) nlines
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (betas(s,j), j = 1, 10)
+            read(lupot,*) (betas(j,s), j = 1, 10)
         end do
     end if
 
     if (poltype >= 1) then
         read(lupot,*) nlines, nexlist
-        allocate(exlist(ncents,nexlist))
+        allocate(exlist(nexlist,ncents))
         exlist = 0.0d0
         do i = 1, nlines
             read(lupot,*) s
-            read(lupot,*) (exlist(s,j), j = 1, nexlist)
+            read(lupot,*) (exlist(j,s), j = 1, nexlist)
         end do
     end if
 
@@ -318,15 +316,15 @@ subroutine es_monopoles(density, fock, E_el, E_nuc, work)
 
     do i = 1, ncents
 
-        if (abs(Q0(i,1)) < zero) cycle
+        if (abs(Q0(1,i)) < zero) cycle
 
-        call get_Qk_integrals(Q0_ints, k, Rs(i,:), Q0(i,:), work)
+        call get_Qk_integrals(Q0_ints, k, Rs(:,i), Q0(:,i), work)
 
         ! nuclei - monopole interaction
         do j = 1, qmnucs
-            Rsm = Rm(j,:) - Rs(i,:)
+            Rsm = Rm(:,j) - Rs(:,i)
             call get_Tk_tensor(Tsm, k, Rsm)
-            E_nuc = E_nuc + Q0(i,1) * Zm(j) * Tsm(1)
+            E_nuc = E_nuc + Q0(1,i) * Zm(j) * Tsm(1)
         end do
 
         ! electron - monopole interaction
@@ -361,16 +359,16 @@ subroutine es_dipoles(density, fock, E_el, E_nuc, work)
 
     do i = 1, ncents
 
-        if (abs(maxval(Q1(i,:))) < zero) cycle
+        if (abs(maxval(Q1(:,i))) < zero) cycle
 
-        call get_Qk_integrals(Q1_ints, k, Rs(i,:), Q1(i,:), work)
+        call get_Qk_integrals(Q1_ints, k, Rs(:,i), Q1(:,i), work)
 
         ! nuclei - dipole interaction energy
         do j = 1, qmnucs
-            Rsm = Rm(j,:) - Rs(i,:)
+            Rsm = Rm(:,j) - Rs(:,i)
             call get_Tk_tensor(Tsm, k, Rsm)
             do l = 1, 3
-                E_nuc = E_nuc - Zm(j) * Q1(i,l) * Tsm(l)
+                E_nuc = E_nuc - Zm(j) * Q1(l,i) * Tsm(l)
             end do
         end do
 
@@ -409,17 +407,17 @@ subroutine es_quadrupoles(density, fock, E_el, E_nuc, work)
 
     do i = 1, ncents
 
-        if (abs(maxval(Q2(i,:))) < zero) cycle
+        if (abs(maxval(Q2(:,i))) < zero) cycle
 
-        call get_Qk_integrals(Q2_ints, k, Rs(i,:), Q2(i,:), work)
+        call get_Qk_integrals(Q2_ints, k, Rs(:,i), Q2(:,i), work)
 
         ! nuclei - quadrupole interaction energy
         do j = 1, qmnucs
-            Rsm = Rm(j,:) - Rs(i,:)
+            Rsm = Rm(:,j) - Rs(:,i)
             call get_Tk_tensor(Tsm, k, Rsm)
             call get_symmetry_factors(factors, k)
             do l = 1, 6
-                E_nuc = E_nuc + 0.5d0 * factors(l) * Zm(j) * Q2(i,l) * Tsm(l)
+                E_nuc = E_nuc + 0.5d0 * factors(l) * Zm(j) * Q2(l,i) * Tsm(l)
             end do
 
         end do
@@ -459,17 +457,17 @@ subroutine es_octopoles(density, fock, E_el, E_nuc, work)
 
     do i = 1, ncents
 
-        if (abs(maxval(Q3(i,:))) < zero) cycle
+        if (abs(maxval(Q3(:,i))) < zero) cycle
 
-        call get_Qk_integrals(Q3_ints, k, Rs(i,:), Q3(i,:), work)
+        call get_Qk_integrals(Q3_ints, k, Rs(:,i), Q3(:,i), work)
 
         ! nuclei - octopole interaction energy
         do j = 1, qmnucs
-            Rsm = Rm(j,:) - Rs(i,:)
+            Rsm = Rm(:,j) - Rs(:,i)
             call get_Tk_tensor(Tsm, k, Rsm)
             call get_symmetry_factors(factors, k)
             do l = 1, 10
-                E_nuc = E_nuc - factors(l) * Zm(j) * Q3(i,l) * Tsm(l) / 6.0d0
+                E_nuc = E_nuc - factors(l) * Zm(j) * Q3(l,i) * Tsm(l) / 6.0d0
             end do
         end do
 
@@ -507,7 +505,7 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
         npol = 0
         do i = 1, ncents
-            if (abs(maxval(alphas(i,:))) >= zero) then
+            if (abs(maxval(alphas(:,i))) >= zero) then
                 npol = npol + 1
             end if
         end do
@@ -535,9 +533,9 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
         do i = 1, ncents
 
-            if (abs(maxval(alphas(i,:))) <= zero) cycle
+            if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-            call get_Qk_integrals(Mu_ints, k, Rs(i,:), Mu(l:l+2), work)
+            call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
 
             do j = 1, 3
                 fock = fock + Mu_ints(:,j)
@@ -640,9 +638,9 @@ subroutine get_electron_fields(Fel, density, work)
 
     do i = 1, ncents
 
-        if (abs(maxval(alphas(i,:))) <= zero) cycle
+        if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-        call get_Tk_integrals(Fel_ints, 3*nbas, k, 'packed', Rs(i,:),&
+        call get_Tk_integrals(Fel_ints, 3*nbas, k, 'packed', Rs(:,i),&
                               work, size(work))
 
         do j = 1, 3
@@ -683,11 +681,11 @@ subroutine get_nuclear_fields(Fnuc, work)
 
         do i = 1, ncents
 
-            if (abs(maxval(alphas(i,:))) <= zero) cycle
+            if (abs(maxval(alphas(:,i))) <= zero) cycle
 
             do j = 1, qmnucs
 
-                Rms = Rs(i,:) - Rm(j,:)
+                Rms = Rs(:,i) - Rm(:,j)
 
                 call get_Tk_tensor(Tms, k, Rms)
 
@@ -736,7 +734,7 @@ subroutine get_multipole_fields(Fmul, work)
 
         do i = 1, ncents
 
-            if (abs(maxval(alphas(i,:))) <= zero) cycle
+            if (abs(maxval(alphas(:,i))) <= zero) cycle
 
             do j = 1, ncents
 
@@ -746,7 +744,7 @@ subroutine get_multipole_fields(Fmul, work)
                 exclude = .false.
 
                 do k = 1, nexlist
-                    if (exlist(i,1) == exlist(j,k)) then
+                    if (exlist(k,i) == exlist(1,j)) then
                         exclude = .true.
                         exit
                     end if
@@ -755,13 +753,13 @@ subroutine get_multipole_fields(Fmul, work)
                 if (exclude) cycle
 
                 ! cutoff
-!                Rij = Rs(j,:) - Rs(i,:)
+!                Rij = Rs(:,j) - Rs(:,j)
 
                 ! get electric field at i due to monopole at j
                 if (mulorder >= 0) then
                     ! skip if monopole is 'zero'
-                    if (abs(maxval(Q0(j,:))) >= zero) then
-                        call get_monopole_field(Fs, Rs(i,:), Rs(j,:), Q0(j,:))
+                    if (abs(maxval(Q0(:,j))) >= zero) then
+                        call get_monopole_field(Fs, Rs(:,i), Rs(:,j), Q0(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -769,8 +767,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to dipole at j
                 if (mulorder >= 1) then
                     ! skip if dipole is 'zero'
-                    if (abs(maxval(Q1(j,:))) >= zero) then
-                        call get_dipole_field(Fs, Rs(i,:), Rs(j,:), Q1(j,:))
+                    if (abs(maxval(Q1(:,j))) >= zero) then
+                        call get_dipole_field(Fs, Rs(:,i), Rs(:,j), Q1(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -778,8 +776,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to quadrupole at j
                 if (mulorder >= 2) then
                     ! skip if quadrupole is 'zero'
-                    if (abs(maxval(Q2(j,:))) >= zero) then
-                        call get_quadrupole_field(Fs, Rs(i,:), Rs(j,:), Q2(j,:))
+                    if (abs(maxval(Q2(:,j))) >= zero) then
+                        call get_quadrupole_field(Fs, Rs(:,i), Rs(:,j), Q2(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -787,8 +785,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to octopole at j
                 if (mulorder >= 3) then
                     ! skip if octopole is 'zero'
-                    if (abs(maxval(Q3(j,:))) >= zero) then
-                        call get_octopole_field(Fs, Rs(i,:), Rs(j,:), Q3(j,:))
+                    if (abs(maxval(Q3(:,j))) >= zero) then
+                        call get_octopole_field(Fs, Rs(:,i), Rs(:,j), Q3(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -810,52 +808,52 @@ end subroutine get_multipole_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_monopole_field(Fa, Ra, Rb, Q0b)
+subroutine get_monopole_field(Fi, Ri, Rj, Q0j)
 
-    real(r8), dimension(3), intent(out) :: Fa
-    real(r8), dimension(3), intent(in) :: Ra, Rb
-    real(r8), dimension(1), intent(in) :: Q0b
+    real(r8), dimension(3), intent(out) :: Fi
+    real(r8), dimension(3), intent(in) :: Ri, Rj
+    real(r8), dimension(1), intent(in) :: Q0j
 
-    integer :: i
+    integer :: a
     integer, parameter :: k = 1
-    real(r8), dimension(3) :: Rab, Tab
+    real(r8), dimension(3) :: Rij, Tij
 
-    Rab = Rb - Ra
+    Rij = Rj - Ri
 
-    call get_Tk_tensor(Tab, k, Rab)
+    call get_Tk_tensor(Tij, k, Rij)
 
-    Fa = 0.0d0
+    Fi = 0.0d0
 
-    do i = 1, 3
-        Fa(i) = Fa(i) - Q0b(1) * Tab(i)
+    do a = 1, 3
+        Fi(a) = Fi(a) + Tij(a) *  Q0j(1)
     end do
 
 end subroutine get_monopole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_dipole_field(Fa, Ra, Rb, Q1b)
+subroutine get_dipole_field(Fi, Ri, Rj, Q1j)
 
-    real(r8), dimension(3), intent(out) :: Fa
-    real(r8), dimension(3), intent(in) :: Ra, Rb, Q1b
+    real(r8), dimension(3), intent(out) :: Fi
+    real(r8), dimension(3), intent(in) :: Ri, Rj, Q1j
 
-    integer :: i, j
+    integer :: a, b
     integer, parameter :: k = 2
-    real(r8), dimension(3) :: Rab
-    real(r8), dimension(6) :: Tab
+    real(r8), dimension(3) :: Rij
+    real(r8), dimension(6) :: Tij
     real(r8), dimension(3,3) :: Tf
 
-    Rab = Rb - Ra
+    Rij = Rj - Ri
 
-    call get_Tk_tensor(Tab, k, Rab)
+    call get_Tk_tensor(Tij, k, Rij)
 
-    call get_full_2nd_tensor(Tf, Tab)
+    call get_full_2nd_tensor(Tf, Tij)
 
-    Fa = 0.0d0
+    Fi = 0.0d0
 
-    do i = 1, 3
-        do j = 1, 3
-            Fa(i) = Fa(i) + Tf(i,j) * Q1b(j)
+    do a = 1, 3
+        do b = 1, 3
+            Fi(a) = Fi(a) + Tf(a,b) * Q1j(b)
         end do
     end do
 
@@ -869,31 +867,31 @@ end subroutine get_dipole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_quadrupole_field(Fa, Ra, Rb, Q2b)
+subroutine get_quadrupole_field(Fi, Ri, Rj, Q2j)
 
-    real(r8), dimension(3), intent(out) :: Fa
-    real(r8), dimension(3), intent(in) :: Ra, Rb, Q2b
+    real(r8), dimension(3), intent(out) :: Fi
+    real(r8), dimension(3), intent(in) :: Ri, Rj, Q2j
 
-    integer :: i, j, l
+    integer :: a, b, g
     integer, parameter :: k = 3
-    real(r8), dimension(3) :: Rab
-    real(r8), dimension(10) :: Tab
+    real(r8), dimension(3) :: Rij
+    real(r8), dimension(10) :: Tij
     real(r8), dimension(3,3) :: Q2f
     real(r8), dimension(3,3,3) :: Tf
 
-    Rab = Rb - Ra
+    Rij = Rj - Ri
 
-    call get_Tk_tensor(Tab, k, Rab)
+    call get_Tk_tensor(Tij, k, Rij)
 
-    call get_full_2nd_tensor(Q2f, Q2b)
-    call get_full_3rd_tensor(Tf, Tab)
+    call get_full_2nd_tensor(Q2f, Q2j)
+    call get_full_3rd_tensor(Tf, Tij)
 
-    Fa = 0.0d0
+    Fi = 0.0d0
 
-    do i = 1, 3
-        do j = 1, 3
-            do l = 1,3
-                Fa(i) = Fa(i) - 0.5d0 * Tf(i,j,l) * Q2f(j,l)
+    do a = 1, 3
+        do b = 1, 3
+            do g = 1, 3
+                Fi(a) = Fi(a) + 0.5d0 * Tf(a,b,g) * Q2f(b,g)
             end do
         end do
     end do
@@ -902,32 +900,32 @@ end subroutine get_quadrupole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_octopole_field(Fa, Ra, Rb, Q3b)
+subroutine get_octopole_field(Fi, Ri, Rj, Q3j)
 
-    real(r8), dimension(3), intent(out) :: Fa
-    real(r8), dimension(3), intent(in) :: Ra, Rb, Q3b
+    real(r8), dimension(3), intent(out) :: Fi
+    real(r8), dimension(3), intent(in) :: Ri, Rj, Q3j
 
-    integer :: i, j, l, m
+    integer :: a, b, g, d
     integer, parameter :: k = 4
-    real(r8), dimension(3) :: Rab
-    real(r8), dimension(15) :: Tab
+    real(r8), dimension(3) :: Rij
+    real(r8), dimension(15) :: Tij
     real(r8), dimension(3,3,3) :: Q3f
     real(r8), dimension(3,3,3,3) :: Tf
 
-    Rab = Rb - Ra
+    Rij = Rj - Ri
 
-    call get_Tk_tensor(Tab, k, Rab)
+    call get_Tk_tensor(Tij, k, Rij)
 
-    call get_full_3rd_tensor(Q3f, Q3b)
-    call get_full_4th_tensor(Tf, Tab)
+    call get_full_3rd_tensor(Q3f, Q3j)
+    call get_full_4th_tensor(Tf, Tij)
 
-    Fa = 0.0d0
+    Fi = 0.0d0
 
-    do i = 1, 3
-        do j = 1, 3
-            do l = 1,3
-                do m = 1, 3
-                    Fa(i) = Fa(i) + Tf(i,j,l,m) * Q3f(j,l,m) / 6.0d0
+    do a = 1, 3
+        do b = 1, 3
+            do g = 1,3
+                do d = 1, 3
+                    Fi(a) = Fi(a) + Tf(a,b,g,d) * Q3f(b,g,d) / 6.0d0
                 end do
             end do
         end do
@@ -969,9 +967,9 @@ subroutine get_response_matrix(A, invert, work)
 
         do i = 1, ncents
 
-            if (abs(maxval(alphas(i,:))) <= zero) cycle
+            if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-            alphainv = alphas(i,:)
+            alphainv = alphas(:,i)
 
             call invert_packed_matrix(alphainv, 'p', work)
 
@@ -979,7 +977,7 @@ subroutine get_response_matrix(A, invert, work)
 
                 do j = i, ncents
 
-                    if (abs(maxval(alphas(j,:))) <= zero) cycle
+                    if (abs(maxval(alphas(:,j))) <= zero) cycle
 
                     if (j == i) then
 
@@ -1009,7 +1007,7 @@ subroutine get_response_matrix(A, invert, work)
 
                         exclude = .false.
                         do k = 1, nexlist
-                            if (exlist(i,k) == exlist(j,1)) then
+                            if (exlist(k,i) == exlist(1,j)) then
                                 exclude = .true.
                                 exit
                             end if
@@ -1020,7 +1018,7 @@ subroutine get_response_matrix(A, invert, work)
                             cycle
                         end if
 
-                        Rij = Rs(j,:) - Rs(i,:)
+                        Rij = Rs(:,j) - Rs(:,i)
                         R = nrm2(Rij)
                         R3 = R**3
                         R5 = R**5
