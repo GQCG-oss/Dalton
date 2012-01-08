@@ -54,6 +54,7 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! AA and AU
 ! initialize when allocate
 ! transpose to follow array element ordering
 ! save individual one-electron integrals and reuse
@@ -1077,6 +1078,7 @@ subroutine get_Tk_tensor(Tk, k, Rij)
     real(r8), dimension(:), intent(out) :: Tk
     real(r8), dimension(3), intent(in) :: Rij
 
+    integer :: i, a, b, g, d
     real(r8) :: R, R2, R4
 
     R = nrm2(Rij)
@@ -1084,56 +1086,122 @@ subroutine get_Tk_tensor(Tk, k, Rij)
     if (k == 0) then
         Tk(1) = 1.0d0 / R
     else if (k == 1) then
-        Tk(1) = Rij(1)
-        Tk(2) = Rij(2)
-        Tk(3) = Rij(3)
+        do a = 1, 3
+            Tk(a) = Rij(a)
+        end do
         Tk = - Tk / R**3
     else if (k == 2) then
         R2 = R**2
-        Tk(1) = 3.0d0 * Rij(1)**2 - R2
-        Tk(2) = 3.0d0 * Rij(1) * Rij(2)
-        Tk(3) = 3.0d0 * Rij(1) * Rij(3)
-        Tk(4) = 3.0d0 * Rij(2)**2 - R2
-        Tk(5) = 3.0d0 * Rij(2) * Rij(3)
-        Tk(6) = 3.0d0 * Rij(3)**2 - R2
+        i = 1
+        do a = 1, 3
+            do b = a, 3
+                Tk(i) = 3.0d0 * Rij(a) * Rij(b)
+                if (a == b) then
+                    Tk(i) = Tk(i) - R2
+                end if
+                i = i + 1
+            end do
+        end do
+!        Tk(1) = 3.0d0 * Rij(1)**2 - R2
+!        Tk(2) = 3.0d0 * Rij(1) * Rij(2)
+!        Tk(3) = 3.0d0 * Rij(1) * Rij(3)
+!        Tk(4) = 3.0d0 * Rij(2)**2 - R2
+!        Tk(5) = 3.0d0 * Rij(2) * Rij(3)
+!        Tk(6) = 3.0d0 * Rij(3)**2 - R2
         Tk = Tk / R**5
     else if (k == 3) then
         R2 = R**2
-        Tk(1) = 15.0d0 * Rij(1)**3 - 9.0d0 * R2 * Rij(1)
-        Tk(2) = 15.0d0 * Rij(1)**2 * Rij(2) - 3.0d0 * R2 * Rij(2)
-        Tk(3) = 15.0d0 * Rij(1)**2 * Rij(3) - 3.0d0 * R2 * Rij(3)
-        Tk(4) = 15.0d0 * Rij(1) * Rij(2)**2 - 3.0d0 * R2 * Rij(1)
-        Tk(5) = 15.0d0 * Rij(1) * Rij(2) * Rij(3)
-        Tk(6) = 15.0d0 * Rij(1) * Rij(3)**2 - 3.0d0 * R2 * Rij(1)
-        Tk(7) = 15.0d0 * Rij(2)**3 - 9.0d0 * R2 * Rij(2)
-        Tk(8) = 15.0d0 * Rij(2)**2 * Rij(3) - 3.0d0 * R2 * Rij(3)
-        Tk(9) = 15.0d0 * Rij(2) * Rij(3)**2 - 3.0d0 * R2 * Rij(2)
-        Tk(10) = 15.0d0 * Rij(3)**3 - 9.0d0 * R2 * Rij(3)
+        i = 1
+        do a = 1, 3
+            do b = a, 3
+                do g = b, 3
+                    Tk(i) = 15.0d0 * Rij(a) * Rij(b) * Rij(g)
+                    if (b == g) then
+                        Tk(i) = Tk(i) - 3.0d0 * R2 * Rij(a)
+                    end if
+                    if (a == g) then
+                        Tk(i) = Tk(i) - 3.0d0 * R2 * Rij(b)
+                    end if
+                    if (a == b) then
+                        Tk(i) = Tk(i) - 3.0d0 * R2 * Rij(g)
+                    end if
+                    i = i + 1
+                end do
+            end do
+        end do
+!        Tk(1) = 15.0d0 * Rij(1)**3 - 9.0d0 * R2 * Rij(1)
+!        Tk(2) = 15.0d0 * Rij(1)**2 * Rij(2) - 3.0d0 * R2 * Rij(2)
+!        Tk(3) = 15.0d0 * Rij(1)**2 * Rij(3) - 3.0d0 * R2 * Rij(3)
+!        Tk(4) = 15.0d0 * Rij(1) * Rij(2)**2 - 3.0d0 * R2 * Rij(1)
+!        Tk(5) = 15.0d0 * Rij(1) * Rij(2) * Rij(3)
+!        Tk(6) = 15.0d0 * Rij(1) * Rij(3)**2 - 3.0d0 * R2 * Rij(1)
+!        Tk(7) = 15.0d0 * Rij(2)**3 - 9.0d0 * R2 * Rij(2)
+!        Tk(8) = 15.0d0 * Rij(2)**2 * Rij(3) - 3.0d0 * R2 * Rij(3)
+!        Tk(9) = 15.0d0 * Rij(2) * Rij(3)**2 - 3.0d0 * R2 * Rij(2)
+!        Tk(10) = 15.0d0 * Rij(3)**3 - 9.0d0 * R2 * Rij(3)
         Tk = - Tk / R**7
     else if (k == 4) then
         R2 = R**2
         R4 = R**4
-        Tk(1) = 105.0d0 * Rij(1)**4 - 90.0d0 * R2 * Rij(1)**2 + 9.0d0 * R4
-        Tk(2) = 105.0d0 * Rij(1)**3 * Rij(2) - 45.0d0 * R2 * Rij(1) * Rij(2)
-        Tk(3) = 105.0d0 * Rij(1)**3 * Rij(3) - 45.0d0 * R2 * Rij(1) * Rij(3)
-        Tk(4) = 105.0d0 * Rij(1)**2 * Rij(2)**2 &
-                - 30.0d0 * R2 * (Rij(1)**2 + Rij(2)**2) + 3.0d0 * R4
-        Tk(5) = 105.0d0 * Rij(1)**2 * Rij(2) * Rij(3) &
-                - 15.0d0 * R2 * Rij(2) * Rij(3)
-        Tk(6) = 105.0d0 * Rij(1)**2 * Rij(3)**2 &
-                - 30.0d0 * R2 * (Rij(1)**2 + Rij(3)**2) + 3.0d0 * R4
-        Tk(7) = 105.0d0 * Rij(1) * Rij(2)**3 - 45.0d0 * R2 * Rij(1) * Rij(2)
-        Tk(8) = 105.0d0 * Rij(1) * Rij(2)**2 * Rij(3) &
-                - 15.0d0 * R2 * Rij(1) * Rij(3)
-        Tk(9) = 105.0d0 * Rij(1) * Rij(2) * Rij(3)**2 &
-                - 15.0d0 * R2 * Rij(1) * Rij(2)
-        Tk(10) = 105.0d0 * Rij(1) * Rij(3)**3 - 45.0d0 * R2 * Rij(1) * Rij(3)
-        Tk(11) = 105.0d0 * Rij(2)**4 - 90.0d0 * R2 * Rij(2)**2 + 9.0d0 * R4
-        Tk(12) = 105.0d0 * Rij(2)**3 * Rij(3) - 45.0d0 * R2 * Rij(2) * Rij(3)
-        Tk(13) = 105.0d0 * Rij(2)**2 * Rij(3)**2 &
-                - 30.0d0 * R2 * (Rij(2)**2 + Rij(3)**2) + 3.0d0 * R4
-        Tk(14) = 105.0d0 * Rij(2) * Rij(3)**3 - 45.0d0 * R2 * Rij(2) * Rij(3)
-        Tk(15) = 105.0d0 * Rij(3)**4 - 90.0d0 * R2 * Rij(3)**2 + 9.0d0 * R4
+        i = 1
+        do a = 1, 3
+            do b = a, 3
+                do g = b, 3
+                    do d = g, 3
+                        Tk(i) = 105.0d0 * Rij(a) * Rij(b) * Rij(g) * Rij(d)
+                        if (g == d) then
+                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(a) * Rij(b)
+                        end if
+                        if (b == d) then
+                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(a) * Rij(g)
+                        end if
+                        if (b == g) then
+                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(a) * Rij(d)
+                        end if
+                        if (a == d) then
+                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(b) * Rij(g)
+                        end if
+                        if (a == g) then
+                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(b) * Rij(d)
+                        end if
+                        if (a == b) then
+                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(g) * Rij(d)
+                        end if
+                        if (a == b .and. g == d) then
+                            Tk(i) = Tk(i) + 3.0d0 * R4
+                        end if
+                        if (a == g .and. b == d) then
+                            Tk(i) = Tk(i) + 3.0d0 * R4
+                        end if
+                        if (a == d .and. b == g) then
+                            Tk(i) = Tk(i) + 3.0d0 * R4
+                        end if
+                        i = i + 1
+                    end do
+                end do
+            end do
+        end do
+!        Tk(1) = 105.0d0 * Rij(1)**4 - 90.0d0 * R2 * Rij(1)**2 + 9.0d0 * R4
+!        Tk(2) = 105.0d0 * Rij(1)**3 * Rij(2) - 45.0d0 * R2 * Rij(1) * Rij(2)
+!        Tk(3) = 105.0d0 * Rij(1)**3 * Rij(3) - 45.0d0 * R2 * Rij(1) * Rij(3)
+!        Tk(4) = 105.0d0 * Rij(1)**2 * Rij(2)**2 &
+!                - 30.0d0 * R2 * (Rij(1)**2 + Rij(2)**2) + 3.0d0 * R4
+!        Tk(5) = 105.0d0 * Rij(1)**2 * Rij(2) * Rij(3) &
+!                - 15.0d0 * R2 * Rij(2) * Rij(3)
+!        Tk(6) = 105.0d0 * Rij(1)**2 * Rij(3)**2 &
+!                - 30.0d0 * R2 * (Rij(1)**2 + Rij(3)**2) + 3.0d0 * R4
+!        Tk(7) = 105.0d0 * Rij(1) * Rij(2)**3 - 45.0d0 * R2 * Rij(1) * Rij(2)
+!        Tk(8) = 105.0d0 * Rij(1) * Rij(2)**2 * Rij(3) &
+!                - 15.0d0 * R2 * Rij(1) * Rij(3)
+!        Tk(9) = 105.0d0 * Rij(1) * Rij(2) * Rij(3)**2 &
+!                - 15.0d0 * R2 * Rij(1) * Rij(2)
+!        Tk(10) = 105.0d0 * Rij(1) * Rij(3)**3 - 45.0d0 * R2 * Rij(1) * Rij(3)
+!        Tk(11) = 105.0d0 * Rij(2)**4 - 90.0d0 * R2 * Rij(2)**2 + 9.0d0 * R4
+!        Tk(12) = 105.0d0 * Rij(2)**3 * Rij(3) - 45.0d0 * R2 * Rij(2) * Rij(3)
+!        Tk(13) = 105.0d0 * Rij(2)**2 * Rij(3)**2 &
+!                - 30.0d0 * R2 * (Rij(2)**2 + Rij(3)**2) + 3.0d0 * R4
+!        Tk(14) = 105.0d0 * Rij(2) * Rij(3)**3 - 45.0d0 * R2 * Rij(2) * Rij(3)
+!        Tk(15) = 105.0d0 * Rij(3)**4 - 90.0d0 * R2 * Rij(3)**2 + 9.0d0 * R4
         Tk = Tk / R**9
     end if
 
@@ -1184,32 +1252,34 @@ subroutine get_full_4th_tensor(Tf, Ts)
 
     Tf = 0.0d0
 
-    Tf(1,1,1,1) = Ts(1); Tf(1,1,1,2) = Ts(2); Tf(1,1,1,3) = Ts(3)
-    Tf(1,1,2,1) = Ts(2); Tf(1,1,2,2) = Ts(4); Tf(1,1,2,3) = Ts(5)
-    Tf(1,1,3,1) = Ts(3); Tf(1,1,3,2) = Ts(5); Tf(1,1,3,3) = Ts(6)
-    Tf(1,2,1,1) = Ts(2); Tf(1,2,1,2) = Ts(4); Tf(1,2,1,3) = Ts(5)
-    Tf(1,2,2,1) = Ts(4); Tf(1,2,2,2) = Ts(7); Tf(1,2,2,3) = Ts(8)
-    Tf(1,2,3,1) = Ts(5); Tf(1,2,3,2) = Ts(8); Tf(1,2,3,3) = Ts(9)
-    Tf(1,3,1,1) = Ts(3); Tf(1,3,1,2) = Ts(5); Tf(1,3,1,3) = Ts(6)
-    Tf(1,3,2,1) = Ts(5); Tf(1,3,2,2) = Ts(8); Tf(1,3,2,3) = Ts(9)
-    Tf(1,3,3,1) = Ts(6); Tf(1,3,3,2) = Ts(9); Tf(1,3,3,3) = Ts(10)
-    Tf(2,1,1,1) = Ts(2); Tf(2,1,1,2) = Ts(4); Tf(2,1,1,3) = Ts(5)
-    Tf(2,1,2,1) = Ts(4); Tf(2,1,2,2) = Ts(7); Tf(2,1,2,3) = Ts(8)
-    Tf(2,1,3,1) = Ts(5); Tf(2,1,3,2) = Ts(8); Tf(2,1,3,3) = Ts(9)
-    Tf(2,2,1,1) = Ts(4); Tf(2,2,1,2) = Ts(7); Tf(2,2,1,3) = Ts(8)
-    Tf(2,2,2,1) = Ts(7); Tf(2,2,2,2) = Ts(11); Tf(2,2,2,3) = Ts(12)
-    Tf(2,2,3,1) = Ts(8); Tf(2,2,3,2) = Ts(12); Tf(2,2,3,3) = Ts(13)
-    Tf(2,3,1,1) = Ts(5); Tf(2,3,1,2) = Ts(8); Tf(2,3,1,3) = Ts(9)
-    Tf(2,3,2,1) = Ts(8); Tf(2,3,2,2) = Ts(12); Tf(2,3,2,3) = Ts(13)
-    Tf(2,3,3,1) = Ts(9); Tf(2,3,3,2) = Ts(13); Tf(2,3,3,3) = Ts(14)
-    Tf(3,1,1,1) = Ts(3); Tf(3,1,1,2) = Ts(5); Tf(3,1,1,3) = Ts(6)
-    Tf(3,1,2,1) = Ts(5); Tf(3,1,2,2) = Ts(8); Tf(3,1,2,3) = Ts(9)
-    Tf(3,1,3,1) = Ts(6); Tf(3,1,3,2) = Ts(9); Tf(3,1,3,3) = Ts(10)
-    Tf(3,2,1,1) = Ts(5); Tf(3,2,1,2) = Ts(8); Tf(3,2,1,3) = Ts(9)
-    Tf(3,2,2,1) = Ts(8); Tf(3,2,2,2) = Ts(12); Tf(3,2,2,3) = Ts(13)
-    Tf(3,2,3,1) = Ts(9); Tf(3,2,3,2) = Ts(13); Tf(3,2,3,3) = Ts(14)
-    Tf(3,3,1,1) = Ts(6); Tf(3,3,1,2) = Ts(9); Tf(3,3,1,3) = Ts(10)
-    Tf(3,3,2,1) = Ts(9); Tf(3,3,2,2) = Ts(13); Tf(3,3,2,3) = Ts(14)
+    Tf(1,1,1,1) = Ts(1);  Tf(1,1,1,2) = Ts(2);  Tf(1,1,1,3) = Ts(3)
+    Tf(1,1,2,1) = Ts(2);  Tf(1,1,2,2) = Ts(4);  Tf(1,1,2,3) = Ts(5)
+    Tf(1,1,3,1) = Ts(3);  Tf(1,1,3,2) = Ts(5);  Tf(1,1,3,3) = Ts(6)
+    Tf(1,2,1,1) = Ts(2);  Tf(1,2,1,2) = Ts(4);  Tf(1,2,1,3) = Ts(5)
+    Tf(1,2,2,1) = Ts(4);  Tf(1,2,2,2) = Ts(7);  Tf(1,2,2,3) = Ts(8)
+    Tf(1,2,3,1) = Ts(5);  Tf(1,2,3,2) = Ts(8);  Tf(1,2,3,3) = Ts(9)
+    Tf(1,3,1,1) = Ts(3);  Tf(1,3,1,2) = Ts(5);  Tf(1,3,1,3) = Ts(6)
+    Tf(1,3,2,1) = Ts(5);  Tf(1,3,2,2) = Ts(8);  Tf(1,3,2,3) = Ts(9)
+    Tf(1,3,3,1) = Ts(6);  Tf(1,3,3,2) = Ts(9);  Tf(1,3,3,3) = Ts(10)
+
+    Tf(2,1,1,1) = Ts(2);  Tf(2,1,1,2) = Ts(4);  Tf(2,1,1,3) = Ts(5)
+    Tf(2,1,2,1) = Ts(4);  Tf(2,1,2,2) = Ts(7);  Tf(2,1,2,3) = Ts(8)
+    Tf(2,1,3,1) = Ts(5);  Tf(2,1,3,2) = Ts(8);  Tf(2,1,3,3) = Ts(9)
+    Tf(2,2,1,1) = Ts(4);  Tf(2,2,1,2) = Ts(7);  Tf(2,2,1,3) = Ts(8)
+    Tf(2,2,2,1) = Ts(7);  Tf(2,2,2,2) = Ts(11); Tf(2,2,2,3) = Ts(12)
+    Tf(2,2,3,1) = Ts(8);  Tf(2,2,3,2) = Ts(12); Tf(2,2,3,3) = Ts(13)
+    Tf(2,3,1,1) = Ts(5);  Tf(2,3,1,2) = Ts(8);  Tf(2,3,1,3) = Ts(9)
+    Tf(2,3,2,1) = Ts(8);  Tf(2,3,2,2) = Ts(12); Tf(2,3,2,3) = Ts(13)
+    Tf(2,3,3,1) = Ts(9);  Tf(2,3,3,2) = Ts(13); Tf(2,3,3,3) = Ts(14)
+
+    Tf(3,1,1,1) = Ts(3);  Tf(3,1,1,2) = Ts(5);  Tf(3,1,1,3) = Ts(6)
+    Tf(3,1,2,1) = Ts(5);  Tf(3,1,2,2) = Ts(8);  Tf(3,1,2,3) = Ts(9)
+    Tf(3,1,3,1) = Ts(6);  Tf(3,1,3,2) = Ts(9);  Tf(3,1,3,3) = Ts(10)
+    Tf(3,2,1,1) = Ts(5);  Tf(3,2,1,2) = Ts(8);  Tf(3,2,1,3) = Ts(9)
+    Tf(3,2,2,1) = Ts(8);  Tf(3,2,2,2) = Ts(12); Tf(3,2,2,3) = Ts(13)
+    Tf(3,2,3,1) = Ts(9);  Tf(3,2,3,2) = Ts(13); Tf(3,2,3,3) = Ts(14)
+    Tf(3,3,1,1) = Ts(6);  Tf(3,3,1,2) = Ts(9);  Tf(3,3,1,3) = Ts(10)
+    Tf(3,3,2,1) = Ts(9);  Tf(3,3,2,2) = Ts(13); Tf(3,3,2,3) = Ts(14)
     Tf(3,3,3,1) = Ts(10); Tf(3,3,3,2) = Ts(14); Tf(3,3,3,3) = Ts(15)
 
 end subroutine get_full_4th_tensor
