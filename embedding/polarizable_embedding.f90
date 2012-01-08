@@ -54,7 +54,9 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! initialize when allocate
 ! transpose to follow array element ordering
+! save individual one-electron integrals and reuse
 ! cutoffs and damping
 ! memory management
 ! add error catching
@@ -500,7 +502,7 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
     E_ind = 0.0d0; E_el = 0.0d0; E_nuc = 0.0d0; E_mul = 0.0d0; E_Qk = 0.0d0
 
-    if (poltype >= 0) then
+    if (poltype >= 1) then
 
         npol = 0
         do i = 1, ncents
@@ -517,8 +519,16 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
         Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
-! TODO: provide electric fields
-        call get_induced_dipoles(Mu, density, work)
+        call get_electron_fields(Fel, density, work)
+
+        call get_nuclear_fields(Fnuc, work)
+
+! TODO: check octopoles
+        call get_multipole_fields(Fmul, work)
+
+!        call get_electric_fields(Ftot, density, work)
+
+        call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
 
         l = 1
 
@@ -536,17 +546,12 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
         end do
 
-        call get_electron_fields(Fel, density, work)
-        E_el = E_el - 0.5d0 * dot(Mu, Fel)
+!        E_el = E_el - 0.5d0 * dot(Mu, Fel)
+!        E_nuc = E_nuc - 0.5d0 * dot(Mu, Fnuc)
+!        E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
 
-        call get_nuclear_fields(Fnuc, work)
-        E_nuc = E_nuc - 0.5d0 * dot(Mu, Fnuc)
-! TODO: check octopoles
-        call get_multipole_fields(Fmul, work)
-        E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
-
-        E_ind = E_el + E_nuc + E_mul
-        print *, E_ind, E_el, E_nuc, E_mul
+!        E_ind = E_el + E_nuc + E_mul
+        E_ind = - 0.5d0 * dot(Mu, Fel + Fnuc + Fmul)
 
         deallocate(Mu_ints)
         deallocate(Mu, Fel, Fnuc, Fmul)
@@ -557,31 +562,29 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine get_induced_dipoles(Mu, density, work)
+subroutine get_induced_dipoles(Mu, F, density, work)
 
     real(r8), dimension(:), intent(out) :: Mu
+    real(r8), dimension(:), intent(in) :: F
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, n
     real(r8), dimension(:), allocatable :: A
-    real(r8), dimension(:), allocatable :: Ftot
 
     n = size(Mu)
 
-    allocate(A(int(n*(n+1)*0.5d0)), Ftot(n))
+    allocate(A(int(n*(n+1)*0.5d0)))
 
-    A = 0.0d0; Ftot = 0.0d0
+    A = 0.0d0
     
-    call get_electric_fields(Ftot, density, work)
-
     call get_response_matrix(A, .false., work)
 
-    Mu = Ftot
+    Mu = F
 
     call solve(A, Mu)
 
-    deallocate(A, Ftot)
+    deallocate(A)
 
 end subroutine get_induced_dipoles
 
