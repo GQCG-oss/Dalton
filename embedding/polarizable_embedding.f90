@@ -4,7 +4,10 @@ module polarizable_embedding
 
     private
 
-    public :: pe_read_input, pe_main
+    public :: pe_read_potential, pe_main
+
+    ! options
+    logical, public :: peqm
 
     integer, parameter :: r8 = selected_real_kind(15)
     integer, parameter :: i8 = selected_int_kind(18)
@@ -54,9 +57,11 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! isotropic polarizabilities
+! memory checks
+! response properties (incl. magnetic)
 ! AA and AU
 ! initialize when allocate
-! transpose to follow array element ordering
 ! save individual one-electron integrals and reuse
 ! cutoffs and damping
 ! memory management
@@ -67,7 +72,7 @@ module polarizable_embedding
 
 contains
 
-subroutine pe_read_input(cord, charge, natoms, work, nwrk)
+subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
 
     ! input parameters could be options given in dalton input
     ! so that cutoffs etc. are handled in here.
@@ -77,8 +82,11 @@ subroutine pe_read_input(cord, charge, natoms, work, nwrk)
     real(r8), dimension(3,natoms), intent(in) :: cord
     real(r8), dimension(nwrk), intent(inout) :: work
 
-    integer :: i, j, s
+    integer :: i, j, k, s
     integer :: lupot, nlines
+    real(r8), dimension(15) :: Qtemp
+    character(2) :: auoraa
+    character(80) :: word
 
     qmnucs = natoms
 
@@ -89,66 +97,61 @@ subroutine pe_read_input(cord, charge, natoms, work, nwrk)
 
     call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
 
-    read(lupot,*) mulorder, poltype, hypoltype
-    read(lupot,*) ncents
+    read(lupot,*) auoraa
+    read(lupot,*) ncents, mulorder, poltype, hypoltype
 
     allocate(elems(ncents), Rs(3,ncents))
     elems = 0.0d0; Rs = 0.0d0
-
     do i = 1, ncents
         read(lupot,*) elems(i), (Rs(j,i), j = 1, 3)
     end do
 
-    if (mulorder >= 0) then
-        read(lupot,*) nlines
-        allocate(Q0(1,ncents))
-        Q0 = 0.0d0
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) Q0(1,s)
-        end do
-    end if
+    do k = 0, mulorder
 
-    if (mulorder >= 1) then
-        read(lupot,*) nlines
-        allocate(Q1(3,ncents))
-        Q1 = 0.0d0
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (Q1(j,s), j = 1, 3)
-        end do
-    end if
+        read(lupot,*) word
 
-    if (mulorder >= 2) then
-        read(lupot,*) nlines
-        allocate(Q2(6,ncents))
-        Q2 = 0.0d0
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (Q2(j,s), j = 1, 6)
-        end do
-    end if
-
-    if (mulorder >= 3) then
-        read(lupot,*) nlines
-        allocate(Q3(10,ncents))
-        Q3 = 0.0d0
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (Q3(j,s), j = 1, 10)
-        end do
-    end if
-
-    if (mulorder >= 4) then
-        read(lupot,*) nlines
-        allocate(Q4(15,ncents))
-        Q4 = 0.0d0
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (Q4(j,s), j = 1, 15)
-        end do
-    end if
-
+        if (trim(word) == 'monopoles') then
+            allocate(Q0(1,ncents))
+            Q0 = 0.0d0; Qtemp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, Qtemp(1)
+                Q0(1,s) = Qtemp(1)
+            end do
+        else if (trim(word) == 'dipoles') then
+            allocate(Q1(3,ncents))
+            Q1 = 0.0d0; Qtemp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (Qtemp(j), j = 1, 3)
+                Q1(:,s) = Qtemp(1:3)
+            end do
+        else if (trim(word) == 'quadrupoles') then
+            allocate(Q2(6,ncents))
+            Q2 = 0.0d0; Qtemp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (Qtemp(j), j = 1, 6)
+                Q2(:,s) = Qtemp(1:6)
+            end do
+        else if (trim(word) == 'octopoles') then
+            allocate(Q3(10,ncents))
+            Q3 = 0.0d0; Qtemp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (Qtemp(j), j = 1, 10)
+                Q3(:,s) = Qtemp(1:10)
+            end do
+        else if (trim(word) == 'hexadecapoles') then
+            allocate(Q4(15,ncents))
+            Q4 = 0.0d0; Qtemp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (Qtemp(j), j = 1, 15)
+                Q4(:,s) = Qtemp(1:15)
+            end do
+        end if
+    end do
 !    if (poltype >= 0) then
 !        allocate(alphas(6,ncents))
 !        alphas = 0.0d0
@@ -217,7 +220,7 @@ subroutine pe_read_input(cord, charge, natoms, work, nwrk)
 
     ! check memory requirements?
 
-end subroutine pe_read_input
+end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
 
