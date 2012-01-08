@@ -517,6 +517,7 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
         Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
+! TODO: provide electric fields
         call get_induced_dipoles(Mu, density, work)
 
         l = 1
@@ -528,27 +529,26 @@ subroutine pe_polarization(density, fock, E_ind, work)
             call get_Qk_integrals(Mu_ints, k, Rs(i,:), Mu(l:l+2), work)
 
             do j = 1, 3
-                E_el = E_el - 0.5d0 * dot(density, Mu_ints(:,j))
                 fock = fock + Mu_ints(:,j)
             end do
-
-            call get_nuclear_fields(Fnuc, work)
-
-            E_nuc = E_nuc - 0.5d0 * dot(Mu, Fnuc)
-
-            call get_multipole_fields(Fmul, work)
-
-            E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
-
-!            print *, Mu(l:l+2)
 
             l = l + 3
 
         end do
 
-        E_ind = E_el + E_nuc + E_mul
-!        print *, E_ind, E_el, E_nuc, E_mul
+        call get_electron_fields(Fel, density, work)
+        E_el = E_el - 0.5d0 * dot(Mu, Fel)
 
+        call get_nuclear_fields(Fnuc, work)
+        E_nuc = E_nuc - 0.5d0 * dot(Mu, Fnuc)
+! TODO: check octopoles
+        call get_multipole_fields(Fmul, work)
+        E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
+
+        E_ind = E_el + E_nuc + E_mul
+        print *, E_ind, E_el, E_nuc, E_mul
+
+        deallocate(Mu_ints)
         deallocate(Mu, Fel, Fnuc, Fmul)
 
     end if
@@ -610,21 +610,6 @@ subroutine get_electric_fields(Ftot, density, work)
     call get_multipole_fields(Fmul, work)
 
     Ftot = Fel + Fnuc + Fmul
-
-!    print *, 'Nuclear field'
-!    j = 0
-!    do i = 1, n / 3
-!        print *, Fnuc(i+j), Fnuc(i+j+1), Fnuc(i+j+2)
-!        j = j + 3
-!    end do
-
-!    print *, 'Multipole field'
-!    j = 0
-!    do i = 1, n / 3
-!        print *, Fmul(i+j), Fmul(i+j+1), Fmul(i+j+2)
-!        j = j + 3
-!    end do
-
 
 end subroutine get_electric_fields
 
@@ -703,7 +688,7 @@ subroutine get_nuclear_fields(Fnuc, work)
                 call get_Tk_tensor(Tms, k, Rms)
 
                 do m = 1, 3
-                    Fnuc(l+m) = - Zm(j) * Tms(m)
+                    Fnuc(l+m) = Fnuc(l+m) - Zm(j) * Tms(m)
                 end do
 
             end do
@@ -838,7 +823,7 @@ subroutine get_monopole_field(Fa, Ra, Rb, Q0b)
     Fa = 0.0d0
 
     do i = 1, 3
-        Fa(i) = - Q0b(1) * Tab(i)
+        Fa(i) = Fa(i) - Q0b(1) * Tab(i)
     end do
 
 end subroutine get_monopole_field
@@ -904,7 +889,7 @@ subroutine get_quadrupole_field(Fa, Ra, Rb, Q2b)
     do i = 1, 3
         do j = 1, 3
             do l = 1,3
-                Fa(i) = Fa(i) + 0.5d0 * Tf(i,j,l) * Q2f(j,l)
+                Fa(i) = Fa(i) - 0.5d0 * Tf(i,j,l) * Q2f(j,l)
             end do
         end do
     end do
