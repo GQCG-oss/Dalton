@@ -14,12 +14,8 @@ module polarizable_embedding
 
     ! number of centers and length of exclusion list
     integer, save :: ncents, nexlist
-    ! order of multipole moment expansion
-    integer, save :: mulorder
-    ! type of polarization, i.e. 0: isotropic alpha, 1: alpha, 2: A, 3: C
-    integer, save :: poltype
-    ! nonlinear polarizabilities
-    integer, save :: hypoltype
+    ! specifies what type of parameters are present
+    logical, dimension(0:4), save :: lmul, lpol, lhypol
 
     ! thresholds
     real(r8), parameter :: zero = 1.0d-8
@@ -27,7 +23,7 @@ module polarizable_embedding
     ! elements, coordinates and exclusion list
     real(r8), dimension(:), allocatable, save :: elems
     real(r8), dimension(:,:), allocatable, save :: Rs
-    real(r8), dimension(:,:), allocatable, save :: exlist
+    integer, dimension(:,:), allocatable, save :: exlists
 
     ! multipole moments
     ! monopoles
@@ -57,7 +53,6 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
-! isotropic polarizabilities
 ! memory checks
 ! response properties (incl. magnetic)
 ! AA and AU
@@ -84,7 +79,7 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
 
     integer :: i, j, k, s
     integer :: lupot, nlines
-    real(r8), dimension(15) :: Qtemp
+    real(r8), dimension(15) :: temp
     character(2) :: auoraa
     character(80) :: word
 
@@ -95,124 +90,136 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
     Rm = cord
     Zm = charge
 
+    lmul = .false.;lpol = .false.; lhypol = .false.
+
     call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
 
-    read(lupot,*) auoraa
-    read(lupot,*) ncents, mulorder, poltype, hypoltype
+    do
+        read(lupot,*,end=100) word
 
-    allocate(elems(ncents), Rs(3,ncents))
-    elems = 0.0d0; Rs = 0.0d0
-    do i = 1, ncents
-        read(lupot,*) elems(i), (Rs(j,i), j = 1, 3)
-    end do
-
-    do k = 0, mulorder
-
-        read(lupot,*) word
-
-        if (trim(word) == 'monopoles') then
+        if (trim(word) == 'coordinates') then
+            read(lupot,*) ncents
+            read(lupot,*) auoraa
+            allocate(elems(ncents), Rs(3,ncents))
+            elems = 0.0d0; Rs = 0.0d0
+            do i = 1, ncents
+                read(lupot,*) elems(i), (Rs(j,i), j = 1, 3)
+            end do
+        else if (trim(word) == 'monopoles') then
+            lmul(0) = .true.
             allocate(Q0(1,ncents))
-            Q0 = 0.0d0; Qtemp = 0.0d0
+            Q0 = 0.0d0; temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
-                read(lupot,*) s, Qtemp(1)
-                Q0(1,s) = Qtemp(1)
+                read(lupot,*) s, temp(1)
+                Q0(1,s) = temp(1)
             end do
         else if (trim(word) == 'dipoles') then
+            lmul(1) = .true.
             allocate(Q1(3,ncents))
-            Q1 = 0.0d0; Qtemp = 0.0d0
+            Q1 = 0.0d0; temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
-                read(lupot,*) s, (Qtemp(j), j = 1, 3)
-                Q1(:,s) = Qtemp(1:3)
+                read(lupot,*) s, (temp(j), j = 1, 3)
+                Q1(:,s) = temp(1:3)
             end do
         else if (trim(word) == 'quadrupoles') then
+            lmul(2) = .true.
             allocate(Q2(6,ncents))
-            Q2 = 0.0d0; Qtemp = 0.0d0
+            Q2 = 0.0d0; temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
-                read(lupot,*) s, (Qtemp(j), j = 1, 6)
-                Q2(:,s) = Qtemp(1:6)
+                read(lupot,*) s, (temp(j), j = 1, 6)
+                Q2(:,s) = temp(1:6)
             end do
         else if (trim(word) == 'octopoles') then
+            lmul(3) = .true.
             allocate(Q3(10,ncents))
-            Q3 = 0.0d0; Qtemp = 0.0d0
+            Q3 = 0.0d0; temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
-                read(lupot,*) s, (Qtemp(j), j = 1, 10)
-                Q3(:,s) = Qtemp(1:10)
+                read(lupot,*) s, (temp(j), j = 1, 10)
+                Q3(:,s) = temp(1:10)
             end do
         else if (trim(word) == 'hexadecapoles') then
+            lmul(4) = .true.
             allocate(Q4(15,ncents))
-            Q4 = 0.0d0; Qtemp = 0.0d0
+            Q4 = 0.0d0; temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
-                read(lupot,*) s, (Qtemp(j), j = 1, 15)
-                Q4(:,s) = Qtemp(1:15)
+                read(lupot,*) s, (temp(j), j = 1, 15)
+                Q4(:,s) = temp(1:15)
             end do
+        else if (trim(word) == 'isoalphas') then
+            lpol(0) = .true.
+            allocate(alphas(6,ncents))
+            alphas = 0.0d0; temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, temp(1)
+                alphas(1,s) = temp(1)
+                alphas(4,s) = temp(1)
+                alphas(6,s) = temp(1)
+            end do
+        else if (trim(word) == 'alphas') then
+            lpol(1) = .true.
+            if (.not. allocated(alphas)) then
+                allocate(alphas(6,ncents))
+                alphas = 0.0d0
+            end if
+            temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 6)
+                alphas(:,s) = temp(1:6)
+            end do
+        else if (trim(word) == 'As') then
+            lpol(2) = .true.
+            allocate(As(10,ncents))
+            As = 0.0d0; temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 10)
+                As(:,s) = temp(1:10)
+            end do
+        else if (trim(word) == 'Cs') then
+            lpol(3) = .true.
+            allocate(Cs(15,ncents))
+            Cs = 0.0d0; temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 15)
+                Cs(:,s) = temp(1:15)
+            end do
+        else if (trim(word) == 'betas') then
+            lhypol(1) = .true.
+            allocate(betas(10,ncents))
+            betas = 0.0d0; temp = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 10)
+                betas(:,s) = temp(1:10)
+            end do
+        else if (trim(word) == 'exlists') then
+            read(lupot,*) nexlist
+            allocate(exlists(nexlist,ncents))
+            exlists = 0; temp = 0.0d0
+            do i = 1, ncents
+                read(lupot,*) (exlists(j,i), j = 1, nexlist)
+            end do
+        else if (word(1:1) == '!' .or. word(1:1) == '#') then
+            cycle
         end if
     end do
-!    if (poltype >= 0) then
-!        allocate(alphas(6,ncents))
-!        alphas = 0.0d0
-!        read(lupot,*) nlines
-!        do i = 1, nlines
-!            read(lupot,*) s
-!            read(lupot,*) alphas(1,s)
-!            alphas(4,s) = alphas(1,s)
-!            alphas(6,s) = alphas(1,s)
-!        end do
-!    end if
 
-    if (poltype >= 1) then
-        if (.not. allocated(alphas)) then
-            allocate(alphas(6,ncents))
-            alphas = 0.0d0
-        end if
-        read(lupot,*) nlines
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (alphas(j,s), j = 1, 6)
-        end do
-    end if
+100 continue
 
-    if (poltype >= 2) then
-        allocate(As(10,ncents))
-        As = 0.0d0
-        read(lupot,*) nlines
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (As(j,s), j = 1, 10)
-        end do
-    end if
-
-    if (poltype >= 3) then
-        allocate(Cs(15,ncents))
-        Cs = 0.0d0
-        read(lupot,*) nlines
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (Cs(j,s), j = 1, 15)
-        end do
-    end if
-
-    if (hypoltype >= 1) then
-        allocate(betas(10,ncents))
-        betas = 0.0d0
-        read(lupot,*) nlines
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (betas(j,s), j = 1, 10)
-        end do
-    end if
-
-    if (poltype >= 1) then
-        read(lupot,*) nlines, nexlist
-        allocate(exlist(nexlist,ncents))
-        exlist = 0.0d0
-        do i = 1, nlines
-            read(lupot,*) s
-            read(lupot,*) (exlist(j,s), j = 1, nexlist)
+    ! default exclusion list (everything polarizes everything)
+    if (.not. allocated(exlists)) then
+        allocate(exlists(1,ncents)
+        exlists = 0
+        do i = 1, ncents
+            exlists(1,i) = i
         end do
     end if
 
@@ -235,15 +242,11 @@ subroutine pe_main(density, fock, E_pe, work)
 
     fock = 0.0d0; E_pe = 0.0d0
 
-    if (mulorder >= 0) then
-        call pe_electrostatic(density, fock, E_es, work)
-        E_pe = E_pe + E_es
-    end if
+    call pe_electrostatic(density, fock, E_es, work)
+    E_pe = E_pe + E_es
 
-    if (poltype >= 0) then
-        call pe_polarization(density, fock, E_ind, work)
-        E_pe = E_pe + E_ind
-    end if
+    call pe_polarization(density, fock, E_ind, work)
+    E_pe = E_pe + E_ind
 
 end subroutine pe_main
 
@@ -270,19 +273,19 @@ subroutine pe_electrostatic(density, fock, E_es, work)
         close(lutemp)
         E_es = E_es + dot(density, fock)
     else
-        if (mulorder >= 0) then
+        if (lmul(0)) then
             call es_monopoles(density, fock, E_el(0), E_nuc(0), work)
         end if
 
-        if (mulorder >= 1) then
+        if (lmul(1)) then
             call es_dipoles(density, fock, E_el(1), E_nuc(1), work)
         end if
 
-        if (mulorder >= 2) then
+        if (lmul(2)) then
             call es_quadrupoles(density, fock, E_el(2), E_nuc(2), work)
         end if
 
-        if (mulorder >= 3) then
+        if (lmul(3)) then
             call es_octopoles(density, fock, E_el(3), E_nuc(3), work)
         end if
 
@@ -504,7 +507,7 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
     E_ind = 0.0d0; E_el = 0.0d0; E_nuc = 0.0d0; E_mul = 0.0d0; E_Qk = 0.0d0
 
-    if (poltype >= 1) then
+    if (lpol(0) .or. lpol(1)) then
 
         npol = 0
         do i = 1, ncents
@@ -747,7 +750,7 @@ subroutine get_multipole_fields(Fmul, work)
                 exclude = .false.
 
                 do k = 1, nexlist
-                    if (exlist(k,i) == exlist(1,j)) then
+                    if (exlists(k,i) == exlists(1,j)) then
                         exclude = .true.
                         exit
                     end if
@@ -759,7 +762,7 @@ subroutine get_multipole_fields(Fmul, work)
 !                Rij = Rs(:,j) - Rs(:,j)
 
                 ! get electric field at i due to monopole at j
-                if (mulorder >= 0) then
+                if (lmul(0)) then
                     ! skip if monopole is 'zero'
                     if (abs(maxval(Q0(:,j))) >= zero) then
                         call get_monopole_field(Fs, Rs(:,i), Rs(:,j), Q0(:,j))
@@ -768,7 +771,7 @@ subroutine get_multipole_fields(Fmul, work)
                 end if
 
                 ! get electric field at i due to dipole at j
-                if (mulorder >= 1) then
+                if (lmul(1)) then
                     ! skip if dipole is 'zero'
                     if (abs(maxval(Q1(:,j))) >= zero) then
                         call get_dipole_field(Fs, Rs(:,i), Rs(:,j), Q1(:,j))
@@ -777,7 +780,7 @@ subroutine get_multipole_fields(Fmul, work)
                 end if
 
                 ! get electric field at i due to quadrupole at j
-                if (mulorder >= 2) then
+                if (lmul(2)) then
                     ! skip if quadrupole is 'zero'
                     if (abs(maxval(Q2(:,j))) >= zero) then
                         call get_quadrupole_field(Fs, Rs(:,i), Rs(:,j), Q2(:,j))
@@ -786,7 +789,7 @@ subroutine get_multipole_fields(Fmul, work)
                 end if
 
                 ! get electric field at i due to octopole at j
-                if (mulorder >= 3) then
+                if (lmul(3)) then
                     ! skip if octopole is 'zero'
                     if (abs(maxval(Q3(:,j))) >= zero) then
                         call get_octopole_field(Fs, Rs(:,i), Rs(:,j), Q3(:,j))
@@ -1010,7 +1013,7 @@ subroutine get_response_matrix(A, invert, work)
 
                         exclude = .false.
                         do k = 1, nexlist
-                            if (exlist(k,i) == exlist(1,j)) then
+                            if (exlists(k,i) == exlists(1,j)) then
                                 exclude = .true.
                                 exit
                             end if
