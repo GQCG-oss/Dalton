@@ -850,25 +850,61 @@ C       Note: FXCAO, FXVAO, FTCAO, FTVAO are assumed to be contiguous
 C             DXCAO, DXVAO, DTCAO, DTVAO are assumed to be contiguous
 C
 C ***** count and initialize atomic Fock matrices
+C       ALso set fock matrix type (Coulomb and/or exchange)
 C
+      IF (HFXFAC .NE. 0.0D0) THEN
+         IFCTYP_TR1 = 13 ! Coulomb and exchange
+      ELSE
+         IFCTYP_TR1 = 11 ! Only Coulomb
+      END IF
+      IFCTYP_SPINDNS = -12
+
       MOSIM = MAX(0,NOSIM)
       MCSIM = MAX(0,NCSIM)
       NDMAT = 0
-      IF (NISHT .GT. 0 .OR. ADDSRI) NDMAT = NDMAT + MOSIM
-C     ... for FXCAO
-      IF (NASHT .GT. 0) NDMAT = NDMAT + MOSIM
-C     ... for FXVAO
-      IF (DFT_SPINDNS ) NDMAT = NDMAT + MOSIM
-C     ... for FXSAO
-                        NDMAT = NDMAT + MCSIM
+      IF (MOSIM .GT. 0) THEN
+C     ... for FXCAO :
+         IF (NISHT .GT. 0 .OR. ADDSRI) THEN
+            IFCTYP(NDMAT+1:NDMAT+MOSIM) = IFCTYP_TR1
+            NDMAT = NDMAT + MOSIM
+         END IF
+C     ... for FXVAO :
+         IF (NASHT .GT. 0) THEN
+            IF (HSROHF) THEN
+               IFCTYP(NDMAT+1:NDMAT+MOSIM) = 12
+            ELSE
+               IFCTYP(NDMAT+1:NDMAT+MOSIM) = IFCTYP_TR1
+            END IF
+            NDMAT = NDMAT + MOSIM
+         END IF
+C     ... for FXSAO :
+         IF (DFT_SPINDNS ) THEN
+            IFCTYP(NDMAT+1:NDMAT+MOSIM) = IFCTYP_SPINDNS
+            NDMAT = NDMAT + MOSIM
+         END IF
+      END IF
+      IF (MCSIM .GT. 0) THEN
 C     ... for FTVAO (note that MCSIM .eq. 0 if NASHT .eq. 0)
-C     ... the MCSIM is necessary: NCSIM may be .lt. 0 to signal
-C         only SOVECS wanted
-      IF (DOMCSRDFT   ) NDMAT = NDMAT + MCSIM
+C         (also note that the MCSIM is necessary: NCSIM may be .lt. 0
+C          to signal only SOVECS wanted)
+         IFCTYP(NDMAT+1:NDMAT+MCSIM) = IFCTYP_TR1
+         NDMAT = NDMAT + MCSIM
 C     ... for MCSRDFT we also need "FTCAO" with sr-dft contribution
-C         from transition density matrix DTV
-      IF (DFT_SPINDNS ) NDMAT = NDMAT + MCSIM
-C     ... for FTSAO
+C         from transition density matrix DTV :
+         IF (DOMCSRDFT) THEN
+            IFCTYP(NDMAT+1:NDMAT+MCSIM) = IFCTYP_TR1
+            NDMAT = NDMAT + MCSIM
+         END IF
+C     ... for FTSAO :
+         IF (DFT_SPINDNS ) THEN
+            IFCTYP(NDMAT+1:NDMAT+MCSIM) = IFCTYP_SPINDNS
+            NDMAT = NDMAT + MCSIM
+         END IF
+      END IF
+
+      DO IDMAT = 1,NDMAT
+         ISYMDM(IDMAT) = JWOPSY
+      END DO
 C
 C
 C ***** TWO-ELECTRON PART (all one-electron contributions
@@ -877,40 +913,32 @@ C ***** of the inactive Fock matrix above).
 C
       IF (NDMAT .GT. 0) THEN
          CALL DZERO(FXCAO,NDMAT*N2BASX)
-      IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSROHF .OR. DFTRUN .OR. DOCISRDFT .OR. DOHFSRDFT .OR.
+
+      IF (LUSUPM .NE. -1 .AND. HFXFAC .EQ. 1.0D0 .AND.
+     &   .NOT. (HSROHF .OR. DODFT .OR. DOCISRDFT .OR. DOHFSRDFT .OR.
      &    DOMCSRDFT)) THEN
          CALL RDSUPM(NDMAT,FXCAO,DXCAO,WRK(KFREE),LFREE)
 C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
       ELSE
-         DO 400 IDMAT = 1,NDMAT
-            ISYMDM(IDMAT) = JWOPSY
-            IFCTYP(IDMAT) = 13
-            IF (CHOINT) IFCTYP(IDMAT) = 3
-  400    CONTINUE
-         IF (HSROHF) THEN
-            DO IDMAT = NOSIM+1,NDMAT
-               IFCTYP(IDMAT) = 12
-               IF (CHOINT) IFCTYP(IDMAT) = 2
-            END DO
-         END IF
+
          DFTADX = DFTADD
          DFTADD = .FALSE.
-C        ... Note : (DODFT.AND.NOT.DFTADD) now tricks 2'nd order 
-C          F        DFT contributions in SIRFCK /mc-srdft work
+C        ... Note : (.NOT.DFTADD) now tricks 2'nd order 
+C                   DFT contributions in SIRFCK /mc-srdft work
+C        ... if (AODRCT) construct Fock matrix directly
+C            else construct Fock matrix from LUINTA
+C            ISYMDM : symmetry of density matrix (DUNP)
+C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      *               AODRCT,WRK(KFREE),LFREE)
          DFTADD = DFTADX
          IF (HSROHF) THEN
             CALL DAXPY(NOSIM*N2BASX,-D1,FXVAO,1,FXCAO,1)
          END IF
-C        ... if (AODRCT) construct Fock matrix directly
-C            else construct Fock matrix from LUINTA
-C            ISYMDM : symmetry of density matrix (DUNP)
-C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
-         DFTADD = DFTADX
-      END IF
-      END IF
+      END IF ! RDSUPM or SIRFCK ?
+
+      END IF ! (NDMAT .GT. 0)
+
 #ifdef FOR_THE_FUTURE
 C
 C add DFT contribution in AO BASIS
