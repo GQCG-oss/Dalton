@@ -1,4 +1,24 @@
-      SUBROUTINE get_Tk_integrals(Tk_ints, nints, k, storage, coord,
+
+!      subroutine pe_input(word)
+
+!#include <pe.h>
+
+!        character(*), intent(in) :: word
+
+!        logical, dimension()
+
+!        if (word == 'pe') then
+!            pe = .true.
+!        else
+!            pe = .false.
+!        end if
+    
+
+!      end subroutine
+
+!------------------------------------------------------------------------------
+
+      subroutine get_Tk_integrals(Tk_ints, nints, k, storage, coord,
      &                            work, nwrk)
 
 #include <implicit.h>
@@ -94,5 +114,6 @@
         runqm3 = .false.
         diporg = backup
 
-      END SUBROUTINE
+      end subroutine get_Tk_integrals
+
 
