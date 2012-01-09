@@ -38,13 +38,13 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Q4
 
     ! (hyper)polarizabilities
-    ! dipole-dipole polarizability
+    ! dipole-dipole polarizabilities
     real(r8), dimension(:,:), allocatable, save :: alphas
-    ! dipole-dipole-dipole polarizability / 1st hyperpolarizability
+    ! dipole-dipole-dipole polarizabilities / 1st hyperpolarizabilities
     real(r8), dimension(:,:), allocatable, save :: betas
-    ! dipole-quadrupole polarizability
+    ! dipole-quadrupole polarizabilities
     real(r8), dimension(:,:), allocatable, save :: As
-    ! quadrupole-quadrupole polarizability
+    ! quadrupole-quadrupole polarizabilities
     real(r8), dimension(:,:), allocatable, save :: Cs
 
     ! QM info: number of nuclei, nuclear charges and nuclear coordinates
@@ -216,7 +216,7 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
 
     ! default exclusion list (everything polarizes everything)
     if (.not. allocated(exlists)) then
-        allocate(exlists(1,ncents)
+        allocate(exlists(1,ncents))
         exlists = 0
         do i = 1, ncents
             exlists(1,i) = i
@@ -822,16 +822,16 @@ subroutine get_monopole_field(Fi, Ri, Rj, Q0j)
 
     integer :: a
     integer, parameter :: k = 1
-    real(r8), dimension(3) :: Rij, Tij
+    real(r8), dimension(3) :: Rji, Tji
 
-    Rij = Rj - Ri
+    Rji = Ri - Rj
 
-    call get_Tk_tensor(Tij, k, Rij)
+    call get_Tk_tensor(Tji, k, Rji)
 
     Fi = 0.0d0
 
     do a = 1, 3
-        Fi(a) = Fi(a) + Tij(a) *  Q0j(1)
+        Fi(a) = Fi(a) - Tji(a) *  Q0j(1)
     end do
 
 end subroutine get_monopole_field
@@ -845,15 +845,15 @@ subroutine get_dipole_field(Fi, Ri, Rj, Q1j)
 
     integer :: a, b
     integer, parameter :: k = 2
-    real(r8), dimension(3) :: Rij
-    real(r8), dimension(6) :: Tij
+    real(r8), dimension(3) :: Rji
+    real(r8), dimension(6) :: Tji
     real(r8), dimension(3,3) :: Tf
 
-    Rij = Rj - Ri
+    Rji = Ri - Rj
 
-    call get_Tk_tensor(Tij, k, Rij)
+    call get_Tk_tensor(Tji, k, Rji)
 
-    call get_full_2nd_tensor(Tf, Tij)
+    call get_full_2nd_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -880,24 +880,24 @@ subroutine get_quadrupole_field(Fi, Ri, Rj, Q2j)
 
     integer :: a, b, g
     integer, parameter :: k = 3
-    real(r8), dimension(3) :: Rij
-    real(r8), dimension(10) :: Tij
+    real(r8), dimension(3) :: Rji
+    real(r8), dimension(10) :: Tji
     real(r8), dimension(3,3) :: Q2f
     real(r8), dimension(3,3,3) :: Tf
 
-    Rij = Rj - Ri
+    Rji = Ri - Rj
 
-    call get_Tk_tensor(Tij, k, Rij)
+    call get_Tk_tensor(Tji, k, Rji)
 
     call get_full_2nd_tensor(Q2f, Q2j)
-    call get_full_3rd_tensor(Tf, Tij)
+    call get_full_3rd_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
     do a = 1, 3
         do b = 1, 3
             do g = 1, 3
-                Fi(a) = Fi(a) + 0.5d0 * Tf(a,b,g) * Q2f(b,g)
+                Fi(a) = Fi(a) - 0.5d0 * Tf(a,b,g) * Q2f(b,g)
             end do
         end do
     end do
@@ -913,17 +913,17 @@ subroutine get_octopole_field(Fi, Ri, Rj, Q3j)
 
     integer :: a, b, g, d
     integer, parameter :: k = 4
-    real(r8), dimension(3) :: Rij
-    real(r8), dimension(15) :: Tij
+    real(r8), dimension(3) :: Rji
+    real(r8), dimension(15) :: Tji
     real(r8), dimension(3,3,3) :: Q3f
     real(r8), dimension(3,3,3,3) :: Tf
 
-    Rij = Rj - Ri
+    Rji = Ri - Rj
 
-    call get_Tk_tensor(Tij, k, Rij)
+    call get_Tk_tensor(Tji, k, Rji)
 
     call get_full_3rd_tensor(Q3f, Q3j)
-    call get_full_4th_tensor(Tf, Tij)
+    call get_full_4th_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
