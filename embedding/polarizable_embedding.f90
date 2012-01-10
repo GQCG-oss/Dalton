@@ -32,7 +32,7 @@ module polarizable_embedding
     integer, dimension(:,:), allocatable, save :: exlists
 
     ! energy contributions
-    real(r8), dimension(0:4), public, save :: Ees
+    real(r8), dimension(0:3), public, save :: Ees
     real(r8), dimension(3), public, save :: Epol
 
     ! multipole moments
@@ -281,17 +281,13 @@ subroutine pe_main(density, fock, Epe, work)
 
     nbas = size(density)
 
-    fock = 0.0d0; Epe = 0.0d0
+    fock = 0.0d0
 
     call pe_electrostatic(density, fock, work)
 
     call pe_polarization(density, fock, work)
 
-    Epe = Epe + sum(Ees) + sum(Epol)
-
-    print *, sum(Ees) + sum(Epol)
-    print *, Ees(0), Ees(1), Ees(2), Ees(3)
-    print *, Epol(1), Epol(2), Epol(3)
+    Epe = sum(Ees) + sum(Epol)
 
 end subroutine pe_main
 
@@ -304,15 +300,11 @@ subroutine pe_final(density, work)
 
     final_energy = .true.
 
-    call pe_electrostatic(density, work, work)
+    call pe_electrostatic(density, work(1:nbas), work(nbas+1:))
 
-    call pe_polarization(density, work, work)
+    call pe_polarization(density, work(1:nbas), work(nbas+1:))
 
     final_energy = .false.
-
-    print *, sum(Ees) + sum(Epol)
-    print *, Ees(0), Ees(1), Ees(2), Ees(3)
-    print *, Epol(1), Epol(2), Epol(3)
 
 end subroutine pe_final
 
@@ -574,11 +566,10 @@ subroutine pe_polarization(density, fock, work)
     integer :: npol
     integer :: i, j, l
     integer, parameter :: k = 1
-    real(r8) :: Eel, Enuc, Emul
     real(r8), dimension(:), allocatable :: Mu, Fel, Fnuc, Fmul
     real(r8), dimension(:,:), allocatable :: Mu_ints
 
-    Eel = 0.0d0; Enuc = 0.0d0; Emul = 0.0d0
+    Epol = 0.0d0
 
     if (lpol(0) .or. lpol(1)) then
 
@@ -589,10 +580,7 @@ subroutine pe_polarization(density, fock, work)
             end if
         end do
 
-        allocate(Mu_ints(size(fock),3))
         allocate(Mu(3*npol), Fel(3*npol), Fnuc(3*npol), Fmul(3*npol))
-
-        Mu_ints = 0.0d0
         Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
 
@@ -602,7 +590,7 @@ subroutine pe_polarization(density, fock, work)
             call get_nuclear_fields(Fnuc, work)
             call get_multipole_fields(Fmul, work)
 
-            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
+            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
 
             Epol(1) = - 0.5d0 * dot(Mu, Fel)
             Epol(2) = - 0.5d0 * dot(Mu, Fnuc)
@@ -610,16 +598,18 @@ subroutine pe_polarization(density, fock, work)
 
         else
 
+            allocate(Mu_ints(size(fock),3))
+            Mu_ints = 0.0d0
+
             call get_electron_fields(Fel, density, work)
             call get_nuclear_fields(Fnuc, work)
             call get_multipole_fields(Fmul, work)
 
 !            call get_electric_fields(Ftot, density, work)
 
-            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
+            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
 
             l = 1
-
             do i = 1, ncents
                 if (abs(maxval(alphas(:,i))) <= zero) cycle
                 call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
@@ -633,9 +623,10 @@ subroutine pe_polarization(density, fock, work)
             Epol(2) = - 0.5d0 * dot(Mu, Fnuc)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
 
+            deallocate(Mu_ints)
+
         end if
 
-        deallocate(Mu_ints)
         deallocate(Mu, Fel, Fnuc, Fmul)
 
     end if
@@ -644,11 +635,10 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine get_induced_dipoles(Mu, F, density, work)
+subroutine get_induced_dipoles(Mu, F, work)
 
     real(r8), dimension(:), intent(out) :: Mu
     real(r8), dimension(:), intent(in) :: F
-    real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, n
@@ -751,32 +741,25 @@ subroutine get_nuclear_fields(Fnuc, work)
     inquire(file='pe_nuclear_field.bin', exist=lexist)
 
     if (lexist) then
+
         call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
         read(lutemp) Fnuc
         close(lutemp)
+
     else
 
         l = 0
-
         do i = 1, ncents
-
             if (abs(maxval(alphas(:,i))) <= zero) cycle
-
             do j = 1, qmnucs
-
                 Rms = Rs(:,i) - Rm(:,j)
-
                 call get_Tk_tensor(Tms, k, Rms)
-
                 do m = 1, 3
                     Fnuc(l+m) = Fnuc(l+m) - Zm(j) * Tms(m)
                 end do
-
             end do
-
             l = l + 3
-
         end do
 
         call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
@@ -804,32 +787,27 @@ subroutine get_multipole_fields(Fmul, work)
     inquire(file='pe_multipole_field.bin', exist=lexist)
 
     if (lexist) then
+
         call openfile('pe_multipole_field.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
         read(lutemp) Fmul
         close(lutemp)
+
     else
 
         l = 1
-
         do i = 1, ncents
-
             if (abs(maxval(alphas(:,i))) <= zero) cycle
-
             do j = 1, ncents
-
                 ! check if j is allowed to polarize i
                 if (i == j) cycle
-
                 exclude = .false.
-
                 do k = 1, nexlist
                     if (exlists(k,i) == exlists(1,j)) then
                         exclude = .true.
                         exit
                     end if
                 end do
-
                 if (exclude) cycle
 
                 ! cutoff
@@ -870,11 +848,8 @@ subroutine get_multipole_fields(Fmul, work)
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
-
             end do
-
             l = l + 3
-
         end do
 
         call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')

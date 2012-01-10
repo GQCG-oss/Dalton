@@ -346,9 +346,8 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
       else if (peqm) then
-        Epe = sum(Ees) + sum(Epol)
         write(lupri,'(/3x,a18,9x,f20.12)')
-     &                      '@ Total PE energy: ', Epe
+     &                      '@ Total PE energy: ', sum(Ees) + sum(Epol)
         write(lupri,'(/5x,a)')
      &                     'Polarizable Embedding energy contributions:'
         write(lupri,'(5x,a)')
