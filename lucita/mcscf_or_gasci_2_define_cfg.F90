@@ -263,8 +263,10 @@ contains
 !     integer/logical block in module lucita_mcscf_ci_cfg
       vector_exchange_type1 = xctype1
       vector_exchange_type2 = xctype2
-      if(vector_exchange_type1 > 1) vector_update_mc2lu(vector_exchange_type1) = .true.
-      if(vector_exchange_type2 > 1) vector_update_mc2lu(vector_exchange_type2) = .true.
+      if(vector_exchange_type1 > 1) &
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1) = .true.
+      if(vector_exchange_type2 > 1) & 
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type2) = .true.
 
 
   end subroutine define_lucita_cfg_dynamic

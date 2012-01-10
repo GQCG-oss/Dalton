@@ -7,35 +7,20 @@ module lucita_mcscf_vector_exchange
 
    use ttss_block_module
    use file_type_module, only : file_info, file_type
+   use vector_xc_file_type
+#ifdef VAR_MPI
+   use mpi
+   use parallel_task_distribution_type_module
+   use sync_coworkers
+   use lucita_cfg
+#endif
 
    implicit none
 
    public vector_exchange_driver
-
-!  type definition
-   type exchange_files
-
-     integer            ::               &
-       present_sym_irrep,                &  ! current active symmetry irrep in use
-       present_fh_lu,                    &  ! file handle for LUCITA file
-       present_fh_mc,                    &  ! file handle for MCSCF  file
-       push_pull_switch                     ! push or pull data to/from lucita i/o files (1 or 2)
-
-     logical ::                          &
-       exchange_file_init     = .false., &  ! status of exchange_files_info
-       exchange_file_io2io    = .false., &  ! file exchange using i/o 2 i/o [.false. ==> i/o 2 core-mem (ex-type 1) / core-mem 2 i/o (ex-type 2)]
-       exchange_file_open(2)                ! leave status 'open' of file(s) after i/o operations
-
-     character(len= 1) ::                &
-       exchange_files_f_extension(8)        ! extension for generic exchange file names (LUCITA_CVECS.x, LUCITA_HCVEC.x, etc) 8 <--> D2h symmetry
-     character(len=14) ::                &  ! generic exchange file names
-       exchange_files_generic(8)
-
-   end type exchange_files
-
-!  exchange_files object
-   type(exchange_files) :: exchange_f_info
-
+#ifdef VAR_MPI
+   public vector_exchange_interface_cw
+#endif
 
    private
    integer, parameter, private :: mc_offset = 4 ! offset to mc types in exchange_f... ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
@@ -71,13 +56,13 @@ contains
 !
 !-------------------------------------------------------------------------------
       real(8), intent(inout)              :: xmat(*)
-      real(8), intent(inout), optional    :: ymat(*)         ! prepare for core-mem 2 core-mem + core-mem 2 i/o exchange in one shot...
-      integer, intent(in)                 :: exchange_type
-      integer, intent(inout)              :: vector_type
-      integer, intent(in)                 :: nr_vectors
-      integer, intent(in)                 :: vector_symmetry
-      logical, intent(in)                 :: io2io_exchange
-      logical, intent(inout)              :: do_vector_exchange
+      real(8), intent(inout), optional    :: ymat(*)            ! prepare for core-mem 2 core-mem + core-mem 2 i/o exchange in one shot...
+      integer, intent(inout)              :: exchange_type      ! inout because of MPI calling structure
+      integer, intent(inout)              :: vector_type        ! inout because of MPI calling structure 
+      integer, intent(inout)              :: nr_vectors         ! inout because of MPI calling structure
+      integer, intent(inout)              :: vector_symmetry    ! inout because of MPI calling structure
+      logical, intent(inout)              :: io2io_exchange     ! inout because of MPI calling structure
+      logical, intent(inout)              :: do_vector_exchange ! inout because of MPI calling structure
 !-------------------------------------------------------------------------------
 
 !     switch to exchange_files info for symmetry vector_symmetry
@@ -86,6 +71,7 @@ contains
                              exchange_type,                      &
                              vector_symmetry,                    &
                              vector_type,                        &
+                             nr_vectors,                         &
                              io2io_exchange)
 
 !     switch to ttss-block info for symmetry vector_symmetry in CI space 1
@@ -96,6 +82,15 @@ contains
       write(lupri,*) ' do_vector_exchange ==> ',do_vector_exchange
       write(lupri,*) ' vector_type        ==> ',vector_type
       write(lupri,*) ' nr_vectors         ==> ',nr_vectors
+#ifdef VAR_MPI
+!     get hold of co-workers and provide them with the mandatory details
+      call lucita_start_cw(1)
+      lucita_ci_run_id   = 'xc vector   '
+      sync_ctrl_array(2) = .true.
+      sync_ctrl_array(5) = .true.
+      sync_ctrl_array(6) = .true.
+      call sync_coworkers_cfg()
+#endif
       if(do_vector_exchange)then
         call push_pull_vector_exchange_driver(xmat,              &
                                               nr_vectors,        &
@@ -110,6 +105,58 @@ contains
 
    end subroutine vector_exchange_driver
 !*******************************************************************************
+
+#ifdef VAR_MPI
+   subroutine vector_exchange_interface_cw(active_xc_vector_type,      &
+                                           do_vector_exchange,         &
+                                           xmat,                       &
+                                           ymat)
+                                     
+!-------------------------------------------------------------------------------
+!
+!  purpose: co-workers driver for vector exchange (I/O) based between the MCSCF and LUCITA 
+!           programs.
+!
+!           active_xc_vector_type == 1: reference vector / right-hand side vector
+!           active_xc_vector_type == 2: CI start vector(s) / right-hand side vector
+!           active_xc_vector_type == 3: sigma vector / left-hand side vector
+!           active_xc_vector_type == 4: H diagonal
+!
+!-------------------------------------------------------------------------------
+      real(8), intent(inout)              :: xmat(*)
+      real(8), intent(inout), optional    :: ymat(*)         ! prepare for core-mem 2 core-mem + core-mem 2 i/o exchange in one shot...
+      integer, intent(inout)              :: active_xc_vector_type
+      logical, intent(inout)              :: do_vector_exchange
+!-------------------------------------------------------------------------------
+
+!     switch to exchange_files info for symmetry vector_symmetry
+      call exchange_f_switch(exchange_f_info,                                          &
+                             file_info,                                                &
+                             exchange_f_info%push_pull_switch,                         &
+                             exchange_f_info%present_sym_irrep,                        &
+                             active_xc_vector_type,                                    &
+                             exchange_f_info%total_nr_vectors,                         &
+                             exchange_f_info%exchange_file_io2io)
+
+!     switch to ttss-block info for symmetry vector_symmetry in CI space 1
+      call ttss_switch(ttss_info,                                                      &
+                       exchange_f_info%present_sym_irrep,                              &
+                       1)
+
+      if(do_vector_exchange)then
+        call push_pull_vector_exchange_driver(xmat,                                    &
+                                              exchange_f_info%total_nr_vectors,        &
+                                              exchange_f_info,                         &
+                                              ttss_info)
+      end if
+
+!     reset vector exchange control variables
+      do_vector_exchange    = .false.
+      active_xc_vector_type = -1
+
+   end subroutine vector_exchange_interface_cw
+!*******************************************************************************
+#endif
 
    subroutine push_pull_vector_exchange_driver(xmat,              &
                                                nr_vectors,        &
@@ -147,24 +194,40 @@ contains
 
         select case(A%exchange_file_io2io)
           case(.true.)
+#ifdef VAR_MPI
+!           call push_pull_vector_exchange_io2io_parallel()
+#else
             call push_pull_vector_exchange_io2io(xmat,                      &
                                                  current_vector,            &
                                                  A,                         &
                                                  B)
+#endif /* VAR_MPI switch */
           case(.false.)
             current_offset = current_offset + (current_vector - 1) * B%total_present_vec
+#ifdef VAR_MPI
+            call push_pull_vector_exchange_memory_parallel(xmat,               &
+                                                           current_vector,     &
+                                                           current_offset,     &
+                                                           A,                  &
+                                                           B,                  &
+                                                           ptask_distribution, &
+                                                           file_info)
+#else
             call push_pull_vector_exchange_memory(xmat,                     &
                                                   current_vector,           &
                                                   current_offset,           &
                                                   A,                        &
                                                   B)
+#endif /* VAR_MPI switch */
         end select
 !
       end do
 
-!     close file(s) if they were opened only for the present task
-      if(.not. A%exchange_file_open(1)) call gpclose(A%present_fh_lu,'KEEP')
-      if(.not. A%exchange_file_open(2) .and. A%exchange_file_io2io) call gpclose(A%present_fh_mc,'KEEP')
+      if(A%my_process_id == 0)then
+!       close file(s) if they were opened only for the present task
+        if(.not. A%exchange_file_open(1)) call gpclose(A%present_fh_lu,'KEEP')
+        if(.not. A%exchange_file_open(2) .and. A%exchange_file_io2io) call gpclose(A%present_fh_mc,'KEEP')
+      end if
 
    end subroutine push_pull_vector_exchange_driver
 !*******************************************************************************
@@ -243,9 +306,132 @@ contains
 !         set end-of-vector marker on file A%present_fh_lu
           call itods(-1,1,-1,A%present_fh_lu)
       end select
+
 !
    end subroutine push_pull_vector_exchange_memory
 !*******************************************************************************
+
+#ifdef VAR_MPI
+   subroutine push_pull_vector_exchange_memory_parallel(xmat,             &
+                                                        current_vector,   &
+                                                        current_offset,   &
+                                                        A,                &
+                                                        B,                &
+                                                        C,                &
+                                                        D)
+                                     
+!-------------------------------------------------------------------------------
+!
+!  purpose: vector exchange (I/O) - memory based between the MCSCF and LUCITA 
+!           programs - push-pull version. 
+!
+!           pull: transfer vector(s) from LUCITA i/o files to MCSCF core-memory
+!           push: transfer vector(s) from MCSCF core-memory to LUCITA i/o files
+!
+!-------------------------------------------------------------------------------
+      real(8), intent(inout)           :: xmat(*)
+      integer, intent(in)              :: current_vector
+      integer, intent(in)              :: current_offset
+      type(exchange_files)             :: A
+      type(ttss_block_structure)       :: B
+      type(parallel_task_distribution) :: C
+      type(file_type)                  :: D
+!-------------------------------------------------------------------------------
+      real(8), external                :: ddot
+      real(8)                          :: checkdot
+      integer                          :: ioff, ierr
+      integer                          :: my_STATUS(mpi_status_size)
+      integer                          :: current_block
+      integer                          :: block_length_rw
+      integer(kind=mpi_offset_kind)    :: ioffset
+      integer(kind=mpi_offset_kind)    :: ioffset_scratch
+      integer                          :: ioffset_int
+#include "parluci.h"
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+#include "priunit.h"
+#endif
+!------------------------------------------------------------------------------
+
+      select case(A%push_pull_switch)
+        case(1) 
+          call dzero(xmat(1+current_offset),B%total_present_vec)
+        case(2) 
+          call mpi_bcast(xmat(1+current_offset),B%total_present_vec,MPI_REAL8,         &
+                         0,mpi_comm_world,ierr)
+      end select
+!
+!     initialize
+      ioff             = 1 + current_offset
+      current_block    = 0 
+      ioffset          = 0
+      ioffset_int      = 0
+
+!     calculate offset
+      ioffset          = D%file_offsets(A%present_vector_type) + (current_vector - 1) * my_vec2_ioff
+      ioffset_int      = 1                                     + (current_vector - 1) * my_act_blk2
+
+      do ! loop over blocks
+
+        current_block   = current_block + 1 
+        if(current_block > B%total_present_ttss) exit
+
+        block_length_rw = B%ttss_block_length(current_block,B%present_sym_irrep,B%present_ci_space)
+!       keep track of core-memory offset
+        ioff            = ioff + block_length_rw
+
+
+        if(C%parallel_task_list(current_block,A%present_sym_irrep) /= A%my_process_id) cycle
+
+        ioffset_scratch = block_length_rw
+
+        select case(A%push_pull_switch)
+          case(1) ! pull block from file to core memory
+            if(D%iluxlist(ioffset_int,A%present_vector_type) > 0)then
+              call mpi_file_read_at(A%present_fh_par,ioffset,xmat(ioff-block_length_rw),          &
+                                    block_length_rw,mpi_real8,my_STATUS,ierr)
+            end if
+          case(2) ! push block from core memory to file
+            D%iluxlist(ioffset_int,A%present_vector_type) = 0
+            checkdot                                      = ddot(block_length_rw,xmat(ioff-block_length_rw),1,        &
+                                                                                 xmat(ioff-block_length_rw),1)
+            if(checkdot > 0.0d0)then
+              call mpi_file_write_at(A%present_fh_par,ioffset,xmat(ioff-block_length_rw),         &
+                                     block_length_rw,mpi_real8,my_STATUS,ierr)
+              D%iluxlist(ioffset_int,A%present_vector_type) = 1
+            end if
+        end select
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' pull/push (1 or 2) block from/to file to/from offset ==> ',A%push_pull_switch,         &
+                             current_block,ioff
+            call wrtmatmn(xmat(ioff-block_length_rw),1,block_length_rw,1,block_length_rw,lupri)
+#undef LUCI_DEBUG
+#endif
+
+!       keep track of file / file-list offsets
+        ioffset     = ioffset     + ioffset_scratch
+        ioffset_int = ioffset_int + 1
+
+      end do
+
+      select case(A%push_pull_switch)
+        case(1) 
+          call dzero(xmat(1+current_offset),B%total_present_vec)
+          if(A%my_process_id > 0)then
+            call mpi_reduce(xmat(1+current_offset),mpi_in_place,B%total_present_vec,MPI_REAL8,      &
+                            mpi_sum,0,mpi_comm_world,ierr)
+          else
+            call mpi_reduce(mpi_in_place,xmat(1+current_offset),B%total_present_vec,MPI_REAL8,      &
+                            mpi_sum,0,mpi_comm_world,ierr)
+          end if
+        case(2) 
+          ! nothing to do
+      end select
+!
+   end subroutine push_pull_vector_exchange_memory_parallel
+!*******************************************************************************
+#endif /* VAR_MPI */
 
    subroutine push_pull_vector_exchange_io2io(xmat,              &
                                               current_vector,    &
@@ -324,6 +510,8 @@ contains
 
   subroutine exchange_f_init(A)
 
+#include "maxorb.h"
+#include "infpar.h"
 !   ----------------------------------------------------------------------------
     type(exchange_files) :: A
 !   ----------------------------------------------------------------------------
@@ -333,9 +521,13 @@ contains
     A%exchange_file_open(1)         = .false.
     A%exchange_file_open(2)         = .false.
     A%present_sym_irrep             = -1
+    A%present_vector_type           = -1
     A%present_fh_lu                 = -1
+    A%present_fh_par                = -1
     A%present_fh_mc                 = -1
     A%push_pull_switch              = -1
+    A%total_nr_vectors              = -1
+    A%my_process_id                 = mytid
 
     A%exchange_files_generic(1)     = 'LUCITA_CEPVC.x'
     A%exchange_files_generic(2)     = 'LUCITA_CVECS.x'
@@ -363,66 +555,80 @@ contains
                                exchange_type,           &
                                vector_symmetry,         &
                                vector_type,             &
+                               vector_quantity,         &
                                io2io_exchange)
 
 !   ----------------------------------------------------------------------------
-    type(exchange_files) :: A
-    type(file_type)      :: B
-    integer, intent(in)  :: exchange_type
-    integer, intent(in)  :: vector_symmetry
-    integer, intent(in)  :: vector_type
-    logical, intent(in)  :: io2io_exchange
+    type(exchange_files)   :: A
+    type(file_type)        :: B
+    integer, intent(inout) :: exchange_type    ! inout because co-workers are calling with the type argument in the calling list
+    integer, intent(inout) :: vector_symmetry  ! inout because co-workers are calling with ...
+    integer, intent(inout) :: vector_type      ! inout because co-workers are calling with ...
+    integer, intent(inout) :: vector_quantity  ! inout because co-workers are calling with ...
+    logical, intent(inout) :: io2io_exchange   ! inout because co-workers are calling with ...
 !   ----------------------------------------------------------------------------
-    integer              :: dummy
+    integer                :: dummy
 !   ----------------------------------------------------------------------------
 
     ! check for initialization of type exchange_files
     if(.not. A%exchange_file_init) call exchange_f_init(A)
 
-    A%present_sym_irrep     = vector_symmetry
-    A%exchange_file_io2io   = io2io_exchange
-    A%push_pull_switch      = exchange_type
-    A%exchange_file_open(1) = .false.
-    A%exchange_file_open(2) = .false.
-    A%present_fh_lu         = -1
-    A%present_fh_mc         = -1
+    A%present_sym_irrep       = vector_symmetry
+    A%present_vector_type     = vector_type
+    A%exchange_file_io2io     = io2io_exchange
+    A%push_pull_switch        = exchange_type
+    A%total_nr_vectors        = vector_quantity
+    A%exchange_file_open(1)   = .false.
+    A%exchange_file_open(2)   = .false.
+    A%present_fh_lu           = -1
+    A%present_fh_mc           = -1
+    A%present_fh_par          = B%fh_lu(A%present_vector_type)
 
-!   step 1: LUCITA file
-    write(A%exchange_files_generic(vector_type),'(a13,a1)') A%exchange_files_generic(vector_type),            &
-                                                            A%exchange_files_f_extension(A%present_sym_irrep)
-
-    write(lupri,*) ' file name set for sym ==> ',A%present_sym_irrep,A%exchange_files_generic(vector_type)
-
-    inquire(opened=A%exchange_file_open(1),file=A%exchange_files_generic(vector_type),number=A%present_fh_lu)
-
-    write(lupri,*) ' file found and status ==> ',A%present_fh_lu,A%exchange_file_open(1)
-
-    if(.not. A%exchange_file_open(1))then
-      call gpopen(A%present_fh_lu,A%exchange_files_generic(vector_type),'OLD',' ','UNFORMATTED',dummy,.FALSE.)
-    end if
-    rewind A%present_fh_lu
-
-!   set sequential file handle in type file_type to be potentially used inside LUCITA
-    if(B%current_file_fh_seqf(1) < 0)then
-       B%current_file_fh_seqf(1) = A%present_fh_lu
+!   set parallel file handle in type file_type to be potentially used inside LUCITA
+    if(B%current_file_nr_active1 < 0)then
+       B%current_file_nr_active1 = A%present_vector_type
     else
-       B%current_file_fh_seqf(2) = A%present_fh_lu
+       B%current_file_nr_active2 = A%present_vector_type
     end if
-    
-!   step 2: MCSCF file
-    if(A%exchange_file_io2io)then
 
-      inquire(opened=A%exchange_file_open(2),file=A%exchange_files_generic(vector_type+mc_offset), & 
-              number=A%present_fh_mc)
+    if(A%my_process_id > 0)then
+!     step 1: LUCITA file
+      write(A%exchange_files_generic(vector_type),'(a13,a1)') A%exchange_files_generic(vector_type),            &
+                                                              A%exchange_files_f_extension(A%present_sym_irrep)
 
-      write(lupri,*) ' file found and status ==> ',A%present_fh_mc,A%exchange_file_open(2)
+      write(lupri,*) ' file name set for sym ==> ',A%present_sym_irrep,A%exchange_files_generic(vector_type)
+  
+      inquire(opened=A%exchange_file_open(1),file=A%exchange_files_generic(vector_type),number=A%present_fh_lu)
+  
+      write(lupri,*) ' file found and status ==> ',A%present_fh_lu,A%exchange_file_open(1)
 
-      if(.not. A%exchange_file_open(2))then
-        call gpopen(A%present_fh_mc,A%exchange_files_generic(vector_type+mc_offset),'OLD',' ','UNFORMATTED',    &
-                    dummy,.FALSE.)
+      if(.not. A%exchange_file_open(1))then
+        call gpopen(A%present_fh_lu,A%exchange_files_generic(vector_type),'OLD',' ','UNFORMATTED',dummy,.FALSE.)
       end if
-      rewind A%present_fh_mc
-    end if
+      rewind A%present_fh_lu
+
+!     set sequential file handle in type file_type to be potentially used inside LUCITA
+      if(B%current_file_fh_seqf(1) < 0)then
+         B%current_file_fh_seqf(1) = A%present_fh_lu
+      else
+         B%current_file_fh_seqf(2) = A%present_fh_lu
+      end if
+    
+!     step 2: MCSCF file
+      if(A%exchange_file_io2io)then
+
+        inquire(opened=A%exchange_file_open(2),file=A%exchange_files_generic(vector_type+mc_offset), & 
+                number=A%present_fh_mc)
+
+        write(lupri,*) ' file found and status ==> ',A%present_fh_mc,A%exchange_file_open(2)
+
+        if(.not. A%exchange_file_open(2))then
+          call gpopen(A%present_fh_mc,A%exchange_files_generic(vector_type+mc_offset),'OLD',' ','UNFORMATTED',    &
+                    dummy,.FALSE.)
+        end if
+        rewind A%present_fh_mc
+      end if
+    end if ! global master switch
 
   end subroutine exchange_f_switch
 !*******************************************************************************

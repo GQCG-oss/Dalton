@@ -921,6 +921,7 @@ contains
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "orbinp.inc"
+#include "parluci.h"
     character(len=12), intent(in) :: ci_run_id
     integer, intent(in)           :: print_lvl
 !-------------------------------------------------------------------------------
@@ -947,6 +948,8 @@ contains
       select case(ci_run_id)
         case('return CIdim') ! calculate # of determinants per symmetry irrep
 !         nothing needs to be allocated
+        case('xc vector   ') ! exchange CI/MCSCF vector
+          len_cref_mc2lu              =  l_combi
         case('return CIdia', 'analyze Cvec') ! calculate the diagonal part of the CI Hamiltonian matrix , analyze CI vector
           len_cref_mc2lu              =  lblock
         case('sigma vec   ',      'Xp-density m',               'rotate  Cvec',       'standard ci ', 'initial ci  ') 
@@ -1038,7 +1041,8 @@ contains
           len_resolution_mat_internal =  len_resolution_mat
           len_int1_or_rho1_internal   =  len_int1_or_rho1
           len_int2_or_rho2_internal   =  len_int2_or_rho2
-        case('analyze Cvec') ! analyze CI vector
+!            analyze CI vector; exchange CI/MCSCF vector
+        case('analyze Cvec',    'xc vector   ')
           len_cref_internal           =  len_cref
         case default
           print *, ' unknown CI run id: ',lucita_ci_run_id,' no memory allocated for the coworkers.'

@@ -98,7 +98,7 @@
 
       IF (LUCI_NMPROC .GT. 1) then 
 !       summon the co-workers, who are waiting in the general menu routine
-        call lucita_start_cw
+        call lucita_start_cw(-1)
 
 !       control variables for synchronizing co-workers
 !       ----------------------------------------------
@@ -336,26 +336,23 @@
 !**********************************************************************
 #ifdef VAR_MPI
 
-      subroutine lucita_start_cw
+      subroutine lucita_start_cw(control_flag)
 !
 !     wake-up the co-workers
 !**********************************************************************
       implicit none
 #include "parluci.h"
-      integer :: iprtyp
-      integer :: idummy
+      integer, intent(in) :: control_flag
+      integer, parameter  :: iprtyp = 42 ! iprtyp = 42 for parallel LUCITA
 !
-!     iprtyp = 42 for parallel LUCITA
-!
-      iprtyp =  42
-      idummy = - 1
-      call mpixbcast(iprtyp,1,'INTEGER',luci_master)
-      call mpixbcast(idummy,1,'INTEGER',luci_master)
+      call mpixbcast(iprtyp,      1,'INTEGER',luci_master)
+      call mpixbcast(control_flag,1,'INTEGER',luci_master)
 !
       end
 !**********************************************************************
 
-      subroutine lucita_coworker_main(work_dalton,lwork_dalton)
+      subroutine lucita_coworker_main(work_dalton,lwork_dalton,         &
+                                      control_flag)
 !
 !     LUCITA routine (DALTON interface) for the co-workers
 !
@@ -368,6 +365,8 @@
       use lucita_cfg
       use lucita_setup
       use parallel_task_distribution_type_module
+      use lucita_mcscf_vector_exchange
+      use vector_xc_file_type
       implicit none
 #include "priunit.h"
 #include "maxorb.h"
@@ -375,6 +374,7 @@
 #include "parluci.h"
 !----------------------------------------------------------------------
       integer, intent(in)    :: lwork_dalton
+      integer, intent(in)    :: control_flag
       real(8), intent(inout) :: work_dalton(lwork_dalton)
       character(len=20)      :: lucitabasf
       character(len=24)      :: lucifiln
@@ -383,6 +383,9 @@
       integer                :: kcref, khc, kresolution_mat 
       integer                :: kint1_or_rho1, kint2_or_rho2
       integer                :: lupri_save, lufil, print_lvl
+      integer                :: active_xc_vector_type
+      logical, save          :: file_open = .false.
+      logical                :: type2     = .false.
 !----------------------------------------------------------------------
 
       call qenter('lucita_coworker_main')
@@ -402,46 +405,58 @@
       print *, '*** co-worker',LUCI_MYPROC,'has arrived. ***'
       print *, '*** co-worker: priunit =',lupri,'***'
 #endif
-
-!     control variables for synchronizing co-workers
-!     ----------------------------------------------
-!     b. synchronize co-workers with ci/mcscf input data: dynamic and static (the latter only if required)
-      sync_ctrl_array(1) = .true.
-!     c. synchronize MC/CI array lengths with co-workers
-      sync_ctrl_array(2) = .true.
-!     a. synchronize ci-run id with co-workers
-      sync_ctrl_array(6) = .true.
-
-!     start synchronization process
-      call sync_coworkers_cfg()
-
 !     create a node-unique filename as output file. Important on
 !     shared file systems. Otherwise all the output gets mingled in one
 !     file. You don't really want to do this.
+      if(.not.file_open)then
+        
+        lucitabasf   = "lucita-coworkers.out"
+        lupri_save   = lupri
+        outfile_node = 6
+        lupri        = outfile_node
 !
-      lucitabasf   = "lucita-coworkers.out"
-      lupri_save   = lupri
-      outfile_node = 6
-      lupri        = outfile_node
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+           WRITE (LUCIFILN,'(A20,A1,I1)') LUCITABASF,'.',LUCI_MYPROC
+           LUFIL=22
+        ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+           WRITE (LUCIFILN,'(A20,A1,I2)') LUCITABASF,'.',LUCI_MYPROC
+           LUFIL=23
+        ELSE IF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+           WRITE (LUCIFILN,'(A20,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
+           LUFIL=24
+        ELSE
+           call quit("luci_nmproc.gt.1000!                              &
+                      extend the lucita_coworker_main module")
+        ENDIF
 !
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (LUCIFILN,'(A20,A1,I1)') LUCITABASF,'.',LUCI_MYPROC
-         LUFIL=22
-      ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (LUCIFILN,'(A20,A1,I2)') LUCITABASF,'.',LUCI_MYPROC
-         LUFIL=23
-      ELSE IF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (LUCIFILN,'(A20,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
-         LUFIL=24
-      ELSE
-         call quit("luci_nmproc.gt.1000!                                &
-                    extend the lucita_coworker_main module")
-      ENDIF
-!
-!     open the local input file and the node specific output file.
-!     every access to the local stdout handle then automatically writes
-!     to the corresponding output file.
-      open(outfile_node,file=lucifiln(1:lufil))
+!       open the local input file and the node specific output file.
+!       every access to the local stdout handle then automatically writes
+!       to the corresponding output file.
+        open(outfile_node,file=lucifiln(1:lufil))
+        file_open = .true.
+      end if ! file-open switch
+
+!     control variables for synchronizing co-workers
+!     ----------------------------------------------
+!     synchronize ci-run id with co-workers
+      sync_ctrl_array(6) = .true.
+!     synchronize MC/CI array lengths with co-workers
+      sync_ctrl_array(2) = .true.
+
+      select case(control_flag)
+        case(-1)
+!         synchronize co-workers with ci/mcscf input data: dynamic and static (the latter only if required)
+          sync_ctrl_array(1) = .true.
+        case( 1)
+          ! update with symmetry information and alike for vector exchange
+          sync_ctrl_array(5) = .true.
+        case default
+          call quit('*** lucita_coworker_main: unknown'//               &
+                    ' control flag.***')
+      end select
+
+!     start synchronization process
+      call sync_coworkers_cfg()
 
 !     set marker on incoming work space 
       call memget('REAL',k1,1,work_dalton,kfree,lfree)
@@ -463,24 +478,52 @@
                                             len_int2_or_rho2_mc2lu,     &
                                             print_lvl)
 
-!     check for (re-)initialization of the parallel task distribution arrays
-      if(lucita_cfg_initialize_cb)then
-        call parallel_task_distribution_free_lucipar(ptask_distribution)
-      end if     
+      select case(control_flag)
+        case(-1)
+!         check for (re-)initialization of the parallel task distribution arrays
+          if(lucita_cfg_initialize_cb)then
+           call parallel_task_distribution_free_lucipar(                &
+                ptask_distribution)
+          end if     
+!         enter the LUCITA driver -- joining the master
+!         ---------------------------------------------
+          call lucita_driver(work_dalton(kfree),lfree,                  &
+                             work_dalton(kcref),                        &
+                             work_dalton(khc),                          &
+                             work_dalton(kresolution_mat),              &
+                             work_dalton(kint1_or_rho1),                &
+                             work_dalton(kint2_or_rho2))
+        case( 1)
+!         enter the parallel vector exchange interface -- co-workers version
+!         ------------------------------------------------------------------
+          active_xc_vector_type   = vector_exchange_type1
+          type2                   = .false.
+          if(active_xc_vector_type < 0)then 
+            active_xc_vector_type = vector_exchange_type2
+            type2                 = .true.
+          end if
 
-!     enter the LUCITA driver -- joining the master
-!     ---------------------------------------------
-      call lucita_driver(work_dalton(kfree),lfree,                      &
-                         work_dalton(kcref),                            &
-                         work_dalton(khc),                              &
-                         work_dalton(kresolution_mat),                  &
-                         work_dalton(kint1_or_rho1),                    &
-                         work_dalton(kint2_or_rho2))
+          call vector_exchange_interface_cw(active_xc_vector_type,      &
+                                            vector_update_mc2lu_lu2mc(  &
+                                            (exchange_f_info%           &
+                                            push_pull_switch-1)*        &
+                                            vector_exchange_types+      &
+                                            active_xc_vector_type),     &
+                                            work_dalton(kcref),         &
+                                            work_dalton(kfree))
+          if(type2)then
+            vector_exchange_type2 = active_xc_vector_type
+          else
+            vector_exchange_type1 = active_xc_vector_type
+          end if
+
+        case default
+          call quit('*** lucita_coworker_main: unknown'//               &
+                    ' control flag.***')
+      end select
 
 !     release marker on incoming work space
       call memrel('lucita.done',work_dalton,kfrsav,kfrsav,kfree,lfree)
-
-      close(outfile_node,status='KEEP')
 
       call qexit('lucita_coworker_main')
 

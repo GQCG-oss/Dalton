@@ -658,7 +658,8 @@ C        ... case: one configuration
 !        in the interface to lucita we use this info to save/broadcast the new
 !        reference vector on lucita internal sequential/parallel MPI-I/O files
          vector_exchange_type1                      = 1
-         vector_update_mc2lu(vector_exchange_type1) = .true.
+         vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                             vector_exchange_type1) = .true.
 
          IF (FLAG(48)) THEN
             CNOLBL = 'ONLYFD'

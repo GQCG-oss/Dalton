@@ -838,13 +838,12 @@ C
 !                 count active blocks
                   NUM_BLK = NUM_BLK + 1
 !
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
                   IF( IMZERO .eq. 0 ) THEN
 !
                     CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
      &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
-                  ELSE
-                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
                   END IF 
 !                 keep track of correct offset
                   IOFFSET_SCRATCH = ILEN
@@ -1009,13 +1008,13 @@ C
 C
           IF(ISENDTOM .gt. 0)THEN
 C
-            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1,LBL,
-     &                            MPI_REAL8,my_STATUS,IERR)
-            CALL MPI_SEND(vec1,LBL,MPI_REAL8,LUCI_MASTER,91,
+            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1(xoffset),
+     &                            LBL,MPI_REAL8,my_STATUS,IERR)
+            CALL MPI_SEND(vec1(xoffset),LBL,MPI_REAL8,LUCI_MASTER,91,
      &                    communicator_group,IERR)
 #ifdef LUCI_DEBUG
             print *,'co-worker - read-in: my vector piece'
-            call wrtmatmn(vec1,1,lbl,1,lbl,luwrt)
+            call wrtmatmn(vec1(xoffset),1,lbl,1,lbl,luwrt)
 #endif
 C
           END IF

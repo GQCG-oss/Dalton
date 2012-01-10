@@ -14,6 +14,7 @@ module sync_coworkers
   use dalton_mpi
   use lucita_cfg
   use lucita_mcscf_ci_cfg
+  use vector_xc_file_type
 #ifndef VAR_USE_MPIF
   use mpi
   implicit none
@@ -87,7 +88,8 @@ contains
                             ' the output arrays in the argument list.***')
                 end if
               case(4) ! distribute previous solution vector (i.e., we restart a CI run)
-              case(5) ! synchronize with current expansion point (CEP) vector (MCSCF run)
+              case(5) ! update information for vector exchange
+                call sync_coworkers_mc_vector_xc()
               case(6) ! set current CI task
                 call sync_coworkers_citask()
               case default ! no option found, quit.
@@ -219,7 +221,8 @@ contains
 
 !     logical
       call dalton_mpi_bcast(integrals_from_mcscf_env,         0,mpi_comm_world)
-!     call dalton_mpi_bcast(io2io_vector_exchange_mc2lu_lu2mc,0,mpi_comm_world) ! no need to sync - co-workers never touch this part of the code
+      call dalton_mpi_bcast(io2io_vector_exchange_mc2lu_lu2mc,0,mpi_comm_world)
+      call dalton_mpi_bcast(vector_update_mc2lu_lu2mc,        0,mpi_comm_world)
 
 !     real(8)
 !     call dalton_mpi_bcast(einact_mc2lu,                     0, mpi_comm_world) ! no need to sync - we sync ecore/ecore_orig in lucita internally
@@ -230,8 +233,29 @@ contains
       call dalton_mpi_bcast(len_resolution_mat_mc2lu,         0, mpi_comm_world)
       call dalton_mpi_bcast(len_int1_or_rho1_mc2lu,           0, mpi_comm_world)
       call dalton_mpi_bcast(len_int2_or_rho2_mc2lu,           0, mpi_comm_world)
+      call dalton_mpi_bcast(vector_exchange_type1,            0, mpi_comm_world)
+      call dalton_mpi_bcast(vector_exchange_type2,            0, mpi_comm_world)
 
   end subroutine sync_coworkers_mc_cfg
+!******************************************************************************
+
+  subroutine sync_coworkers_mc_vector_xc()
+!*******************************************************************************
+!
+!    purpose:  provide co-workers with the basic information to initiate
+!              the vector exchange process.
+!
+!*******************************************************************************
+
+!     logical
+      call dalton_mpi_bcast(exchange_f_info%exchange_file_io2io, 0,mpi_comm_world)
+
+!     integer
+      call dalton_mpi_bcast(exchange_f_info%present_sym_irrep,   0, mpi_comm_world)
+      call dalton_mpi_bcast(exchange_f_info%push_pull_switch,    0, mpi_comm_world)
+      call dalton_mpi_bcast(exchange_f_info%total_nr_vectors,    0, mpi_comm_world)
+
+  end subroutine sync_coworkers_mc_vector_xc
 !******************************************************************************
 
   subroutine sync_coworkers_ij_abcd(xarray1,xarray2)
