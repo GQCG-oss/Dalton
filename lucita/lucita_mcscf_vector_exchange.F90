@@ -65,6 +65,12 @@ contains
       logical, intent(inout)              :: do_vector_exchange ! inout because of MPI calling structure
 !-------------------------------------------------------------------------------
 
+      write(lupri,*) ' do_vector_exchange ==> ',do_vector_exchange
+      write(lupri,*) ' vector_type        ==> ',vector_type
+      write(lupri,*) ' nr_vectors         ==> ',nr_vectors
+      write(lupri,*) ' vector_symmetry    ==> ',vector_symmetry
+      call flshfo(lupri)
+      call flshfo(lupri)
 !     switch to exchange_files info for symmetry vector_symmetry
       call exchange_f_switch(exchange_f_info,                    &
                              file_info,                          &
@@ -73,15 +79,18 @@ contains
                              vector_type,                        &
                              nr_vectors,                         &
                              io2io_exchange)
+      write(lupri,*) ' finished exchange_f_switch '
+      call flshfo(lupri)
+      call flshfo(lupri)
 
 !     switch to ttss-block info for symmetry vector_symmetry in CI space 1
       call ttss_switch(ttss_info,                                &
                        vector_symmetry,                          &
                        1)
 
-      write(lupri,*) ' do_vector_exchange ==> ',do_vector_exchange
-      write(lupri,*) ' vector_type        ==> ',vector_type
-      write(lupri,*) ' nr_vectors         ==> ',nr_vectors
+      write(lupri,*) ' finished ttss_switch '
+      call flshfo(lupri)
+      call flshfo(lupri)
 #ifdef VAR_MPI
 !     get hold of co-workers and provide them with the mandatory details
       call lucita_start_cw(1)
@@ -99,6 +108,7 @@ contains
 
       end if
 
+!     call quit('bla')
 !     reset vector exchange control variables
       do_vector_exchange = .false.
       vector_type        = -1
@@ -582,7 +592,14 @@ contains
     A%exchange_file_open(2)   = .false.
     A%present_fh_lu           = -1
     A%present_fh_mc           = -1
+    A%present_fh_par          = -1
+#ifdef VAR_MPI
+    if(allocated(B%fh_lu))then
     A%present_fh_par          = B%fh_lu(A%present_vector_type)
+    else
+    call quit('access attempt to non-open MPI file')
+    end if
+#endif
 
 !   set parallel file handle in type file_type to be potentially used inside LUCITA
     if(B%current_file_nr_active1 < 0)then
@@ -591,7 +608,7 @@ contains
        B%current_file_nr_active2 = A%present_vector_type
     end if
 
-    if(A%my_process_id > 0)then
+    if(A%my_process_id == 0)then
 !     step 1: LUCITA file
       write(A%exchange_files_generic(vector_type),'(a13,a1)') A%exchange_files_generic(vector_type),            &
                                                               A%exchange_files_f_extension(A%present_sym_irrep)
