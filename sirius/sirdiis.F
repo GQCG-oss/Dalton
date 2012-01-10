@@ -716,12 +716,11 @@ C
             else if (nasht > 0) then
                 call quit('PEQM not implemented for open shell.')
             end if
-            call memget('REAL', kfs, nnbasx, wrk, kfree, lfree)
-            kfe = kfs + nnbasx
-            call pe_main(daosav(1:nnbasx,1), wrk(kfs:kfe), esolt,
-     &                   wrk(kfree:lfree))
-            call daxpy(nnbasx, d1, wrk(kfs), 1, faosav(1,indevc,1), 1)
-            call memrel('DIIS_CTL.pe_main', wrk, kfrsav, kfs, kfree,
+            call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
+            call pe_main(daosav(1,1), wrk(kfcpe), nnbasx,
+     &                   esolt, wrk(kfree), lfree)
+            call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
+            call memrel('DIIS_CTL.pe_main', wrk, kfrsav, kfcpe, kfree,
      &                  lfree)
          end if
 

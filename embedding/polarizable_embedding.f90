@@ -274,14 +274,15 @@ end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
 
-subroutine pe_main(density, fock, Epe, work)
+subroutine pe_main(density, fock, nb, Epe, work, nwrk)
 
+    integer, intent(in) :: nb, nwrk
     real(r8), intent(inout) :: Epe
-    real(r8), dimension(:), intent(in) :: density
-    real(r8), dimension(:), intent(out) :: fock
-    real(r8), dimension(:), intent(inout) :: work
+    real(r8), dimension(nb), intent(in) :: density
+    real(r8), dimension(nb), intent(out) :: fock
+    real(r8), dimension(nwrk), intent(inout) :: work
 
-    nbas = size(density)
+    nbas = nb
 
     fock = 0.0d0
 
