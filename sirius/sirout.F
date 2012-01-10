@@ -61,7 +61,7 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-      use polarizable_embedding, only: pe_final, peqm
+      use polarizable_embedding, only: peqm, Ees, Epol
 #include <implicit.h>
 C
 #include <litinfo.h>
@@ -346,21 +346,23 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
       else if (peqm) then
-        call pe_final(Epe, Ees, Epol)
-        write(lupri,'(/5x,a)') 'PE-DFT/HF calculation converged:'
-        write(lupri,'(5x,a)') '--------------------------------'
-        write(lupri,'(/7x,a)') 'Electrostatic contributions:'
-        write(lupri,'(9x,a26,f20.10)') 'Monopoles     : ', Ees(0)
-        write(lupri,'(9x,a26,f20.10)') 'Dipoles       : ', Ees(1)
-        write(lupri,'(9x,a26,f20.10)') 'Quadrupoles   : ', Ees(2)
-        write(lupri,'(9x,a26,f20.10)') 'Octopoles     : ', Ees(3)
-        !write(lupri,'(9x,a26,f20.10)') 'Hexadecapoles : ', Ees(4)
-        write(lupri,'(7x,a)') 'Polarization contributions:'
-        write(lupri,'(9x,a26,f20.10)') 'Electronic    : ', Epol(1)
-        write(lupri,'(9x,a26,f20.10)') 'Nuclear       : ', Epol(2)
-        write(lupri,'(9x,a26,f20.10)') 'Multipoles    : ', Epol(3)
         Epe = sum(Ees) + sum(Epol)
-        write(lupri,'(7x,a26,f20.10)') 'Total PE-DFT/HF energy : ', Epe
+        write(lupri,'(/3x,a18,9x,f20.12)')
+     &                      '@ Total PE energy: ', Epe
+        write(lupri,'(/5x,a)')
+     &                     'Polarizable Embedding energy contributions:'
+        write(lupri,'(5x,a)')
+     &                     '-------------------------------------------'
+        write(lupri,'(/7x,a)') 'Electrostatic contributions:'
+        write(lupri,'(9x,a16,5x,f20.12)') 'Monopoles       ', Ees(0)
+        write(lupri,'(9x,a16,5x,f20.12)') 'Dipoles         ', Ees(1)
+        write(lupri,'(9x,a16,5x,f20.12)') 'Quadrupoles     ', Ees(2)
+        write(lupri,'(9x,a16,5x,f20.12)') 'Octopoles       ', Ees(3)
+        !write(lupri,'(9x,a16,5x,f20.12)') 'Hexadecapoles   ', Ees(4)
+        write(lupri,'(/7x,a)') 'Polarization contributions:'
+        write(lupri,'(9x,a16,5x,f20.12)') 'Electronic      ', Epol(1)
+        write(lupri,'(9x,a16,5x,f20.12)') 'Nuclear         ', Epol(2)
+        write(lupri,'(9x,a16,5x,f20.12)') 'Multipole       ', Epol(3)
       ELSE
         ESOLT = D0
       END IF

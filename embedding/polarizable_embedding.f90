@@ -6,8 +6,9 @@ module polarizable_embedding
 
     public :: pe_dalton_input, pe_read_potential, pe_main, pe_final
 
-    ! options
+    ! options and other logicals
     logical, public, save :: peqm
+    logical :: final_energy = .false.
 
     ! logical units from dalton
     integer, save :: luout
@@ -31,8 +32,8 @@ module polarizable_embedding
     integer, dimension(:,:), allocatable, save :: exlists
 
     ! energy contributions
-    real(r8), dimension(0:4), save :: Ees
-    real(r8), dimension(3), save :: Epol
+    real(r8), dimension(0:4), public, save :: Ees
+    real(r8), dimension(3), public, save :: Epol
 
     ! multipole moments
     ! monopoles
@@ -66,7 +67,7 @@ module polarizable_embedding
 ! memory checks
 ! response properties (incl. magnetic)
 ! AA and AU
-! initialize when allocate
+! initialize when allocate (only if necessary?)
 ! save individual one-electron integrals and reuse
 ! cutoffs and damping
 ! memory management
@@ -282,27 +283,43 @@ subroutine pe_main(density, fock, Epe, work)
 
     fock = 0.0d0; Epe = 0.0d0
 
-    call pe_electrostatic(density, fock, Epe, work)
+    call pe_electrostatic(density, fock, work)
 
-    call pe_polarization(density, fock, Epe, work)
+    call pe_polarization(density, fock, work)
+
+    Epe = Epe + sum(Ees) + sum(Epol)
+
+    print *, sum(Ees) + sum(Epol)
+    print *, Ees(0), Ees(1), Ees(2), Ees(3)
+    print *, Epol(1), Epol(2), Epol(3)
 
 end subroutine pe_main
 
 !------------------------------------------------------------------------------
 
-subroutine pe_final(Epe, Ees, Epol)
+subroutine pe_final(density, work)
 
-    call pe_electrostatics()
+    real(r8), dimension(:), intent(in) :: density
+    real(r8), dimension(:), intent(inout) :: work
 
-    call pe_polarization()
+    final_energy = .true.
+
+    call pe_electrostatic(density, work, work)
+
+    call pe_polarization(density, work, work)
+
+    final_energy = .false.
+
+    print *, sum(Ees) + sum(Epol)
+    print *, Ees(0), Ees(1), Ees(2), Ees(3)
+    print *, Epol(1), Epol(2), Epol(3)
 
 end subroutine pe_final
 
 !------------------------------------------------------------------------------
 
-subroutine pe_electrostatic(density, fock, Epe, work)
+subroutine pe_electrostatic(density, fock, work)
 
-    real(r8), intent(inout) :: Epe
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
@@ -314,12 +331,12 @@ subroutine pe_electrostatic(density, fock, Epe, work)
 
     inquire(file='pe_electrostatics.bin', exist=lexist)
 
-    if (lexist) then
+    if (lexist .and. .not. final_energy) then
         call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
         read(lutemp) Esave, fock
         close(lutemp)
-        Epe = Epe + Esave + dot(density, fock)
+        Ees(0) = Esave + dot(density, fock)
     else
         if (lmul(0)) then
             call es_monopoles(density, fock, Eel, Enuc, work)
@@ -351,12 +368,12 @@ subroutine pe_electrostatic(density, fock, Epe, work)
 !            Esave = Esave + Enuc
 !        end if
 
-        Epe = Epe + sum(Ees)
-
-        call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
-        rewind(lutemp)
-        write(lutemp) Esave, fock
-        close(lutemp)
+        if (.not. final_energy) then
+            call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
+            rewind(lutemp)
+            write(lutemp) Esave, fock
+            close(lutemp)
+        end if
     end if
 
 end subroutine pe_electrostatic
@@ -549,9 +566,8 @@ end subroutine es_octopoles
 
 !------------------------------------------------------------------------------
 
-subroutine pe_polarization(density, fock, Epe, work)
+subroutine pe_polarization(density, fock, work)
 
-    real(r8), intent(inout) :: Epe
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
@@ -574,11 +590,9 @@ subroutine pe_polarization(density, fock, Epe, work)
         end do
 
         allocate(Mu_ints(size(fock),3))
-
-        Mu_ints = 0.0d0
-
         allocate(Mu(3*npol), Fel(3*npol), Fnuc(3*npol), Fmul(3*npol))
 
+        Mu_ints = 0.0d0
         Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
 
@@ -590,11 +604,9 @@ subroutine pe_polarization(density, fock, Epe, work)
 
             call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
 
-            Epol(0) = - 0.5d0 * dot(Mu, Fel)
-            Epol(1) = - 0.5d0 * dot(Mu, Fnuc)
+            Epol(1) = - 0.5d0 * dot(Mu, Fel)
+            Epol(2) = - 0.5d0 * dot(Mu, Fnuc)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
-
-            Epe = Epe + sum(Epol)
 
         else
 
@@ -617,11 +629,9 @@ subroutine pe_polarization(density, fock, Epe, work)
                 l = l + 3
             end do
 
-            Epol(0) = - 0.5d0 * dot(Mu, Fel)
-            Epol(1) = - 0.5d0 * dot(Mu, Fnuc)
+            Epol(1) = - 0.5d0 * dot(Mu, Fel)
+            Epol(2) = - 0.5d0 * dot(Mu, Fnuc)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
-
-            Epe = Epe + sum(Epol)
 
         end if
 

@@ -277,7 +277,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: pe_main, peqm
+      use polarizable_embedding, only: pe_main, pe_final, peqm
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -375,6 +375,10 @@ C
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  sym.  closed shell occupation'
       END IF
+      else if (peqm) then
+        write(luw4,'(/a)')
+     &      ' Iter      Total energy       PE energy           '//
+     &      'Error norm     Delta(E)'
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -702,10 +706,10 @@ C
               TMMFCK = TMMFCK + DTIME
             ENDIF
          ENDIF
-            
+
          if (peqm) then
             if (qm3 .or. qmmm .or. flag(16) .or. PCM) then
-                call quit('ERROR: PEQM should not be combined with QM3,
+                call quit('ERROR: PEQM cannot be combined with QM3,
      &                     QMMM, PCM, etc.')
             else if (nsym > 1) then
                 call quit('PEQM cannot be combined with symmetry.')
@@ -788,6 +792,9 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
      &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,IOPRHF,
      &                 (NISH(I),I=1,NSYM)
                END IF
+            else if (peqm) then
+               write(luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
+     &          itdiis, emcscf, esolt, grdnrm, emcdif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G22.12,D15.5,D12.2,I5)')
@@ -1323,17 +1330,26 @@ C
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
        END IF
+
+       ! needed to get specific PE energy contributions
+       if (peqm) then
+         call pe_final(daosav(1:nnbasx,1), wrk(kfree:lfree))
+       end if
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+         if (peqm) write(luw4,'(a)')
+     &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+            if (peqm) write(lupri,'(A)')
+     &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------
