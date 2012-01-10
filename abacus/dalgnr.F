@@ -1089,6 +1089,7 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+      use polarizable_embedding, only: pe_dalton_input
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -1658,8 +1659,7 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 continue
-        continue
-!        call pe_input(word)
+        call pe_dalton_input(word, lucmd, lupri)
       goto 200
 
 C

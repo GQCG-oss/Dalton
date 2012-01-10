@@ -4,16 +4,21 @@ module polarizable_embedding
 
     private
 
-    public :: pe_read_potential, pe_main
+    public :: pe_dalton_input, pe_read_potential, pe_main, pe_final
 
     ! options
-    logical, public :: peqm
+    logical, public, save :: peqm
 
+    ! logical units from dalton
+    integer, save :: luout
+
+    ! precision
     integer, parameter :: r8 = selected_real_kind(15)
     integer, parameter :: i8 = selected_int_kind(18)
 
     ! number of centers and length of exclusion list
     integer, save :: ncents, nexlist
+
     ! specifies what type of parameters are present
     logical, dimension(0:4), save :: lmul, lpol, lhypol
 
@@ -24,6 +29,10 @@ module polarizable_embedding
     real(r8), dimension(:), allocatable, save :: elems
     real(r8), dimension(:,:), allocatable, save :: Rs
     integer, dimension(:,:), allocatable, save :: exlists
+
+    ! energy contributions
+    real(r8), dimension(0:4), save :: Ees
+    real(r8), dimension(3), save :: Epol
 
     ! multipole moments
     ! monopoles
@@ -48,11 +57,12 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Cs
 
     ! QM info: number of nuclei, nuclear charges and nuclear coordinates
-    integer, save :: qmnucs
+    integer, save :: qmnucs, nbas
     real(r8), dimension(:), allocatable, save :: Zm
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! write to output
 ! memory checks
 ! response properties (incl. magnetic)
 ! AA and AU
@@ -66,6 +76,36 @@ module polarizable_embedding
 ! parallelization (openMP, MPI, CUDA/openCL)
 
 contains
+
+subroutine pe_dalton_input(word, luinp, lupri)
+
+    external upcase
+
+    character(7), intent(inout) :: word
+    integer, intent(in) :: luinp
+    integer, intent(in) :: lupri
+
+    character(7) :: option
+
+    luout = lupri
+
+    do
+        read(luinp,'(a7)') option
+        call upcase(option)
+       
+        if (trim(option(2:)) == 'PEQM') then
+            peqm = .true.
+        else if (option(1:1) == '*') then
+            word = option
+            exit
+        else if (option(1:1) == '!' .or. option(1:1) == '#') then
+            cycle
+        end if
+    end do
+
+end subroutine pe_dalton_input
+
+!------------------------------------------------------------------------------
 
 subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
 
@@ -231,69 +271,91 @@ end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
 
-subroutine pe_main(density, fock, E_pe, work)
+subroutine pe_main(density, fock, Epe, work)
 
-    real(r8), intent(out) :: E_pe
+    real(r8), intent(inout) :: Epe
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(out) :: fock
     real(r8), dimension(:), intent(inout) :: work
 
-    real(r8) :: E_es, E_ind
+    nbas = size(density)
 
-    fock = 0.0d0; E_pe = 0.0d0
+    fock = 0.0d0; Epe = 0.0d0
 
-    call pe_electrostatic(density, fock, E_es, work)
-    E_pe = E_pe + E_es
+    call pe_electrostatic(density, fock, Epe, work)
 
-    call pe_polarization(density, fock, E_ind, work)
-    E_pe = E_pe + E_ind
+    call pe_polarization(density, fock, Epe, work)
 
 end subroutine pe_main
 
 !------------------------------------------------------------------------------
 
-subroutine pe_electrostatic(density, fock, E_es, work)
+subroutine pe_final(Epe, Ees, Epol)
 
-    real(r8), intent(out) :: E_es
+    call pe_electrostatics()
+
+    call pe_polarization()
+
+end subroutine pe_final
+
+!------------------------------------------------------------------------------
+
+subroutine pe_electrostatic(density, fock, Epe, work)
+
+    real(r8), intent(inout) :: Epe
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
     logical :: lexist
     integer :: lutemp
-    real(r8), dimension(0:3) :: E_el, E_nuc
+    real(r8) :: Eel, Enuc, Esave
 
-    E_es = 0.0d0; E_el = 0.0d0; E_nuc = 0.0d0
+    Ees = 0.0d0; Eel = 0.0d0; Enuc = 0.0d0; Esave = 0.0d0
 
     inquire(file='pe_electrostatics.bin', exist=lexist)
 
     if (lexist) then
         call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
-        read(lutemp) E_es, fock
+        read(lutemp) Esave, fock
         close(lutemp)
-        E_es = E_es + dot(density, fock)
+        Epe = Epe + Esave + dot(density, fock)
     else
         if (lmul(0)) then
-            call es_monopoles(density, fock, E_el(0), E_nuc(0), work)
+            call es_monopoles(density, fock, Eel, Enuc, work)
+            Ees(0) = Eel + Enuc
+            Esave = Esave + Enuc
         end if
 
         if (lmul(1)) then
-            call es_dipoles(density, fock, E_el(1), E_nuc(1), work)
+            call es_dipoles(density, fock, Eel, Enuc, work)
+            Ees(1) = Eel + Enuc
+            Esave = Esave + Enuc
         end if
 
         if (lmul(2)) then
-            call es_quadrupoles(density, fock, E_el(2), E_nuc(2), work)
+            call es_quadrupoles(density, fock, Eel, Enuc, work)
+            Ees(2) = Eel + Enuc
+            Esave = Esave + Enuc
         end if
 
         if (lmul(3)) then
-            call es_octopoles(density, fock, E_el(3), E_nuc(3), work)
+            call es_octopoles(density, fock, Eel, Enuc, work)
+            Ees(3) = Eel + Enuc
+            Esave = Esave + Enuc
         end if
 
-        E_es = sum(E_el) + sum(E_nuc)
+!        if (lmul(4)) then
+!            call es_hexadecapoles(density, fock, Eel, Enuc, work)
+!            Ees(4) = Eel + Enuc
+!            Esave = Esave + Enuc
+!        end if
+
+        Epe = Epe + sum(Ees)
 
         call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
         rewind(lutemp)
-        write(lutemp) sum(E_nuc), fock
+        write(lutemp) Esave, fock
         close(lutemp)
     end if
 
@@ -301,24 +363,21 @@ end subroutine pe_electrostatic
 
 !------------------------------------------------------------------------------
 
-subroutine es_monopoles(density, fock, E_el, E_nuc, work)
+subroutine es_monopoles(density, fock, Eel, Enuc, work)
 
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
-    real(r8), intent(out) :: E_el, E_nuc
+    real(r8), intent(out) :: Eel, Enuc
 
-    integer :: nbas
     integer :: i, j
     integer, parameter :: k = 0
     real(r8), dimension(3) :: Rsm
     real(r8), dimension(1) :: Tsm
     real(r8), dimension(:,:), allocatable :: Q0_ints
 
-    nbas = size(fock)
-
     allocate(Q0_ints(nbas,1))
 
-    E_el = 0.0d0; E_nuc = 0.0d0
+    Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, ncents
 
@@ -330,12 +389,14 @@ subroutine es_monopoles(density, fock, E_el, E_nuc, work)
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
             call get_Tk_tensor(Tsm, k, Rsm)
-            E_nuc = E_nuc + Q0(1,i) * Zm(j) * Tsm(1)
+            Enuc = Enuc + Q0(1,i) * Zm(j) * Tsm(1)
         end do
 
         ! electron - monopole interaction
-        E_el = E_el + dot(density, Q0_ints(:,1))
-        fock = fock + Q0_ints(:,1)
+        Eel = Eel + dot(density, Q0_ints(:,1))
+        if (.not. final_energy) then
+            fock = fock + Q0_ints(:,1)
+        end if
 
     end do
 
@@ -345,23 +406,20 @@ end subroutine es_monopoles
 
 !------------------------------------------------------------------------------
 
-subroutine es_dipoles(density, fock, E_el, E_nuc, work)
+subroutine es_dipoles(density, fock, Eel, Enuc, work)
 
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
-    real(r8), intent(out) :: E_el, E_nuc
+    real(r8), intent(out) :: Eel, Enuc
 
-    integer :: nbas
     integer :: i, j, l
     integer, parameter :: k = 1
     real(r8), dimension(3) :: Rsm, Tsm
     real(r8), dimension(:,:), allocatable :: Q1_ints
 
-    nbas = size(fock)
-
     allocate(Q1_ints(nbas,3))
 
-    E_el = 0.0d0; E_nuc = 0.0d0
+    Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, ncents
 
@@ -374,14 +432,16 @@ subroutine es_dipoles(density, fock, E_el, E_nuc, work)
             Rsm = Rm(:,j) - Rs(:,i)
             call get_Tk_tensor(Tsm, k, Rsm)
             do l = 1, 3
-                E_nuc = E_nuc - Zm(j) * Q1(l,i) * Tsm(l)
+                Enuc = Enuc - Zm(j) * Q1(l,i) * Tsm(l)
             end do
         end do
 
         ! electron - dipole interaction
         do j = 1, 3
-            E_el = E_el + dot(density, Q1_ints(:,j))
-            fock = fock + Q1_ints(:,j)
+            Eel = Eel + dot(density, Q1_ints(:,j))
+            if (.not. final_energy) then
+                fock = fock + Q1_ints(:,j)
+            end if
         end do
 
     end do
@@ -392,24 +452,21 @@ end subroutine es_dipoles
 
 !------------------------------------------------------------------------------
 
-subroutine es_quadrupoles(density, fock, E_el, E_nuc, work)
+subroutine es_quadrupoles(density, fock, Eel, Enuc, work)
 
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
-    real(r8), intent(out) :: E_el, E_nuc
+    real(r8), intent(out) :: Eel, Enuc
 
-    integer :: nbas
     integer :: i, j, l
     integer, parameter :: k = 2
     real(r8), dimension(3) :: Rsm
     real(r8), dimension(6) :: Tsm, factors
     real(r8), dimension(:,:), allocatable :: Q2_ints
 
-    nbas = size(fock)
-
     allocate(Q2_ints(nbas,6))
 
-    E_el = 0.0d0; E_nuc = 0.0d0
+    Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, ncents
 
@@ -423,15 +480,17 @@ subroutine es_quadrupoles(density, fock, E_el, E_nuc, work)
             call get_Tk_tensor(Tsm, k, Rsm)
             call get_symmetry_factors(factors, k)
             do l = 1, 6
-                E_nuc = E_nuc + 0.5d0 * factors(l) * Zm(j) * Q2(l,i) * Tsm(l)
+                Enuc = Enuc + 0.5d0 * factors(l) * Zm(j) * Q2(l,i) * Tsm(l)
             end do
 
         end do
 
         ! electron - quadrupole interaction energy
         do j = 1, 6
-            fock = fock + Q2_ints(:,j)
-            E_el = E_el + dot(density, Q2_ints(:,j))
+            Eel = Eel + dot(density, Q2_ints(:,j))
+            if (.not. final_energy) then
+                fock = fock + Q2_ints(:,j)
+            end if
         end do
 
     end do
@@ -442,24 +501,21 @@ end subroutine es_quadrupoles
 
 !------------------------------------------------------------------------------
 
-subroutine es_octopoles(density, fock, E_el, E_nuc, work)
+subroutine es_octopoles(density, fock, Eel, Enuc, work)
 
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
-    real(r8), intent(out) :: E_el, E_nuc
+    real(r8), intent(out) :: Eel, Enuc
 
-    integer :: nbas
     integer :: i, j, l
     integer, parameter :: k = 3
     real(r8), dimension(3) :: Rsm
     real(r8), dimension(10) :: Tsm, factors
     real(r8), dimension(:,:), allocatable :: Q3_ints
 
-    nbas = size(fock)
-
     allocate(Q3_ints(nbas,10))
 
-    E_el = 0.0d0; E_nuc = 0.0d0
+    Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, ncents
 
@@ -473,14 +529,16 @@ subroutine es_octopoles(density, fock, E_el, E_nuc, work)
             call get_Tk_tensor(Tsm, k, Rsm)
             call get_symmetry_factors(factors, k)
             do l = 1, 10
-                E_nuc = E_nuc - factors(l) * Zm(j) * Q3(l,i) * Tsm(l) / 6.0d0
+                Enuc = Enuc - factors(l) * Zm(j) * Q3(l,i) * Tsm(l) / 6.0d0
             end do
         end do
 
         ! electron - octopole interaction energy
         do j = 1, 10
-            fock = fock + Q3_ints(:,j)
-            E_el = E_el + dot(density, Q3_ints(:,j))
+            Eel = Eel + dot(density, Q3_ints(:,j))
+            if (.not. final_energy) then
+                fock = fock + Q3_ints(:,j)
+            end if
         end do
 
     end do
@@ -491,21 +549,20 @@ end subroutine es_octopoles
 
 !------------------------------------------------------------------------------
 
-subroutine pe_polarization(density, fock, E_ind, work)
+subroutine pe_polarization(density, fock, Epe, work)
 
-    real(r8), intent(out) :: E_ind
+    real(r8), intent(inout) :: Epe
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
-    integer :: npol, nbas
+    integer :: npol
     integer :: i, j, l
     integer, parameter :: k = 1
-    real(r8) :: E_el, E_nuc, E_mul
-    real(r8), dimension(0:3) :: E_Qk
+    real(r8) :: Eel, Enuc, Emul
     real(r8), dimension(:), allocatable :: Mu, Fel, Fnuc, Fmul
     real(r8), dimension(:,:), allocatable :: Mu_ints
 
-    E_ind = 0.0d0; E_el = 0.0d0; E_nuc = 0.0d0; E_mul = 0.0d0; E_Qk = 0.0d0
+    Eel = 0.0d0; Enuc = 0.0d0; Emul = 0.0d0
 
     if (lpol(0) .or. lpol(1)) then
 
@@ -524,39 +581,49 @@ subroutine pe_polarization(density, fock, E_ind, work)
 
         Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
-        call get_electron_fields(Fel, density, work)
 
-        call get_nuclear_fields(Fnuc, work)
+        if (final_energy) then
 
-! TODO: check octopoles
-        call get_multipole_fields(Fmul, work)
+            call get_electron_fields(Fel, density, work)
+            call get_nuclear_fields(Fnuc, work)
+            call get_multipole_fields(Fmul, work)
 
-!        call get_electric_fields(Ftot, density, work)
+            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
 
-        call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
+            Epol(0) = - 0.5d0 * dot(Mu, Fel)
+            Epol(1) = - 0.5d0 * dot(Mu, Fnuc)
+            Epol(3) = - 0.5d0 * dot(Mu, Fmul)
 
-        l = 1
+            Epe = Epe + sum(Epol)
 
-        do i = 1, ncents
+        else
 
-            if (abs(maxval(alphas(:,i))) <= zero) cycle
+            call get_electron_fields(Fel, density, work)
+            call get_nuclear_fields(Fnuc, work)
+            call get_multipole_fields(Fmul, work)
 
-            call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
+!            call get_electric_fields(Ftot, density, work)
 
-            do j = 1, 3
-                fock = fock + Mu_ints(:,j)
+            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, density, work)
+
+            l = 1
+
+            do i = 1, ncents
+                if (abs(maxval(alphas(:,i))) <= zero) cycle
+                call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
+                do j = 1, 3
+                    fock = fock + Mu_ints(:,j)
+                end do
+                l = l + 3
             end do
 
-            l = l + 3
+            Epol(0) = - 0.5d0 * dot(Mu, Fel)
+            Epol(1) = - 0.5d0 * dot(Mu, Fnuc)
+            Epol(3) = - 0.5d0 * dot(Mu, Fmul)
 
-        end do
+            Epe = Epe + sum(Epol)
 
-!        E_el = E_el - 0.5d0 * dot(Mu, Fel)
-!        E_nuc = E_nuc - 0.5d0 * dot(Mu, Fnuc)
-!        E_mul = E_mul - 0.5d0 * dot(Mu, Fmul)
-
-!        E_ind = E_el + E_nuc + E_mul
-        E_ind = - 0.5d0 * dot(Mu, Fel + Fnuc + Fmul)
+        end if
 
         deallocate(Mu_ints)
         deallocate(Mu, Fel, Fnuc, Fmul)
@@ -631,12 +698,9 @@ subroutine get_electron_fields(Fel, density, work)
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
-    integer :: nbas
     integer :: i, j, l
     integer, parameter :: k = 1
     real(r8), dimension(:,:), allocatable :: Fel_ints
-
-    nbas = size(density)
 
     allocate(Fel_ints(nbas,3))
 
@@ -1301,7 +1365,7 @@ subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i
-    integer :: ncomps, nbas
+    integer :: ncomps
     real(r8) :: taylor
     real(r8), dimension(:), allocatable :: factors
 
@@ -1317,7 +1381,6 @@ subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
         taylor = 1.0d0 / 24.0d0
     end if
 
-    nbas = size(Qk_ints, 1)
     ncomps = size(Qk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)

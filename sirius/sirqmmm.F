@@ -29,8 +29,6 @@ C   added parallel QMMM routines.
 C  /* Deck qmmmfck */
       SUBROUTINE QMMMFCK(DCAO,DVAO,FSOL,EQMMM,WRK,LWRK,IPRINT)
 
-      use polarizable_embedding, only: pe_main
-
 #include <implicit.h>
 #include <dummy.h>
 #include <inftap.h>
@@ -50,14 +48,9 @@ C  /* Deck qmmmfck */
 #include <symmet.h>
 #include <orgcom.h>
 
-#include <nuclei.h>
-! charge(*), cord(3,*)
-
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
       LOGICAL HSFOCK
-
-      double precision new_coords(natoms,3), new_charges(natoms)
 
       CALL QENTER('QMMMFCK')
       KDTAO = 1
@@ -84,10 +77,7 @@ C     Get total density
 
 C     Modify the fock operator. Modification returned in FSOL. 
 C     QMMM contribution to the energy returned in EQMMM.
-C      CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
-
-      call pe_main(wrk(kdtao:nnbasx), fsol(1:nnbasx), eqmmm,
-     &             wrk(kend:lwrk1))
+      CALL QMMM_FCK_AO(FSOL,WRK(KDTAO),EQMMM,WRK(KEND),LWRK1,IPRINT)
 
       CALL QEXIT('QMMMFCK')
       RETURN

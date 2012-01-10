@@ -53,6 +53,7 @@ C
 C
 
       use lucita_orbital_spaces
+      use polarizable_embedding, only: peqm
 
 #include <implicit.h>
 C
@@ -333,7 +334,7 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            IF (QMMM) CALL QUIT('DIIS failed to converge')
+            IF (QMMM .or. peqm) CALL QUIT('DIIS failed to converge')
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN

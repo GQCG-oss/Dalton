@@ -277,6 +277,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+      use polarizable_embedding, only: pe_main, peqm
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -465,7 +466,7 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .AND. .NOT.AOSAVE
+     &     .and. .not. peqm    .AND. .NOT.AOSAVE
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -701,6 +702,24 @@ C
               TMMFCK = TMMFCK + DTIME
             ENDIF
          ENDIF
+            
+         if (peqm) then
+            if (qm3 .or. qmmm .or. flag(16) .or. PCM) then
+                call quit('ERROR: PEQM should not be combined with QM3,
+     &                     QMMM, PCM, etc.')
+            else if (nsym > 1) then
+                call quit('PEQM cannot be combined with symmetry.')
+            else if (nasht > 0) then
+                call quit('PEQM not implemented for open shell.')
+            end if
+            call memget('REAL', kfs, nnbasx, wrk, kfree, lfree)
+            kfe = kfs + nnbasx
+            call pe_main(daosav(1:nnbasx,1), wrk(kfs:kfe), esolt,
+     &                   wrk(kfree:lfree))
+            call daxpy(nnbasx, d1, wrk(kfs), 1, faosav(1,indevc,1), 1)
+            call memrel('DIIS_CTL.pe_main', wrk, kfrsav, kfs, kfree,
+     &                  lfree)
+         end if
 
          IF (FLAG(16)) THEN
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
