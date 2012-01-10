@@ -8,7 +8,7 @@ module polarizable_embedding
 
     ! options and other logicals
     logical, public, save :: peqm
-    logical :: final_energy = .false.
+    logical, save :: final_energy
 
     ! logical units from dalton
     integer, save :: luout
@@ -103,6 +103,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
             cycle
         end if
     end do
+
+    final_energy = .false.
 
 end subroutine pe_dalton_input
 
