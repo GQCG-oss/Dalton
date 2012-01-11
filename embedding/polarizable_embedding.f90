@@ -18,10 +18,11 @@ module polarizable_embedding
     integer, parameter :: i8 = selected_int_kind(18)
 
     ! number of centers and length of exclusion list
-    integer, save :: ncents, nexlist
+    integer, public, save :: ncents
+    integer, save :: nexlist
 
     ! specifies what type of parameters are present
-    logical, dimension(0:4), save :: lmul, lpol, lhypol
+    logical, dimension(0:4), public, save :: lmul, lpol, lhypol
 
     ! thresholds
     real(r8), parameter :: zero = 1.0d-8

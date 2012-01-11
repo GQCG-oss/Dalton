@@ -708,6 +708,7 @@ C
          ENDIF
 
          if (peqm) then
+            ! Do these tests elsewhere
             if (qm3 .or. qmmm .or. flag(16) .or. pcm) then
                 call quit('ERROR: PEQM cannot be combined with QM3,
      &                     QMMM, PCM, etc.')

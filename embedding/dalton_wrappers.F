@@ -4,15 +4,9 @@
       subroutine get_Tk_integrals(Tk_ints, nints, k, storage, coord,
      &                            work, nwrk)
 
-#include <implicit.h>
 #include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
 #include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
 #include <orgcom.h>
-#include <priunit.h>
 
         character(8), dimension(9*mxcent) :: labint
         integer*8, dimension(9*mxcent) :: intrep, intadr
