@@ -14,7 +14,7 @@ module file_type_module
   public file_init_lucipar
   public file_free_lucipar
   public file_set_list_lucipar
-  public file_sequential_fh_reset_lucipar
+  public file_type_active_fh_reset_lucipar
 
 
 ! type definition
@@ -163,7 +163,7 @@ contains
 
   end subroutine file_set_factors_lucipar
 
-  subroutine file_sequential_fh_reset_lucipar(A)
+  subroutine file_type_active_fh_reset_lucipar(A)
 
 !   ----------------------------------------------------------------------------
     type(file_type) :: A
@@ -172,7 +172,9 @@ contains
     if(A%file_handle_seq_init) return
     A%current_file_fh_seqf(1) = -1
     A%current_file_fh_seqf(2) = -1
+    A%current_file_nr_active1 = -1
+    A%current_file_nr_active2 = -1
 
-  end subroutine file_sequential_fh_reset_lucipar
+  end subroutine file_type_active_fh_reset_lucipar
  
 end module file_type_module

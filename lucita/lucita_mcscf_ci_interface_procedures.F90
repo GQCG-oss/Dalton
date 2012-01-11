@@ -11,7 +11,7 @@ module lucita_mcscf_ci_interface_procedures
   use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
   use lucita_mcscf_vector_exchange, only : vector_exchange_driver
   use lucita_mcscf_ci_cfg
-  use file_type_module, only : file_info, file_type, file_sequential_fh_reset_lucipar
+  use file_type_module, only : file_info, file_type, file_type_active_fh_reset_lucipar
 
   implicit none
 
@@ -114,8 +114,8 @@ contains
 !     a. define allocations for a given CI runtype needed by slaves in parallel runs
       call setup_lucita_mcci_wrkspc_dimensions(run_type,         &
                                                print_lvl)
-!     b. initialize sequential file handles
-      call file_sequential_fh_reset_lucipar(file_info)
+!     b. initialize file handles
+      call file_type_active_fh_reset_lucipar(file_info)
 
 !     d. select pre-process task
       select case(run_type)
@@ -168,8 +168,8 @@ contains
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 
-!     a. initialize sequential file handles
-      call file_sequential_fh_reset_lucipar(file_info)
+!     a. initialize file handles
+      call file_type_active_fh_reset_lucipar(file_info)
 
 !     b. choose post-process task
       select case(run_type)
@@ -214,7 +214,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .false.,c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -275,7 +275,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .true.,c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -308,7 +308,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .true.,c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -369,13 +369,13 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .true.,c_or_cr)
 
 !     lhs vector (if transition density matrix) - otherwise we take care of it internally in lucita
       call vector_exchange_driver(push_pull,vector_exchange_type2,lucita_cfg_nr_roots,lucita_cfg_hcsym,               &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type2),       &
-                                  hc_or_cl)
+                                  .true.,hc_or_cl)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -428,7 +428,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,nroot,irefsm_c,                                     &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .false.,c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -474,7 +474,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .true.,c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -510,7 +510,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                   &
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
-                                  hc_or_cl)
+                                  .true.,hc_or_cl)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
@@ -546,7 +546,7 @@ contains
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_hcsym,               &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
-                                  c_or_cr)
+                                  .true.,c_or_cr)
 
       if(print_lvl >= -1)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'

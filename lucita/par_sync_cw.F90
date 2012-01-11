@@ -15,6 +15,7 @@ module sync_coworkers
   use lucita_cfg
   use lucita_mcscf_ci_cfg
   use vector_xc_file_type
+  use file_type_module, only : file_type, file_info
 #ifndef VAR_USE_MPIF
   use mpi
   implicit none
@@ -254,6 +255,9 @@ contains
       call dalton_mpi_bcast(exchange_f_info%present_sym_irrep,   0, mpi_comm_world)
       call dalton_mpi_bcast(exchange_f_info%push_pull_switch,    0, mpi_comm_world)
       call dalton_mpi_bcast(exchange_f_info%total_nr_vectors,    0, mpi_comm_world)
+
+      call dalton_mpi_bcast(file_info%current_file_nr_active1,   0, mpi_comm_world)
+      call dalton_mpi_bcast(file_info%current_file_nr_active2,   0, mpi_comm_world)
 
   end subroutine sync_coworkers_mc_vector_xc
 !******************************************************************************

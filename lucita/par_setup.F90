@@ -186,6 +186,8 @@ contains
       IDIA = file_info%fh_lu( 4)
       ILUC = file_info%fh_lu( 5)
 
+      write(lupri,*) 'MPI file handles: ',file_info%fh_lu(1:5)
+
 !     safe information for files used exclusively in parallel LUCITA-CI runs
       if(file_info%active_nr_f_lucipar > 5)then
         ILU3       = file_info%fh_lu( 6)

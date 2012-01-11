@@ -115,6 +115,7 @@
 #endif
 #endif
 
+#ifdef BLABLA_DOIT
 #ifdef VAR_MPI
       if(luci_nmproc > 1)then
 
@@ -130,6 +131,7 @@
      &                                          MPI_COMM_WORLD,
      &                                          NUM_BLOCKS,1,1,1)
       end if
+#endif
 #endif
 
 !     transform each orbital separately
@@ -305,6 +307,7 @@
       END DO
 
 #ifdef VAR_MPI
+#ifdef BLABLA_DOIT
       if(luci_nmproc > 1)then
 
 !       collect the rotated vector
@@ -322,6 +325,7 @@
      &                                          num_blocks,1,1,2)
 
       end if ! luci_nmproc > 1
+#endif
 #else
 
 !     transfer rotated vector to lu_refout

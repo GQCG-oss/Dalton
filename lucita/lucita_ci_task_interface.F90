@@ -476,45 +476,52 @@ contains
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
 
-!       hardwired for now (ILU1 + ILU2)
-        file_info%current_file_nr_active1 = 2
-        file_info%current_file_nr_active2 = 3
 
-        call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
-                   file_info%max_list_length)
-        call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
-                   file_info%max_list_length)
+        if(.not.file_info%file_type_mc)then ! not within MCSCF
 
-        call rewino(luc_internal)
-!       step 1: the rhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
-                                                luc_internal,                          &
-                                                file_info%fh_lu(file_info%             &
-                                                current_file_nr_active1),              &
-                                                file_info%file_offsets(                &
-                                                file_info%current_file_nr_active1),    &
-                                                file_info%iluxlist(1,                  &
-                                                file_info%current_file_nr_active1),    &
-                                                par_dist_block_list,                   &
-                                                block_list,                            &
-                                                MPI_COMM_WORLD,                        &
-                                                NUM_BLOCKS,NROOT,1,1)
+!         hardwired for now (ILU1 + ILU2)
+          file_info%current_file_nr_active1 = 2
+          file_info%current_file_nr_active2 = 3
+          call rewino(luc_internal)
+
+          call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
+                     file_info%max_list_length)
+          call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
+                     file_info%max_list_length)
+
+!         step 1: the rhs vector
+          call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
+                                                  luc_internal,                          &
+                                                  file_info%fh_lu(file_info%             &
+                                                  current_file_nr_active1),              &
+                                                  file_info%file_offsets(                &
+                                                  file_info%current_file_nr_active1),    &
+                                                  file_info%iluxlist(1,                  &
+                                                  file_info%current_file_nr_active1),    &
+                                                  par_dist_block_list,                   &
+                                                  block_list,                            &
+                                                  MPI_COMM_WORLD,                        &
+                                                  NUM_BLOCKS,NROOT,1,1)
+        end if
 
         if(lucita_cfg_transition_densm)then
-          call rewino(luhc_internal)
-!         step 2: the lhs vector
-          call mcci_cp_vcd_mpi_2_seq_io_interface(hc,                                  &
-                                                  luhc_internal,                       &
-                                                  file_info%fh_lu(file_info%           &
-                                                  current_file_nr_active2),            &
-                                                  file_info%file_offsets(              &
-                                                  file_info%current_file_nr_active2),  &
-                                                  file_info%iluxlist(1,                &
-                                                  file_info%current_file_nr_active2),  &
-                                                  par_dist_block_list,                 &
-                                                  block_list,                          &
-                                                  MPI_COMM_WORLD,                      &
-                                                  NUM_BLOCKS,NROOT,1,1)
+
+          if(.not.file_info%file_type_mc)then ! not within MCSCF
+!           step 2: the lhs vector
+            call rewino(luhc_internal)
+            call mcci_cp_vcd_mpi_2_seq_io_interface(hc,                                  &
+                                                    luhc_internal,                       &
+                                                    file_info%fh_lu(file_info%           &
+                                                    current_file_nr_active2),            &
+                                                    file_info%file_offsets(              &
+                                                    file_info%current_file_nr_active2),  &
+                                                    file_info%iluxlist(1,                &
+                                                    file_info%current_file_nr_active2),  &
+                                                    par_dist_block_list,                 &
+                                                    block_list,                          &
+                                                    MPI_COMM_WORLD,                      &
+                                                    NUM_BLOCKS,NROOT,1,1)
+          end if
 
           luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active2)
         else
@@ -527,6 +534,9 @@ contains
           my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active1)
         end if
         lusc_vector_file   = file_info%fh_lu(file_info%current_file_nr_bvec)
+        write(lupri,*) ' luhc_vector_file, lusc_vector_file: ',luhc_vector_file, lusc_vector_file
+        write(lupri,*) ' file_info%current_file_nr_active1, file_info%current_file_nr_active2', &
+                         file_info%current_file_nr_active1, file_info%current_file_nr_active2
       end if
 #endif
 
@@ -782,29 +792,33 @@ contains
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
 
-!       hardwired for now (ILU1 + ILU2)
-        file_info%current_file_nr_active1 = 2
-        file_info%current_file_nr_active2 = 3
 
-        call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
-                   file_info%max_list_length)
-        call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
-                   file_info%max_list_length)
+        if(.not.file_info%file_type_mc)then ! not within MCSCF
 
-        call rewino(luc_internal)
-!       step 1: the rhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
-                                                luc_internal,                          &
-                                                file_info%fh_lu(file_info%             &
-                                                current_file_nr_active1),              &
-                                                file_info%file_offsets(                &
-                                                file_info%current_file_nr_active1),    &
-                                                file_info%iluxlist(1,                  &
-                                                file_info%current_file_nr_active1),    &
-                                                par_dist_block_list,                   &
-                                                block_list,                            &
-                                                MPI_COMM_WORLD,                        &
-                                                NUM_BLOCKS,NROOT,1,1)
+!         hardwired for now (ILU1 + ILU2)
+          file_info%current_file_nr_active1 = 2
+          file_info%current_file_nr_active2 = 3
+
+          call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
+                     file_info%max_list_length)
+          call izero(file_info%iluxlist(1,file_info%current_file_nr_active2),  &
+                     file_info%max_list_length)
+
+          call rewino(luc_internal)
+!         step 1: the rhs vector
+          call mcci_cp_vcd_mpi_2_seq_io_interface(cref,                                  &
+                                                  luc_internal,                          &
+                                                  file_info%fh_lu(file_info%             &
+                                                  current_file_nr_active1),              &
+                                                  file_info%file_offsets(                &
+                                                  file_info%current_file_nr_active1),    &
+                                                  file_info%iluxlist(1,                  &
+                                                  file_info%current_file_nr_active1),    &
+                                                  par_dist_block_list,                   &
+                                                  block_list,                            &
+                                                  MPI_COMM_WORLD,                        &
+                                                  NUM_BLOCKS,NROOT,1,1)
+        end if ! not within MCSCF
       end if
 #endif
 
@@ -867,20 +881,23 @@ contains
 
       if(luci_nmproc > 1)then
 #ifdef VAR_MPI
-!       collect e2b vector(s)
-!       --------------------
-        call rewino(luhc_internal)
+        if(.not.file_info%file_type_mc)then ! not within MCSCF
+!         collect e2b vector(s)
+!         --------------------
+          call rewino(luhc_internal)
+  
+!         the lhs vector
+          call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc_internal,luhc_vector_file,   &
+                                                  file_info%file_offsets(              &
+                                                  file_info%current_file_nr_active2),  &
+                                                  file_info%iluxlist(1,                &
+                                                  file_info%current_file_nr_active2),  &
+                                                  par_dist_block_list,                 &
+                                                  block_list,                          &
+                                                  MPI_COMM_WORLD,                      &
+                                                  num_blocks,nroot,1,2)
 
-!       the lhs vector
-        call mcci_cp_vcd_mpi_2_seq_io_interface(hc,luhc_internal,luhc_vector_file,   &
-                                                file_info%file_offsets(              &
-                                                file_info%current_file_nr_active2),  &
-                                                file_info%iluxlist(1,                &
-                                                file_info%current_file_nr_active2),  &
-                                                par_dist_block_list,                 &
-                                                block_list,                          &
-                                                MPI_COMM_WORLD,                      &
-                                                num_blocks,nroot,1,2)
+        end if ! not within MCSCF
 
         deallocate(block_info_batch)
         deallocate(block_offset_batch)
@@ -970,8 +987,9 @@ contains
       my_BVC_fh  = 0
 #ifdef VAR_MPI
 !     hardwired for now (ILU1 + ILU2)
-      file_info%current_file_nr_active1 = 2
-      file_info%current_file_nr_active2 = 3
+!     file_info%current_file_nr_active1 = 2
+!     file_info%current_file_nr_active2 = 3
+
       my_in_fh   = file_info%fh_lu(file_info%current_file_nr_active1)
       my_out_fh  = file_info%fh_lu(file_info%current_file_nr_active1)
       my_sc1_fh  = file_info%fh_lu(file_info%current_file_nr_active2)
