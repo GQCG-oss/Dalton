@@ -113,7 +113,7 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-      polarizable_embedding, only: peqm
+      use polarizable_embedding, only: peqm
 #include <implicit.h>
 #include <maxorb.h>
 C
