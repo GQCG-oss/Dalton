@@ -61,7 +61,7 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-      use polarizable_embedding, only: peqm, Ees, Epol
+      use polarizable_embedding, only: peqm, Ees, Epol, lmul, lpol
 #include <implicit.h>
 C
 #include <litinfo.h>
@@ -351,15 +351,23 @@ csonia 04/10/95
         write(lupri,'(5x,a)')
      &                     '-------------------------------------------'
         write(lupri,'(/7x,a)') 'Electrostatic contributions:'
-        write(lupri,'(9x,a16,5x,f20.12)') 'Monopoles       ', Ees(0)
-        write(lupri,'(9x,a16,5x,f20.12)') 'Dipoles         ', Ees(1)
-        write(lupri,'(9x,a16,5x,f20.12)') 'Quadrupoles     ', Ees(2)
-        write(lupri,'(9x,a16,5x,f20.12)') 'Octopoles       ', Ees(3)
-        !write(lupri,'(9x,a16,5x,f20.12)') 'Hexadecapoles   ', Ees(4)
-        write(lupri,'(/7x,a)') 'Polarization contributions:'
-        write(lupri,'(9x,a16,5x,f20.12)') 'Electronic      ', Epol(1)
-        write(lupri,'(9x,a16,5x,f20.12)') 'Nuclear         ', Epol(2)
-        write(lupri,'(9x,a16,5x,f20.12)') 'Multipole       ', Epol(3)
+        if (lmul(0)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Monopoles       ', Ees(0)
+        if (lmul(1)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Dipoles         ', Ees(1)
+        if (lmul(2)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Quadrupoles     ', Ees(2)
+        if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Octopoles       ', Ees(3)
+        if (lpol(0) .or. lpol(1)) then
+            write(lupri,'(/7x,a)') 'Polarization contributions:'
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Electronic      ', Epol(1)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Nuclear         ', Epol(2)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Multipole       ', Epol(3)
+        end if
         write(lupri,'(/3x,a18,9x,f20.12)')
      &                      '@ Total PE energy: ', sum(Ees) + sum(Epol)
       ELSE
