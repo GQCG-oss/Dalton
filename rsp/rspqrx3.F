@@ -237,6 +237,7 @@ C  /* Deck e3init */
      *                  FV,MJWOP)
 C
 C
+      use polarizable_embedding, only: peqm
 #include <implicit.h>
 C
       PARAMETER ( D1 = 1.0D0 )
@@ -404,7 +405,7 @@ C
          END IF
       END IF
 
-      IF (QMMM) THEN
+      IF (QMMM .or. peqm) THEN
          IF (TDHF) THEN
             CALL QMMMQRO(VECB,VECC,
      *                   ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),

@@ -4,7 +4,7 @@ module polarizable_embedding
 
     private
 
-    public :: pe_dalton_input, pe_read_potential, pe_main, pe_final
+    public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
 
     ! options and other logicals
     logical, public, save :: peqm
@@ -64,6 +64,7 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! Symmetry
 ! Environment properties in herrdn.F
 ! write to output
 ! memory checks
@@ -276,7 +277,7 @@ end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
 
-subroutine pe_main(density, fock, nb, Epe, work, nwrk)
+subroutine pe_fock(density, fock, nb, Epe, work, nwrk)
 
     integer, intent(in) :: nb, nwrk
     real(r8), intent(inout) :: Epe
@@ -294,11 +295,11 @@ subroutine pe_main(density, fock, nb, Epe, work, nwrk)
 
     Epe = sum(Ees) + sum(Epol)
 
-end subroutine pe_main
+end subroutine pe_fock
 
 !------------------------------------------------------------------------------
 
-subroutine pe_final(density, work)
+subroutine pe_energy(density, work)
 
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
@@ -311,7 +312,7 @@ subroutine pe_final(density, work)
 
     final_energy = .false.
 
-end subroutine pe_final
+end subroutine pe_energy
 
 !------------------------------------------------------------------------------
 
@@ -1559,6 +1560,14 @@ subroutine openfile(filename, lunit, stat, frmt)
     return
 
 end subroutine openfile
+
+!------------------------------------------------------------------------------
+
+!subroutine pe_response(bvecs, cmo, density, evecs, work, nwrk)
+
+
+
+!end subroutine pe_response
 
 !------------------------------------------------------------------------------
 

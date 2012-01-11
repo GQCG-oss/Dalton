@@ -277,7 +277,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: pe_main, pe_final, peqm
+      use polarizable_embedding, only: pe_fock, pe_energy, peqm
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -718,10 +718,10 @@ C
                 call quit('PEQM not implemented for open shell.')
             end if
             call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
-            call pe_main(daosav(1,1), wrk(kfcpe), nnbasx,
+            call pe_fock(daosav(1,1), wrk(kfcpe), nnbasx,
      &                   esolt, wrk(kfree), lfree)
             call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
-            call memrel('DIIS_CTL.pe_main', wrk, kfrsav, kfcpe, kfree,
+            call memrel('DIIS_CTL.pe_fock', wrk, kfrsav, kfcpe, kfree,
      &                  lfree)
          end if
 
@@ -1333,7 +1333,7 @@ C
 
        ! needed to get specific PE energy contributions
        if (peqm) then
-         call pe_final(daosav(1:nnbasx,1), wrk(kfree:lfree))
+         call pe_energy(daosav(1:nnbasx,1), wrk(kfree:lfree))
        end if
 C
        IF (IPRENR .GT. 0) THEN
