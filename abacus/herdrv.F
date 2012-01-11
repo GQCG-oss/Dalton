@@ -295,8 +295,6 @@ C
 C     950602-vebjorn:
 C     Added flag HRINPC to ensure that HERMIT input processing is done only once.
 C
-      use polarizable_embedding, only: peqm, pe_read_potential
-
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1657,10 +1655,6 @@ C
  1000 CONTINUE
 C
       IF (QMMM) CALL READMM(WORK,LWORK)
-
-      if (peqm) call pe_read_potential(cord(:,1:natoms),
-     &                                 charge(1:natoms), natoms,
-     &                                 work, lwork)
 
       CALL SETDCH
       CALL GPCLOSE(LUCMD,'KEEP')

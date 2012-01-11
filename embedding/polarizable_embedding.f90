@@ -64,6 +64,7 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
 ! TODO:
+! Environment properties in herrdn.F
 ! write to output
 ! memory checks
 ! response properties (incl. magnetic)
