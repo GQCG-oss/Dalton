@@ -567,7 +567,7 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-      use polarizable_embedding, only: peqm
+      use polarizable_embedding, only: peqm, pe_linear_response
 #include <implicit.h>
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -658,10 +658,17 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
+
+      if (peqm) then
+        call pe_linear_response(nosim, zyovec, kzywop,
+     &                          wrk(kevecs), kzyvar,
+     &                          cmo, nbast, norbt,
+     &                          wrk(kfree), lfree)
+      end if
 C
 C *** END OF RSPLIN
 C

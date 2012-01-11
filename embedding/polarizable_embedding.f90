@@ -5,6 +5,7 @@ module polarizable_embedding
     private
 
     public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
+    public :: pe_linear_response
 
     ! options and other logicals
     logical, public, save :: peqm
@@ -83,7 +84,7 @@ contains
 
 subroutine pe_dalton_input(word, luinp, lupri)
 
-    external upcase
+    external :: upcase
 
     character(7), intent(inout) :: word
     integer, intent(in) :: luinp
@@ -698,7 +699,7 @@ end subroutine get_electric_fields
 
 subroutine get_electron_fields(Fel, density, work)
 
-    external get_Tk_integrals
+    external :: get_Tk_integrals
 
     real(r8), dimension(:), intent(out) :: Fel
     real(r8), dimension(:), intent(in) :: density
@@ -1347,7 +1348,7 @@ end subroutine get_full_4th_tensor
 
 subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
 
-    external get_Tk_integrals
+    external :: get_Tk_integrals
 
     integer, intent(in) :: k
     real(r8), dimension(:,:), intent(out) :: Qk_ints
@@ -1472,7 +1473,7 @@ end function dot
 
 subroutine invert_packed_matrix(ap, sp, work)
 
-    external dpptrf, dpptri, dsptrf, dsptri, xerbla
+    external :: dpptrf, dpptri, dsptrf, dsptri, xerbla
 
     character(*), optional :: sp
     real(r8), dimension(:), intent(inout) :: ap, work
@@ -1509,7 +1510,7 @@ end subroutine invert_packed_matrix
 
 subroutine solve(ap, b)
 
-    external dspsv
+    external :: dspsv
 
     real(r8), dimension(:), intent(inout) :: ap, b
 
@@ -1563,11 +1564,71 @@ end subroutine openfile
 
 !------------------------------------------------------------------------------
 
-!subroutine pe_response(bvecs, cmo, density, evecs, work, nwrk)
+subroutine pe_linear_response(nvecs, bvecs, nb, evecs, ne, cmo, nbas, norb, work, nwrk)
 
+    external :: get_Tk_integrals, uthu, dsptsi, onexh1
+    real(r8), external :: slvqlm
+    integer, intent(in) :: nvecs, nb, ne, nbas, norb, nwrk
+    real(r8), dimension(nb,nvecs), intent(in) :: bvecs
+    real(r8), dimension(nbas,norb), intent(in) :: cmo
+    real(r8), dimension(ne,nvecs), intent(out) :: evecs
+    real(r8), dimension(nwrk), intent(inout) :: work
 
+    integer :: npol
+    real(r8) :: dum
+    integer :: i, j, l, n
+    integer, parameter :: k = 1
+    real(r8), dimension(:), allocatable :: Mu, Fel
+    real(r8), dimension(:,:), allocatable :: Fel_ao, Fel_mo
+    real(r8), dimension(:,:,:), allocatable :: Fel_mof, Fel_tf
 
-!end subroutine pe_response
+    npol = 0
+    do i = 1, ncents
+        if (abs(maxval(alphas(:,i))) >= zero) then
+            npol = npol + 1
+        end if
+    end do
+
+    allocate(Mu(3*npol), Fel(3*npol))
+    Mu = 0.0d0; Fel = 0.0d0
+
+    allocate(Fel_ao(nbas,3))
+    allocate(Fel_mo(norb,3))
+    allocate(Fel_mof(norb,norb,3))
+    allocate(Fel_tf(norb,norb,3))
+
+    do n = 1, nvecs
+
+        l = 0
+
+        do i = 1, ncents
+
+            if (abs(maxval(alphas(:,i))) <= zero) cycle
+
+            call get_Tk_integrals(Fel_ao, 3*nbas, k, 'packed', Rs(:,i),&
+                                  work, size(work))
+
+! TODO: replace by blas/lapack or own routines
+            do j = 1, 3
+                call uthu(Fel_ao(:,j), Fel_mo(:,j), cmo, work, nbas, norb)
+                call dsptsi(norb, Fel_mo(:,j), Fel_mof(:,:,j))
+                call onexh1(bvecs(:,n), Fel_mof(:,:,j), Fel_tf(:,:,j))
+                Fel(l+j) = slvqlm((/0.0D0/), (/0.0D0/), Fel_tf(:,:,j), dum)
+            end do
+
+            l = l + 3
+
+        end do
+
+    end do
+
+    do i = 1, 3*npol
+        print *, Fel(i)
+    end do
+
+    deallocate(Fel_ao, Fel_mo, Fel_mof, Fel_tf)
+
+end subroutine pe_linear_response
 
 !------------------------------------------------------------------------------
 
