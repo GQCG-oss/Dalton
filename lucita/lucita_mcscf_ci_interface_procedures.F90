@@ -210,6 +210,11 @@ contains
       integer                  :: push_pull = 2
 !-------------------------------------------------------------------------------
       
+#ifdef VAR_MPI
+!     stefan: always enforce vector_update in order to write the full vector to the sequential file on the master
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1) = .true.
+#endif
+
 !     rhs vector (the first argument '2' refers to the direction of transfer: mcscf ==> lucita)
       call vector_exchange_driver(push_pull,vector_exchange_type1,lucita_cfg_nr_roots,lucita_cfg_csym,                &
                                   io2io_vector_exchange_mc2lu_lu2mc,                                                  &
@@ -538,8 +543,11 @@ contains
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 1
 !-------------------------------------------------------------------------------
-      
-      vector_exchange_type1                      = 3
+#ifdef VAR_MPI      
+      vector_exchange_type1 = 1
+#else
+      vector_exchange_type1 = 3
+#endif
       vector_update_mc2lu_lu2mc((push_pull-1)*vector_exchange_types+vector_exchange_type1) = .true. ! pull the outgoing lhs vector from LUCITA files to mc core-memory
 
 !     lhs vector (the first argument '1' refers to the direction of transfer: lucita ==> mcscf)

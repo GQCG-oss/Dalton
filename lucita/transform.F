@@ -133,6 +133,8 @@
       end if
 #endif
 #endif
+      write(luwrt,*) 'lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,BVC_fh',
+     &                lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,BVC_fh
 
 !     transform each orbital separately
       DO K = 1, NTOOB

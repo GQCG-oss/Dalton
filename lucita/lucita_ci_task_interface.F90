@@ -479,7 +479,7 @@ contains
 
         if(.not.file_info%file_type_mc)then ! not within MCSCF
 
-!         hardwired for now (ILU1 + ILU2)
+!         hardwired to ILU1 + ILU2 for CI
           file_info%current_file_nr_active1 = 2
           file_info%current_file_nr_active2 = 3
           call rewino(luc_internal)
@@ -792,12 +792,13 @@ contains
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
 
+!       set HC vector file target
+        file_info%current_file_nr_active2 = 3
 
         if(.not.file_info%file_type_mc)then ! not within MCSCF
 
-!         hardwired for now (ILU1 + ILU2)
+!         hardwired to ILU1 for CI
           file_info%current_file_nr_active1 = 2
-          file_info%current_file_nr_active2 = 3
 
           call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
                      file_info%max_list_length)
@@ -986,9 +987,7 @@ contains
       my_BVC_off = 0
       my_BVC_fh  = 0
 #ifdef VAR_MPI
-!     hardwired for now (ILU1 + ILU2)
-!     file_info%current_file_nr_active1 = 2
-!     file_info%current_file_nr_active2 = 3
+      file_info%current_file_nr_active2 = 3
 
       my_in_fh   = file_info%fh_lu(file_info%current_file_nr_active1)
       my_out_fh  = file_info%fh_lu(file_info%current_file_nr_active1)

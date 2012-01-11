@@ -88,15 +88,8 @@ contains
 
       if(do_vector_exchange)then
 #ifdef VAR_MPI
-        if(parallel_vector_xc)then
-!         get hold of co-workers and provide them with the mandatory details
-          call lucita_start_cw(1)
-          lucita_ci_run_id   = 'xc vector   '
-          sync_ctrl_array(2) = .true.
-          sync_ctrl_array(5) = .true.
-          sync_ctrl_array(6) = .true.
-          call sync_coworkers_cfg()
-        end if
+!       get hold of co-workers and provide them with the mandatory details
+        if(parallel_vector_xc) call vector_exchange_wake_up_cw()
 #endif
         write(lupri,*) ' starting vector xc-driver: parallel? ==> ',parallel_vector_xc
         call flshfo(lupri)
@@ -118,6 +111,23 @@ contains
 !*******************************************************************************
 
 #ifdef VAR_MPI
+   subroutine vector_exchange_wake_up_cw()
+!-------------------------------------------------------------------------------
+!
+!       purpose: get hold of co-workers and provide them with the mandatory details
+!-------------------------------------------------------------------------------
+
+      lucita_ci_run_id   = 'xc vector   '
+      sync_ctrl_array(2) = .true.
+      sync_ctrl_array(5) = .true.
+      sync_ctrl_array(6) = .true.
+
+      call lucita_start_cw(1)
+      call sync_coworkers_cfg()
+
+   end subroutine vector_exchange_wake_up_cw
+!*******************************************************************************
+
    subroutine vector_exchange_interface_cw(active_xc_vector_type,      &
                                            do_vector_exchange,         &
                                            xmat,                       &
@@ -455,7 +465,6 @@ contains
 
       select case(A%push_pull_switch)
         case(1) 
-          call dzero(xmat(1+current_offset),B%total_present_vec)
           if(A%my_process_id > 0)then
             call mpi_reduce(xmat(1+current_offset),mpi_in_place,B%total_present_vec,MPI_REAL8,      &
                             mpi_sum,0,mpi_comm_world,ierr)
