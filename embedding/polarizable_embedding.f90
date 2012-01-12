@@ -1450,6 +1450,7 @@ end subroutine get_symmetry_factors
 function nrm2(x)
 
     real(r8), external :: dnrm2
+
     real(r8) :: nrm2
     real(r8), dimension(:), intent(in) :: x
 
@@ -1462,12 +1463,35 @@ end function nrm2
 function dot(x,y)
 
     real(r8), external :: ddot
+
     real(r8) :: dot
     real(r8), dimension(:), intent(in) :: x, y
 
     dot = ddot(size(x), x, 1, y, 1)
 
 end function dot
+
+!------------------------------------------------------------------------------
+
+subroutine axpy(x, y, a)
+
+    external :: daxpy
+
+    real(r8), optional :: a
+    real(r8), dimension(:), intent(in) :: x
+    real(r8), dimension(:), intent(inout) :: y
+
+    integer :: n
+
+    n = size(x)
+
+    if (.not. present(a)) then
+        a = 1.0d0
+    end if
+
+    call daxpy(n, a, x, 1, y, 1)
+
+end subroutine axpy
 
 !------------------------------------------------------------------------------
 
@@ -1564,23 +1588,30 @@ end subroutine openfile
 
 !------------------------------------------------------------------------------
 
-subroutine pe_linear_response(nvecs, bvecs, nb, evecs, ne, cmo, nbas, norb, work, nwrk)
+subroutine pe_linear_response(nvecs, bvecs, evecs, ne, cmo, nbas, norb, work, nwrk)
 
-    external :: get_Tk_integrals, uthu, dsptsi, onexh1
+    external :: get_Tk_integrals, uthu, dsptsi, onexh1, slvsor
     real(r8), external :: slvqlm
-    integer, intent(in) :: nvecs, nb, ne, nbas, norb, nwrk
-    real(r8), dimension(nb,nvecs), intent(in) :: bvecs
+    integer, intent(in) :: nvecs, ne, nbas, norb, nwrk
+    real(r8), dimension(norb,norb,nvecs), intent(in) :: bvecs
     real(r8), dimension(nbas,norb), intent(in) :: cmo
-    real(r8), dimension(ne,nvecs), intent(out) :: evecs
+    real(r8), dimension(ne,nvecs), intent(inout) :: evecs
     real(r8), dimension(nwrk), intent(inout) :: work
 
-    integer :: npol
+    integer :: npol, nnbas, nnorb, n2bas, n2orb
     real(r8) :: dum
     integer :: i, j, l, n
     integer, parameter :: k = 1
     real(r8), dimension(:), allocatable :: Mu, Fel
-    real(r8), dimension(:,:), allocatable :: Fel_ao, Fel_mo
-    real(r8), dimension(:,:,:), allocatable :: Fel_mof, Fel_tf
+    real(r8), dimension(:,:), allocatable :: Fel_ao
+    real(r8), dimension(:), allocatable :: Fel_mo, Fel_mof, Fel_tf
+    real(r8), dimension(:,:), allocatable :: FMu
+
+    nnbas = nbas * (nbas + 1) / 2
+    nnorb = norb * (norb + 1) / 2
+
+    n2bas = nbas * nbas
+    n2orb = norb * norb
 
     npol = 0
     do i = 1, ncents
@@ -1592,12 +1623,15 @@ subroutine pe_linear_response(nvecs, bvecs, nb, evecs, ne, cmo, nbas, norb, work
     allocate(Mu(3*npol), Fel(3*npol))
     Mu = 0.0d0; Fel = 0.0d0
 
-    allocate(Fel_ao(nbas,3))
-    allocate(Fel_mo(norb,3))
-    allocate(Fel_mof(norb,norb,3))
-    allocate(Fel_tf(norb,norb,3))
+    allocate(Fel_ao(nnbas,3))
+    allocate(Fel_mo(nnorb), Fel_mof(n2orb), Fel_tf(n2orb))
+
+    allocate(FMu(n2orb,nvecs))
+    FMu = 0.0d0
 
     do n = 1, nvecs
+
+        Fel = 0.0d0
 
         l = 0
 
@@ -1605,15 +1639,39 @@ subroutine pe_linear_response(nvecs, bvecs, nb, evecs, ne, cmo, nbas, norb, work
 
             if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-            call get_Tk_integrals(Fel_ao, 3*nbas, k, 'packed', Rs(:,i),&
-                                  work, size(work))
+            call get_Tk_integrals(Fel_ao, 3*nnbas, k, 'packed', Rs(:,i),&
+                                  work, nwrk)
 
+            Fel_mo = 0.0d0; Fel_mof = 0.0d0; Fel_tf = 0.0d0
 ! TODO: replace by blas/lapack or own routines
             do j = 1, 3
-                call uthu(Fel_ao(:,j), Fel_mo(:,j), cmo, work, nbas, norb)
-                call dsptsi(norb, Fel_mo(:,j), Fel_mof(:,:,j))
-                call onexh1(bvecs(:,n), Fel_mof(:,:,j), Fel_tf(:,:,j))
-                Fel(l+j) = slvqlm((/0.0D0/), (/0.0D0/), Fel_tf(:,:,j), dum)
+                call uthu(Fel_ao(:,j), Fel_mo, cmo, work, nbas, norb)
+                call dsptsi(norb, Fel_mo, Fel_mof)
+                call onexh1(bvecs(:,:,n), Fel_mof, Fel_tf)
+                Fel(l+j) = slvqlm((/0.0D0/), (/0.0D0/), Fel_tf, dum)
+            end do
+
+            l = l + 3
+
+        end do
+
+        call get_induced_dipoles(Mu, Fel, work)
+
+        l = 0
+
+        do i = 1, ncents
+
+            if (abs(maxval(alphas(:,i))) <= zero) cycle
+
+            call get_Tk_integrals(Fel_ao, 3*nnbas, k, 'packed', Rs(:,i),&
+                                  work, nwrk)
+
+            Fel_mo = 0.0d0; Fel_mof = 0.0d0
+
+            do j = 1, 3
+                call uthu(Fel_ao(:,j), Fel_mo, cmo, work, nbas, norb)
+                call dsptsi(norb, Fel_mo, Fel_mof)
+                call axpy(Fel_mof, FMu(:,n), Mu(l+j))
             end do
 
             l = l + 3
@@ -1622,11 +1680,9 @@ subroutine pe_linear_response(nvecs, bvecs, nb, evecs, ne, cmo, nbas, norb, work
 
     end do
 
-    do i = 1, 3*npol
-        print *, Fel(i)
-    end do
+    call slvsor(.true., .true., nvecs, (/0.0D0/), Evecs, FMu)
 
-    deallocate(Fel_ao, Fel_mo, Fel_mof, Fel_tf)
+    deallocate(Fel_ao, Fel_mo, Fel_mof, Fel_tf, FMu)
 
 end subroutine pe_linear_response
 

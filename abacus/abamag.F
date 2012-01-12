@@ -480,7 +480,6 @@ C     This routine controls the calculation of the different magnetic
 C     properties integrals. It also constructs the density matrix and
 C     calculates the corresponding expectation values.
 C
-      use polarizable_embedding, only: peqm
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -593,7 +592,7 @@ C
             CALL DAXPY(NCOMP,D1,WORK(KSLEXP),1,EXPVAL,1)
          END IF
 C
-         IF ((QMMM .or. peqm) .AND. (WORD .EQ. 'DIASUS')) THEN
+         IF (QMMM .AND. (WORD .EQ. 'DIASUS')) THEN
             IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
             NCOMP  = 6
             KSLEXP = 1

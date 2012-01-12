@@ -664,10 +664,10 @@ C
       END IF
 
       if (peqm) then
-        call pe_linear_response(nosim, zyovec, kzywop,
+        call pe_linear_response(nosim, wrk(kzymat),
      &                          wrk(kevecs), kzyvar,
      &                          cmo, nbast, norbt,
-     &                          wrk(kfree), lfree)
+     &                          wrk(kwrk1), lwrk1)
       end if
 C
 C *** END OF RSPLIN

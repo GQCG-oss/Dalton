@@ -162,7 +162,6 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
-      use polarizable_embedding, only: peqm
 #include <implicit.h>
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -248,7 +247,7 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-      IF (QMMM .or. peqm) THEN
+      IF (QMMM) THEN
          IF (TDHF) THEN
              CALL QMMMCRO(VECB, VECC, VECD,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),

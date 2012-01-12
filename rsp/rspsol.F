@@ -113,7 +113,6 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-      use polarizable_embedding, only: peqm
 #include <implicit.h>
 #include <maxorb.h>
 C
@@ -317,7 +316,7 @@ C
      &               EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
          END IF
-      ELSE IF (QMMM .or. peqm) THEN
+      ELSE IF (QMMM) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
