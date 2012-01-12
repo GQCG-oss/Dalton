@@ -4875,7 +4875,7 @@ C
 #endif
      &             )
       END IF
-!     NTEST = 100
+      NTEST = 100
       IF(ISIGDEN.EQ. 2 .and. NTEST. ge. 100) THEN
         write(luwrt,*) 'final rho1 matrix after sigden business'
         CALL WRTMATMN(WORK(KRHO1),1,LRHO1,1,LRHO1,luwrt)
@@ -4968,8 +4968,12 @@ C
 C     debug printing of 'complete' C vector on node/global file
 C
       IF( NPTESTVAR .ge. 20 ) THEN
+
+        WRITE(LUWRT,*) ' Right vector = C-vector:  file-handle =',LUC
+        WRITE(LUWRT,*) ' left  vector = HC-vector: file-handle =',LUHC
+!       CALL iWRTMaMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+
         IOFFSET_SCRATCH = 0
-        WRITE(LUWRT,*) ' Right vector = C-vector'
         DO IBLK = 1, NUM_BLOCKS2
 C
            LENGTH_BLK = IBLOCKL(IBLK)
@@ -5126,7 +5130,7 @@ C
 C
        CALL SIGDEN3_CI(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &                 CB,SB,C2,CV,ISIGDEN,LUC,0,0,0,0,0,SSCLFAC,
-     &                 ISCLFAC_GROUP,rhotype
+     &                 ISCLFAC_GROUP,rhotype,ls
 #ifdef VAR_MPI
      &                ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5175,11 +5179,13 @@ C
             END IF
 *           transfer block to disc
             IF(WRITE_SB)THEN
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
               WRITE(luwrt,*) 'I transfer to file block ISBLK',
-     &                      ISBLK
+     &                      ISBLK, LUHC
               CALL WRTMATMN(SB(IOFF),1,LEN,1,LEN,luwrt)
               WRITE(luwrt,*) 'offset,length',IOFF_SCR1,LEN
+#undef LUCI_DEBUG
 #endif
               CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
      &                               MPI_REAL8,my_STATUS,IERR)
@@ -5265,9 +5271,9 @@ C
 
 !------------------------------------------------------------------------------
       SUBROUTINE SIGDEN3_CI(NBLOCK,IBLOCK,IBOFF,CB,HCB,C2,CV,ISIGDEN,
-     &                  LUC,IRESTRICT,
-     &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
-     &                  SSCLFAC,ISCLFAC_GROUP,rhotype
+     &                      LUC,IRESTRICT,
+     &                      LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END,
+     &                      SSCLFAC,ISCLFAC_GROUP,rhotype,sigma_batchl
 #ifdef VAR_MPI
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
@@ -5341,8 +5347,8 @@ C
      &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
       COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*
-      integer, intent(in) :: rhotype
+!                                     length of sigma vector batch
+      integer, intent(in) :: rhotype, sigma_batchl
       dimension XIJILS(MXTSOB)
       INTEGER MLTHCHCK, ITEMPP
       DIMENSION SSCLFAC(*),ISCLFAC_GROUP(*)
@@ -5951,23 +5957,23 @@ C         length of block
           IOFF_SCR_C2 = LBL
           IF( INTERACT .eq. 1 ) THEN
 C
-C            file offset
+C           file offset
 C
-csk          WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
-             xxxreadtime = MPI_WTIME()
-             CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
-     &                             LBL,MPI_REAL8,my_STATUS,IERR)
-csk          CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
-             xreadtimebi = xreadtimebi - xxxreadtime + MPI_WTIME()
-             IBI_MULT_BL = IBI_MULT_BL + 1
-             SCLFAC(JBLOCK) = 1.0D0
+!           WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
+            xxxreadtime = MPI_WTIME()
+            CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
+     &                            LBL,MPI_REAL8,my_STATUS,IERR)
+!           CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
+            xreadtimebi    = xreadtimebi - xxxreadtime + MPI_WTIME()
+            IBI_MULT_BL    = IBI_MULT_BL + 1
+            SCLFAC(JBLOCK) = 1.0D0
           ELSE
-             SCLFAC(JBLOCK) = 0.0D0
+            SCLFAC(JBLOCK) = 0.0D0
           END IF
+
           IOFF_SCR_C1 = IOFF_SCR_C1 + IOFF_SCR_C2
-csk       WRITE(LUWRT,*) ' set new IOFF_SCR_C2 for JBLOCK   ',
-csk  &                     IOFF_SCR_C2, JBLOCK
 #endif
+
         ELSE ! (LUCI_NMPROC .GT. 1) THEN
           IF(INTERACT.EQ.1) THEN
             CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
@@ -6025,252 +6031,236 @@ C                          --------------
 C
         DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
 C
-!!!#ifdef VAR_MPI
-!!!            IF( ISCLFAC_GROUP( ICBLK ) .gt. 0 ) THEN
-!!!#else
-            IF( SCLFAC( ICBLK ) .ne. 0.0D0 ) THEN
-!!!#endif
-              JATP = ICBLOCK(1,ICBLK)
-              JBTP = ICBLOCK(2,ICBLK)
-              JASM = ICBLOCK(3,ICBLK)
-              JBSM = ICBLOCK(4,ICBLK)
-              ICOFF = ICBLOCK(5,ICBLK)
-              NJA = NSSOA(JASM,JATP)
-              NJB = NSSOB(JBSM,JBTP)
-C             other symmetry blocks that can be obtained from this block
-              CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
-     &                    LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
-C             start with transposed block
-              DO 8765 IPERM = NPERM,1, -1
-                LLASM = LASM(IPERM)
-                LLBSM = LBSM(IPERM)
-                LLATP = LATP(IPERM)
-                LLBTP = LBTP(IPERM)
-                NLLA = NSSOA(LLASM,LLATP)
-                NLLB = NSSOB(LLBSM,LLBTP)
-C               the routines assumes on input that the blocks are transposed, 
-C               so, initial tour, IPERM = 1 corresponds always to no transpose, 
-C               so transpose!
+          IF( SCLFAC( ICBLK ) .ne. 0.0D0 ) THEN
+            JATP = ICBLOCK(1,ICBLK)
+            JBTP = ICBLOCK(2,ICBLK)
+            JASM = ICBLOCK(3,ICBLK)
+            JBSM = ICBLOCK(4,ICBLK)
+            ICOFF = ICBLOCK(5,ICBLK)
+            NJA = NSSOA(JASM,JATP)
+            NJB = NSSOB(JBSM,JBTP)
+C           other symmetry blocks that can be obtained from this block
+            CALL PRMBLK(IDC,ISTRFL,JASM,JBSM,JATP,JBTP,PS,PL,
+     &                  LATP,LBTP,LASM,LBSM,LSGN,LTRP,NPERM)
+C           start with transposed block
+            DO 8765 IPERM = NPERM,1, -1
+              LLASM = LASM(IPERM)
+              LLBSM = LBSM(IPERM)
+              LLATP = LATP(IPERM)
+              LLBTP = LBTP(IPERM)
+              NLLA = NSSOA(LLASM,LLATP)
+              NLLB = NSSOB(LLBSM,LLBTP)
+C             the routines assumes on input that the blocks are transposed, 
+C             so, initial tour, IPERM = 1 corresponds always to no transpose, 
+C             so transpose!
 *. transpose is done for sigma, not density so
-                ipermdia_off = -1
-                IF(ISIGDEN.EQ.1) THEN
-                 IF(IPERM.EQ.1) THEN
-                   IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
-!                    write(luwrt,*) ' iperm business, ps ==> ',ps
-C                    diagonal blocks, Transposing corresponds to scaling
-                     IF(PS.EQ.-1.0D0) THEN
-                       ipermdia_off = 0
-                       CALL DSCAL(NJA*NJB,PS,CB(ICOFF),1)
-                     END IF
-                   ELSE
-                     ipermdia_off = 1
-!                    write(luwrt,*) ' iperm business, offdiag block'
-C                    offdiagonal blocks, explicit transposing
-                     CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
-                     CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
-                     if (LSGN(IPERM).eq.-1) then
-                       write(luwrt,*) 'LROW,LCOL undef. in sblocks'
-                       write(luwrt,*) 'and LSGN(IPERM).eq.-1'
-                       call quit(' *** error in SIGDEN4_CI: undefined'//
-     &                           ' transpose action. ***')
-CTF                    CALL SCALVE(CB(ICOFF),-1.0D0,LROW*LCOL)
-                     end if
+              ipermdia_off = -1
+              IF(ISIGDEN.EQ.1) THEN
+               IF(IPERM.EQ.1) THEN
+                 IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
+!                  write(luwrt,*) ' iperm business, ps ==> ',ps
+C                  diagonal blocks, Transposing corresponds to scaling
+                   IF(PS.EQ.-1.0D0) THEN
+                     ipermdia_off = 0
+                     CALL DSCAL(NJA*NJB,PS,CB(ICOFF),1)
                    END IF
-                 END IF! IPERM.EQ.1 switch
-                END IF !  ISIGDEN switch
-              
+                 ELSE
+                   ipermdia_off = 1
+!                  write(luwrt,*) ' iperm business, offdiag block'
+C                  offdiagonal blocks, explicit transposing
+                   CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
+                   CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
+                   if (LSGN(IPERM).eq.-1) then
+                     write(luwrt,*) 'LROW,LCOL undef. in sblocks'
+                     write(luwrt,*) 'and LSGN(IPERM).eq.-1'
+                     call quit(' *** error in SIGDEN4_CI: undefined'//
+     &                         ' transpose action. ***')
+CTF                  CALL SCALVE(CB(ICOFF),-1.0D0,LROW*LCOL)
+                   end if
+                 END IF
+               END IF! IPERM.EQ.1 switch
+              END IF !  ISIGDEN switch
+            
 C
-C               loop over sigma blocks in this batch
+C             loop over sigma blocks in this batch
 C
-C               NOTE: in parallel execution ISBLOCK(1,ISBLK) is 
-C                     set to 0 if block is not included in block 
-C                     distribution list NPARBLOCK for a given CPU.
+C             NOTE: in parallel execution ISBLOCK(1,ISBLK) is 
+C                   set to 0 if block is not included in block 
+C                   distribution list NPARBLOCK for a given CPU.
 C
-                DO 10000 ISBLK = 1, NSBLOCK
+              DO 10000 ISBLK = 1, NSBLOCK
                 IF( ISBLOCK(1,ISBLK) .GT. 0 ) THEN
-                  IATP = ISBLOCK(1,ISBLK)
-                  IBTP = ISBLOCK(2,ISBLK)
-                  IASM = ISBLOCK(3,ISBLK)
-                  IBSM = ISBLOCK(4,ISBLK)
+                  IATP  = ISBLOCK(1,ISBLK)
+                  IBTP  = ISBLOCK(2,ISBLK)
+                  IASM  = ISBLOCK(3,ISBLK)
+                  IBSM  = ISBLOCK(4,ISBLK)
                   ISOFF = ISBLOCK(5,ISBLK)
-                  NIA = NSSOA(IASM,IATP)
-                  NIB = NSSOB(IBSM,IBTP)
+                  NIA   = NSSOA(IASM,IATP)
+                  NIB   = NSSOB(IBSM,IBTP)
 C
                   IF(NIA*NIB.EQ.0) GOTO 10000
                   IF(IRESTRICT.EQ.1.AND.
      &               (JASM.GT.IASM.OR.
      &               JASM.EQ.IASM.AND.JATP.GT.IATP.OR.
      &               JASM.EQ.IASM.AND.JATP.EQ.IATP.AND.JBTP.GT.IBTP))
-     &            GOTO 10000
-C             are the two blocks connected by allowed excitation
-              INTERACT = 0
-              IF(MXEXC.EQ.1) THEN
-                 IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
-     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
-     &              (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
-     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
-                       INTERACT = 1
-                 ENDIF
-              ELSE IF(MXEXC.EQ.2) THEN
-                 IF((ICONSPA(IATP,LLATP).LE.1.AND.
-     &               ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
-     &              (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
-     &               IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
-     &              (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
-     &               IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+     &               GOTO 10000
+C                 are the two blocks connected by allowed excitation
+                  INTERACT = 0
+                  IF(MXEXC.EQ.1) THEN
+                    IF((ICONSPA(IATP,LLATP).LE.MXEXC.AND.
+     &                IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM  ) .OR.
+     &                (ICONSPB(IBTP,LLBTP).LE.MXEXC.AND.
+     &                IATP.EQ.LLATP.AND.IASM.EQ.LLASM  )     )THEN
                         INTERACT = 1
-                 END IF
-              END IF
+                    ENDIF
+                  ELSE IF(MXEXC.EQ.2) THEN
+                    IF((ICONSPA(IATP,LLATP).LE.1.AND.
+     &                ICONSPB(IBTP,LLBTP).LE.1     )   .OR.
+     &                (ICONSPA(IATP,LLATP).EQ.MXEXC.AND.
+     &                IBTP.EQ.LLBTP.AND.IBSM.EQ.LLBSM) .OR.
+     &                (ICONSPB(IBTP,LLBTP).EQ.MXEXC.AND.
+     &                IATP.EQ.LLATP.AND.IASM.EQ.LLASM)     )THEN
+                        INTERACT = 1
+                    END IF
+                  END IF
 C
-                 IF(INTERACT.EQ.0) GOTO 10000
+                  IF(INTERACT.EQ.0) GOTO 10000
 
-                 IF(NTEST.GE.100) THEN
-                   WRITE(luwrt,*) ' Next s block in batch : '
-                   write(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
-                   write(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
-                 END IF
+                  IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP.AND.
+     &              ((LLBSM.GT.LLASM).OR.
+     &              (LLASM.EQ.LLBSM).AND.(LLBTP.GT.LLATP)))
+     &              GOTO 8764
 C
-                IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP.AND.
-     &            ((LLBSM.GT.LLASM).OR.
-     &            (LLASM.EQ.LLBSM).AND.(LLBTP.GT.LLATP)))
-     &            GOTO 8764
-C
-                IF(NTEST.GE.60) THEN
-                  WRITE(luwrt,*) ' Slave will be called for '
-                  WRITE(luwrt,*) ' Sigma block : '
-                  WRITE(luwrt,*) ' ISOFF ', ISOFF
-                  WRITE(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
-                  WRITE(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
-                  WRITE(luwrt,*) ' C     block : '
-                  WRITE(luwrt,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
-                  WRITE(luwrt,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
-                  WRITE(luwrt,*) ' ICOFF ', ICOFF
-                  WRITE(luwrt,*) ' Overall scale',SCLFAC(ICBLK)
-                END IF
+                  IF(NTEST.GE.60) THEN
+                    WRITE(luwrt,*) ' Slave will be called for '
+                    WRITE(luwrt,*) ' Sigma block : '
+                    WRITE(luwrt,*) ' ISOFF ', ISOFF
+                    WRITE(luwrt,*) ' ISBLK IASM IBSM IATP IBTP'
+                    WRITE(luwrt,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
+                    WRITE(luwrt,*) ' C     block : '
+                    WRITE(luwrt,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
+                    WRITE(luwrt,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
+                    WRITE(luwrt,*) ' ICOFF ', ICOFF
+                    WRITE(luwrt,*) ' Overall scale',SCLFAC(ICBLK)
+                  END IF
 *
-                IF(IRESTRICT.EQ.1.AND.
-     &             ((IASM.EQ.LLASM.AND.IBSM.EQ.LLBSM.AND.
-     &               IATP.EQ.LLATP.AND.IBTP.EQ.LLBTP     ) .OR.
+                  IF(IRESTRICT.EQ.1.AND.
+     &              ((IASM.EQ.LLASM.AND.IBSM.EQ.LLBSM.AND.
+     &                IATP.EQ.LLATP.AND.IBTP.EQ.LLBTP     ) .OR.
      &              (IDC.EQ.2.AND.
      &               IASM.EQ.LLBSM.AND.IBSM.EQ.LLASM.AND.
      &               IATP.EQ.LLBTP.AND.IBTP.EQ.LLATP     )     ))THEN
                      XFAC = 0.5D0*SCLFAC(ICBLK)
-                ELSE
-                     XFAC = SCLFAC(ICBLK)
-                END IF
-C               form of operator in action
-                IF(IPERTOP.NE.0) THEN
-C                  not exact Hamiltonian in use
-                   IPTSPC = IH0SPC(IATP,IBTP)
-                   JPTSPC = IH0SPC(JATP,JBTP)
-                   IJOP   = IH0INSPC(IPTSPC)
-*
-C?                 WRITE(6,*) ' SBLOCKS:IPTSPC,JPTSPC,IJOP',
-C?   &                         IPTSPC,JPTSPC,IJOP
-*
-                ELSE
-                   IPTSPC = -1
-                   JPTSPC = -1
-                   IJOP   = -1
-                END IF
+                  ELSE
+                    XFAC = SCLFAC(ICBLK)
+                  END IF
+C                 form of operator in action
+                  IF(IPERTOP.NE.0) THEN
+C                   not exact Hamiltonian in use
+                    IPTSPC = IH0SPC(IATP,IBTP)
+                    JPTSPC = IH0SPC(JATP,JBTP)
+                    IJOP   = IH0INSPC(IPTSPC)
+                  ELSE
+                    IPTSPC = -1
+                    JPTSPC = -1
+                    IJOP   = -1
+                  END IF
 *
 #ifdef VAR_MPI
-                IF (LUCI_NMPROC .GT. 1) THEN
-                   xxxcomputtime = MPI_WTIME()
-                END IF ! (LUCI_NMPROC .GT. 1) THEN
+                  IF(LUCI_NMPROC .GT. 1) THEN
+                    xxxcomputtime = MPI_WTIME()
+                  END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 *
-                IF(ISIGDEN.EQ.1) THEN
-                  CALL RSSBCB2(IASM,IATP,IOCTPA,
-     &                         IBSM,IBTP,IOCTPB,
-     &                         LLASM,LLATP,LLBSM,LLBTP,NGAS,
-     &                         NELFSPGP(1,IATP+IOCTPA-1),
-     &                         NELFSPGP(1,IBTP+IOCTPB-1),
-     &                         NELFSPGP(1,LLATP+IOCTPA-1),
-     &                         NELFSPGP(1,LLBTP+IOCTPB-1),
-     &                         NAEL,NBEL,
-     &                         IAGRP,IBGRP,
-     &                         SB(ISOFF),CB(ICOFF),IDOH2,
-     &                         ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
-     &                         NOBPTS,IOBPTS,MXPNGAS,ITSOB,MAXI,MAXK,
-     &                         SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,C2,
-     &                         NSMOB,NSMST,NSMSX,NSMDX,
-     &                         NIA,NIB,NLLA,NLLB,MXPOBS,IDC,PS,
-     &                         ICJKAIB,CJRES,SIRES,I3,XI3S,I4,XI4S,
-     &                         MXSXBL,MOCAA,MOCAB,IAPR,
-     &                         IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,IDUM,
-     &                         XFAC,IUSE_PH,IPHGAS,I_RES_AB,IUSE_PA,
-     &                         CJPA,SIPA,MXTSOB,SOMESCR,SOMEH,
-     &                         XIJILS,luwrt)
-                ELSE
-                  I12_local = 1
-                  IF(IDOH2.EQ.1) I12_local = 2
+                  IF(ISIGDEN.EQ.1) THEN
+                    CALL RSSBCB2(IASM,IATP,IOCTPA,
+     &                           IBSM,IBTP,IOCTPB,
+     &                           LLASM,LLATP,LLBSM,LLBTP,NGAS,
+     &                           NELFSPGP(1,IATP+IOCTPA-1),
+     &                           NELFSPGP(1,IBTP+IOCTPB-1),
+     &                           NELFSPGP(1,LLATP+IOCTPA-1),
+     &                           NELFSPGP(1,LLBTP+IOCTPB-1),
+     &                           NAEL,NBEL,
+     &                           IAGRP,IBGRP,
+     &                           SB(ISOFF),CB(ICOFF),IDOH2,
+     &                           ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,
+     &                           SXDXSX,NOBPTS,IOBPTS,MXPNGAS,ITSOB,
+     &                           MAXI,MAXK,SSCR,CSCR,I1,XI1S,I2,XI2S,
+     &                           XINT,C2,NSMOB,NSMST,NSMSX,NSMDX,
+     &                           NIA,NIB,NLLA,NLLB,MXPOBS,IDC,PS,
+     &                           ICJKAIB,CJRES,SIRES,I3,XI3S,I4,XI4S,
+     &                           MXSXBL,MOCAA,MOCAB,IAPR,
+     &                           IPRNT,IPERTOP,IPTSPC,JPTSPC,IJOP,0,
+     &                           IDUM,XFAC,IUSE_PH,IPHGAS,I_RES_AB,
+     &                           IUSE_PA,CJPA,SIPA,MXTSOB,SOMESCR,SOMEH,
+     &                           XIJILS,luwrt)
+                  ELSE
+                    I12_local = 1
+                    IF(IDOH2.EQ.1) I12_local = 2
 *. RHO1, Rho2
-                  IF(NTEST.GE.10) THEN
-                    WRITE(luwrt,*) ' RSDNBB will be called for '
-                    WRITE(luwrt,*) ' L block : '
-                    WRITE(luwrt,'(A,5I5)')
-     &              ' IASM IBSM IATP IBTP',
-     &                IASM,IBSM,IATP,IBTP
-                    WRITE(luwrt,*) ' R  block : '
-                    WRITE(luwrt,'(A,5I5)')
-     &              ' JASM JBSM JATP JBTP',
-     &                JASM,JBSM,JATP,JBTP
-                    WRITE(luwrt,*) ' IOFF,JOFF ', ISOFF,ICOFF
-                    WRITE(luwrt,*) ' SCLFAC = ', xfac
-                  END IF
+                    IF(NTEST.GE.10) THEN
+                      WRITE(luwrt,*) ' RSDNBB will be called for '
+                      WRITE(luwrt,*) ' L block : '
+                      WRITE(luwrt,'(A,4I5)')
+     &                ' IASM IBSM IATP IBTP',
+     &                  IASM,IBSM,IATP,IBTP
+                      WRITE(luwrt,*) ' R  block : '
+                      WRITE(luwrt,'(A,4I5)')
+     &                ' JASM JBSM JATP JBTP',
+     &                  JASM,JBSM,JATP,JBTP
+                      WRITE(luwrt,*) ' IOFF,JOFF ', ISOFF,ICOFF
+                      WRITE(luwrt,*) ' rhotype   ', rhotype
+                      WRITE(luwrt,*) ' calculate 2-p contribution?',
+     &                                 IDOH2.EQ.1
+                    END IF
 
-                  CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
-     &                         rhotype,IASM,IATP,IBSM,IBTP,
-     &                         JASM,JATP,JBSM,JBTP,NGAS,
-     &                         NELFSPGP(1,IATP+IOCTPA-1),
-     &                         NELFSPGP(1,IBTP+IOCTPB-1),
-     &                         NELFSPGP(1,JATP+IOCTPA-1), 
-     &                         NELFSPGP(1,JBTP+IOCTPB-1),
-     &                         NAEL,NBEL,IAGRP,IBGRP,
-     &                         SB(ISOFF),CB(ICOFF),C2,
-     &                         ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
-     &                         MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                         SSCR,CSCR,SIPA,CJPA,
-     &                         I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
-     &                         XINT,NSMOB,NSMST,NSMSX,NSMDX,
-     &                         NIA,NIB,NJA,NJB,MXPOBS,
-     &                         IPRNT,NACOB,RHO1S,XFAC,
-     &                         S2_TERM1,IUSE_PH,IPHGAS,
-     &                         MXTSOB)
-                  IF(NTEST.GE.100) THEN
-                    write(luwrt,*) ' Updated rho1 '
-                    call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
-                  END IF
+                    CALL GSDNBB2(I12_local,WORK(KRHO1),WORK(KRHO2),
+     &                           rhotype,IASM,IATP,IBSM,IBTP,
+     &                           JASM,JATP,JBSM,JBTP,NGAS,
+     &                           NELFSPGP(1,IATP+IOCTPA-1),
+     &                           NELFSPGP(1,IBTP+IOCTPB-1),
+     &                           NELFSPGP(1,JATP+IOCTPA-1), 
+     &                           NELFSPGP(1,JBTP+IOCTPB-1),
+     &                           NAEL,NBEL,IAGRP,IBGRP,
+     &                           SB(ISOFF),CB(ICOFF),C2,
+     &                           ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,
+     &                           SXDXSX,MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
+     &                           SSCR,CSCR,SIPA,CJPA,
+     &                           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                           XINT,NSMOB,NSMST,NSMSX,NSMDX,
+     &                           NIA,NIB,NJA,NJB,MXPOBS,
+     &                           IPRNT,NACOB,RHO1S,XFAC,
+     &                           S2_TERM1,IUSE_PH,IPHGAS,
+     &                           MXTSOB)
+                    IF(NTEST.GE.100) THEN
+                      write(luwrt,*) ' Updated rho1 '
+                      call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
+                    END IF
 
-                END IF
+                  END IF
 
 
 #ifdef VAR_MPI
-                IF (LUCI_NMPROC .GT. 1) THEN
+                  IF(LUCI_NMPROC .GT. 1)THEN
                    xcomputesi = xcomputesi - xxxcomputtime + MPI_WTIME()
-                END IF ! (LUCI_NMPROC .GT. 1) THEN
+                  END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
 C
- 8764         CONTINUE
-              END IF
-10000         CONTINUE
-C             ^ end of loop over sigma blocks
-              if(isigden .eq. 1)then ! back-transposing for sigma-vec run
-                if(ipermdia_off .eq. 0)then
-                  CALL DSCAL(NJA*NJB,-1.0d0,CB(ICOFF),1)
-                else if(ipermdia_off .eq. 1)then
-                  CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
-                  CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
+ 8764             CONTINUE
+                END IF
+10000           CONTINUE ! end of loop over sigma blocks
+                if(isigden .eq. 1)then ! back-transposing for sigma-vec run
+                  if(ipermdia_off .eq. 0)then
+                    CALL DSCAL(NJA*NJB,-1.0d0,CB(ICOFF),1)
+                  else if(ipermdia_off .eq. 1)then
+                    CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
+                    CALL DCOPY(NJA*NJB,C2,1,CB(ICOFF),1)
+                  end if
                 end if
-              end if
- 8765         CONTINUE ! perm loop
-            END IF
-C           ^ non-vanishing C-block
- 9000       CONTINUE
-C           ^ end of loop over C blocks in Batch
-20000   CONTINUE
-C       ^ end of loop over batches of C blocks
+ 8765           CONTINUE ! perm loop
+              END IF ! non-vanishing C-block
+ 9000       CONTINUE ! end of loop over C blocks in Batch
+20000   CONTINUE ! end of loop over batches of C blocks
 C
 C     order
 C

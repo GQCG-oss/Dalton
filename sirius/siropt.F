@@ -413,7 +413,7 @@ C        ... flag(34) = (int.transf. not needed in optimization)
 C
 C *** Retrieve CI coefficients:
 C
-      CALL RDCREF(WRK(KCREF))
+      CALL RDCREF(WRK(KCREF),.true.)
 C
 C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now

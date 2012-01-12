@@ -150,9 +150,6 @@ contains
       logical, intent(inout)              :: do_vector_exchange
 !-------------------------------------------------------------------------------
 
-      write(lupri,*) ' exchange_f_info%total_nr_vectors ',exchange_f_info%total_nr_vectors
-      call flshfo(lupri)
-
 !     switch to exchange_files info for symmetry vector_symmetry
       call exchange_f_switch(exchange_f_info,                                          &
                              file_info,                                                &
@@ -182,9 +179,6 @@ contains
 !     reset vector exchange control variables
       do_vector_exchange    = .false.
       active_xc_vector_type = -1
-
-      write(lupri,*) ' parallel node xc-driver done '
-      call flshfo(lupri)
 
    end subroutine vector_exchange_interface_cw
 !*******************************************************************************
@@ -407,6 +401,8 @@ contains
           call mpi_bcast(xmat(1+current_offset),B%total_present_vec,MPI_REAL8,         &
                          0,mpi_comm_world,ierr)
       end select
+
+      write(lupri,*) ' present fh handle ==> ',A%present_fh_par
 !
 !     initialize
       ioff             = 1 + current_offset
@@ -427,7 +423,6 @@ contains
 !       keep track of core-memory offset
         ioff            = ioff + block_length_rw
 
-
         if(C%parallel_task_list(current_block,A%present_sym_irrep) /= A%my_process_id) cycle
 
         ioffset_scratch = block_length_rw
@@ -442,7 +437,6 @@ contains
             D%iluxlist(ioffset_int,A%present_vector_type) = 0
             checkdot                                      = ddot(block_length_rw,xmat(ioff-block_length_rw),1,        &
                                                                                  xmat(ioff-block_length_rw),1)
-            write(lupri,*) 'checkdot is ==> ',checkdot
             if(checkdot > 0.0d0)then
               call mpi_file_write_at(A%present_fh_par,ioffset,xmat(ioff-block_length_rw),         &
                                      block_length_rw,mpi_real8,my_STATUS,ierr)

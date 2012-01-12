@@ -190,19 +190,21 @@ contains
         call dalton_mpi_bcast(nfro_lucita,                    0, mpi_comm_world)
         call dalton_mpi_bcast(nocc_lucita,                    0, mpi_comm_world)
 
+        call dalton_mpi_bcast(ngsh_lucita,                    0, mpi_comm_world)
+        call dalton_mpi_bcast(ngso_lucita,                    0, mpi_comm_world)
+
         select case(lucita_cfg_init_wave_f_type)
           case(1) ! GAS settings
-            call dalton_mpi_bcast(ngsh_lucita,                0, mpi_comm_world)
-            call dalton_mpi_bcast(ngso_lucita,                0, mpi_comm_world)
+!           nothing particular here
           case(2) ! RAS settings
 !           logical
-            call dalton_mpi_bcast(lucita_cfg_ras1_set,        0, mpi_comm_world)
-            call dalton_mpi_bcast(lucita_cfg_ras2_set,        0, mpi_comm_world)
-            call dalton_mpi_bcast(lucita_cfg_ras3_set,        0, mpi_comm_world)
+!           call dalton_mpi_bcast(lucita_cfg_ras1_set,        0, mpi_comm_world)
+!           call dalton_mpi_bcast(lucita_cfg_ras2_set,        0, mpi_comm_world)
+!           call dalton_mpi_bcast(lucita_cfg_ras3_set,        0, mpi_comm_world)
 !           integer 
-            call dalton_mpi_bcast(nas1_lucita,                0, mpi_comm_world)
-            call dalton_mpi_bcast(nas2_lucita,                0, mpi_comm_world)
-            call dalton_mpi_bcast(nas3_lucita,                0, mpi_comm_world)
+!           call dalton_mpi_bcast(nas1_lucita,                0, mpi_comm_world)
+!           call dalton_mpi_bcast(nas2_lucita,                0, mpi_comm_world)
+!           call dalton_mpi_bcast(nas3_lucita,                0, mpi_comm_world)
             call dalton_mpi_bcast(lucita_cfg_max_holes_ras1,  0, mpi_comm_world)
             call dalton_mpi_bcast(lucita_cfg_max_e_ras3,      0, mpi_comm_world)
         end select
@@ -236,6 +238,9 @@ contains
       call dalton_mpi_bcast(len_int2_or_rho2_mc2lu,           0, mpi_comm_world)
       call dalton_mpi_bcast(vector_exchange_type1,            0, mpi_comm_world)
       call dalton_mpi_bcast(vector_exchange_type2,            0, mpi_comm_world)
+
+      call dalton_mpi_bcast(file_info%current_file_nr_active1,0, mpi_comm_world)
+      call dalton_mpi_bcast(file_info%current_file_nr_active2,0, mpi_comm_world)
 
   end subroutine sync_coworkers_mc_cfg
 !******************************************************************************

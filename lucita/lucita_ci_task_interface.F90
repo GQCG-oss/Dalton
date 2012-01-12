@@ -418,6 +418,7 @@ contains
       integer                          :: rhotype
       integer                          :: idum
       integer(8)                       :: kdum
+      integer(8)                       :: k_scratchsbatch
       integer(8)                       :: k_dens2_scratch
       integer(8)                       :: k_scratch1
       integer(8)                       :: k_scratch2
@@ -431,6 +432,7 @@ contains
       integer                          :: iatp, ibtp
       integer                          :: nbatch_par, nblock_par
       integer                          :: ierr
+      integer                          :: iloop, nbatch_par_max
       integer(kind=MPI_OFFSET_KIND)    :: my_lu4_off_tmp
 #endif
 !-------------------------------------------------------------------------------
@@ -476,12 +478,24 @@ contains
                                            block_info_batch,nbatch_par,      &
                                            nblock_par,par_dist_block_list)
 
+        if(luci_myproc == luci_master .and. rhotype == 1)then
+          idum = 0
+          call memman(idum,idum,'MARK  ',idum,'Xpden0')
+          nbatch_par_max = 0
+          do iloop = 1, nbatch_par
+            nbatch_par_max = max(nbatch_par_max,batch_length(iloop))
+          end do
+          write(lupri,*) 'allocate scratch space for sigma vec: ',nbatch_par_max
+          call memman(k_scratchsbatch,nbatch_par_max,'ADDL  ',2,'SBATCH')
+          call dzero(work(k_scratchsbatch),nbatch_par_max)
+        end if
+         
 
         if(.not.file_info%file_type_mc)then ! not within MCSCF
 
 !         hardwired to ILU1 + ILU2 for CI
           file_info%current_file_nr_active1 = 2
-          file_info%current_file_nr_active2 = 3
+          file_info%current_file_nr_active2 = 2
           call rewino(luc_internal)
 
           call izero(file_info%iluxlist(1,file_info%current_file_nr_active1),  &
@@ -507,8 +521,11 @@ contains
         if(lucita_cfg_transition_densm)then
 
           if(.not.file_info%file_type_mc)then ! not within MCSCF
+
 !           step 2: the lhs vector
+            file_info%current_file_nr_active2 = 3
             call rewino(luhc_internal)
+
             call mcci_cp_vcd_mpi_2_seq_io_interface(hc,                                  &
                                                     luhc_internal,                       &
                                                     file_info%fh_lu(file_info%           &
@@ -523,17 +540,18 @@ contains
                                                     NUM_BLOCKS,NROOT,1,1)
           end if
 
-          luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active2)
         else
-          luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active1)
 
           call icopy(file_info%max_list_length,file_info%iluxlist(1,file_info%current_file_nr_active1),1, &
                                                file_info%iluxlist(1,file_info%current_file_nr_active2),1)
-!         save and temporarily re-set the file offset for ilu2 to ilu1 (ilu2 has the same offset as ilu4 which is used inside sigden_ci)
-          my_lu4_off_tmp   = my_lu4_off
-          my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active1)
         end if
-        lusc_vector_file   = file_info%fh_lu(file_info%current_file_nr_bvec)
+
+        luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active2)
+!       save and temporarily re-set the file offset ("ilu4" is used inside sigden_ci)
+        my_lu4_off_tmp   = my_lu4_off
+        my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active2)
+
+        lusc_vector_file = file_info%fh_lu(file_info%current_file_nr_bvec)
         write(lupri,*) ' luhc_vector_file, lusc_vector_file: ',luhc_vector_file, lusc_vector_file
         write(lupri,*) ' file_info%current_file_nr_active1, file_info%current_file_nr_active2', &
                          file_info%current_file_nr_active1, file_info%current_file_nr_active2
@@ -600,15 +618,35 @@ contains
           jvec_sf = eigen_state_id - 1
 #endif
         end if
+
 !
-        call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                   &
-                       cv_dummy,hcv_dummy,isigden,rhotype                                          &
+!       stefan - jan 2012: the following construct is a consequence of the physical memory
+!                          identity of cref and hc on the master node in case of a parallel mcscf
+!                          and a regular density matrix run
+!
+        if(luci_nmproc > 1 .and. luci_myproc == luci_master .and.  rhotype == 1)then
+          write(lupri,*) ' master ends up here!!!!'
+          call sigden_ci(cref,work(k_scratchsbatch),resolution_mat,lusc_vector_file,luhc_vector_file,&
+                         cv_dummy,hcv_dummy,isigden,rhotype                                          &
 #ifdef VAR_MPI
-                      ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2), &
-                       block_list,par_dist_block_list,                                             &
-                       rcctos,grouplist,proclist                                                   &
+                        ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2), &
+                         block_list,par_dist_block_list,                                             &
+                         rcctos,grouplist,proclist                                                   &
 #endif
                         )
+        else
+          write(lupri,*) ' i end up here, luckily!!!!',luci_myproc
+          call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                   &
+                         cv_dummy,hcv_dummy,isigden,rhotype                                          &
+#ifdef VAR_MPI
+                        ,file_info%ilublist,file_info%iluxlist(1,file_info%current_file_nr_active2), &
+                         block_list,par_dist_block_list,                                             &
+                         rcctos,grouplist,proclist                                                   &
+#endif
+                        )
+        end if
+
+
         if(luci_nmproc > 1)then
 #ifdef VAR_MPI
 !         collect density matrices
@@ -680,6 +718,9 @@ contains
 
 #ifdef VAR_MPI
       if(luci_nmproc > 1)then
+        if(luci_myproc == luci_master .and. rhotype == 1)then
+          call memman(kdum ,idum,'FLUSM ',2,'Xpden0')
+        end if
 !       reset file off-set and free memory
         if(.not.lucita_cfg_transition_densm) my_lu4_off = my_lu4_off_tmp
         deallocate(block_info_batch)
@@ -759,6 +800,7 @@ contains
       integer                          :: iatp, ibtp
       integer                          :: nbatch_par, nblock_par
       integer                          :: ierr
+      integer(kind=mpi_offset_kind)    :: my_lu4_off_tmp
 #endif
 !-------------------------------------------------------------------------------
 
@@ -849,6 +891,9 @@ contains
           call mpi_barrier(mynew_comm,ierr) 
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
 
+          WRITE(luwrt,*) ' Right vector = C-vector: file-handle (outside) =',              &
+          file_info%fh_lu(file_info%current_file_nr_active1), file_info%current_file_nr_active1
+
           call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
                                  file_info%fh_lu(file_info%current_file_nr_bvec),          &
                                  hc,nbatch_par,blocks_per_batch,                           &
@@ -862,6 +907,10 @@ contains
 
           lusc_vector_file = file_info%fh_lu(file_info%current_file_nr_bvec)
           luhc_vector_file = file_info%fh_lu(file_info%current_file_nr_active2)
+
+!         save and temporarily re-set the file offset ("ilu4" is used inside sigden_ci)
+          my_lu4_off_tmp   = my_lu4_off
+          my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active2)
 
 !         offset in MPI I/O file for lhs-vector
           jvec_sf = eigen_state_id - 1
@@ -899,6 +948,8 @@ contains
                                                   num_blocks,nroot,1,2)
 
         end if ! not within MCSCF
+
+        my_lu4_off = my_lu4_off_tmp
 
         deallocate(block_info_batch)
         deallocate(block_offset_batch)
@@ -964,6 +1015,7 @@ contains
       integer, allocatable   :: block_offset_batch(:)
       integer, allocatable   :: block_info_batch(:,:)
       integer, allocatable   :: blocktype(:)
+      integer(8)             :: my_lu4_off_tmp
 !-------------------------------------------------------------------------------
 
 !#define LUCI_DEBUG
@@ -1007,6 +1059,10 @@ contains
       len_ilu1   = file_info%max_list_length
       len_ilu2   = file_info%max_list_length
       len_iluc   = file_info%max_list_length_bvec
+
+!     save and temporarily re-set the file offset ("ilu4" is used inside sigden_ci)
+      my_lu4_off_tmp   = my_lu4_off
+      my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active2)
 #else
       my_in_fh   = lusc1
       my_out_fh  = luhc_internal
@@ -1065,6 +1121,11 @@ contains
                   len_ilu1,len_ilu2,len_iluc,                    &
                   my_in_off,my_out_off,my_scr_off,               &
                   my_BVC_off)
+
+#ifdef VAR_MPI
+!     reset
+      my_lu4_off = my_lu4_off_tmp
+#endif
 
       deallocate(blocks_per_batch)
       deallocate(batch_length)

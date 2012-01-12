@@ -437,7 +437,7 @@ C     if MC/CI and NO's not already printed
          IPRNO = MAX(1,IPRI4-5)
 C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-         CALL RDCREF(WRK(KCREF))
+         CALL RDCREF(WRK(KCREF),.true.)
          CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
      *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
      *              WRK,KFREE,LFREE,LUPRI,IPRNO)
@@ -473,7 +473,7 @@ C             (CREF was not saved on file)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
          IPRNO = -1
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-         CALL RDCREF(WRK(KCREF))
+         CALL RDCREF(WRK(KCREF),.true.)
          CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
      *              .TRUE.,.TRUE.,.TRUE.,MOISNO,WRK(KCINDX),
      *              WRK,KFREE,LFREE,LUPRI,IPRNO)

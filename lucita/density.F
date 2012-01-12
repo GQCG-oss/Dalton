@@ -998,9 +998,9 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      WRITE(lupri,*) ' C'
+      WRITE(lupri,*) ' GSBBD1: C'
       CALL WRTMATMN(CB,nacob,nacob,nacob,nacob,lupri)
-      WRITE(lupri,*) ' S'
+      WRITE(lupri,*) ' GSBBD1: S'
       CALL WRTMATMN(SB,nacob,nacob,nacob,nacob,lupri)
 #undef LUCI_DEBUG
 #endif
@@ -1147,7 +1147,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
 #ifdef LUCI_DEBUG
                 ntest = 1000
                 IF(NTEST.GE.1000) THEN
-                 WRITE(lupri,*) ' CSCR and SSCR '
+                 WRITE(lupri,*) ' GSBBD1: CSCR and SSCR '
                  CALL WRTMATMN(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI,lupri)
                  CALL WRTMATMN(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI,lupri)
                 END IF
@@ -1180,6 +1180,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
                   WRITE(lupri,*) ' one-body density after scatter'
                   CALL WRTMATMN(RHO1,nacob,nacob,nacob,nacob,lupri)
 #undef LUCI_DEBUG
+                  ntest = 0
 #endif
                 END DO
 *               /\ End of hard work
@@ -1963,9 +1964,11 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
         CALL TRPMT3(CB,NJA,NJB,C2)
         CALL DCOPY(NJA*NJB,C2,1,CB,1)
 !       sk - nov 2011: take care of the transpose procedure: 
-!                      a. regular DM run (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
-!                      b. TDMs in MCSCF  (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
+!                      a. regular DM run       (rhotype == 1): CB and SB ARE IDENTICAL memory arrays!!! 
+!                      b. TDMs in MCSCF        (rhotype == 3): CB and SB ARE DIFFERENT memory arrays!!! 
+!                      c. regular DM run in CI (rhotype == 0): CB and SB ARE DIFFERENT memory arrays!!! 
         if(rhotype .eq. 0 .or. rhotype .gt. 1)then
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           WRITE(lupri,*) ' SB before          transpose'
           call wrtmatmn(sb,nia,nib,nia,nib,lupri)
@@ -1974,6 +1977,11 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
         else
           CALL DCOPY(NIA*NIB,SB,1,scatS,1)
         end if
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' ingoing scatS'
+          call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
+#endif
 
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
      &       NGAS,IAOC,JAOC,scatS,CB,

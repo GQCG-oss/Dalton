@@ -2043,7 +2043,7 @@ C
       RETURN
       END
 C  /* Deck rdcref */
-      SUBROUTINE RDCREF(CREF)
+      SUBROUTINE RDCREF(CREF,set_cref_xc_flag_lucita)
 C
 C 26-Sep-1990 Hans Joergen Aa. Jensen
 C Read reference CI vector from LUIT1
@@ -2066,6 +2066,7 @@ C
 #include <inftap.h>
 #include <infpri.h>
 C
+      logical, intent(in) :: set_cref_xc_flag_lucita
       CHARACTER*8 RTNLBL(2), STAR8
       DATA STAR8/'********'/
 C
@@ -2109,8 +2110,9 @@ C        else only reference vector saved
 !     in the interface to lucita we use this info to save/broadcast the new
 !     reference vector on lucita internal sequential/parallel MPI-I/O files
       vector_exchange_type1                      = 1
-      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
-     &                                vector_exchange_type1) = .true.
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types  +
+     &                                vector_exchange_type1) = 
+     &                                set_cref_xc_flag_lucita
 C
       RETURN
       END

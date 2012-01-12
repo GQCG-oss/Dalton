@@ -477,10 +477,13 @@ contains
 !       generalized active space concept, define orbital spaces
 !       -------------------------------------------------------
         ngas    = lucita_cfg_nr_gas_spaces 
-        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') ngas = 3
+        if(lucita_cfg_ci_type(1:6) == 'RASCI ') ngas = 3
+        write(lupri,*) ' ngas ==> ',ngas
+        write(lupri,*) ' lucita_cfg_ci_type(1:6) ==> ',ngas
         do i = 1, ngas
           do j = 1, nirrep
             NGSSH(j,i) = ngsh_lucita(i,j)
+            write(lupri,*) ' igas, jirrep, ngsh_lucita(i,j), NGSSH(j,i)',i,j, ngsh_lucita(i,j), NGSSH(j,i)
           end do
         end do
 !       check for maximum number of orbitals per space and symmetry
@@ -688,15 +691,6 @@ contains
           write(lupri,*) 'GASCI type requires .GASSPC to be specified.'
           write(lupri,*) 'Else, I do not know what to do.'
           call quit(' *** error in setup_lucita_check_input: GASCI run but .GASSPC not specified.')
-        end if
-      end if
-
-!     RAS specifications; no default
-      if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
-        if(.not.lucita_cfg_ras1_set .or. .not. lucita_cfg_ras2_set.or. .not.lucita_cfg_ras3_set)then
-          write(lupri,*) 'RASCI type requires .RAS1, .RAS2 and .RAS3 to be specified.'
-          write(lupri,*) 'Else, I do not know what to do.'
-          call quit(' *** error in setup_lucita_check_input: RASCI run but not all RAS spaces specified.')
         end if
       end if
 

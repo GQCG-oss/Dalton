@@ -398,8 +398,8 @@ C
       CALL QENTER('CIEIG')
 ! Inverse iteration modified Davidson with 2 vectors in core
       write(luwrt,*) ' THRES_E is ',THRES_E
-!     THRES_E = 1.0d-12
-!     write(luwrt,*) ' bla bla THRES_E reset...'
+      THRES_E = 1.0d-12
+      write(luwrt,*) ' bla bla THRES_E reset...'
       IF(IPRT .GE. 5 ) THEN
          WRITE(luwrt,'(A,I3)')
      &   '  Number of roots to be converged..  ',NROOTSL

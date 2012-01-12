@@ -82,21 +82,12 @@ C
 C *** 1 *** GCI(I) = SUM(J) OF LCI(I,J)*CREF(J)
 C           calculate CI matrix times reference vector
 C
-      DISTYP = 1
-      IADINT = IADH2
-!#define TESTTEST
-#ifdef TESTTEST
-      write(lupri,*) 'ATTENTION bla bla - hardwired CREF READING!!!'
-      call RDCREF(CREF)
-#endif
+      DISTYP                        = 1
+      IADINT                        = IADH2
       cref_is_active_bvec_for_sigma = .true.
+
       CALL CISIGC(1,CREF,GCI,NCONF,FCAC,H2AC,INDXCI,WRK,LFREE)
 C     CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,INDXCI,WRK,LFREE)
-#ifdef TESTTEST
-      write(lupri,*) 'ATTENTION bla bla - hardwired CREF READING!!!'
-      call RDCREF(CREF)
-#undef TESTTEST
-#endif
 C
 C
 C *** 2 *** Calculate total energy:
