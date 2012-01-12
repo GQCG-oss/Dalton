@@ -214,7 +214,10 @@ c Local memory
 !     note: C2 only needs max of nia*nib (see TRACI1)
       IF ( KLFREE-1 .GT. LFREE ) CALL ERRWRK('TRACI',KLFREE-1,LFREE)
 
-!     orbital tranformation matrix - setup internally in LUCITA...
+!     1p-matrix 
+      write(lupri,*) ' 1p-mat     '
+      call wrtmatmn(UMO,1,nasht**2,1,nasht**2,lupri)
+
       if(ci_program .eq. 'SIRIUS-CI')then
         IF (.NOT. SLREOR)THEN
            CALL DCOPY(N2ASHX,UMO,1,WRK(KLSOT),1)
@@ -244,9 +247,9 @@ c       CALL CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
          CALL QUIT(' TRACI : ERROR IN SOTMAT ')
       END IF
 
-!     IF (IPRTCI .GT. 10 ) THEN
-         WRITE(LUPRI,'(/A)') ' SINGLE ORBITAL TRANSFORMATION MATRIX '
-         CALL WRTMAT(WRK(KLSOT),NASHT,NASHT,NASHT,NASHT,0)
+!     IF(IPRTCI .GT. 10 ) THEN
+        WRITE(LUPRI,'(/A)') ' SINGLE ORBITAL TRANSFORMATION MATRIX '
+        CALL WRTMAT(WRK(KLSOT),NASHT,NASHT,NASHT,NASHT,0)
 !     END IF
 c
       DO 450 IVEC = 1, NCVEC

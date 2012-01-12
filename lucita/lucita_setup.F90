@@ -935,6 +935,7 @@ contains
       if(integrals_from_mcscf_env)then
 !       1-p density matrix / 1-e integrals
         tmp_length_p1 = (nacob*(nacob+1)/2)**1
+        if(ci_run_id == 'rotate  Cvec') tmp_length_p1 = nacob**2
 !       2-p density matrix / 2-e integrals
         if(lucita_cfg_el_operator_level > 1) tmp_length_p2 = (nacob*(nacob+1)/2)**2
       end if

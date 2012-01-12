@@ -106,6 +106,7 @@
 !     1-electron integrals in complete block form (NTOOB,NTOOB)
       IH1FORM  = 2
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
 #ifndef VAR_MPI
       WRITE(luwrt,*) ' input vector to ntoob loop'
@@ -219,9 +220,18 @@
         CALL rewine(lusc2,-1)
         CALL rewine(lusc1,-1)
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
+        WRITE(luwrt,*) ' 1st vecsmd: in 1'
         CALL WRTVCD(VEC1,lucin,1,-1)
+        WRITE(luwrt,*) ' 1st vecsmd: in 2'
+        CALL WRTVCD(VEC1,lusc1,1,-1)
+        WRITE(luwrt,*) ' 1st vecsmd: out'
+        CALL WRTVCD(VEC1,lusc2,1,-1)
+        call rewine(lusc2,-1)
+        call rewine(lusc1,-1)
         call rewine(lucin,-1)
+        call flshfo(luwrt)
 #endif
 
 #endif
@@ -379,16 +389,21 @@
 !     symmetry offset in full 1e-matrix block
       IOFF = IFRMR(WORK(KPGINT1A(1)),1,KSM)
 
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      write(luwrt,*) 'ioff in T and H ==> ',IOFF+(KREL-1)*NK
-      write(luwrt,*) 'NK elements     ==> ',NK
-      write(luwrt,*) 'absolute ioff   ==> ',ioff
-      write(luwrt,*) 'krel, ksm       ==> ',krel,ksm
+      write(luwrt,*)        '*****************'
+      write(luwrt,'(a,i3)') 'ORBITAL # == ', K
+      write(luwrt,*)        '*****************'
+      write(luwrt,*) 'ioff in T and H  ==> ',IOFF+(KREL-1)*NK
+      write(luwrt,*) 'NK elements      ==> ',NK
+      write(luwrt,*) 'relative ioff    ==> ',ioff
+      write(luwrt,*) 'krel, ksm        ==> ',krel
+      write(luwrt,*) 'orbital symmetry ==> ',ksm
       call flshfo(luwrt)
 #endif
 !     copy orbital block with symmetry ksm
-      CALL DCOPY(NK,T(IOFF+(KREL-1)*NK),1,H(IOFF+(KREL-1)*NK),1)
+!!    CALL DCOPY(NK,T(IOFF+(KREL-1)*NK),1,H(IOFF+(KREL-1)*NK),1)
+      CALL DCOPY(NK,T((K-1)*NTOOB+KOFF),1,H(IOFF+(KREL-1)*NK),1)
 
 !     set T_kk
       TKK = H(IOFF-1+(KREL-1)*NK+KREL)
@@ -456,7 +471,7 @@
 *. Scratch block, must hold a batch of blocks
       DIMENSION C(*)
 *
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(lupri,*) ' T_TO_NK_VEC speaking '
       WRITE(lupri,*) ' ISM, ISPC = ', ISM,ISPC
@@ -564,7 +579,7 @@
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
 
-!#define LUCI_DEBUG
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IATP IBTP IASM IBSM ', IATP,IBTP,IASM,IBSM
         WRITE(lupri,*) ' IBLTP(IASM)         ', IBLTP(IASM) 
@@ -599,6 +614,7 @@
           IKAOCC(JSTR) = KOCC
         END DO
 
+#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IKAOCC array '
         CALL IWRTMAMN(IKAOCC,1,NASTR1,1,NASTR1,lupri)
@@ -678,6 +694,7 @@
      &                         KABOCC, C(IDET), T, T**2
               WRITE(lupri,*) ' IA IB IDET',IA,IB,IDET
               call flshfo(lupri)
+#undef LUCI_DEBUG
 #endif
 
               IF(KABOCC.EQ.1) THEN

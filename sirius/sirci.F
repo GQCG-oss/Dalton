@@ -375,14 +375,16 @@ C
      &                                 istaci,
      &                                 ispin1,
      &                                 ispin2,
-     &                                 ncroot,
+     &                                 ncroot,  ! # of CI roots
      &                                 ispin,
-     &                                 maxitc,
+     &                                 maxitc,  ! max davidson CI iterations
      &                                 0, ! no 1/2-particle density calcs
-     &                                 iprcix,
-     &                                 1.0d-10,
-     &                                 thrcit,
-     &                                 thrcit,
+     &                                 iprcix,  ! print level
+     &                                 1.0d-10, ! screening threshold
+     &                                 1.0d-12,
+     &                                 1.0d-12,
+!    &                                 thrcit,  ! default davidson threshold
+!    &                                 thrcit,  ! default davidson threshold
 !    &                                 .false., ! do not calculate nat. orb. occ. num.
      &                                 .true.,  ! do not calculate nat. orb. occ. num.
 !    &                                 P6FLAG(32).and.FLAG(67), ! wave function analysis

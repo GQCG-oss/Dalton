@@ -7,7 +7,17 @@ module lucita_ci_task_interface
 
   use lucita_integral_density_interface
 
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+  use mpi
   implicit none
+#else
+  implicit none
+#include "mpif.h"
+#endif
+#else
+  implicit none
+#endif
 
 #if defined (VAR_INT64)
 #define my_MPI_INTEGER MPI_INTEGER8
@@ -206,11 +216,6 @@ contains
 
 #ifdef VAR_MPI
   use par_mcci_io
-#ifndef VAR_USE_MPIF
-  use mpi
-#else
-#include "mpif.h"
-#endif
 #endif
 
 #include "parluci.h"
@@ -367,11 +372,6 @@ contains
   use lucita_mcscf_ci_cfg
 #ifdef VAR_MPI
   use par_mcci_io
-#ifndef VAR_USE_MPIF
-  use mpi
-#else
-#include "mpif.h"
-#endif
 #endif
 
 
@@ -750,11 +750,6 @@ contains
   use lucita_mcscf_ci_cfg
 #ifdef VAR_MPI
   use par_mcci_io
-#ifndef VAR_USE_MPIF
-  use mpi
-#else
-#include "mpif.h"
-#endif
 #endif
 
 
@@ -1016,6 +1011,7 @@ contains
       integer, allocatable   :: block_info_batch(:,:)
       integer, allocatable   :: blocktype(:)
       integer(8)             :: my_lu4_off_tmp
+      integer                :: ierr
 !-------------------------------------------------------------------------------
 
 !#define LUCI_DEBUG
@@ -1063,6 +1059,9 @@ contains
 !     save and temporarily re-set the file offset ("ilu4" is used inside sigden_ci)
       my_lu4_off_tmp   = my_lu4_off
       my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active2)
+
+!     update co-workers with single-orbital transformation matrix
+      call mpi_bcast(mo2mo_mat,nacob**2,mpi_real8,0,mpi_comm_world,ierr)
 #else
       my_in_fh   = lusc1
       my_out_fh  = luhc_internal
