@@ -970,7 +970,9 @@ contains
  use file_type_module
 !-------------------------------------------------------------------------------
 #include "mxpdim.inc"
+#include "lucinp.inc"
 #include "clunit.inc"
+#include "cgas.inc"
 #include "csm.inc"
 #include "crun.inc"
 #include "cstate.inc"
@@ -979,6 +981,10 @@ contains
 #include "cicisp.inc"
 #include "cands.inc"
 #include "parluci.h"
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),&
+                    ADSXA(MXPOBS,2*MXPOBS),                     &
+                    SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
       real(8), intent(inout) :: vec1(*)
       real(8), intent(inout) :: vec2(*)
       real(8), intent(inout) :: c2(*)
@@ -1062,6 +1068,7 @@ contains
 
 !     update co-workers with single-orbital transformation matrix
       call mpi_bcast(mo2mo_mat,nacob**2,mpi_real8,0,mpi_comm_world,ierr)
+
 #else
       my_in_fh   = lusc1
       my_out_fh  = luhc_internal

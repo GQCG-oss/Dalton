@@ -150,7 +150,7 @@ contains
 !     subtract dynamically allocated memory
 !     the parameter values are based on an educated guess from my experience - stefan nov 2010
       work_space_out_length_scratch = work_space_in_length                                        &
-                                    - 2 * luci_nmproc - nr_files - 2 * max_num_ttss_blocks        &
+                                    - 2 * luci_nmproc - nr_files -  8 * max_num_ttss_blocks       &
                                     - (max_subspace_dim*(max_subspace_dim+1)/2)                   &
                                     - 2 * max_subspace_dim**2
 
@@ -478,12 +478,9 @@ contains
 !       -------------------------------------------------------
         ngas    = lucita_cfg_nr_gas_spaces 
         if(lucita_cfg_ci_type(1:6) == 'RASCI ') ngas = 3
-        write(lupri,*) ' ngas ==> ',ngas
-        write(lupri,*) ' lucita_cfg_ci_type(1:6) ==> ',ngas
         do i = 1, ngas
           do j = 1, nirrep
             NGSSH(j,i) = ngsh_lucita(i,j)
-            write(lupri,*) ' igas, jirrep, ngsh_lucita(i,j), NGSSH(j,i)',i,j, ngsh_lucita(i,j), NGSSH(j,i)
           end do
         end do
 !       check for maximum number of orbitals per space and symmetry
@@ -522,6 +519,7 @@ contains
             igsoccx(2,2,1) = namx
             igsoccx(3,1,1) = nemn
             igsoccx(3,2,1) = nemx
+            if(nimx > namx .or.  namx > nemx ) call quit('*** reconsider your RAS setup - it is wrong...  ***')
 !         gas
           case('GASCI ')
             do i = 1, ngas

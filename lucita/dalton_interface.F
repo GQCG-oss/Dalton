@@ -1232,39 +1232,15 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       IF(NTEST.GE.5)
      &WRITE(lupri,*) ' LGETINT : ICC_EXC and ICOUL = ', ICC_EXC, ICOUL
 
-      IF (ICC_EXC.EQ.0) THEN
-*
 * =======================
 * Usual/Normal  integrals
 * =======================
 *
 *. Integrals in core in internal LUCIA format
-         CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
-     &                 IXCHNG,IKSM,JLSM,WORK(KINT2),
-     &                 WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
-      ELSE IF (ICC_EXC.EQ.1) THEN
-*
-* ============================
-* Coupled Cluster coefficients
-* ============================
-*
-        IF(ICOUL.EQ.1) THEN
-          IKLJ = 0
-          IJ_TRNSP = 1
-        ELSE
-          IKLJ = 1
-          IJ_TRNSP = 0
-        END IF
-        call quit('CC coefficients not implemented in LGETINT')
-*. IJ_TRNSP : RSBB2BN requires blocks for e(ijkl) in the form C(ji,kl)
-*. Amplitudes fetched from KCC1, KCC2 used as scratch
-!       CALL GET_DX_BLK(ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,WORK(KCC1+NSXE),
-!    &                  XINT,1,IXCHNG,IKLJ,IKSM,JLSM,WORK(KCC2),
-!    &                  IJ_TRNSP )
-C            GET_DX_BLK(IGAS,ISM,JGAS,JSM,KGAS,KSM,LGAS,LSM,
-C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
-      END IF
-*
+      CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
+     &              IXCHNG,IKSM,JLSM,WORK(KINT2),
+     &              WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
+
       IF(NTEST.NE.0) THEN
         IF(ITP.EQ.0) THEN
           NI = NTOOBS(ISM)
@@ -1311,7 +1287,6 @@ C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
       END IF
 *
       CALL QEXIT('LGETINT')
-C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
       RETURN
       END
 ***********************************************************************
@@ -2001,149 +1976,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 
       END
 ***********************************************************************
-* Calculate total number of integrals on record
-* of a symmetry reduced list (r/i, particle symmetry)
-*
-      subroutine numints_red(IGLSUM,NSMBLK,SYDI,NIRR_PN,IPRINT)
-*
-*------------------------------------
-*  Timo Fleig, October 2000
-*
-*   modified for scalar relativistic runs with LUCITA
-*   Nov. 2000
-*------------------------------------
-*
-      implicit real*8 (A-H,O-Z)
-*
-#include "mxpdim.inc"
-#include "multd2h.inc"
-#include "files.inc"
-#include "clunit.inc"
-#include "parluci.h"
-*
-      integer SYDI
-      dimension SYDI(NIRR_PN)
-      dimension IDEKS(MXPORB),IQISYM(MXPIRR)
-*
-      NTESTL = 00
-      NTEST = max(NTESTL,IPRINT)
-*
-      NTEST  = 00
-      if (NTEST.ge.1) then
-        write(LUWRT,*)
-        write(LUWRT,*) '=========================='
-        write(LUWRT,*) ' numints_red speaking:    '
-        write(LUWRT,*) '=========================='
-      end if
-*
-* Set up triangular array
-      II = 0
-      do I=1,MXPORB,1
-        IDEKS(I) = II
-        II = II + I
-      end do
-*
-* Initialize arrays
-      do IS=1,NIRR_PN,1
-        IQISYM(IS) = 0
-      end do
-*
-* Symmetry packing labels
-      NOCC = 0
-      do IS=1,NIRR_PN,1
-        if (SYDI(IS).eq.0) goto 10
-        NOCC = NOCC + 1
-        IQISYM(NOCC) = IS
-   10   continue
-      end do
-      if (NTEST.ge.5) then
-        write(LUWRT,*) 'Symmetry packing labels:'
-        call iwrtma(IQISYM,NOCC,1,NOCC,1)
-      end if
-*
-* Number of symmetry blocks and total number of integrals
-      INIT = 1
-      do ISP=1,NIRR_PN,1
-        if (NTEST.ge.10) write(LUWRT,*) 'ISP =',ISP
-        NSP=IQISYM(ISP)
-        if (NSP.eq.0.and.NTEST.ge.1) then
-          write(LUWRT,*) 'Number of symm for P is  ',NSP
-          write(LUWRT,*) 'Skipping two-el. int. read.'
-          goto 333
-        end if
-        if (NTEST.ge.10) write(LUWRT,*) 'NSP =',NSP
-        NOP=SYDI(NSP)
-        do ISQ=1,ISP,1
-          if (NTEST.ge.10) write(LUWRT,*) 'ISQ =',ISQ
-          NSQ = IQISYM(ISQ)
-          NOQ = SYDI(NSQ)
-          ISPQ = MULTD2H(NSP,NSQ)
-          if (NTEST.ge.10) write(LUWRT,*) 'NSQ =',NSQ
-          ntest = 00
-          do ISR=1,ISP,1
-            if (NTEST.ge.10) write(LUWRT,*) 'ISR =',ISR
-            NSR = IQISYM(ISR)
-            NOR = SYDI(NSR)
-            ISPQR = MULTD2H(ISPQ,NSR)
-            ISSM=ISR
-            if (ISR.EQ.ISP) ISSM=ISQ
-            if (NTEST.ge.10) write(LUWRT,*) 'NSR =',NSR
-            do 40 ISS=1,ISSM,1
-              if (NTEST.ge.10) write(LUWRT,*) 'ISS =',ISS
-              NSS=IQISYM(ISS)
-              NOS=SYDI(NSS)
-              if (NTEST.ge.10) then
-                write(LUWRT,'(A,4I6)') 
-     &          'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
-                write(LUWRT,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
-              end if
-              if (NTEST.ge.10) write(LUWRT,*) 'NSS =',NSS
-              if(NSS.NE.ISPQR) goto 40
-              if(NOS*NOR*NOQ*NOP.eq.0) goto 40
-*
-*  NUMBER OF INTEGRALS IN THIS SYMMETRYBLOCK
-*
-              if (NSP.EQ.NSQ) then
-*
-*  TYPES <PP|PP> AND <PP|QQ>
-*
-                NPQ = IDEKS(NOP+1)
-                NRS = IDEKS(NOR+1)
-              else
-*
-*  TYPES <PQ|PQ> AND <PQ|RS>
-*
-                NPQ = NOP*NOQ
-                NRS = NOR*NOS
-              end if
-              if (NSP.EQ.NSR) then
-*
-*  TYPES <PP|PP> AND <PQ|PQ>
-*
-                NIGL = NPQ*(NPQ+1)/2
-              else
-*
-*  TYPES <PP|QQ> AND <PQ|RS>
-*
-                NIGL = NPQ*NRS
-              end if
-              INIT = INIT + 1
-              IGLSUM = IGLSUM + NIGL
-              if (NTEST.ge.1) then
-                 write(LUWRT,601) NSP,NSQ,NSR,NSS,NIGL
-              end if
-40          continue
-          end do
-        end do
-* Number of non-vanishing symmetry blocks
-        NSMBLK = INIT - 1
-333     continue
-      end do
-601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
-     &             ,4I2,' IS : ',I10)
-*
-      end
-***********************************************************************
+
       SUBROUTINE PUTINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM)
 *
 * Put integrals in permanent integral list
@@ -2708,7 +2541,7 @@ C
         write(lupri,*) ' nr_act_isym', nr_act_isym
 #endif
 
-        if(jsym .ge. isym)then
+        if(jsym >= isym)then
 
           nr_act_jsym = nr_orb_per_sym(jsym)
 
@@ -2747,9 +2580,9 @@ C
               end if
   
 #ifdef LUCI_DEBUG
-             write(lupri,*) 'offset_ij, offset_internal,jsorb,isorb,h1',
-     &                offset_ij, offset_internal,jsorb,isorb,
-     &                h1_out(offset_internal), h1_in(offset_ij)
+       write(lupri,*)'offset_ij, offset_int,jsorb,isorb,h1,switch',
+     & offset_ij, offset_internal,jsorb,isorb,
+     & h1_out(offset_internal), h1_in(offset_ij), iintden
 #endif
 
 !             count the number of non-vanishing 1-electron integrals
@@ -2765,6 +2598,7 @@ C
 !     final # of 1-el ints
       nr_1int = offset_internal - 1
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       if(rhotype <= 0)then
         write(lupri,*) '  final 1e- list: # of ints =', nr_1int

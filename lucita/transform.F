@@ -96,6 +96,7 @@
       integer(kind=8)        :: my_BVC_off
       integer, parameter     :: isigden = 1
       real(8)                :: cdummy(2), sdummy(2)
+      logical                :: skip_orbital
 
 !     NTEST = 1000 ! debug
       NTEST = 0000 ! default
@@ -134,14 +135,17 @@
       end if
 #endif
 #endif
-      write(luwrt,*) 'lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,BVC_fh',
-     &                lu_ref,lu_refout,LUCIN,LUCOUT,LUSC1,LUSC2,BVC_fh
+
+      skip_orbital = .false.
 
 !     transform each orbital separately
       DO K = 1, NTOOB
 
 !       place (T(P,K)/S(K,K) in one-electron integral list work(kint1)
-        CALL T_ROW_TO_H(T,H,K,TKK)
+        CALL T_ROW_TO_H(T,H,K,TKK,skip_orbital)
+
+!       proceed to next orbital if ddot(H(row)) equals 0.0d0
+        if(skip_orbital) cycle
 
 !       scale elements with T_{kk}^Nk depending on occupation type Nk (Nk=0,1,2)
         CALL T_TO_NK_VEC(TKK,K,ICSM,ICSPC,lucin,LUSC1,VEC1,
@@ -300,6 +304,7 @@
 !       y (lusc1) := 1.0d0*lucin + 0.5d0*lusc2
         CALL VECSMD(VEC1,VEC2,1.0d0,0.5d0,lucin,lusc2,LUSC1,1,-1)
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(luwrt,*) ' 2nd vecsmd: in 1'
         CALL WRTVCD(VEC1,lucin,1,-1)
@@ -355,9 +360,10 @@
       END
 !**********************************************************************
 
-      SUBROUTINE T_ROW_TO_H(T,H,K,TKK)
+      SUBROUTINE T_ROW_TO_H(T,H,K,TKK,skip_orbital)
 *
-* Set H integrals
+!     purpose: Set H integrals and return logical skip_orbital advising the calling
+!              routine to proceed to the next orbital
 *
 *    Column K : H(P,K) = T(P,K)/T(K,K), P.NE.K
 *    Other Columns     = 0
@@ -365,6 +371,7 @@
 *
 *
 * Jeppe Olsen, Jan 98
+! Stefan Knecht, Jan 2012 revised for lucita-mcscf in dalton/dirac
 * For rotation of CI vectors
 *
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -379,12 +386,15 @@
       DIMENSION T(*)
 *. Output ( also in blocked form)
       DIMENSION H(*)
+      logical, intent(inout) :: skip_orbital
 *
       CALL DZERO(H,NTOOB**2)
 
-      KSM  = ISMFSO(K)
+!     KSM  = ISMFSO(k)        
+      KSM  = ISMFSO(ireots(k))
       KOFF = IBSO(KSM)
-      KREL = K - KOFF + 1
+!     KREL = K - KOFF + 1
+      KREL = ireots(k) - KOFF + 1
       NK   = NTOOBS(KSM)
 !     symmetry offset in full 1e-matrix block
       IOFF = IFRMR(WORK(KPGINT1A(1)),1,KSM)
@@ -393,17 +403,23 @@
 #ifdef LUCI_DEBUG
       write(luwrt,*)        '*****************'
       write(luwrt,'(a,i3)') 'ORBITAL # == ', K
+      write(luwrt,'(a,i3)') 'ORBITAL # reo', ireots(k)
       write(luwrt,*)        '*****************'
-      write(luwrt,*) 'ioff in T and H  ==> ',IOFF+(KREL-1)*NK
+!     write(luwrt,*) 'ioff in T        ==> ',KOFF+(K-1)*NTOOB
+      write(luwrt,*) 'ioff in T        ==> ',KOFF+(ireots(k)-1)*NTOOB
+      write(luwrt,*) 'ioff in H        ==> ',IOFF+(KREL-1)*NK
       write(luwrt,*) 'NK elements      ==> ',NK
+      write(luwrt,*) 'relative koff    ==> ',koff
       write(luwrt,*) 'relative ioff    ==> ',ioff
-      write(luwrt,*) 'krel, ksm        ==> ',krel
+      write(luwrt,*) 'krel             ==> ',krel
       write(luwrt,*) 'orbital symmetry ==> ',ksm
       call flshfo(luwrt)
+#undef LUCI_DEBUG
 #endif
 !     copy orbital block with symmetry ksm
 !!    CALL DCOPY(NK,T(IOFF+(KREL-1)*NK),1,H(IOFF+(KREL-1)*NK),1)
-      CALL DCOPY(NK,T((K-1)*NTOOB+KOFF),1,H(IOFF+(KREL-1)*NK),1)
+!!!   CALL DCOPY(NK,T((K-1)*NTOOB+KOFF),1,H(IOFF+(KREL-1)*NK),1)
+      CALL DCOPY(NK,T((ireots(k)-1)*NTOOB+KOFF),1,H(IOFF+(KREL-1)*NK),1)
 
 !     set T_kk
       TKK = H(IOFF-1+(KREL-1)*NK+KREL)
@@ -413,16 +429,21 @@
         H(IOFF-1+(KREL-1)*NK+KREL) = 0.0D0
       END IF
 
+!     check for zero row (in this case we can skip the whole loop
+!     business in the calling routine) - stefan jan 2012
+      skip_orbital = .false.
+      zero_row = ddot(NK,H(IOFF+(KREL-1)*NK),1,H(IOFF+(KREL-1)*NK),1)
+      if(zero_row == 0.0d0) skip_orbital = .true.
+
 #ifdef LUCI_DEBUG
       WRITE(luwrt,*) ' output from T_ROW_TO_H, TKK ==> ',TKK
       WRITE(luwrt,*) ' Row to be transferred ', KREL
       WRITE(luwrt,*) ' Updated H matrix '
-      WRITE(luwrt,*) ' NTOOB, NTOOBS(1)', NTOOB, NTOOBS(1)
+      WRITE(luwrt,*) ' NTOOB', NTOOB
       CALL APRBLM2(H,NTOOBS,NTOOBS,NSMOB,0)
 #undef LUCI_DEBUG
 #endif
-*
-      RETURN
+
       END
 ***********************************************************************
 *                                                                     *
@@ -471,7 +492,7 @@
 *. Scratch block, must hold a batch of blocks
       DIMENSION C(*)
 *
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       WRITE(lupri,*) ' T_TO_NK_VEC speaking '
       WRITE(lupri,*) ' ISM, ISPC = ', ISM,ISPC
@@ -491,11 +512,17 @@
       CALL MEMMAN(KLKAOC,MXNSTR,     'ADDL  ',1,'KLKAOC')
       CALL MEMMAN(KLKBOC,MXNSTR,     'ADDL  ',1,'KLKBOC')
       
-!     orbital K in type ordering
-      KKORB = IREOST(KORB)
+!     orbital K in type ordering - stefan jan 2012 (in paris on the wy
+!     to chile): not true any longer. SOT-mat entries are resorted to
+!     sirius order (type order) therefore no reordering here needed.
+
+!     KKORB = IREOST(KORB)
+!     KKORB = IREOTS(KORB)
+      KKORB = KORB
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      write(lupri,*) 'korb, kkorb ==> ',korb, kkorb
-      call flshfo(lupri)
+      write(lupri,*) 'korb, kkorb (ST), (TS) ==> ',korb, kkorb,
+     & IREOST(KORB), IREOTS(KORB)
 #endif
 
       CALL T_TO_NK_VECS(T,KKORB,C,LUCIN,LUCOUT,
@@ -579,7 +606,7 @@
         IASM = IBLOCK(3,JBLOCK)
         IBSM = IBLOCK(4,JBLOCK)
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IATP IBTP IASM IBSM ', IATP,IBTP,IASM,IBSM
         WRITE(lupri,*) ' IBLTP(IASM)         ', IBLTP(IASM) 
@@ -614,7 +641,7 @@
           IKAOCC(JSTR) = KOCC
         END DO
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         WRITE(lupri,*) ' IKAOCC array '
         CALL IWRTMAMN(IKAOCC,1,NASTR1,1,NASTR1,lupri)
@@ -648,7 +675,7 @@
         NIA = NSSOA(IASM,IATP)
         NIB = NSSOB(IBSM,IBTP)
 
-!       WRITE(lupri,*) ' NIA NIB ', NIA,NIB
+        WRITE(lupri,*) ' NIA NIB ', NIA,NIB
 
         IMZERO = 0
         if(luci_nmproc .gt. 1)then
@@ -689,11 +716,12 @@
               IDET = IDET + 1
               KABOCC = IKAOCC(IA)+IKBOCC(IB)
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-              WRITE(lupri,*) ' KABOCC, C(IDET), T, T**2',
-     &                         KABOCC, C(IDET), T, T**2
-              WRITE(lupri,*) ' IA IB IDET',IA,IB,IDET
-              call flshfo(lupri)
+!             WRITE(lupri,*) ' KABOCC, C(IDET), T, T**2',
+!    &                         KABOCC, C(IDET), T, T**2
+              WRITE(lupri,*) ' KABOCC',KABOCC
+              WRITE(lupri,*) ' IA IB IDET, C, T',IA,IB,IDET,C(IDET),T
 #undef LUCI_DEBUG
 #endif
 
@@ -796,61 +824,6 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
       END
 !**********************************************************************
 
-      SUBROUTINE TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
-*
-* Transform a blocked symmetric matrix AIN with blocked matrix
-*  X to yield blocked matrix AOUT
-*
-* Aout = X(transposed) A X
-*
-* Jeppe Olsen
-*
-      IMPLICIT REAL*8(A,H,O-Z)
-*. Input
-      DIMENSION AIN(*),X(*),LBLOCK(NBLOCK)
-*. Output
-      DIMENSION AOUT(*)
-*. Scratch : At least twice the length of largest block
-      DIMENSION SCR(*)
-*
-      DO IBLOCK = 1, NBLOCK
-       IF(IBLOCK.EQ.1) THEN
-         IOFFP = 1
-         IOFFC = 1
-       ELSE
-         IOFFP = IOFFP + LBLOCK(IBLOCK-1)*(LBLOCK(IBLOCK-1)+1)/2
-         IOFFC = IOFFC + LBLOCK(IBLOCK-1)** 2
-       END IF
-       L = LBLOCK(IBLOCK)
-       K1 = 1
-       K2 = 1 + L **2
-*. Unpack block of A
-C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
-       SIGN = 1.0D0
-       CALL TRIPAK_LUCI(SCR(K1),AIN(IOFFP),2,L,L,SIGN)
-*. X(T)(IBLOCK)A(IBLOCK)
-       ZERO = 0.0D0
-       ONE  = 1.0D0
-       CALL MATML7(SCR(K2),X(IOFFC),SCR(K1),L,L,L,L,L,L,
-     &             ZERO,ONE,1)
-*. X(T) (IBLOCK) A(IBLOCK) X (IBLOCK)
-       CALL MATML7(SCR(K1),SCR(K2),X(IOFFC),L,L,L,L,L,L,
-     &             ZERO,ONE,0)
-*. Pack and transfer
-       CALL TRIPAK_LUCI(SCR(K1),AOUT(IOFFP),1,L,L,SIGN)
-      END DO
-*
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' output matrix TRAN_SYM_BLOC_MAT '
-        WRITE(6,*) ' ==============================='
-        CALL APRBLM2(AOUT,LBLOCK,LBLOCK,NBLOCK,1)
-      END IF
-*
-      RETURN
-      END
-!**********************************************************************
-
       SUBROUTINE TRAN_SYM_BLOC_MAT2(AIN,X,NBLOCK,LBLOCK,AOUT,SCR,ISYM)
 *
 * Transform a blocked matrix AIN with blocked matrix
@@ -917,307 +890,3 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
       RETURN
       END
 !**********************************************************************
-
-      SUBROUTINE TRAN_SYM_BLOC_MAT3
-     &   (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
-*
-* Transform a blocked matrix AIN with blocked matrix
-*  X to yield blocked matrix AOUT
-*
-* ISYM = 1 => Input and output are     triangular packed
-*      else=> Input and Output are not triangular packed
-*
-* Aout = X(transposed) A X
-*
-* Jeppe Olsen
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION AIN(*),X(*),LX_ROW(NBLOCK),LX_COL(NBLOCK)
-*. Output
-      DIMENSION AOUT(*)
-*. Scratch : At least twice the length of largest block
-      DIMENSION SCR(*)
-*
-      DO IBLOCK = 1, NBLOCK
-       IF(IBLOCK.EQ.1) THEN
-         IOFFP_IN = 1
-         IOFFC_IN = 1
-         IOFFP_OUT= 1
-         IOFFC_OUT= 1
-         IOFFX = 1
-       ELSE
-         IOFFP_IN = IOFFP_IN + LX_ROW(IBLOCK-1)*(LX_ROW(IBLOCK-1)+1)/2
-         IOFFC_IN = IOFFC_IN + LX_ROW(IBLOCK-1) ** 2
-         IOFFP_OUT= IOFFP_OUT+ LX_COL(IBLOCK-1)*(LX_COL(IBLOCK-1)+1)/2
-         IOFFC_OUT= IOFFC_OUT+ LX_COL(IBLOCK-1) ** 2
-         IOFFX = IOFFX + LX_ROW(IBLOCK-1)*LX_COL(IBLOCK-1)
-       END IF
-       LXR = LX_ROW(IBLOCK)
-       LXC = LX_COL(IBLOCK)
-       K1 = 1
-       K2 = 1 + MAX(LXR,LXC) ** 2
-*. Unpack block of A
-       SIGN = 1.0D0
-       IF(ISYM.EQ.1) THEN
-         CALL TRIPAK_LUCI(SCR(K1),AIN(IOFFP_IN),2,LXR,LXR,SIGN)
-C             TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
-       ELSE
-         CALL COPVEC(AIN(IOFFC_IN),SCR(K1),LXR*LXR)
-       END IF
-*. X(T)(IBLOCK)A(IBLOCK)
-       ZERO = 0.0D0
-       ONE  = 1.0D0
-       CALL SETVEC(SCR(K2),ZERO,LXR*LXC)
-       CALL MATML7(SCR(K2),X(IOFFX),SCR(K1),LXC,LXR,LXR,LXC,LXR,LXR,
-     &             ZERO,ONE,1)
-C?     WRITE(6,*) ' Half transformed matrix '
-C?     CALL WRTMT_LU(SCR(K2),LXC,LXR,LXC,LXR)
-
-*. X(T) (IBLOCK) A(IBLOCK) X (IBLOCK)
-       CALL SETVEC(SCR(K1),ZERO,LXC*LXC)
-       CALL MATML7(SCR(K1),SCR(K2),X(IOFFX),LXC,LXC,LXC,LXR,LXR,LXC,
-     &             ZERO,ONE,0)
-C?     WRITE(6,*) ' Transformed matrix '
-C?     CALL WRTMT_LU(SCR(K1),LXC,LXC,LXC,LXC)
-*. Pack and transfer
-       IF(ISYM.EQ.1) THEN
-         CALL TRIPAK_LUCI(SCR(K1),AOUT(IOFFP_OUT),1,LXC,LXC,SIGN)
-       ELSE
-         CALL COPVEC(SCR(K1),AOUT(IOFFC_OUT),LXC*LXC)
-       END IF
-*
-      END DO
-*
-      NTEST = 00
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' output matrix TRAN_SYM_BLOC_MAT '
-        WRITE(6,*) ' ==============================='
-        WRITE(6,*)
-        CALL APRBLM2(AOUT,LX_COL,LX_COL,NBLOCK,ISYM)
-      END IF
-*
-      END
-***********************************************************************
-
-      SUBROUTINE SCLH2(XLAMBDA)
-*
-*. Scale two electron integrals
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "glbbas.inc"
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*
-      call dscal(nint2,xlambda,work(kint2),1)
-*
-      END
-
-***********************************************************************
-      SUBROUTINE TRA1_SIMPLE(C)
-*
-* Transform one-electron integrals
-*
-* Integrals from KINT1O used : Integrals without particle-hole corrections
-*
-* Input integrals in KINT1
-* Output integrals also in KINT1
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLH1, KLSCR
-!               for addressing of WORK
-*. General Input
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "wrkspc.inc"
-#include "lucinp.inc"
-#include "glbbas.inc"
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*. Specific Input
-      DIMENSION C(*)
-*
-      NTEST = 100
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRA1_S')
-*. Largest symmetry block of orbitals
-      MXSOB = IMNMX(NTOOBS,NSMOB,2)
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Largest number of orbitals in sym block ', MXSOB
-      END IF
-*. Space for 1e- integrals and two sym blocks
-      LENH1 = NTOOB ** 2
-      CALL MEMMAN(KLH1,LENH1,'ADDL  ',2,'LH1   ')
-      
-      LENSCR = 2 * MXSOB ** 2
-      CALL MEMMAN(KLSCR,LENSCR,'ADDL   ',2,'H1SCR ')
-      WRITE(6,*) ' LENH1 LENSCR ', LENH1, LENSCR
-*. and do it
-C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
-      WRITE(6,*) ' Before TRAN_SYM '
-      CALL COPVEC(WORK(KINT1O),WORK(KINT1),NINT1)
-      CALL TRAN_SYM_BLOC_MAT3(WORK(KINT1),C,NSMOB,NTOOBS,NTOOBS,
-     &                        WORK(KLH1),WORK(KLSCR),1)
-      WRITE(6,*) ' After TRAN_SYM '
-*. Copy to original array
-      CALL COPVEC(WORK(KLH1),WORK(KINT1),NINT1)
-*. Flush memory
-      WRITE(6,*) ' Returning from TRA1 '
-      CALL MEMMAN(IDUM,IDUM,'FLUSM  ',IDUM,'TRA1_S')
-*
-      RETURN
-      END
-!**********************************************************************
-
-      SUBROUTINE TRA2_SIMPLE(C)
-*
-* Trivial 2-electron integral transformation
-*
-*. Input integrals in KINT2
-*. Output integrals in KINT2
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLBL1, KLBL2
-!               for addressing of WORK
-*. General input
-#include "mxpdim.inc"
-#include "wrkspc.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
-#include "multd2h.inc"
-*. Specific input
-      DIMENSION C(*)
-*
-      NTEST  = 0
-*
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRA2_S')
-*. Largest symmetry block
-      MXSOB = IMNMX(NTOOBS,NSMOB,2)
-*. Two symmetry blocks
-      LENBL = MXSOB ** 4
-      IF(NTEST.GE.100)
-     &WRITE(6,*) ' Size of symmetry block ', LENBL
-      CALL  MEMMAN(KLBL1,LENBL,'ADDL ',2,'KLBL1 ')
-      CALL  MEMMAN(KLBL2,LENBL,'ADDL ',2,'KLBL2 ')
-C     WRITE(6,*) ' Two integral blocks allocated '
-*. Loop over symmetry blocks
-      DO ISM = 1, NSMOB
-        DO JSM = 1, ISM
-          DO KSM = 1, ISM
-            IF(KSM.EQ.ISM) THEN
-              LSM_MX = JSM
-            ELSE
-              LSM_MX = KSM
-            END IF
-            DO LSM = 1, LSM_MX
-*. Ensure that integrals have correct symmetry
-              INTSYM = 1
-              IJSM = MULTD2H(ISM,JSM)
-              IJKSM = MULTD2H(IJSM,KSM)
-              IF(INTSYM.EQ.MULTD2H(IJKSM,LSM)) THEN
-*. Fetch 2-e integral block (IJ!KL)
-C             LGETINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
-C    &               IXCHNG,IKSM,JLSM,ICOUL)
-C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
-              CALL LGETINT(WORK(KLBL1),0,ISM,0,JSM,0,KSM,0,LSM,
-     &                     0,0,0,1)
-*. (Type = 0  => Complete symmetryblock)
-*. Offsets and dimensions for symmetryblocks in C
-              IOFF = 1
-              DO IISM = 1, ISM-1
-                IOFF = IOFF + NTOOBS(IISM)**2
-              END DO
-              NI = NTOOBS(ISM)
-*
-              JOFF = 1
-              DO JJSM = 1, JSM-1
-                JOFF = JOFF + NTOOBS(JJSM)**2
-              END DO
-              NJ = NTOOBS(JSM)
-*
-              KOFF = 1
-              DO KKSM = 1, KSM-1
-                KOFF = KOFF + NTOOBS(KKSM)**2
-              END DO
-              NK = NTOOBS(KSM)
-*
-              LOFF = 1
-              DO LLSM = 1, LSM-1
-                LOFF = LOFF + NTOOBS(LLSM)**2
-              END DO
-              NL = NTOOBS(LSM)
-*. Transform 2-electron integral block
-              CALL TRA_2EL_BLK_SIMPLE(WORK(KLBL1),
-     &        C(IOFF),NI,C(JOFF),NJ,C(KOFF),NK,C(LOFF),NL,WORK(KLBL2))
-*. Transfer symmetry block to integral list
-              CALL PUTINT(WORK(KLBL1),0,ISM,0,JSM,0,KSM,0,LSM)
-            END IF
-*           ^ Check if integrals have correct symmetry
-            END DO
-          END DO
-        END DO
-      END DO
-*     ^ End of loop over symmetries
-      CALL DMPINT(90)
-*
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRA2_S')
-*
-      RETURN
-      END
-!**********************************************************************
-
-      SUBROUTINE TRA_2EL_BLK_SIMPLE(XINT,CI,NI,CJ,NJ,CK,NK,CL,NL,SCR)
-*
-* Transform 2-electron integral block
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION CI(NI,NI),CJ(NJ,NJ),CK(NK,NK),CL(NL,NL)
-*. Input and output
-      DIMENSION XINT(*)
-* Matrix given in complete form XI(NI,NJ,NK,NL)
-*. Scratch
-      DIMENSION SCR(*)
-      NTEST = 00
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Input integral block as X(IJ,KL)'
-        CALL WRTMT_LU(XINT,NI*NJ,NK*NL,NI*NJ,NK*NL)
-      END IF
-*. Transform first two indeces
-      DO K = 1, NK
-       DO L = 1, NL
-         KLOF = 1 + ((L-1)*NK+K-1)*NI*NJ
-         FACTORC = 0.0D0
-         FACTORAB = 1.0D0
-         CALL MATML7(SCR(KLOF),XINT(KLOF),CJ,NI,NJ,NI,NJ,NJ,NJ,
-     &                FACTORC,FACTORAB,0)
-         CALL MATML7(XINT(KLOF),CI,SCR(KLOF),NI,NJ,NI,NI,NI,NJ,
-     &                FACTORC,FACTORAB,1)
-       END DO
-      END DO
-*. Transpose Block X(IJ,KL)
-      NIJ = NI*NJ
-      NKL = NK*NL
-      CALL TRPMT3(XINT,NIJ,NKL,SCR)
-*. Matrix is now SCR(KL,IJ)
-*. Transform last two indeces
-      DO I = 1, NI
-        DO J = 1, NJ
-         IJOF = ((J-1)*NI+I-1)*NK*NL+1
-         CALL MATML7(XINT(IJOF),SCR(IJOF),CL,NK,NL,NK,NL,NL,NL,
-     &               FACTORC,FACTORAB,0)
-         CALL MATML7(SCR(IJOF),CK,XINT(IJOF),NK,NL,NK,NK,NK,NL,
-     &               FACTORC,FACTORAB,1)
-        END DO
-      END DO
-*. Transpose to obtain XINT(IJ,KL)
-      CALL TRPMT3(SCR,NKL,NIJ,XINT)
-*
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Output integral block as X(IJ,KL)'
-        CALL WRTMT_LU(XINT,NI*NJ,NK*NL,NI*NJ,NK*NL)
-      END IF
-*
-      RETURN
-      END
