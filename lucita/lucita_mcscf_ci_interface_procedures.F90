@@ -20,9 +20,10 @@ module lucita_mcscf_ci_interface_procedures
   private
 
 #ifdef VAR_MPI
-  integer, public :: restore_cref_vector_switch = -1
-  logical, public :: restore_cref               = .false.
+  integer, public    :: restore_cref_vector_switch = -1
+  logical, public    :: restore_cref               = .false.
 #endif
+  integer, parameter, public :: print_lvl_limit = 1000
 
 contains
 
@@ -195,8 +196,8 @@ contains
       end select
 
 #ifdef VAR_MPI
-      write(lupri,*) ' restore_cref, restore_cref_vector_switch', &
-                       restore_cref, restore_cref_vector_switch
+!     write(lupri,*) ' restore_cref, restore_cref_vector_switch', &
+!                      restore_cref, restore_cref_vector_switch
 !     c. restore cref
       select case(restore_cref)
         case(.true.)
@@ -224,7 +225,7 @@ contains
       logical,   intent(inout) :: do_restore
 !-------------------------------------------------------------------------------
 
-      write(lupri,*) 'restore cref in action...',switch
+!     write(lupri,*) 'restore cref in action...',switch
       select case(switch)
         case(1)
           call rdcref(c_or_cr ,.false.)
@@ -267,7 +268,7 @@ contains
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .false.,c_or_cr)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' rhs vector saved on lucita files'
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -295,7 +296,7 @@ contains
       
       einact_mc2lu           = emy_ci ! inactive energy
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' inactive energy obtained from MCSCF environment ==> ', einact_mc2lu
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -324,7 +325,7 @@ contains
       
 #ifdef VAR_MPI
 !     potentially restore cref after the ci task in parallel runs
-      write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
+!     write(lupri,*) ' check for restorage, vector_exchange_type1',vector_exchange_type1
       if(vector_exchange_type1 == 1)then
         restore_cref_vector_switch = 1
         restore_cref               = .true.
@@ -337,7 +338,7 @@ contains
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .true.,c_or_cr)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' rhs vector saved on lucita files'
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -370,7 +371,7 @@ contains
                                   vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .true.,c_or_cr)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' rhs vector saved on lucita files'
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -426,7 +427,7 @@ contains
 !-------------------------------------------------------------------------------
 
 #ifdef VAR_MPI
-      write(lupri,*) ' check for restorage, vector_exchange_type1/2',vector_exchange_type1,vector_exchange_type2
+!     write(lupri,*) ' check for restorage, vector_exchange_type1/2',vector_exchange_type1,vector_exchange_type2
 !     potentially restore cref after the ci task in parallel runs
       if(vector_exchange_type1 == 1 .or. vector_exchange_type2 == 1)then
         restore_cref               = .true.
@@ -448,7 +449,7 @@ contains
                                   .true.,hc_or_cl)
 
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' rhs/lhs vectors saved on lucita files'
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -501,7 +502,7 @@ contains
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .false.,c_or_cr)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' number of non-converged roots ==> ', jconv_c
         do i = 1, nroot
@@ -547,7 +548,7 @@ contains
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .true.,c_or_cr)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' H diag pushed into mcscf core memory '
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -583,7 +584,7 @@ contains
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),        &
                                   .true.,hc_or_cl)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' lhs vector pushed to mc core-memory'
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -622,7 +623,7 @@ contains
                                   vector_update_mc2lu_lu2mc((1-1)*vector_exchange_types+vector_exchange_type1),       &
                                   .true.,c_or_cr)
 
-      if(print_lvl >= -1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' lhs vector pushed to mc core-memory'
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'
@@ -664,7 +665,7 @@ contains
         mxndt     = max(mxndt, ndtasm(i))
       end do
 
-      if(print_lvl >= 1)then
+      if(print_lvl >= print_lvl_limit)then
         write(lupri,'(/a)') ' *** LUCITA-MCSCF interface reports: ***'
         write(lupri,*) ' maximum number of determinants in all spaces: ', MXNDT
         write(lupri,'(a/)') ' *** end of LUCITA-MCSCF interface   ***'

@@ -4369,11 +4369,12 @@ C
 #endif
      &             )
       END IF
-      NTEST = 100
-      IF(ISIGDEN.EQ. 2 .and. NTEST. ge. 100) THEN
+#ifdef LUCI_DEBUG
+      IF(ISIGDEN.EQ. 2)THEN
         write(luwrt,*) 'final rho1 matrix after sigden business'
         CALL WRTMATMN(WORK(KRHO1),1,LRHO1,1,LRHO1,luwrt)
-      END IF
+      end if
+#endif
 
 *. Eliminate local memory
       CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'SIDE  ')

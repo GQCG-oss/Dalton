@@ -452,8 +452,6 @@ contains
       if(file_info%current_file_fh_seqf(1) > 0) luc_internal  = file_info%current_file_fh_seqf(1)
       if(file_info%current_file_fh_seqf(2) > 0) luhc_internal = file_info%current_file_fh_seqf(2)
 
-      write(lupri,*) 'dens: luc_internal, luhc_internal',luc_internal, luhc_internal
-
 #ifdef VAR_MPI
       if(luci_nmproc > 1)then
 
@@ -485,7 +483,7 @@ contains
           do iloop = 1, nbatch_par
             nbatch_par_max = max(nbatch_par_max,batch_length(iloop))
           end do
-          write(lupri,*) 'allocate scratch space for sigma vec: ',nbatch_par_max
+!         write(lupri,*) 'allocate scratch space for sigma vec: ',nbatch_par_max
           call memman(k_scratchsbatch,nbatch_par_max,'ADDL  ',2,'SBATCH')
           call dzero(work(k_scratchsbatch),nbatch_par_max)
         end if
@@ -552,9 +550,6 @@ contains
         my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active2)
 
         lusc_vector_file = file_info%fh_lu(file_info%current_file_nr_bvec)
-        write(lupri,*) ' luhc_vector_file, lusc_vector_file: ',luhc_vector_file, lusc_vector_file
-        write(lupri,*) ' file_info%current_file_nr_active1, file_info%current_file_nr_active2', &
-                         file_info%current_file_nr_active1, file_info%current_file_nr_active2
       end if
 #endif
 
@@ -625,7 +620,6 @@ contains
 !                          and a regular density matrix run
 !
         if(luci_nmproc > 1 .and. luci_myproc == luci_master .and.  rhotype == 1)then
-          write(lupri,*) ' master ends up here!!!!'
           call sigden_ci(cref,work(k_scratchsbatch),resolution_mat,lusc_vector_file,luhc_vector_file,&
                          cv_dummy,hcv_dummy,isigden,rhotype                                          &
 #ifdef VAR_MPI
@@ -635,7 +629,6 @@ contains
 #endif
                         )
         else
-          write(lupri,*) ' i end up here, luckily!!!!',luci_myproc
           call sigden_ci(cref,hc,resolution_mat,lusc_vector_file,luhc_vector_file,                   &
                          cv_dummy,hcv_dummy,isigden,rhotype                                          &
 #ifdef VAR_MPI
@@ -885,9 +878,6 @@ contains
 !         -----------------------------------------------
           call mpi_barrier(mynew_comm,ierr) 
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
-
-          WRITE(luwrt,*) ' Right vector = C-vector: file-handle (outside) =',              &
-          file_info%fh_lu(file_info%current_file_nr_active1), file_info%current_file_nr_active1
 
           call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
                                  file_info%fh_lu(file_info%current_file_nr_bvec),          &

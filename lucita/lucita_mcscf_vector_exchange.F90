@@ -67,10 +67,12 @@ contains
       logical, intent(in)                 :: parallel_vector_xc
 !-------------------------------------------------------------------------------
 
+#ifdef LUCI_DEBUG
       write(lupri,*) ' do_vector_exchange ==> ',do_vector_exchange
       write(lupri,*) ' vector_type        ==> ',vector_type
       write(lupri,*) ' nr_vectors         ==> ',nr_vectors
       write(lupri,*) ' vector_symmetry    ==> ',vector_symmetry
+#endif
 
 !     switch to exchange_files info for symmetry vector_symmetry
       call exchange_f_switch(exchange_f_info,                    &
@@ -91,8 +93,6 @@ contains
 !       get hold of co-workers and provide them with the mandatory details
         if(parallel_vector_xc) call vector_exchange_wake_up_cw()
 #endif
-        write(lupri,*) ' starting vector xc-driver: parallel? ==> ',parallel_vector_xc
-        call flshfo(lupri)
 
         call push_pull_vector_exchange_driver(xmat,              &
                                               nr_vectors,        &
@@ -102,7 +102,6 @@ contains
 
       end if
 
-!     call quit('bla')
 !     reset vector exchange control variables
       do_vector_exchange = .false.
       vector_type        = -1
@@ -164,9 +163,10 @@ contains
                        exchange_f_info%present_sym_irrep,                              &
                        1)
 
+#ifdef LUCI_DEBUG
       write(lupri,*) ' parallel node xc-driver call? ==> ',do_vector_exchange
       write(lupri,*) ' parallel node xc-driver active_xc_vector_type? ==> ',active_xc_vector_type
-      call flshfo(lupri)
+#endif
 
       if(do_vector_exchange)then
         call push_pull_vector_exchange_driver(xmat,                                    &
@@ -218,10 +218,6 @@ contains
 
         current_vector = current_vector + 1
 
-        write(lupri,*)'A%exchange_file_io2io, myproc',A%exchange_file_io2io,A%my_process_id
-        write(lupri,*)'current_vector',current_vector,nr_vectors
-        call flshfo(lupri)
-
         if(current_vector > nr_vectors) exit
 
         select case(A%exchange_file_io2io)
@@ -241,9 +237,11 @@ contains
           case(.false.)
             current_offset = current_offset + (current_vector - 1) * B%total_present_vec
 
+#ifdef LUCI_DEBUG
             write(lupri,*)'parallel_vector_xc',parallel_vector_xc
             write(lupri,*)'current_offset    ',current_offset
-            call flshfo(lupri)
+#endif
+
 #ifdef VAR_MPI
             if(parallel_vector_xc)then
               call push_pull_vector_exchange_memory_parallel(xmat,               &
@@ -397,12 +395,13 @@ contains
         case(1) 
           call dzero(xmat(1+current_offset),B%total_present_vec)
         case(2) 
-          write(lupri,*) 'call bcast with B%total_present_vec',B%total_present_vec,A%my_process_id
           call mpi_bcast(xmat(1+current_offset),B%total_present_vec,MPI_REAL8,         &
                          0,mpi_comm_world,ierr)
       end select
 
+#ifdef LUCI_DEBUG
       write(lupri,*) ' present fh handle ==> ',A%present_fh_par
+#endif
 !
 !     initialize
       ioff             = 1 + current_offset
@@ -443,7 +442,7 @@ contains
               D%iluxlist(ioffset_int,A%present_vector_type) = 1
             end if
         end select
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
             write(lupri,*) ' pull/push (1 or 2) block from/to file to/from fh handle offset ==> ',A%push_pull_switch,         &
                              current_block,A%present_fh_par,ioff-block_length_rw
@@ -649,11 +648,11 @@ contains
       write(A%exchange_files_generic(vector_type),'(a13,a1)') A%exchange_files_generic(vector_type),            &
                                                               A%exchange_files_f_extension(A%present_sym_irrep)
 
-      write(lupri,*) ' file name set for sym ==> ',A%present_sym_irrep,A%exchange_files_generic(vector_type)
+!     write(lupri,*) ' file name set for sym ==> ',A%present_sym_irrep,A%exchange_files_generic(vector_type)
   
       inquire(opened=A%exchange_file_open(1),file=A%exchange_files_generic(vector_type),number=A%present_fh_lu)
   
-      write(lupri,*) ' file found and status ==> ',A%present_fh_lu,A%exchange_file_open(1)
+!     write(lupri,*) ' file found and status ==> ',A%present_fh_lu,A%exchange_file_open(1)
 
       if(.not. A%exchange_file_open(1))then
         call gpopen(A%present_fh_lu,A%exchange_files_generic(vector_type),'OLD',' ','UNFORMATTED',dummy,.FALSE.)
@@ -673,7 +672,7 @@ contains
         inquire(opened=A%exchange_file_open(2),file=A%exchange_files_generic(vector_type+mc_offset), & 
                 number=A%present_fh_mc)
 
-        write(lupri,*) ' file found and status ==> ',A%present_fh_mc,A%exchange_file_open(2)
+!       write(lupri,*) ' file found and status ==> ',A%present_fh_mc,A%exchange_file_open(2)
 
         if(.not. A%exchange_file_open(2))then
           call gpopen(A%present_fh_mc,A%exchange_files_generic(vector_type+mc_offset),'OLD',' ','UNFORMATTED',    &

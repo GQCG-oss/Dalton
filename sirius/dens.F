@@ -1160,7 +1160,7 @@ C       ... pack RHO1 as triangular matrix
         call dcopy(nnashx,work(krho1),1,rho1,1)
       end if
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       write(lupri,*) ' makdm: rho1 total ==> ',nnashx
       call wrtmatmn(rho1,1,nnashx,1,nnashx,lupri)
@@ -1400,7 +1400,7 @@ C        CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *               RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *               XNDXCI,WORK,KFREE,LWRK)
 C
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
          write(lupri,*) 'dens 1 after - part 1...'
          call wrtmatmn(WORK(KRHO1),1,N2ASHX,1,N2ASHX,lupri)
@@ -1678,7 +1678,7 @@ C        ... determinant basis
      &                                    xctype2,     ! vector_exchange_type2
      &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
            write(lupri,*) ' before dens run: cl'
            call wrtmatmn(cl,1,NLDET,1,NLDET,lupri)

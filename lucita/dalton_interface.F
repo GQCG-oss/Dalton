@@ -2500,7 +2500,7 @@ C
       character (len=90) :: error_message
 !     -----------------------------------------------------------------
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       if(rhotype > 0)then
         write(lupri,*) ' distributing 1p-dens mat elements from h1_out:'

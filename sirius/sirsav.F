@@ -504,11 +504,6 @@ C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,wrk(kbvec+(j-1)*nconf),1)
              END IF
-#ifdef LUCI_DEBUG_test_case
-!            HARDWIRED TEST case !!!
-             call dzero(wrk(kbvec+(j-1)*nconf),nc4)
-             wrk(kbvec+(j-1)*nconf+1) = 1.0d0
-#endif
              call writt(luit1,nc4,wrk(kbvec+(j-1)*nconf))
            end do
          end if ! ci_program switch

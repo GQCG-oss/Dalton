@@ -215,8 +215,8 @@ c Local memory
       IF ( KLFREE-1 .GT. LFREE ) CALL ERRWRK('TRACI',KLFREE-1,LFREE)
 
 !     1p-matrix 
-      write(lupri,*) ' 1p-mat     '
-      call wrtmatmn(UMO,1,nasht**2,1,nasht**2,lupri)
+!     write(lupri,*) ' 1p-mat     '
+!     call wrtmatmn(UMO,1,nasht**2,1,nasht**2,lupri)
 
       if(ci_program .eq. 'SIRIUS-CI')then
         IF (.NOT. SLREOR)THEN
@@ -247,10 +247,10 @@ c       CALL CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
          CALL QUIT(' TRACI : ERROR IN SOTMAT ')
       END IF
 
-!     IF(IPRTCI .GT. 10 ) THEN
+      IF(IPRTCI .GT. 10 ) THEN
         WRITE(LUPRI,'(/A)') ' SINGLE ORBITAL TRANSFORMATION MATRIX '
         CALL WRTMAT(WRK(KLSOT),NASHT,NASHT,NASHT,NASHT,0)
-!     END IF
+      END IF
 c
       DO 450 IVEC = 1, NCVEC
         IF(CSFEXP) THEN
@@ -311,7 +311,7 @@ c
      &                                     .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                     .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
             write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
             call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
@@ -700,7 +700,7 @@ C *** Construct diagonal of CI matrix
          call mcscf_lucita_interface(diagc,dummy2,fcac,h2ac,
      &                               'return CIdia',wrk(kw1),lw1,
      &                               iprdia)
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           write(lupri,*) ' after diag run: hdiag'
           call wrtmatmn(diagc,1,nconf,1,nconf,lupri)
@@ -1234,7 +1234,7 @@ C        .. change from CSf basis to determinant basis
      &                                   .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                   .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
           write(lupri,*) ' before sigma vec run: c'
           call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)

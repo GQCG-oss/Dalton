@@ -399,7 +399,7 @@
 !     symmetry offset in full 1e-matrix block
       IOFF = IFRMR(WORK(KPGINT1A(1)),1,KSM)
 
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       write(luwrt,*)        '*****************'
       write(luwrt,'(a,i3)') 'ORBITAL # == ', K
@@ -675,7 +675,7 @@
         NIA = NSSOA(IASM,IATP)
         NIB = NSSOB(IBSM,IBTP)
 
-        WRITE(lupri,*) ' NIA NIB ', NIA,NIB
+!       WRITE(lupri,*) ' NIA NIB ', NIA,NIB
 
         IMZERO = 0
         if(luci_nmproc .gt. 1)then
