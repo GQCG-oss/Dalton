@@ -1842,7 +1842,7 @@ c. And then , the density matrix
 C** Symmetrize RHO1 for TDM
 C
       IF (RHOTYP .EQ. 3) THEN
-#define LUCI_DEBUG
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
          write(lupri,*) ' rho1 before symm..'
          call wrtmatmn(rho1,NASHT,NASHT,NASHT,NASHT,lupri)

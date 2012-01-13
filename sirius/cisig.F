@@ -351,8 +351,8 @@ c
      &                  XNDXCI(KTPFSA),NOCTPB,XNDXCI(KNSSOB),
      &                  XNDXCI(KISSOB),
      &                  XNDXCI(KTPFSB),XNDXCI(KIOCOC),XNDXCI(KICOOS),
-!    &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
-     &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,100)
+     &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
+!    &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,100)
 
 #ifdef LUCI_DEBUG
             write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
@@ -421,11 +421,8 @@ C..    TRANSFORM ORBITAL IORB
         CALL SETVEC(C2,0.0D0,KDET)
         IF(NTEST .GE. 25)WRITE(LUPRI,*)'  *** ORBITAL TO BE ROTATED ',
      &                                 IORB
-         write(lupri,*) 'IOCOC mat - beta part'
-         call iwrtmamn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,lupri)
         DO  890 IATP =  1, NOCTPA
         DO  880 IBTP =  1, NOCTPB
-         write(lupri,*) 'IATP,IBTP ==> iococ',IATP,IBTP,IOCOC(IATP,IBTP)
          IF( IOCOC(IATP,IBTP) .NE. 1 ) GOTO  880
          IOFF =   ICOOS (IBTP,IATP,IASM)
 C
@@ -446,20 +443,12 @@ C IS ORBITAL IORB OCCUPIED IN IB ?
                IF(IBSTR(IEL,IB) .EQ. IORB ) IOCC = 1
   750        CONTINUE
 C
-             write(lupri,*) 'IOCC ==> ',IOCC
              IF ( IOCC .EQ. 0 ) THEN
-               write(lupri,*) 
-         write(lupri,*) ' == 0: scale NIA, with 1, bf',
-     &             NIA, IOFFI+IOFF11-1, C(IOFFI),
-     &             C(IOFFI+1)
                CALL VECSUM(C2(IOFFI-IOFF11+1),C2(IOFFI-IOFF11+1),
      &                     C(IOFFI),1.0D0,1.0D0,NIA)
-         write(lupri,*) ' after: scale (iocc == 0)',
-     &             C2(IOFFI-IOFF11+1),C2(IOFFI-IOFF11+2)
              ELSE
                DO 700 IEX = TBSYM(1,IB),TBSYM(2,IB)-1
                  IJEX = TBIJ(IEX)
-                 write(lupri,*) 'IANNI(IJEX) ==> ',IANNI(IJEX)
                  IF(IANNI(IJEX) .EQ. IORB ) THEN
                    JB = TBTO(IEX)
                    IF( JB .GT. NBSTR ) THEN
@@ -470,13 +459,10 @@ C
                    END IF
 C
                    JBTP = ITPBST(JB)
-         write(lupri,*) 'IATP,JBTP ==> iococ',IATP,JBTP,IOCOC(IATP,JBTP)
                    IF( IOCOC(IATP,JBTP) .NE. 1 ) GOTO 700
                    JBEFF = JB - ISTBOS(JBTP,IBSM)+1
                    IOFFJ = ICOOS(JBTP,IATP,IASM) - IOFF11
      &                   + (JBEFF-1)*NIA + 1
-         write(lupri,*) ' == 1: scale NIA with factor NIA, factor, off',
-     &             NIA, factor, IOFFI, C(IOFFI),C(IOFFI+1),IOFFJ
                    CALL VECSUM(C2(IOFFJ),C2(IOFFJ),
      &                         C(IOFFI),1.0D0,FACTOR,NIA)
                  END IF
@@ -509,8 +495,6 @@ C.. TRANSPOSE TO EASE INDEXING
 C        CALL TRPMAT(C2,NIA,NIB,C(IOFF))
          CALL TPBLM2(C2,C(IOFF11),NSTAOS(1,IASM),NOCTPA,
      &        NSTBOS(1,IBSM),NOCTPB,IOCOC,1)
-         write(lupri,*) 'IOCOC mat - alpha part'
-         call iwrtmamn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,lupri)
          DO 1900 IORB = 1, NORB
           IF( NTEST .GE. 25 )WRITE(LUPRI,*)' ORBITAL TO BE ROTATED ',
      &                                       IORB
@@ -537,13 +521,8 @@ C IS ORBITAL IORB OCCUPIED IN IA ?
  1750        CONTINUE
 C
              IF ( IOCC .EQ. 0 ) THEN
-         write(lupri,*) ' == 0: scale NIB, with 1, bf',
-     &             NIB, IOFFI+IOFF11-1, C(IOFFI+IOFF11-1),
-     &             C(IOFFI+IOFF11)
                CALL VECSUM(C2(IOFFI),C2(IOFFI),
      &                     C(IOFFI+IOFF11-1),1.0D0,1.0D0,NIB)
-         write(lupri,*) ' after: scale (iocc == 0)',
-     &             C2(IOFFI),C2(IOFFI+1)
              ELSE
                DO 1700 IEX = TASYM(1,IA),TASYM(2,IA)-1
                  IJEX = TAIJ(IEX)
@@ -562,13 +541,8 @@ C
                    JASTRT = ISTAOS(JATP,IASM)
                    IOFFJ = ICOOS(IBTP,JATP,IASM)-IOFF11
      &                   + (JA-JASTRT)*NIB + 1
-         write(lupri,*) ' == 1: scale NIB, factor NIB, factor, off, bf',
-     &             NIB, factor, IOFFI+IOFF11-1, C(IOFFI+IOFF11-1),
-     &             C(IOFFI+IOFF11),IOFFJ,C2(IOFFJ),C2(IOFFJ+1)
                    CALL VECSUM(C2(IOFFJ),C2(IOFFJ),C(IOFFI+IOFF11-1),
      &                         1.0D0,FACTOR,NIB)
-         write(lupri,*) ' after: scale',
-     &             C2(IOFFJ),C2(IOFFJ+1)
 C
                  END IF
  1700          CONTINUE
