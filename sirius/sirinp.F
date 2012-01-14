@@ -2150,7 +2150,7 @@ C
 #include <implicit.h>
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
-     *          REWORD*20, TITLIN*80, SRFTMP*72
+     *          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
@@ -2186,7 +2186,7 @@ C
 C
 C
 C
-      SRFTMP    = ' '
+      SR_FUNCS = ' ERROR: .SRFUN was not specified in input.'
 C
 C     ***** PROCESS INPUT FOR SIR_GENINP *****
 C
@@ -2393,21 +2393,23 @@ C
 C *** Option 15 >BASIS <  Specify basis set
 C    Default: specified by integral program
   115 CONTINUE
-       READ (LUCMD,*) (NBAS(I), I = 1,NSYM)
+        READ (LUCMD,*) (NBAS(I), I = 1,NSYM)
       GO TO 100
 C
 C *** Option 17 >DFT   <  Restricted Kohn-Sham DFT
   117 CONTINUE
          IF (DOSCF) THEN
 C           ... DOSCF may also be set with .CC
-            WRITE (LUPRI,*) 'Input error: both HF and DFT specified!'
+            WRITE (LUPRI,'(//A)')
+     &      'Input ERROR: both HF and DFT specified!'
             INPERR = INPERR + 1
          END IF
          DODFT    = .TRUE.
          DOSCF    = .TRUE.
          FLAG(21) = .TRUE.
 C        ... flag for QCSCF -- quadratically convergent HF or DFT
-c     dodft should be enough but it is sometimes to have also dftrun set.
+
+c     dodft should be enough but it is sometimes necessary to have also dftrun set.
          DFTRUN = .TRUE.
          DFTADD = .TRUE.
          LUSUPM   = -1
@@ -2417,9 +2419,9 @@ C        ... no P-supermatrix for DFT
          PROMPT = TITLIN(1:1)
          IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') GO TO 1171
          IF (PROMPT .EQ. '.' .OR. PROMPT .EQ. '*') THEN
-C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
+            INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A//A)')
-     &      '--> Input error for line following .DFT',
+     &      '--> Input ERROR for input line following .DFT',
      &      '    expected functional specification but read:',
      &      TITLIN
             WORD = TITLIN(1:7)
@@ -2473,8 +2475,8 @@ C *** Options 23-25 not used
   125 CONTINUE
       GO TO 100
 C
+C     ... .CISRDFT hybrid
   126 CONTINUE
-C     ... CISRDFT hybrid
          DOCI = .TRUE.
          FLAG(4) = .TRUE.
          DOCISRDFT = .TRUE.
@@ -2486,8 +2488,8 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
          NUMRUN = NUMRUN + 1
       GO TO 100
 C
+C     ... .HFSRDFT  Hartree-Fock srDFT hybrid
   127 CONTINUE
-C        ... HFSRDFT  Hartree-Fock srDFT hybrid
          DOSCF     = .TRUE.
          DOHFSRDFT = .TRUE.
          ADDSRI    = .TRUE.
@@ -2499,8 +2501,8 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
          NUMRUN = NUMRUN + 1
       GO TO 100
 C
+C     ... .MCSRDFT hybrid
   128 CONTINUE
-C        ... MCSRDFT hybrid
          DOMC      = .TRUE.
          DOMCSRDFT = .TRUE.
          FLAG(2)   = .TRUE.
@@ -2512,7 +2514,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
       GO TO 100
 C&&& .SRLDA (SR-DFT) : Use SR-LDA functionals for both 
 C                     exchange and correlation
-  129 SRFTMP = 'SRXLDA SRCLDA'
+  129 SR_FUNCS = 'SRXLDA SRCLDA'
       DFTADD = .TRUE.
       IF (.NOT.HFXSET) THEN
          HFXFAC = 0.0D0
@@ -2521,7 +2523,7 @@ C                     exchange and correlation
       GO TO 100
 C&&& SRFUN : Read Correlation (SRCFUN) and 
 C&&&         Exchange (SRXFUN) functionals
-  130 READ (LUCMD,'(A)') SRFTMP
+  130 READ (LUCMD,'(A)') SR_FUNCS
       DFTADD = .TRUE.
       GO TO 100
 C&&&  SRHYBR : Perform a DFT MC-SRDFT hybrid calculation.
@@ -2530,6 +2532,7 @@ C&&&           Treat core with regular DFT and valence with MC-SRDFT
 Chjaaj TODO what about HFXFAC here ????
       GO TO 100
 C
+C     .COPFAC (for some srDFT testing)
   132 READ (LUCMD,*) COPFAC
       GO TO 100
 C
@@ -2541,7 +2544,7 @@ C
  8000 CONTINUE
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
-      IF (ADDSRI) CALL SRFUN_INPUT(SRFTMP)
+      IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
 #else
       IF (ADDSRI) CALL QUIT('srDFT not implemented in this version')
 #endif
@@ -5465,7 +5468,7 @@ C        ... Check for inconsistencies :
 !          CALL QUIT(' MCSRDFT not allowed for CHIVAL=0')
 !        ENDIF
          IF (DODFT) THEN
-           CALL QUIT('DFT and SRDFT not both allowed in same run')
+           CALL QUIT('DFT and srDFT not both allowed in same run')
          END IF
 
       ENDIF
