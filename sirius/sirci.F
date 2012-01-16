@@ -361,12 +361,14 @@ C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 !     set keyword for saving the final vector(s) in SIRSAV (called from CISAVE)
       keywrd = 'CISAVE' 
+      write(lupri,*) ' incoming thrcit ==> ',thrcit
+      thrcit = 1.0d-11
+      write(lupri,*) ' incoming thrcit (updated) ==> ',thrcit
 
       IF(CI_PROGRAM .eq. 'LUCITA   ')THEN
 !
 !       note for stefan/hjaaj: kcdiag is not used for lucita; we might want to NOT allocate it then above!!!
 !
-        write(lupri,*) ' incoming thrcit ==> ',thrcit
         xctype1 = -1
         xctype2 = -1
 

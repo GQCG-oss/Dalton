@@ -249,7 +249,7 @@
 
       if(.not.ptask_distribution%parallel_task_distribution_init)then
         call parallel_task_distribution_init_lucipar(ptask_distribution,&
-                                                     nblock,1)
+                                                     nblock,icsm)
       end if
 
       if(luci_nmproc > 1)then

@@ -224,6 +224,9 @@ contains
 
 !     logical
       call dalton_mpi_bcast(integrals_from_mcscf_env,         0,mpi_comm_world)
+      call dalton_mpi_bcast(mcscf_ci_update_ijkl,             0,mpi_comm_world)
+      call dalton_mpi_bcast(mcscf_orbital_trial_vector,       0,mpi_comm_world)
+      call dalton_mpi_bcast(mcscf_ci_trial_vector,            0,mpi_comm_world)
       call dalton_mpi_bcast(io2io_vector_exchange_mc2lu_lu2mc,0,mpi_comm_world)
       call dalton_mpi_bcast(vector_update_mc2lu_lu2mc,        0,mpi_comm_world)
 
@@ -296,7 +299,7 @@ contains
 !     lucita routines (for historic reasons/other purposes, i do not know. stefan dec 2010)
 
       call mpi_bcast(xarray1, nint1, mpi_real8, 0, mpi_comm_world, ierr)
-      call mpi_bcast(xarray2, nint2, mpi_real8, 0, mpi_comm_world, ierr)
+      if(.not.mcscf_ci_trial_vector) call mpi_bcast(xarray2, nint2, mpi_real8, 0, mpi_comm_world, ierr)
 
 !     set sync_ctrl option
       sync_ctrl_array(3) = .false.

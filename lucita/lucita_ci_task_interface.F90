@@ -87,6 +87,9 @@ contains
           call lucita_pointer_integral_driver(ci_task_list(ci_task_ticket+1),          &
                                               int1_or_rho1,                            &
                                               int2_or_rho2,                            &
+                                              mcscf_ci_update_ijkl,                    &
+                                              mcscf_orbital_trial_vector,              &
+                                              mcscf_ci_trial_vector,                   &
                                               integrals_from_mcscf_env,                &
                                               print_lvl)
 

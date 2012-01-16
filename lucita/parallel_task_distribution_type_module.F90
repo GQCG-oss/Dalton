@@ -21,7 +21,8 @@ module parallel_task_distribution_type_module
 
 
     integer            ::       &
-      active_csym                       = -1      ! place holder for active symmetry irrep - if we activate LUCITA for respone this needs to be adapted...
+      active_csym                       = -1,&    ! active csym
+      active_csym_max                   = -1      ! max active csym
 
     logical ::                  &
       parallel_task_distribution_init   = .false. ! status of the communicator type
@@ -36,7 +37,7 @@ module parallel_task_distribution_type_module
 
 ! ttss block type object
   type(parallel_task_distribution), public :: ptask_distribution
-  integer, parameter, private              :: max_symmetry_distributions_active =  1 ! place holder for # symmetry irrep 
+  integer, parameter, private              :: max_symmetry_distributions_active =  8 ! place holder for # symmetry irrep 
 !                                                                                    - if we activate LUCITA for respone this needs to be adapted...
 
 contains 
@@ -52,11 +53,14 @@ contains
 !   reset old type information
     call parallel_task_distribution_free_lucipar(A)
 
-    if(number_of_irreps > max_symmetry_distributions_active) call quit('no multi-sym distribution active yet')
+!   if(number_of_irreps > max_symmetry_distributions_active) call quit('no multi-sym distribution active yet')
 
     A%parallel_task_distribution_init = .true.
     A%parallel_task_distribution_set  = .false.
-    A%active_csym                     = 1
+    A%active_csym                     = number_of_irreps
+    A%active_csym_max                 = number_of_irreps
+
+    if(number_of_irreps > max_symmetry_distributions_active) call quit('# of sym-irrep exceeds max #')
 
     allocate(A%c2s_connections(number_of_blocks,number_of_irreps))
     allocate(A%parallel_task_list(number_of_blocks,number_of_irreps))
@@ -89,6 +93,7 @@ contains
 
 !   CALL THIS ROUTINE HERE IF LUCITA IS ACTIVATED FOR RESPONSE...
     A%active_csym = active_irrep
+    if(A%active_csym > max_symmetry_distributions_active) call quit('# of sym-irrep exceeds max #')
 
   end subroutine parallel_task_distribution_switch_lucipar
 

@@ -19,6 +19,9 @@ module lucita_mcscf_ci_cfg
 ! logical block
 
   logical,              public :: integrals_from_mcscf_env                             = .false.
+  logical,              public :: mcscf_ci_update_ijkl                                 = .true.
+  logical,              public :: mcscf_orbital_trial_vector                           = .false.
+  logical,              public :: mcscf_ci_trial_vector                                = .false.
   logical,              public :: io2io_vector_exchange_mc2lu_lu2mc                    = .false.
   logical,              public :: cref_is_active_bvec_for_sigma                        = .false.
   logical,              public :: vector_exchange_mc2lu_lu2mc_active                   = .false.

@@ -1740,6 +1740,9 @@ C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
 C  CMO,   mo coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
+!  
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -1800,6 +1803,10 @@ C
      &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       END IF
+
+!     set flag for new integrals (required for parallel MCSCF/CI with lucita)
+      mcscf_ci_update_ijkl = .true.
+
       RETURN
       END
 C  /* Deck tractl_1 */

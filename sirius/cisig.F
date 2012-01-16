@@ -286,6 +286,14 @@ c
           xctype1               =  1
           if(ncvec > 1) xctype1 =  2
 
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
+            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+            write(lupri,*) ' before tra-ci run: sot-mat'
+            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#endif
+
           if(ci_program .eq. 'LUCITA   ')then
             call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry ! swap see subroutine below
      &                                     lsym,        ! lhs symmetry ! swap see subroutine below
@@ -311,34 +319,13 @@ c
      &                                     .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
      &                                     .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
-!#define LUCI_DEBUG
-#ifdef LUCI_DEBUG
-            write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
-            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
-            write(lupri,*) ' before tra-ci run: sot-mat'
-            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
-#endif
 
             call mcscf_lucita_interface(cvec(1,ivec),wrk(klc2),
      &                                  wrk(klsot),dummy2,
      &                                  'rotate  Cvec',
      &                                  wrk(klfree),lfree_local,iprtci)
 
-#ifdef LUCI_DEBUG
-            write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
-            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
-            write(lupri,*) ' after  tra-ci run: sot-mat'
-            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
-#endif
-
           else if(ci_program .eq. 'SIRIUS-CI')then
-
-#ifdef LUCI_DEBUG
-            write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
-            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
-            write(lupri,*) ' before tra-ci run: sot-mat'
-            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
-#endif
 
             CALL TRACI2(WRK(KLSOT),NASHT,LSYM,NAEL,XNDXCI(KIASTR),
      &                  XNDXCI(KTAIJ),XNDXCI(KTATO),XNDXCI(KTASYM),
@@ -354,14 +341,14 @@ c
      &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
 !    &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,100)
 
+          end if
 #ifdef LUCI_DEBUG
-            write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
-            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
-            write(lupri,*) ' after  tra-ci run: sot-mat'
-            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+          write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
+          call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+          write(lupri,*) ' after  tra-ci run: sot-mat'
+          call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
 #undef LUCI_DEBUG
 #endif
-          end if
         END IF
   450 CONTINUE
 C
@@ -918,6 +905,9 @@ C     ... singlet-singlet coupling of 2-electron integrals
 !       ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
       else if(ci_program .eq. 'LUCITA   ')then
         call dcopy(NNASHX,FCAC,1,WRK(KUFCAC),1)
+!
+!       set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+        mcscf_ci_trial_vector = .true.
 
 !       set vector exchange type: cref
         if(cref_is_active_bvec_for_sigma)then 
@@ -940,6 +930,9 @@ C       CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
 C    &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
       end do
 C
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+
       CALL GETTIM(T3,W3)
 C
 C
@@ -1458,6 +1451,7 @@ C   INFORB : NASHT,NNASHX,N2ASHX
 C   INFLIN : LSYMRF,LSYMPT,LSYMST,NCONRF,NCONST
 C   INFTIM : NCALLS,TIMCPU,TIMWAL    ! IDTIM is index for these
 C
+#include <priunit.h>
 #include <maxorb.h>
 #include <inforb.h>
 #include <inflin.h>
@@ -1481,6 +1475,9 @@ C
       CALL GETTIM(T2,W2)
       CALL GETTIM(T3,W3)
 C
+!
+!     set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .true.
 C
       DO 300 IOSIM = 1, NOSIM
 C
@@ -1513,6 +1510,9 @@ C
 C
   300 CONTINUE
 C
+!
+!     re-set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .false.
 C
       CALL GETTIM(T4,W4)
 C

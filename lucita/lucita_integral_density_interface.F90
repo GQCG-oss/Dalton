@@ -22,6 +22,9 @@ contains
   subroutine lucita_pointer_integral_driver(citask_id,                      &
                                             int1_or_rho1,                   &
                                             int2_or_rho2,                   &
+                                            update_ijkl_from_env,           &
+                                            orbital_trial_vector,           &
+                                            ci_trial_vector,                &
                                             mcscf_provides_integrals,       &
                                             print_level)
 !*******************************************************************************
@@ -35,6 +38,9 @@ contains
     real(8), intent(inout)          :: int1_or_rho1(*)
     real(8), intent(inout)          :: int2_or_rho2(*)
     integer, intent(in)             :: print_level
+    logical, intent(inout)          :: update_ijkl_from_env
+    logical, intent(in)             :: orbital_trial_vector
+    logical, intent(in)             :: ci_trial_vector
     logical, intent(in)             :: mcscf_provides_integrals
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
@@ -43,6 +49,9 @@ contains
       call intim(citask_id,                &
                  int1_or_rho1,             &
                  int2_or_rho2,             &
+                 update_ijkl_from_env,     &
+                 orbital_trial_vector,     &
+                 ci_trial_vector,          &
                  mcscf_provides_integrals)
 
   end subroutine lucita_pointer_integral_driver

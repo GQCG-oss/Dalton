@@ -1855,6 +1855,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 
 ***********************************************************************
       subroutine intim(citask_id,int1_mcscf,int2_mcscf,
+     &                 update_ijkl_from_env,
+     &                 orbital_trial_vector,
+     &                 ci_trial_vector,
      &                 mcscf_provides_integrals)
 *
 * Interface to external integrals
@@ -1876,6 +1879,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       character (len=12), intent(in) :: citask_id
       real(8), intent(inout)         :: int1_mcscf(*)
       real(8), intent(inout)         :: int2_mcscf(*)
+      logical, intent(inout)         :: update_ijkl_from_env
+      logical, intent(in)            :: orbital_trial_vector
+      logical, intent(in)            :: ci_trial_vector
       logical, intent(in)            :: mcscf_provides_integrals
 #include "priunit.h"
 #include "mxpdim.inc"
@@ -1889,6 +1895,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "parluci.h"
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      character (len=25)   :: file_name
+      logical              :: update_ijkl
 
 !     pointers for symmetry blocks of integrals
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
@@ -1904,56 +1912,104 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
      &   citask_id.eq.'return sigma' )then
 
         IF(INCORE.EQ.1)THEN
-          if(luci_myproc .eq. luci_master)then
-            CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
-            LSCR = current_free_mem - 1000
-            idum = 0
-!           set local marker + allocate space for lucita-dalton integral interface
-            call memman(idum,idum,'MARK  ',idum,'dalint')
-            call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+          write(file_name,'(a17,i3,a1,i4)')
+     &    'IJKL_REOD_LUCITA-',1,'.',luci_myproc
+          do i = 18, 20
+            if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+          end do
+          do i = 22, 25
+            if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+          end do
+          LUINT_LUCITA = -1
+          CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+          is_2e_int_active = 2
 
-            CALL LUCITA_GETINT_DALTON(einact_mc2lu,WORK(KINT1),
-     &                                WORK(KINT2),
-     &                                WORK(kintdal_interface),LSCR,
-     &                                int1_mcscf,int2_mcscf,
-     &                                mcscf_provides_integrals,1)
-            ecore = ecore_orig + einact_mc2lu
-!           release memory
-            CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
+          update_ijkl =
+     &    update_ijkl_from_env.or.ci_trial_vector.or.
+     &    orbital_trial_vector
+
+          if(update_ijkl)then
+
+            if(luci_myproc .eq. luci_master)then
+              CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
+              LSCR = current_free_mem - 1000
+              idum = 0
+!             set local marker + allocate space for lucita-dalton integral interface
+              call memman(idum,idum,'MARK  ',idum,'dalint')
+              call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+
+              CALL LUCITA_GETINT_DALTON(einact_mc2lu,WORK(KINT1),
+     &                                  WORK(KINT2),
+     &                                  WORK(kintdal_interface),LSCR,
+     &                                  int1_mcscf,int2_mcscf,
+     &                                  mcscf_provides_integrals,1)
+              ecore = ecore_orig + einact_mc2lu
+!             release memory
+              CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-            if(luci_myproc .eq. luci_master)then
-              write(lupri,*) 
-     &        '*** co-worker',luci_myproc,'reports 1-ints:',
-     &                        nint1
-              call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
-              write(lupri,*) 
-     &        '*** co-worker',luci_myproc,'reports 2-ints:',
-     &                        nint2
-              call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
-            end if ! debug print for co-worker-id luci_master+1
+              if(luci_myproc .eq. luci_master)then
+                write(lupri,*) 
+     &          '*** co-worker',luci_myproc,'reports 1-ints:',
+     &                          nint1
+                call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
+                write(lupri,*) 
+     &          '*** co-worker',luci_myproc,'reports 2-ints:',
+     &                          nint2
+                call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+              end if ! debug print for co-worker-id luci_master+1
 #endif
-          end if
+            end if
 #ifdef VAR_MPI
-          if(luci_nmproc .gt. 1)then
-!           set sync_ctrl option
-            sync_ctrl_array(3) = .true.
-!           synchronize the co-workers with the 1-/2-electron integrals
-            call sync_coworkers_cfg(work(kint1),work(kint2))
+            if(luci_nmproc .gt. 1)then
+!             set sync_ctrl option
+              sync_ctrl_array(3) = update_ijkl
+!             synchronize the co-workers with the 1-/2-electron integrals
+              call sync_coworkers_cfg(work(kint1),work(kint2))
 
 #ifdef LUCI_DEBUG
-            if(luci_myproc .eq. luci_master+1)then
-              print *, '*** co-worker',luci_myproc,'reports 1-ints:',
-     &                      nint1
-              call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
-              print *, '*** co-worker',luci_myproc,'reports 2-ints:',
-     &                      nint2
-              call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
-            end if ! debug print for co-worker-id luci_master+1
-#endif
+              if(luci_myproc .eq. luci_master+1)then
+                print *, '*** co-worker',luci_myproc,'reports 1-ints:',
+     &                        nint1
+                call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
+                print *, '*** co-worker',luci_myproc,'reports 2-ints:',
+     &                        nint2
+                call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+              end if ! debug print for co-worker-id luci_master+1
 !#undef LUCI_DEBUG
-          end if
 #endif
+            end if
+#endif
+            
+            if(.not.orbital_trial_vector.and..not.ci_trial_vector)then
+!             put 1e- and 2e-integrals to file
+!             --------------------------------
+              WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIIJKL'
+              WRITE(LUINT_LUCITA) nint1, nint2
+              CALL WRITT(LUINT_LUCITA, nint1, work(kint1))
+              if(is_2e_int_active .gt. 1)
+     &        CALL WRITT(LUINT_LUCITA, nint2, work(kint2))
+              WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+              update_ijkl_from_env = .false.
+            end if
+!           1e-integrals from MCSCF environment, 2e-integrals from file
+            if(ci_trial_vector)then
+              CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+              READ (LUINT_LUCITA) nint1, nint2
+              CALL READT(LUINT_LUCITA, nint1, work(kint2))
+              CALL READT(LUINT_LUCITA, nint2, work(kint2))
+            end if
+          else
+!           read 1e- and 2e-integrals from file
+!           -----------------------------------
+            CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+            READ (LUINT_LUCITA) nint1, nint2
+            CALL READT(LUINT_LUCITA, nint1, work(kint1))
+            if(is_2e_int_active .gt. 1)
+     &      CALL READT(LUINT_LUCITA, nint2, work(kint2))
+          end if
+          CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
         ELSE
           CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
         END IF
