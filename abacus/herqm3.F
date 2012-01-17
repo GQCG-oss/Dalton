@@ -4347,16 +4347,6 @@ C-------------------------------------------------------------------------
 C
 C INPUT FROM ABACUS TO QMMM CALCULATIONS 
 C
-C Oct. 2009: AHS and JMO
-C   Added a restart option (.MMREST) which requires the relay matrix to be
-C   present in the file QMMMIM. Currently the restart option only supports
-C   the calculation of the relay matrix.
-C
-C Nov. 2009: JMO
-C   Added an option (.RELMAT) for constructing the relay matrix, saving it
-C   in the file QMMMIM and quit. Intended for use in subsequent restarted
-C   calculations.
-C
 #include <implicit.h>
 #include <priunit.h>
 #include <gnrinf.h>
@@ -4367,7 +4357,7 @@ C
 #include <qmmm.h>
 #include <codata.h>
 C
-      PARAMETER ( NTABLE = 26, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 27, D1 = 1.0D0)
       LOGICAL NEWDEF,RCUT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -4388,8 +4378,8 @@ C
      *            '.ISOPOL', '.PRINT ', '.MMREST', '.RELMAT',
 !                  21         22         23         24
      *            '.ZERODI', '.ZEROQU', '.ZEROOC', '.NOPOL ',
-!                  25         26
-     *            '.NOMB  ', '.MMTIME'/
+!                  25         26         27
+     *            '.NOMB  ', '.MMTIME', '.NEWEXC'/
  
       CALL QENTER('QMMMIN')
  
@@ -4430,6 +4420,7 @@ C      SELPOL   = .FALSE.   ! Skip selected systems response related to the elec
       RELMAT   = .FALSE.   ! Construct relay matrix, save to QMMMIM and quit
       NOMB     = .FALSE.   ! Remove many-body effects, i.e. no induced dipole - induced dipole interactions
       MMTIME   = .FALSE.   ! Print wall times used in different parts of the QMMM module
+      NEWEXC   = .FALSE.   ! Use new type of exclusion list
 
       NEWDEF = (WORD .EQ. '*QMMM  ')
       ICHANG = 0
@@ -4450,7 +4441,7 @@ C
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &               19,20,21,22,23,24,25,26), I
+     &               19,20,21,22,23,24,25,26,27), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -4631,6 +4622,10 @@ C           See if further input is provided for this option
 
    26     CONTINUE
             MMTIME = .TRUE.
+          GO TO 100
+
+   27     CONTINUE
+            NEWEXC = .TRUE.
           GO TO 100
 
         ELSE IF (PROMPT .EQ. '*') THEN

@@ -1665,8 +1665,6 @@ C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
      &            IMXEXC=20, D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
-      PARAMETER (AU_TO_GM=80*3.1415926D0**3 / 137.036**2 * 
-     &     0.591177**4 *2.418884)
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include <iratdef.h>
@@ -1691,6 +1689,9 @@ C
 C Sonia: MCD variables
 #include <wrkrsp.h>
 C
+      PARAMETER (AU_TO_GM=1.0D50*8*PI**2*ALPHAC*
+     &     (XTANGM10*1.0D2)**5 /(CCM*1.0D2*0.0036749326))
+
       DIMENSION JWOPSV(2,MAXWOP)
       CHARACTER A1*1, B1*1, CLABEL*8
       LOGICAL LYESGP

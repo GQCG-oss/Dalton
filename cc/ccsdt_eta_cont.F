@@ -1410,7 +1410,7 @@ C              Can use kend3 since we do not need the integrals anymore.
                KINDEXB  = KINDSQ  + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
                KINDEXD = KINDEXB  + (NCKI(ISALJB)  - 1)/IRAT + 1
                KTMAT   = KINDEXD + (NCKI(ISALJD) - 1)/IRAT + 1
-               KTRVI8  = KTMAT   + MAX(NCKIJ(ISCKIJ),NCKIJ(ISBLCKIJ))
+               KTRVI8  = KTMAT   + NCKIJMAX
                KTRVI9  = KTRVI8  + NCKATR(ISYCKD)
                KTRVI10 = KTRVI9  + NCKATR(ISYCKD)
                KEND4   = KTRVI10 + NCKATR(ISYCKD)

@@ -46,7 +46,7 @@
   !> \param num_atoms is the number of atoms
   !> \return num_opt is the number of operators (including different derivatives)
   !>         and total geometric derivatives
-  !> \return kind_int indicates if the kind of integral matrices, 1 for symmetric, -1 for
+  !> \return kind_int indicates the kind of integral matrices, 1 for symmetric, -1 for
   !>         anti-symmetric, others for square
   subroutine gen1int_prop_attr(prop_name, is_lao, order_mom,             &
                                max_num_cent, order_geo_total, num_atoms, &

@@ -875,7 +875,7 @@ C
 #ifdef BUILD_GEN1INT
 C...  added by Bin Gao, Feb. 16, 2011
 C...  initializes basis sets used in Gen1Int interface
-      call gen1int_dal_init(NONTYP, KATOM, NONT, IQM(:,1),
+      call gen1int_ifc_init(1, NONTYP, KATOM, NONT, IQM(:,1),
      &                      NBLCK(:,1), KANG, JCO(:,:,1), KBLOCK,
      &                      NUC(:,1), NRC(:,1), KPRIM, ALPHA(:,:,1),
      &                      CPRIMU(:,:,:,1))
@@ -2779,9 +2779,10 @@ C     sufficient, as it will not stop duplication of AOs within a single
 C     block, as for instance may happen if you use Pople-type basis sets
 C     K.Ruud, Nov.-2006
 C
-         WRITE (LUPRI,*) ' >>> WARNING GTOINP: If primitive exponents'//
-     &        ' are duplicated in several blocks, ',
-     &        ' >>> Douglas-Kroll will not work correctly'
+         WRITE (LUPRI,'(//A/A/)')
+     &      ' WARNING GTOINP >>> If primitive exponents'//
+     &         ' are duplicated in several blocks,',
+     &      ' WARNING GTOINP >>> Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C

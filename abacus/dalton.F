@@ -392,15 +392,13 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
                END IF
          END IF
 
-#ifdef THIS_IS_CMAKE_BUILD
-         write(lupri, *)
-         write(lupri, *)
-         write(lupri, '(a)') 'Compilation info'
-         write(lupri, '(a)') '----------------'
-         write(lupri, *)
-         call print_compilation_info()
-         call print_git_revision_info()
-#endif
+Cahs#ifdef THIS_IS_CMAKE_BUILD
+Cahs         write(lupri, '(//a/a/)')
+Cahs     &     'Compilation info',
+Cahs     &     '----------------'
+Cahs         call print_compilation_info()
+Cahs         call print_git_revision_info()
+Cahs#endif
 
 #ifdef VAR_OMP
          write(lupri,'(//A,I5)')
@@ -604,7 +602,7 @@ C
 #ifdef BUILD_GEN1INT
 C...  added by Bin Gao, Oct. 2, 2011
 C...  cleans up for Gen1Int interface
-      call gen1int_dal_clean
+      call gen1int_ifc_clean
 #endif
       CALL QEXIT('DALTON main')
       END

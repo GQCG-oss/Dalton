@@ -15,7 +15,7 @@ mkdir -p $TMP_DIR
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 
 cd $TMP_DIR
-./setup --fc=ifort --cc=icc --debug --scratch=$SCRATCH_DIR -D BUILDNAME="linux-ifort-debug"
+./setup --fc=ifort --cc=icc --debug -D SCRATCH_DIR=$SCRATCH_DIR -D BUILDNAME="linux-ifort-debug"
 
 cd $TMP_DIR/build
 

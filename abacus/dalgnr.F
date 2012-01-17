@@ -419,10 +419,10 @@ C     ***************************************************************
 C
 C     If we use the Douglas-Kroll transformation, we first generate
 C     the necessary integrals in the primitive basis.
-C     See further notes in DKINTF routine.
+C     See further notes in DKH_INTF routine.
 C
       IF (DKTRAN .AND. RNHERM) THEN
-         CALL DKINTF(WORK(1),LMWORK)
+         CALL DKH_INTF(WORK(1),LMWORK)
          NEWPRP = .TRUE.
       END IF
 C
@@ -1141,7 +1141,7 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            'xXXXXXX', '.DOUGLA'/
+     &            '.THRRED', '.DOUGLA'/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
