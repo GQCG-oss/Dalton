@@ -277,7 +277,9 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: pe_fock, pe_energy, peqm
+      use polarizable_embedding, only: peqm, pe_fock, pe_energy,
+     &                                 pe_repuls, pe_savden,
+     &                                 pe_repulsion, pe_save_density
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -326,6 +328,7 @@ Cholesky
 #include <choscf.h>
 C
 #include <center.h>
+#include <nuclei.h>
 C
       LOGICAL DIFDNO
 Cholesky
@@ -718,12 +721,14 @@ C
                 call quit('PEQM not implemented for open shell.')
             end if
             call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
-            call pe_fock(daosav(1,1), wrk(kfcpe), nnbasx,
-     &                   esolt, wrk(kfree), lfree)
+            call pe_fock(daosav(:,1), wrk(kfcpe:kfcpe+nnbasx-1),
+     &                   esolt, wrk(kfree:lfree))
             call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
             call memrel('DIIS_CTL.pe_fock', wrk, kfrsav, kfcpe, kfree,
      &                  lfree)
          end if
+
+         
 
          IF (FLAG(16)) THEN
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
@@ -1331,10 +1336,23 @@ C
      &              NSYM,NBAS,NORB)
        END IF
 
-       ! needed to get specific PE energy contributions
+       ! needed to get specific PE energy contributions for printout
+       ! when converged
        if (peqm) then
-         call pe_energy(daosav(1:nnbasx,1), wrk(kfree:lfree))
+        call pe_energy(daosav(:,1), wrk(kfree:lfree))
        end if
+       ! save density matrix 
+       if (pe_savden) then
+        if (nsym > 1) then
+            call quit('PEQM cannot be combined with symmetry.')
+        end if
+        call pe_save_density(cmo, nbast, norbt, cord(:,1:natoms),
+     &                       charge(1:natoms), wrk(kfree:lfree))
+       end if
+       ! save intermolecular part of Fock matrix
+!       if (pe_repuls .and. pe_twoint) then
+!        call pe_repulsion(faosav(1,indevc,1), wrk(kfree), lfree)
+!       end if
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'

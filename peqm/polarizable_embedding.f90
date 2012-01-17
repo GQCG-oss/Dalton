@@ -6,17 +6,25 @@ module polarizable_embedding
 
     public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
     public :: pe_linear_response
+    public :: pe_frozen_density, pe_intermolecular, pe_repulsion
 
     ! options and other logicals
-    logical, public, save :: peqm
-    logical, save :: final_energy
-
+    logical, public, save :: peqm = .false.
+    logical, save :: final_energy = .false.
+    logical, save, public :: pe_twoint = .false.
+    logical, save, public :: pe_repuls = .false.
+    logical, save, public :: pe_savden = .false.
+    
+    
     ! logical units from dalton
     integer, save :: luout
 
     ! precision
     integer, parameter :: r8 = selected_real_kind(15)
     integer, parameter :: i8 = selected_int_kind(18)
+
+    ! constants (codata 2002: 1 bohr = 0.5291772108 Aa)
+    real(r8), parameter :: au2aa = 1.8897261249935897d0
 
     ! number of centers and length of exclusion list
     integer, public, save :: ncents
@@ -29,7 +37,7 @@ module polarizable_embedding
     real(r8), parameter :: zero = 1.0d-8
 
     ! elements, coordinates and exclusion list
-    real(r8), dimension(:), allocatable, save :: elems
+    real(r8), dimension(:), allocatable, save :: Zs
     real(r8), dimension(:,:), allocatable, save :: Rs
     integer, dimension(:,:), allocatable, save :: exlists
 
@@ -59,19 +67,23 @@ module polarizable_embedding
     ! quadrupole-quadrupole polarizabilities
     real(r8), dimension(:,:), allocatable, save :: Cs
 
-    ! QM info: number of nuclei, nuclear charges and nuclear coordinates
-    integer, save :: qmnucs, nbas
+    ! QM core info: number of nuclei, nuclear charges and nuclear coordinates
+    integer, save :: qmnucs
     real(r8), dimension(:), allocatable, save :: Zm
     real(r8), dimension(:,:), allocatable, save :: Rm
 
+    ! frozen density fragment info
+    integer, public, save :: fdnucs
+
 ! TODO:
+! Avoid dimensions as input
+! Remove double zeroing and unecessary zeroing?
 ! Symmetry
 ! Environment properties in herrdn.F
 ! write to output
 ! memory checks
 ! response properties (incl. magnetic)
 ! AA and AU
-! initialize when allocate (only if necessary?)
 ! save individual one-electron integrals and reuse
 ! cutoffs and damping
 ! memory management
@@ -81,6 +93,8 @@ module polarizable_embedding
 ! parallelization (openMP, MPI, CUDA/openCL)
 
 contains
+
+!------------------------------------------------------------------------------
 
 subroutine pe_dalton_input(word, luinp, lupri)
 
@@ -97,9 +111,18 @@ subroutine pe_dalton_input(word, luinp, lupri)
     do
         read(luinp,'(a7)') option
         call upcase(option)
-       
+
+        ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
+        ! calculate intermolecular two-electron integrals
+        else if (trim(option(2:)) == 'TWOINT') then
+            read(luinp,'(a7)') fdnucs
+            pe_twoint = .true.
+        else if (trim(option(2:)) == 'SAVDEN') then
+            pe_savden = .true.
+        else if (trim(option(2:)) == 'REPULS') then
+            pe_repuls = .true.
         else if (option(1:1) == '*') then
             word = option
             exit
@@ -114,28 +137,28 @@ end subroutine pe_dalton_input
 
 !------------------------------------------------------------------------------
 
-subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
+subroutine pe_read_potential(coords, charges, work)
 
     ! input parameters could be options given in dalton input
     ! so that cutoffs etc. are handled in here.
 
-    integer, intent(in) :: natoms, nwrk
-    real(r8), dimension(natoms), intent(in) :: charge
-    real(r8), dimension(3,natoms), intent(in) :: cord
-    real(r8), dimension(nwrk), intent(inout) :: work
+    real(r8), dimension(:), intent(in) :: charges
+    real(r8), dimension(:,:), intent(in) :: coords
+    real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, k, s
-    integer :: lupot, nlines
+    integer :: lupot, nlines, nwrk
     real(r8), dimension(15) :: temp
     character(2) :: auoraa
     character(80) :: word
 
-    qmnucs = natoms
+    nwrk = size(work)
+    qmnucs = size(charges)
 
-    allocate(Rm(3,qmnucs), Zm(qmnucs))
+    allocate(Rm(3,qmnucs), Zm(qmnucs)); Rm = 0.0d0; Zm = 0.0d0
 
-    Rm = cord
-    Zm = charge
+    Rm = coords
+    Zm = charges
 
     lmul = .false.;lpol = .false.; lhypol = .false.
 
@@ -147,15 +170,14 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
         if (trim(word) == 'coordinates') then
             read(lupot,*) ncents
             read(lupot,*) auoraa
-            allocate(elems(ncents), Rs(3,ncents))
-            elems = 0.0d0; Rs = 0.0d0
+            allocate(Zs(ncents), Rs(3,ncents)); Zs = 0.0d0; Rs = 0.0d0
             do i = 1, ncents
-                read(lupot,*) elems(i), (Rs(j,i), j = 1, 3)
+                read(lupot,*) Zs(i), (Rs(j,i), j = 1, 3)
             end do
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
-            allocate(Q0(1,ncents))
-            Q0 = 0.0d0; temp = 0.0d0
+            allocate(Q0(1,ncents)); Q0 = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
@@ -163,8 +185,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'dipoles') then
             lmul(1) = .true.
-            allocate(Q1(3,ncents))
-            Q1 = 0.0d0; temp = 0.0d0
+            allocate(Q1(3,ncents)); Q1 = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 3)
@@ -172,8 +194,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'quadrupoles') then
             lmul(2) = .true.
-            allocate(Q2(6,ncents))
-            Q2 = 0.0d0; temp = 0.0d0
+            allocate(Q2(6,ncents)); Q2 = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
@@ -181,8 +203,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'octopoles') then
             lmul(3) = .true.
-            allocate(Q3(10,ncents))
-            Q3 = 0.0d0; temp = 0.0d0
+            allocate(Q3(10,ncents)); Q3 = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
@@ -190,8 +212,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'hexadecapoles') then
             lmul(4) = .true.
-            allocate(Q4(15,ncents))
-            Q4 = 0.0d0; temp = 0.0d0
+            allocate(Q4(15,ncents)); Q4 = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 15)
@@ -199,8 +221,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'isoalphas') then
             lpol(0) = .true.
-            allocate(alphas(6,ncents))
-            alphas = 0.0d0; temp = 0.0d0
+            allocate(alphas(6,ncents)); alphas = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
@@ -211,8 +233,7 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
         else if (trim(word) == 'alphas') then
             lpol(1) = .true.
             if (.not. allocated(alphas)) then
-                allocate(alphas(6,ncents))
-                alphas = 0.0d0
+                allocate(alphas(6,ncents)); alphas = 0.0d0
             end if
             temp = 0.0d0
             read(lupot,*) nlines
@@ -222,8 +243,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'As') then
             lpol(2) = .true.
-            allocate(As(10,ncents))
-            As = 0.0d0; temp = 0.0d0
+            allocate(As(10,ncents)); As = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
@@ -231,8 +252,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'Cs') then
             lpol(3) = .true.
-            allocate(Cs(15,ncents))
-            Cs = 0.0d0; temp = 0.0d0
+            allocate(Cs(15,ncents)); Cs = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 15)
@@ -240,8 +261,8 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'betas') then
             lhypol(1) = .true.
-            allocate(betas(10,ncents))
-            betas = 0.0d0; temp = 0.0d0
+            allocate(betas(10,ncents)); betas = 0.0d0
+            temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
@@ -249,8 +270,7 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
             end do
         else if (trim(word) == 'exlists') then
             read(lupot,*) nexlist
-            allocate(exlists(nexlist,ncents))
-            exlists = 0; temp = 0.0d0
+            allocate(exlists(nexlist,ncents)); exlists = 0
             do i = 1, ncents
                 read(lupot,*) (exlists(j,i), j = 1, nexlist)
             end do
@@ -261,10 +281,14 @@ subroutine pe_read_potential(cord, charge, natoms, work, nwrk)
 
 100 continue
 
+    ! If coordinates are in AA then convert to AU
+    if (auoraa == 'AA') then
+        Rs = Rs * au2aa
+    end if
+
     ! default exclusion list (everything polarizes everything)
     if (.not. allocated(exlists)) then
-        allocate(exlists(1,ncents))
-        exlists = 0
+        allocate(exlists(1,ncents)); exlists = 0
         do i = 1, ncents
             exlists(1,i) = i
         end do
@@ -278,15 +302,12 @@ end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
 
-subroutine pe_fock(density, fock, nb, Epe, work, nwrk)
+subroutine pe_fock(density, fock, Epe, work)
 
-    integer, intent(in) :: nb, nwrk
     real(r8), intent(inout) :: Epe
-    real(r8), dimension(nb), intent(in) :: density
-    real(r8), dimension(nb), intent(out) :: fock
-    real(r8), dimension(nwrk), intent(inout) :: work
-
-    nbas = nb
+    real(r8), dimension(:), intent(in) :: density
+    real(r8), dimension(:), intent(out) :: fock
+    real(r8), dimension(:), intent(inout) :: work
 
     fock = 0.0d0
 
@@ -307,9 +328,9 @@ subroutine pe_energy(density, work)
 
     final_energy = .true.
 
-    call pe_electrostatic(density, work(1:nbas), work(nbas+1:))
+    call pe_electrostatic(density, work(1:size(density)), work(size(density)+1:))
 
-    call pe_polarization(density, work(1:nbas), work(nbas+1:))
+    call pe_polarization(density, work(1:size(density)), work(size(density)+1:))
 
     final_energy = .false.
 
@@ -391,7 +412,7 @@ subroutine es_monopoles(density, fock, Eel, Enuc, work)
     real(r8), dimension(1) :: Tsm
     real(r8), dimension(:,:), allocatable :: Q0_ints
 
-    allocate(Q0_ints(nbas,1))
+    allocate(Q0_ints(size(density),1)); Q0_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
 
@@ -433,7 +454,7 @@ subroutine es_dipoles(density, fock, Eel, Enuc, work)
     real(r8), dimension(3) :: Rsm, Tsm
     real(r8), dimension(:,:), allocatable :: Q1_ints
 
-    allocate(Q1_ints(nbas,3))
+    allocate(Q1_ints(size(density),3)); Q1_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
 
@@ -480,7 +501,7 @@ subroutine es_quadrupoles(density, fock, Eel, Enuc, work)
     real(r8), dimension(6) :: Tsm, factors
     real(r8), dimension(:,:), allocatable :: Q2_ints
 
-    allocate(Q2_ints(nbas,6))
+    allocate(Q2_ints(size(density),6)); Q2_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
 
@@ -529,7 +550,7 @@ subroutine es_octopoles(density, fock, Eel, Enuc, work)
     real(r8), dimension(10) :: Tsm, factors
     real(r8), dimension(:,:), allocatable :: Q3_ints
 
-    allocate(Q3_ints(nbas,10))
+    allocate(Q3_ints(size(density),10)); Q3_ints = 0.0d0
 
     Eel = 0.0d0; Enuc = 0.0d0
 
@@ -587,8 +608,10 @@ subroutine pe_polarization(density, fock, work)
             end if
         end do
 
-        allocate(Mu(3*npol), Fel(3*npol), Fnuc(3*npol), Fmul(3*npol))
-        Mu = 0.0d0; Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
+        allocate(Mu(3*npol)); Mu = 0.0d0
+        allocate(Fel(3*npol)); Fel = 0.0d0
+        allocate(Fnuc(3*npol)); Fnuc = 0.0d0
+        allocate(Fmul(3*npol)); Fmul = 0.0d0
 
 
         if (final_energy) then
@@ -605,8 +628,7 @@ subroutine pe_polarization(density, fock, work)
 
         else
 
-            allocate(Mu_ints(size(fock),3))
-            Mu_ints = 0.0d0
+            allocate(Mu_ints(size(fock),3)); Mu_ints = 0.0d0
 
             call get_electron_fields(Fel, density, work)
             call get_nuclear_fields(Fnuc, work)
@@ -653,9 +675,7 @@ subroutine get_induced_dipoles(Mu, F, work)
 
     n = size(Mu)
 
-    allocate(A(int(n*(n+1)*0.5d0)))
-
-    A = 0.0d0
+    allocate(A(int(n*(n+1)*0.5d0))); A = 0.0d0
     
     call get_response_matrix(A, .false., work)
 
@@ -681,9 +701,7 @@ subroutine get_electric_fields(Ftot, density, work)
 
     n = size(Ftot)
 
-    allocate(Fel(n), Fnuc(n), Fmul(n))
-
-    Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
+    allocate(Fel(n), Fnuc(n), Fmul(n)); Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
     call get_electron_fields(Fel, density, work)
 
@@ -706,10 +724,13 @@ subroutine get_electron_fields(Fel, density, work)
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, l
+    integer :: nnbas
     integer, parameter :: k = 1
     real(r8), dimension(:,:), allocatable :: Fel_ints
 
-    allocate(Fel_ints(nbas,3))
+    nnbas = size(density)
+
+    allocate(Fel_ints(nnbas,3)); Fel_ints = 0.0d0
 
     l = 0
 
@@ -717,8 +738,7 @@ subroutine get_electron_fields(Fel, density, work)
 
         if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-        call get_Tk_integrals(Fel_ints, 3*nbas, k, 'packed', Rs(:,i),&
-                              work, size(work))
+        call get_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 
         do j = 1, 3
             Fel(l+j) = dot(density, Fel_ints(:,j))
@@ -1357,7 +1377,7 @@ subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i
-    integer :: ncomps
+    integer :: ncomps, nnbas
     real(r8) :: taylor
     real(r8), dimension(:), allocatable :: factors
 
@@ -1373,14 +1393,14 @@ subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
         taylor = 1.0d0 / 24.0d0
     end if
 
+    nnbas = size(Qk_ints, 1)
     ncomps = size(Qk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
-    call get_Tk_integrals(Qk_ints, ncomps*nbas, k, 'packed', Rij,&
-                          work, size(work))
+    call get_Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij, work, size(work))
 
     ! get symmetry factors
-    allocate(factors(ncomps))
+    allocate(factors(ncomps)); factors = 0.0d0
     call get_symmetry_factors(factors, k)
 
     ! dot T^(k) integrals with multipole to get Q^(k) integrals
@@ -1447,6 +1467,166 @@ end subroutine get_symmetry_factors
 
 !------------------------------------------------------------------------------
 
+subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
+
+    external :: get_Tk_integrals
+
+    integer, intent(in) :: nbas, norb
+    real(r8), dimension(nbas,norb), intent(in) :: cmo
+    real(r8), dimension(:), intent(in) :: charges
+    real(r8), dimension(:,:), intent(in) :: coords
+    real(r8), dimension(:), intent(inout) :: work
+
+    integer :: i, j, l
+    integer :: ncents, nwrk
+    integer, parameter :: k = 0
+    integer :: lucore, luden
+    character(2) :: auoraa
+    real(r8) :: Een
+    real(r8), dimension(:,:), allocatable :: density
+    real(r8), dimension(:), allocatable :: T0_ints, folded_density
+
+    ncents = size(charges)
+    nwrk = size(work)
+
+    ! read in information about qm core
+    call openfile('core.dat', lucore, 'new', 'formatted')
+    rewind(lucore)
+    read(lucore,*) auoraa
+    read(lucore,*) qmnucs
+    allocate(Zm(qmnucs), Rm(3,qmnucs)); Zm = 0.0d0; Rm = 0.0d0
+    do i = 1, qmnucs
+        read(lucore,*) Zm(i), (Rm(j,i), j = 1, 3)
+    end do
+    close(lucore)
+    if (auoraa == 'AA') then
+        Rm = Rm * au2aa
+    end if
+
+    ! generate density matrix
+    allocate(density(nbas,nbas)); density = 0.0d0
+    call gemm(cmo, cmo, density, transb='T', alpha=2.0d0)
+    
+    ! fold density matrix
+    allocate(folded_density(nbas*(nbas+1)/2)); folded_density = 0.0d0
+    l = 1
+    do j = 1, nbas
+        do i = j, nbas
+            if (i == j) then
+                folded_density(l) = density(i,j)
+            else
+                folded_density(l) = density(i,j) + density(j,i)
+            end if
+            l = l + 1
+        end do
+    end do
+
+    ! calculate nuclear - electron energy contribution
+    allocate(T0_ints(nbas)); T0_ints = 0.0d0
+    Een = 0.0d0
+    do i = 1, qmnucs
+        call get_Tk_integrals(T0_ints, nbas, k, Rm(:,i), work, size(work))
+        Een = Een + dot(folded_density, Zm(i) * T0_ints)
+    end do
+    deallocate(T0_ints, folded_density)
+
+    ! save density and energy for subsequent calculations
+    call openfile('pe_density.bin', luden, 'new', 'unformatted')
+    rewind(luden)
+    write(luden) Een
+    write(luden) ncents
+    write(luden) coords, charges
+    write(luden) nbas
+    write(luden) density
+    close(luden)
+
+    deallocate(density)
+
+end subroutine pe_frozen_density
+
+!------------------------------------------------------------------------------
+
+subroutine pe_intermolecular(nbas, work)
+
+    external :: sirfck
+
+    integer, intent(in) :: nbas
+    real(r8), dimension(:), intent(inout) :: work
+
+    integer :: i, j, k, l
+    integer :: fbas, cbas
+    integer :: luden, lufck
+    integer, dimension(1) :: ifctyp
+    real(r8) :: Een
+    real(r8), dimension(:), allocatable :: core_fock
+    real(r8), dimension(:,:), allocatable :: frozen_density, full_density
+    real(r8), dimension(:,:), allocatable :: full_fock
+
+
+    call openfile('pe_density.bin', luden, 'new', 'unformatted')
+    rewind(luden)
+    read(luden) Een
+    read(luden) ncents
+    allocate(Rs(3,ncents), Zs(ncents)); Rs = 0.0d0; Zs = 0.0d0
+    read(luden) Rs, Zs
+    read(luden) fbas
+    allocate(frozen_density(fbas, fbas)); frozen_density = 0.0d0
+    read(luden) frozen_density
+    close(luden)
+
+    cbas = nbas - fbas
+
+    ! resize density matrix to full size and fill with frozen density in first
+    ! block
+    allocate(full_density(nbas,nbas)); full_density = 0.0d0
+    full_density(1:fbas:1:fbas) = frozen_density
+
+    ! get two-electron part of Fock matrix using resized density matrix
+    allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
+!     IFCTYP = +/-XY
+!       X indicates symmetry about diagonal
+!         X = 0 No symmetry
+!         X = 1 Symmetric
+!         X = 2 Anti-symmetric
+!       Y indicates contributions
+!         Y = 0 no contribution !
+!         Y = 1 Coulomb
+!         Y = 2 Exchange
+!         Y = 3 Coulomb + Exchange
+!       + sign: alpha + beta matrix (singlet)
+!       - sign: alpha - beta matrix (triplet)
+!     sirfck(fock, density, ?, isymdm, ifctyp, direct, work, nwrk)
+    ifctyp = 11
+    call sirfck(full_fock, full_density, 1, (/1/), ifctyp, .true.,&
+                work, size(work))
+
+    ! extract lower triangle part of full Fock matrix corresponding to
+    ! core fragment
+    allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
+    l = 1
+    do j = 1, cbas
+        do i = j, cbas
+            core_fock(l) = full_fock(fbas+i,fbas+j)
+            l = l + 1
+        end do
+    end do
+
+    ! save core Fock matrix
+    call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
+    rewind(lufck)
+    write(lufck) 
+
+
+end subroutine pe_intermolecular
+
+!------------------------------------------------------------------------------
+
+subroutine pe_repulsion()
+
+end subroutine pe_repulsion
+
+!------------------------------------------------------------------------------
+
 function nrm2(x)
 
     real(r8), external :: dnrm2
@@ -1481,17 +1661,56 @@ subroutine axpy(x, y, a)
     real(r8), dimension(:), intent(in) :: x
     real(r8), dimension(:), intent(inout) :: y
 
-    integer :: n
+    if (.not. present(a)) a = 1.0d0
 
-    n = size(x)
-
-    if (.not. present(a)) then
-        a = 1.0d0
-    end if
-
-    call daxpy(n, a, x, 1, y, 1)
+    call daxpy(size(x), a, x, 1, y, 1)
 
 end subroutine axpy
+
+!------------------------------------------------------------------------------
+
+subroutine gemm(a, b, c, transa, transb, alpha, beta)
+
+    external :: dgemm
+
+    real(r8), optional :: alpha, beta
+    character(1), optional :: transa, transb
+    real(r8), dimension(:,:), intent(in) :: a, b
+    real(r8), dimension(:,:) , intent(inout) :: c
+
+    integer :: m, n, k, lda, ldb, ldc
+
+    if (.not. present(alpha)) alpha = 1.0d0
+
+    if (.not. present(beta)) beta = 0.0d0
+
+    if (.not. present(transa)) transa = 'N'
+
+    if (.not. present(transb)) transb = 'N'
+
+    if (transa == 'N') then
+        m = size(a, 1)
+        k = size(a, 2)
+        lda = m
+    else
+        k = size(a, 1)
+        m = size(a, 2)
+        lda = k
+    end if
+
+    if (transb == 'N') then
+        n = size(b, 2)
+        ldb = k
+    else
+        n = size(b, 1)
+        ldb = n
+    end if
+
+    ldc = m
+
+    call dgemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+
+end subroutine gemm
 
 !------------------------------------------------------------------------------
 
@@ -1520,7 +1739,7 @@ subroutine invert_packed_matrix(ap, sp, work)
         if (size(work) < n) then
             stop('Not enough work memory to invert matrix.')
         end if
-        allocate(ipiv(n))
+        allocate(ipiv(n)); ipiv = 0.0d0
         call dsptrf('L', n, ap, ipiv, info)
         if (info /= 0) call xerbla('sptrf', info)
         call dsptri('L', n, ap, ipiv, work, info)
@@ -1543,7 +1762,7 @@ subroutine solve(ap, b)
 
     n = size(b)
 
-    allocate(ipiv(n))
+    allocate(ipiv(n)); ipiv = 0.0d0
 
     info = 0
 
@@ -1620,14 +1839,14 @@ subroutine pe_linear_response(nvecs, bvecs, evecs, ne, cmo, nbas, norb, work, nw
         end if
     end do
 
-    allocate(Mu(3*npol), Fel(3*npol))
-    Mu = 0.0d0; Fel = 0.0d0
+    allocate(Mu(3*npol), Fel(3*npol)); Mu = 0.0d0; Fel = 0.0d0
 
-    allocate(Fel_ao(nnbas,3))
-    allocate(Fel_mo(nnorb), Fel_mof(n2orb), Fel_tf(n2orb))
+    allocate(Fel_ao(nnbas,3)); Fel_ao = 0.0d0
+    allocate(Fel_mo(nnorb)); Fel_mo = 0.0d0
+    allocate(Fel_mof(n2orb)); Fel_mof = 0.0d0
+    allocate(Fel_tf(n2orb)); Fel_tf = 0.0d0
 
-    allocate(FMu(n2orb,nvecs))
-    FMu = 0.0d0
+    allocate(FMu(n2orb,nvecs)); FMu = 0.0d0
 
     do n = 1, nvecs
 
@@ -1639,8 +1858,7 @@ subroutine pe_linear_response(nvecs, bvecs, evecs, ne, cmo, nbas, norb, work, nw
 
             if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-            call get_Tk_integrals(Fel_ao, 3*nnbas, k, 'packed', Rs(:,i),&
-                                  work, nwrk)
+            call get_Tk_integrals(Fel_ao, 3*nnbas, k, Rs(:,i), work, size(work))
 
             Fel_mo = 0.0d0; Fel_mof = 0.0d0; Fel_tf = 0.0d0
 ! TODO: replace by blas/lapack or own routines
@@ -1663,8 +1881,7 @@ subroutine pe_linear_response(nvecs, bvecs, evecs, ne, cmo, nbas, norb, work, nw
 
             if (abs(maxval(alphas(:,i))) <= zero) cycle
 
-            call get_Tk_integrals(Fel_ao, 3*nnbas, k, 'packed', Rs(:,i),&
-                                  work, nwrk)
+            call get_Tk_integrals(Fel_ao, 3*nnbas, k, Rs(:,i), work, size(work))
 
             Fel_mo = 0.0d0; Fel_mof = 0.0d0
 

@@ -4451,8 +4451,7 @@ C
 
       if (peqm) then
         if (peqm) call pe_read_potential(cord(:,1:natoms),
-     &                                   charge(1:natoms), natoms,
-     &                                   work, lwork)
+     &                                   charge(1:natoms), work)
         write(lupri,'(//2x,a)') 'Polarizable Embedding potential'
         write(lupri,'(2x,a)')   '-------------------------------'
         write(lupri,'(/4x,a,i6)') 'Number of sites: ', ncents
