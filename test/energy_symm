@@ -30,7 +30,7 @@ cat > energy_symm_sirius.info <<'%EOF%'
 #######################################################################
 cat > energy_symm.mol <<'%EOF%'
 BASIS
-3-21G
+cc-pVDZ
 HBr with small basis set
 
     2    2  X  Y   a
@@ -55,21 +55,27 @@ cat > energy_symm.dal <<'%EOF%'
  1 0 0 0
 *CONFIGURATION INPUT
 .SYMMETRY
- 1
+ 2
 .SPIN MUL
  1
 .INACTIVE
  0 0 0 0
 .ELECTRONS
  2
-#.RAS1 SPACE
-# 1 0 0 0
-#.RAS2 SPACE
-# 1 0 0 0
-#.RAS1 HOLES
-# 0 2
-.CAS SPACE
-3 0 0 0
+.RAS1 SPACE
+ 1 0 0 0
+.RAS2 SPACE
+ 1 1 1 0
+.RAS3 SPACE
+ 2 1 1 0
+.RAS1 HOLES
+ 0 2
+.RAS3 ELECTRONS
+ 0 2
+#.CAS SPACE
+#2 1 1 0
+#.CAS SPACE
+#3 0 0 0
 *CI INP
 .THRESH
 1.0D-07
@@ -84,10 +90,10 @@ LUCITA
 100
 .MAX CI
 100
-*PRINT LEVELS
-.PRINTF
- 9 0
- 15 19 20 25 21 26 27 23 33
+#*PRINT LEVELS
+#.PRINTF
+# 9 0
+# 15 19 20 25 21 26 27 23 33
 # p6flag(25) is code for 2el dens
 # p6flag(15) is code for 1el dens
 # p6flag(21) is code for active fock matrix
