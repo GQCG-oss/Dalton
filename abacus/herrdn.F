@@ -4272,8 +4272,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-      use polarizable_embedding, only: pe_read_potential, peqm, ncents,
-     &                                 lmul, lpol
+      use polarizable_embedding, only: pe_read_potential, peqm,
+     &                                 pe_savden, ncents, lmul, lpol
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -4450,8 +4450,7 @@ C
       END IF
 
       if (peqm) then
-        if (peqm) call pe_read_potential(cord(:,1:natoms),
-     &                                   charge(1:natoms), work)
+        call pe_read_potential(cord(:,1:natoms), charge(1:natoms), work)
         write(lupri,'(//2x,a)') 'Polarizable Embedding potential'
         write(lupri,'(2x,a)')   '-------------------------------'
         write(lupri,'(/4x,a,i6)') 'Number of sites: ', ncents
@@ -4469,6 +4468,8 @@ C
         else if (lpol(1)) then
             write(lupri,'(4x,a)') 'Anisotropic polarizabilities.'
         end if
+      else if (pe_savden) then
+        call pe_read_potential(cord(:,1:natoms), charge(1:natoms), work)
       end if
 
       RETURN

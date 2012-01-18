@@ -5,15 +5,16 @@ module polarizable_embedding
     private
 
     public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
-    public :: pe_linear_response
     public :: pe_frozen_density, pe_intermolecular, pe_repulsion
+
 
     ! options and other logicals
     logical, public, save :: peqm = .false.
     logical, save :: final_energy = .false.
-    logical, save, public :: pe_twoint = .false.
-    logical, save, public :: pe_repuls = .false.
-    logical, save, public :: pe_savden = .false.
+    logical, public, save :: pe_twoint = .false.
+    logical, public, save :: pe_repuls = .false.
+    logical, public, save :: pe_savden = .false.
+    logical, public, save :: pe_qmes = .false.
     
     
     ! logical units from dalton
@@ -44,6 +45,7 @@ module polarizable_embedding
     ! energy contributions
     real(r8), dimension(0:3), public, save :: Ees
     real(r8), dimension(3), public, save :: Epol
+    real(r8), dimension(:), allocatable, public, save :: Efd
 
     ! multipole moments
     ! monopoles
@@ -73,9 +75,14 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
     ! frozen density fragment info
+    integer, save :: nfdens
     integer, public, save :: fdnucs
+    real(r8), dimension(:), allocatable, save :: Zfd
+    real(r8), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
+! write list of publications which should be cited
+! write output related to QMES
 ! Avoid dimensions as input
 ! Remove double zeroing and unecessary zeroing?
 ! Symmetry
@@ -119,10 +126,17 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,'(a7)') fdnucs
             pe_twoint = .true.
+        ! save frozen density
         else if (trim(option(2:)) == 'SAVDEN') then
             pe_savden = .true.
+        ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
             pe_repuls = .true.
+        else if (trim(option(2:)) == '.QMES') then
+            ! number of frozen densities
+            read(luinp,'(a7)') nfdens
+            allocate(Efd(nfdens)); Efd = 0.0d0
+            pe_qmes = .true.
         else if (option(1:1) == '*') then
             word = option
             exit
@@ -317,6 +331,8 @@ subroutine pe_fock(density, fock, Epe, work)
 
     Epe = sum(Ees) + sum(Epol)
 
+    if (pe_qmes) Epe = Epe + sum(Efd)
+
 end subroutine pe_fock
 
 !------------------------------------------------------------------------------
@@ -388,6 +404,10 @@ subroutine pe_electrostatic(density, fock, work)
 !            Esave = Esave + Enuc
 !        end if
 
+        if (pe_qmes) then
+            call es_frozen_densities(density, fock, work)
+        end if
+
         if (.not. final_energy) then
             call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
             rewind(lutemp)
@@ -397,6 +417,61 @@ subroutine pe_electrostatic(density, fock, work)
     end if
 
 end subroutine pe_electrostatic
+
+!------------------------------------------------------------------------------
+
+subroutine es_frozen_densities(density, fock, work)
+
+    real(r8), dimension(:), intent(in) :: density
+    real(r8), dimension(:), intent(inout) :: fock, work
+
+    integer :: i, j, l
+    integer, parameter :: k = 0
+    integer :: lufck
+    real(r8) :: Ene
+    real(r8), dimension(1) :: Tfm
+    real(r8), dimension(3) :: Rfm
+    real(r8), dimension(:), allocatable :: core_fock
+    real(r8), dimension(:,:), allocatable :: Zfd_ints
+    character(80) :: filename
+
+    allocate(core_fock(size(density)), Zfd_ints(size(density),1))
+
+    do i = 1, nfdens
+
+        Ene= 0.0d0; core_fock = 0.0d0; fdnucs = 0
+        Rfd = 0.0d0; Zfd = 0.0d0; Zfd_ints = 0.0d0
+
+        filename = 'pe_fock_'//char(i)//'.bin'
+        call openfile(trim(filename), lufck, 'old', 'unformatted')
+        rewind(lufck)
+        read(lufck) Ene
+        read(lufck) core_fock
+        read(lufck) fdnucs
+        read(lufck) Rfd, Zfd
+        close(lufck)
+
+        fock = fock + core_fock
+
+        Efd(i) = Efd(i) + Ene + dot(density, core_fock)
+
+        do j = 1, fdnucs
+            call get_Qk_integrals(Zfd_ints, k, Rfd(:,j), (/Zfd(j)/), work)
+            Efd(i) = Efd(i) + dot(density, Zfd_ints(:,1))
+            fock = fock + Zfd_ints(:,1)
+        end do
+
+        do j = 1, fdnucs
+            do l = 1, qmnucs
+                Rfm = Rm(:,l) - Rfd(:,j)
+                call get_Tk_tensor(Tfm, k, Rfm)
+                Efd(i) = Efd(i) + Zm(l) * Zfd(j) * Tfm(1)
+            end do
+        end do
+
+    end do
+
+end subroutine es_frozen_densities
 
 !------------------------------------------------------------------------------
 
@@ -1478,23 +1553,20 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, l
-    integer :: ncents, nwrk
+    integer :: npol
     integer, parameter :: k = 0
     integer :: lucore, luden
     character(2) :: auoraa
-    real(r8) :: Een
+    real(r8) :: Ene
     real(r8), dimension(:,:), allocatable :: density
-    real(r8), dimension(:), allocatable :: T0_ints, folded_density
-
-    ncents = size(charges)
-    nwrk = size(work)
+    real(r8), dimension(:), allocatable :: T0_ints, folded_density, Ffd
 
     ! read in information about qm core
-    call openfile('core.dat', lucore, 'new', 'formatted')
+    call openfile('core.dat', lucore, 'old', 'formatted')
     rewind(lucore)
     read(lucore,*) auoraa
     read(lucore,*) qmnucs
-    allocate(Zm(qmnucs), Rm(3,qmnucs)); Zm = 0.0d0; Rm = 0.0d0
+    Zm = 0.0d0; Rm = 0.0d0
     do i = 1, qmnucs
         read(lucore,*) Zm(i), (Rm(j,i), j = 1, 3)
     end do
@@ -1520,27 +1592,42 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
             l = l + 1
         end do
     end do
+    print *,'test'
+
+    ! get electric field from frozen density at polarizable sites
+    npol = 0
+    do i = 1, ncents
+        if (abs(maxval(alphas(:,i))) >= zero) then
+            npol = npol + 1
+        end if
+    end do
+    allocate(Ffd(3*npol)); Ffd = 0.0d0
+    call get_electron_fields(Ffd, folded_density, work)
+    print *,'test'
 
     ! calculate nuclear - electron energy contribution
     allocate(T0_ints(nbas)); T0_ints = 0.0d0
-    Een = 0.0d0
+    Ene = 0.0d0
     do i = 1, qmnucs
         call get_Tk_integrals(T0_ints, nbas, k, Rm(:,i), work, size(work))
-        Een = Een + dot(folded_density, Zm(i) * T0_ints)
+        Ene = Ene + dot(folded_density, Zm(i) * T0_ints)
     end do
     deallocate(T0_ints, folded_density)
+    print *,'test'
 
     ! save density and energy for subsequent calculations
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
     rewind(luden)
-    write(luden) Een
-    write(luden) ncents
+    write(luden) Ene
+    write(luden) size(charges)
     write(luden) coords, charges
+    write(luden) npol
+    write(luden) Ffd
     write(luden) nbas
     write(luden) density
     close(luden)
 
-    deallocate(density)
+    deallocate(density, Ffd)
 
 end subroutine pe_frozen_density
 
@@ -1555,20 +1642,24 @@ subroutine pe_intermolecular(nbas, work)
 
     integer :: i, j, k, l
     integer :: fbas, cbas
+    integer :: npol
     integer :: luden, lufck
     integer, dimension(1) :: ifctyp
-    real(r8) :: Een
-    real(r8), dimension(:), allocatable :: core_fock
+    real(r8) :: Ene
+    real(r8), dimension(:), allocatable :: core_fock, Ffd
     real(r8), dimension(:,:), allocatable :: frozen_density, full_density
     real(r8), dimension(:,:), allocatable :: full_fock
 
 
-    call openfile('pe_density.bin', luden, 'new', 'unformatted')
+    call openfile('pe_density.bin', luden, 'old', 'unformatted')
     rewind(luden)
-    read(luden) Een
-    read(luden) ncents
-    allocate(Rs(3,ncents), Zs(ncents)); Rs = 0.0d0; Zs = 0.0d0
-    read(luden) Rs, Zs
+    read(luden) Ene
+    read(luden) fdnucs
+    allocate(Rfd(3,fdnucs), Zfd(fdnucs)); Rfd = 0.0d0; Zfd = 0.0d0
+    read(luden) Rfd, Zfd
+    read(luden) npol
+    allocate(Ffd(3*npol))
+    read(luden) Ffd
     read(luden) fbas
     allocate(frozen_density(fbas, fbas)); frozen_density = 0.0d0
     read(luden) frozen_density
@@ -1579,7 +1670,7 @@ subroutine pe_intermolecular(nbas, work)
     ! resize density matrix to full size and fill with frozen density in first
     ! block
     allocate(full_density(nbas,nbas)); full_density = 0.0d0
-    full_density(1:fbas:1:fbas) = frozen_density
+    full_density(1:fbas,1:fbas) = frozen_density
 
     ! get two-electron part of Fock matrix using resized density matrix
     allocate(full_fock(nbas,nbas)); full_fock = 0.0d0
@@ -1600,6 +1691,8 @@ subroutine pe_intermolecular(nbas, work)
     call sirfck(full_fock, full_density, 1, (/1/), ifctyp, .true.,&
                 work, size(work))
 
+    deallocate(full_density)
+
     ! extract lower triangle part of full Fock matrix corresponding to
     ! core fragment
     allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
@@ -1611,11 +1704,19 @@ subroutine pe_intermolecular(nbas, work)
         end do
     end do
 
+    deallocate(full_fock)
+
     ! save core Fock matrix
     call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
     rewind(lufck)
-    write(lufck) 
+    write(lufck) Ene
+    write(lufck) core_fock
+    write(lufck) ncents
+    write(lufck) Rs, Zs
+    write(lufck) Ffd
+    close(lufck)
 
+    deallocate(core_fock, Rs, Zs, Ffd)
 
 end subroutine pe_intermolecular
 
@@ -1804,104 +1905,6 @@ subroutine openfile(filename, lunit, stat, frmt)
     return
 
 end subroutine openfile
-
-!------------------------------------------------------------------------------
-
-subroutine pe_linear_response(nvecs, bvecs, evecs, ne, cmo, nbas, norb, work, nwrk)
-
-    external :: get_Tk_integrals, uthu, dsptsi, onexh1, slvsor
-    real(r8), external :: slvqlm
-    integer, intent(in) :: nvecs, ne, nbas, norb, nwrk
-    real(r8), dimension(norb,norb,nvecs), intent(in) :: bvecs
-    real(r8), dimension(nbas,norb), intent(in) :: cmo
-    real(r8), dimension(ne,nvecs), intent(inout) :: evecs
-    real(r8), dimension(nwrk), intent(inout) :: work
-
-    integer :: npol, nnbas, nnorb, n2bas, n2orb
-    real(r8) :: dum
-    integer :: i, j, l, n
-    integer, parameter :: k = 1
-    real(r8), dimension(:), allocatable :: Mu, Fel
-    real(r8), dimension(:,:), allocatable :: Fel_ao
-    real(r8), dimension(:), allocatable :: Fel_mo, Fel_mof, Fel_tf
-    real(r8), dimension(:,:), allocatable :: FMu
-
-    nnbas = nbas * (nbas + 1) / 2
-    nnorb = norb * (norb + 1) / 2
-
-    n2bas = nbas * nbas
-    n2orb = norb * norb
-
-    npol = 0
-    do i = 1, ncents
-        if (abs(maxval(alphas(:,i))) >= zero) then
-            npol = npol + 1
-        end if
-    end do
-
-    allocate(Mu(3*npol), Fel(3*npol)); Mu = 0.0d0; Fel = 0.0d0
-
-    allocate(Fel_ao(nnbas,3)); Fel_ao = 0.0d0
-    allocate(Fel_mo(nnorb)); Fel_mo = 0.0d0
-    allocate(Fel_mof(n2orb)); Fel_mof = 0.0d0
-    allocate(Fel_tf(n2orb)); Fel_tf = 0.0d0
-
-    allocate(FMu(n2orb,nvecs)); FMu = 0.0d0
-
-    do n = 1, nvecs
-
-        Fel = 0.0d0
-
-        l = 0
-
-        do i = 1, ncents
-
-            if (abs(maxval(alphas(:,i))) <= zero) cycle
-
-            call get_Tk_integrals(Fel_ao, 3*nnbas, k, Rs(:,i), work, size(work))
-
-            Fel_mo = 0.0d0; Fel_mof = 0.0d0; Fel_tf = 0.0d0
-! TODO: replace by blas/lapack or own routines
-            do j = 1, 3
-                call uthu(Fel_ao(:,j), Fel_mo, cmo, work, nbas, norb)
-                call dsptsi(norb, Fel_mo, Fel_mof)
-                call onexh1(bvecs(:,:,n), Fel_mof, Fel_tf)
-                Fel(l+j) = slvqlm((/0.0D0/), (/0.0D0/), Fel_tf, dum)
-            end do
-
-            l = l + 3
-
-        end do
-
-        call get_induced_dipoles(Mu, Fel, work)
-
-        l = 0
-
-        do i = 1, ncents
-
-            if (abs(maxval(alphas(:,i))) <= zero) cycle
-
-            call get_Tk_integrals(Fel_ao, 3*nnbas, k, Rs(:,i), work, size(work))
-
-            Fel_mo = 0.0d0; Fel_mof = 0.0d0
-
-            do j = 1, 3
-                call uthu(Fel_ao(:,j), Fel_mo, cmo, work, nbas, norb)
-                call dsptsi(norb, Fel_mo, Fel_mof)
-                call axpy(Fel_mof, FMu(:,n), Mu(l+j))
-            end do
-
-            l = l + 3
-
-        end do
-
-    end do
-
-    call slvsor(.true., .true., nvecs, (/0.0D0/), Evecs, FMu)
-
-    deallocate(Fel_ao, Fel_mo, Fel_mof, Fel_tf, FMu)
-
-end subroutine pe_linear_response
 
 !------------------------------------------------------------------------------
 

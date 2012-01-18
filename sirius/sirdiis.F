@@ -279,7 +279,7 @@ C
 C
       use polarizable_embedding, only: peqm, pe_fock, pe_energy,
      &                                 pe_repuls, pe_savden,
-     &                                 pe_repulsion, pe_save_density
+     &                                 pe_repulsion, pe_frozen_density
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -1346,11 +1346,11 @@ C
         if (nsym > 1) then
             call quit('PEQM cannot be combined with symmetry.')
         end if
-        call pe_save_density(cmo, nbast, norbt, cord(:,1:natoms),
+        call pe_frozen_density(cmo, nbast, norbt, cord(:,1:natoms),
      &                       charge(1:natoms), wrk(kfree:lfree))
        end if
        ! save intermolecular part of Fock matrix
-!       if (pe_repuls .and. pe_twoint) then
+!       if (pe_repuls) then
 !        call pe_repulsion(faosav(1,indevc,1), wrk(kfree), lfree)
 !       end if
 C

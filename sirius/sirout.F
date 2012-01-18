@@ -61,7 +61,8 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-      use polarizable_embedding, only: peqm, Ees, Epol, lmul, lpol
+      use polarizable_embedding, only: peqm, pe_qmes, Ees, Epol, Efd,
+     &                                 lmul, lpol
 #include <implicit.h>
 C
 #include <litinfo.h>
@@ -359,6 +360,8 @@ csonia 04/10/95
      &                                        'Quadrupoles     ', Ees(2)
         if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
      &                                        'Octopoles       ', Ees(3)
+        if (pe_qmes) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                      'Frozen densities', sum(Efd)
         if (lpol(0) .or. lpol(1)) then
             write(lupri,'(/7x,a)') 'Polarization contributions:'
             write(lupri,'(9x,a16,5x,f20.12)')
@@ -368,8 +371,13 @@ csonia 04/10/95
             write(lupri,'(9x,a16,5x,f20.12)')
      &                                       'Multipole       ', Epol(3)
         end if
-        write(lupri,'(/3x,a18,9x,f20.12)')
+        if (pe_qmes) then
+            write(lupri,'(/3x,a18,9x,f20.12)')
+     &            '@ Total PE energy: ', sum(Ees) + sum(Epol) + sum(Efd)
+        else
+            write(lupri,'(/3x,a18,9x,f20.12)')
      &                      '@ Total PE energy: ', sum(Ees) + sum(Epol)
+        end if
       ELSE
         ESOLT = D0
       END IF
