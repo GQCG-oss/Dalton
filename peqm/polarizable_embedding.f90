@@ -124,7 +124,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
             peqm = .true.
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
-            read(luinp,'(a7)') fdnucs
+            read(luinp,*) fdnucs
             pe_twoint = .true.
         ! save frozen density
         else if (trim(option(2:)) == 'SAVDEN') then
@@ -132,9 +132,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
             pe_repuls = .true.
-        else if (trim(option(2:)) == '.QMES') then
+        else if (trim(option(2:)) == 'QMES') then
             ! number of frozen densities
-            read(luinp,'(a7)') nfdens
+            read(luinp,*) nfdens
             allocate(Efd(nfdens)); Efd = 0.0d0
             pe_qmes = .true.
         else if (option(1:1) == '*') then
@@ -151,13 +151,13 @@ end subroutine pe_dalton_input
 
 !------------------------------------------------------------------------------
 
-subroutine pe_read_potential(coords, charges, work)
+subroutine pe_read_potential(work, coords, charges)
 
     ! input parameters could be options given in dalton input
     ! so that cutoffs etc. are handled in here.
 
-    real(r8), dimension(:), intent(in) :: charges
-    real(r8), dimension(:,:), intent(in) :: coords
+    real(r8), dimension(:), intent(in), optional :: charges
+    real(r8), dimension(:,:), intent(in), optional :: coords
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, k, s
@@ -167,12 +167,17 @@ subroutine pe_read_potential(coords, charges, work)
     character(80) :: word
 
     nwrk = size(work)
-    qmnucs = size(charges)
-
-    allocate(Rm(3,qmnucs), Zm(qmnucs)); Rm = 0.0d0; Zm = 0.0d0
-
-    Rm = coords
-    Zm = charges
+    if (present(coords) .and. present(charges)) then
+        qmnucs = size(charges)
+        allocate(Rm(3,qmnucs), Zm(qmnucs)); Rm = 0.0d0; Zm = 0.0d0
+        Rm = coords
+        Zm = charges
+    else if (present(coords) .and. .not. present(charges)) then
+        print *, 'ERROR: nuclear charges of the QM system are missing.'
+        stop
+    else if (.not. present(coords) .and. present(charges)) then
+        print *, 'ERROR: nuclear coordinates of the QM system are missing.'
+    end if
 
     lmul = .false.;lpol = .false.; lhypol = .false.
 
@@ -404,16 +409,16 @@ subroutine pe_electrostatic(density, fock, work)
 !            Esave = Esave + Enuc
 !        end if
 
-        if (pe_qmes) then
-            call es_frozen_densities(density, fock, work)
-        end if
-
         if (.not. final_energy) then
             call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
             rewind(lutemp)
             write(lutemp) Esave, fock
             close(lutemp)
         end if
+    end if
+
+    if (pe_qmes) then
+        call es_frozen_densities(density, fock, work)
     end if
 
 end subroutine pe_electrostatic
@@ -428,36 +433,41 @@ subroutine es_frozen_densities(density, fock, work)
     integer :: i, j, l
     integer, parameter :: k = 0
     integer :: lufck
-    real(r8) :: Ene
+    real(r8) :: Ene, Een, Eee, Enn
     real(r8), dimension(1) :: Tfm
     real(r8), dimension(3) :: Rfm
-    real(r8), dimension(:), allocatable :: core_fock
+    real(r8), dimension(:), allocatable :: fd_fock
     real(r8), dimension(:,:), allocatable :: Zfd_ints
+    character(99) :: ci
     character(80) :: filename
 
-    allocate(core_fock(size(density)), Zfd_ints(size(density),1))
+    allocate(fd_fock(size(density)), Zfd_ints(size(density),1))
+
+    Efd = 0.0d0
 
     do i = 1, nfdens
 
-        Ene= 0.0d0; core_fock = 0.0d0; fdnucs = 0
-        Rfd = 0.0d0; Zfd = 0.0d0; Zfd_ints = 0.0d0
+        Zfd_ints = 0.0d0
 
-        filename = 'pe_fock_'//char(i)//'.bin'
+        write(ci,*) i
+        ci = adjustl(ci)
+        filename = 'pe_fock_'//trim(ci)//'.bin'
         call openfile(trim(filename), lufck, 'old', 'unformatted')
         rewind(lufck)
         read(lufck) Ene
-        read(lufck) core_fock
+        read(lufck) fd_fock
         read(lufck) fdnucs
+        allocate(Rfd(3,fdnucs), Zfd(fdnucs))
         read(lufck) Rfd, Zfd
         close(lufck)
 
-        fock = fock + core_fock
+        fock = fock + fd_fock
 
-        Efd(i) = Efd(i) + Ene + dot(density, core_fock)
+        Eee = dot(density, fd_fock)
 
         do j = 1, fdnucs
             call get_Qk_integrals(Zfd_ints, k, Rfd(:,j), (/Zfd(j)/), work)
-            Efd(i) = Efd(i) + dot(density, Zfd_ints(:,1))
+            Een = Een + dot(density, Zfd_ints(:,1))
             fock = fock + Zfd_ints(:,1)
         end do
 
@@ -465,11 +475,19 @@ subroutine es_frozen_densities(density, fock, work)
             do l = 1, qmnucs
                 Rfm = Rm(:,l) - Rfd(:,j)
                 call get_Tk_tensor(Tfm, k, Rfm)
-                Efd(i) = Efd(i) + Zm(l) * Zfd(j) * Tfm(1)
+                Enn = Enn + Zm(l) * Zfd(j) * Tfm(1)
             end do
         end do
 
+        deallocate(Rfd, Zfd)
+
+        print *, Ene, Een, Eee, Enn, Ene + Een + Eee + Enn
+
+        Efd(i) = Efd(i) + Ene + Een + Eee + Enn
+
     end do
+
+    deallocate(fd_fock, Zfd_ints)
 
 end subroutine es_frozen_densities
 
@@ -1553,7 +1571,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, l
-    integer :: npol
+    integer :: npol, nnbas
     integer, parameter :: k = 0
     integer :: lucore, luden
     character(2) :: auoraa
@@ -1566,7 +1584,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     rewind(lucore)
     read(lucore,*) auoraa
     read(lucore,*) qmnucs
-    Zm = 0.0d0; Rm = 0.0d0
+    allocate(Zm(qmnucs), Rm(3,qmnucs)); Zm = 0.0d0; Rm = 0.0d0
     do i = 1, qmnucs
         read(lucore,*) Zm(i), (Rm(j,i), j = 1, 3)
     end do
@@ -1577,22 +1595,27 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
 
     ! generate density matrix
     allocate(density(nbas,nbas)); density = 0.0d0
-    call gemm(cmo, cmo, density, transb='T', alpha=2.0d0)
-    
+!    density = 2.0d0 * matmul(cmo, transpose(cmo))
+    call gemm(cmo, cmo, density, 'N', 'T', 2.0d0, 0.0d0)
+
     ! fold density matrix
     allocate(folded_density(nbas*(nbas+1)/2)); folded_density = 0.0d0
+!    call dgefsp(nbas, density, folded_density)
     l = 1
-    do j = 1, nbas
-        do i = j, nbas
+    do i = 1, nbas
+        do j = 1, i
             if (i == j) then
                 folded_density(l) = density(i,j)
             else
-                folded_density(l) = density(i,j) + density(j,i)
+                folded_density(l) = 2.0d0 * density(i,j)
             end if
             l = l + 1
         end do
     end do
-    print *,'test'
+
+    do i = 1, nbas*(nbas+1)/2
+        print *, folded_density(i)
+    end do
 
     ! get electric field from frozen density at polarizable sites
     npol = 0
@@ -1603,17 +1626,17 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     end do
     allocate(Ffd(3*npol)); Ffd = 0.0d0
     call get_electron_fields(Ffd, folded_density, work)
-    print *,'test'
 
     ! calculate nuclear - electron energy contribution
-    allocate(T0_ints(nbas)); T0_ints = 0.0d0
+    nnbas = nbas*(nbas+1)/2
+    allocate(T0_ints(nnbas)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, qmnucs
-        call get_Tk_integrals(T0_ints, nbas, k, Rm(:,i), work, size(work))
-        Ene = Ene + dot(folded_density, Zm(i) * T0_ints)
+        call get_Tk_integrals(T0_ints, nnbas, k, Rm(:,i), work, size(work))
+        T0_ints = Zm(i) * T0_ints
+        Ene = Ene + dot(folded_density, T0_ints)
     end do
     deallocate(T0_ints, folded_density)
-    print *,'test'
 
     ! save density and energy for subsequent calculations
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
@@ -1644,7 +1667,7 @@ subroutine pe_intermolecular(nbas, work)
     integer :: fbas, cbas
     integer :: npol
     integer :: luden, lufck
-    integer, dimension(1) :: ifctyp
+    integer, dimension(1) :: isymdm, ifctyp
     real(r8) :: Ene
     real(r8), dimension(:), allocatable :: core_fock, Ffd
     real(r8), dimension(:,:), allocatable :: frozen_density, full_density
@@ -1687,8 +1710,9 @@ subroutine pe_intermolecular(nbas, work)
 !       + sign: alpha + beta matrix (singlet)
 !       - sign: alpha - beta matrix (triplet)
 !     sirfck(fock, density, ?, isymdm, ifctyp, direct, work, nwrk)
+    isymdm = 1
     ifctyp = 11
-    call sirfck(full_fock, full_density, 1, (/1/), ifctyp, .true.,&
+    call sirfck(full_fock, full_density, 1, isymdm, ifctyp, .false.,&
                 work, size(work))
 
     deallocate(full_density)
@@ -1697,9 +1721,9 @@ subroutine pe_intermolecular(nbas, work)
     ! core fragment
     allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
     l = 1
-    do j = 1, cbas
-        do i = j, cbas
-            core_fock(l) = full_fock(fbas+i,fbas+j)
+    do i = fbas + 1, nbas
+        do j = fbas + 1, i
+            core_fock(l) = full_fock(i,j)
             l = l + 1
         end do
     end do
@@ -1711,12 +1735,12 @@ subroutine pe_intermolecular(nbas, work)
     rewind(lufck)
     write(lufck) Ene
     write(lufck) core_fock
-    write(lufck) ncents
-    write(lufck) Rs, Zs
+    write(lufck) fdnucs
+    write(lufck) Rfd, Zfd
     write(lufck) Ffd
     close(lufck)
 
-    deallocate(core_fock, Rs, Zs, Ffd)
+    deallocate(core_fock, Rfd, Zfd, Ffd)
 
 end subroutine pe_intermolecular
 
@@ -1774,42 +1798,52 @@ subroutine gemm(a, b, c, transa, transb, alpha, beta)
 
     external :: dgemm
 
-    real(r8), optional :: alpha, beta
-    character(1), optional :: transa, transb
+    real(r8), intent(in), optional :: alpha, beta
+    character(1), intent(in), optional :: transa, transb
     real(r8), dimension(:,:), intent(in) :: a, b
     real(r8), dimension(:,:) , intent(inout) :: c
 
     integer :: m, n, k, lda, ldb, ldc
+    character(1) :: o_transa, o_transb
+    real(r8) :: o_alpha, o_beta
 
-    if (.not. present(alpha)) alpha = 1.0d0
+    if (present(alpha)) then
+        o_alpha = alpha
+    else
+        o_alpha = 1.0d0
+    end if
 
-    if (.not. present(beta)) beta = 0.0d0
+    if (present(beta)) then
+        o_beta = beta
+    else
+        o_beta = 0.0d0
+    end if
 
-    if (.not. present(transa)) transa = 'N'
+    if (present(transa)) then
+        o_transa = transa
+    else
+        o_transa = 'N'
+    end if
 
-    if (.not. present(transb)) transb = 'N'
+    if (present(transb)) then
+        o_transb = transb
+    else
+        o_transb = 'N'
+    end if
 
     if (transa == 'N') then
-        m = size(a, 1)
         k = size(a, 2)
-        lda = m
     else
         k = size(a, 1)
-        m = size(a, 2)
-        lda = k
     end if
 
-    if (transb == 'N') then
-        n = size(b, 2)
-        ldb = k
-    else
-        n = size(b, 1)
-        ldb = n
-    end if
+    m = size(c, 1)
+    n = size(c, 2)
+    lda = max(1, size(a, 1))
+    ldb = max(1, size(b, 1))
+    ldc = max(1, size(c, 1))
 
-    ldc = m
-
-    call dgemm(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+    call dgemm(o_transa, o_transb, m, n, k, o_alpha, a, lda, b, ldb, o_beta, c, ldc)
 
 end subroutine gemm
 
@@ -1891,7 +1925,7 @@ subroutine openfile(filename, lunit, stat, frmt)
       endif
     endif
 
-    do i = 10, 99
+    do i = 21, 99
       inquire(unit=i, opened=lopen)
       if (lopen) then
         cycle

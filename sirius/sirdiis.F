@@ -473,7 +473,8 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
-     &     .and. .not. peqm    .AND. .NOT.AOSAVE
+     &     .and. .not. peqm    .and. .not. pe_savden
+     &     .AND. .NOT.AOSAVE
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -1346,8 +1347,14 @@ C
         if (nsym > 1) then
             call quit('PEQM cannot be combined with symmetry.')
         end if
-        call pe_frozen_density(cmo, nbast, norbt, cord(:,1:natoms),
-     &                       charge(1:natoms), wrk(kfree:lfree))
+        lucmo = nbast*norbt
+        call memget('REAL', kucmo, lucmo, wrk, kfree, lfree)
+        call upkcmo(cmo, wrk(kucmo))
+        call pe_frozen_density(wrk(kucmo:kucmo+lucmo-1), nbast, norbt,
+     &                         cord(:,1:natoms), charge(1:natoms),
+     &                         wrk(kfree:lfree))
+        call memrel('DIIS_CTL.pe_frozen_density', wrk, kfrsav, kucmo,
+     &              kfree, lfree)
        end if
        ! save intermolecular part of Fock matrix
 !       if (pe_repuls) then

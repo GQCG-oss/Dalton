@@ -4450,7 +4450,7 @@ C
       END IF
 
       if (peqm) then
-        call pe_read_potential(cord(:,1:natoms), charge(1:natoms), work)
+        call pe_read_potential(work, cord(:,1:natoms), charge(1:natoms))
         write(lupri,'(//2x,a)') 'Polarizable Embedding potential'
         write(lupri,'(2x,a)')   '-------------------------------'
         write(lupri,'(/4x,a,i6)') 'Number of sites: ', ncents
@@ -4469,7 +4469,7 @@ C
             write(lupri,'(4x,a)') 'Anisotropic polarizabilities.'
         end if
       else if (pe_savden) then
-        call pe_read_potential(cord(:,1:natoms), charge(1:natoms), work)
+        call pe_read_potential(work)
       end if
 
       RETURN

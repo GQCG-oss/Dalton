@@ -973,7 +973,7 @@ C
       IF(I2TYP.EQ.0) THEN
         do ishela = 1, maxshl
           ncenta = ncntsh(ishela)
-          if (ncenta.le.fragnucs) then
+          if (ncenta.le.fdnucs) then
             iastrt = ishela + 1
             cycle
           end if
@@ -1156,31 +1156,28 @@ C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
                   SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
 
 ! Intermolecular Coulomb and exchange integrals
-!           if ((ncentb.le.fragnucs).and.
-!     &         (ncentc.le.fragnucs).and.
-!     &         (ncentd.le.fragnucs)) cycle
-!           if ((ncentb.gt.fragnucs).and.
-!     &         (ncentc.gt.fragnucs)) cycle
-!           if ((ncentb.gt.fragnucs).and.
-!     &         (ncentd.gt.fragnucs)) cycle
-!           if ((ncentc.gt.fragnucs).and.
-!     &         (ncentd.gt.fragnucs)) cycle
+!           if ((ncentb.le.fdnucs).and.
+!     &         (ncentc.le.fdnucs).and.
+!     &         (ncentd.le.fdnucs)) cycle
+!           if ((ncentb.gt.fdnucs).and.
+!     &         (ncentc.gt.fdnucs)) cycle
+!           if ((ncentb.gt.fdnucs).and.
+!     &         (ncentd.gt.fdnucs)) cycle
+!           if ((ncentc.gt.fdnucs).and.
+!     &         (ncentd.gt.fdnucs)) cycle
 
 ! Intermolecular Coulomb integrals only
-           if ((ncenta.le.fragnucs).or.
-     &         (ncentb.le.fragnucs)) cycle
-           if ((ncentc.gt.fragnucs).or.
-     &         (ncentd.gt.fragnucs)) cycle
+           if ((ncenta.le.fdnucs).or.(ncentb.le.fdnucs)) cycle
+           if ((ncentc.gt.fdnucs).or.(ncentd.gt.fdnucs)) cycle
 
 ! Make sure that all integrals are written
-!           if ((ishela.eq.iasmax).and.
-!     &         (ishelb.eq.ibsmax).and.
-!     &         (ncentc.eq.fragnucs).and.
-!     &         (ncentd.eq.fragnucs)) then
-!             icsmax = ishelc
-!             idsmax = isheld
-!           end if
-
+           if ((ishela.eq.iasmax).and.
+     &         (ishelb.eq.ibsmax).and.
+     &         (ncentc.eq.fdnucs).and.
+     &         (ncentd.eq.fdnucs)) then
+             icsmax = ishelc
+             idsmax = isheld
+           end if
 C
 C                 *******************************
 C                 ***** Calculate integrals *****
