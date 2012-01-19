@@ -29,6 +29,7 @@ module polarizable_embedding
 
     ! number of centers and length of exclusion list
     integer, public, save :: ncents
+    integer, save :: npol
     integer, save :: nexlist
 
     ! specifies what type of parameters are present
@@ -44,7 +45,7 @@ module polarizable_embedding
 
     ! energy contributions
     real(r8), dimension(0:3), public, save :: Ees
-    real(r8), dimension(3), public, save :: Epol
+    real(r8), dimension(4), public, save :: Epol
     real(r8), dimension(:), allocatable, public, save :: Efd
 
     ! multipole moments
@@ -75,8 +76,9 @@ module polarizable_embedding
     real(r8), dimension(:,:), allocatable, save :: Rm
 
     ! frozen density fragment info
-    integer, save :: nfdens
+    integer, save :: nfdens, nfdlist
     integer, public, save :: fdnucs
+    integer, dimension(:), allocatable, save :: fdlist
     real(r8), dimension(:), allocatable, save :: Zfd
     real(r8), dimension(:,:), allocatable, save :: Rfd
 
@@ -293,6 +295,10 @@ subroutine pe_read_potential(work, coords, charges)
             do i = 1, ncents
                 read(lupot,*) (exlists(j,i), j = 1, nexlist)
             end do
+        else if (trim(word) == 'fdlist') then
+            read(lupot,*) nfdlist
+            allocate(fdlist(nfdlist)); fdlist = 0
+            read(lupot,*) (fdlist(j), j = 1, nfdlist)
         else if (word(1:1) == '!' .or. word(1:1) == '#') then
             cycle
         end if
@@ -312,6 +318,21 @@ subroutine pe_read_potential(work, coords, charges)
             exlists(1,i) = i
         end do
     end if
+
+    ! default fdlist
+    if (.not. allocated(fdlist)) then
+        allocate(fdlist(1)); fdlist = 0
+    end if
+
+
+    ! number of polarizabilities different from zero
+    npol = 0
+    do i = 1, ncents
+        if (abs(maxval(alphas(:,i))) >= zero) then
+            npol = npol + 1
+        end if
+    end do
+
 
     close(lupot)
 
@@ -334,9 +355,9 @@ subroutine pe_fock(density, fock, Epe, work)
 
     call pe_polarization(density, fock, work)
 
-    Epe = sum(Ees) + sum(Epol)
+    Epe = sum(Ees) + sum(Epol(1:3))
 
-    if (pe_qmes) Epe = Epe + sum(Efd)
+    if (pe_qmes) Epe = Epe + sum(Efd) + Epol(4)
 
 end subroutine pe_fock
 
@@ -454,6 +475,7 @@ subroutine es_frozen_densities(density, fock, work)
         filename = 'pe_fock_'//trim(ci)//'.bin'
         call openfile(trim(filename), lufck, 'old', 'unformatted')
         rewind(lufck)
+        read(lufck) work(1:3*npol)
         read(lufck) Ene
         read(lufck) fd_fock
         read(lufck) fdnucs
@@ -480,8 +502,6 @@ subroutine es_frozen_densities(density, fock, work)
         end do
 
         deallocate(Rfd, Zfd)
-
-        print *, Ene, Een, Eee, Enn, Ene + Een + Eee + Enn
 
         Efd(i) = Efd(i) + Ene + Een + Eee + Enn
 
@@ -684,27 +704,20 @@ subroutine pe_polarization(density, fock, work)
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: fock, work
 
-    integer :: npol
     integer :: i, j, l
     integer, parameter :: k = 1
-    real(r8), dimension(:), allocatable :: Mu, Fel, Fnuc, Fmul
+    real(r8), dimension(:), allocatable :: Mu, Fel, Fnuc, Fmul, Ffd
     real(r8), dimension(:,:), allocatable :: Mu_ints
 
     Epol = 0.0d0
 
     if (lpol(0) .or. lpol(1)) then
 
-        npol = 0
-        do i = 1, ncents
-            if (abs(maxval(alphas(:,i))) >= zero) then
-                npol = npol + 1
-            end if
-        end do
-
         allocate(Mu(3*npol)); Mu = 0.0d0
         allocate(Fel(3*npol)); Fel = 0.0d0
         allocate(Fnuc(3*npol)); Fnuc = 0.0d0
         allocate(Fmul(3*npol)); Fmul = 0.0d0
+        if (pe_qmes) allocate(Ffd(3*npol)); Ffd = 0.0d0 
 
 
         if (final_energy) then
@@ -712,12 +725,18 @@ subroutine pe_polarization(density, fock, work)
             call get_electron_fields(Fel, density, work)
             call get_nuclear_fields(Fnuc, work)
             call get_multipole_fields(Fmul, work)
+            if (pe_qmes) call get_frozen_density_field(Ffd, work)
 
-            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+            if (pe_qmes) then
+                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
+            else
+                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+            end if
 
             Epol(1) = - 0.5d0 * dot(Mu, Fel)
             Epol(2) = - 0.5d0 * dot(Mu, Fnuc)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
+            if (pe_qmes) Epol(4) = - 0.5d0 * dot(Mu, Ffd)
 
         else
 
@@ -726,10 +745,15 @@ subroutine pe_polarization(density, fock, work)
             call get_electron_fields(Fel, density, work)
             call get_nuclear_fields(Fnuc, work)
             call get_multipole_fields(Fmul, work)
+            if (pe_qmes) call get_frozen_density_field(Ffd, work)
 
 !            call get_electric_fields(Ftot, density, work)
 
-            call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+            if (pe_qmes) then
+                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
+            else
+                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+            end if
 
             l = 1
             do i = 1, ncents
@@ -744,12 +768,14 @@ subroutine pe_polarization(density, fock, work)
             Epol(1) = - 0.5d0 * dot(Mu, Fel)
             Epol(2) = - 0.5d0 * dot(Mu, Fnuc)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
+            if (pe_qmes) Epol(4) = - 0.5d0 * dot(Mu, Ffd)
 
             deallocate(Mu_ints)
 
         end if
 
         deallocate(Mu, Fel, Fnuc, Fmul)
+        if (pe_qmes) deallocate(Ffd)
 
     end if
 
@@ -816,6 +842,7 @@ subroutine get_electron_fields(Fel, density, work)
     real(r8), dimension(:), intent(in) :: density
     real(r8), dimension(:), intent(inout) :: work
 
+    logical :: skip
     integer :: i, j, l
     integer :: nnbas
     integer, parameter :: k = 1
@@ -828,6 +855,14 @@ subroutine get_electron_fields(Fel, density, work)
     l = 0
 
     do i = 1, ncents
+
+        if (pe_savden) then
+            skip = .false.
+            do j = 1, nfdlist
+                if (i == fdlist(j)) skip = .true.
+            end do
+            if (skip) cycle
+        end if
 
         if (abs(maxval(alphas(:,i))) <= zero) cycle
 
@@ -890,6 +925,36 @@ subroutine get_nuclear_fields(Fnuc, work)
     end if
 
 end subroutine get_nuclear_fields
+
+!------------------------------------------------------------------------------
+
+subroutine get_frozen_density_field(Ffd, work)
+
+    real(r8), dimension(:), intent(out) :: Ffd
+    real(r8), dimension(:), intent(inout) :: work
+
+    integer :: i
+    integer :: lutemp
+    character(99) :: ci
+    character(80) :: filename
+    real(r8), dimension(3*npol) :: Ftmp
+
+    do i = 1, nfdens
+
+        Ftmp = 0.0d0
+        write(ci,*) i
+        ci = adjustl(ci)
+        filename = 'pe_fock_'//trim(ci)//'.bin'
+        call openfile(trim(filename), lutemp, 'old', 'unformatted')
+        rewind(lutemp)
+        read(lutemp) Ftmp
+        close(lutemp)
+
+        Ffd = Ffd + Ftmp
+
+    end do
+
+end subroutine get_frozen_density_field
 
 !------------------------------------------------------------------------------
 
@@ -1571,7 +1636,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     real(r8), dimension(:), intent(inout) :: work
 
     integer :: i, j, l
-    integer :: npol, nnbas
+    integer :: nnbas
     integer, parameter :: k = 0
     integer :: lucore, luden
     character(2) :: auoraa
@@ -1613,17 +1678,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
         end do
     end do
 
-    do i = 1, nbas*(nbas+1)/2
-        print *, folded_density(i)
-    end do
-
     ! get electric field from frozen density at polarizable sites
-    npol = 0
-    do i = 1, ncents
-        if (abs(maxval(alphas(:,i))) >= zero) then
-            npol = npol + 1
-        end if
-    end do
     allocate(Ffd(3*npol)); Ffd = 0.0d0
     call get_electron_fields(Ffd, folded_density, work)
 
@@ -1665,7 +1720,6 @@ subroutine pe_intermolecular(nbas, work)
 
     integer :: i, j, k, l
     integer :: fbas, cbas
-    integer :: npol
     integer :: luden, lufck
     integer, dimension(1) :: isymdm, ifctyp
     real(r8) :: Ene
@@ -1733,11 +1787,11 @@ subroutine pe_intermolecular(nbas, work)
     ! save core Fock matrix
     call openfile('pe_fock.bin', lufck, 'new', 'unformatted')
     rewind(lufck)
+    write(lufck) Ffd
     write(lufck) Ene
     write(lufck) core_fock
     write(lufck) fdnucs
     write(lufck) Rfd, Zfd
-    write(lufck) Ffd
     close(lufck)
 
     deallocate(core_fock, Rfd, Zfd, Ffd)

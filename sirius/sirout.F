@@ -370,13 +370,15 @@ csonia 04/10/95
      &                                       'Nuclear         ', Epol(2)
             write(lupri,'(9x,a16,5x,f20.12)')
      &                                       'Multipole       ', Epol(3)
+        if (pe_qmes) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Frozen densities', Epol(4)
         end if
         if (pe_qmes) then
             write(lupri,'(/3x,a18,9x,f20.12)')
      &            '@ Total PE energy: ', sum(Ees) + sum(Epol) + sum(Efd)
         else
             write(lupri,'(/3x,a18,9x,f20.12)')
-     &                      '@ Total PE energy: ', sum(Ees) + sum(Epol)
+     &                  '@ Total PE energy: ', sum(Ees) + sum(Epol(1:3))
         end if
       ELSE
         ESOLT = D0
