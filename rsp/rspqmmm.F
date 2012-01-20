@@ -230,6 +230,11 @@ C        Calculate the induced dipoles corresponding to this field
      *                 IOPT,IPQMMM)
          ENDIF
 
+         print *, 'Induced dipoles'
+         do i = 1, ndim
+            print *, wrk(kindmom+i-1)
+         end do
+
          IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
            WRITE(LUPRI,*) 'Transformed induced dipole moments' 
            CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)

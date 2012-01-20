@@ -6,10 +6,12 @@ module polarizable_embedding
 
     public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
     public :: pe_frozen_density, pe_intermolecular, pe_repulsion
+    public :: pe_response
 
 
     ! options and other logicals
     logical, public, save :: peqm = .false.
+    logical, save :: response = .false.
     logical, save :: final_energy = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
@@ -356,7 +358,6 @@ subroutine pe_fock(density, fock, Epe, work)
     call pe_polarization(density, fock, work)
 
     Epe = sum(Ees) + sum(Epol(1:3))
-
     if (pe_qmes) Epe = Epe + sum(Efd) + Epol(4)
 
 end subroutine pe_fock
@@ -377,6 +378,23 @@ subroutine pe_energy(density, work)
     final_energy = .false.
 
 end subroutine pe_energy
+
+!------------------------------------------------------------------------------
+
+subroutine pe_response(density, fock, work)
+
+    real(r8), dimension(:), intent(in) :: density
+    real(r8), dimension(:), intent(inout) :: fock, work
+
+    fock = 0.0d0
+
+    response = .true.
+
+    call pe_polarization(density, fock, work)
+
+    response = .false.
+
+end subroutine pe_response
 
 !------------------------------------------------------------------------------
 
@@ -717,8 +735,7 @@ subroutine pe_polarization(density, fock, work)
         allocate(Fel(3*npol)); Fel = 0.0d0
         allocate(Fnuc(3*npol)); Fnuc = 0.0d0
         allocate(Fmul(3*npol)); Fmul = 0.0d0
-        if (pe_qmes) allocate(Ffd(3*npol)); Ffd = 0.0d0 
-
+        allocate(Ffd(3*npol)); Ffd = 0.0d0 
 
         if (final_energy) then
 
@@ -738,6 +755,31 @@ subroutine pe_polarization(density, fock, work)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
             if (pe_qmes) Epol(4) = - 0.5d0 * dot(Mu, Ffd)
 
+        else if (response) then
+
+            allocate(Mu_ints(size(fock),3)); Mu_ints = 0.0d0
+
+            call get_electron_fields(Fel, density, work)
+
+            call get_induced_dipoles(Mu, Fel, work)
+
+            print *, 'Induced dipoles'
+            do i = 1, 3*npol
+                print *, Mu(i)
+            end do
+
+            l = 1
+            do i = 1, ncents
+                if (abs(maxval(alphas(:,i))) <= zero) cycle
+                call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
+                do j = 1, 3
+                    fock = fock + Mu_ints(:,j)
+                end do
+                l = l + 3
+            end do
+
+            deallocate(Mu_ints)
+
         else
 
             allocate(Mu_ints(size(fock),3)); Mu_ints = 0.0d0
@@ -746,8 +788,6 @@ subroutine pe_polarization(density, fock, work)
             call get_nuclear_fields(Fnuc, work)
             call get_multipole_fields(Fmul, work)
             if (pe_qmes) call get_frozen_density_field(Ffd, work)
-
-!            call get_electric_fields(Ftot, density, work)
 
             if (pe_qmes) then
                 call get_induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
@@ -774,8 +814,7 @@ subroutine pe_polarization(density, fock, work)
 
         end if
 
-        deallocate(Mu, Fel, Fnuc, Fmul)
-        if (pe_qmes) deallocate(Ffd)
+        deallocate(Mu, Fel, Fnuc, Fmul, Ffd)
 
     end if
 

@@ -112,7 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
-      use polarizable_embedding, only: peqm, pe_fock
+      use polarizable_embedding, only: peqm, pe_response
 C
 #include <implicit.h>
 #include <maxorb.h>
@@ -136,6 +136,10 @@ C
 C
       DIMENSION BCVECS(*),BOVECS(*),CMO(*),INDXCI(*)
       DIMENSION UDV(NASHT,*),EVECS(*),WRK(LWRK)
+
+      real*8, dimension(:), allocatable :: dao, evao, ev
+      real*8, dimension(:,:), allocatable :: ucmo, udcao, udvao, uevao
+      real*8, dimension(:,:,:), allocatable :: ubv, uev
 C
 C
 C
@@ -323,7 +327,51 @@ C
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-!      else if (peqm) then
+      else if (peqm) then
+        if (nsym > 1) then
+            call quit('Symmetry is not permitted in PEQM')
+        end if
+        kpe = nbast*norbt + norbt*norbt*nosim + 2*nbast*nbast
+        kpe = kpe + nbast*(nbast+1) + norbt*(norbt+1)/2 + norbt*norbt
+        if (kpe > lfree-kfree) then
+            call quit('Not enough memory for PE response calculation.')
+        end if
+
+        allocate(ucmo(nbast,norbt)); ucmo = 0.0d0
+        allocate(ubv(norbt,norbt,nosim)); ubv = 0.0d0
+        allocate(udcao(nbast,nbast)); udcao = 0.0d0
+        allocate(udvao(nbast,nbast)); udvao = 0.0d0
+        allocate(dao(nnbast)); dao = 0.0d0
+        allocate(evao(nnbast)); evao = 0.0d0
+        allocate(uevao(nbast,nbast)); uevao = 0.0d0
+        allocate(ev(nnorbt)); ev = 0.0d0
+        allocate(uev(norbt,norbt,nosim)); uev = 0.0d0
+    
+        call upkcmo(cmo, ucmo)
+
+        if (nosim > 0) then
+            call rspzym(nosim, bovecs, ubv)
+            ubv = -2.0d0 * ubv
+        end if
+
+        do i = 1, nosim
+            udcao = 0.0d0; udvao = 0.0d0; dao = 0.0d0
+            evao = 0.0d0; uevao= 0.0d0; ev = 0.0d0
+            call deq27(ucmo, ubv(:,:,i), udv, udcao, udvao,
+     &                 wrk(kfree), lfree)
+            udcao = udcao + udvao
+            call dgefsp(nbast, udcao, dao)
+            call pe_response(dao, evao, wrk(kfree:lfree))
+            call dsptge(nbast, evao, uevao)
+            uev(:,:,i) = matmul(matmul(transpose(ucmo), uevao), ucmo)
+!            call uthu(evao, ev, ucmo, wrk(kfree), nbast, norbt)
+!            call dsptsi(norbt, ev, uev(:,:,i))
+        end do
+
+        call slvsor(.true., .true., nosim, udv, evecs, uev)
+
+        deallocate(ucmo, ubv, udcao, udvao, dao, evao, ev, uev)
+
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
