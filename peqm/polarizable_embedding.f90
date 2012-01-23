@@ -1723,7 +1723,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     character(2) :: auoraa
     real(dp) :: Ene
     real(dp), dimension(:,:), allocatable :: density
-    real(dp), dimension(:), allocatable :: T0_ints, folded_density, Ffd
+    real(dp), dimension(:), allocatable :: T0_ints, folded_density, Ffd, Ftmp
 
     ! read in information about qm core
     call openfile('core.dat', lucore, 'old', 'formatted')
@@ -1760,8 +1760,11 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     end do
 
     ! get electric field from frozen density at polarizable sites
-    allocate(Ffd(3*npols)); Ffd = 0.0d0
-    call get_electron_fields(Ffd, folded_density, work)
+    allocate(Ftmp(3*npols), Ffd(3*npols)); Ftmp = 0.0d0
+    call get_electron_fields(Ftmp, folded_density, work)
+    Ffd = Ftmp
+    call get_nuclear_fields(Ftmp, work)
+    Ffd = Ffd + Ftmp
 
     ! calculate nuclear - electron energy contribution
     nnbas = nbas*(nbas+1)/2
