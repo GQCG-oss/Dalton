@@ -46,8 +46,9 @@ module polarizable_embedding
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.
     logical, dimension(0:4), public, save :: lmul = .false.
-    ! lpol(1): dipole-dipole polarizabilities, etc.
-    logical, dimension(1), public, save :: lpol = .false.
+    ! lpol(0): isotropic dipole-dipole polarizabilities
+    ! lpol(1): anisotropic dipole-dipole polarizabilities
+    logical, dimension(0:1), public, save :: lpol = .false.
     ! lhypol(1): dipole-dipole-dipole polarizabilities/1st hyperpolarizability
 !    logical, dimension(1), public, save :: lhypol
 
@@ -274,7 +275,7 @@ subroutine pe_read_potential(work, coords, charges)
 !                Q4(:,s) = temp(1:15)
 !            end do
         else if (trim(word) == 'isoalphas') then
-            lpol(1) = .true.
+            lpol(0) = .true.
             allocate(alphas(6,nsites)); alphas = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
@@ -835,7 +836,7 @@ subroutine pe_polarization(density, fock, work)
 
     Epol = 0.0d0
 
-    if (lpol(1)) then
+    if (lpol(0) .or. lpol(1)) then
 
         allocate(Mu(3*npols)); Mu = 0.0d0
         allocate(Fel(3*npols)); Fel = 0.0d0
