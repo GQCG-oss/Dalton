@@ -4273,7 +4273,7 @@ C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
       use polarizable_embedding, only: pe_read_potential, peqm,
-     &                                 pe_savden, ncents, lmul, lpol
+     &                                 pe_savden, nsites, lmul, lpol
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -4453,7 +4453,7 @@ C
         call pe_read_potential(work, cord(:,1:natoms), charge(1:natoms))
         write(lupri,'(//2x,a)') 'Polarizable Embedding potential'
         write(lupri,'(2x,a)')   '-------------------------------'
-        write(lupri,'(/4x,a,i6)') 'Number of sites: ', ncents
+        write(lupri,'(/4x,a,i6)') 'Number of sites: ', nsites
         if (lmul(3)) then
             write(lupri,'(4x,a)') 'Multipole moments upto 3rd order.'
         else if (lmul(2)) then
