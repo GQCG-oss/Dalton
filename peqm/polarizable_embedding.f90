@@ -1722,8 +1722,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     integer :: lucore, luden
     character(2) :: auoraa
     real(dp) :: Ene
-    real(dp), dimension(:), allocatable :: Zc
-    real(dp), dimension(:,:), allocatable :: Rc
+    real(dp), dimension(:,:), allocatable :: Rc, Zc
     real(dp), dimension(:,:), allocatable :: density
     real(dp), dimension(:), allocatable :: T0_ints, folded_density
     real(dp), dimension(:), allocatable :: Ffd, Ftmp
@@ -1738,7 +1737,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     call openfile('core.dat', lucore, 'old', 'formatted')
     rewind(lucore)
     read(lucore,*) auoraa
-    read(lucore,*) corenuce
+    read(lucore,*) corenucs
     allocate(Zc(1,corenucs), Rc(3,corenucs))
     do i = 1, corenucs
         read(lucore,*) Zc(1,i), (Rc(j,i), j = 1, 3)
