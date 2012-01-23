@@ -4464,13 +4464,13 @@ C
             write(lupri,'(4x,a)') 'Multipole moments upto 0th order.'
         end if
         if (lpol(0) .and. lpol(1)) then
-            write(lupri,'(4x,a)') 'Isotropic and anisotropic'\\
+            write(lupri,'(4x,a)') 'Isotropic and anisotropic'//
      &                            ' dipole-dipole polarizabilities.'
         else if (lpol(0) .and. .not. lpol(1)) then
-            write(lupri,'(4x,a)') 'Isotropic'\\
+            write(lupri,'(4x,a)') 'Isotropic'//
      &                            ' dipole-dipole polarizabilities.'
         else if (.not. lpol(0) .and. lpol(1)) then
-            write(lupri,'(4x,a)') 'Anisotropic'\\
+            write(lupri,'(4x,a)') 'Anisotropic'//
      &                            ' dipole-dipole polarizabilities.'
         end if
       else if (pe_savden) then
