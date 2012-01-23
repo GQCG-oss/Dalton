@@ -355,7 +355,7 @@ C
 
         call pe_response(wrk(kdao:kdao+nosim*nnbasx-1),
      &                   wrk(kevao:kevao+nosim*nnbasx-1),
-     &                   wrk(kfree:lfree))
+     &                   nosim, wrk(kfree:lfree))
 
         call memrel('RSPSLV.pe_response', wrk, 1, kdao, kfree, lfree)
 

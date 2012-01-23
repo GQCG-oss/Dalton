@@ -93,9 +93,9 @@ module polarizable_embedding
     ! ---------------------
 
     ! number of density matrices
-    integer :: ndens
+!    integer :: ndens
     ! number of basis functions and orbitals
-    integer, save :: nbas, norb
+!    integer, save :: nbas, norb
     ! number nuclei in qm region
     integer, save :: qmnucs
     ! nuclear charges
@@ -415,19 +415,79 @@ end subroutine pe_energy
 
 !------------------------------------------------------------------------------
 
-subroutine pe_response(density, fock, work)
+subroutine pe_response(density, fock, ndens, work)
+
+    external :: get_Tk_integrals
 
     real(dp), dimension(:), intent(in) :: density
     real(dp), dimension(:), intent(out) :: fock
+    integer, intent(in) :: ndens
     real(dp), dimension(:), intent(inout) :: work
+
+    logical :: skip
+    integer :: i, j, l, m
+    integer :: nnbas
+    integer, parameter :: k = 1
+    real(dp), dimension(:,:), allocatable :: Fel, Mu
+    real(dp), dimension(:,:), allocatable :: Fel_ints, Mu_ints
+
+    nnbas = size(density) / ndens
 
     fock = 0.0d0
 
-    response = .true.
+    allocate(Fel(3*npols,ndens)); Fel = 0.0d0
+    allocate(Fel_ints(nnbas,3))
 
-    call pe_polarization(density, fock, work)
+    l = 0
 
-    response = .false.
+    do i = 1, nsites
+
+        if (pe_savden) then
+            skip = .false.
+            do j = 1, nfdlist
+                if (i == fdlist(j)) skip = .true.
+            end do
+            if (skip) cycle
+        end if
+
+        if (zeroalphas(i)) cycle
+
+        call get_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+
+        do m = 1, ndens
+            do j = 1, 3
+                Fel(l+j,m) = dot(density((m-1)*nnbas+1:m*nnbas), Fel_ints(:,j))
+            end do
+        end do
+
+        l = l + 3
+
+    end do
+
+    deallocate(Fel_ints)
+
+    allocate(Mu(3*npols,ndens))
+    allocate(Mu_ints(nnbas,3))
+
+    do m = 1, ndens
+        call get_induced_dipoles(Mu(:,m), Fel(:,m), work)
+    end do
+
+    deallocate(Fel)
+
+    l = 1
+    do i = 1, nsites
+        if (zeroalphas(i)) cycle
+        do m = 1, ndens
+            call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2,m), work)
+            do j = 1, 3
+                fock((m-1)*nnbas+1:m*nnbas) = fock((m-1)*nnbas+1:m*nnbas) + Mu_ints(:,j)
+            end do
+         end do
+         l = l + 3
+    end do
+
+    deallocate(Mu, Mu_ints)
 
 end subroutine pe_response
 
@@ -801,29 +861,9 @@ subroutine pe_polarization(density, fock, work)
             Epol(3) = - 0.5d0 * dot(Mu, Fmul)
             if (pe_qmes) Epol(4) = - 0.5d0 * dot(Mu, Ffd)
 
-        else if (response) then
-
-            allocate(Mu_ints(size(fock),3)); Mu_ints = 0.0d0
-
-            call get_electron_fields(Fel, density, work)
-
-            call get_induced_dipoles(Mu, Fel, work)
-
-            l = 1
-            do i = 1, nsites
-                if (abs(maxval(alphas(:,i))) <= zero) cycle
-                call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
-                do j = 1, 3
-                    fock = fock + Mu_ints(:,j)
-                end do
-                l = l + 3
-            end do
-
-            deallocate(Mu_ints)
-
         else
 
-            allocate(Mu_ints(size(fock),3)); Mu_ints = 0.0d0
+            allocate(Mu_ints(size(fock),3))
 
             call get_electron_fields(Fel, density, work)
             call get_nuclear_fields(Fnuc, work)
@@ -1021,6 +1061,7 @@ subroutine get_frozen_density_field(Ffd, work)
     character(80) :: filename
     real(dp), dimension(3*npols) :: Ftmp
 
+! TODO: nuclear field???
     do i = 1, nfds
 
         Ftmp = 0.0d0
