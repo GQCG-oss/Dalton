@@ -1717,26 +1717,35 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, l
-    integer :: nnbas
+    integer :: nnbas, corenucs
     integer, parameter :: k = 0
     integer :: lucore, luden
     character(2) :: auoraa
     real(dp) :: Ene
+    real(dp), dimension(:), allocatable :: Zc
+    real(dp), dimension(:,:), allocatable :: Rc
     real(dp), dimension(:,:), allocatable :: density
-    real(dp), dimension(:), allocatable :: T0_ints, folded_density, Ffd, Ftmp
+    real(dp), dimension(:), allocatable :: T0_ints, folded_density
+    real(dp), dimension(:), allocatable :: Ffd, Ftmp
+
+    ! frozen density nuclear charges and coordinates
+    qmnucs = size(charges)
+    allocate(Rm(3,qmnucs), Zm(1,qmnucs))
+    Rm = coords
+    Zm(1,:) = charges
 
     ! read in information about qm core
     call openfile('core.dat', lucore, 'old', 'formatted')
     rewind(lucore)
     read(lucore,*) auoraa
-    read(lucore,*) qmnucs
-    allocate(Zm(1,qmnucs), Rm(3,qmnucs)); Zm = 0.0d0; Rm = 0.0d0
-    do i = 1, qmnucs
-        read(lucore,*) Zm(1,i), (Rm(j,i), j = 1, 3)
+    read(lucore,*) corenuce
+    allocate(Zc(1,corenucs), Rc(3,corenucs))
+    do i = 1, corenucs
+        read(lucore,*) Zc(1,i), (Rc(j,i), j = 1, 3)
     end do
     close(lucore)
     if (auoraa == 'AA') then
-        Rm = Rm * au2aa
+        Rc = Rc * au2aa
     end if
 
     ! generate density matrix
@@ -1771,8 +1780,8 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     allocate(T0_ints(nnbas)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, qmnucs
-        call get_Tk_integrals(T0_ints, nnbas, k, Rm(:,i), work, size(work))
-        T0_ints = Zm(1,i) * T0_ints
+        call get_Tk_integrals(T0_ints, nnbas, k, Rc(:,i), work, size(work))
+        T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(folded_density, T0_ints)
     end do
     deallocate(T0_ints, folded_density)
@@ -1781,8 +1790,8 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
     rewind(luden)
     write(luden) Ene
-    write(luden) size(charges)
-    write(luden) coords, charges
+    write(luden) qmnucs
+    write(luden) Rm, Zm
     write(luden) npols
     write(luden) Ffd
     write(luden) nbas
