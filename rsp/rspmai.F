@@ -1567,7 +1567,7 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' Polarizable Embedding calculation'
+            write(lupri,'(a)') ' PE-QM response calculation'
          end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
@@ -2118,7 +2118,7 @@ C
          ENDIF 
 
          if (peqm) then
-            write(lupri,'(a)') ' Polarizable Embedding calculation'
+            write(lupri,'(a)') ' PE-QM response calculation'
          end if
 
          IF (CHANNEL_CALC) THEN
@@ -4706,7 +4706,7 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' Polarizable Embedding calculation'
+            write(lupri,'(a)') ' PE-QM response calculation'
          end if
 
          WRITE(LUPRI,'(A,I4)')

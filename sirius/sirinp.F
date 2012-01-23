@@ -5020,7 +5020,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
-      use polarizable_embedding, only: peqm, lmul, lpol
+      use polarizable_embedding, only: peqm
 
 #include <implicit.h>
 C

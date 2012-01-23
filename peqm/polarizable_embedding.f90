@@ -108,7 +108,7 @@ module polarizable_embedding
     ! ----------------------------
 
     ! number of frozen densities
-    integer, save :: nfds
+    integer, public, save :: nfds
     ! doesn't work have to redo
     integer, save :: nfdlist
     ! number of nuclei in current frozen density

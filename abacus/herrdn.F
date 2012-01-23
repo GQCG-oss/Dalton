@@ -4273,7 +4273,8 @@ C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
       use polarizable_embedding, only: pe_read_potential, peqm,
-     &                                 pe_savden, nsites, lmul, lpol
+     &                                 pe_savden, nsites, lmul, lpol,
+     &                                 pe_qmes, nfds
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -4472,6 +4473,9 @@ C
         else if (.not. lpol(0) .and. lpol(1)) then
             write(lupri,'(4x,a)') 'Anisotropic'//
      &                            ' dipole-dipole polarizabilities.'
+        end if
+        if (pe_qmes) then
+            write(lupri,'(4x,a,i4)') 'Number of frozen densities:', nfds
         end if
       else if (pe_savden) then
         call pe_read_potential(work)
