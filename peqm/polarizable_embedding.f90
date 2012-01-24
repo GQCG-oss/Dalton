@@ -1765,20 +1765,8 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
     allocate(Ftmp(3*npols), Ffd(3*npols)); Ftmp = 0.0d0
     call get_electron_fields(Ftmp, density, work)
     Ffd = Ftmp
-
-    l = 1
-    do i = 1, npols
-        print *, i, Ftmp(l:l+2)
-        l = l + 3
-    end do
     call get_nuclear_fields(Ftmp, work)
     Ffd = Ffd + Ftmp
-    l = 1
-    do i = 1, npols
-        print *, i, Ftmp(l:l+2)
-        l = l + 3
-    end do
-
 
     ! calculate nuclear - electron energy contribution
     nnbas = nbas*(nbas+1)/2
