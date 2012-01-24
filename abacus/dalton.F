@@ -32,6 +32,10 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+      use gen1int_interface
+#endif
 #include <implicit.h>
 #include <dummy.h>
 #include <mtags.h>

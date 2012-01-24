@@ -70,6 +70,10 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+      use gen1int_interface
+#endif
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -227,7 +231,7 @@ C
 
 #ifdef BUILD_GEN1INT
 C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
-      if (TEST_GEN1INT)
+      if (test_gen1int_interface)
      &  call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
 #endif
 
@@ -295,6 +299,10 @@ C
 C     950602-vebjorn:
 C     Added flag HRINPC to ensure that HERMIT input processing is done only once.
 C
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+      use gen1int_interface
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1216,7 +1224,9 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             ONEPRP = .TRUE.
             GOTO 100
   239    CONTINUE
-            TEST_GEN1INT = .true.
+#ifdef BUILD_GEN1INT
+            test_gen1int_interface = .true.
+#endif
             goto 100
   240    CONTINUE
             ONEPRP = .TRUE.

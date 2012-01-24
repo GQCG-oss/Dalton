@@ -146,30 +146,78 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-# set Gen1Int library
+# set Gen1Int library and interface
 if(ENABLE_GEN1INT)
-    find_library(GEN1INT_LIBRARIES NAMES libgen1int.a
-                 PATHS ${PATH_GEN1INT}
-                 PATH_SUFFIXES build lib obj src)
-    if(GEN1INT_LIBRARIES)
-        message("-- Find Gen1Int library at "${GEN1INT_LIBRARIES})
-        message("-- Enable Gen1Int module")
-        add_definitions(-DBUILD_GEN1INT)
-        set(LIBS
-            ${LIBS}
-            ${GEN1INT_LIBRARIES})
-        set(FREE_FORTRAN_SOURCES
-            ${FREE_FORTRAN_SOURCES}
-            gen1int/gen1int_shell.F90
-            gen1int/gen1int_prop_attr.F90
-            gen1int/gen1int_ifc_init.F90
-            gen1int/gen1int_ifc_clean.F90
-            gen1int/gen1int_ifc_prop.F90
-            gen1int/gen1int_ifc_main.F90
-            gen1int/gen1int_ifc_test.F90)
-    else()
-        message("-- Disable Gen1Int module")
-    endif()
+    message("-- Enable Gen1Int module")
+    message("-- Gen1Int library at "${LIB_GEN1INT_PATH})
+    add_definitions(-DBUILD_GEN1INT)
+    # Gen1int library source code
+    set(Gen1Int_SRCS ${LIB_GEN1INT_PATH}/src/error_stop.F90
+                     ${LIB_GEN1INT_PATH}/src/xtimer.F90
+                     ${LIB_GEN1INT_PATH}/src/norm_contr_cgto.F90
+                     ${LIB_GEN1INT_PATH}/src/norm_contr_sgto.F90
+                     ${LIB_GEN1INT_PATH}/src/reorder_ints.F90
+                     ${LIB_GEN1INT_PATH}/src/trace_ints.F90
+                     ${LIB_GEN1INT_PATH}/src/dump_info.F90
+                     ${LIB_GEN1INT_PATH}/src/binom_coeff.F90
+                     ${LIB_GEN1INT_PATH}/src/next_permutation.F90
+                     ${LIB_GEN1INT_PATH}/src/geom_total.F90
+                     ${LIB_GEN1INT_PATH}/src/sort_cents.F90
+                     ${LIB_GEN1INT_PATH}/src/shell_scatter.F90
+                     ${LIB_GEN1INT_PATH}/src/geom_part_zero.F90
+                     ${LIB_GEN1INT_PATH}/src/geom_part_one.F90
+                     ${LIB_GEN1INT_PATH}/src/hgto_to_cgto.F90
+                     ${LIB_GEN1INT_PATH}/src/hgto_to_lcgto.F90
+                     ${LIB_GEN1INT_PATH}/src/hgto_to_sgto.F90
+                     ${LIB_GEN1INT_PATH}/src/london_mom_hgto.F90
+                     ${LIB_GEN1INT_PATH}/src/const_contr_ints.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_deriv.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_init.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_to_hbra.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_hrr_ket.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_csgto_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/aux_boys_vec.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_nderv.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_hket.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_hbra.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_to_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_to_hgto.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_nucpot.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_nucpot.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_nucpot.F90
+                     ${LIB_GEN1INT_PATH}/src/gaupot_nderv.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int.F90)
+    # Gen1Int interface source code
+    set(FREE_FORTRAN_SOURCES
+        ${FREE_FORTRAN_SOURCES}
+        ${Gen1Int_SRCS}
+        gen1int/gen1int_matrix.F90
+        gen1int/gen1int_shell.F90
+        gen1int/gen1int_interface.F90)
+    #find_library(GEN1INT_LIBRARIES NAMES libgen1int.a
+    #             PATHS ${LIB_GEN1INT_PATH}
+    #             PATH_SUFFIXES build lib obj src)
+    #if(GEN1INT_LIBRARIES)
+    #    message("-- Find Gen1Int library at "${GEN1INT_LIBRARIES})
+    #    message("-- Enable Gen1Int module")
+    #    add_definitions(-DBUILD_GEN1INT)
+    #    set(LIBS
+    #        ${LIBS}
+    #        ${GEN1INT_LIBRARIES})
+    #    set(FREE_FORTRAN_SOURCES
+    #        ${FREE_FORTRAN_SOURCES}
+    #        gen1int/gen1int_matrix.F90
+    #        gen1int/gen1int_shell.F90
+    #        gen1int/gen1int_interface.F90)
+    #else()
+    #    message("-- Disable Gen1Int module")
+    #endif()
 endif()
 
 # set cdash buildname

@@ -145,12 +145,12 @@ group.add_option('-D',
                        you can also forward CPP defintions all the way to the program \
                        (example: -D CPP="-DDEBUG")',
                  metavar='STRING')
-group.add_option('--gen1int-dir',
+group.add_option('--lib-gen1int',
                  type='string',
                  action='store',
-                 dest='path_gen1int',
+                 dest='lib_gen1int_path',
                  default=None,
-                 help='directory of Gen1Int library libgen1int.a [default: %default]',
+                 help='path of Gen1Int library [default: %default]',
                  metavar='PATH')
 parser.add_option_group(group)
 
@@ -229,10 +229,10 @@ def gen_cmake_command():
     if options.install:
             command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
 
-    # enables Gen1Int module
-    if options.path_gen1int:
+    # enables Gen1Int module by defining its path
+    if options.lib_gen1int_path:
         command += ' -DENABLE_GEN1INT=ON'
-        command += ' -DPATH_GEN1INT="%s"' % options.path_gen1int
+        command += ' -DLIB_GEN1INT_PATH="%s"' % options.lib_gen1int_path
 
     if options.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'

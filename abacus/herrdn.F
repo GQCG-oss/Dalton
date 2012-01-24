@@ -651,6 +651,10 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+      use gen1int_interface
+#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
