@@ -116,6 +116,7 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
+! consistent implementation where several densities iare taken as input
 ! find better solution for electric field calculation from frozen densities
 ! hexadecapoles and higher order polarizabilities
 ! write list of publications which should be cited
