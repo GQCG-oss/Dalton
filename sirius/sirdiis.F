@@ -712,14 +712,8 @@ C
          ENDIF
 
          if (peqm) then
-            ! Do these tests elsewhere
-            if (qm3 .or. qmmm .or. flag(16) .or. pcm) then
-                call quit('ERROR: PEQM cannot be combined with QM3,
-     &                     QMMM, PCM, etc.')
-            else if (nsym > 1) then
-                call quit('PEQM cannot be combined with symmetry.')
-            else if (nasht > 0) then
-                call quit('PEQM not implemented for open shell.')
+            if (nasht > 0) then
+                call quit('PE-QM not implemented for open shell.')
             end if
             call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
             call pe_fock(daosav(:,1), wrk(kfcpe:kfcpe+nnbasx-1),

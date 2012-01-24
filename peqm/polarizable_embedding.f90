@@ -116,6 +116,7 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
+! insert quits inside dalton if QM3, QMMM etc.
 ! consistent implementation where several densities iare taken as input
 ! find better solution for electric field calculation from frozen densities
 ! hexadecapoles and higher order polarizabilities
@@ -360,6 +361,33 @@ subroutine pe_read_potential(work, coords, charges)
     close(lupot)
 
     ! check memory requirements?
+
+    ! write to Dalton output file
+    write(luout,'(//2x,a)') 'Polarizable Embedding potential'
+    write(luout,'(2x,a)')   '-------------------------------'
+    write(luout,'(/4x,a,i6)') 'Number of sites: ', nsites
+    if (lmul(3)) then
+        write(luout,'(4x,a)') 'Multipole moments upto 3rd order.'
+    else if (lmul(2)) then
+        write(luout,'(4x,a)') 'Multipole moments upto 2nd order.'
+    else if (lmul(1)) then
+        write(luout,'(4x,a)') 'Multipole moments upto 1st order.'
+    else if (lmul(0)) then
+        write(luout,'(4x,a)') 'Multipole moments upto 0th order.'
+    end if
+    if (lpol(0) .and. lpol(1)) then
+        write(luout,'(4x,a)') 'Isotropic and anisotropic'//&
+                              ' dipole-dipole polarizabilities.'
+    else if (lpol(0) .and. .not. lpol(1)) then
+        write(luout,'(4x,a)') 'Isotropic'//&
+                              ' dipole-dipole polarizabilities.'
+    else if (.not. lpol(0) .and. lpol(1)) then
+        write(luout,'(4x,a)') 'Anisotropic'//&
+                              ' dipole-dipole polarizabilities.'
+    end if
+    if (pe_qmes) then
+        write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
+    end if
 
 end subroutine pe_read_potential
 

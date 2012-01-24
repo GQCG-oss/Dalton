@@ -118,12 +118,9 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
-! *********************************************
-! *** Run a PEQM dimer calculation and quit ***
-! *********************************************
-! TODO: check if this call can be put in HERCTL
-!       also add some informative output
-      ! save intermolecular part of Fock matrix
+! *********************************************************************
+! *** Save intermolecular part of two-electron Fock matrix and quit ***
+! *********************************************************************
       if (pe_twoint .and. .not. pe_repuls) then
           call pe_intermolecular(nbast, work)
           goto 8000
