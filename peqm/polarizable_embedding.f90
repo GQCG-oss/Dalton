@@ -10,7 +10,6 @@ module polarizable_embedding
 
 
     ! logicals
-    logical, save :: response = .false.
     logical, save :: energy = .false.
 
     ! options
@@ -31,7 +30,7 @@ module polarizable_embedding
     real(dp), parameter :: au2aa = 1.8897261249935897d0
 
     ! thresholds
-    real(dp), parameter :: zero = 1.0d-8
+    real(dp), parameter :: zero = 1.0d-6
 
     ! polarizable embedding potential info
     ! ------------------------------------
@@ -443,14 +442,6 @@ subroutine pe_response(density, fock, ndens, work)
 
     do i = 1, nsites
 
-        if (pe_savden) then
-            skip = .false.
-            do j = 1, nfdlist
-                if (i == fdlist(j)) skip = .true.
-            end do
-            if (skip) cycle
-        end if
-
         if (zeroalphas(i)) cycle
 
         call get_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
@@ -599,7 +590,7 @@ subroutine es_frozen_densities(density, fock, Eel, Enuc, work)
         read(lufck) fd_fock
         read(lufck) fdnucs
         allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
-        read(lufck) Rfd, Zfd(1,:)
+        read(lufck) Rfd, Zfd
         close(lufck)
 
         fock = fock + fd_fock
@@ -971,6 +962,8 @@ subroutine get_electron_fields(Fel, density, work)
     integer, parameter :: k = 1
     real(dp), dimension(:,:), allocatable :: Fel_ints
 
+    Fel = 0.0d0
+
     nnbas = size(density)
 
     allocate(Fel_ints(nnbas,3))
@@ -1010,11 +1003,13 @@ subroutine get_nuclear_fields(Fnuc, work)
     real(dp), dimension(:), intent(out) :: Fnuc
     real(dp), dimension(:), intent(inout) :: work
 
-    logical :: exclude, lexist
+    logical :: exclude, lexist, skip
     integer :: lutemp
     integer :: i, j, l, m
     integer, parameter :: k = 1
     real(dp), dimension(3) :: Rms, Tms
+
+    Fnuc = 0.0d0
 
     inquire(file='pe_nuclear_field.bin', exist=lexist)
 
@@ -1029,6 +1024,15 @@ subroutine get_nuclear_fields(Fnuc, work)
 
         l = 0
         do i = 1, nsites
+
+            if (pe_savden) then
+                skip = .false.
+                do j = 1, nfdlist
+                    if (i == fdlist(j)) skip = .true.
+                end do
+                if (skip) cycle
+            end if
+
             if (zeroalphas(i)) cycle
             do j = 1, qmnucs
                 Rms = Rs(:,i) - Rm(:,j)
@@ -1062,6 +1066,8 @@ subroutine get_frozen_density_field(Ffd, work)
     character(80) :: filename
     real(dp), dimension(3*npols) :: Ftmp
 
+    Ffd = 0.0d0
+
 ! TODO: nuclear field???
     do i = 1, nfds
 
@@ -1092,6 +1098,8 @@ subroutine get_multipole_fields(Fmul, work)
     integer :: i, j, k, l
     real(dp) :: Rij
     real(dp), dimension(3) :: Fs
+
+    Fmul = 0.0d0
 
     inquire(file='pe_multipole_field.bin', exist=lexist)
 
@@ -1706,12 +1714,12 @@ end subroutine get_symmetry_factors
 
 !------------------------------------------------------------------------------
 
-subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
+subroutine pe_frozen_density(density, nbas, coords, charges, work)
 
     external :: get_Tk_integrals
 
-    integer, intent(in) :: nbas, norb
-    real(dp), dimension(nbas,norb), intent(in) :: cmo
+    integer, intent(in) :: nbas
+    real(dp), dimension(:), intent(in) :: density
     real(dp), dimension(:), intent(in) :: charges
     real(dp), dimension(:,:), intent(in) :: coords
     real(dp), dimension(:), intent(inout) :: work
@@ -1723,8 +1731,8 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     character(2) :: auoraa
     real(dp) :: Ene
     real(dp), dimension(:,:), allocatable :: Rc, Zc
-    real(dp), dimension(:,:), allocatable :: density
-    real(dp), dimension(:), allocatable :: T0_ints, folded_density
+    real(dp), dimension(:,:), allocatable :: full_density
+    real(dp), dimension(:), allocatable :: T0_ints
     real(dp), dimension(:), allocatable :: Ffd, Ftmp
 
     ! frozen density nuclear charges and coordinates
@@ -1732,7 +1740,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     allocate(Rm(3,qmnucs), Zm(1,qmnucs))
     Rm = coords
     Zm(1,:) = charges
-
+    
     ! read in information about qm core
     call openfile('core.dat', lucore, 'old', 'formatted')
     rewind(lucore)
@@ -1747,21 +1755,17 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
         Rc = Rc * au2aa
     end if
 
-    ! generate density matrix
-    allocate(density(nbas,nbas)); density = 0.0d0
-!    density = 2.0d0 * matmul(cmo, transpose(cmo))
-    call gemm(cmo, cmo, density, 'N', 'T', 2.0d0, 0.0d0)
-
-    ! fold density matrix
-    allocate(folded_density(nbas*(nbas+1)/2)); folded_density = 0.0d0
-!    call dgefsp(nbas, density, folded_density)
+    ! unfold density matrix
+    allocate(full_density(nbas,nbas)); full_density = 0.0d0
+!    call dunfld(nbas, density, full_density)
     l = 1
     do i = 1, nbas
         do j = 1, i
-            if (i == j) then
-                folded_density(l) = density(i,j)
+            if (j == i) then
+                full_density(i,j) = density(l)
             else
-                folded_density(l) = 2.0d0 * density(i,j)
+                full_density(i,j) = 0.5d0 * density(l)
+                full_density(j,i) = 0.5d0 * density(l)
             end if
             l = l + 1
         end do
@@ -1769,7 +1773,7 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
 
     ! get electric field from frozen density at polarizable sites
     allocate(Ftmp(3*npols), Ffd(3*npols)); Ftmp = 0.0d0
-    call get_electron_fields(Ftmp, folded_density, work)
+    call get_electron_fields(Ftmp, density, work)
     Ffd = Ftmp
     call get_nuclear_fields(Ftmp, work)
     Ffd = Ffd + Ftmp
@@ -1778,12 +1782,12 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     nnbas = nbas*(nbas+1)/2
     allocate(T0_ints(nnbas)); T0_ints = 0.0d0
     Ene = 0.0d0
-    do i = 1, qmnucs
+    do i = 1, corenucs
         call get_Tk_integrals(T0_ints, nnbas, k, Rc(:,i), work, size(work))
         T0_ints = Zc(1,i) * T0_ints
-        Ene = Ene + dot(folded_density, T0_ints)
+        Ene = Ene + dot(density, T0_ints)
     end do
-    deallocate(T0_ints, folded_density)
+    deallocate(T0_ints)
 
     ! save density and energy for subsequent calculations
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
@@ -1794,10 +1798,10 @@ subroutine pe_frozen_density(cmo, nbas, norb, coords, charges, work)
     write(luden) npols
     write(luden) Ffd
     write(luden) nbas
-    write(luden) density
+    write(luden) full_density
     close(luden)
 
-    deallocate(density, Ffd)
+    deallocate(full_density, Ffd, Ftmp)
 
 end subroutine pe_frozen_density
 
@@ -1824,13 +1828,13 @@ subroutine pe_intermolecular(nbas, work)
     rewind(luden)
     read(luden) Ene
     read(luden) fdnucs
-    allocate(Rfd(3,fdnucs), Zfd(1,fdnucs)); Rfd = 0.0d0; Zfd = 0.0d0
-    read(luden) Rfd, Zfd(1,:)
+    allocate(Rfd(3,fdnucs), Zfd(1,fdnucs))
+    read(luden) Rfd, Zfd
     read(luden) npols
     allocate(Ffd(3*npols))
     read(luden) Ffd
     read(luden) fbas
-    allocate(frozen_density(fbas, fbas)); frozen_density = 0.0d0
+    allocate(frozen_density(fbas, fbas))
     read(luden) frozen_density
     close(luden)
 
@@ -1863,13 +1867,13 @@ subroutine pe_intermolecular(nbas, work)
 
     deallocate(full_density)
 
-    ! extract lower triangle part of full Fock matrix corresponding to
+    ! extract upper triangle part of full Fock matrix corresponding to
     ! core fragment
     allocate(core_fock(cbas*(cbas+1)/2)); core_fock = 0.0d0
     l = 1
     do i = fbas + 1, nbas
         do j = fbas + 1, i
-            core_fock(l) = full_fock(i,j)
+            core_fock(l) = full_fock(j,i)
             l = l + 1
         end do
     end do

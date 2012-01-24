@@ -1348,13 +1348,8 @@ C
             call quit('PEQM cannot be combined with symmetry.')
         end if
         lucmo = nbast*norbt
-        call memget('REAL', kucmo, lucmo, wrk, kfree, lfree)
-        call upkcmo(cmo, wrk(kucmo))
-        call pe_frozen_density(wrk(kucmo:kucmo+lucmo-1), nbast, norbt,
-     &                         cord(:,1:natoms), charge(1:natoms),
-     &                         wrk(kfree:lfree))
-        call memrel('DIIS_CTL.pe_frozen_density', wrk, kfrsav, kucmo,
-     &              kfree, lfree)
+        call pe_frozen_density(daosav(:,1), nbast, cord(:,1:natoms),
+     &                         charge(1:natoms), wrk(kfree:lfree))
        end if
        ! save intermolecular part of Fock matrix
 !       if (pe_repuls) then
