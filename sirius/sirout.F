@@ -61,6 +61,8 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+      use polarizable_embedding, only: peqm, pe_qmes, Ees, Epol,
+     &                                 lmul, lpol
 #include <implicit.h>
 C
 #include <litinfo.h>
@@ -339,11 +341,40 @@ csonia 04/10/95
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT 
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ',EOCTUP
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Octopole contribution:  ',EOCTUP
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ',EDELD 
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
+      else if (peqm) then
+        write(lupri,'(/5x,a)')
+     &                     'Polarizable Embedding energy contributions:'
+        write(lupri,'(5x,a)')
+     &                     '-------------------------------------------'
+        write(lupri,'(/7x,a)') 'Electrostatic contributions:'
+        if (lmul(0)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Monopoles       ', Ees(0)
+        if (lmul(1)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Dipoles         ', Ees(1)
+        if (lmul(2)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Quadrupoles     ', Ees(2)
+        if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Octopoles       ', Ees(3)
+        if (pe_qmes) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                        'Frozen densities', Ees(4)
+        if (lpol(0) .or. lpol(1)) then
+            write(lupri,'(/7x,a)') 'Polarization contributions:'
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Electronic      ', Epol(1)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Nuclear         ', Epol(2)
+            write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Multipole       ', Epol(3)
+        if (pe_qmes) write(lupri,'(9x,a16,5x,f20.12)')
+     &                                       'Frozen densities', Epol(4)
+        end if
+        write(lupri,'(/3x,a18,9x,f20.12)')
+     &                       '@ Total PE energy: ', sum(Ees) + sum(Epol)
       ELSE
         ESOLT = D0
       END IF

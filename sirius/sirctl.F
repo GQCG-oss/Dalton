@@ -53,6 +53,8 @@ C
 C
 
       use lucita_orbital_spaces
+      use polarizable_embedding, only: pe_twoint, pe_repuls,
+     &                                 pe_intermolecular
 
 #include <implicit.h>
 C
@@ -116,6 +118,16 @@ C
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
       CALL FLSHFO(LUSTAT)
+! *********************************************
+! *** Run a PEQM dimer calculation and quit ***
+! *********************************************
+! TODO: check if this call can be put in HERCTL
+!       also add some informative output
+      ! save intermolecular part of Fock matrix
+      if (pe_twoint .and. .not. pe_repuls) then
+          call pe_intermolecular(nbast, work)
+          goto 8000
+      end if
 C
 C ***************************************************
 C *** Optimize for RHF, MP2, CI, MCSCF wave functions

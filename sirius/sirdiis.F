@@ -277,6 +277,9 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+      use polarizable_embedding, only: peqm, pe_fock, pe_energy,
+     &                                 pe_repuls, pe_savden,
+     &                                 pe_repulsion, pe_frozen_density
 #include <implicit.h>
 #include <dummy.h>
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -325,6 +328,7 @@ Cholesky
 #include <choscf.h>
 C
 #include <center.h>
+#include <nuclei.h>
 C
       LOGICAL DIFDNO
 Cholesky
@@ -374,6 +378,10 @@ C
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  sym.  closed shell occupation'
       END IF
+      else if (peqm) then
+        write(luw4,'(/a)')
+     &      ' Iter      Total energy       PE energy           '//
+     &      'Error norm     Delta(E)'
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -465,6 +473,7 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
+     &     .and. .not. peqm    .and. .not. pe_savden
      &     .AND. .NOT.AOSAVE
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
@@ -702,6 +711,26 @@ C
             ENDIF
          ENDIF
 
+         if (peqm) then
+            ! Do these tests elsewhere
+            if (qm3 .or. qmmm .or. flag(16) .or. pcm) then
+                call quit('ERROR: PEQM cannot be combined with QM3,
+     &                     QMMM, PCM, etc.')
+            else if (nsym > 1) then
+                call quit('PEQM cannot be combined with symmetry.')
+            else if (nasht > 0) then
+                call quit('PEQM not implemented for open shell.')
+            end if
+            call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
+            call pe_fock(daosav(:,1), wrk(kfcpe:kfcpe+nnbasx-1),
+     &                   esolt, wrk(kfree:lfree))
+            call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
+            call memrel('DIIS_CTL.pe_fock', wrk, kfrsav, kfcpe, kfree,
+     &                  lfree)
+         end if
+
+         
+
          IF (FLAG(16)) THEN
             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
             CALL SOLFCK(DAOSAV(1,1),DAOSAV(1,2),
@@ -769,6 +798,9 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
      &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,IOPRHF,
      &                 (NISH(I),I=1,NSYM)
                END IF
+            else if (peqm) then
+               write(luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
+     &          itdiis, emcscf, esolt, grdnrm, emcdif
             ELSE
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G22.12,D15.5,D12.2,I5)')
@@ -1304,17 +1336,40 @@ C
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
        END IF
+
+       ! needed to get specific PE energy contributions for printout
+       ! when converged
+       if (peqm) then
+        call pe_energy(daosav(:,1), wrk(kfree:lfree))
+       end if
+       ! save density matrix 
+       if (pe_savden) then
+        if (nsym > 1) then
+            call quit('PEQM cannot be combined with symmetry.')
+        end if
+        lucmo = nbast*norbt
+        call pe_frozen_density(daosav(:,1), nbast, cord(:,1:natoms),
+     &                         charge(1:natoms), wrk(kfree:lfree))
+       end if
+       ! save intermolecular part of Fock matrix
+!       if (pe_repuls) then
+!        call pe_repulsion(faosav(1,indevc,1), wrk(kfree), lfree)
+!       end if
 C
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+         if (peqm) write(luw4,'(a)')
+     &    '   (incl. contribution from Polarizable Embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+            if (peqm) write(lupri,'(A)')
+     &    '   (incl. contribution from Polarizable Embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------

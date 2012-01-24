@@ -4272,6 +4272,9 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use polarizable_embedding, only: pe_read_potential, peqm,
+     &                                 pe_savden, nsites, lmul, lpol,
+     &                                 pe_qmes, nfds
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -4443,9 +4446,41 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
-     &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
+      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//3x,A,F18.12,A)')
+     &   '@ Nuclear repulsion energy:  ',POTNUC,' Hartree'
       END IF
+
+      if (peqm) then
+        call pe_read_potential(work, cord(:,1:natoms), charge(1:natoms))
+        write(lupri,'(//2x,a)') 'Polarizable Embedding potential'
+        write(lupri,'(2x,a)')   '-------------------------------'
+        write(lupri,'(/4x,a,i6)') 'Number of sites: ', nsites
+        if (lmul(3)) then
+            write(lupri,'(4x,a)') 'Multipole moments upto 3rd order.'
+        else if (lmul(2)) then
+            write(lupri,'(4x,a)') 'Multipole moments upto 2nd order.'
+        else if (lmul(1)) then
+            write(lupri,'(4x,a)') 'Multipole moments upto 1st order.'
+        else if (lmul(0)) then
+            write(lupri,'(4x,a)') 'Multipole moments upto 0th order.'
+        end if
+        if (lpol(0) .and. lpol(1)) then
+            write(lupri,'(4x,a)') 'Isotropic and anisotropic'//
+     &                            ' dipole-dipole polarizabilities.'
+        else if (lpol(0) .and. .not. lpol(1)) then
+            write(lupri,'(4x,a)') 'Isotropic'//
+     &                            ' dipole-dipole polarizabilities.'
+        else if (.not. lpol(0) .and. lpol(1)) then
+            write(lupri,'(4x,a)') 'Anisotropic'//
+     &                            ' dipole-dipole polarizabilities.'
+        end if
+        if (pe_qmes) then
+            write(lupri,'(4x,a,i4)') 'Number of frozen densities:', nfds
+        end if
+      else if (pe_savden) then
+        call pe_read_potential(work)
+      end if
+
       RETURN
       END
 C  /* Deck priord */
