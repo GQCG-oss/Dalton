@@ -108,20 +108,16 @@ module polarizable_embedding
 
     ! number of frozen densities
     integer, public, save :: nfds
-    ! doesn't work have to redo
-    integer, save :: nfdlist
     ! number of nuclei in current frozen density
     integer, public, save :: fdnucs
-    ! doesn't work
-    integer, dimension(:), allocatable, save :: fdlist
     ! nuclear charges
     real(dp), dimension(:,:), allocatable, save :: Zfd
     ! nuclear coordinates
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
-! fdlist thing
-! hexadecapoles and polarizabilities
+! find better solution for electric field calculation from frozen densities
+! hexadecapoles and higher order polarizabilities
 ! write list of publications which should be cited
 ! write output related to QMES
 ! avoid dimensions as input
@@ -328,10 +324,6 @@ subroutine pe_read_potential(work, coords, charges)
             do i = 1, nsites
                 read(lupot,*) (exlists(j,i), j = 1, lexlst)
             end do
-        else if (trim(word) == 'fdlist') then
-            read(lupot,*) nfdlist
-            allocate(fdlist(nfdlist)); fdlist = 0
-            read(lupot,*) (fdlist(j), j = 1, nfdlist)
         else if (word(1:1) == '!' .or. word(1:1) == '#') then
             cycle
         end if
@@ -350,11 +342,6 @@ subroutine pe_read_potential(work, coords, charges)
         do i = 1, nsites
             exlists(1,i) = i
         end do
-    end if
-
-    ! default fdlist
-    if (.not. allocated(fdlist)) then
-        allocate(fdlist(1)); fdlist = 0
     end if
 
     ! number of polarizabilities different from zero
@@ -973,9 +960,10 @@ subroutine get_electron_fields(Fel, density, work)
     do i = 1, nsites
 
         if (pe_savden) then
+! TODO: finde better threshold or better solution
             skip = .false.
-            do j = 1, nfdlist
-                if (i == fdlist(j)) skip = .true.
+            do j = 1, qmnucs
+                if (nrm2(Rs(:,i) - Rm(:,j)) <= 1.0d0) skip = .true.
             end do
             if (skip) cycle
         end if
@@ -1026,9 +1014,10 @@ subroutine get_nuclear_fields(Fnuc, work)
         do i = 1, nsites
 
             if (pe_savden) then
+! TODO: finde better threshold or better solution
                 skip = .false.
-                do j = 1, nfdlist
-                    if (i == fdlist(j)) skip = .true.
+                do j = 1, qmnucs
+                    if (nrm2(Rs(:,i) - Rm(:,j)) <= 1.0d0) skip = .true.
                 end do
                 if (skip) cycle
             end if
@@ -1775,8 +1764,20 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
     allocate(Ftmp(3*npols), Ffd(3*npols)); Ftmp = 0.0d0
     call get_electron_fields(Ftmp, density, work)
     Ffd = Ftmp
+
+    l = 1
+    do i = 1, npols
+        print *, i, Ftmp(l:l+2)
+        l = l + 3
+    end do
     call get_nuclear_fields(Ftmp, work)
     Ffd = Ffd + Ftmp
+    l = 1
+    do i = 1, npols
+        print *, i, Ftmp(l:l+2)
+        l = l + 3
+    end do
+
 
     ! calculate nuclear - electron energy contribution
     nnbas = nbas*(nbas+1)/2
