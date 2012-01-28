@@ -222,7 +222,7 @@ C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
 C   INFOPT : EPOT,?
 C   INFTAP : LUCME,?
 C   INFDIM : MAXPHP,?
-C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
+C   INFTRA : THRP,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
 C   PCMLOG : PCM
@@ -678,8 +678,7 @@ C
 C     ITRFIN   Level of final integral transformation (when FLAG(25),
 C              i.e. call wrgeom in siropt)
 C
-      THRP   = 1.0D-15
-      THRQ   = 1.0D-15
+      THRP   = 1.0D-12
       ITRLVL = -6789
       ITRFIN = -6789
       IPRTRA = -1
@@ -4348,7 +4347,7 @@ C
 C GNRINF : THR_REDFAC
 C INFINP : FLAG(*)
 C INFDIM : MWORK
-C INFTRA : ITRLVL, THRP, THRQ
+C INFTRA : ITRLVL, THRP
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -4358,7 +4357,7 @@ C
 #include <inftra.h>
 C
       DATA TABLE /'.RESIDE','.FINAL ','.LEVEL ','.OLD TR','.PRINT ',
-     *            '.P THRE','.Q THRE','xxxxxxx'/
+     *            '.P THRE','xxxxxxx','xxxxxxx'/
 C
 C     ***** PROCESS INPUT FOR TRAINP *****
 C
@@ -4418,8 +4417,8 @@ C *** Option  106 >P THRE<
   106 READ(LUCMD,*) THRP
       GO TO 100
 C
-C *** Option  107 >Q THRE<
-  107 READ(LUCMD,*) THRQ
+C *** Option  107 >      <
+  107 CONTINUE
       GO TO 100
 C
 C *** Option  108 >      <
@@ -4432,7 +4431,6 @@ C
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRP = THRP*THR_REDFAC
-         THRQ = THRQ*THR_REDFAC
       END IF
       END
 C  /* Deck updinp */

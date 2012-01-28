@@ -2408,9 +2408,9 @@ c     &               IDUMMY,.FALSE.)
 c         CALL GPCLOSE(LURSP,'DELETE')
 c      END IF
 cC
-c      CALL GPINQ('DRCINT','EXIST',EX)
+c      CALL GPINQ('MODRCINT','EXIST',EX)
 c      IF (EX) THEN
-c         CALL GPOPEN(LURSP,'DRCINT','OLD',' ','UNFORMATTED',
+c         CALL GPOPEN(LURSP,'MODRCINT','OLD',' ','UNFORMATTED',
 c     &               IDUMMY,.FALSE.)
 c         CALL GPCLOSE(LURSP,'DELETE')
 c      END IF

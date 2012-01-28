@@ -239,7 +239,7 @@ C  TODO hjaaj:  When NEWTRA and USEDRC, all integrals are
 C           stored and calculated twice, both as Mulliken
 C           and Dirac; but only occ-occ Dirac distributions
 C           are needed in rspoli.F (if .not. NEWTRA then
-C           only occ-occ Dirac dist. are saved on DRCINT).
+C           only occ-occ Dirac dist. are saved on MODRCINT).
 C           hjaaj Nov 2001
          ELSE
             JTRLVL = -4
