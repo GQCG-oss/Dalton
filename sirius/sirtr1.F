@@ -361,7 +361,6 @@ C
 C Revisions
 C   2-May-1983 hjaaj.
 C  30-Jan-1985 hjaaj (use UTBO instead of UBO)
-C   3-Nov-1989 hjaaj (use UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C
 C This subroutine is called by TR1SUP to calculate the one-index
 C transformed inactive and active one-electron density matrices
@@ -521,7 +520,6 @@ C  /* Deck tr1fck */
 C
 C 890102 - hjaaj
 C New interface routine for Tr1Fck
-C 891103 - hjaaj : UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C
 C MOTECC-90: The algorithms used in this module, TR1FCK, are
 C            described in Chapter 8 Appendix 8B of MOTECC-90
@@ -700,7 +698,6 @@ C  29-Dec-1984 hjaaj (NCONF=0 option for call by ORBLIN)
 C  15-Jan-1985 hjaaj (moved calc. of UTBO outside TR1FCY)
 C  30 Jan '85 hjaaj  (ver 2; separated conf. and orb. trial vectors)
 C  31-Jan-1985 hjaaj (NCONF=0 option changed to NCSIM.lt.0)
-C 891103 - hjaaj : UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C 891106 - hjaaj : only FXCAO if NISHT.gt.0
 C 921201 - hjaaj : Fock matrices from AO integrals
 C                  (partly following Hans Agren 911202)
@@ -746,7 +743,7 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1=1.0D0, D2 = 2.0D0)
 C
 C Used from common blocks:
-C   INFORB : N2ORBX,N2ORBT,N2BASX,NNASHX
+C   INFORB : N2ORBX,N2BASX,NNASHX
 C   INFIND : ?
 C   INFVAR : JWOPSY
 C   INFLIN : IPRLIN
@@ -1092,7 +1089,7 @@ C
       PARAMETER ( DP5 = 0.5D0 )
 C
 C Used from common blocks:
-C   INFORB : N2ORBX,N2ORBT,N2BASX,NNASHX
+C   INFORB : N2ORBX,N2BASX,NNASHX
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(*)
 C
@@ -2605,7 +2602,7 @@ C     Loop over DIRAC distributions allowed in NEEDDI(6)
 C
       IDIST = 0
       LUINTD = -1
-      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'DRCINT','OLD',' ',
+      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'MODRCINT','OLD',' ',
      &                              'UNFORMATTED',IDUMMY,.FALSE.)
   100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI,LUINTD,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800

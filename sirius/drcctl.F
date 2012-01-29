@@ -23,9 +23,10 @@
 !
 #include <single.h>
 C
-#ifdef UNDEF
+C FILE: sirius/drcctl.F
+C
+#ifdef old_log
 ===========================================================================
-/* Comdeck changes */
 900108-hjaaj
   LBINTD = optimal buffer length .le. 1024 (instead of N2ORBT)
   new LUINTD label DRCINFO, after which LBINTD,LVLDRC may be read
@@ -47,7 +48,7 @@ C
 C Last revision Dec 89, Oct 2003 (CMO check) hjaaj
 C
 C PURPOSE:
-C  SET UP DRCINT CONTAINING DIRAC INTEGTRAL DISTRIBUTIONS
+C  SET UP MODRCINT CONTAINING DIRAC INTEGTRAL DISTRIBUTIONS
 C  <**/CD> C.ge.D
 C
 C If (LVLDRC .eq. 0)      then C,D both active
@@ -61,8 +62,7 @@ C
       LOGICAL FNDLAB, DRCOLD
 C
 #include <iratdef.h>
-#include <lbmxsq.h>
-#include <thrzer.h>
+#include "lbmxsq.h"
 C
 C Used from common blocks:
 C   INFORB : N2ORBT, N2ORBX, ...
@@ -76,31 +76,14 @@ C
 C
       CALL QENTER('DRCCTL')
 C
-C     Open DRCINT and check if integrals already there ...
+C     Open MODRCINT and check if integrals already there ...
 C
       LUINTD = -1
-      CALL GPOPEN(LUINTD,'DRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+      CALL GPOPEN(LUINTD,'MODRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       IF (FNDLAB('DRCINFO',LUINTD)) THEN
          IF (DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)) GO TO 9999
       END IF
-C
-C     IF (FNDLAB('DRCINFO',LUINTD)) THEN
-C        READ  (LUINTD) LBINTD, LVLOLD
-C        IF (LVLOLD .GE. LVLDRC) THEN
-C           read CMO matrix from LUINTD
-C           and subtract from input CMO matrix
-C           READ  (LUINTD) (WRK(I),I=1,NCMOT)
-C           CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
-C           I = IDAMAX(NCMOT,WRK,1)
-C           IF (ABS(WRK(I)) .LE. THRZER) THEN
-C              IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-C    *' DRCCTL abandoned: the required MO integrals in Dirac format',
-C    *' are already available on the DRCINT file.'
-C              GO TO 9999
-C           END IF
-C        END IF
-C     END IF
 C
 C Set LBINTD to optimal buffer length .le. LBMXSQ for LUINTD
 C ( N2ORBT is the maximum number of non-zero elements in
@@ -162,6 +145,7 @@ C
      *               LVLDRC,WRK(KWRK1),LWRK1)
 C
 C WRITE these DIRAC DISTRIBUTIONS OUT ON LUINTD
+C
          CALL DRCWRT(WRK(KH2ACD),ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
      *               LVLDRC,LABCD,WRK(KOUTB),WRK(KOUTB),LUINTD,CMO)
 C        CALL DRCWRT(H2ACD,ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
@@ -175,8 +159,8 @@ C
       IF (IPRTRA.GT.0) WRITE(LUPRI,1000) LABCD,NLOAD
       CALL GPCLOSE(LUINTD,'KEEP')
  1000 FORMAT(/' DRCCTL: Number of Dirac integrals written on file'//
-     *        ' "DRCINT" is',I10,
-     *       /'         Number of passes over Mulliken file',I5)
+     *    ' "MODRCINT" is',I12,
+     *   /'         Number of passes over Mulliken file MOTWOINT',I5)
 C
  9999 CALL QEXIT('DRCCTL')
       RETURN
@@ -203,7 +187,7 @@ C
 C Used from common blocks:
 C   INFORB : NSYM,NORB(*),IORB(*),?
 C   INFIND : ISMO(*),?
-C   INFTRA : IPRTRA
+C   INFTRA : IPRTRA, THRP
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -263,7 +247,7 @@ C
          END IF
 C
 C        See if we need this distribution:
-C         ICDTYP = 0 we don't need this distribution
+C         ICDTYP = 0 we do not need this distribution
 C                    DISTRIBUTION HAS NO INDICES WITHIN
 C                    DESIRED DISTRIBUTION RANGE
 C         ICDTYP = 1 DISTRIBUTION WITH ONE INDEX WITHIN
@@ -274,7 +258,7 @@ C
          ICDTYP = 0
          IF ( NCW .GE. ICLOW .AND. NCW .LE. ICHGH ) ICDTYP = 1
          IF ( NDW .GE. ICLOW .AND. NDW .LE. ICHGH .AND.
-     *        NDW .NE. NCW  ) THEN
+     &        NDW .NE. NCW  ) THEN
             IF (ICDTYP .EQ. 1) THEN
                ICDTYP = 2
                IDOFF  = IROW(NDW) - ILOWOF
@@ -288,9 +272,11 @@ C
                ID     = ISWAP
             END IF
          END IF
-         IF (ICDTYP .GT. 0) ICOFF  = IROW(NCW) - ILOWOF
-C
+
          IF (ICDTYP.EQ.0)     GO TO 200
+
+         ICOFF  = IROW(NCW) - ILOWOF
+C
 C
 C      ... C IS ACTIVE AND WITHIN DESIRED RANGE
 C      ... D IS ACTIVE AND WITHIN DESIRED RANGE IF ICDTYP = 2
@@ -302,6 +288,7 @@ C
             IBEND = MIN(IA,IORB(IBSYM)+NORB(IBSYM))
             DO 290 IB = IBST,IBEND
                H2AB = H2(IB,IA)
+            IF (ABS(H2AB) .LE. THRP) GO TO 290
                NAW  = ISW(IA)
                NBW  = ISW(IB)
                IF (LVLDRC .EQ. 0) THEN
@@ -336,6 +323,7 @@ C
                END IF
   290       CONTINUE
   280    CONTINUE
+
       GO TO 200
 C
 C ***
@@ -425,7 +413,7 @@ C
          CALL QTRACE(LUPRI)
          CALL QUIT(' DRCWRT: INCORRECT DISTRIBUTION INTERVAL')
       END IF
-      IF ( IPRTRA.GT.80 ) THEN
+      IF ( IPRTRA.GT.20 ) THEN
          WRITE(LUPRI,'(/A,/A,2I8)')' ****DRCWRT*****',
      *   ' ICMIN,IDMIN',ICMIN,IDMIN
       END IF
@@ -497,7 +485,7 @@ C     ***** WRITE LAST BUFFER *****
 C
       IF ( ICDDIS.GT.NTOTDI) THEN
          IOUTB(LOUT21)=-1
-         IF ( IPRTRA.GT.80 ) THEN
+         IF ( IPRTRA.GT.20 ) THEN
             WRITE(LUPRI,'(/A,I10)')
      *      ' -1 WRITTEN OUT ON LAST(EMPTY) RECORD, ICDDIS;',ICDDIS
          END IF
@@ -522,7 +510,7 @@ C
       LOGICAL FNDLAB
 C
 #include <iratdef.h>
-#include <lbmxsq.h>
+#include "lbmxsq.h"
 #include <thrzer.h>
 C
 #include <inforb.h>
@@ -545,6 +533,7 @@ C        and subtract from input CMO matrix
       END IF
       IF (DRCOLD .AND. IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
      *' DRCCTL abandoned: the required MO integrals in Dirac format',
-     *' are already available on the DRCINT file.'
+     *' are already available on the MODRCINT file.'
       RETURN
       END
+C --- end of drcctl.F ---

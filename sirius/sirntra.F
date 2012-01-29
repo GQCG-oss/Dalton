@@ -2872,7 +2872,7 @@ C
       MORBT = 0
       DO 100 I = 1,8
          MFRO(I) = NFRO(I)
-         MISH(I) = NISH(I)
+         MISH(I) = NISH(I) - NFRO(I)
          MASH(I) = NASH(I)
          MORB(I) = NORB(I)
          MBAS(I) = NBAS(I)

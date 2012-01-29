@@ -136,13 +136,14 @@ C
 #include <dummy.h>
 C
 #include <iratdef.h>
-#include <lbmxsq.h>
+#include "lbmxsq.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*),ITRLVL,ITRFIN,ICI0
 C   INFORB : NNORBT
 C   INFDIM : LBUFMA
-C   INFTRA : LSRTAO
+C   INFTRA : LSRTAO, THRP
+C   CCOM   : THRS ! from hermit
 C   INFTAP : LU*
 C
 #include <maxorb.h>
@@ -151,10 +152,19 @@ C
 #include <inforb.h>
 #include <infdim.h>
 #include <inftra.h>
+#include <maxaqn.h>
+#include <ccom.h>
 #include <inftap.h>
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
+      IF (THRP .LT. THRS) THEN
+         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
+     &      ' INFO: Changed THRP threshold used in'//
+     &      ' integral transformation from',THRP,
+     &      ' to integral evaluation threshold',THRS
+         THRP = THRS
+      END IF
       IF (NBAST .GT. 255 .AND. .NOT. NEWTRA) THEN
          NEWTRA = .TRUE.
          WRITE(LUPRI,'(/4X,A/4X,A)') 'INFORMATION: Switched to "new" '/
@@ -628,7 +638,7 @@ C
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*),IBUF(IBUFL)
       INTEGER   IT(*)
       LOGICAL FEXIST
-#include <lbmxsq.h>
+#include "lbmxsq.h"
 C
 #include <priunit.h>
 #include "inttra.h"
@@ -917,7 +927,7 @@ C
      *          PQCD(MORBT,*),PQRD(*),TRI(*)
       INTEGER   ITSMO(*), ITSAO(*), ITSX(*), IT(*)
 #include <iratdef.h>
-#include <lbmxsq.h>
+#include "lbmxsq.h"
 C
 #include <priunit.h>
 #include "inttra.h"
@@ -1746,7 +1756,7 @@ C
       DIMENSION CMO(*), WORK(KWORK)
 #include <iratdef.h>
 #include <thrzer.h>
-#include <lbmxsq.h>
+#include "lbmxsq.h"
 C
 C Used from common blocks:
 C
@@ -1849,7 +1859,7 @@ C
       DIMENSION CMO(*), WORK(KWORK), MISH_TEST(8), MASH_TEST(8)
 #include <iratdef.h>
 #include <thrzer.h>
-#include <lbmxsq.h>
+#include "lbmxsq.h"
       PARAMETER (DM1 = -1.0D0)
 C
 C Used from common blocks:
@@ -1905,18 +1915,13 @@ C        ... force new integral sort and transformation
 C     ***** SET THRESHOLDS *****
 C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
 C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
-      IF (THRP.LE.0.D0) THEN
+      IF (THRP.LE.1.D-16) THEN
          WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
-     &      ' INFO: Changed THRP threshold used in transformation from',
-     &      THRP,' to',1.D-15
-         THRP=1.D-15
+     &      ' INFO: Changed THRP threshold used in'//
+     &      ' integral transformation from',THRP,' to',1.D-14
+         THRP=1.D-14
       END IF
-      IF (THRQ.LE.0.D0) THEN
-         WRITE(LUPRI,'(/A,1P,D10.2,A,D10.2)')
-     &      ' INFO: Changed THRQ threshold used in AO sort from',THRP,
-     &      ' to',1.D-15
-         THRQ=1.D-15
-      END IF
+      THRQ = THRP * 0.1D0
 C
 C     ***** Reset /CBGETD/ because any H2AC on disk will be
 C           obsolete after transformation.
