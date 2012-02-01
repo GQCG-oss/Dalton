@@ -216,11 +216,12 @@ subroutine pe_read_potential(work, coords, charges)
     end if
 
     inquire(file='POTENTIAL.INP', exist=lexist)
+    print *, lexist
     if (lexist) then
         call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
     else
         if (pe_savden) then
-            continue
+            return
         else
             stop('POTENTIAL.INP not found!')
         end if
