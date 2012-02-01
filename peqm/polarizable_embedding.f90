@@ -214,7 +214,16 @@ subroutine pe_read_potential(work, coords, charges)
         print *, 'ERROR: nuclear coordinates of the QM system are missing.'
     end if
 
-    call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
+    inquire(file='POTENTIAL.INP', exist=lexist)
+    if (lexist) then
+        call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
+    else
+        if (pe_savden) then
+            continue
+        else
+            stop('POTENTIAL.INP not found!')
+        end if
+    end if
 
     do
         read(lupot,*,end=100) word
