@@ -201,6 +201,7 @@ subroutine pe_read_potential(work, coords, charges)
     real(dp), dimension(15) :: temp
     character(2) :: auoraa
     character(80) :: word
+    logical :: lexist
 
     if (present(coords) .and. present(charges)) then
         qmnucs = size(charges)
