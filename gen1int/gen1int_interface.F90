@@ -440,7 +440,6 @@ module gen1int_interface
                                 order_ram_total=order_ram_total, &
                                 order_geo_bra=order_geo_bra,     &
                                 order_geo_ket=order_geo_ket,     &
-                                geom_tree=geom_tree,             &
                                 num_ints=num_ints,               &
                                 val_ints=val_ints,               &
                                 redunt_ints=redunt_ints,         &
