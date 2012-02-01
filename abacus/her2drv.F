@@ -971,10 +971,12 @@ C
       ENDIF
 
       IF(I2TYP.EQ.0) THEN
-        do ishela = 1, maxshl
-          ncenta = ncntsh(ishela)
-          if (ncenta.le.fdnucs) then
-            iastrt = ishela + 1
+        do ishel = 1, maxshl
+          ncent = ncntsh(ishel)
+          if (ncent <= fdnucs) then
+            iastrt = ishel + 1
+            icsmax = ishel
+            idsmax = ishel
             cycle
           end if
         end do
@@ -983,8 +985,8 @@ C
         IDSTRT = 1
         IASMAX = MAXSHL
         IBSMAX = MAXSHL
-        ICSMAX = MAXSHL
-        IDSMAX = MAXSHL
+!        ICSMAX = MAXSHL
+!        IDSMAX = MAXSHL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'TWOPEQM: Unknown I2TYP =', I2TYP
         CALL QUIT('Unknown I2TYP !!!')
@@ -1171,13 +1173,13 @@ C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
            if ((ncentc.gt.fdnucs).or.(ncentd.gt.fdnucs)) cycle
 
 ! Make sure that all integrals are written
-           if ((ishela.eq.iasmax).and.
-     &         (ishelb.eq.ibsmax).and.
-     &         (ncentc.eq.fdnucs).and.
-     &         (ncentd.eq.fdnucs)) then
-             icsmax = ishelc
-             idsmax = isheld
-           end if
+!           if ((ishela.eq.iasmax).and.
+!     &         (ishelb.eq.ibsmax).and.
+!     &         (ncentc.eq.fdnucs).and.
+!     &         (ncentd.eq.fdnucs)) then
+!             icsmax = ishelc
+!             idsmax = isheld
+!           end if
 C
 C                 *******************************
 C                 ***** Calculate integrals *****

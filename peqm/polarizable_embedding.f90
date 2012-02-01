@@ -221,6 +221,8 @@ subroutine pe_read_potential(work, coords, charges)
     else
         if (pe_savden) then
             return
+        else if (pe_qmes) then
+            return
         else
             stop('POTENTIAL.INP not found!')
         end if

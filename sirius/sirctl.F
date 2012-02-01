@@ -123,6 +123,7 @@ C
 ! *********************************************************************
       if (pe_twoint .and. .not. pe_repuls) then
           call pe_intermolecular(nbast, work)
+          iconv = 1
           goto 8000
       end if
 C
