@@ -359,16 +359,18 @@ subroutine pe_read_potential(work, coords, charges)
     end if
 
     ! number of polarizabilities different from zero
-    npols = 0
-    allocate(zeroalphas(nsites))
-    do i = 1, nsites
-        if (abs(maxval(alphas(:,i))) >= zero) then
-            zeroalphas(i) = .false.
-            npols = npols + 1
-        else
-            zeroalphas = .true.
-        end if
-    end do
+    if (lpol(0) .or. lpol(1)) then
+        npols = 0
+        allocate(zeroalphas(nsites))
+        do i = 1, nsites
+            if (abs(maxval(alphas(:,i))) >= zero) then
+                zeroalphas(i) = .false.
+                npols = npols + 1
+            else
+                zeroalphas = .true.
+            end if
+        end do
+    end if
 
     close(lupot)
 
@@ -462,6 +464,10 @@ subroutine pe_response(density, fock, ndens, work)
     nnbas = size(density) / ndens
 
     fock = 0.0d0
+
+    if (.not. lpol(0) .and. .not. lpol(1)) then
+        return
+    end if
 
     allocate(Fel(3*npols,ndens)); Fel = 0.0d0
     allocate(Fel_ints(nnbas,3))

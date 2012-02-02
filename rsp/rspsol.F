@@ -112,7 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
-      use polarizable_embedding, only: peqm, pe_response
+      use polarizable_embedding, only: peqm, lpol, pe_response
 C
 #include <implicit.h>
 #include <maxorb.h>
@@ -328,6 +328,8 @@ C
            call quit('PE response calc. not implemented for ncsim > 0.')
         end if
 
+        if (lpol(0) .or. lpol(1)) then
+
         call memget('REAL', kuev, n2orbx*nosim, wrk, kfree, lfree)
         call memget('REAL', kev, nnorbx, wrk, kfree, lfree)
         call memget('REAL', kevao, nnbasx*nosim, wrk, kfree, lfree)
@@ -370,7 +372,7 @@ C
         call slvsor(.true., .true., nosim, udv, evecs, wrk(kuev))
 
         call memrel('RSPSLV.pe_response', wrk, 1, kuev, kfree, lfree)
-
+        end if
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
