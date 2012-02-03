@@ -14,6 +14,7 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
+    logical, public, save :: pe_gspol = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
@@ -161,6 +162,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
+        else if (trim(option(2:)) == 'GSPOL') then
+            pe_gspol = .true.
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
@@ -171,6 +174,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
             pe_repuls = .true.
+        ! QM electrostatics from frozen densities
         else if (trim(option(2:)) == 'QMES') then
             ! number of frozen densities
             read(luinp,*) nfds
@@ -465,7 +469,10 @@ subroutine pe_response(density, fock, ndens, work)
 
     fock = 0.0d0
 
+    ! this should optimally be done outside loop
     if (.not. lpol(0) .and. .not. lpol(1)) then
+        return
+    else if (pe_gspol) then
         return
     end if
 
