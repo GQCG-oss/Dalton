@@ -5,7 +5,7 @@ module polarizable_embedding
     private
 
     public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
-    public :: pe_frozen_density, pe_intermolecular, pe_repulsion
+    public :: pe_save_density, pe_intmol_twoints, pe_repulsion
     public :: pe_response
 
 
@@ -64,7 +64,7 @@ module polarizable_embedding
     ! energy contributions
     ! electrostatic (last spot reserved for frozen densities)
     real(dp), dimension(0:4), public, save :: Ees = 0.0d0
-    ! polarization (1: electron, 2: nuclear, 3: multipole, 4: frozen density)
+    ! polarization (1: electron, 2: nuclear, 3: multipole, 4: frozen densities)
     real(dp), dimension(4), public, save :: Epol = 0.0d0
 
     ! multipole moments
@@ -170,7 +170,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
             pe_twoint = .true.
-        ! save frozen density
+        ! save density matrix
         else if (trim(option(2:)) == 'SAVDEN') then
             pe_savden = .true.
         ! get fock matrix for repulsion potential
@@ -1758,7 +1758,7 @@ end subroutine get_symmetry_factors
 
 !------------------------------------------------------------------------------
 
-subroutine pe_frozen_density(density, nbas, coords, charges, work)
+subroutine pe_save_density(density, nbas, coords, charges, work)
 
     external :: get_Tk_integrals
 
@@ -1801,7 +1801,6 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
 
     ! unfold density matrix
     allocate(full_density(nbas,nbas)); full_density = 0.0d0
-!    call dunfld(nbas, density, full_density)
     l = 1
     do i = 1, nbas
         do j = 1, i
@@ -1833,7 +1832,7 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
     end do
     deallocate(T0_ints)
 
-    ! save density and energy for subsequent calculations
+    ! save density, energy and field for subsequent calculations
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
     rewind(luden)
     write(luden) Ene
@@ -1847,11 +1846,11 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
 
     deallocate(full_density, Ffd, Ftmp)
 
-end subroutine pe_frozen_density
+end subroutine pe_save_density
 
 !------------------------------------------------------------------------------
 
-subroutine pe_intermolecular(nbas, work)
+subroutine pe_intmol_twoints(nbas, work)
 
     external :: sirfck
 
@@ -1936,7 +1935,7 @@ subroutine pe_intermolecular(nbas, work)
 
     deallocate(core_fock, Rfd, Zfd, Ffd)
 
-end subroutine pe_intermolecular
+end subroutine pe_intmol_twoints
 
 !------------------------------------------------------------------------------
 
