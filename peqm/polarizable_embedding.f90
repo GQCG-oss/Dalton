@@ -15,6 +15,7 @@ module polarizable_embedding
     ! options
     logical, public, save :: peqm = .false.
     logical, public, save :: pe_gspol = .false.
+    logical, public, save :: pe_nomb = .false.
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
@@ -118,20 +119,18 @@ module polarizable_embedding
 
 ! TODO:
 ! insert quits inside dalton if QM3, QMMM etc.
-! consistent implementation where several densities iare taken as input
+! consistent implementation where several densities are taken as input
 ! find better solution for electric field calculation from frozen densities
 ! hexadecapoles and higher order polarizabilities
 ! write list of publications which should be cited
 ! write output related to QMES
 ! avoid dimensions as input
-! remove double zeroing and unecessary zeroing?
-! quit if symmetry or implement symmetry
-! Environment properties in herrdn.F
+! remove double zeroing and unecessary zeroing
 ! write to output
 ! memory checks and handle memory better
-! response properties (incl. magnetic)
+! nonlinear response properties
+! magnetic properties
 ! AA and AU
-! save individual one-electron integrals and reuse
 ! cutoffs and damping
 ! memory management
 ! add error catching
@@ -162,8 +161,11 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
+        ! neglect dynamic response from environment
         else if (trim(option(2:)) == 'GSPOL') then
             pe_gspol = .true.
+        else if (trim(option(2:)) == 'NOMB') then
+            pe_nomb = .true.
         ! calculate intermolecular two-electron integrals
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
@@ -1408,11 +1410,10 @@ subroutine get_response_matrix(A, invert, work)
 
                     else
 
-! Remove manybody polarization
-!                        if (?) then
-!                            m = m + 3
-!                            cycle
-!                        end if
+                        if (pe_nomb) then
+                            m = m + 3
+                            cycle
+                        end if
 
                         exclude = .false.
                         do k = 1, lexlst
@@ -1432,7 +1433,7 @@ subroutine get_response_matrix(A, invert, work)
                         R3 = R**3
                         R5 = R**5
 
-! Implement cutoff
+! cutoff radius
 !                        if (R > cutoff) then
 !                            m = m + 3
 !                            cycle
