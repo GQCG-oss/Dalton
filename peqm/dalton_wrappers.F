@@ -1,7 +1,4 @@
-
-!------------------------------------------------------------------------------
-
-      subroutine get_Tk_integrals(Tk_ints, nints, k, coord, work, nwrk)
+      subroutine Tk_integrals(Tk_ints, nints, k, coord, work, nwrk)
 
 #include <mxcent.h>
 #include <qm3.h>
@@ -86,6 +83,4 @@
         runqm3 = .false.
         diporg = backup
 
-      end subroutine get_Tk_integrals
-
-
+      end subroutine Tk_integrals
