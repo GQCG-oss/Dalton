@@ -54,7 +54,7 @@ C
 
       use lucita_orbital_spaces
       use polarizable_embedding, only: pe_twoint, pe_repuls,
-     &                                 pe_intermolecular
+     &                                 pe_intmol_twoints
 
 #include <implicit.h>
 C
@@ -122,7 +122,7 @@ C
 ! *** Save intermolecular part of two-electron Fock matrix and quit ***
 ! *********************************************************************
       if (pe_twoint .and. .not. pe_repuls) then
-          call pe_intermolecular(nbast, work)
+          call pe_intmol_twoints(nbast, work)
           iconv = 1
           goto 8000
       end if

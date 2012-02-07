@@ -5,7 +5,7 @@ module polarizable_embedding
     private
 
     public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
-    public :: pe_frozen_density, pe_intermolecular, pe_repulsion
+    public :: pe_save_density, pe_intmol_twoints, pe_repulsion
     public :: pe_response
 
 
@@ -64,18 +64,18 @@ module polarizable_embedding
     ! energy contributions
     ! electrostatic (last spot reserved for frozen densities)
     real(dp), dimension(0:4), public, save :: Ees = 0.0d0
-    ! polarization (1: electron, 2: nuclear, 3: multipole, 4: frozen density)
+    ! polarization (1: electron, 2: nuclear, 3: multipole, 4: frozen densities)
     real(dp), dimension(4), public, save :: Epol = 0.0d0
 
     ! multipole moments
     ! monopoles
-    real(dp), dimension(:,:), allocatable, save :: Q0
+    real(dp), dimension(:,:), allocatable, save :: Q0s
     ! dipoles
-    real(dp), dimension(:,:), allocatable, save :: Q1
+    real(dp), dimension(:,:), allocatable, save :: Q1s
     ! quadrupoles
-    real(dp), dimension(:,:), allocatable, save :: Q2
+    real(dp), dimension(:,:), allocatable, save :: Q2s
     ! octopoles
-    real(dp), dimension(:,:), allocatable, save :: Q3
+    real(dp), dimension(:,:), allocatable, save :: Q3s
     ! hexadecapoles
 !    real(dp), dimension(:,:), allocatable, save :: Q4
 
@@ -170,7 +170,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (trim(option(2:)) == 'TWOINT') then
             read(luinp,*) fdnucs
             pe_twoint = .true.
-        ! save frozen density
+        ! save density matrix
         else if (trim(option(2:)) == 'SAVDEN') then
             pe_savden = .true.
         ! get fock matrix for repulsion potential
@@ -246,39 +246,39 @@ subroutine pe_read_potential(work, coords, charges)
             end do
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
-            allocate(Q0(1,nsites)); Q0 = 0.0d0
+            allocate(Q0s(1,nsites)); Q0s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, temp(1)
-                Q0(1,s) = temp(1)
+                Q0s(1,s) = temp(1)
             end do
         else if (trim(word) == 'dipoles') then
             lmul(1) = .true.
-            allocate(Q1(3,nsites)); Q1 = 0.0d0
+            allocate(Q1s(3,nsites)); Q1s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 3)
-                Q1(:,s) = temp(1:3)
+                Q1s(:,s) = temp(1:3)
             end do
         else if (trim(word) == 'quadrupoles') then
             lmul(2) = .true.
-            allocate(Q2(6,nsites)); Q2 = 0.0d0
+            allocate(Q2s(6,nsites)); Q2s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 6)
-                Q2(:,s) = temp(1:6)
+                Q2s(:,s) = temp(1:6)
             end do
         else if (trim(word) == 'octopoles') then
             lmul(3) = .true.
-            allocate(Q3(10,nsites)); Q3 = 0.0d0
+            allocate(Q3s(10,nsites)); Q3s = 0.0d0
             temp = 0.0d0
             read(lupot,*) nlines
             do i = 1, nlines
                 read(lupot,*) s, (temp(j), j = 1, 10)
-                Q3(:,s) = temp(1:10)
+                Q3s(:,s) = temp(1:10)
             end do
 !        else if (trim(word) == 'hexadecapoles') then
 !            lmul(4) = .true.
@@ -453,7 +453,7 @@ end subroutine pe_energy
 
 subroutine pe_response(density, fock, ndens, work)
 
-    external :: get_Tk_integrals
+    external :: Tk_integrals
 
     real(dp), dimension(:), intent(in) :: density
     real(dp), dimension(:), intent(out) :: fock
@@ -487,7 +487,7 @@ subroutine pe_response(density, fock, ndens, work)
 
         if (zeroalphas(i)) cycle
 
-        call get_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 
         do m = 1, ndens
             do j = 1, 3
@@ -505,7 +505,7 @@ subroutine pe_response(density, fock, ndens, work)
     allocate(Mu_ints(nnbas,3))
 
     do m = 1, ndens
-        call get_induced_dipoles(Mu(:,m), Fel(:,m), work)
+        call induced_dipoles(Mu(:,m), Fel(:,m), work)
     end do
 
     deallocate(Fel)
@@ -514,7 +514,7 @@ subroutine pe_response(density, fock, ndens, work)
     do i = 1, nsites
         if (zeroalphas(i)) cycle
         do m = 1, ndens
-            call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2,m), work)
+            call Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2,m), work)
             do j = 1, 3
                 fock((m-1)*nnbas+1:m*nnbas) = fock((m-1)*nnbas+1:m*nnbas) + Mu_ints(:,j)
             end do
@@ -641,7 +641,7 @@ subroutine es_frozen_densities(density, fock, Eel, Enuc, work)
         Eee = dot(density, fd_fock)
 
         do j = 1, fdnucs
-            call get_Qk_integrals(Zfd_ints, k, Rfd(:,j), Zfd(:,j), work)
+            call Qk_integrals(Zfd_ints, k, Rfd(:,j), Zfd(:,j), work)
             Een = Een + dot(density, Zfd_ints(:,1))
             fock = fock + Zfd_ints(:,1)
         end do
@@ -649,7 +649,7 @@ subroutine es_frozen_densities(density, fock, Eel, Enuc, work)
         do j = 1, fdnucs
             do l = 1, qmnucs
                 Rfm = Rm(:,l) - Rfd(:,j)
-                call get_Tk_tensor(Tfm, k, Rfm)
+                call Tk_tensor(Tfm, k, Rfm)
                 Enn = Enn + Zm(1,l) * Zfd(1,j) * Tfm(1)
             end do
         end do
@@ -686,15 +686,15 @@ subroutine es_monopoles(density, fock, Eel, Enuc, work)
 
     do i = 1, nsites
 
-        if (abs(Q0(1,i)) < zero) cycle
+        if (abs(Q0s(1,i)) < zero) cycle
 
-        call get_Qk_integrals(Q0_ints, k, Rs(:,i), Q0(:,i), work)
+        call Qk_integrals(Q0_ints, k, Rs(:,i), Q0s(:,i), work)
 
         ! nuclei - monopole interaction
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call get_Tk_tensor(Tsm, k, Rsm)
-            Enuc = Enuc + Q0(1,i) * Zm(1,j) * Tsm(1)
+            call Tk_tensor(Tsm, k, Rsm)
+            Enuc = Enuc + Q0s(1,i) * Zm(1,j) * Tsm(1)
         end do
 
         ! electron - monopole interaction
@@ -729,16 +729,16 @@ subroutine es_dipoles(density, fock, Eel, Enuc, work)
 
     do i = 1, nsites
 
-        if (abs(maxval(Q1(:,i))) < zero) cycle
+        if (abs(maxval(Q1s(:,i))) < zero) cycle
 
-        call get_Qk_integrals(Q1_ints, k, Rs(:,i), Q1(:,i), work)
+        call Qk_integrals(Q1_ints, k, Rs(:,i), Q1s(:,i), work)
 
         ! nuclei - dipole interaction energy
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call get_Tk_tensor(Tsm, k, Rsm)
+            call Tk_tensor(Tsm, k, Rsm)
             do l = 1, 3
-                Enuc = Enuc - Zm(1,j) * Q1(l,i) * Tsm(l)
+                Enuc = Enuc - Zm(1,j) * Q1s(l,i) * Tsm(l)
             end do
         end do
 
@@ -777,17 +777,17 @@ subroutine es_quadrupoles(density, fock, Eel, Enuc, work)
 
     do i = 1, nsites
 
-        if (abs(maxval(Q2(:,i))) < zero) cycle
+        if (abs(maxval(Q2s(:,i))) < zero) cycle
 
-        call get_Qk_integrals(Q2_ints, k, Rs(:,i), Q2(:,i), work)
+        call Qk_integrals(Q2_ints, k, Rs(:,i), Q2s(:,i), work)
 
         ! nuclei - quadrupole interaction energy
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call get_Tk_tensor(Tsm, k, Rsm)
-            call get_symmetry_factors(factors, k)
+            call Tk_tensor(Tsm, k, Rsm)
+            call symmetry_factors(factors, k)
             do l = 1, 6
-                Enuc = Enuc + 0.5d0 * factors(l) * Zm(1,j) * Q2(l,i) * Tsm(l)
+                Enuc = Enuc + 0.5d0 * factors(l) * Zm(1,j) * Q2s(l,i) * Tsm(l)
             end do
 
         end do
@@ -827,17 +827,17 @@ subroutine es_octopoles(density, fock, Eel, Enuc, work)
 
     do i = 1, nsites
 
-        if (abs(maxval(Q3(:,i))) < zero) cycle
+        if (abs(maxval(Q3s(:,i))) < zero) cycle
 
-        call get_Qk_integrals(Q3_ints, k, Rs(:,i), Q3(:,i), work)
+        call Qk_integrals(Q3_ints, k, Rs(:,i), Q3s(:,i), work)
 
         ! nuclei - octopole interaction energy
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call get_Tk_tensor(Tsm, k, Rsm)
-            call get_symmetry_factors(factors, k)
+            call Tk_tensor(Tsm, k, Rsm)
+            call symmetry_factors(factors, k)
             do l = 1, 10
-                Enuc = Enuc - factors(l) * Zm(1,j) * Q3(l,i) * Tsm(l) / 6.0d0
+                Enuc = Enuc - factors(l) * Zm(1,j) * Q3s(l,i) * Tsm(l) / 6.0d0
             end do
         end do
 
@@ -880,15 +880,15 @@ subroutine pe_polarization(density, fock, work)
 
         if (energy) then
 
-            call get_electron_fields(Fel, density, work)
-            call get_nuclear_fields(Fnuc, work)
-            call get_multipole_fields(Fmul, work)
-            if (pe_qmes) call get_frozen_density_field(Ffd, work)
+            call electron_fields(Fel, density, work)
+            call nuclear_fields(Fnuc, work)
+            call multipole_fields(Fmul, work)
+            if (pe_qmes) call frozen_density_field(Ffd, work)
 
             if (pe_qmes) then
-                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
             else
-                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
             end if
 
             Epol(1) = - 0.5d0 * dot(Mu, Fel)
@@ -900,21 +900,21 @@ subroutine pe_polarization(density, fock, work)
 
             allocate(Mu_ints(size(fock),3))
 
-            call get_electron_fields(Fel, density, work)
-            call get_nuclear_fields(Fnuc, work)
-            call get_multipole_fields(Fmul, work)
-            if (pe_qmes) call get_frozen_density_field(Ffd, work)
+            call electron_fields(Fel, density, work)
+            call nuclear_fields(Fnuc, work)
+            call multipole_fields(Fmul, work)
+            if (pe_qmes) call frozen_density_field(Ffd, work)
 
             if (pe_qmes) then
-                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
             else
-                call get_induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
             end if
 
             l = 1
             do i = 1, nsites
                 if (zeroalphas(i)) cycle
-                call get_Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
+                call Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
                 do j = 1, 3
                     fock = fock + Mu_ints(:,j)
                 end do
@@ -938,7 +938,7 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine get_induced_dipoles(Mu, F, work)
+subroutine induced_dipoles(Mu, F, work)
 
     real(dp), dimension(:), intent(out) :: Mu
     real(dp), dimension(:), intent(in) :: F
@@ -951,7 +951,7 @@ subroutine get_induced_dipoles(Mu, F, work)
 
     allocate(A(n*(n+1)/2))
     
-    call get_response_matrix(A, .false., work)
+    call response_matrix(A, .false., work)
 
     Mu = F
 
@@ -959,11 +959,11 @@ subroutine get_induced_dipoles(Mu, F, work)
 
     deallocate(A)
 
-end subroutine get_induced_dipoles
+end subroutine induced_dipoles
 
 !------------------------------------------------------------------------------
 
-subroutine get_electric_fields(Ftot, density, work)
+subroutine electric_fields(Ftot, density, work)
 
     real(dp), dimension(:), intent(out) :: Ftot
     real(dp), dimension(:), intent(in) :: density
@@ -979,21 +979,21 @@ subroutine get_electric_fields(Ftot, density, work)
 
     allocate(Fel(n), Fnuc(n), Fmul(n)); Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
-    call get_electron_fields(Fel, density, work)
+    call electron_fields(Fel, density, work)
 
-    call get_nuclear_fields(Fnuc, work)
+    call nuclear_fields(Fnuc, work)
 
-    call get_multipole_fields(Fmul, work)
+    call multipole_fields(Fmul, work)
 
     Ftot = Fel + Fnuc + Fmul
 
-end subroutine get_electric_fields
+end subroutine electric_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_electron_fields(Fel, density, work)
+subroutine electron_fields(Fel, density, work)
 
-    external :: get_Tk_integrals
+    external :: Tk_integrals
 
     real(dp), dimension(:), intent(out) :: Fel
     real(dp), dimension(:), intent(in) :: density
@@ -1026,7 +1026,7 @@ subroutine get_electron_fields(Fel, density, work)
 
         if (zeroalphas(i)) cycle
 
-        call get_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 
         do j = 1, 3
             Fel(l+j) = dot(density, Fel_ints(:,j))
@@ -1038,11 +1038,11 @@ subroutine get_electron_fields(Fel, density, work)
 
     deallocate(Fel_ints)
 
-end subroutine get_electron_fields
+end subroutine electron_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_nuclear_fields(Fnuc, work)
+subroutine nuclear_fields(Fnuc, work)
 
     real(dp), dimension(:), intent(out) :: Fnuc
     real(dp), dimension(:), intent(inout) :: work
@@ -1081,7 +1081,7 @@ subroutine get_nuclear_fields(Fnuc, work)
             if (zeroalphas(i)) cycle
             do j = 1, qmnucs
                 Rms = Rs(:,i) - Rm(:,j)
-                call get_Tk_tensor(Tms, k, Rms)
+                call Tk_tensor(Tms, k, Rms)
                 do m = 1, 3
                     Fnuc(l+m) = Fnuc(l+m) - Zm(1,j) * Tms(m)
                 end do
@@ -1096,11 +1096,11 @@ subroutine get_nuclear_fields(Fnuc, work)
 
     end if
 
-end subroutine get_nuclear_fields
+end subroutine nuclear_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_frozen_density_field(Ffd, work)
+subroutine frozen_density_field(Ffd, work)
 
     real(dp), dimension(:), intent(out) :: Ffd
     real(dp), dimension(:), intent(inout) :: work
@@ -1129,11 +1129,11 @@ subroutine get_frozen_density_field(Ffd, work)
 
     end do
 
-end subroutine get_frozen_density_field
+end subroutine frozen_density_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_multipole_fields(Fmul, work)
+subroutine multipole_fields(Fmul, work)
 
     real(dp), dimension(:), intent(out) :: Fmul
     real(dp), dimension(:), intent(inout) :: work
@@ -1178,8 +1178,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to monopole at j
                 if (lmul(0)) then
                     ! skip if monopole is 'zero'
-                    if (abs(maxval(Q0(:,j))) >= zero) then
-                        call get_monopole_field(Fs, Rs(:,i), Rs(:,j), Q0(:,j))
+                    if (abs(maxval(Q0s(:,j))) >= zero) then
+                        call monopole_field(Fs, Rs(:,i), Rs(:,j), Q0s(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -1187,8 +1187,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to dipole at j
                 if (lmul(1)) then
                     ! skip if dipole is 'zero'
-                    if (abs(maxval(Q1(:,j))) >= zero) then
-                        call get_dipole_field(Fs, Rs(:,i), Rs(:,j), Q1(:,j))
+                    if (abs(maxval(Q1s(:,j))) >= zero) then
+                        call dipole_field(Fs, Rs(:,i), Rs(:,j), Q1s(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -1196,8 +1196,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to quadrupole at j
                 if (lmul(2)) then
                     ! skip if quadrupole is 'zero'
-                    if (abs(maxval(Q2(:,j))) >= zero) then
-                        call get_quadrupole_field(Fs, Rs(:,i), Rs(:,j), Q2(:,j))
+                    if (abs(maxval(Q2s(:,j))) >= zero) then
+                        call quadrupole_field(Fs, Rs(:,i), Rs(:,j), Q2s(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -1205,8 +1205,8 @@ subroutine get_multipole_fields(Fmul, work)
                 ! get electric field at i due to octopole at j
                 if (lmul(3)) then
                     ! skip if octopole is 'zero'
-                    if (abs(maxval(Q3(:,j))) >= zero) then
-                        call get_octopole_field(Fs, Rs(:,i), Rs(:,j), Q3(:,j))
+                    if (abs(maxval(Q3s(:,j))) >= zero) then
+                        call octopole_field(Fs, Rs(:,i), Rs(:,j), Q3s(:,j))
                         Fmul(l:l+2) = Fmul(l:l+2) + Fs
                     end if
                 end if
@@ -1221,11 +1221,11 @@ subroutine get_multipole_fields(Fmul, work)
 
     end if
 
-end subroutine get_multipole_fields
+end subroutine multipole_fields
 
 !------------------------------------------------------------------------------
 
-subroutine get_monopole_field(Fi, Ri, Rj, Q0j)
+subroutine monopole_field(Fi, Ri, Rj, Q0j)
 
     real(dp), dimension(3), intent(out) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj
@@ -1237,7 +1237,7 @@ subroutine get_monopole_field(Fi, Ri, Rj, Q0j)
 
     Rji = Ri - Rj
 
-    call get_Tk_tensor(Tji, k, Rji)
+    call Tk_tensor(Tji, k, Rji)
 
     Fi = 0.0d0
 
@@ -1245,11 +1245,11 @@ subroutine get_monopole_field(Fi, Ri, Rj, Q0j)
         Fi(a) = Fi(a) - Tji(a) *  Q0j(1)
     end do
 
-end subroutine get_monopole_field
+end subroutine monopole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_dipole_field(Fi, Ri, Rj, Q1j)
+subroutine dipole_field(Fi, Ri, Rj, Q1j)
 
     real(dp), dimension(3), intent(out) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj, Q1j
@@ -1262,9 +1262,9 @@ subroutine get_dipole_field(Fi, Ri, Rj, Q1j)
 
     Rji = Ri - Rj
 
-    call get_Tk_tensor(Tji, k, Rji)
+    call Tk_tensor(Tji, k, Rji)
 
-    call get_full_2nd_tensor(Tf, Tji)
+    call full_2nd_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -1274,11 +1274,11 @@ subroutine get_dipole_field(Fi, Ri, Rj, Q1j)
         end do
     end do
 
-end subroutine get_dipole_field
+end subroutine dipole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_quadrupole_field(Fi, Ri, Rj, Q2j)
+subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
 
     real(dp), dimension(3), intent(out) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj, Q2j
@@ -1292,10 +1292,10 @@ subroutine get_quadrupole_field(Fi, Ri, Rj, Q2j)
 
     Rji = Ri - Rj
 
-    call get_Tk_tensor(Tji, k, Rji)
+    call Tk_tensor(Tji, k, Rji)
 
-    call get_full_2nd_tensor(Q2f, Q2j)
-    call get_full_3rd_tensor(Tf, Tji)
+    call full_2nd_tensor(Q2f, Q2j)
+    call full_3rd_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -1307,11 +1307,11 @@ subroutine get_quadrupole_field(Fi, Ri, Rj, Q2j)
         end do
     end do
 
-end subroutine get_quadrupole_field
+end subroutine quadrupole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_octopole_field(Fi, Ri, Rj, Q3j)
+subroutine octopole_field(Fi, Ri, Rj, Q3j)
 
     real(dp), dimension(3), intent(out) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj, Q3j
@@ -1325,10 +1325,10 @@ subroutine get_octopole_field(Fi, Ri, Rj, Q3j)
 
     Rji = Ri - Rj
 
-    call get_Tk_tensor(Tji, k, Rji)
+    call Tk_tensor(Tji, k, Rji)
 
-    call get_full_3rd_tensor(Q3f, Q3j)
-    call get_full_4th_tensor(Tf, Tji)
+    call full_3rd_tensor(Q3f, Q3j)
+    call full_4th_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -1342,11 +1342,11 @@ subroutine get_octopole_field(Fi, Ri, Rj, Q3j)
         end do
     end do
 
-end subroutine get_octopole_field
+end subroutine octopole_field
 
 !------------------------------------------------------------------------------
 
-subroutine get_response_matrix(A, invert, work)
+subroutine response_matrix(A, invert, work)
 
 ! TODO: Damping schemes
 !       Cutoff radius
@@ -1476,11 +1476,11 @@ subroutine get_response_matrix(A, invert, work)
         call invert_packed_matrix(A, 's', work)
     end if
 
-end subroutine get_response_matrix
+end subroutine response_matrix
 
 !------------------------------------------------------------------------------
 
-subroutine get_Tk_tensor(Tk, k, Rij)
+subroutine Tk_tensor(Tk, k, Rij)
 
     integer, intent(in) :: k
     real(dp), dimension(:), intent(out) :: Tk
@@ -1576,11 +1576,11 @@ subroutine get_Tk_tensor(Tk, k, Rij)
         Tk = Tk / R**9
     end if
 
-end subroutine get_Tk_tensor
+end subroutine Tk_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine get_full_2nd_tensor(Tf, Ts)
+subroutine full_2nd_tensor(Tf, Ts)
 
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3), intent(out) :: Tf
@@ -1591,11 +1591,11 @@ subroutine get_full_2nd_tensor(Tf, Ts)
     Tf(2,1) = Ts(2); Tf(2,2) = Ts(4); Tf(2,3) = Ts(5)
     Tf(3,1) = Ts(3); Tf(3,2) = Ts(5); Tf(3,3) = Ts(6)
 
-end subroutine get_full_2nd_tensor
+end subroutine full_2nd_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine get_full_3rd_tensor(Tf, Ts)
+subroutine full_3rd_tensor(Tf, Ts)
 
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3,3), intent(out) :: Tf
@@ -1612,11 +1612,11 @@ subroutine get_full_3rd_tensor(Tf, Ts)
     Tf(3,2,1) = Ts(5); Tf(3,2,2) = Ts(8); Tf(3,2,3) = Ts(9)
     Tf(3,3,1) = Ts(6); Tf(3,3,2) = Ts(9); Tf(3,3,3) = Ts(10)
 
-end subroutine get_full_3rd_tensor
+end subroutine full_3rd_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine get_full_4th_tensor(Tf, Ts)
+subroutine full_4th_tensor(Tf, Ts)
 
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3,3,3), intent(out) :: Tf
@@ -1653,13 +1653,13 @@ subroutine get_full_4th_tensor(Tf, Ts)
     Tf(3,3,2,1) = Ts(9);  Tf(3,3,2,2) = Ts(13); Tf(3,3,2,3) = Ts(14)
     Tf(3,3,3,1) = Ts(10); Tf(3,3,3,2) = Ts(14); Tf(3,3,3,3) = Ts(15)
 
-end subroutine get_full_4th_tensor
+end subroutine full_4th_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
+subroutine Qk_integrals(Qk_ints, k, Rij, Qk, work)
 
-    external :: get_Tk_integrals
+    external :: Tk_integrals
 
     integer, intent(in) :: k
     real(dp), dimension(:,:), intent(out) :: Qk_ints
@@ -1688,11 +1688,11 @@ subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
     ncomps = size(Qk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
-    call get_Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij, work, size(work))
+    call Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij, work, size(work))
 
     ! get symmetry factors
     allocate(factors(ncomps)); factors = 0.0d0
-    call get_symmetry_factors(factors, k)
+    call symmetry_factors(factors, k)
 
     ! dot T^(k) integrals with multipole to get Q^(k) integrals
     do i = 1, ncomps
@@ -1701,11 +1701,11 @@ subroutine get_Qk_integrals(Qk_ints, k, Rij, Qk, work)
 
     deallocate(factors)
 
-end subroutine get_Qk_integrals
+end subroutine Qk_integrals
 
 !------------------------------------------------------------------------------
 
-subroutine get_symmetry_factors(factors, k)
+subroutine symmetry_factors(factors, k)
 
     integer, intent(in) :: k
     real(dp), dimension(:), intent(out) :: factors
@@ -1754,13 +1754,13 @@ subroutine get_symmetry_factors(factors, k)
         factors(15) = 1.0d0
     end if
 
-end subroutine get_symmetry_factors
+end subroutine symmetry_factors
 
 !------------------------------------------------------------------------------
 
-subroutine pe_frozen_density(density, nbas, coords, charges, work)
+subroutine pe_save_density(density, nbas, coords, charges, work)
 
-    external :: get_Tk_integrals
+    external :: Tk_integrals
 
     integer, intent(in) :: nbas
     real(dp), dimension(:), intent(in) :: density
@@ -1801,7 +1801,6 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
 
     ! unfold density matrix
     allocate(full_density(nbas,nbas)); full_density = 0.0d0
-!    call dunfld(nbas, density, full_density)
     l = 1
     do i = 1, nbas
         do j = 1, i
@@ -1817,9 +1816,9 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
 
     ! get electric field from frozen density at polarizable sites
     allocate(Ftmp(3*npols), Ffd(3*npols)); Ftmp = 0.0d0
-    call get_electron_fields(Ftmp, density, work)
+    call electron_fields(Ftmp, density, work)
     Ffd = Ftmp
-    call get_nuclear_fields(Ftmp, work)
+    call nuclear_fields(Ftmp, work)
     Ffd = Ffd + Ftmp
 
     ! calculate nuclear - electron energy contribution
@@ -1827,13 +1826,13 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
     allocate(T0_ints(nnbas)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call get_Tk_integrals(T0_ints, nnbas, k, Rc(:,i), work, size(work))
+        call Tk_integrals(T0_ints, nnbas, k, Rc(:,i), work, size(work))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(density, T0_ints)
     end do
     deallocate(T0_ints)
 
-    ! save density and energy for subsequent calculations
+    ! save density, energy and field for subsequent calculations
     call openfile('pe_density.bin', luden, 'new', 'unformatted')
     rewind(luden)
     write(luden) Ene
@@ -1847,11 +1846,11 @@ subroutine pe_frozen_density(density, nbas, coords, charges, work)
 
     deallocate(full_density, Ffd, Ftmp)
 
-end subroutine pe_frozen_density
+end subroutine pe_save_density
 
 !------------------------------------------------------------------------------
 
-subroutine pe_intermolecular(nbas, work)
+subroutine pe_intmol_twoints(nbas, work)
 
     external :: sirfck
 
@@ -1936,7 +1935,7 @@ subroutine pe_intermolecular(nbas, work)
 
     deallocate(core_fock, Rfd, Zfd, Ffd)
 
-end subroutine pe_intermolecular
+end subroutine pe_intmol_twoints
 
 !------------------------------------------------------------------------------
 
@@ -2040,6 +2039,34 @@ subroutine gemm(a, b, c, transa, transb, alpha, beta)
     call dgemm(o_transa, o_transb, m, n, k, o_alpha, a, lda, b, ldb, o_beta, c, ldc)
 
 end subroutine gemm
+
+!------------------------------------------------------------------------------
+
+subroutine tpttr(ap, a, uplo)
+
+    external :: dtpttr
+
+    real(dp), dimension(:), intent(in) :: ap
+    real(dp), dimension(:,:), intent(out) :: a
+    character(1), intent(in), optional :: uplo
+
+    integer :: n, lda, info
+    character(1) :: o_uplo
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'L'
+    end if
+
+    n = size(a, 2)
+    lda = max(1, size(a, 1))
+
+    call dtpttr(o_uplo, n, ap, a, lda, info)
+
+    if (info /= 0) call xerbla('tpttr', info)
+
+end subroutine tpttr
 
 !------------------------------------------------------------------------------
 
