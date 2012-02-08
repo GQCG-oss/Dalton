@@ -716,14 +716,15 @@ C
             if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
                 call pe_master(denmats=(daosav(:,1) + daosav(:,2)),
      &                         fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
-     &                         ndens=1, Epe=esolt,
-     &                         work=wrk(kfree:lfree))
+     &                         ndens=1, Epe=wrk(kfree),
+     &                         work=wrk(kfree+1:lfree))
             else
                 call pe_master(denmats=daosav(:,1),
      &                         fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
-     &                         ndens=1, Epe=esolt, 
-     &                         work=wrk(kfree:lfree))
+     &                         ndens=1, Epe=wrk(kfree),
+     &                         work=wrk(kfree+1:lfree))
             end if
+            esolt = wrk(kfree)
             call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
             call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfcpe, kfree,
      &                  lfree)
@@ -1344,7 +1345,8 @@ C
             call pe_master(denmats=(daosav(:,1) + daosav(:,2)),
      &                     ndens=1, work=wrk(kfree:lfree))
         else
-            call pe_master(denmats=daosav(:,1), work=wrk(kfree:lfree))
+            call pe_master(denmats=daosav(:,1), ndens= 1,
+     &                     work=wrk(kfree:lfree))
         end if
        end if
        ! save density matrix 
