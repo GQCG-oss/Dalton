@@ -353,28 +353,28 @@ csonia 04/10/95
      &                     '-------------------------------------------'
         write(lupri,'(/7x,a)') 'Electrostatic contributions:'
         if (lmul(0)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                        'Monopoles       ', Ees(0)
+     &                                      'Monopoles       ', Ees(0,1)
         if (lmul(1)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                        'Dipoles         ', Ees(1)
+     &                                      'Dipoles         ', Ees(1,1)
         if (lmul(2)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                        'Quadrupoles     ', Ees(2)
+     &                                      'Quadrupoles     ', Ees(2,1)
         if (lmul(3)) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                        'Octopoles       ', Ees(3)
+     &                                      'Octopoles       ', Ees(3,1)
         if (pe_qmes) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                        'Frozen densities', Ees(4)
+     &                                      'Frozen densities', Ees(4,1)
         if (lpol(0) .or. lpol(1)) then
             write(lupri,'(/7x,a)') 'Polarization contributions:'
             write(lupri,'(9x,a16,5x,f20.12)')
-     &                                       'Electronic      ', Epol(1)
+     &                                     'Electronic      ', Epol(1,1)
             write(lupri,'(9x,a16,5x,f20.12)')
-     &                                       'Nuclear         ', Epol(2)
+     &                                     'Nuclear         ', Epol(2,1)
             write(lupri,'(9x,a16,5x,f20.12)')
-     &                                       'Multipole       ', Epol(3)
+     &                                     'Multipole       ', Epol(3,1)
         if (pe_qmes) write(lupri,'(9x,a16,5x,f20.12)')
-     &                                       'Frozen densities', Epol(4)
+     &                                     'Frozen densities', Epol(4,1)
         end if
         write(lupri,'(/3x,a18,9x,f20.12)')
-     &                       '@ Total PE energy: ', sum(Ees) + sum(Epol)
+     &             '@ Total PE energy: ', sum(Ees(:,1)) + sum(Epol(:,1))
       ELSE
         ESOLT = D0
       END IF

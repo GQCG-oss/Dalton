@@ -112,7 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
-      use polarizable_embedding, only: peqm, pe_response
+      use polarizable_embedding, only: peqm, pe_master
 C
 #include <implicit.h>
 #include <maxorb.h>
@@ -323,7 +323,7 @@ C
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      else if (peqm) then
+      else if (peqm .and. .not. (nasht == 0 .and. trplet)) then
         if (ncsim .gt. 0) then
            call quit('PE response calc. not implemented for ncsim > 0.')
         end if
@@ -351,13 +351,14 @@ C
             call dgefsp(nbast, wrk(kudcao), wrk(jdao))
         end do
 
-        call memrel('RSPSLV.pe_response', wrk, 1, kudvao, kfree, lfree)
+        call memrel('RSPSLV.pe_master', wrk, 1, kudvao, kfree, lfree)
 
-        call pe_response(wrk(kdao:kdao+nosim*nnbasx-1),
-     &                   wrk(kevao:kevao+nosim*nnbasx-1),
-     &                   nosim, wrk(kfree:lfree))
+        call pe_master(runtype='response',
+     &                 denmats=wrk(kdao:kdao+nosim*nnbasx-1),
+     &                 fckmats=wrk(kevao:kevao+nosim*nnbasx-1),
+     &                 nmats=nosim, work=wrk(kfree:lfree))
 
-        call memrel('RSPSLV.pe_response', wrk, 1, kdao, kfree, lfree)
+        call memrel('RSPSLV.pe_master', wrk, 1, kdao, kfree, lfree)
 
         do i = 1, nosim
             juev = kuev + (i-1)*n2orbx
@@ -369,7 +370,7 @@ C
 
         call slvsor(.true., .true., nosim, udv, evecs, wrk(kuev))
 
-        call memrel('RSPSLV.pe_response', wrk, 1, kuev, kfree, lfree)
+        call memrel('RSPSLV.pe_master', wrk, 1, kuev, kfree, lfree)
       ELSE
       IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM SLVLTR TO LINEAR TRANSFORMATION'
