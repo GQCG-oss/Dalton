@@ -712,23 +712,24 @@ C
          ENDIF
 
          if (peqm) then
-            call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
-            call memget('REAL', kepe, 1, wrk, kfree, lfree)
-            if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
-                call pe_master(denmats=(daosav(:,1) + daosav(:,2)),
-     &                         fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
-     &                         ndens=1, Epe=wrk(kepe),
-     &                         work=wrk(kfree:lfree))
-            else
-                call pe_master(denmats=daosav(:,1),
-     &                         fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
-     &                         ndens=1, Epe=wrk(kepe),
-     &                         work=wrk(kfree:lfree))
-            end if
-            esolt = wrk(kepe)
-            call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
-            call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfcpe, kfree,
-     &                  lfree)
+           call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
+           call memget('REAL', kepe, 1, wrk, kfree, lfree)
+           if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
+             call pe_master(runtype='fock',
+     &                      denmats=(daosav(:,1) + daosav(:,2)),
+     &                      fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
+     &                      nmats=1, Epe=wrk(kepe:kepe),
+     &                      work=wrk(kfree:lfree))
+           else
+             call pe_master(runtype='fock', denmats=daosav(:,1),
+     &                      fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
+     &                      nmats=1, Epe=wrk(kepe:kepe),
+     &                      work=wrk(kfree:lfree))
+           end if
+           esolt = wrk(kepe)
+           call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
+           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfcpe, kfree,
+     &                 lfree)
          end if
 
          
@@ -1342,13 +1343,15 @@ C
        ! needed to get specific PE energy contributions for printout
        ! when converged
        if (peqm) then
-        if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
-            call pe_master(denmats=(daosav(:,1) + daosav(:,2)),
-     &                     ndens=1, work=wrk(kfree:lfree))
-        else
-            call pe_master(denmats=daosav(:,1), ndens= 1,
-     &                     work=wrk(kfree:lfree))
-        end if
+         if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
+           call pe_master(runtype='energy',
+     &                    denmats=(daosav(:,1) + daosav(:,2)),
+     &                    nmats=1, work=wrk(kfree:lfree))
+         else
+           call pe_master(runtype='energy',
+     &                    denmats=daosav(:,1), nmats= 1,
+     &                    work=wrk(kfree:lfree))
+         end if
        end if
        ! save density matrix 
        if (pe_savden) then

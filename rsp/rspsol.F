@@ -323,7 +323,7 @@ C
          CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
-      else if (peqm) then
+      else if (peqm .and. .not. (nasht == 0 .and. trplet)) then
         if (ncsim .gt. 0) then
            call quit('PE response calc. not implemented for ncsim > 0.')
         end if
@@ -353,9 +353,10 @@ C
 
         call memrel('RSPSLV.pe_master', wrk, 1, kudvao, kfree, lfree)
 
-        call pe_master(denmats=wrk(kdao:kdao+nosim*nnbasx-1),
+        call pe_master(runtype='response',
+     &                 denmats=wrk(kdao:kdao+nosim*nnbasx-1),
      &                 fckmats=wrk(kevao:kevao+nosim*nnbasx-1),
-     &                 ndens=nosim, work=wrk(kfree:lfree))
+     &                 nmats=nosim, work=wrk(kfree:lfree))
 
         call memrel('RSPSLV.pe_master', wrk, 1, kdao, kfree, lfree)
 
