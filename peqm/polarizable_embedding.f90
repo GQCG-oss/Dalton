@@ -4,13 +4,8 @@ module polarizable_embedding
 
     private
 
-    public :: pe_dalton_input, pe_read_potential, pe_fock, pe_energy
+    public :: pe_dalton_input, pe_read_potential, pe_master.
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
-    public :: pe_response
-
-
-    ! logicals
-    logical, save :: energy = .false.
 
     ! options
     logical, public, save :: peqm = .false.
@@ -20,7 +15,7 @@ module polarizable_embedding
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
     logical, public, save :: pe_qmes = .false.
-    
+
     ! logical unit from dalton
     integer, save :: luout = 0
 
@@ -46,7 +41,7 @@ module polarizable_embedding
     
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.
-    logical, dimension(0:4), public, save :: lmul = .false.
+    logical, dimension(0:3), public, save :: lmul = .false.
     ! lpol(0): isotropic dipole-dipole polarizabilities
     ! lpol(1): anisotropic dipole-dipole polarizabilities
     logical, dimension(0:1), public, save :: lpol = .false.
@@ -62,10 +57,10 @@ module polarizable_embedding
     integer, dimension(:,:), allocatable, save :: exlists
 
     ! energy contributions
-    ! electrostatic (last spot reserved for frozen densities)
-    real(dp), dimension(0:4), public, save :: Ees = 0.0d0
-    ! polarization (1: electron, 2: nuclear, 3: multipole, 4: frozen densities)
-    real(dp), dimension(4), public, save :: Epol = 0.0d0
+    ! electrostatic
+    real(dp), dimension(:,:), allocatable, public, save :: Ees
+    ! polarization
+    real(dp), dimension(:,:), allocatable, public, save :: Epol
 
     ! multipole moments
     ! monopoles
@@ -95,9 +90,9 @@ module polarizable_embedding
     ! ---------------------
 
     ! number of density matrices
-!    integer :: ndens
+    integer :: ndens
     ! number of basis functions and orbitals
-!    integer, save :: nbas, norb
+    integer, save :: nbas, nnbas, norb
     ! number nuclei in qm region
     integer, save :: qmnucs
     ! nuclear charges
@@ -380,8 +375,6 @@ subroutine pe_read_potential(work, coords, charges)
 
     close(lupot)
 
-    ! check memory requirements?
-
     ! write to Dalton output file
     write(luout,'(//2x,a)') 'Polarizable Embedding potential'
     write(luout,'(2x,a)')   '-------------------------------'
@@ -413,52 +406,82 @@ end subroutine pe_read_potential
 
 !------------------------------------------------------------------------------
 
-subroutine pe_fock(density, fock, Epe, work)
+subroutine pe_master(denmats, fckmats, ndens, Epe, work)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(out) :: fock
-    real(dp), intent(out) :: Epe
+    integer :: ndens
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out), optional :: fckmats
+    real(dp), dimension(:), intent(out), optional :: Epe
     real(dp), dimension(:), intent(inout) :: work
 
-    Epe = 0.0d0
+    nnbas = size(density) / ndens
+    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(nnbas, dp)) - 1.0d0))
 
-    fock = 0.0d0
+    if (present(fckmats)) fckmats = 0.0d0
 
-    call pe_electrostatic(density, fock, work)
+    if (present(fckmats) .and. present(Epe)) then
+        call pe_fock(denmats, fckmats, Epe)
+    else if (.not. present(Epe) .and. .not. present(fckmats)) then
+        call pe_fock(denmats)
+    else if (present(fckmats) .and. .not. present(Epe)) then
+        call pe_response(denmats, fckmats)
+    else
+        stop('Could not determine calculation type.')
+    end if
 
-    call pe_polarization(density, fock, work)
+end subroutine pe_master
 
-    Epe = Epe + sum(Ees) + sum(Epol)
+!------------------------------------------------------------------------------
+
+subroutine pe_fock(denmats, fckmats, Epe)
+
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out), optional :: fckmats
+    real(dp), dimension(:), intent(out), optional :: Epe
+
+    integer :: i
+    logical :: mul, pol
+
+    do i = 0, 3
+        if (lmul(i)) mul = .true.
+    end do
+    do i = 0, 1
+        if (lpol(i)) pol = .true.
+    end do
+
+    allocate(Ees(0:4,ndens), Epol(4,ndens))
+    Ees = 0.0d0; Epol = 0.0d0
+
+    if (present(fckmats)) then
+        if (mul) call pe_electrostatic(denmats, fckmats)
+        if (pol) call pe_polarization(denmats, fckmats)
+    else
+        if (mul) call pe_electrostatic(denmats)
+        if (pol) call pe_polarization(denmats)
+    end if
+
+    if (present(Epe)) then
+        Epe = 0.0d0
+        do i = 1, ndens
+            Epe(i) =  sum(Ees(:,i)) + sum(Epol(:,i))
+        end do
+    end if
+
+    if (present(fckmats)) then
+        deallocate(Ees, Epol)
+    end if
 
 end subroutine pe_fock
 
 !------------------------------------------------------------------------------
 
-subroutine pe_energy(density, work)
-
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: work
-
-    energy = .true.
-
-    call pe_electrostatic(density, work(1:size(density)), work(size(density)+1:))
-
-    call pe_polarization(density, work(1:size(density)), work(size(density)+1:))
-
-    energy = .false.
-
-end subroutine pe_energy
-
-!------------------------------------------------------------------------------
-
-subroutine pe_response(density, fock, ndens, work)
+subroutine pe_response(denmats, fckmats)
 
     external :: Tk_integrals
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(out) :: fock
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out) :: fckmats
     integer, intent(in) :: ndens
-    real(dp), dimension(:), intent(inout) :: work
 
     logical :: skip
     integer :: i, j, l, m
@@ -467,9 +490,9 @@ subroutine pe_response(density, fock, ndens, work)
     real(dp), dimension(:,:), allocatable :: Fel, Mu
     real(dp), dimension(:,:), allocatable :: Fel_ints, Mu_ints
 
-    nnbas = size(density) / ndens
+    nnbas = size(denmats) / ndens
 
-    fock = 0.0d0
+    fckmats = 0.0d0
 
     ! this should optimally be done outside loop
     if (.not. lpol(0) .and. .not. lpol(1)) then
@@ -487,11 +510,11 @@ subroutine pe_response(density, fock, ndens, work)
 
         if (zeroalphas(i)) cycle
 
-        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i))
 
         do m = 1, ndens
             do j = 1, 3
-                Fel(l+j,m) = dot(density((m-1)*nnbas+1:m*nnbas), Fel_ints(:,j))
+                Fel(l+j,m) = dot(denmats((m-1)*nnbas+1:m*nnbas), Fel_ints(:,j))
             end do
         end do
 
@@ -505,7 +528,7 @@ subroutine pe_response(density, fock, ndens, work)
     allocate(Mu_ints(nnbas,3))
 
     do m = 1, ndens
-        call induced_dipoles(Mu(:,m), Fel(:,m), work)
+        call induced_dipoles(Mu(:,m), Fel(:,m))
     end do
 
     deallocate(Fel)
@@ -514,9 +537,9 @@ subroutine pe_response(density, fock, ndens, work)
     do i = 1, nsites
         if (zeroalphas(i)) cycle
         do m = 1, ndens
-            call Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2,m), work)
+            call Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2,m))
             do j = 1, 3
-                fock((m-1)*nnbas+1:m*nnbas) = fock((m-1)*nnbas+1:m*nnbas) + Mu_ints(:,j)
+                fckmats((m-1)*nnbas+1:m*nnbas) = fckmats((m-1)*nnbas+1:m*nnbas) + Mu_ints(:,j)
             end do
          end do
          l = l + 3
@@ -528,107 +551,116 @@ end subroutine pe_response
 
 !------------------------------------------------------------------------------
 
-subroutine pe_electrostatic(density, fock, work)
+subroutine pe_electrostatic(denmats, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(inout), optional :: fckmats
 
+    integer :: i, j, k
     logical :: lexist
     integer :: lutemp
-    real(dp) :: Eel, Enuc, Esave
-
-    Ees = 0.0d0
+    real(dp), dimension(ndens) :: Eel, Enuc, Esave
 
     inquire(file='pe_electrostatics.bin', exist=lexist)
 
-    if (lexist .and. .not. energy) then
-
+    if (lexist .and. present(fckmats)) then
         call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
-        read(lutemp) Esave, fock
+        read(lutemp) Esave, fckmats
         close(lutemp)
-        Ees(0) = Esave
-        Ees(0) = Ees(0) + dot(density, fock)
-
+        Ees = Esave
+        do i = 1, ndens
+            j = (i - 1) * nnbas
+            k = i * nnbas
+            Ees(0,i) = Ees(0,i) + dot(denmats(j:k), fckmats(j:k))
+        end do
     else
-
         Esave = 0.0d0
-
         if (lmul(0)) then
-            call es_monopoles(density, fock, Eel, Enuc, work)
-            Ees(0) = Ees(0) + Eel + Enuc
+            if (present(fckmats)) then
+                call es_monopoles(denmats, Eel, Enuc, fckmats)
+            else
+                call es_monopoles(denmats, Eel, Enuc)
+            end if
+            Ees(0,:) = Ees(0,:) + Eel + Enuc
             Esave = Esave + Enuc
         end if
-
         if (lmul(1)) then
-            call es_dipoles(density, fock, Eel, Enuc, work)
-            Ees(1) = Ees(1) + Eel + Enuc
+            if (present(fckmats)) then
+                call es_dipoles(denmats, Eel, Enuc, fckmats)
+            else
+                call es_dipoles(denmats, Eel, Enuc)
+            end if
+            Ees(1,:) = Ees(1,:) + Eel + Enuc
             Esave = Esave + Enuc
         end if
-
         if (lmul(2)) then
-            call es_quadrupoles(density, fock, Eel, Enuc, work)
-            Ees(2) = Ees(2) + Eel + Enuc
+            if (present(fckmats)) then
+                call es_quadrupoles(denmats, Eel, Enuc, fckmats)
+            else
+                call es_quadrupoles(denmats, Eel, Enuc)
+            end if
+            Ees(2,:) = Ees(2,:) + Eel + Enuc
             Esave = Esave + Enuc
         end if
-
         if (lmul(3)) then
-            call es_octopoles(density, fock, Eel, Enuc, work)
-            Ees(3) = Ees(3) + Eel + Enuc
+            if (present(fckmats)) then
+                call es_octopoles(denmats, Eel, Enuc, fckmats)
+            else
+                call es_octopoles(denmats, Eel, Enuc)
+            end if
+            Ees(3,:) = Ees(3,:) + Eel + Enuc
             Esave = Esave + Enuc
         end if
-
         if (pe_qmes) then
-            call es_frozen_densities(density, fock, Eel, Enuc, work)
-            Ees(4) = Ees(4) + Eel + Enuc
+            if (present(fckmats)) then
+                call es_frozen_densities(denmats, Eel, Enuc, fckmats)
+            else
+                call es_frozen_densities(denmats, Eel, Enuc)
+            end if
+            Ees(4,:) = Ees(4,:) + Eel + Enuc
             Esave = Esave + Enuc
         end if
-
-        if (.not. energy) then
+        if (.not. ) then
             call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
             rewind(lutemp)
-            write(lutemp) Esave, fock
+            write(lutemp) Esave, fckmats
             close(lutemp)
         end if
-
     end if
 
 end subroutine pe_electrostatic
 
 !------------------------------------------------------------------------------
 
-subroutine es_frozen_densities(density, fock, Eel, Enuc, work)
+subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), intent(out) :: Eel, Enuc
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out) :: Eel, Enuc
+    real(dp), dimension(:), intent(inout), optional :: fckmats
 
-    integer :: i, j, l
+    integer :: i, j, l, m, n, o
     integer, parameter :: k = 0
     integer :: lufck, lexist, lutemp
-    real(dp) :: Ene, Een, Eee, Enn
+    real(dp), dimension(ndens) :: Ene, Een, Eee, Enn
     real(dp), dimension(1) :: Tfm
     real(dp), dimension(3) :: Rfm
-    real(dp), dimension(:), allocatable :: fd_fock
-    real(dp), dimension(:,:), allocatable :: Zfd_ints
+    real(dp), dimension(3*npols) :: temp
+    real(dp), dimension(nnbas), allocatable :: fd_fock
+    real(dp), dimension(nnbas,1), allocatable :: Zfd_ints
     character(99) :: ci
     character(99) :: filename
 
     Eel = 0.0d0; Enuc = 0.0d0
     Ene = 0.0d0; Een = 0.0d0; Eee = 0.0d0; Enn = 0.0d0
 
-    allocate(fd_fock(size(density)), Zfd_ints(size(density),1))
-
     do i = 1, nfds
-
         write(ci,*) i
         ci = adjustl(ci)
         filename = 'pe_fock_'//trim(ci)//'.bin'
         call openfile(trim(filename), lufck, 'old', 'unformatted')
         rewind(lufck)
-        read(lufck) work(1:3*npols)
+        read(lufck) temp
         read(lufck) Ene
         read(lufck) fd_fock
         read(lufck) fdnucs
@@ -636,17 +668,21 @@ subroutine es_frozen_densities(density, fock, Eel, Enuc, work)
         read(lufck) Rfd, Zfd
         close(lufck)
 
-        fock = fock + fd_fock
-
-        Eee = dot(density, fd_fock)
-
-        do j = 1, fdnucs
-            call Qk_integrals(Zfd_ints, k, Rfd(:,j), Zfd(:,j), work)
-            Een = Een + dot(density, Zfd_ints(:,1))
-            fock = fock + Zfd_ints(:,1)
+        do j = 1, ndens
+            l = (j - 1) * nnbas
+            m = j * nnbas
+            if (present(fckmats)) fckmats(l:m) = fckmats(l:m) + fd_fock
+            Eee(j) = dot(denmats(l:m), fd_fock)
         end do
 
         do j = 1, fdnucs
+            call Qk_integrals(Zfd_ints, k, Rfd(:,j), Zfd(:,j))
+            do m = 1, ndens
+                n = (m - 1) * nnbas
+                o = m * nnbas
+                Een(m) = Een(m) + dot(denmats(n:o), Zfd_ints(:,1))
+                if (present(fckmats)) fckmats(n:o) = fckmats(n:o) + Zfd_ints(:,1)
+            end do
             do l = 1, qmnucs
                 Rfm = Rm(:,l) - Rfd(:,j)
                 call Tk_tensor(Tfm, k, Rfm)
@@ -658,37 +694,28 @@ subroutine es_frozen_densities(density, fock, Eel, Enuc, work)
 
         Enuc = Enuc + Ene + Enn
         Eel = Eel + Een + Eee
-
     end do
-
-    deallocate(fd_fock, Zfd_ints)
 
 end subroutine es_frozen_densities
 
 !------------------------------------------------------------------------------
 
-subroutine es_monopoles(density, fock, Eel, Enuc, work)
+subroutine es_monopoles(denmats, Eel, Enuc, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), intent(out) :: Eel, Enuc
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out) :: Eel, Enuc
+    real(dp), dimension(:), intent(inout), optional :: fckmats
 
-    integer :: i, j
+    integer :: i, j, l, m
     integer, parameter :: k = 0
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(1) :: Tsm
-    real(dp), dimension(:,:), allocatable :: Q0_ints
-
-    allocate(Q0_ints(size(density),1)); Q0_ints = 0.0d0
+    real(dp), dimension(nnbas,1) :: Q0_ints
 
     Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, nsites
-
         if (abs(Q0s(1,i)) < zero) cycle
-
-        call Qk_integrals(Q0_ints, k, Rs(:,i), Q0s(:,i), work)
 
         ! nuclei - monopole interaction
         do j = 1, qmnucs
@@ -698,40 +725,34 @@ subroutine es_monopoles(density, fock, Eel, Enuc, work)
         end do
 
         ! electron - monopole interaction
-        Eel = Eel + dot(density, Q0_ints(:,1))
-        if (.not. energy) then
-            fock = fock + Q0_ints(:,1)
-        end if
-
+        call Qk_integrals(Q0_ints, k, Rs(:,i), Q0s(:,i))
+        do j = 1, ndens
+            l = (j - 1) * nnbas
+            m = j * nnbas
+            Eel(j) = Eel(j) + dot(denmats(l:m), Q0_ints(:,1))
+            if (present(fckmats)) fckmats(l:m) = fckmats(l:m) + Q0_ints(:,1)
+        end do
     end do
-
-    deallocate(Q0_ints)
 
 end subroutine es_monopoles
 
 !------------------------------------------------------------------------------
 
-subroutine es_dipoles(density, fock, Eel, Enuc, work)
+subroutine es_dipoles(denmats, Eel, Enuc, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), intent(out) :: Eel, Enuc
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out) :: Eel, Enuc
+    real(dp), dimension(:), intent(inout), optional :: fckmats
 
-    integer :: i, j, l
+    integer :: i, j, l, m, n
     integer, parameter :: k = 1
     real(dp), dimension(3) :: Rsm, Tsm
-    real(dp), dimension(:,:), allocatable :: Q1_ints
-
-    allocate(Q1_ints(size(density),3)); Q1_ints = 0.0d0
+    real(dp), dimension(nnbas,3) :: Q1_ints
 
     Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, nsites
-
         if (abs(maxval(Q1s(:,i))) < zero) cycle
-
-        call Qk_integrals(Q1_ints, k, Rs(:,i), Q1s(:,i), work)
 
         ! nuclei - dipole interaction energy
         do j = 1, qmnucs
@@ -743,43 +764,37 @@ subroutine es_dipoles(density, fock, Eel, Enuc, work)
         end do
 
         ! electron - dipole interaction
+        call Qk_integrals(Q1_ints, k, Rs(:,i), Q1s(:,i))
         do j = 1, 3
-            Eel = Eel + dot(density, Q1_ints(:,j))
-            if (.not. energy) then
-                fock = fock + Q1_ints(:,j)
-            end if
+            do l = 1, ndens
+                m = (l - 1) * nnbas
+                n = l * nnbas
+                Eel(l) = Eel(l) + dot(denmats(m:n), Q1_ints(:,j))
+                if (present(fckmats)) fckmats(m:n) = fckmats(m:n) + Q1_ints(:,j)
+            end do
         end do
-
     end do
-
-    deallocate(Q1_ints)
 
 end subroutine es_dipoles
 
 !------------------------------------------------------------------------------
 
-subroutine es_quadrupoles(density, fock, Eel, Enuc, work)
+subroutine es_quadrupoles(denmats, Eel, Enuc, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), intent(out) :: Eel, Enuc
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out) :: Eel, Enuc
+    real(dp), dimension(:), intent(inout), optional :: fckmats
 
-    integer :: i, j, l
+    integer :: i, j, l, m, n
     integer, parameter :: k = 2
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(6) :: Tsm, factors
-    real(dp), dimension(:,:), allocatable :: Q2_ints
-
-    allocate(Q2_ints(size(density),6)); Q2_ints = 0.0d0
+    real(dp), dimension(nnbas,6) :: Q2_ints
 
     Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, nsites
-
         if (abs(maxval(Q2s(:,i))) < zero) cycle
-
-        call Qk_integrals(Q2_ints, k, Rs(:,i), Q2s(:,i), work)
 
         ! nuclei - quadrupole interaction energy
         do j = 1, qmnucs
@@ -789,47 +804,40 @@ subroutine es_quadrupoles(density, fock, Eel, Enuc, work)
             do l = 1, 6
                 Enuc = Enuc + 0.5d0 * factors(l) * Zm(1,j) * Q2s(l,i) * Tsm(l)
             end do
-
         end do
 
         ! electron - quadrupole interaction energy
+        call Qk_integrals(Q2_ints, k, Rs(:,i), Q2s(:,i))
         do j = 1, 6
-            Eel = Eel + dot(density, Q2_ints(:,j))
-            if (.not. energy) then
-                fock = fock + Q2_ints(:,j)
-            end if
+            do l = 1, ndens
+                m = (l - 1) * nnbas
+                n = l * nnbas
+                Eel(l) = Eel(l) + dot(denmats(m:n), Q2_ints(:,j))
+                if (present(fckmats)) fckmats(m:n) = fckmats(m:n) + Q2_ints(:,j)
+            end do
         end do
-
     end do
-
-    deallocate(Q2_ints)
 
 end subroutine es_quadrupoles
 
 !------------------------------------------------------------------------------
 
-subroutine es_octopoles(density, fock, Eel, Enuc, work)
+subroutine es_octopoles(denmats, Eel, Enuc, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), intent(out) :: Eel, Enuc
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(out) :: Eel, Enuc
+    real(dp), dimension(:), intent(inout) :: fckmats
 
-    integer :: i, j, l
+    integer :: i, j, l, m, n
     integer, parameter :: k = 3
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(10) :: Tsm, factors
-    real(dp), dimension(:,:), allocatable :: Q3_ints
-
-    allocate(Q3_ints(size(density),10)); Q3_ints = 0.0d0
+    real(dp), dimension(nnbas,10) :: Q3_ints
 
     Eel = 0.0d0; Enuc = 0.0d0
 
     do i = 1, nsites
-
         if (abs(maxval(Q3s(:,i))) < zero) cycle
-
-        call Qk_integrals(Q3_ints, k, Rs(:,i), Q3s(:,i), work)
 
         ! nuclei - octopole interaction energy
         do j = 1, qmnucs
@@ -842,26 +850,25 @@ subroutine es_octopoles(density, fock, Eel, Enuc, work)
         end do
 
         ! electron - octopole interaction energy
+        call Qk_integrals(Q3_ints, k, Rs(:,i), Q3s(:,i))
         do j = 1, 10
-            Eel = Eel + dot(density, Q3_ints(:,j))
-            if (.not. energy) then
-                fock = fock + Q3_ints(:,j)
-            end if
+            do l = 1, ndens
+                m = (l - 1) * nnbas
+                n = l * nnbas
+                Eel(l) = Eel(l) + dot(denmats(m:n), Q3_ints(:,j))
+                if (present(fckmats)) fckmats(m:n) = fckmats(m:n) + Q3_ints(:,j)
+            end do
         end do
-
     end do
-
-    deallocate(Q3_ints)
 
 end subroutine es_octopoles
 
 !------------------------------------------------------------------------------
 
-subroutine pe_polarization(density, fock, work)
+subroutine pe_polarization(denmats, fckmats)
 
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: fock
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:), intent(inout) :: fckmats
 
     integer :: i, j, l
     integer, parameter :: k = 1
@@ -880,15 +887,15 @@ subroutine pe_polarization(density, fock, work)
 
         if (energy) then
 
-            call electron_fields(Fel, density, work)
-            call nuclear_fields(Fnuc, work)
-            call multipole_fields(Fmul, work)
-            if (pe_qmes) call frozen_density_field(Ffd, work)
+            call electron_fields(Fel, denmats)
+            call nuclear_fields(Fnuc)
+            call multipole_fields(Fmul)
+            if (pe_qmes) call frozen_density_field(Ffd)
 
             if (pe_qmes) then
-                call induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd)
             else
-                call induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul)
             end if
 
             Epol(1) = - 0.5d0 * dot(Mu, Fel)
@@ -898,25 +905,25 @@ subroutine pe_polarization(density, fock, work)
 
         else
 
-            allocate(Mu_ints(size(fock),3))
+            allocate(Mu_ints(size(fckmats),3))
 
-            call electron_fields(Fel, density, work)
-            call nuclear_fields(Fnuc, work)
-            call multipole_fields(Fmul, work)
-            if (pe_qmes) call frozen_density_field(Ffd, work)
+            call electron_fields(Fel, denmats)
+            call nuclear_fields(Fnuc)
+            call multipole_fields(Fmul)
+            if (pe_qmes) call frozen_density_field(Ffd)
 
             if (pe_qmes) then
-                call induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul + Ffd)
             else
-                call induced_dipoles(Mu, Fel + Fnuc + Fmul, work)
+                call induced_dipoles(Mu, Fel + Fnuc + Fmul)
             end if
 
             l = 1
             do i = 1, nsites
                 if (zeroalphas(i)) cycle
-                call Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2), work)
+                call Qk_integrals(Mu_ints, k, Rs(:,i), Mu(l:l+2))
                 do j = 1, 3
-                    fock = fock + Mu_ints(:,j)
+                    fckmats = fckmats + Mu_ints(:,j)
                 end do
                 l = l + 3
             end do
@@ -938,11 +945,10 @@ end subroutine pe_polarization
 
 !------------------------------------------------------------------------------
 
-subroutine induced_dipoles(Mu, F, work)
+subroutine induced_dipoles(Mu, F)
 
     real(dp), dimension(:), intent(out) :: Mu
     real(dp), dimension(:), intent(in) :: F
-    real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, n
     real(dp), dimension(:), allocatable :: A
@@ -951,7 +957,7 @@ subroutine induced_dipoles(Mu, F, work)
 
     allocate(A(n*(n+1)/2))
     
-    call response_matrix(A, .false., work)
+    call response_matrix(A, .false.)
 
     Mu = F
 
@@ -963,11 +969,10 @@ end subroutine induced_dipoles
 
 !------------------------------------------------------------------------------
 
-subroutine electric_fields(Ftot, density, work)
+subroutine electric_fields(Ftot, denmats)
 
     real(dp), dimension(:), intent(out) :: Ftot
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
 
     integer :: i, j
     integer :: n
@@ -979,11 +984,11 @@ subroutine electric_fields(Ftot, density, work)
 
     allocate(Fel(n), Fnuc(n), Fmul(n)); Fel = 0.0d0; Fnuc = 0.0d0; Fmul = 0.0d0
 
-    call electron_fields(Fel, density, work)
+    call electron_fields(Fel, denmats)
 
-    call nuclear_fields(Fnuc, work)
+    call nuclear_fields(Fnuc)
 
-    call multipole_fields(Fmul, work)
+    call multipole_fields(Fmul)
 
     Ftot = Fel + Fnuc + Fmul
 
@@ -991,13 +996,12 @@ end subroutine electric_fields
 
 !------------------------------------------------------------------------------
 
-subroutine electron_fields(Fel, density, work)
+subroutine electron_fields(Fel, denmats)
 
     external :: Tk_integrals
 
     real(dp), dimension(:), intent(out) :: Fel
-    real(dp), dimension(:), intent(in) :: density
-    real(dp), dimension(:), intent(inout) :: work
+    real(dp), dimension(:), intent(in) :: denmats
 
     logical :: skip
     integer :: i, j, l
@@ -1007,7 +1011,7 @@ subroutine electron_fields(Fel, density, work)
 
     Fel = 0.0d0
 
-    nnbas = size(density)
+    nnbas = size(denmats)
 
     allocate(Fel_ints(nnbas,3))
 
@@ -1026,10 +1030,10 @@ subroutine electron_fields(Fel, density, work)
 
         if (zeroalphas(i)) cycle
 
-        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i))
 
         do j = 1, 3
-            Fel(l+j) = dot(density, Fel_ints(:,j))
+            Fel(l+j) = dot(denmats, Fel_ints(:,j))
         end do
 
         l = l + 3
@@ -1042,10 +1046,9 @@ end subroutine electron_fields
 
 !------------------------------------------------------------------------------
 
-subroutine nuclear_fields(Fnuc, work)
+subroutine nuclear_fields(Fnuc)
 
     real(dp), dimension(:), intent(out) :: Fnuc
-    real(dp), dimension(:), intent(inout) :: work
 
     logical :: exclude, lexist, skip
     integer :: lutemp
@@ -1100,10 +1103,9 @@ end subroutine nuclear_fields
 
 !------------------------------------------------------------------------------
 
-subroutine frozen_density_field(Ffd, work)
+subroutine frozen_density_field(Ffd)
 
     real(dp), dimension(:), intent(out) :: Ffd
-    real(dp), dimension(:), intent(inout) :: work
 
     integer :: i
     integer :: lutemp
@@ -1133,10 +1135,9 @@ end subroutine frozen_density_field
 
 !------------------------------------------------------------------------------
 
-subroutine multipole_fields(Fmul, work)
+subroutine multipole_fields(Fmul)
 
     real(dp), dimension(:), intent(out) :: Fmul
-    real(dp), dimension(:), intent(inout) :: work
 
     logical :: exclude, lexist
     integer :: lutemp
@@ -1346,7 +1347,7 @@ end subroutine octopole_field
 
 !------------------------------------------------------------------------------
 
-subroutine response_matrix(A, invert, work)
+subroutine response_matrix(A, invert)
 
 ! TODO: Damping schemes
 !       Cutoff radius
@@ -1354,7 +1355,6 @@ subroutine response_matrix(A, invert, work)
 
     real(dp), dimension(:), intent(out) :: A
     logical, intent(in) :: invert
-    real(dp), dimension(:), intent(inout) :: work
 
     logical :: exclude, lexist
     integer :: info, lutemp
@@ -1382,7 +1382,7 @@ subroutine response_matrix(A, invert, work)
 
             alphainv = alphas(:,i)
 
-            call invert_packed_matrix(alphainv, 'p', work)
+            call invert_packed_matrix(alphainv, 'p')
 
             do l = 3, 1, -1
 
@@ -1473,7 +1473,7 @@ subroutine response_matrix(A, invert, work)
     end if
 
     if (invert) then
-        call invert_packed_matrix(A, 's', work)
+        call invert_packed_matrix(A, 's')
     end if
 
 end subroutine response_matrix
@@ -1657,7 +1657,7 @@ end subroutine full_4th_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine Qk_integrals(Qk_ints, k, Rij, Qk, work)
+subroutine Qk_integrals(Qk_ints, k, Rij, Qk)
 
     external :: Tk_integrals
 
@@ -1665,7 +1665,6 @@ subroutine Qk_integrals(Qk_ints, k, Rij, Qk, work)
     real(dp), dimension(:,:), intent(out) :: Qk_ints
     real(dp), dimension(:), intent(in) :: Qk
     real(dp), dimension(3), intent(in) :: Rij
-    real(dp), dimension(:), intent(inout) :: work
 
     integer :: i
     integer :: ncomps, nnbas
@@ -1688,7 +1687,7 @@ subroutine Qk_integrals(Qk_ints, k, Rij, Qk, work)
     ncomps = size(Qk_ints, 2)
 
     ! get T^(k) integrals (incl. negative sign from electron density)
-    call Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij, work, size(work))
+    call Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij)
 
     ! get symmetry factors
     allocate(factors(ncomps)); factors = 0.0d0
@@ -1816,9 +1815,9 @@ subroutine pe_save_density(density, nbas, coords, charges, work)
 
     ! get electric field from frozen density at polarizable sites
     allocate(Ftmp(3*npols), Ffd(3*npols)); Ftmp = 0.0d0
-    call electron_fields(Ftmp, density, work)
+    call electron_fields(Ftmp, density)
     Ffd = Ftmp
-    call nuclear_fields(Ftmp, work)
+    call nuclear_fields(Ftmp)
     Ffd = Ffd + Ftmp
 
     ! calculate nuclear - electron energy contribution
@@ -1826,7 +1825,7 @@ subroutine pe_save_density(density, nbas, coords, charges, work)
     allocate(T0_ints(nnbas)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals(T0_ints, nnbas, k, Rc(:,i), work, size(work))
+        call Tk_integrals(T0_ints, nnbas, k, Rc(:,i))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(density, T0_ints)
     end do
@@ -2070,15 +2069,16 @@ end subroutine tpttr
 
 !------------------------------------------------------------------------------
 
-subroutine invert_packed_matrix(ap, sp, work)
+subroutine invert_packed_matrix(ap, sp)
 
     external :: dpptrf, dpptri, dsptrf, dsptri, xerbla
 
     character(*), optional :: sp
-    real(dp), dimension(:), intent(inout) :: ap, work
+    real(dp), dimension(:), intent(inout) :: ap
 
     integer :: n, info
     integer, dimension(:), allocatable :: ipiv
+    real(dp), dimension(:), allocatable :: work
 
     n = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(ap), dp)) - 1.0d0))
 
@@ -2092,15 +2092,12 @@ subroutine invert_packed_matrix(ap, sp, work)
         call dpptri('L', n, ap, info)
         if (info /= 0) call xerbla('pptri', info)
     else if (sp == 's') then
-        if (size(work) < n) then
-            stop('Not enough work memory to invert matrix.')
-        end if
-        allocate(ipiv(n)); ipiv = 0.0d0
+        allocate(ipiv(n), work(n))
         call dsptrf('L', n, ap, ipiv, info)
         if (info /= 0) call xerbla('sptrf', info)
         call dsptri('L', n, ap, ipiv, work, info)
         if (info /= 0) call xerbla('sptri', info)
-        deallocate(ipiv)
+        deallocate(ipiv, work)
     end if
 
 end subroutine invert_packed_matrix
@@ -2111,18 +2108,20 @@ subroutine solve(ap, b)
 
     external :: dspsv
 
-    real(dp), dimension(:), intent(inout) :: ap, b
+    real(dp), dimension(:), intent(inout) :: ap
+    real(dp), dimension(:,:), intent(inout) :: b
 
-    integer :: n, info
+    integer :: n, nrhs, info
     integer, dimension(:), allocatable :: ipiv
 
-    n = size(b)
+    n = size(b, 1)
+    nrhs = size(b, 2)
 
     allocate(ipiv(n)); ipiv = 0.0d0
 
     info = 0
 
-    call dspsv('L', n, 1, ap, ipiv, b, n, info)
+    call dspsv('L', n, nrhs, ap, ipiv, b, n, info)
 
     if (info /= 0) call xerbla('spsv', info)
 

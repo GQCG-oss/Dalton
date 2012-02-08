@@ -277,7 +277,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use polarizable_embedding, only: peqm, pe_fock, pe_energy,
+      use polarizable_embedding, only: peqm, pe_master,
      &                                 pe_repuls, pe_savden,
      &                                 pe_repulsion, pe_save_density
 #include <implicit.h>
@@ -712,14 +712,20 @@ C
          ENDIF
 
          if (peqm) then
-            if (nasht > 0) then
-                call quit('PE-QM not implemented for open shell.')
-            end if
             call memget('REAL', kfcpe, nnbasx, wrk, kfree, lfree)
-            call pe_fock(daosav(:,1), wrk(kfcpe:kfcpe+nnbasx-1),
-     &                   esolt, wrk(kfree:lfree))
+            if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
+                call pe_master(denmats=(daosav(:,1) + daosav(:,2)),
+     &                         fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
+     &                         ndens=1, Epe=esolt,
+     &                         work=wrk(kfree:lfree))
+            else
+                call pe_master(denmats=daosav(:,1),
+     &                         fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
+     &                         ndens=1, Epe=esolt, 
+     &                         work=wrk(kfree:lfree))
+            end if
             call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
-            call memrel('DIIS_CTL.pe_fock', wrk, kfrsav, kfcpe, kfree,
+            call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfcpe, kfree,
      &                  lfree)
          end if
 
@@ -1334,7 +1340,12 @@ C
        ! needed to get specific PE energy contributions for printout
        ! when converged
        if (peqm) then
-        call pe_energy(daosav(:,1), wrk(kfree:lfree))
+        if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
+            call pe_master(denmats=(daosav(:,1) + daosav(:,2)),
+     &                     ndens=1, work=wrk(kfree:lfree))
+        else
+            call pe_master(denmats=daosav(:,1), work=wrk(kfree:lfree))
+        end if
        end if
        ! save density matrix 
        if (pe_savden) then
