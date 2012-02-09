@@ -1,10 +1,14 @@
 module polarizable_embedding
 
+#ifdef VAR_MPI
+    use mpi
+#endif
+
     implicit none
 
     private
 
-    public :: pe_dalton_input, pe_read_potential, pe_master
+    public :: pe_dalton_input, pe_read_potential, pe_master, pe_mpi
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
 
     ! options
@@ -39,6 +43,8 @@ module polarizable_embedding
 
     ! number of sites
     integer, public, save :: nsites = 0
+    ! number of sites for MPI
+    integer, save :: nsave = 0
     ! number of polarizable sites
     integer, save :: npols = 0
     ! exclusion list length
@@ -420,6 +426,27 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     real(dp), dimension(:), intent(out), optional :: Epe
     real(dp), dimension(:), intent(inout) :: work
 
+    integer :: i
+
+#ifdef VAR_MPI
+    integer :: myid, ncores, ierr
+    integer :: ndist, nrest
+    integer, dimension(:), allocatable :: ndists, displs
+    integer :: comm = MPI_COMM_WORLD
+    integer :: msum = MPI_SUM
+    integer :: mdp = MPI_DOUBLE_PRECISION
+    integer :: mint = MPI_INTEGER
+    integer :: mlog = MPI_LOGICAL
+
+    call mpi_comm_rank(comm, myid, ierr)
+    call mpi_comm_size(comm, ncores, ierr)
+
+    if (ncores > 1 .and. runtype == 'response') then
+        call mpi_bcast(44, 1, mint, myid, comm, ierr)
+        call mpi_bcast(3, 1, mint, myid, comm, ierr)
+    end if
+#endif
+
     ! determine what to calculate and do consistency check
     if (runtype == 'fock') then
         fock = .true.
@@ -448,6 +475,43 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     ndens = nmats
     nnbas = size(denmats) / ndens
 
+#ifdef VAR_MPI
+    if (ncores > 1 .and. response) then
+        call mpi_bcast(ndens, 1, mint, myid, comm, ierr)
+        call mpi_bcast(nnbas, 1, mint, myid, comm, ierr)
+        call mpi_bcast(denmats, nnbas*ndens, mdp, myid, comm, ierr)
+        call mpi_bcast(npols, 1, mint, myid, comm, ierr)
+
+        allocate(ndists(ncores), displs(ncores))
+        ndists = 0; displs = 0
+        ndist = nsites / ncores
+        ndists = ndist
+        if (ncores * ndist < nsites) then
+            nrest = nsites - ncores * ndist
+            do i = 1, nrest
+                ndists(i) = ndists(i) + 1
+            end do
+        end if
+        displs(1) = 1
+        displs(2) = 3 * ndists(1)
+        if (ncores > 2) then
+            do i = 3, ncores
+                displs(i) = displs(i-1) + 3 * ndists(i-1)
+            end do
+        end if
+
+        nsave = nsites
+        nsites = ndists(1)
+
+        call mpi_scatter(ndists, 1, mint, MPI_IN_PLACE, 1, mint, myid, comm, ierr)
+        call mpi_scatterv(Rs, 3*ndists, displs, mdp, MPI_IN_PLACE, 3*ndists(1), mdp, myid, comm, ierr)
+        do i = 1, ncores
+            displs(i) = i
+        end do
+        call mpi_scatterv(zeroalphas, ndists, displs, mlog, MPI_IN_PLACE, ndists(1), mlog, myid, comm, ierr)
+    end if
+#endif
+
     if (fock .or. response) fckmats = 0.0d0
 
     if (fock) then
@@ -458,11 +522,64 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
         if (pe_gspol) return
         if (.not. lpol(0) .and. .not. lpol(1)) return
         call pe_response(denmats, fckmats, work)
+        if (ncores > 1) then
+            call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, mdp, msum, myid, comm, ierr)
+        end if
 !        call pe_polarization(denmats, fckmats, work)
     end if
 
+#ifdef VAR_MPI
+    if (ncores > 1 .and. response) then
+        deallocate(ndists, displs)
+        nsites = nsave
+    end if
+#endif
+
 end subroutine pe_master
 
+!------------------------------------------------------------------------------
+#ifdef VAR_MPI
+subroutine pe_mpi(work, runtype)
+
+    real(dp), dimension(:), intent(inout) :: work
+    integer :: runtype
+
+    integer :: i
+    integer :: myid, ierr
+    integer :: nwrk
+    integer :: comm = MPI_COMM_WORLD
+    integer :: msum = MPI_SUM
+    integer :: mdp = MPI_DOUBLE_PRECISION
+    integer :: mint = MPI_INTEGER
+    integer :: mlog = MPI_LOGICAL
+
+    nwrk = size(work)
+
+    call mpi_bcast(ndens, 1, mint, 0, comm, ierr)
+    call mpi_bcast(nnbas, 1, mint, 0, comm, ierr)
+    call mpi_bcast(work(1:ndens*nnbas), nnbas*ndens, mdp, 0, comm, ierr)
+    call mpi_bcast(npols, 1, mint, 0, comm, ierr)
+    call mpi_scatter(0, 0, 0, nsites, 1, mint, 0, comm, ierr)
+    if (.not. allocated(Rs)) allocate(Rs(3,nsites))
+    call mpi_scatterv(0, 0, 0, 0, Rs, 3*nsites, mdp, 0, comm, ierr)
+    if (.not. allocated(zeroalphas)) allocate(zeroalphas(nsites))
+    call mpi_scatterv(0, 0, 0, 0, zeroalphas, nsites, mlog, 0, comm, ierr)
+
+    if (runtype == 1) then
+        return
+    else if (runtype == 2) then
+        return
+    else if (runtype == 3) then
+        call pe_response(work(1:ndens*nnbas), work(ndens*nnbas+1:2*ndens*nnbas),&
+                        &work(2*ndens*nnbas+1:nwrk))
+        call mpi_reduce(work(ndens*nnbas+1:2*ndens*nnbas), 0,&
+                       &ndens*nnbas, mdp, msum, 0, comm, ierr)
+    else
+        stop('Could not determine calculation type.')
+    end if
+    
+end subroutine
+#endif
 !------------------------------------------------------------------------------
 
 subroutine pe_fock(denmats, fckmats, Epe, work)
@@ -519,6 +636,39 @@ subroutine pe_response(denmats, fckmats, work)
     real(dp), dimension(3*npols,ndens) :: Fel, Mu
     real(dp), dimension(nnbas,3) :: Fel_ints
 
+#ifdef VAR_MPI
+    integer, dimension(:), allocatable :: ndists, displs
+    integer :: ierr, myid, ncores, ndist, nrest
+    integer :: comm = MPI_COMM_WORLD
+    integer :: mdp = MPI_DOUBLE_PRECISION
+
+    call mpi_comm_rank(comm, myid, ierr)
+    call mpi_comm_size(comm, ncores, ierr)
+
+    if (ncores > 1 .and. myid == 0) then
+        allocate(ndists(ncores), displs(ncores))
+        ndists = 0; displs = 0
+        ndist = nsave / ncores
+        ndists = ndist
+        if (ncores * ndist < nsave) then
+            nrest = nsave - ncores * ndist
+            do i = 1, nrest
+                ndists(i) = ndists(i) + 1
+            end do
+        end if
+        displs(1) = 1
+        displs(2) = 3 * ndists(1)
+        if (ncores > 2) then
+            do i = 3, ncores
+                displs(i) = displs(i-1) + 3 * ndists(i-1) 
+            end do
+        end if
+    end if
+#endif
+
+    Fel = 0.0d0; Mu = 0.0d0
+    fckmats = 0.0d0
+
     l = 0
     do i = 1, nsites
         if (zeroalphas(i)) cycle
@@ -533,7 +683,40 @@ subroutine pe_response(denmats, fckmats, work)
         l = l + 3
     end do
 
-    call induced_dipoles(Mu, Fel)
+#ifdef VAR_MPI
+    if (ncores > 1) then
+        if (myid == 0) then
+            do i = 1, ndens
+                call mpi_gatherv(MPI_IN_PLACE, 3*nsites, mdp, Fel(:,i), 3*ndists, displs, mdp, myid, comm, ierr)
+            end do
+        else
+            do i = 1, ndens
+                call mpi_gatherv(Fel(:,i), 3*nsites, mdp, 0, 0, 0, 0, 0, comm, ierr)
+            end do
+        end if
+    end if
+    if (myid /= 0) then
+
+    end if
+
+    if (myid == 0) then
+#endif
+        call induced_dipoles(Mu, Fel)
+#ifdef VAR_MPI
+    end if
+
+    if (ncores > 1) then
+        if (myid == 0) then
+            do i = 1, ndens
+                call mpi_scatterv(Mu(:,i), 3*ndists, displs, mdp, MPI_IN_PLACE, 3*nsites, mdp, myid, comm, ierr)
+            end do
+        else
+            do i = 1, ndens
+                call mpi_scatterv(0, 0, 0, 0, Mu(:,i), 3*nsites, mdp, 0, comm, ierr)
+            end do
+        end if
+    end if
+#endif
 
     l = 0
     do i = 1, nsites
