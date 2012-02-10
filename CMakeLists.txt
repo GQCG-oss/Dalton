@@ -19,6 +19,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/cmake/architecture
     ${CMAKE_SOURCE_DIR}/cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/cmake/compilers
     )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -102,8 +103,7 @@ endif()
 include(ConfigArchitecture)
 include(BinaryInfo)
 include(Sources)
-include(FCompilers)
-include(CCompilers)
+include(ConfigCompilerFlags)
 
 set(LIBS)
 
