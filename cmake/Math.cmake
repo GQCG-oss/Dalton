@@ -56,3 +56,18 @@ if(NOT ENABLE_INTERNAL_MATH)
     endif()
 
 endif()
+
+if(NOT BLAS_FOUND)
+    message("-- Using own BLAS implementation (slow)")
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${OWN_BLAS_SOURCES}
+        )
+endif()
+if(NOT LAPACK_FOUND)
+    message("-- Using own LAPACK implementation (slow)")
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${OWN_LAPACK_SOURCES}
+        )
+endif()
