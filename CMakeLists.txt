@@ -17,6 +17,7 @@ add_definitions(-DTHIS_IS_CMAKE_BUILD)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/cmake/architecture
     )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -97,7 +98,7 @@ if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
 endif()
 
-include(Archs)
+include(ConfigArchitecture)
 include(Sources)
 include(FCompilers)
 include(CCompilers)
