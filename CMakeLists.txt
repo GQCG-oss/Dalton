@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/cmake/architecture
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info
     )
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -99,6 +100,7 @@ if(THIS_CODE STREQUAL "linsca")
 endif()
 
 include(ConfigArchitecture)
+include(BinaryInfo)
 include(Sources)
 include(FCompilers)
 include(CCompilers)
@@ -283,6 +285,5 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dalton.x
     )
 
-include(CompilationInfo)
 include(Install)
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
