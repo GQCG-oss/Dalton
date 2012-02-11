@@ -397,10 +397,12 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          END IF
 
 #ifdef THIS_IS_CMAKE_BUILD
-         write(lupri, '(//a/a/)')
-     &     'Compilation information',
-     &     '-----------------------'
-         call print_binary_info()
+!radovan: this is not fully portable
+!         don't understand why
+!        write(lupri, '(//a/a/)')
+!    &     'Compilation information',
+!    &     '-----------------------'
+!        call print_binary_info()
 #endif
 
 #ifdef VAR_OMP
