@@ -1,8 +1,20 @@
       subroutine Tk_integrals(Tk_ints, nints, k, coord, work, nwrk)
 
+#include <implicit.h>
 #include <mxcent.h>
 #include <qm3.h>
 #include <orgcom.h>
+!#ifdef VAR_MPI
+!#include <maxorb.h>
+!#include <infpar.h>
+!#include <mtags.h>
+!#include <mpif.h>
+!#include <inftap.h>
+!#include <nuclei.h>
+!#include <inforb.h>
+!#include <gnrinf.h>
+!#include <priunit.h>
+!#endif
 
         character(8), dimension(9*mxcent) :: labint
         integer*8, dimension(9*mxcent) :: intrep, intadr
