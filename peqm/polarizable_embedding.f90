@@ -118,6 +118,7 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
+! insert quit if symmetry
 ! insert quits inside dalton if QM3, QMMM etc.
 ! consistent implementation where several densities are taken as input
 ! find better solution for electric field calculation from frozen densities
