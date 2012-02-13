@@ -385,7 +385,7 @@ subroutine pe_read_potential(work, coords, charges)
                 zeroalphas(i) = .false.
                 npols = npols + 1
             else
-                zeroalphas = .true.
+                zeroalphas(i) = .true.
             end if
         end do
     end if
