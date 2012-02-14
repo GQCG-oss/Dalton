@@ -1,22 +1,12 @@
       subroutine Tk_integrals(Tk_ints, nints, k, coord, work, nwrk)
 
 #include <implicit.h>
+#include <dummy.h>
 #include <mxcent.h>
 #include <qm3.h>
 #include <orgcom.h>
-!#ifdef VAR_MPI
-!#include <maxorb.h>
-!#include <infpar.h>
-!#include <mtags.h>
-!#include <mpif.h>
-!#include <inftap.h>
-!#include <nuclei.h>
-!#include <inforb.h>
-!#include <gnrinf.h>
-!#include <priunit.h>
-!#endif
 
-        character(8), dimension(9*mxcent) :: labint
+        character*8, dimension(9*mxcent) :: labint
         integer*8, dimension(9*mxcent) :: intrep, intadr
 
         integer, intent(in) :: k, nints, nwrk
@@ -56,8 +46,8 @@
 
         if (k <= 2) then
             call get1in(Tk_ints(1), inttype, ncomp, work(1), nwrk,
-     &                  labint, intrep, intadr, -1, .false., 0, trimat,
-     &                  work, .false., work, 1)
+     &                  labint, intrep, intadr, 0, .false., 0, trimat,
+     &                  dummy, .false., dummy, 1)
         else if (k == 3) then
             m = nints / 10
             i = 6 * nints / 10
@@ -66,13 +56,13 @@
                 diporg(j) = diporg(j) + 0.01d0
                 call get1in(work(l*i+1), inttype, ncomp,
      &                      work(j*i+1), nwrk, labint, intrep,
-     &                      intadr, -1, .false., 0, trimat, work,
-     &                      .false., work, 1)
+     &                      intadr, 0, .false., 0, trimat, dummy,
+     &                      .false., dummy, 1)
                 diporg(j) = diporg(j) - 2.0d0 * 0.01d0
                 call get1in(work(j*i+1), inttype, ncomp,
      &                      work((j+1)*i+1), nwrk, labint, intrep,
-     &                      intadr, -1, .false., 0, trimat, work,
-     &                      .false., work, 1)
+     &                      intadr, 0, .false., 0, trimat, dummy,
+     &                      .false., dummy, 1)
                 diporg(j) = coord(j)
                 work(l*i+1:j*i) = (work(l*i+1:j*i)
      &                            - work(j*i+1:(j+1)*i))
