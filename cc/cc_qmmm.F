@@ -75,7 +75,8 @@ C
       DIMENSION WORK(LWORK),FOCK(*)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       CHARACTER*8 LABINT(9*MXCENT)
-      LOGICAL TOFILE,TRIMAT,EXP1VL
+      LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
 C
       CHARACTER*8 LABEL
 C
@@ -99,10 +100,6 @@ C
       CALL DZERO(WORK(KTAO),NNBASX)
       CALL DZERO(WORK(KINT),N2BST(ISYMOP))
 C
-C Backup dipole origin
-      OBKPX = DIPORG(1)
-      OBKPY = DIPORG(2)
-      OBKPZ = DIPORG(3)
 C
 C---------------------------------------
 C     First the polarization contribution
@@ -139,11 +136,16 @@ C--------------------------------------------------
      &             IRREP,ISYM,IERR,WORK(KWRK1),LWRK1)
 C
 C Print G matrix to file
-        CALL PUT_TO_FILE('G_MATRIX',N2BST(ISYMOP),WORK(KINT))
+        IF (FFIRST ) THEN  !needed for PECC2 to ensure that we dump also the HF G to fil
+          CALL PUT_TO_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KINT))
+          FFIRST=.FALSE.
+        ELSE
+          CALL PUT_TO_FILE('G_MATRIX',N2BST(ISYMOP),WORK(KINT))
 
 C Put LGFILE to TRUE to indicate that we read it from file in future
-C inner iterations. This keyword is reset in TINE QM3E
-        LGFILE=.TRUE.
+C inner iterations. This keyword is reset in TINE QMMME
+          LGFILE=.TRUE.
+        ENDIF
 
       ELSE IF (LGFILE) THEN
 
@@ -168,12 +170,147 @@ C
          CALL CC_PRFCKAO(FOCK,ISYMOP)
       ENDIF
 C
-C Restore dipole origin
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
-
       CALL QEXIT('CCMM_ADDG')
+      END
+C
+C***********************************************************************
+C  /* Deck ccmm_addg */
+      SUBROUTINE CCMM_ADDGHF(FOCK,WORK,LWORK)
+C**************************************************************
+C
+C     Purpose: Construct the Effective G solvent operator FROM
+C     THE HF INDUCED DIPOLES and add to Fock
+C
+C     The general strategy of the routine is the following:
+C      IF (LGFILE==FALSE)
+C      1) Get induced dipoles from file (preceeding HF/MM) 
+C         calc 
+C      2) Construct effective operator G^pol=-sum_a\mu^ind_aF^el_a (polarization
+C         contribution)
+C      3) Get G^elecstat from file (multipole integrals calculated in 
+C        preceeding HF/MM calc)
+C      ELSE IF (LFGILE==TRUE)
+C     Get G operator from file dumped in the first iteration.
+C     ENDIF
+C     Add effective operator G to FOCK
+C
+C     The LGFILE is reset in TINE CC_QMMME
+C     KS oct 09
+C**************************************************************
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <ccsdinp.h>
+#include <ccfield.h>
+#include <exeinf.h>
+#include <ccfdgeo.h>
+#include <qm3.h>
+#include <ccinftap.h>
+#include <nuclei.h>
+#include <orgcom.h>
+C
+      PARAMETER (ZERO = 0.0D0, MONE=-1.0D0 ,ONE = 1.0D0,
+     &             IZERO = 0 , TWO = 2.0D0)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      DIMENSION WORK(LWORK),FOCK(*)
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
+C
+      CHARACTER*8 LABEL
+C
+C
+      CALL QENTER('CCMM_ADDGHF')
+C-------------------------
+C       Init parameters
+C-------------------------
+      NDIM=3*NNZAL
+C--------------------------
+C       Dynamical allocation
+C--------------------------
+C
+      KTAO  =  1 
+      KINT = KTAO + NNBASX
+      KWRK1 = KINT + N2BST(ISYMOP)
+      LWRK1   = LWORK   - KWRK1
+
+      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CCMM_ADDGHF' )
+        
+      CALL DZERO(WORK(KTAO),NNBASX)
+      CALL DZERO(WORK(KINT),N2BST(ISYMOP))
+C
+C---------------------------------------
+C     First the polarization contribution
+C---------------------------------------
+
+      IF (.NOT. LHFFIL ) THEN
+        IF (IPOLTP .GT. 0 .AND. NNZAL.NE.0) THEN 
+C
+          CALL CCMM_POL(WORK(KTAO),WORK(KWRK1),LWRK1)
+C
+        END IF
+C
+C--------------------------------------
+C     Then the electrostatic contribution 
+C--------------------------------------
+      CALL CCMM_ELSTAT(WORK(KTAO),WORK(KWRK1),LWRK1)
+C
+C
+C
+        IF (IPQMMM .GT. 14 ) THEN
+          WRITE(LUPRI,*) 'NORM of G after electrostatic cont: ',
+     *    DDOT(NNBASX,WORK(KTAO),1,WORK(KTAO),1)
+          WRITE (LUPRI,*) ' G matrix: '
+          CALL OUTPAK(WORK(KTAO),NBAST,1,LUPRI)
+        ENDIF
+C--------------------------------------------------
+C     Add total contribution to effective AO fock matrix:
+C--------------------------------------------------
+
+        LABEL= 'GIVE INT'
+        CALL CCMMINT(LABEL,-1,WORK(KINT),WORK(KTAO),
+     &             IRREP,ISYM,IERR,WORK(KWRK1),LWRK1)
+C
+C Print G matrix to file
+        CALL PUT_TO_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KINT))
+C Put LHFFIL to TRUE to indicate that we read it from file in all future
+C inner iterations. Unlike LGFILE this keyword is never reset.
+        LHFFIL=.TRUE.
+
+      ELSE IF (LHFFIL) THEN
+
+        CALL GET_FROM_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KINT))
+
+      END IF
+
+      IF (IPQMMM .GT.14 ) THEN
+         CALL AROUND( 'CCMM cont. to AO matrix' )
+         CALL OUTPUT(WORK(KINT),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+C
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'Usual Fock AO matrix' )
+         CALL CC_PRFCKAO(FOCK,ISYMOP)
+      ENDIF
+C
+      CALL DAXPY(N2BST(ISYMOP),ONE,WORK(KINT),1,FOCK,1)
+C
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'Modified Fock AO matrix when leaving ADDGHF')
+         CALL CC_PRFCKAO(FOCK,ISYMOP)
+      ENDIF
+C
+
+      CALL QEXIT('CCMM_ADDGHF')
       END
 C
 C***********************************************************************
@@ -192,7 +329,7 @@ C   IF (LR NE '0')
 C    1) Construct auxiliary density 
 C    4) Construct effective operator,e.g G^C=-sum_a\∆mu^{DC}_a eps_a
 C   ELSE IF (LR EQ '0')
-C    Simply read G matrix from file constructed in the preceeding ADDG routine.
+C    Simply read GCC matrix from file constructed in the preceeding ADDG routine.
 C   END IF
 C   4) Do xi/eta-transformation depending on LR
 C   5) Add to rho vector
@@ -254,6 +391,12 @@ C
       IF (CCS)  CALL QUIT('CCMM_TRANSFORMER: Not implemented for CCS')
 C
       IF (DISCEX) CALL QUIT('CCMM_TRANSFORM:Not implemented for DISCEX')
+C fixed field approximation - no derivative response terms for fixed
+C ccfld
+      IF (CCFIXF .AND. (LR.NE.'0') ) THEN
+        CALL QEXIT('CCMM_TRANSFORMER')
+        RETURN 
+      END IF
 C
 C------------------------------------
 C     Dynamical allocation for CCMM :
@@ -287,12 +430,7 @@ C Print section
         WRITE(LUPRI,*) ' Norm af C2AM in CCMM_TRANS on input:', RHO2N
       ENDIF
 
-C Backup dipole origin
-      OBKPX = DIPORG(1)
-      OBKPY = DIPORG(2)
-      OBKPZ = DIPORG(3)
-
-      IF (LR.NE.'0' .AND. IPOLTP .GT. 0) THEN
+      IF ( (LR.NE.'0' .AND. IPOLTP .GT. 0) .AND. (.NOT. HFFLD) ) THEN
 
 C----------------------------
 C     Construct auxiliary densities
@@ -308,7 +446,11 @@ C----------------------------
 C
 
       ELSE IF (LR .EQ. '0' ) THEN
-        CALL GET_FROM_FILE('G_MATRIX',N2BST(ISYMOP),WORK(KGMAT))
+        IF (HFFLD ) THEN
+          CALL GET_FROM_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KGMAT))
+        ELSE
+          CALL GET_FROM_FILE('G_MATRIX',N2BST(ISYMOP),WORK(KGMAT))
+        END IF
       END IF
      
 C Transform the effective operator according to LR
@@ -359,10 +501,6 @@ C
      &                     Norm2 of singles: ', TAL1,
      &                    'Norm2 of doubles: ', TAL2
       END IF
-C Restore dipole origin
-      DIPORG(1) = OBKPX
-      DIPORG(2) = OBKPY
-      DIPORG(3) = OBKPZ
 C
       CALL QEXIT('CCMM_TRANSFORMER')
          
@@ -405,6 +543,7 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <cclr.h>
+#include <qm3.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK), CTR1(*), CTR2(*)
@@ -701,7 +840,7 @@ C
 #include <qmmm.h>
 C
       DIMENSION WORK(LWORK)
-      DIMENSION ELF(*),INDMOM(*)
+      DOUBLE PRECISION ELF(*),INDMOM(*)
       LOGICAL LOCDEB,FNDLAB
       PARAMETER (LOCDEB=.FALSE.)
       PARAMETER (ZERO=0.0D0, ONE=1.0D0)
@@ -710,13 +849,14 @@ C
       CALL QENTER('CCMM_F2DIP')
 
       NDIM=3*NNZAL
+      NDIM2P = NDIM * (NDIM+1)/2!packed response matrix
 
       KRELAY=1
-      KWRK1 =KRELAY+NDIM*NDIM
+      KWRK1=KRELAY+NDIM2P 
       LWRK1 =LWORK-KWRK1
       IF (LWRK1.LT.0) CALL QUIT('Too little work in CCMM_F2DIP')
 
-      CALL DZERO(WORK(KRELAY),NDIM*NDIM)
+      CALL DZERO(WORK(KRELAY),NDIM2P)
 C
 C
       IF (MMMAT) THEN
@@ -728,7 +868,7 @@ C
          REWIND(LUQMMM)
 C      
          IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-            CALL READT(LUQMMM,NDIM*NDIM,WORK(KRELAY))
+            CALL READT(LUQMMM,NDIM2P,WORK(KRELAY))
          ELSE 
             CALL QUIT('Problem reading the relay 
      &                 matrix from QMMMIM file')
@@ -738,8 +878,7 @@ C
 C
          IF (IPQMMM .GE. 5) THEN
             WRITE(LUPRI,*) 'The relay matrix is read from file'
-            CALL OUTPUT(WORK(KRELAY),1,NDIM,1,NDIM,NDIM,
-     *                     NDIM,1,LUPRI)
+            CALL OUTPAK(WORK(KRELAY),NDIM,1,LUPRI)
          ENDIF
 C
          IF (IPRINT .GT. 1) THEN
@@ -759,9 +898,7 @@ C
 
 C
 C calculate the corresponding induced moments
-         NTOTI = MAX(NDIM,1)
-         CALL DGEMV('N',NDIM,NDIM,ONE,WORK(KRELAY),NTOTI,
-     *             ELF,1,ZERO,INDMOM,1)
+         CALL DSPMV('L', NDIM, ONE, WORK(KRELAY), ELF, 1,ZERO, INDMOM,1)
 
 C 
       ELSE IF (MMITER) THEN
@@ -833,6 +970,8 @@ C
 C     NSAO is a vector containing the sum (of all orders) of 
 C     the multipole integrals. This is the one we need at output. Note that
 C     it is returned packed i.e. LENGTH=NNBASX 
+C     Note that all signs are carried in the integrals themselves (cf.
+C     sirqmmm.F) and daxpy is always with a +
 C
 #include <implicit.h>
 #include <maxorb.h>
@@ -854,7 +993,7 @@ C
 #include <qm3.h>
 #include <qmmm.h>
 C
-      DIMENSION NSAO(*)
+      DOUBLE PRECISION NSAO(*)
       DIMENSION WORK(LWORK)
       PARAMETER (ONE=1.0D0)
       PARAMETER (MONE=-1.0D0)
@@ -880,7 +1019,6 @@ C
             CALL OUTPAK(WORK(KMULTI),NBAST,1,LUPRI)
          END IF
 
-C no minus in the charge case
          CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,NSAO,1)
 
       END IF
@@ -898,7 +1036,6 @@ C 2) The dipole contribution
             CALL OUTPAK(WORK(KMULTI),NBAST,1,LUPRI)
          END IF
 
-C Keep minus in daxpy cf sirqmmm where integrals are written
          CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,NSAO,1)
 
       END IF
@@ -916,7 +1053,6 @@ C 3) The quadrupole contribution
             CALL OUTPAK(WORK(KMULTI),NBAST,1,LUPRI)
          END IF
 
-C DAXPY with a +
          CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,NSAO,1)
 
       END IF
@@ -934,7 +1070,6 @@ C 4) The octopole contribution
             CALL OUTPAK(WORK(KMULTI),NBAST,1,LUPRI)
          END IF
 
-C same sign as quadrupole since obtained as derivatives
          CALL DAXPY(NNBASX,ONE,WORK(KMULTI),1,NSAO,1)
 
       END IF
@@ -978,7 +1113,7 @@ C
 C
       DIMENSION WORK(LWORK), DENS(*), ELF(*)
       INTEGER NDIM
-      LOGICAL LSKIP 
+      LOGICAL LOCDEB, LSKIP 
       CHARACTER*8 LABEL
 C
       CALL QENTER('CCMM_DENS2F')
@@ -1083,7 +1218,7 @@ C
 #include <cclr.h>
 C
       DIMENSION WORK(LWORK)
-      DIMENSION GPOL(*)
+      DOUBLE PRECISION GPOL(*)
       INTEGER NDIM
       LOGICAL LSKIP
 
@@ -1400,6 +1535,11 @@ C     a possible storage-problem when working with large systems.
         RETURN
       END IF
 
+C Backup dipole origin
+      OBKPX = DIPORG(1)
+      OBKPY = DIPORG(2)
+      OBKPZ = DIPORG(3)
+
       DIPORG(1) = MMCORD(1,SITE)
       DIPORG(2) = MMCORD(2,SITE)
       DIPORG(3) = MMCORD(3,SITE)
@@ -1484,6 +1624,10 @@ C Print section
      &  electrons at MM site ',SITE
         CALL OUTPAK(EPSAO(1+2*NNBASX),NBAST,1,LUPRI)
       ENDIF
+C Restore dipole origin
+      DIPORG(1) = OBKPX
+      DIPORG(2) = OBKPY
+      DIPORG(3) = OBKPZ
 
       END
 C**************************************************************
@@ -1574,7 +1718,7 @@ C SPLDIP option not implemented for CC
       IF (LGSPOL) CALL QUIT( 'LGSPOL not implemented for CC/MM')
 
 C
-      IF (IPOLTP .GT. 0) THEN
+      IF ( ( IPOLTP .GT. 0 ) .AND. (.NOT. HFFLD) ) THEN
          CALL CCMM_FSTATIC(WORK(KELF),AODEN,WORK(KWRK1),LWRK1)
 C
 CC  Transform the field to induced dipoles
@@ -1582,6 +1726,9 @@ CC  Transform the field to induced dipoles
 C
 CC Write the updated induced moments to file 
          CALL PUT_TO_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
+      ELSE IF ( HFFLD .AND. (IPOLTP .GT. 0 ) ) THEN
+         CALL CCMM_FSTATIC(WORK(KELF),AODEN,WORK(KWRK1),LWRK1)
+         CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDIP))
 CC
       END IF
 
@@ -1639,6 +1786,8 @@ C 3) Edisp
 C-------------
 C
 C sne - New qmmm not implemented for dispersion yet
+C sne - Anyhow it is just a static energy contribution (for now) so
+C straightforward to do - copy how it is done in dft
 C      ECCMM = ECCMM + ECLVDW
 C
 C-----------------------------------------------
@@ -1888,7 +2037,7 @@ C
               TEMPI = POLIMM(I)
             ENDIF
             TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
-            SIJ = 2.1304*DIQM/TEMP
+            SIJ = 2.1304D0*DIQM/TEMP
             DFACT=1.0D0-(1.0D0+SIJ+0.50D0*SIJ*SIJ)*exp(-SIJ)
           ELSE
             DFACT = (1-exp(-ADAMP*DIQM))**3
@@ -2014,10 +2163,6 @@ C     Check the symmetry
       IF (ISYCB .NE. ISYRES) THEN
         CALL QUIT('Symmetry problem in CCMM_QRTRANSFORMER')
       END IF
-C Backup dipole origin
-CC      OBKPX = DIPORG(1)
-C C     OBKPY = DIPORG(2)
-C      OBKPZ = DIPORG(3)
 C
 C Check what kind of response.
 C Find out which density and hence which operator to construct
@@ -2112,7 +2257,6 @@ C Dynamical memory allocation to store the response transformed operator
         
 
 C Print section
-      LOCDEB=.TRUE.
       IF (LOCDEB .OR. IPQMMM .GT. 14) THEN
          TAL1= DDOT(NT1AM(ISYCB),WORK(KETA1),1,WORK(KETA1),1)
          TAL2= DDOT(NT2AM(ISYCB),WORK(KETA2),1,WORK(KETA2),1)
@@ -2120,7 +2264,6 @@ C Print section
      &                     Norm2 of singles: ', TAL1,
      &                    'Norm2 of doubles: ', TAL2
       END IF
-      LOCDEB=.FALSE.
 
 C Note that if B=C then we just multiply the already found contribution by 2
 C If we are dealing with the pseudo B matrix contribution no contributions
@@ -2225,7 +2368,6 @@ C Dynamical memory allocation to store the response transformed operator
         END IF
 
 C Print section
-      LOCDEB=.TRUE.
         IF(LOCDEB .OR. IPQMMM .GT. 14) THEN
           TAL1= DDOT(NT1AM(ISYCB),WORK(KETA1),1,WORK(KETA1),1)
           TAL2= DDOT(NT2AM(ISYCB),WORK(KETA2),1,WORK(KETA2),1)
@@ -2233,7 +2375,6 @@ C Print section
      &                     Norm2 of singles: ', TAL1,
      &                    'Norm2 of doubles: ', TAL2
         END IF
-      LOCDEB=.FALSE.
 
         CALL DAXPY(NT1AM(ISYCB),ONE,WORK(KETA1),1,RHO1,1)
         CALL DAXPY(NT2AM(ISYCB),ONE,WORK(KETA2),1,RHO2,1)
@@ -2319,10 +2460,6 @@ C Then do response transformation
         CALL DAXPY(NT1AM(ISYCB),ONE,WORK(KETA1),1,RHO1,1)
         CALL DAXPY(NT2AM(ISYCB),ONE,WORK(KETA2),1,RHO2,1)
       END IF
-C Restore dipole origin
-C      DIPORG(1) = OBKPX
-C      DIPORG(2) = OBKPY
-C      DIPORG(3) = OBKPZ
 C
       CALL QEXIT('CCMM_QRTRANSFORMER')
          
@@ -2652,3 +2789,102 @@ C
 
       END
 
+C***********************************************************************
+C  /* Deck ccmm_addgdiff */
+      SUBROUTINE CCMM_ADDGDIFF(FOCK,WORK,LWORK)
+C**************************************************************
+C
+C     Purpose: For CC2 fullfld Construct the EFFective Diff G solvent operator FROM
+C     the diff between cc induced dipoles and the HF INDUCED DIPOLES and add to Fock
+C     (in AO basis)
+C
+C     
+C     Get G operators from file dumped 
+C     Subtract G^CC-G^HF
+C     Add effective operator G to FOCK
+C
+C     KS 11
+C**************************************************************
+C
+#include <implicit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <qmmm.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <ccsdinp.h>
+#include <ccfield.h>
+#include <exeinf.h>
+#include <ccfdgeo.h>
+#include <qm3.h>
+#include <ccinftap.h>
+#include <nuclei.h>
+#include <orgcom.h>
+C
+      PARAMETER (ZERO = 0.0D0, MONE=-1.0D0 ,ONE = 1.0D0,
+     &             IZERO = 0 , TWO = 2.0D0)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
+      DIMENSION WORK(LWORK),FOCK(*)
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL TOFILE,TRIMAT,EXP1VL,LOCDEB
+      PARAMETER (LOCDEB=.FALSE.)
+C
+      CHARACTER*8 LABEL
+C
+C
+      CALL QENTER('CCMM_ADDGDIFF')
+C-------------------------
+C       Init parameters
+C-------------------------
+      NDIM=3*NNZAL
+C--------------------------
+C       Dynamical allocation
+C--------------------------
+C
+      KCC =  1 
+      KHF = KCC + N2BST(ISYMOP)
+      KWRK = KHF + N2BST(ISYMOP)
+      LWRK1   = LWORK   - KWRK
+
+      IF (LWRK1.LT.0) CALL QUIT( 'Too little work in CCMM_ADDGDIFF' )
+        
+      CALL DZERO(WORK(KCC),N2BST(ISYMOP))
+      CALL DZERO(WORK(KHF),N2BST(ISYMOP))
+C
+
+      WRITE(LUPRI,*) 'Reading G from file'
+      CALL GET_FROM_FILE('G_MATRIX',N2BST(ISYMOP),WORK(KCC))
+
+      WRITE(LUPRI,*) 'Reading GHF from file'
+      CALL GET_FROM_FILE('G_MATRIXHF',N2BST(ISYMOP),WORK(KHF))
+
+
+      IF (IPQMMM .GT.14 ) THEN
+         CALL AROUND( 'CCMM cont. to AO matrix' )
+         CALL OUTPUT(WORK(KCC),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+C
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'Usual Fock AO matrix' )
+         CALL CC_PRFCKAO(FOCK,ISYMOP)
+      ENDIF
+
+      CALL DAXPY(N2BST(ISYMOP),-ONE,WORK(KHF),1,WORK(KCC),1)
+
+      TAL=DDOT(N2BST(ISYMOP),WORK(KCC),1,WORK(KCC),1)
+      WRITE(LUPRI,*) 'Difference density cont norm ', TAL
+C
+      CALL DAXPY(N2BST(ISYMOP),ONE,WORK(KCC),1,FOCK,1)
+
+      IF (IPQMMM .GT.14) THEN
+         CALL AROUND( 'Modified Fock AO matrix when leaving ADDGDIFF')
+         CALL CC_PRFCKAO(FOCK,ISYMOP)
+      ENDIF
+C
+      CALL QEXIT('CCMM_ADDGDIFF')
+      END

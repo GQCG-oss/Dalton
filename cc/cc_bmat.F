@@ -686,8 +686,13 @@ C
             IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
-C               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                WRITE(LUPRI,*) 'Is it justified to do B transfor with
+     &  with a HFFLD?'
+                CALL QUIT('HFFLD not implemented for QR')
+              ELSE
+                CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              END IF
             END IF
          ENDIF
       ENDIF
@@ -2646,10 +2651,15 @@ C
          IF (.NOT.CCMM) CALL CCSL_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
          IF (CCMM) THEN
              IF (.NOT. NYQMMM) THEN
-            CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
+               CALL CCMM_RHSTG(WORK(KONEHR),WORK(KEND1),LWRK1)
              ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KONEHR),WORK(KEND1),LWRK1)
-C               CALL CCMM_TGT(WORK(KONEHR),WORK(KEND1),LWRK1)
+               IF (HFFLD) THEN
+                 WRITE(LUPRI,*) 'Is it justified to do B transfor with
+     &  with a HFFLD?'
+                 CALL QUIT('HFFLD not implemented for QR')
+               ELSE
+                 CALL CCMM_ADDG(WORK(KONEHR),WORK(KEND1),LWRK1)
+               END IF
              END IF
          END IF
       ENDIF
@@ -2808,8 +2818,13 @@ C
                IF(.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KPERT),WORK(KEND1),LWRK1)
                ELSE IF (NYQMMM) THEN
-                 CALL CCMM_ADDG(WORK(KPERT),WORK(KEND1),LWRK1)
-C                 CALL CCMM_TGT(WORK(KPERT),WORK(KEND1),LWRK1)
+                 IF (HFFLD) THEN
+                   WRITE(LUPRI,*) 'Is it justified to do B transfor with
+     &  with a HFFLD?'
+                   CALL QUIT('HFFLD not implemented for QR')
+                 ELSE
+                   CALL CCMM_ADDG(WORK(KPERT),WORK(KEND1),LWRK1)
+                 END IF
                END IF  
            END IF
          ENDIF

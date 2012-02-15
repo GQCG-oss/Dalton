@@ -1018,8 +1018,11 @@ C     DOUBLE PRECISION ECURRSAV
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK0),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
-C               CALL CCMM_TGT(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              ELSE
+                CALL CCMM_ADDG(WORK(KFOCK0),WORK(KEND0),LWRK0)
+              END IF
             END IF
          END IF
       ENDIF
@@ -2177,13 +2180,10 @@ C
                  CALL CCMM_LTRB(WORK(KTHETA1),WORK(KTHETA2),
      *                    WORK(KT1AMPA),WORK(KT2AMPA),ISYAMP,'F',
      *                    WORK(KEND3),LWRK3)
-              ELSE IF (NYQMMM) THEN
+              ELSE IF (NYQMMM .AND. (.NOT. HFFLD)) THEN
                  CALL CCMM_TRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
      *                         WORK(KT1AMPA),WORK(KT2AMPA),MODEL,ISYAMP,
      *                         'F',WORK(KEND3),LWRK3)
-C                 CALL CCMM_TGTBAR(WORK(KTHETA1),WORK(KTHETA2),
-C     *                         WORK(KT1AMPA),WORK(KT2AMPA),MODEL,ISYAMP,
-C     *                         'F',WORK(KEND3),LWRK3)
               END IF
            END IF
          ELSE IF (LISTL(1:2).NE.'L0') THEN
@@ -2203,7 +2203,7 @@ C     *                         'F',WORK(KEND3),LWRK3)
      *                              LISTR,IDLSTR, WORK(KT1AMPA),
      *                              ISYAMP,MODEL,
      *                              WORK(KEND2),LWRK2)
-             ELSE IF (NYQMMM) THEN
+             ELSE IF (NYQMMM .AND. (.NOT. HFFLD ) ) THEN
                RSPTYP='F'
                CALL CCMM_QRTRANSFORMER(WORK(KTHETA1),WORK(KTHETA2),
      *                              ISYRES,
@@ -3991,8 +3991,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KONEH),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KONEH),WORK(KEND0),LWRK0)
-C               CALL CCMM_TGT(WORK(KONEH),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                 CALL CCMM_ADDGHF(WORK(KONEH),WORK(KEND0),LWRK0)
+              ELSE
+                CALL CCMM_ADDG(WORK(KONEH),WORK(KEND0),LWRK0)
+              END IF
             END IF
          ENDIF
 C-----------------------------------------------------------------
@@ -4037,8 +4040,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND0),LWRK0)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND0),LWRK0)
-C               CALL CCMM_TGT(WORK(KFIELD),WORK(KEND0),LWRK0)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFIELD),WORK(KEND0),LWRK0)
+              ELSE
+                CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND0),LWRK0)
+              END IF
             END IF
          ENDIF
 C------------------------------------------------------------------------------

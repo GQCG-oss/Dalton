@@ -598,6 +598,12 @@ C
            INTTR = .FALSE.
 C
            IF (CCP2) CCS = .TRUE.
+C KS: For CCSDR(3)/MM model we use vacuum triples amplitudes, i.e. we skip the
+C call to CC_FOP by a dirty goto
+           IF (CCR3 .AND. CCSLV) THEN
+             LSTBTR=.TRUE.
+             GOTO 32
+           ENDIF
 C
 C--------------------------------------
 C          ****************************
@@ -650,6 +656,7 @@ C
             ENDIF
          ENDIF
 C
+  32     CONTINUE
          IF (CCSLV .AND. DISCEX) THEN
 C           IF (CCEXCI .OR. CCEXGR .OR. LRSPSYM .OR. CCLRSD .OR.
 C     *         CCQR2R .OR. CCSM .OR. CCLR .OR. CCQR ) THEN
