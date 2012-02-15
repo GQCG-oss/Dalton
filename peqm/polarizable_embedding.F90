@@ -738,7 +738,8 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i
-    logical :: mul, pol
+    logical :: mul = .false.
+    logical :: pol = .false.
 
 #ifdef VAR_MPI
     integer :: ierr, myid, ncores
