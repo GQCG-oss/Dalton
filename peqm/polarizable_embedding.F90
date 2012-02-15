@@ -768,6 +768,8 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
         if (mul) call pe_electrostatic(denmats, work=work)
         if (pol) call pe_polarization(denmats, work=work)
     end if
+print *, Ees
+print *, Epol
 
     if (fock) then
         Epe = 0.0d0
@@ -1010,8 +1012,6 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             end if
 #ifdef VAR_MPI
         end if
-
-        call mpi_bcast(Esave, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
 #endif
         if (fock) then
 #ifdef VAR_MPI
@@ -1020,8 +1020,12 @@ subroutine pe_electrostatic(denmats, fckmats, work)
                 tmpfcks = fckmats
                 call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8, MPI_SUM,&
                                &0, MPI_COMM_WORLD, ierr)
+                call mpi_reduce(MPI_IN_PLACE, Esave, 1, MPI_REAL8, MPI_SUM,&
+                               &0, MPI_COMM_WORLD, ierr)
             else
                 call mpi_reduce(fckmats, 0, ndens*nnbas, MPI_REAL8, MPI_SUM,&
+                               &0, MPI_COMM_WORLD, ierr)
+                call mpi_reduce(Esave, 0, 1, MPI_REAL8, MPI_SUM,&
                                &0, MPI_COMM_WORLD, ierr)
             end if
             if (myid == 0) then
