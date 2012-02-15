@@ -569,10 +569,8 @@ subroutine pe_sync(work)
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
-    allocate(ndists(0:ncores-1), displs(0:ncores-1))
-    ndists = 0; displs = 0
-
     if (myid == 0) then
+        allocate(ndists(0:ncores-1), displs(0:ncores-1))
         ndist = nsites / ncores
         ndists = ndist
         if (ncores * ndist < nsites) then
@@ -624,7 +622,9 @@ subroutine pe_sync(work)
                              &zeroalphas, nloop, MPI_LOGICAL,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
+
         call mpi_bcast(lexlst, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+
         if (myid == 0) then
             displs(0) = 0
             do i = 1, ncores-1
@@ -719,7 +719,9 @@ subroutine pe_sync(work)
         end if
     end if
 
-    deallocate(ndists, displs)
+    if (myid == 0) then
+        deallocate(ndists, displs)
+    end if
 
     initialized = .true.
 
@@ -913,28 +915,41 @@ subroutine pe_electrostatic(denmats, fckmats, work)
     integer :: lutemp
     real(dp) :: Enuc, Esave
     real(dp), dimension(ndens) :: Eel
+    real(dp), dimension(:), allocatable :: tmpfcks
 
 !#ifdef VAR_MPI
     integer :: ierr, myid, ncores
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
-#endif
 
-!    inquire(file='pe_electrostatics.bin', exist=lexist)
+    if (myid == 0) then
+!#endif
+        inquire(file='pe_electrostatics.bin', exist=lexist)
+!#ifdef VAR_MPI
+    end if
 
-!    if (lexist .and. fock) then
-!        call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
-!        rewind(lutemp)
-!        read(lutemp) Esave, fckmats
-!        close(lutemp)
-!        do i = 1, ndens
-!            j = (i - 1) * nnbas + 1
-!            k = i * nnbas
-!            Ees(0,i) = Ees(0,i) + dot(denmats(j:k), fckmats(j:k)) + Esave
-!        end do
-!    else
-!        Esave = 0.0d0
+    call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+!#endif
+
+    if (lexist .and. fock) then
+!#ifdef VAR_MPI
+        if (myid == 0) then
+!#endif
+            call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
+            rewind(lutemp)
+            read(lutemp) Esave, fckmats
+            close(lutemp)
+            do i = 1, ndens
+                j = (i - 1) * nnbas + 1
+                k = i * nnbas
+                Ees(0,i) = Ees(0,i) + dot(denmats(j:k), fckmats(j:k)) + Esave
+            end do
+!ifdef VAR_MPI
+        end if
+!#endif
+    else
+        Esave = 0.0d0
         if (lmul(0)) then
             if (fock) then
                 call es_monopoles(denmats, Eel, Enuc, fckmats, work)
@@ -944,7 +959,7 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             do i = 1, ndens
                 Ees(0,i) = Ees(0,i) + Eel(i) + Enuc
             end do
-!            Esave = Esave + Enuc
+            Esave = Esave + Enuc
         end if
         if (lmul(1)) then
             if (fock) then
@@ -955,7 +970,7 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             do i = 1, ndens
                 Ees(1,i) = Ees(1,i) + Eel(i) + Enuc
             end do
-!            Esave = Esave + Enuc
+            Esave = Esave + Enuc
         end if
         if (lmul(2)) then
             if (fock) then
@@ -966,7 +981,7 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             do i = 1, ndens
                 Ees(2,i) = Ees(2,i) + Eel(i) + Enuc
             end do
-!            Esave = Esave + Enuc
+            Esave = Esave + Enuc
         end if
         if (lmul(3)) then
             if (fock) then
@@ -977,36 +992,60 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             do i = 1, ndens
                 Ees(3,i) = Ees(3,i) + Eel(i) + Enuc
             end do
-!            Esave = Esave + Enuc
+            Esave = Esave + Enuc
         end if
-        if (pe_qmes) then
-            if (fock) then
-                call es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
-            else if (energy) then
-                call es_frozen_densities(denmats, Eel, Enuc, work=work)
-            end if
-            do i = 1, ndens
-                Ees(4,i) = Ees(4,i) + Eel(i) + Enuc
-            end do
-!            Esave = Esave + Enuc
-        end if
-!        if (fock) then
-!            call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
-!            rewind(lutemp)
-!            write(lutemp) Esave, fckmats
-!            close(lutemp)
-!        end if
-!    end if
-
 !#ifdef VAR_MPI
-    if (myid == 0) then
-        call mpi_reduce(MPI_IN_PLACE, Ees, 5*ndens, MPI_REAL8, MPI_SUM,&
-                       &0, MPI_COMM_WORLD, ierr)
-    else
-        call mpi_reduce(Ees, 0, 5*ndens, MPI_REAL8, MPI_SUM,&
-                       &0, MPI_COMM_WORLD, ierr)
-    end if
+        if (myid == 0) then
 !#endif
+            if (pe_qmes) then
+                if (fock) then
+                    call es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
+                else if (energy) then
+                    call es_frozen_densities(denmats, Eel, Enuc, work=work)
+                end if
+                do i = 1, ndens
+                    Ees(4,i) = Ees(4,i) + Eel(i) + Enuc
+                end do
+                Esave = Esave + Enuc
+            end if
+!#ifdef VAR_MPI
+        end if
+
+        call mpi_bcast(Esave, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
+!endif
+        if (fock) then
+!#ifdef VAR_MPI
+            if (myid == 0) then
+                allocate(tmpfcks(ndens*nnbas))
+                tmpfcks = fckmats
+                call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8, MPI_SUM,&
+                               &0, MPI_COMM_WORLD, ierr)
+            else
+                call mpi_reduce(fckmats, 0, ndens*nnbas, MPI_REAL8, MPI_SUM,&
+                               &0, MPI_COMM_WORLD, ierr)
+            end if
+            if (myid == 0) then
+!#endif
+                call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
+                rewind(lutemp)
+                write(lutemp) Esave, fckmats
+                close(lutemp)
+!#ifdef VAR_MPI
+                fckmats = tmpfcks
+                deallocate(tmpfcks)
+            end if
+!#endif
+        end if
+!#ifdef VAR_MPI
+        if (myid == 0) then
+            call mpi_reduce(MPI_IN_PLACE, Ees, 5*ndens, MPI_REAL8, MPI_SUM,&
+                           &0, MPI_COMM_WORLD, ierr)
+        else
+            call mpi_reduce(Ees, 0, 5*ndens, MPI_REAL8, MPI_SUM,&
+                           &0, MPI_COMM_WORLD, ierr)
+        end if
+!#endif
+    end if
 
 end subroutine pe_electrostatic
 
@@ -1481,14 +1520,14 @@ subroutine nuclear_fields(Fnuc)
 
     Fnuc = 0.0d0
 
-!    inquire(file='pe_nuclear_field.bin', exist=lexist)
+    inquire(file='pe_nuclear_field.bin', exist=lexist)
 
-!    if (lexist) then
-!        call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
-!        rewind(lutemp)
-!        read(lutemp) Fnuc
-!        close(lutemp)
-!    else
+     if (lexist) then
+         call openfile('pe_nuclear_field.bin', lutemp, 'old', 'unformatted')
+         rewind(lutemp)
+         read(lutemp) Fnuc
+         close(lutemp)
+     else
         l = 0
         do i = 1, nsites
             if (zeroalphas(i)) cycle
@@ -1509,11 +1548,11 @@ subroutine nuclear_fields(Fnuc)
             end do
             l = l + 3
         end do
-!        call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
-!        rewind(lutemp)
-!        write(lutemp) Fnuc
-!        close(lutemp)
-!    end if
+         call openfile('pe_nuclear_field.bin', lutemp, 'new', 'unformatted')
+         rewind(lutemp)
+         write(lutemp) Fnuc
+         close(lutemp)
+     end if
 
 end subroutine nuclear_fields
 
@@ -1559,14 +1598,14 @@ subroutine multipole_fields(Fmul)
 
     Fmul = 0.0d0
 
-!    inquire(file='pe_multipole_field.bin', exist=lexist)
+     inquire(file='pe_multipole_field.bin', exist=lexist)
 
-!    if (lexist) then
-!        call openfile('pe_multipole_field.bin', lutemp, 'old', 'unformatted')
-!        rewind(lutemp)
-!        read(lutemp) Fmul
-!        close(lutemp)
-!    else
+     if (lexist) then
+         call openfile('pe_multipole_field.bin', lutemp, 'old', 'unformatted')
+         rewind(lutemp)
+         read(lutemp) Fmul
+         close(lutemp)
+     else
         l = 1
         do i = 1, nsites
             if (zeroalphas(i)) cycle
@@ -1614,11 +1653,11 @@ subroutine multipole_fields(Fmul)
             end do
             l = l + 3
         end do
-!        call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')
-!        rewind(lutemp)
-!        write(lutemp) Fmul
-!        close(lutemp)
-!    end if
+         call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')
+         rewind(lutemp)
+         write(lutemp) Fmul
+         close(lutemp)
+     end if
 
 end subroutine multipole_fields
 
