@@ -27,7 +27,7 @@ module polarizable_embedding
 
     ! MPI stuff
     logical, save :: initialized = .false.
-    integer, save :: ncores, savpols, savsites
+    integer, save :: ncores, nloop
 
     ! logical unit from dalton
     integer, save :: luout = 0
@@ -581,14 +581,13 @@ subroutine pe_sync(work)
                 ndists(i) = ndists(i) + 1
             end do
         end if
-        savsites = nsites
-        nsites = ndists(0)
+        nloop = ndists(0)
         call mpi_scatter(ndists, 1, MPI_INTEGER,&
                         &MPI_IN_PLACE, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
     else
         call mpi_scatter(0, 0, MPI_INTEGER,&
-                        &nsites, 1, MPI_INTEGER,&
+                        &nloop, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
     end if
 
@@ -598,12 +597,12 @@ subroutine pe_sync(work)
             displs(i) = displs(i-1) + 3 * ndists(i-1)
         end do
         call mpi_scatterv(Rs, 3*ndists, displs, MPI_REAL8,&
-                         &MPI_IN_PLACE, 3*nsites, MPI_REAL8,&
+                         &MPI_IN_PLACE, 0, MPI_REAL8,&
                          &0, MPI_COMM_WORLD, ierr)
     else
-        allocate(Rs(3,nsites))
+        allocate(Rs(3,nloop))
         call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                         &Rs, 3*nsites, MPI_REAL8,&
+                         &Rs, 3*nloop, MPI_REAL8,&
                          &0, MPI_COMM_WORLD, ierr)
     end if
 
@@ -617,12 +616,12 @@ subroutine pe_sync(work)
                 displs(i) = displs(i-1) + ndists(i-1)
             end do
             call mpi_scatterv(zeroalphas, ndists, displs, MPI_LOGICAL,&
-                             &MPI_IN_PLACE, nsites, MPI_LOGICAL,&
+                             &MPI_IN_PLACE, 0, MPI_LOGICAL,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(zeroalphas(nsites))
+            allocate(zeroalphas(nloop))
             call mpi_scatterv(0, 0, 0, MPI_LOGICAL,&
-                             &zeroalphas, nsites, MPI_LOGICAL,&
+                             &zeroalphas, nloop, MPI_LOGICAL,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
         call mpi_bcast(lexlst, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -632,12 +631,12 @@ subroutine pe_sync(work)
                 displs(i) = displs(i-1) + lexlst * ndists(i-1)
             end do
             call mpi_scatterv(exlists, lexlst*ndists, displs, MPI_INTEGER,&
-                             &MPI_IN_PLACE, lexlst*nsites, MPI_INTEGER,&
+                             &MPI_IN_PLACE, 0, MPI_INTEGER,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(exlists(lexlst,nsites))
+            allocate(exlists(lexlst,nloop))
             call mpi_scatterv(0, 0, 0, MPI_INTEGER,&
-                             &exlists, lexlst*nsites, MPI_INTEGER,&
+                             &exlists, lexlst*nloop, MPI_INTEGER,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -659,12 +658,12 @@ subroutine pe_sync(work)
                 displs(i) = displs(i-1) + ndists(i-1)
             end do
             call mpi_scatterv(Q0s, ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, nsites, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q0s(1,nsites))
+            allocate(Q0s(1,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q0s, nsites, MPI_REAL8,&
+                             &Q0s, nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -676,12 +675,12 @@ subroutine pe_sync(work)
                 displs(i) = displs(i-1) + 3 * ndists(i-1)
             end do
             call mpi_scatterv(Q1s, 3*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 3*nsites, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q1s(3,nsites))
+            allocate(Q1s(3,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q1s, 3*nsites, MPI_REAL8,&
+                             &Q1s, 3*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -693,12 +692,12 @@ subroutine pe_sync(work)
                 displs(i) = displs(i-1) + 6 * ndists(i-1)
             end do
             call mpi_scatterv(Q2s, 6*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 6*nsites, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q2s(6,nsites))
+            allocate(Q2s(6,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q2s, 6*nsites, MPI_REAL8,&
+                             &Q2s, 6*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -710,12 +709,12 @@ subroutine pe_sync(work)
                 displs(i) = displs(i-1) + 10 * ndists(i-1)
             end do
             call mpi_scatterv(Q3s, 10*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 10*nsites, MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         else
-            allocate(Q3s(10,nsites))
+            allocate(Q3s(10,nloop))
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Q3s, 10*nsites, MPI_REAL8,&
+                             &Q3s, 10*nloop, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -795,20 +794,17 @@ subroutine pe_response(denmats, fckmats, work)
 
 !#ifdef VAR_MPI
     integer :: ierr, myid, ncores
-    integer :: ndist, nrest, ntemp
+    integer :: ndist, nrest
     integer, dimension(:), allocatable :: ndists, displs
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
-
-    allocate(ndists(0:ncores-1), displs(0:ncores-1))
-    ndists = 0; displs = 0
 !#endif
 
     Fel = 0.0d0; fckmats = 0.0d0
 
     l = 0
-    do i = 1, nsites
+    do i = 1, nloop
         if (zeroalphas(i)) cycle
         call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
         do j = 1, 3
@@ -823,6 +819,7 @@ subroutine pe_response(denmats, fckmats, work)
 
 !#ifdef VAR_MPI
     if (myid == 0) then
+        allocate(ndists(0:ncores-1), displs(0:ncores-1))
         ndist = npols / ncores
         ndists = ndist
         if (ncores * ndist < npols) then
@@ -846,7 +843,7 @@ subroutine pe_response(denmats, fckmats, work)
             displs(i) = displs(i-1) + 3 * ndists(i-1) 
         end do
         do i = 1, ndens
-            call mpi_gatherv(MPI_IN_PLACE, 3*ndists(0), MPI_REAL8,&
+            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                             &Fel(:,i), 3*ndists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
@@ -859,35 +856,32 @@ subroutine pe_response(denmats, fckmats, work)
     end if
 
     if (myid == 0) then
-        ntemp = nsites
-        nsites = savsites
 !#endif
         call induced_dipoles(Mu, Fel)
 !#ifdef VAR_MPI
-        nsites = ntemp
     end if
 
     if (myid == 0) then
-        displs(1) = 0
+        displs(0) = 0
         do i = 1, ncores-1
             displs(i) = displs(i-1) + 3 * ndists(i-1)
         end do
         do i = 1, ndens
             call mpi_scatterv(Mu(:,i), 3*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 3*ndists(0), MPI_REAL8, 0,&
-                             &MPI_COMM_WORLD, ierr)
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
         end do
     else
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
-                             &Mu(:,i), 3*ndist, MPI_REAL8, 0,&
-                             &MPI_COMM_WORLD, ierr)
+                             &Mu(:,i), 3*ndist, MPI_REAL8,&
+                             &0, MPI_COMM_WORLD, ierr)
         end do
     end if
 !#endif
 
     l = 0
-    do i = 1, nsites
+    do i = 1, nloop
         if (zeroalphas(i)) cycle
         call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
         do j = 1, 3
@@ -900,7 +894,9 @@ subroutine pe_response(denmats, fckmats, work)
         l = l + 3
     end do
 
-    deallocate(ndists, displs)
+    if (myid == 0) then
+        deallocate(ndists, displs)
+    end if
 
 end subroutine pe_response
 
@@ -1103,7 +1099,7 @@ subroutine es_monopoles(denmats, Eel, Enuc, fckmats, work)
 
     Eel = 0.0d0; Enuc = 0.0d0
 
-    do i = 1, nsites
+    do i = 1, nloop
         if (abs(Q0s(1,i)) < zero) cycle
 
         ! nuclei - monopole interaction
@@ -1142,7 +1138,7 @@ subroutine es_dipoles(denmats, Eel, Enuc, fckmats, work)
 
     Eel = 0.0d0; Enuc = 0.0d0
 
-    do i = 1, nsites
+    do i = 1, nloop
         if (abs(maxval(Q1s(:,i))) < zero) cycle
 
         ! nuclei - dipole interaction energy
@@ -1186,7 +1182,7 @@ subroutine es_quadrupoles(denmats, Eel, Enuc, fckmats, work)
 
     Eel = 0.0d0; Enuc = 0.0d0
 
-    do i = 1, nsites
+    do i = 1, nloop
         if (abs(maxval(Q2s(:,i))) < zero) cycle
 
         ! nuclei - quadrupole interaction energy
@@ -1231,7 +1227,7 @@ subroutine es_octopoles(denmats, Eel, Enuc, fckmats, work)
 
     Eel = 0.0d0; Enuc = 0.0d0
 
-    do i = 1, nsites
+    do i = 1, nloop
         if (abs(maxval(Q3s(:,i))) < zero) cycle
 
         ! nuclei - octopole interaction energy
@@ -1277,7 +1273,7 @@ subroutine pe_polarization(denmats, fckmats, work)
 
 !#ifdef VAR_MPI
     integer :: ierr, myid, ncores
-    integer :: ndist, nrest, ntemp
+    integer :: ndist, nrest
     integer, dimension(:), allocatable :: ndists, displs
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
@@ -1290,7 +1286,7 @@ subroutine pe_polarization(denmats, fckmats, work)
     Fel = 0.0d0
 
     l = 0
-    do i = 1, nsites
+    do i = 1, nloop
         if (zeroalphas(i)) cycle
         if (pe_savden) then
 ! TODO: find better threshold or better solution
@@ -1336,7 +1332,7 @@ subroutine pe_polarization(denmats, fckmats, work)
             displs(i) = displs(i-1) + 3 * ndists(i-1)
         end do
         do i = 1, ndens
-            call mpi_gatherv(MPI_IN_PLACE, 3*ndists(0), MPI_REAL8,&
+            call mpi_gatherv(MPI_IN_PLACE, 0, MPI_REAL8,&
                             &Fel(:,i), 3*ndists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
@@ -1349,8 +1345,6 @@ subroutine pe_polarization(denmats, fckmats, work)
     endif
 
     if (myid == 0) then
-        ntemp = nsites
-        nsites = savsites
 !#endif
 
     call nuclear_fields(Fnuc)
@@ -1375,7 +1369,6 @@ subroutine pe_polarization(denmats, fckmats, work)
     end do
 
 !#ifdef VAR_MPI
-        nsites = ntemp
     end if
 
     if (myid == 0) then
@@ -1385,7 +1378,7 @@ subroutine pe_polarization(denmats, fckmats, work)
         end do
         do i = 1, ndens
             call mpi_scatterv(Mu(:,i), 3*ndists, displs, MPI_REAL8,&
-                             &MPI_IN_PLACE, 3*ndists(0), MPI_REAL8,&
+                             &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &myid, MPI_COMM_WORLD, ierr)
         end do
     else
@@ -1399,7 +1392,7 @@ subroutine pe_polarization(denmats, fckmats, work)
 
     if (fock) then
         l = 0
-        do i = 1, nsites
+        do i = 1, nloop
             if (zeroalphas(i)) cycle
             call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
             do j = 1, 3
@@ -1451,7 +1444,7 @@ subroutine electron_fields(Fel, denmats, work)
     Fel = 0.0d0
 
     l = 0
-    do i = 1, nsites
+    do i = 1, nloop
         if (zeroalphas(i)) cycle
         if (pe_savden) then
 ! TODO: find better threshold or better solution
