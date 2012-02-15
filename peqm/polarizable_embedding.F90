@@ -768,8 +768,6 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
         if (mul) call pe_electrostatic(denmats, work=work)
         if (pol) call pe_polarization(denmats, work=work)
     end if
-print *, Ees
-print *, Epol
 
     if (fock) then
         Epe = 0.0d0
