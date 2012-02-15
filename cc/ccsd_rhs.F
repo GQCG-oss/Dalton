@@ -477,8 +477,11 @@ C
          IF (.NOT. NYQMMM) THEN
             CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_ADDG(WORK(KFOCK),WORK(KEND1),LWRK1)
-C            CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+            IF (HFFLD ) THEN
+              CALL CCMM_ADDGHF(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE
+              CALL CCMM_ADDG(WORK(KFOCK),WORK(KEND1),LWRK1)
+            END IF
          END IF
       ENDIF
 C
@@ -1251,8 +1254,11 @@ C
            IF (.NOT. NYQMMM) THEN
               CALL CCMM_RHSTG(WORK(KFIELD),WORK(KEND2),LWRK2)
            ELSE IF (NYQMMM) THEN
-              CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND2),LWRK2)
-C              CALL CCMM_TGT(WORK(KFIELD),WORK(KEND2),LWRK2)
+              IF ( HFFLD ) THEN
+                CALL CCMM_ADDGHF(WORK(KFIELD),WORK(KEND2),LWRK2)
+              ELSE
+                CALL CCMM_ADDG(WORK(KFIELD),WORK(KEND2),LWRK2)
+              END IF
            END IF
         ENDIF
 C
@@ -8568,9 +8574,12 @@ C
          IF (CCMM) THEN
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK),WORK(KEND1),LWRK1)
-            ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KFOCK),WORK(KEND1),LWRK1)
-C               CALL CCMM_TGT(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM .AND. (.NOT. HFFLD)) THEN 
+             !WRITE(LUPRI,*) 'About to add difference density contri'
+             CALL CCMM_ADDGDIFF(WORK(KFOCK),WORK(KEND1),LWRK1)
+            ELSE IF (NYQMMM .AND. HFFLD) THEN
+             ! WRITE(LUPRI,*) 'You are using a hffld so no corr. needed'
+              CONTINUE
             END IF
          ENDIF
 C

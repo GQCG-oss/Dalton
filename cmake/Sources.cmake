@@ -711,8 +711,7 @@ soppa/so_wrtve.F
 peqm/dalton_wrappers.F
     )
 set(FREE_FORTRAN_SOURCES
-gp/compilation_info.F90
-gp/git_revision_info.F90
+gp/binary_info.F90
 gp/character_processing.F90
 gp/dalton_input_processing.F90
 gp/input_reader.F90

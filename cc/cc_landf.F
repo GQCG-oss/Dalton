@@ -2686,8 +2686,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK2),WORK(KEND1),LWRK1)
             ELSE IF (NYQMMM) THEN
-               CALL CCMM_ADDG(WORK(KFOCK2),WORK(KEND1),LWRK1)
-C               CALL CCMM_TGT(WORK(KFOCK2),WORK(KEND1),LWRK1)
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFOCK2),WORK(KEND1),LWRK1)
+              ELSE 
+                CALL CCMM_ADDG(WORK(KFOCK2),WORK(KEND1),LWRK1)
+              END IF
             END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
@@ -2800,8 +2803,11 @@ C
             IF (.NOT. NYQMMM) THEN
                CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
             ELSE IF (NYQMMM) THEN
+              IF (HFFLD) THEN
+                CALL CCMM_ADDGHF(WORK(KFOCK1),WORK(KEND1),LWRK1)
+              ELSE
                CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
-C               CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+              END IF
             END IF
             IF (IPRINT .GT. 5) THEN
               WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_RCC2FF) 1',
@@ -2907,8 +2913,11 @@ C
          IF (.NOT. NYQMMM ) THEN
             CALL CCMM_RHSTG(WORK(KFOCK1),WORK(KEND1),LWRK1)
          ELSE IF (NYQMMM) THEN
-            CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
-C            CALL CCMM_TGT(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            IF (HFFLD) THEN
+              CALL CCMM_ADDGHF(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            ELSE
+              CALL CCMM_ADDG(WORK(KFOCK1),WORK(KEND1),LWRK1)
+            END IF
          END IF
          IF (IPRINT .GT. 5) THEN
            WRITE(LUPRI,*)'Time used in CCMM_RHSTG (CC_FCC2FF) 1',

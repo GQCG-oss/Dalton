@@ -892,8 +892,6 @@ C
               ELSE IF (NYQMMM) THEN
                  CALL CCMM_TRANSFORMER(WORK(KRHO1),WORK(KRHO2),DUM1,
      *                DUM2,MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
-C                 CALL CCMM_TGTBAR(WORK(KRHO1),WORK(KRHO2),DUM1,DUM2, 
-C     *                           MODEL,ISYMOP,LR,WORK(KWRK4),LWRK4)
               END IF
               CALL TIMER('LR=R',TIMSTR,TIMEND)
               CALL FLSHFO(LUPRI)
@@ -920,7 +918,7 @@ C
               ECCP1 = DDOT(NT1AMX,WORK(KLAM),1,WORK(KOMEG1),1)
               ECCP2 = 0.0D0
               IF (.NOT.CCS) THEN
-c                CALL CCLR_DIASCL(WORK(KOMEG2),0.5D0,ISYMTR)
+!                CALL CCLR_DIASCL(WORK(KOMEG2),0.5D0,ISYMTR)
                  ECCP2 = DDOT(NT2AMX,WORK(KLAM2),
      *                        1,WORK(KOMEG2),1)
               ENDIF
