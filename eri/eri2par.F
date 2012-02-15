@@ -952,6 +952,7 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
 C
+      use polarizable_embedding, only: pe_mpi
 #include <implicit.h>
 #include <priunit.h>
 #include <mtags.h>
@@ -1050,6 +1051,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP .EQ. 43) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
+         else if (iprtyp == 44) then
+            call pe_mpi(work(1:mwork), iprint)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODEDRIVER) ERROR on slave',MYTID,
