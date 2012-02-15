@@ -1,8 +1,8 @@
 module polarizable_embedding
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     use mpi
-!#endif
+#endif
 
     implicit none
 
@@ -429,11 +429,11 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     real(dp), dimension(:), intent(out), optional :: Epe
     real(dp), dimension(:), intent(inout) :: work
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     integer :: myid, ierr
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-!#endif
+#endif
 
     ! determine what to calculate and do consistency check
     if (runtype == 'fock') then
@@ -465,7 +465,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     ndens = nmats
     nnbas = size(denmats) / ndens
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     call mpi_bcast(44, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
     if (fock) then
         call mpi_bcast(1, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
@@ -482,7 +482,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     if (.not. initialized) then
         call pe_sync(work)
     end if
-!#endif
+#endif
 
     if (fock) then
         call pe_fock(denmats, fckmats, Epe, work)
@@ -493,17 +493,17 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
 !        call pe_polarization(denmats, fckmats, work)
     end if
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     if (fock .or. response) then
         call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8,&
                        &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
     end if
-!#endif
+#endif
 
 end subroutine pe_master
 
 !------------------------------------------------------------------------------
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
 subroutine pe_mpi(work, runtype)
 
     real(dp), dimension(:), intent(inout) :: work
@@ -727,7 +727,7 @@ subroutine pe_sync(work)
 
 end subroutine pe_sync
 
-!#endif
+#endif
 !------------------------------------------------------------------------------
 
 subroutine pe_fock(denmats, fckmats, Epe, work)
@@ -740,12 +740,12 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
     integer :: i
     logical :: mul, pol
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     integer :: ierr, myid, ncores
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
-!#endif
+#endif
 
     do i = 0, 3
         if (lmul(i)) mul = .true.
@@ -794,14 +794,14 @@ subroutine pe_response(denmats, fckmats, work)
     real(dp), dimension(3*npols,ndens) :: Fel, Mu
     real(dp), dimension(nnbas,3) :: Fel_ints
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     integer :: ierr, myid, ncores
     integer :: ndist, nrest
     integer, dimension(:), allocatable :: ndists, displs
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
-!#endif
+#endif
 
     Fel = 0.0d0; fckmats = 0.0d0
 
@@ -819,7 +819,7 @@ subroutine pe_response(denmats, fckmats, work)
         l = l + 3
     end do
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     if (myid == 0) then
         allocate(ndists(0:ncores-1), displs(0:ncores-1))
         ndist = npols / ncores
@@ -858,9 +858,9 @@ subroutine pe_response(denmats, fckmats, work)
     end if
 
     if (myid == 0) then
-!#endif
+#endif
         call induced_dipoles(Mu, Fel)
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     end if
 
     if (myid == 0) then
@@ -880,7 +880,7 @@ subroutine pe_response(denmats, fckmats, work)
                              &0, MPI_COMM_WORLD, ierr)
         end do
     end if
-!#endif
+#endif
 
     l = 0
     do i = 1, nloop
@@ -917,25 +917,25 @@ subroutine pe_electrostatic(denmats, fckmats, work)
     real(dp), dimension(ndens) :: Eel
     real(dp), dimension(:), allocatable :: tmpfcks
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     integer :: ierr, myid, ncores
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
     if (myid == 0) then
-!#endif
+#endif
         inquire(file='pe_electrostatics.bin', exist=lexist)
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     end if
 
     call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-!#endif
+#endif
 
     if (lexist .and. fock) then
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
         if (myid == 0) then
-!#endif
+#endif
             call openfile('pe_electrostatics.bin', lutemp, 'old', 'unformatted')
             rewind(lutemp)
             read(lutemp) Esave, fckmats
@@ -945,9 +945,9 @@ subroutine pe_electrostatic(denmats, fckmats, work)
                 k = i * nnbas
                 Ees(0,i) = Ees(0,i) + dot(denmats(j:k), fckmats(j:k)) + Esave
             end do
-!ifdef VAR_MPI
+#ifdef VAR_MPI
         end if
-!#endif
+#endif
     else
         Esave = 0.0d0
         if (lmul(0)) then
@@ -994,9 +994,9 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             end do
             Esave = Esave + Enuc
         end if
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
         if (myid == 0) then
-!#endif
+#endif
             if (pe_qmes) then
                 if (fock) then
                     call es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
@@ -1008,13 +1008,13 @@ subroutine pe_electrostatic(denmats, fckmats, work)
                 end do
                 Esave = Esave + Enuc
             end if
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
         end if
 
         call mpi_bcast(Esave, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
-!endif
+#endif
         if (fock) then
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
             if (myid == 0) then
                 allocate(tmpfcks(ndens*nnbas))
                 tmpfcks = fckmats
@@ -1025,18 +1025,18 @@ subroutine pe_electrostatic(denmats, fckmats, work)
                                &0, MPI_COMM_WORLD, ierr)
             end if
             if (myid == 0) then
-!#endif
+#endif
                 call openfile('pe_electrostatics.bin', lutemp, 'new', 'unformatted')
                 rewind(lutemp)
                 write(lutemp) Esave, fckmats
                 close(lutemp)
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
                 fckmats = tmpfcks
                 deallocate(tmpfcks)
             end if
-!#endif
+#endif
         end if
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
         if (myid == 0) then
             call mpi_reduce(MPI_IN_PLACE, Ees, 5*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
@@ -1044,7 +1044,7 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             call mpi_reduce(Ees, 0, 5*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
         end if
-!#endif
+#endif
     end if
 
 end subroutine pe_electrostatic
@@ -1310,7 +1310,7 @@ subroutine pe_polarization(denmats, fckmats, work)
     real(dp), dimension(3*npols,ndens) :: Mu, Fel, Ftot
     real(dp), dimension(nnbas,3) :: Fel_ints
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     integer :: ierr, myid, ncores
     integer :: ndist, nrest
     integer, dimension(:), allocatable :: ndists, displs
@@ -1320,7 +1320,7 @@ subroutine pe_polarization(denmats, fckmats, work)
 
     allocate(ndists(0:ncores-1), displs(0:ncores-1))
     ndists = 0; displs = 0
-!#endif
+#endif
 
     Fel = 0.0d0
 
@@ -1346,7 +1346,7 @@ subroutine pe_polarization(denmats, fckmats, work)
         l = l + 3
     end do
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     if (myid == 0) then
         ndist = npols / ncores
         ndists = ndist
@@ -1381,10 +1381,10 @@ subroutine pe_polarization(denmats, fckmats, work)
                             &0, 0, 0, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
-    endif
+    end if
 
     if (myid == 0) then
-!#endif
+#endif
 
     call nuclear_fields(Fnuc)
     call multipole_fields(Fmul)
@@ -1407,7 +1407,7 @@ subroutine pe_polarization(denmats, fckmats, work)
         if (pe_qmes) Epol(4,i) = - 0.5d0 * dot(Mu(:,i), Ffd)
     end do
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
     end if
 
     if (myid == 0) then
@@ -1427,7 +1427,7 @@ subroutine pe_polarization(denmats, fckmats, work)
                              &0, MPI_COMM_WORLD, ierr)
         end do
     end if
-!#endif
+#endif
 
     if (fock) then
         l = 0
@@ -2560,8 +2560,8 @@ subroutine openfile(filename, lunit, stat, frmt)
       if (.not. lexist) then
         print *, filename, ' not found!'
         stop
-      endif
-    endif
+      end if
+    end if
 
     do i = 21, 99
       inquire(unit=i, opened=lopen)
@@ -2571,8 +2571,8 @@ subroutine openfile(filename, lunit, stat, frmt)
         lunit = i
         open(unit=lunit, file=filename, status=stat, form=frmt)
         exit
-      endif
-    enddo
+      end if
+    end do
 
     return
 
