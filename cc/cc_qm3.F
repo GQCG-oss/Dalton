@@ -2620,6 +2620,9 @@ C   ^BT^g = - Sum_a * Sum_sigma
 C             t^B_sigma <bar sigma|Rr_a|CC> Rr_a 
 C
 C   JK+OC, marts 03
+C   KS, modifed to allow for J term needed from the left. I.e when cG operator is needed
+C   in the NYQMMM formulation. This routine is not used for calculating Gc term (LR=ET) - see
+C   instead CCMM_TRANSFORMER in cc_qmmm
 C-----------------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -2708,164 +2711,165 @@ C
         WRITE(LUPRI,*)'Norm af B2AM in CCMM_TGB on input:,1', RHO2N
       END IF
 C
+      IF (.NOT. NYQMMM) THEN
 C------------------------------------
 C     Dynamical allocation for CCMM :
 C------------------------------------
 C
-      KRAAOx = KWRK1
-      KRAAOy = KRAAOx + N2BST(ISYMTR)
-      KRAAOz = KRAAOy + N2BST(ISYMTR)
-      KWRK2  = KRAAOz + N2BST(ISYMTR)
-      LWRK2  = LWORK   - KWRK2
-C
-      IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CCMM_TGB, 2')
-C
-      KXIx  = KWRK2
-      KXIy  = KXIx + NTAMP
-      KXIz  = KXIy + NTAMP
-      KWRK3 = KXIz  + NTAMP
-      LWRK3   = LWORK   - KWRK3
-C
-      IF (LWRK3.LT.0) CALL QUIT( 'Too little work in CCMM_TGB, 3')
-C
-      CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMTR))
-      CALL DZERO(WORK(KXIx),3*NTAMP)
-C
-C----------------------------
-C     Read Rra in AO basis:
-C----------------------------
-C
-      LUCCEF = -1
-      CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
+        KRAAOx = KWRK1
+        KRAAOy = KRAAOx + N2BST(ISYMTR)
+        KRAAOz = KRAAOy + N2BST(ISYMTR)
+        KWRK2  = KRAAOz + N2BST(ISYMTR)
+        LWRK2  = LWORK   - KWRK2
+C  
+        IF (LWRK2.LT.0) CALL QUIT( 'Too little work in CCMM_TGB, 2')
+C  
+        KXIx  = KWRK2
+        KXIy  = KXIx + NTAMP
+        KXIz  = KXIy + NTAMP
+        KWRK3 = KXIz  + NTAMP
+        LWRK3   = LWORK   - KWRK3
+C  
+        IF (LWRK3.LT.0) CALL QUIT( 'Too little work in CCMM_TGB, 3')
+C  
+        CALL DZERO(WORK(KRAAOx),3*N2BST(ISYMTR))
+        CALL DZERO(WORK(KXIx),3*NTAMP)
+C  
+C  ----------------------------
+C       Read Rra in AO basis:
+C  ----------------------------
+C  
+        LUCCEF = -1
+        CALL GPOPEN(LUCCEF,'ELFDMM','OLD',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LUCCEF)
-C
-      LM = 0
-      IADR1 = 1
-      IADR2 = 1
-      LEN = NTAMP
-C
-      DO 700 I = 1, ISYTP
-        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
-          DO 701 J = NSYSBG(I), NSYSED(I)
-            DO 702 K = 1, NUALIS(I)
-C
-              LM = LM + 1
-              LABEL = 'READ INT'
-C
-              CALL CCMMINT(LABEL,LUCCEF,WORK(KRAAOx),DUMMY,IRREP,
+        REWIND(LUCCEF)
+C  
+        LM = 0
+        IADR1 = 1
+        IADR2 = 1
+        LEN = NTAMP
+C  
+        DO 700 I = 1, ISYTP
+          IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+            DO 701 J = NSYSBG(I), NSYSED(I)
+              DO 702 K = 1, NUALIS(I)
+C  
+                LM = LM + 1
+                LABEL = 'READ INT'
+C  
+                CALL CCMMINT(LABEL,LUCCEF,WORK(KRAAOx),DUMMY,IRREP,
      &             ISYM,IERR,WORK(KWRK3),LWRK3)
-              CALL CCMMINT(LABEL,LUCCEF,WORK(KRAAOy),DUMMY,IRREP,
+                CALL CCMMINT(LABEL,LUCCEF,WORK(KRAAOy),DUMMY,IRREP,
      &             ISYM,IERR,WORK(KWRK3),LWRK3)
-              CALL CCMMINT(LABEL,LUCCEF,WORK(KRAAOz),DUMMY,IRREP,
+                CALL CCMMINT(LABEL,LUCCEF,WORK(KRAAOz),DUMMY,IRREP,
      &             ISYM,IERR,WORK(KWRK3),LWRK3)
-C
+C  
 C---------------------------------------------------------------------
-C             (LR.EQ.'ET') Calculate eta^T_lm
-C             (LR.EQ.'XI') Calculate xi^T_lm
-C             Only if MDLWRD(I) = 'SPC_E01' are we going to calculate
-C             contributions from the T^g operator to the response
-C             equations.
+C               (LR.EQ.'ET') Calculate eta^T_lm
+C               (LR.EQ.'XI') Calculate xi^T_lm
+C               Only if MDLWRD(I) = 'SPC_E01' are we going to calculate
+C               contributions from the T^g operator to the response
+C               equations.
 C---------------------------------------------------------------------
-C
-              IF (MDLWRD(I) .EQ. 'SPC_E01') THEN
-                IF (.NOT. (DISCEX)) THEN
-                  IF (LR.EQ.'ET') THEN
-                    LABEL = 'GIVE INT'
-                    LIST  = 'L0'
-                    IDLINO = 1
-C
-                    CALL CC_ETAC(ISYMTR,LABEL,WORK(KXIx),
+C  
+                IF (MDLWRD(I) .EQ. 'SPC_E01') THEN
+                  IF (.NOT. (DISCEX)) THEN
+                    IF (LR.EQ.'ET') THEN
+                      LABEL = 'GIVE INT'
+                      LIST  = 'L0'
+                      IDLINO = 1
+C  
+                      CALL CC_ETAC(ISYMTR,LABEL,WORK(KXIx),
      *                   LIST,IDLINO,0,WORK(KRAAOx),WORK(KWRK3),LWRK3)
-                    CALL CC_ETAC(ISYMTR,LABEL,WORK(KXIy),
+                      CALL CC_ETAC(ISYMTR,LABEL,WORK(KXIy),
      *                   LIST,IDLINO,0,WORK(KRAAOy),WORK(KWRK3),LWRK3)
-                    CALL CC_ETAC(ISYMTR,LABEL,WORK(KXIz),
+                      CALL CC_ETAC(ISYMTR,LABEL,WORK(KXIz),
      *                   LIST,IDLINO,0,WORK(KRAAOz),WORK(KWRK3),LWRK3)
-C
-                  ELSE IF (LR.EQ.'XI') THEN 
-                    LABEL = 'GIVE INT'
-C
+C  
+                    ELSE IF (LR.EQ.'XI') THEN 
+                      LABEL = 'GIVE INT'
+C  
                     CALL CC_XKSI(WORK(KXIx),LABEL,ISYMTR,0,WORK(KRAAOx),
      *                           WORK(KWRK3),LWRK3)
-                   CALL CC_XKSI(WORK(KXIy),LABEL,ISYMTR,0,WORK(KRAAOy),
+                    CALL CC_XKSI(WORK(KXIy),LABEL,ISYMTR,0,WORK(KRAAOy),
      *                           WORK(KWRK3),LWRK3)
                     CALL CC_XKSI(WORK(KXIz),LABEL,ISYMTR,0,WORK(KRAAOz),
      *                           WORK(KWRK3),LWRK3) 
-C
+C  
+                    END IF
+                  ELSE 
+                    IF (LR.EQ.'ET') THEN
+                      CALL GETWA2(LUMMET,FILMME,WORK(KXIx),IADR1,LEN)
+                      IADR1 = IADR1 + LEN
+                      CALL GETWA2(LUMMET,FILMME,WORK(KXIy),IADR1,LEN)
+                      IADR1 = IADR1 + LEN
+                      CALL GETWA2(LUMMET,FILMME,WORK(KXIz),IADR1,LEN)
+                      IADR1 = IADR1 + LEN
+                    ELSE IF (LR.EQ.'XI') THEN
+                      CALL GETWA2(LUMMXI,FILMMX,WORK(KXIx),IADR2,LEN)
+                      IADR2 = IADR2 + LEN
+                      CALL GETWA2(LUMMXI,FILMMX,WORK(KXIy),IADR2,LEN)
+                      IADR2 = IADR2 + LEN
+                      CALL GETWA2(LUMMXI,FILMMX,WORK(KXIz),IADR2,LEN)
+                      IADR2 = IADR2 + LEN
+                    END IF
                   END IF
-                ELSE 
-                  IF (LR.EQ.'ET') THEN
-                    CALL GETWA2(LUMMET,FILMME,WORK(KXIx),IADR1,LEN)
-                    IADR1 = IADR1 + LEN
-                    CALL GETWA2(LUMMET,FILMME,WORK(KXIy),IADR1,LEN)
-                    IADR1 = IADR1 + LEN
-                    CALL GETWA2(LUMMET,FILMME,WORK(KXIz),IADR1,LEN)
-                    IADR1 = IADR1 + LEN
-                  ELSE IF (LR.EQ.'XI') THEN
-                    CALL GETWA2(LUMMXI,FILMMX,WORK(KXIx),IADR2,LEN)
-                    IADR2 = IADR2 + LEN
-                    CALL GETWA2(LUMMXI,FILMMX,WORK(KXIy),IADR2,LEN)
-                    IADR2 = IADR2 + LEN
-                    CALL GETWA2(LUMMXI,FILMMX,WORK(KXIz),IADR2,LEN)
-                    IADR2 = IADR2 + LEN
-                  END IF
-                END IF
-C
+C  
 C--------------------------------------------------------------
-C               Contract with trial vector:
-C               (If LR.EQ.'ET' then from the right hand side)
-C               (If LR.EQ.'XI' then from the left hand side)
+C                 Contract with trial vector:
+C                 (If LR.EQ.'ET' then from the right hand side)
+C                 (If LR.EQ.'XI' then from the left hand side)
 C--------------------------------------------------------------
-C
-                KXI1x = KXIx
-                KXI2x = KXIx + NTAMP1
-                BXILMD1x= DDOT(NTAMP1,CTR1,1,WORK(KXI1x),1)
-                BXILMD2x= DDOT(NTAMP2,WORK(KT2AMPA),1,WORK(KXI2x),1)
-                BXILMDx = BXILMD1x + BXILMD2x
-C
-                KXI1y = KXIy
-                KXI2y = KXIy + NTAMP1
-                BXILMD1y = DDOT(NTAMP1,CTR1,1,WORK(KXI1y),1)
-                BXILMD2y = DDOT(NTAMP2,WORK(KT2AMPA),1,WORK(KXI2y),1)
-                BXILMDy = BXILMD1y + BXILMD2y
-C
-                KXI1z = KXIz
-                KXI2z = KXIz  + NTAMP1
-                BXILMD1z = DDOT(NTAMP1,CTR1,1,WORK(KXI1z),1)
-                BXILMD2z = DDOT(NTAMP2,WORK(KT2AMPA),1,WORK(KXI2z),1)
-                BXILMDz  = BXILMD1z + BXILMD2z
-C
-                FACx =  - ALPIMM(I,K) * (BXILMDx)
-                FACy =  - ALPIMM(I,K) * (BXILMDy)
-                FACz =  - ALPIMM(I,K) * (BXILMDz)
-C
-                IF (IQM3PR .GT. 5) THEN
-                  WRITE(LUPRI,*)'---------------------------' //
+C  
+                  KXI1x = KXIx
+                  KXI2x = KXIx + NTAMP1
+                  BXILMD1x= DDOT(NTAMP1,CTR1,1,WORK(KXI1x),1)
+                  BXILMD2x= DDOT(NTAMP2,WORK(KT2AMPA),1,WORK(KXI2x),1)
+                  BXILMDx = BXILMD1x + BXILMD2x
+C  
+                  KXI1y = KXIy
+                  KXI2y = KXIy + NTAMP1
+                  BXILMD1y = DDOT(NTAMP1,CTR1,1,WORK(KXI1y),1)
+                  BXILMD2y = DDOT(NTAMP2,WORK(KT2AMPA),1,WORK(KXI2y),1)
+                  BXILMDy = BXILMD1y + BXILMD2y
+C  
+                  KXI1z = KXIz
+                  KXI2z = KXIz  + NTAMP1
+                  BXILMD1z = DDOT(NTAMP1,CTR1,1,WORK(KXI1z),1)
+                  BXILMD2z = DDOT(NTAMP2,WORK(KT2AMPA),1,WORK(KXI2z),1)
+                  BXILMDz  = BXILMD1z + BXILMD2z
+C  
+                  FACx =  - ALPIMM(I,K) * (BXILMDx)
+                  FACy =  - ALPIMM(I,K) * (BXILMDy)
+                  FACz =  - ALPIMM(I,K) * (BXILMDz)
+C  
+                  IF (IQM3PR .GT. 5) THEN
+                    WRITE(LUPRI,*)'---------------------------' //
      *                          '-------------------'
-                  WRITE(LUPRI,*)'The factors calculated at cent.' //
+                    WRITE(LUPRI,*)'The factors calculated at cent.' //
      *                          ' of mass no.',LM
-                  WRITE(LUPRI,*)'---------------------------' //
+                    WRITE(LUPRI,*)'---------------------------' //
      *                          '-------------------'
-                  WRITE(LUPRI,*)'FACx=',FACx
-                  WRITE(LUPRI,*)'FACy=',FACy
-                  WRITE(LUPRI,*)'FACz=',FACz
-                  WRITE(LUPRI,*)'---------------------------' //
+                    WRITE(LUPRI,*)'FACx=',FACx
+                    WRITE(LUPRI,*)'FACy=',FACy
+                    WRITE(LUPRI,*)'FACz=',FACz
+                    WRITE(LUPRI,*)'---------------------------' //
      *                          '-------------------'
-                END IF
-C
+                 END IF
+C  
 
-C--------------------------------------------------------------
-C        Put factor on integrals 
-C--------------------------------------------------------------
-C
-                  CALL DAXPY(N2BST(ISYMTR),FACx,WORK(KRAAOx),1,
+C  --------------------------------------------------------------
+C          Put factor on integrals 
+C  --------------------------------------------------------------
+C  
+                    CALL DAXPY(N2BST(ISYMTR),FACx,WORK(KRAAOx),1,
      *                       TGB,1)
-                  CALL DAXPY(N2BST(ISYMTR),FACy,WORK(KRAAOy),1,
+                    CALL DAXPY(N2BST(ISYMTR),FACy,WORK(KRAAOy),1,
      *                       TGB,1)
-                  CALL DAXPY(N2BST(ISYMTR),FACz,WORK(KRAAOz),1,
+                    CALL DAXPY(N2BST(ISYMTR),FACz,WORK(KRAAOz),1,
      *                       TGB,1)
-C
-              END IF
+C  
+                END IF
   702       CONTINUE
   701     CONTINUE
         END IF
@@ -2873,6 +2877,28 @@ C
 C
       CALL GPCLOSE(LUCCEF,'KEEP')
 C
+      ELSE IF (NYQMMM) THEN
+
+        IF (LR .NE. 'XI' ) CALL QUIT('CCMM_TGB xi flag not allowed')
+        KDENS = KWRK1
+        KWRK2 = KDENS + N2BST(ISYMTR)
+        LWRK2 = LWORK - KWRK2
+
+        CALL DZERO(WORK(KDENS),N2BST(ISYMTR))
+
+C----------------------------
+C     Construct auxiliary densities
+C----------------------------
+        CALL CCMM_D1AO(WORK(KDENS),CTR1,WORK(KT2AMPA),MODEL,'L',
+     *                 LISDUM,IDLDUM,ISYDUM,
+     *                 WORK(KWRK2),LWRK2)
+C----------------------------
+C     Construct effective G operator
+C----------------------------
+
+        CALL CCMM_GEFF(WORK(KDENS),TGB(1),WORK(KWRK2),LWRK2)
+
+      END IF
       IF (DISCEX) THEN
         CALL WCLOSE2(LUMMET, FILMME, 'KEEP')
         CALL WCLOSE2(LUMMXI, FILMMX, 'KEEP')

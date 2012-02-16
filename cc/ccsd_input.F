@@ -8509,7 +8509,7 @@ C-------------------------------------------------------------------
 C
       CCSLV  = (ICHANG.GT.0)
       IF (CCSLV) RSPIM = .TRUE.
-C sne debug
+C 
       IF (CC2 ) NONHF = .TRUE.
 
       IF ( (HFFLD) .AND. (CCFIXF) ) THEN
