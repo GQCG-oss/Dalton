@@ -8,7 +8,7 @@ module polarizable_embedding
 
     private
 
-    public :: pe_dalton_input, pe_read_potential, pe_master, pe_mpi
+    public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
 
     ! options
@@ -25,9 +25,13 @@ module polarizable_embedding
     logical :: energy = .false.
     logical :: response = .false.
 
+#ifdef VAR_MPI
     ! MPI stuff
+    public :: pe_mpi
     logical, save :: initialized = .false.
-    integer, save :: ncores, nloop
+    integer, save :: ncores = 1
+    integer, dimension(:), allocatable :: ndists, displs
+#endif
 
     ! logical unit from dalton
     integer, save :: luout = 0
@@ -37,7 +41,7 @@ module polarizable_embedding
 
     ! constants (codata 2002)
     ! 1 bohr = 0.5291772108 Aa
-    real(dp), parameter :: au2aa = 1.8897261249935897d0
+    real(dp), parameter :: aa2au = 1.8897261249935897d0
 
     ! thresholds
     real(dp), parameter :: zero = 1.0d-6
@@ -49,8 +53,10 @@ module polarizable_embedding
     integer, public, save :: nsites = 0
     ! number of polarizable sites
     integer, save :: npols = 0
+    ! loop variable
+    integer, save :: nloop = 0
     ! exclusion list length
-    integer, save :: lexlst
+    integer, save :: lexlst = 0
     
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.
@@ -248,6 +254,7 @@ subroutine pe_read_potential(work, coords, charges)
 
         if (trim(word) == 'coordinates') then
             read(lupot,*) nsites
+            nloop = nsites
             read(lupot,*) auoraa
             allocate(Zs(1,nsites), Rs(3,nsites))
             do i = 1, nsites
@@ -349,7 +356,7 @@ subroutine pe_read_potential(work, coords, charges)
 !            end do
         else if (trim(word) == 'exlists') then
             read(lupot,*) lexlst
-            allocate(exlists(lexlst,nsites)); exlists = 0
+            allocate(exlists(lexlst,nsites))
             do i = 1, nsites
                 read(lupot,*) (exlists(j,i), j = 1, lexlst)
             end do
@@ -362,7 +369,7 @@ subroutine pe_read_potential(work, coords, charges)
 
     ! if coordinates are in AA then convert to AU
     if (auoraa == 'AA') then
-        Rs = Rs * au2aa
+        Rs = Rs * aa2au
     end if
 
     ! default exclusion list (everything polarizes everything)
@@ -503,6 +510,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
 end subroutine pe_master
 
 !------------------------------------------------------------------------------
+
 #ifdef VAR_MPI
 subroutine pe_mpi(work, runtype)
 
@@ -564,7 +572,6 @@ subroutine pe_sync(work)
     integer :: i
     integer :: myid, ncores, ierr
     integer :: ndist, nrest
-    integer, dimension(:), allocatable :: ndists, displs
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
@@ -620,23 +627,6 @@ subroutine pe_sync(work)
             allocate(zeroalphas(nloop))
             call mpi_scatterv(0, 0, 0, MPI_LOGICAL,&
                              &zeroalphas, nloop, MPI_LOGICAL,&
-                             &0, MPI_COMM_WORLD, ierr)
-        end if
-
-        call mpi_bcast(lexlst, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, ncores-1
-                displs(i) = displs(i-1) + lexlst * ndists(i-1)
-            end do
-            call mpi_scatterv(exlists, lexlst*ndists, displs, MPI_INTEGER,&
-                             &MPI_IN_PLACE, 0, MPI_INTEGER,&
-                             &0, MPI_COMM_WORLD, ierr)
-        else
-            allocate(exlists(lexlst,nloop))
-            call mpi_scatterv(0, 0, 0, MPI_INTEGER,&
-                             &exlists, lexlst*nloop, MPI_INTEGER,&
                              &0, MPI_COMM_WORLD, ierr)
         end if
     end if
@@ -719,15 +709,11 @@ subroutine pe_sync(work)
         end if
     end if
 
-    if (myid == 0) then
-        deallocate(ndists, displs)
-    end if
-
     initialized = .true.
 
 end subroutine pe_sync
-
 #endif
+
 !------------------------------------------------------------------------------
 
 subroutine pe_fock(denmats, fckmats, Epe, work)
@@ -745,7 +731,6 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
     integer :: ierr, myid, ncores
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #endif
 
     do i = 0, 3
@@ -798,10 +783,8 @@ subroutine pe_response(denmats, fckmats, work)
 #ifdef VAR_MPI
     integer :: ierr, myid, ncores
     integer :: ndist, nrest
-    integer, dimension(:), allocatable :: ndists, displs
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #endif
 
     Fel = 0.0d0; fckmats = 0.0d0
@@ -822,7 +805,6 @@ subroutine pe_response(denmats, fckmats, work)
 
 #ifdef VAR_MPI
     if (myid == 0) then
-        allocate(ndists(0:ncores-1), displs(0:ncores-1))
         ndist = npols / ncores
         ndists = ndist
         if (ncores * ndist < npols) then
@@ -897,10 +879,6 @@ subroutine pe_response(denmats, fckmats, work)
         l = l + 3
     end do
 
-    if (myid == 0) then
-        deallocate(ndists, displs)
-    end if
-
 end subroutine pe_response
 
 !------------------------------------------------------------------------------
@@ -922,7 +900,6 @@ subroutine pe_electrostatic(denmats, fckmats, work)
     integer :: ierr, myid, ncores
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
     if (myid == 0) then
 #endif
@@ -1316,13 +1293,8 @@ subroutine pe_polarization(denmats, fckmats, work)
 #ifdef VAR_MPI
     integer :: ierr, myid, ncores
     integer :: ndist, nrest
-    integer, dimension(:), allocatable :: ndists, displs
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
-
-    allocate(ndists(0:ncores-1), displs(0:ncores-1))
-    ndists = 0; displs = 0
 #endif
 
     Fel = 0.0d0
@@ -1363,9 +1335,9 @@ subroutine pe_polarization(denmats, fckmats, work)
                         &MPI_IN_PLACE, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
     else
-            call mpi_scatter(0, 0, MPI_INTEGER,&
-                            &ndist, 1, MPI_INTEGER,&
-                            &0, MPI_COMM_WORLD, ierr)
+        call mpi_scatter(0, 0, MPI_INTEGER,&
+                        &ndist, 1, MPI_INTEGER,&
+                        &0, MPI_COMM_WORLD, ierr)
     end if
 
     if (myid == 0) then
@@ -1388,7 +1360,6 @@ subroutine pe_polarization(denmats, fckmats, work)
 
     if (myid == 0) then
 #endif
-
     call nuclear_fields(Fnuc)
     call multipole_fields(Fmul)
     if (pe_qmes) then
@@ -2217,7 +2188,7 @@ subroutine pe_save_density(density, nbas, coords, charges, work)
     end do
     close(lucore)
     if (auoraa == 'AA') then
-        Rc = Rc * au2aa
+        Rc = Rc * aa2au
     end if
 
     ! unfold density matrix
@@ -2538,7 +2509,7 @@ subroutine solve(ap, b)
     n = size(b, 1)
     nrhs = size(b, 2)
 
-    allocate(ipiv(n)); ipiv = 0.0d0
+    allocate(ipiv(n))
 
     info = 0
 
