@@ -12,7 +12,7 @@
 #
 # Ask PBS for 2 nodes.
 #
-#PBS -l nodes=2
+#PBS -l nodes=1
 #PBS -l walltime=00:20:00
 #PBS -q express
 #
@@ -21,5 +21,5 @@
 cd $PBS_O_WORKDIR
 #
 #
-./TEST -keep -benchmark -param "-N 8" longpar
+./TEST -keep -benchmark -param "-N 12" longpar
 #
