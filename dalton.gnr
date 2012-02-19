@@ -42,8 +42,8 @@ usage (){
         echo  " dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
         echo
 	  echo 'Options:'
-	  echo ' -b dir    prepend dir to directory list for basis set searches.'
-	  echo '           Current directory and dalton basis library are included automatically.'
+	  echo ' -b dir    prepend dir to directory list for basis set searches'
+	  echo '           (current directory and dalton basis library are included automatically).'
 	  echo ' -d        delete job scratch directory before calculation starts'
 	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -nobackup do not backup files, simply overwrite outputs'
@@ -286,13 +286,14 @@ fi
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
+         cp $DALMPI ./dalton_mpi_copy.x
 	 if [ -n "$optlam" ] ; then
 	    lamboot -v  $WRKDIR/$optlam
-	    $MPIRUN -wd $TMPDIR -np $optn $DALMPI
+	    $MPIRUN -wd $TMPDIR -np $optn ./dalton_mpi_copy.x
             ierr=$?
 	    wipe    -v  $WRKDIR/$optlam
 	 else
-	    $MPIRUN -np $optn $DALMPI
+	    $MPIRUN -np $optn ./dalton_mpi_copy.x
 #	    $MPIRUN --prefix /usr/local/lib/openmpi -np $optn $DALMPI
             ierr=$?
 	 fi
@@ -311,10 +312,11 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $DALTON -a -x $DALTON ]; then
+      cp $DALTON dalton_copy.x
       if [ $opt_valgrind -eq 1 ]; then
-          valgrind $DALTON
+          valgrind ./dalton_copy.x
       else
-          $DALTON
+          ./dalton_copy.x
       fi
       ierr=$?
       if [ $ierr -ne 0 ];then
