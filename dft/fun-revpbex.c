@@ -92,6 +92,7 @@ static void revpbe_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional revPBExFunctional = {
   "revPBEx",       /* name */
   revpbe_isgga,   /* gga-corrected */
+   1,
   revpbe_read,
   NULL,
   revpbe_energy,

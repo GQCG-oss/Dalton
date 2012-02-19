@@ -89,6 +89,7 @@ static void pbex_third(FunThirdFuncDrv *ds,   real factor,
 Functional PBExFunctional = {
   "PBEx",       /* name */
   pbex_isgga,   /* gga-corrected */
+   1,
   pbex_read,
   NULL,
   pbex_energy,

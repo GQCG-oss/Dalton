@@ -92,6 +92,7 @@ static void b86mx_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional B86mxFunctional = {
   "B86mx",       /* name */
   b86mx_isgga,   /* gga-corrected */
+   1,
   b86mx_read,
   NULL,
   b86mx_energy,

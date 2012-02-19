@@ -101,6 +101,7 @@ static void p86c_third(FunThirdFuncDrv *ds,   real factor,
 Functional P86cFunctional = {
   "P86c",       /* name */
   p86c_isgga,   /* gga-corrected */
+   1,
   p86c_read,
   NULL,
   p86c_energy,

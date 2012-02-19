@@ -63,6 +63,7 @@ static void slater_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp*);
 Functional SlaterFunctional = {
   "Slater",       /* name */
   slater_isgga,   /* gga-corrected */
+   3,
   slater_read, 
   NULL,
   slater_energy, 

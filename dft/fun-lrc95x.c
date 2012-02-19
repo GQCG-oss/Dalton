@@ -109,6 +109,7 @@ static void lrc95x_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional LRC95xFunctional = {
   "LRC95x",       /* name */
   lrc95x_isgga,   /* gga-corrected */
+   1,
   lrc95x_read,
   NULL,
   lrc95x_energy,

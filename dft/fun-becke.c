@@ -69,6 +69,7 @@ static void becke_fourth(FunFourthFuncDrv *ds, real factor,
 Functional BeckeFunctional = {
     "Becke",      /* name */
     becke_isgga,  /* gga-corrected */
+   3,
     becke_read,   /* set bloody common blocks */
     NULL,         /* reporter */
     becke_energy, 

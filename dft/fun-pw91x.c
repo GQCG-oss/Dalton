@@ -102,6 +102,7 @@ static void pw91x_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional PW91xFunctional = {
   "PW91x",       /* name */
   pw91x_isgga,   /* gga-corrected */
+   1,
   pw91x_read,
   NULL,
   pw91x_energy,

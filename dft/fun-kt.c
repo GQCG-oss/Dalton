@@ -75,6 +75,7 @@ static void kt_fourth(FunFourthFuncDrv *ds, real factor,
 Functional KTxFunctional = {
     "KTx",      /* name */
     kt_isgga,  /* gga-corrected */
+   1,
     kt_read,   /* set bloody common blocks */
     NULL,         /* reporter */
     kt_energy, 

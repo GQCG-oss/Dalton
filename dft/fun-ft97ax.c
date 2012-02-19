@@ -97,6 +97,7 @@ static void ft97ax_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional FT97axFunctional = {
   "FT97ax",       /* name */
   ft97ax_isgga,   /* gga-corrected */
+   1,
   ft97ax_read,
   NULL,
   ft97ax_energy,
