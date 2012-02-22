@@ -8,6 +8,8 @@ module polarizable_embedding
 
     private
 
+    intrinsic :: present, size
+
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
 
@@ -53,7 +55,7 @@ module polarizable_embedding
     integer, public, save :: nsites = 0
     ! number of polarizable sites
     integer, save :: npols = 0
-    ! loop variable
+    ! loop variable (nloop = nsites if serial)
     integer, save :: nloop = 0
     ! exclusion list length
     integer, save :: lexlst = 0
@@ -161,11 +163,11 @@ subroutine pe_dalton_input(word, luinp, lupri)
 
     external :: upcase
 
-    character(7), intent(inout) :: word
+    character(len=7), intent(inout) :: word
     integer, intent(in) :: luinp
     integer, intent(in) :: lupri
 
-    character(7) :: option
+    character(len=7) :: option
 
     luout = lupri
 
@@ -220,8 +222,8 @@ subroutine pe_read_potential(work, coords, charges)
     integer :: i, j, k, s
     integer :: lupot, nlines
     real(dp), dimension(15) :: temp
-    character(2) :: auoraa
-    character(80) :: word
+    character(len=2) :: auoraa
+    character(len=80) :: word
     logical :: lexist
 
     if (present(coords) .and. present(charges)) then
@@ -241,9 +243,10 @@ subroutine pe_read_potential(work, coords, charges)
         call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
     else
         if (pe_savden) then
+! TODO: needs fix
             return
         else if (pe_qmes) then
-            return
+            goto 101
         else
             stop('POTENTIAL.INP not found!')
         end if
@@ -254,7 +257,6 @@ subroutine pe_read_potential(work, coords, charges)
 
         if (trim(word) == 'coordinates') then
             read(lupot,*) nsites
-            nloop = nsites
             read(lupot,*) auoraa
             allocate(Zs(1,nsites), Rs(3,nsites))
             do i = 1, nsites
@@ -367,6 +369,9 @@ subroutine pe_read_potential(work, coords, charges)
 
 100 continue
 
+    ! initialize nloop
+    nloop = nsites
+
     ! if coordinates are in AA then convert to AU
     if (auoraa == 'AA') then
         Rs = Rs * aa2au
@@ -397,7 +402,7 @@ subroutine pe_read_potential(work, coords, charges)
     close(lupot)
 
     ! write to Dalton output file
-    write(luout,'(//2x,a)') 'Polarizable Embedding potential'
+101 write(luout,'(//2x,a)') 'Polarizable Embedding potential'
     write(luout,'(2x,a)')   '-------------------------------'
     write(luout,'(/4x,a,i6)') 'Number of sites: ', nsites
     if (lmul(3)) then
@@ -894,11 +899,10 @@ subroutine pe_electrostatic(denmats, fckmats, work)
     integer :: lutemp
     real(dp) :: Enuc, Esave
     real(dp), dimension(ndens) :: Eel
-    real(dp), dimension(:), allocatable :: tmpfcks
 
 #ifdef VAR_MPI
     integer :: ierr, myid, ncores
-
+    real(dp), dimension(:), allocatable :: tmpfcks
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
 
     if (myid == 0) then
@@ -994,8 +998,8 @@ subroutine pe_electrostatic(denmats, fckmats, work)
             if (myid == 0) then
                 allocate(tmpfcks(ndens*nnbas))
                 tmpfcks = fckmats
-                call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8, MPI_SUM,&
-                               &0, MPI_COMM_WORLD, ierr)
+                call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8,&
+                               &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
                 call mpi_reduce(MPI_IN_PLACE, Esave, 1, MPI_REAL8, MPI_SUM,&
                                &0, MPI_COMM_WORLD, ierr)
             else
@@ -1049,8 +1053,8 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
     real(dp), dimension(3*npols) :: temp
     real(dp), dimension(nnbas) :: fd_fock
     real(dp), dimension(nnbas,1) :: Zfd_ints
-    character(99) :: ci
-    character(99) :: filename
+    character(len=99) :: ci
+    character(len=99) :: filename
 
     Eel = 0.0d0; Enuc = 0.0d0
     Ene = 0.0d0; Enn = 0.0d0
@@ -1429,13 +1433,17 @@ subroutine induced_dipoles(Mu, F)
     real(dp), dimension(:,:), intent(in) :: F
 
     integer :: i, j
-    real(dp), dimension(3*npols*(3*npols+1)/2) :: A
+    real(dp), dimension(:), allocatable :: A
 
-    call response_matrix(A, .false.)
+    allocate(A(3*npols*(3*npols+1)/2))
 
-    Mu = F
+    call response_matrix(A, .true.)
 
-    call solve(A, Mu)
+    do i = 1, ndens
+        call spmv(A, F(:,i), Mu(:,i), 'L')
+    end do
+
+    deallocate(A)
 
 end subroutine induced_dipoles
 
@@ -1538,8 +1546,8 @@ subroutine frozen_density_field(Ffd)
 
     integer :: i
     integer :: lutemp
-    character(99) :: ci
-    character(80) :: filename
+    character(len=99) :: ci
+    character(len=80) :: filename
     real(dp), dimension(3*npols) :: Ftmp
 
     Ffd = 0.0d0
@@ -1855,14 +1863,13 @@ subroutine response_matrix(A, invert)
                 end do
             end do
         end do
+        if (invert) then
+            call invert_packed_matrix(A, 's')
+        end if
         call openfile('pe_response_matrix.bin', lutemp, 'new', 'unformatted')
         rewind(lutemp)
         write(lutemp) A
         close(lutemp)
-    end if
-
-    if (invert) then
-        call invert_packed_matrix(A, 's')
     end if
 
 end subroutine response_matrix
@@ -2160,7 +2167,7 @@ subroutine pe_save_density(density, nbas, coords, charges, work)
     integer :: corenucs
     integer, parameter :: k = 0
     integer :: lucore, luden
-    character(2) :: auoraa
+    character(len=2) :: auoraa
     real(dp) :: Ene
     real(dp), dimension(:,:), allocatable :: Rc, Zc
     real(dp), dimension(:,:), allocatable :: full_density
@@ -2383,12 +2390,12 @@ subroutine gemm(a, b, c, transa, transb, alpha, beta)
     external :: dgemm
 
     real(dp), intent(in), optional :: alpha, beta
-    character(1), intent(in), optional :: transa, transb
+    character(len=1), intent(in), optional :: transa, transb
     real(dp), dimension(:,:), intent(in) :: a, b
     real(dp), dimension(:,:) , intent(inout) :: c
 
     integer :: m, n, k, lda, ldb, ldc
-    character(1) :: o_transa, o_transb
+    character(len=1) :: o_transa, o_transb
     real(dp) :: o_alpha, o_beta
 
     if (present(alpha)) then
@@ -2433,16 +2440,59 @@ end subroutine gemm
 
 !------------------------------------------------------------------------------
 
+subroutine spmv(ap, x, y, uplo, alpha, beta)
+
+    external :: dspmv
+    intrinsic :: present, size
+
+    real(dp), dimension(:), intent(in) :: ap
+    real(dp), dimension(:), intent(in) :: x
+    real(dp), dimension(:), intent(inout) :: y
+    character(len=1), optional :: uplo
+    real(dp), intent(in), optional :: alpha, beta
+
+    integer :: n, incx, incy
+    real(dp) :: o_alpha, o_beta
+    character(len=1) :: o_uplo
+
+    if (present(uplo)) then
+        o_uplo = uplo
+    else
+        o_uplo = 'U'
+    end if
+
+    if (present(alpha)) then
+        o_alpha = alpha
+    else
+        o_alpha = 1.0d0
+    end if
+
+    if (present(beta)) then
+        o_beta = beta
+    else
+        o_beta = 0.0d0
+    end if
+
+    incx = 1
+    incy = 1
+    n = size(x)
+
+    call dspmv(o_uplo, n, o_alpha, ap, x, incx, o_beta, y, incy)
+
+end subroutine spmv
+
+!------------------------------------------------------------------------------
+
 subroutine tpttr(ap, a, uplo)
 
     external :: dtpttr
 
     real(dp), dimension(:), intent(in) :: ap
     real(dp), dimension(:,:), intent(out) :: a
-    character(1), intent(in), optional :: uplo
+    character(len=1), intent(in), optional :: uplo
 
     integer :: n, lda, info
-    character(1) :: o_uplo
+    character(len=1) :: o_uplo
 
     if (present(uplo)) then
         o_uplo = uplo
