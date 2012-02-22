@@ -117,6 +117,7 @@ static void pw91c_third(FunThirdFuncDrv *ds,   real factor,
 Functional PW91cFunctional = {
   "PW91c",       /* name */
   pw91c_isgga,   /* gga-corrected */
+   1,
   pw91c_read,
   NULL,
   pw91c_energy,

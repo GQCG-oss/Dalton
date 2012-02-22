@@ -74,6 +74,7 @@ static void vwn3i_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* d
 Functional VWN3Functional = {
     "VWN3",      /* name */
     vwn_isgga,  /* gga-corrected */
+   1,
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,
     vwn3_energy, 
@@ -85,6 +86,7 @@ Functional VWN3Functional = {
 Functional VWN5Functional = {
     "VWN5",     /* name */
     vwn_isgga,  /* gga-corrected */
+   3,
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,
     vwn_energy, 
@@ -98,6 +100,7 @@ Functional VWN5Functional = {
 Functional VWNFunctional = {
     "VWN",     /* name */
     vwn_isgga,  /* gga-corrected */
+   1,
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,
     vwn_energy, 
@@ -116,6 +119,7 @@ Functional VWNFunctional = {
 Functional VWNIFunctional = {
     "VWNI",      /* name */
     vwn_isgga,  /* gga-corrected */
+   1,
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,
     vwni_energy, 
@@ -126,6 +130,7 @@ Functional VWNIFunctional = {
 Functional VWN3IFunctional = {
     "VWN3I",      /* name */
     vwn_isgga,  /* gga-corrected */
+   1,
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,
     vwn3i_energy, 

@@ -157,6 +157,7 @@ static void hcth120_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional HCTH120Functional = {
   "HCTH120",       /* name */
   hcth120_isgga,   /* gga-corrected */
+   1,
   hcth120_read,
   NULL,
   hcth120_energy,

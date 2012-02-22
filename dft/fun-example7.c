@@ -56,6 +56,7 @@ static void example7_third(FunThirdFuncDrv *ds,   real factor,
 Functional Example7Functional = {
   "Example7",         /* name */
   example7_isgga,     /* gga-corrected */
+   1,
   example7_read, 
   NULL,              /* reporter */
   example7_energy, 

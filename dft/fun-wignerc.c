@@ -89,6 +89,7 @@ static void wignerc_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional WignerFunctional = {
   "Wigner",       /* name */
   wignerc_isgga,   /* gga-corrected */
+   1,
   wignerc_read,
   NULL,
   wignerc_energy,

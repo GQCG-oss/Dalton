@@ -95,6 +95,7 @@ static void dk87x_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional DK87xFunctional = {
   "DK87x",       /* name */
   dk87x_isgga,   /* gga-corrected */
+   1,
   dk87x_read,
   NULL,
   dk87x_energy,

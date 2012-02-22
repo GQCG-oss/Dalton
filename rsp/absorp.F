@@ -55,12 +55,15 @@ C
 #include <mxcent.h>
 #include <symmet.h>
 #include <codata.h>
+#include <infinp.h>
 C
       LOGICAL NEWDEF, ALLCOMP
       PARAMETER ( NTABLE = 22 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
       CHARACTER*8 DIPLEN(3), ANGMOM(3)
+
+      logical, external :: fun_is_ready_for_qr
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
       DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
@@ -264,6 +267,24 @@ C     User input of damping parameter
 C
 C     Process user input
 C
+
+#ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
+!     sanity check for incomplete/untested xc functional implementations
+      if (abs_beta .and. dodft) then
+         if (.not. fun_is_ready_for_qr()) then
+            write(lupri, *) 'ERROR: functional not fully implemented'
+            write(lupri, *) '       or tested for QR'
+            write(lupri, *) 'to disable this stop recompile'
+            write(lupri, *) 'with -DDISABLE_XC_RESPONSE_SANITY_CHECK'
+            write(lupri, *) 'note that GGAKEY functionals are always'
+            write(lupri, *) 'stopped although they could be correct'
+            call quit('functional not fully implemented/tested for QR')
+         end if
+      end if
+#endif
+
+
+
       ABSORP = ABS_ALPHA .OR. ABS_BETA .OR. ABS_GAMMA .OR. ABS_MCD
       IF (.NOT.ABSORP) THEN
          WRITE(LUPRI,'(/A)') ' Absorption input ignored because:'
