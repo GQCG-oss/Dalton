@@ -72,11 +72,13 @@ module polarizable_embedding
     ! lhypol(1): dipole-dipole-dipole polarizabilities/1st hyperpolarizability
 !    logical, dimension(1), public, save :: lhypol
 
-    ! elements, coordinates and exclusion lists
+    ! nuclear charges, coordinates, elements and exclusion lists
     ! nuclear charges
     real(dp), dimension(:,:), allocatable, save :: Zs
     ! coordinates
     real(dp), dimension(:,:), allocatable, save :: Rs
+    ! elements
+    character(len=2), dimension(:,:), allocatable, save :: elems
     ! exclusion list
     integer, dimension(:,:), allocatable, save :: exlists
 
@@ -262,9 +264,11 @@ subroutine pe_read_potential(work, coords, charges)
         if (trim(word) == 'coordinates') then
             read(lupot,*) nsites
             read(lupot,*) auoraa
-            allocate(Zs(1,nsites), Rs(3,nsites))
+            allocate(elems(1,nsites), Zs(1,nsites), Rs(3,nsites))
             do i = 1, nsites
-                read(lupot,*) Zs(1,i), (Rs(j,i), j = 1, 3)
+                read(lupot,*) elems(1,i), (Rs(j,i), j = 1, 3)
+                Zs(1,i) = elem2charge(elems(1,i))
+                print *, elems(1,i), Zs(1,i)
             end do
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
@@ -2618,6 +2622,41 @@ subroutine openfile(filename, lunit, stat, frmt)
     return
 
 end subroutine openfile
+
+!------------------------------------------------------------------------------
+
+function elem2charge(elem)
+
+    character(*) :: elem
+    real(dp) :: elem2charge
+
+    integer :: i
+    real(dp), dimension(89) :: charges
+    character(len=2), dimension(89) :: elements
+
+    elements = (/ 'H' , 'He', 'Li', 'Be', 'B' , 'C' , 'N' , 'O' , 'F' , 'Ne',&
+                & 'Na', 'Mg', 'Al', 'Si', 'P' , 'S' , 'Cl', 'Ar', 'K' , 'Ca',&
+                & 'Sc', 'Ti', 'V' , 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',&
+                & 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y' , 'Zr',&
+                & 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',&
+                & 'Sb', 'Te', 'I' , 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',&
+                & 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',&
+                & 'Lu', 'Hf', 'Ta', 'W' , 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',&
+                & 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'X'/)
+
+    do i = 1, 88
+        charges(i) = real(i, dp)
+    end do
+    charges(89) = 0.0d0
+
+    do i = 1, 88
+        if (elem == elements(i)) then
+            elem2charge = charges(i)
+            exit
+        end if
+    end do
+
+end function elem2charge
 
 !------------------------------------------------------------------------------
 
