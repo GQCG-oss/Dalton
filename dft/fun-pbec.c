@@ -129,6 +129,7 @@ static void pbec_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional PBEcFunctional = {
   "PBEC",       /* name */
   pbec_isgga,   /* gga-corrected */
+   1,
   pbec_read,
   NULL,
   pbec_energy,

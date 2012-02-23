@@ -58,6 +58,7 @@ static void pz81_third (FunThirdFuncDrv *ds,  real factor, const FunDensProp* dp
 Functional PZ81Functional = {
   "PZ81",
   fun_false,
+  1,
   pz81_read,
   NULL,
   pz81_energy,

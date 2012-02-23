@@ -67,6 +67,7 @@ static void optx_third(FunThirdFuncDrv *ds, real factor,
 Functional OPTXFunctional = {
     "OPTX",      /* name */
     optx_isgga,  /* gga-corrected */
+   1,
     optx_read,   /* set bloody common blocks */
     NULL,         /* reporter */
     optx_energy, 

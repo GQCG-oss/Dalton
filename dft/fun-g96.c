@@ -86,6 +86,7 @@ static void g96_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional G96xFunctional = {
   "G96x",       /* name */
   g96_isgga,   /* gga-corrected */
+   1,
   g96_read,
   NULL,
   g96_energy,

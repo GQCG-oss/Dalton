@@ -100,6 +100,7 @@ static void pw92ac_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional PW92acFunctional = {
   "PW92ac",       /* name */
   pw92ac_isgga,   /* gga-corrected */
+   1,
   pw92ac_read,
   NULL,
   pw92ac_energy,

@@ -250,7 +250,12 @@ C     **********************************
 C
 C     Integrals on AOORDINT
 C
-      IF (USE_INTSORT .AND. (.NOT. CHOINT)) THEN
+      IF (USE_INTSORT .AND. CHOINT) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' * INFO: .SORT INT ignored when .CHOLESKY'
+         USE_INTSORT = .FALSE.
+      END IF
+      IF (USE_INTSORT) THEN
          CALL GPINQ('AOTWOINT','EXIST',FEXIST)
          IF (FEXIST) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
@@ -3787,7 +3792,7 @@ C
       END IF
   300 CONTINUE
       IF (ICHANG .EQ. 0) RETURN
-      IF (USE_INTSORT. AND. NEWDEF) THEN
+      IF (USE_INTSORT .AND. NEWDEF) THEN
          CALL HEADER('Changes of defaults for SORTAO:',1)
          IF (THRQ2 .NE. 1.0D-15) WRITE (LUPRI,'(A,D12.2)')
      &        ' Threshold for sorted integrals:', THRQ2

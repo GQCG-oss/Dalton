@@ -63,6 +63,7 @@ static void lypr_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
 Functional LYPrFunctional = {
     "LYPr",      /* name */
     lypr_isgga,  /* gga-corrected */
+   1,
     lypr_read,   /* no extra input expected, just set the common block */
     NULL, /* reporter */
     lypr_energy, 

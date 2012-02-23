@@ -1951,12 +1951,10 @@ C     Select orbitals and basis fucntions for hybrid CC models.
 C
       CALL QENTER('SELACT')
 C
-      WRITE(LUPRI, '(A/)') '    Starting in Selact Section -'
-C
       CALL TITLER('Starting in Selact Section',' ',200)
 C
 C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
-      write(lupri,*) 'Not yet implemented'
+      write(lupri,*) 'INFO: SELACT is not yet implemented. Skipped.'
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
 C
 ctst  CLOSE(24)

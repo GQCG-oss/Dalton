@@ -93,6 +93,7 @@ static void rpbe_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional RPBExFunctional = {
   "RPBEx",       /* name */
   rpbe_isgga,   /* gga-corrected */
+   1,
   rpbe_read,
   NULL,
   rpbe_energy,
