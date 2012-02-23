@@ -8,7 +8,7 @@ module polarizable_embedding
 
     private
 
-    intrinsic :: present, size
+    intrinsic :: present, size, cpu_time
 
     public :: pe_dalton_input, pe_read_potential, pe_master
     public :: pe_save_density, pe_intmol_twoints, pe_repulsion
@@ -21,6 +21,7 @@ module polarizable_embedding
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
     logical, public, save :: pe_qmes = .false.
+    logical, public, save :: pe_timing = .false.
 
     ! calculation type
     logical :: fock = .false.
@@ -31,8 +32,7 @@ module polarizable_embedding
     ! MPI stuff
     public :: pe_mpi
     logical, save :: initialized = .false.
-    integer, save :: ncores = 1
-    integer, dimension(:), allocatable :: ndists, displs
+    integer, dimension(:), save, allocatable :: ndists, displs
 #endif
 
     ! logical unit from dalton
@@ -47,6 +47,9 @@ module polarizable_embedding
 
     ! thresholds
     real(dp), parameter :: zero = 1.0d-6
+
+    ! variables used for timings
+    real(dp) :: t1, t2
 
     ! polarizable embedding potential info
     ! ------------------------------------
@@ -443,9 +446,10 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     real(dp), dimension(:), intent(inout) :: work
 
 #ifdef VAR_MPI
-    integer :: myid, ierr
+    integer :: myid, ncores, ierr
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #endif
 
     ! determine what to calculate and do consistency check
@@ -528,7 +532,11 @@ subroutine pe_mpi(work, runtype)
     integer :: runtype
 
     integer :: i
-    integer :: nwrk, ierr
+    integer :: nwrk
+    integer :: myid, ncores, ierr
+
+    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
     nwrk = size(work)
 
@@ -580,8 +588,8 @@ subroutine pe_sync(work)
     real(dp), dimension(:) :: work
 
     integer :: i
-    integer :: myid, ncores, ierr
     integer :: ndist, nrest
+    integer :: myid, ncores, ierr
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
     call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
@@ -786,10 +794,11 @@ subroutine pe_response(denmats, fckmats, work)
     real(dp), dimension(nnbas,3) :: Fel_ints
 
 #ifdef VAR_MPI
-    integer :: ierr, myid, ncores
     integer :: ndist, nrest
+    integer :: myid, ncores, ierr
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #endif
 
     Fel = 0.0d0; fckmats = 0.0d0
@@ -901,9 +910,11 @@ subroutine pe_electrostatic(denmats, fckmats, work)
     real(dp), dimension(ndens) :: Eel
 
 #ifdef VAR_MPI
-    integer :: ierr, myid, ncores
     real(dp), dimension(:), allocatable :: tmpfcks
+    integer :: myid, ncores, ierr
+
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 
     if (myid == 0) then
 #endif
@@ -1300,10 +1311,11 @@ subroutine pe_polarization(denmats, fckmats, work)
     real(dp), dimension(nnbas,3) :: Fel_ints
 
 #ifdef VAR_MPI
-    integer :: ierr, myid, ncores
     integer :: ndist, nrest
+    integer :: myid, ncores, ierr
 
     call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+    call mpi_comm_size(MPI_COMM_WORLD, ncores, ierr)
 #endif
 
     Fel = 0.0d0
