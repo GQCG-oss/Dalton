@@ -268,7 +268,6 @@ subroutine pe_read_potential(work, coords, charges)
             do i = 1, nsites
                 read(lupot,*) elems(1,i), (Rs(j,i), j = 1, 3)
                 Zs(1,i) = elem2charge(elems(1,i))
-                print *, elems(1,i), Zs(1,i)
             end do
         else if (trim(word) == 'monopoles') then
             lmul(0) = .true.
