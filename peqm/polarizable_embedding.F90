@@ -134,6 +134,7 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
+! use allocate/deallocate where possible?
 ! insert quit if symmetry
 ! insert quits inside dalton if QM3, QMMM etc.
 ! consistent implementation where several densities are taken as input
@@ -404,7 +405,7 @@ subroutine pe_read_potential(work, coords, charges)
     ! write to Dalton output file
 101 write(luout,'(//2x,a)') 'Polarizable Embedding potential'
     write(luout,'(2x,a)')   '-------------------------------'
-    write(luout,'(/4x,a,i6)') 'Number of sites: ', nsites
+    write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites
     if (lmul(3)) then
         write(luout,'(4x,a)') 'Multipole moments upto 3rd order.'
     else if (lmul(2)) then
@@ -478,21 +479,23 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     nnbas = size(denmats) / ndens
 
 #ifdef VAR_MPI
-    call mpi_bcast(44, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-    if (fock) then
-        call mpi_bcast(1, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-    else if (energy) then
-        call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-    else if (response) then
-        call mpi_bcast(3, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-    end if
+    if (myid == 0 .and. ncores > 1) then
+        call mpi_bcast(44, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        if (fock) then
+            call mpi_bcast(1, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        else if (energy) then
+            call mpi_bcast(2, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        else if (response) then
+            call mpi_bcast(3, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        end if
 
-    call mpi_bcast(nnbas, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-    call mpi_bcast(ndens, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
-    call mpi_bcast(denmats, nnbas*ndens, MPI_REAL8, myid, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(nnbas, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(ndens, 1, MPI_INTEGER, myid, MPI_COMM_WORLD, ierr)
+        call mpi_bcast(denmats, nnbas*ndens, MPI_REAL8, myid, MPI_COMM_WORLD, ierr)
 
-    if (.not. initialized) then
-        call pe_sync(work)
+        if (.not. initialized) then
+            call pe_sync(work)
+        end if
     end if
 #endif
 
@@ -506,9 +509,11 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
     end if
 
 #ifdef VAR_MPI
-    if (fock .or. response) then
-        call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8,&
-                       &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    if (myid == 0 .and. ncores > 1) then
+        if (fock .or. response) then
+            call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8,&
+                           &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+        end if
     end if
 #endif
 
@@ -729,18 +734,13 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i
-    logical :: mul = .false.
+    logical :: es = .false.
     logical :: pol = .false.
 
-#ifdef VAR_MPI
-    integer :: ierr, myid, ncores
-
-    call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
-#endif
-
     do i = 0, 3
-        if (lmul(i)) mul = .true.
+        if (lmul(i)) es = .true.
     end do
+    if (pe_qmes) es = .true.
     do i = 0, 1
         if (lpol(i)) pol = .true.
     end do
@@ -753,10 +753,10 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
     if (fock) fckmats = 0.0d0
 
     if (fock) then
-        if (mul) call pe_electrostatic(denmats, fckmats, work)
+        if (es) call pe_electrostatic(denmats, fckmats, work)
         if (pol) call pe_polarization(denmats, fckmats, work)
     else if (energy) then
-        if (mul) call pe_electrostatic(denmats, work=work)
+        if (es) call pe_electrostatic(denmats, work=work)
         if (pol) call pe_polarization(denmats, work=work)
     end if
 
@@ -809,7 +809,7 @@ subroutine pe_response(denmats, fckmats, work)
     end do
 
 #ifdef VAR_MPI
-    if (myid == 0) then
+    if (myid == 0 .and. ncores > 1) then
         ndist = npols / ncores
         ndists = ndist
         if (ncores * ndist < npols) then
@@ -821,13 +821,13 @@ subroutine pe_response(denmats, fckmats, work)
         call mpi_scatter(ndists, 1, MPI_INTEGER,&
                         &MPI_IN_PLACE, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
-    else
+    else if (myid /= 0) then
             call mpi_scatter(0, 0, MPI_INTEGER,&
                             &ndist, 1, MPI_INTEGER,&
                             &0, MPI_COMM_WORLD, ierr)
     end if
 
-    if (myid == 0) then
+    if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
         do i = 1, ncores-1
             displs(i) = displs(i-1) + 3 * ndists(i-1) 
@@ -837,7 +837,7 @@ subroutine pe_response(denmats, fckmats, work)
                             &Fel(:,i), 3*ndists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
-    else
+    else if (myid /= 0) then
         do i = 1, ndens
             call mpi_gatherv(Fel(:,i), 3*ndist, MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
@@ -851,7 +851,7 @@ subroutine pe_response(denmats, fckmats, work)
 #ifdef VAR_MPI
     end if
 
-    if (myid == 0) then
+    if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
         do i = 1, ncores-1
             displs(i) = displs(i-1) + 3 * ndists(i-1)
@@ -861,7 +861,7 @@ subroutine pe_response(denmats, fckmats, work)
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &0, MPI_COMM_WORLD, ierr)
         end do
-    else
+    else if (myid /= 0) then
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
                              &Mu(:,i), 3*ndist, MPI_REAL8,&
@@ -911,7 +911,9 @@ subroutine pe_electrostatic(denmats, fckmats, work)
 #ifdef VAR_MPI
     end if
 
-    call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    if (ncores > 1) then
+        call mpi_bcast(lexist, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    end if
 #endif
 
     if (lexist .and. fock) then
@@ -995,14 +997,14 @@ subroutine pe_electrostatic(denmats, fckmats, work)
 #endif
         if (fock) then
 #ifdef VAR_MPI
-            if (myid == 0) then
+            if (myid == 0 .and. ncores > 1) then
                 allocate(tmpfcks(ndens*nnbas))
                 tmpfcks = fckmats
                 call mpi_reduce(MPI_IN_PLACE, fckmats, ndens*nnbas, MPI_REAL8,&
                                &MPI_SUM, 0, MPI_COMM_WORLD, ierr)
                 call mpi_reduce(MPI_IN_PLACE, Esave, 1, MPI_REAL8, MPI_SUM,&
                                &0, MPI_COMM_WORLD, ierr)
-            else
+            else if (myid /= 0) then
                 call mpi_reduce(fckmats, 0, ndens*nnbas, MPI_REAL8, MPI_SUM,&
                                &0, MPI_COMM_WORLD, ierr)
                 call mpi_reduce(Esave, 0, 1, MPI_REAL8, MPI_SUM,&
@@ -1015,16 +1017,19 @@ subroutine pe_electrostatic(denmats, fckmats, work)
                 write(lutemp) Esave, fckmats
                 close(lutemp)
 #ifdef VAR_MPI
+            end if
+
+            if (myid == 0 .and. ncores > 1) then
                 fckmats = tmpfcks
                 deallocate(tmpfcks)
             end if
 #endif
         end if
 #ifdef VAR_MPI
-        if (myid == 0) then
+        if (myid == 0 .and. ncores > 1) then
             call mpi_reduce(MPI_IN_PLACE, Ees, 5*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
-        else
+        else if (myid /= 0) then
             call mpi_reduce(Ees, 0, 5*ndens, MPI_REAL8, MPI_SUM,&
                            &0, MPI_COMM_WORLD, ierr)
         end if
@@ -1326,7 +1331,7 @@ subroutine pe_polarization(denmats, fckmats, work)
     end do
 
 #ifdef VAR_MPI
-    if (myid == 0) then
+    if (myid == 0 .and. ncores > 1) then
         ndist = npols / ncores
         ndists = ndist
         if (ncores * ndist < npols) then
@@ -1338,13 +1343,13 @@ subroutine pe_polarization(denmats, fckmats, work)
         call mpi_scatter(ndists, 1, MPI_INTEGER,&
                         &MPI_IN_PLACE, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
-    else
+    else if (myid /= 0) then
         call mpi_scatter(0, 0, MPI_INTEGER,&
                         &ndist, 1, MPI_INTEGER,&
                         &0, MPI_COMM_WORLD, ierr)
     end if
 
-    if (myid == 0) then
+    if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
         do i = 1, ncores-1
             displs(i) = displs(i-1) + 3 * ndists(i-1)
@@ -1354,7 +1359,7 @@ subroutine pe_polarization(denmats, fckmats, work)
                             &Fel(:,i), 3*ndists, displs, MPI_REAL8,&
                             &0, MPI_COMM_WORLD, ierr)
         end do
-    else
+    else if (myid /= 0) then
         do i = 1, ndens
             call mpi_gatherv(Fel(:,i), 3*ndist, MPI_REAL8,&
                             &0, 0, 0, MPI_REAL8,&
@@ -1388,7 +1393,7 @@ subroutine pe_polarization(denmats, fckmats, work)
 #ifdef VAR_MPI
     end if
 
-    if (myid == 0) then
+    if (myid == 0 .and. ncores > 1) then
         displs(0) = 0
         do i = 1, ncores-1
             displs(i) = displs(i-1) + 3 * ndists(i-1)
@@ -1398,7 +1403,7 @@ subroutine pe_polarization(denmats, fckmats, work)
                              &MPI_IN_PLACE, 0, MPI_REAL8,&
                              &myid, MPI_COMM_WORLD, ierr)
         end do
-    else
+    else if (myid /= 0) then
         do i = 1, ndens
             call mpi_scatterv(0, 0, 0, MPI_REAL8,&
                              &Mu(:,i), 3*ndist, MPI_REAL8,&
