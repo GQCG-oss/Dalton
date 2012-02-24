@@ -1076,10 +1076,9 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
     character(len=99) :: filename
 
     Eel = 0.0d0; Enuc = 0.0d0
-    Ene = 0.0d0; Enn = 0.0d0
-    Een = 0.0d0; Eee = 0.0d0
 
     do i = 1, nfds
+        Eee = 0.0d0; Een = 0.0d0; Ene = 0.0d0; Enn = 0.0d0
         write(ci,*) i
         ci = adjustl(ci)
         filename = 'pe_fock_'//trim(ci)//'.bin'
@@ -1118,7 +1117,9 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
         deallocate(Rfd, Zfd)
 
         Enuc = Enuc + Ene + Enn
-        Eel = Eel + Een + Eee
+        do j = 1, ndens
+            Eel(j) = Eel(j) + Een(j) + Eee(j)
+        end do
     end do
 
 end subroutine es_frozen_densities
