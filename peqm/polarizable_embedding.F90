@@ -1454,17 +1454,17 @@ subroutine induced_dipoles(Mu, F)
     real(dp), dimension(:,:), intent(in) :: F
 
     integer :: i, j
-    real(dp), dimension(:), allocatable :: A
+    real(dp), dimension(:), allocatable :: B
 
-    allocate(A(3*npols*(3*npols+1)/2))
+    allocate(B(3*npols*(3*npols+1)/2))
 
-    call response_matrix(A, .true.)
+    call response_matrix(B)
 
     do i = 1, ndens
-        call spmv(A, F(:,i), Mu(:,i), 'L')
+        call spmv(B, F(:,i), Mu(:,i), 'L')
     end do
 
-    deallocate(A)
+    deallocate(B)
 
 end subroutine induced_dipoles
 
@@ -1787,13 +1787,13 @@ end subroutine octopole_field
 
 !------------------------------------------------------------------------------
 
-subroutine response_matrix(A, invert)
+subroutine response_matrix(B, invert, wrt2file)
 
 ! TODO: Damping schemes
 !       Cutoff radius
 
-    real(dp), dimension(:), intent(out) :: A
-    logical, intent(in) :: invert
+    real(dp), dimension(:), intent(out) :: B
+    logical, intent(in), optional :: invert, wrt2file
 
     logical :: exclude, lexist
     integer :: info, lutemp
@@ -1802,14 +1802,22 @@ subroutine response_matrix(A, invert)
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: alphainv
 
-    A = 0.0d0
+    if (.not. present(invert)) then
+        invert = .true.
+    end if
+
+    if (.not. present(wrt2file)) then
+        wrt2file = .true.
+    end if
+
+    B = 0.0d0
 
     inquire(file='pe_response_matrix.bin', exist=lexist)
 
     if (lexist) then
         call openfile('pe_response_matrix.bin', lutemp, 'old', 'unformatted')
         rewind(lutemp)
-        read(lutemp) A
+        read(lutemp) B
         close(lutemp)
     else
         m = 0
@@ -1823,15 +1831,15 @@ subroutine response_matrix(A, invert)
                     if (j == i) then
                         if (l == 3) then
                             do k = 1, l
-                                A(m+k) = alphainv(k)
+                                B(m+k) = alphainv(k)
                             end do
                         else if (l == 2) then
                             do k = 1, l
-                                A(m+k) = alphainv(3+k)
+                                B(m+k) = alphainv(3+k)
                             end do
                         else if (l == 1) then
                             do k = 1, l
-                                A(m+k) = alphainv(5+k)
+                                B(m+k) = alphainv(5+k)
                             end do
                         end if
                         m = m + l
@@ -1864,19 +1872,19 @@ subroutine response_matrix(A, invert)
                             do k = 1, 3
                                 T = 3.0d0 * Rij(1) * Rij(k) / R5
                                 if (k == 1) T = T - 1.0d0/R3
-                                A(m+k) = - T
+                                B(m+k) = - T
                             end do
                         else if (l == 2) then
                             do k = 1, 3
                                 T = 3.0d0 * Rij(2) * Rij(k) / R5
                                 if (k == 2) T = T - 1.0d0/R3
-                                A(m+k) = - T
+                                B(m+k) = - T
                             end do
                         else if (l == 1) then
                             do k = 1, 3
                                 T = 3.0d0 * Rij(3) * Rij(k) / R5
                                 if (k == 3) T = T - 1.0d0/R3
-                                A(m+k) = - T
+                                B(m+k) = - T
                             end do
                         end if
                         m = m + 3
@@ -1885,12 +1893,14 @@ subroutine response_matrix(A, invert)
             end do
         end do
         if (invert) then
-            call invert_packed_matrix(A, 's')
+            call invert_packed_matrix(B, 's')
         end if
-        call openfile('pe_response_matrix.bin', lutemp, 'new', 'unformatted')
-        rewind(lutemp)
-        write(lutemp) A
-        close(lutemp)
+        if (wrt2file) then
+            call openfile('pe_response_matrix.bin', lutemp, 'new', 'unformatted')
+            rewind(lutemp)
+            write(lutemp) B
+            close(lutemp)
+        end if
     end if
 
 end subroutine response_matrix
