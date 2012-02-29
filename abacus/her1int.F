@@ -116,8 +116,11 @@ C
 C
 #include "ibtfun.h"
 C
-      IF(THRS.EQ.0.D0) THRS = 1.D-15
-      TOLS   = THRS*THRS
+      IF (THRS.LE.0.0D0) THEN
+         TOLS   = 1.0D-30 ! to avoid log(0.0d0) below
+      ELSE
+         TOLS   = THRS*THRS
+      END IF
       TOLOG  = - LOG(TOLS)
 C
 C   JMAXD   max j in (d/dx)**j

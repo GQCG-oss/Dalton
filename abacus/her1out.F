@@ -55,6 +55,7 @@ C
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
       IF (IPRINT .GE. 4) CALL TITLER('Output from WRTUND','*',103)
+      THRS_OUT = MAX(1.0D-15,THRS)
 C
       DO 100 ITYPE = 1, 3
          IF (ITYPE .EQ. 1) THEN
@@ -80,7 +81,7 @@ C
             AINT = STHMAT(IAB,ITYPE)
             IF (ITYPE .EQ. 1 .AND. FINDPT)
      *      AINT = AINT + DPTFAC * DP5 * ALPHAC**2 * STHMAT(IAB,3)
-            IF (ABS(AINT) .GT. THRS) THEN
+            IF (ABS(AINT) .GT. THRS_OUT) THEN
                ICOUNT = ICOUNT + 1
                BUF(ICOUNT) = AINT
                IBUF(ICOUNT) = IAB
@@ -177,6 +178,8 @@ C     **************************
 C     ***** INITIALIZATION *****
 C     **************************
 C
+      THRS_OUT = MAX(1.0D-15,THRS)
+C
 C     Determine direct access buffer lengths
 C
       LABUFD = NBUF
@@ -217,7 +220,7 @@ C
          WRITE (LUPRI, '(2X,A,I5)')    'NPASS:      ', NPASS
          WRITE (LUPRI, '(2X,A,2I5)')   'LABUFD/I:   ', LABUFD, LABUFI
          WRITE (LUPRI, '(2X,A,I5)')    'MXABUF:     ', MXABUF
-         WRITE (LUPRI, '(2X,A,D12.4)') 'THRS:       ', THRS
+         WRITE (LUPRI, '(2X,A,D12.4)') 'THRS_OUT:   ', THRS_OUT
          WRITE (LUPRI, '(2X,A,I5)')    'INDMAX:     ', INDMAX
          WRITE (LUPRI, '(2X,A,I5)')    'NMATS:      ', NMATS
       END IF
@@ -308,7 +311,7 @@ C
             LDISK          = 0
             DO 700 I = 1, INDMAX
                DINT = SOINT(IOFF + I)
-               IF (ABS(DINT) .GE. THRS) THEN
+               IF (ABS(DINT) .GE. THRS_OUT) THEN
                   NOFF                  = NOFF + 1
                   BUFDA(NOFF)           = DINT
                   IBUFDA(MXABF2 + NOFF) = I
@@ -544,7 +547,7 @@ C
 C
 C     (2) Loop over totally symmetric perturbations
 C
-      THRS10 = D1000*THRS
+      THRS10 = D1000*MAX(1.0D-15,THRS)
       DFMAX1 = D0
       DFMAX2 = D0
       DO 100 ICOOR = 1, 3*NUCDEP

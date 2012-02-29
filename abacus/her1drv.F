@@ -382,8 +382,11 @@ C
       TIMINT = D0
       FRSDER = MAXDIF .GE. 1
       SECDER = MAXDIF .EQ. 2
-      IF(THRS.EQ.0D0) THRS = 1.D-15 ! to avoid log(0.0d0) below
-      TOLS   = THRS*THRS
+      IF (THRS.LE.0.0D0) THEN
+         TOLS   = 1.0D-30 ! to avoid log(0.0d0) below
+      ELSE
+         TOLS   = THRS*THRS
+      END IF
       TOLOG  = - LOG(TOLS)
       IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
          CALL GPOPEN(LUITMP,' ','NEW',' ','UNFORMATTED',IDUMMY,.FALSE.)
