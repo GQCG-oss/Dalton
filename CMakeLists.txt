@@ -12,8 +12,6 @@ if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DVAR_LINSCA)
 endif()
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
-
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -40,14 +38,12 @@ if(    NOT cmake_build_type_tolower STREQUAL "debug"
 endif()
 
 # do not rebuild if rules (compiler flags) change
-# this has advantages and disadvantages
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
@@ -107,7 +103,7 @@ include(ConfigCompilerFlags)
 
 set(LIBS)
 
-include(Math)
+include(ConfigMath)
 
 if(ENABLE_MPI)
     find_package(MPI)
@@ -189,24 +185,6 @@ if(ENABLE_GEN1INT)
         gen1int/gen1int_matrix.F90
         gen1int/gen1int_shell.F90
         gen1int/gen1int_interface.F90)
-    #find_library(GEN1INT_LIBRARIES NAMES libgen1int.a
-    #             PATHS ${LIB_GEN1INT_PATH}
-    #             PATH_SUFFIXES build lib obj src)
-    #if(GEN1INT_LIBRARIES)
-    #    message("-- Find Gen1Int library at "${GEN1INT_LIBRARIES})
-    #    message("-- Enable Gen1Int module")
-    #    add_definitions(-DBUILD_GEN1INT)
-    #    set(LIBS
-    #        ${LIBS}
-    #        ${GEN1INT_LIBRARIES})
-    #    set(FREE_FORTRAN_SOURCES
-    #        ${FREE_FORTRAN_SOURCES}
-    #        gen1int/gen1int_matrix.F90
-    #        gen1int/gen1int_shell.F90
-    #        gen1int/gen1int_interface.F90)
-    #else()
-    #    message("-- Disable Gen1Int module")
-    #endif()
 endif()
 
 # set cdash buildname
