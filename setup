@@ -183,6 +183,11 @@ group.add_argument('--generator',
         default=None,
         help='set the cmake generator [default: %(default)s]',
         metavar='STRING')
+group.add_argument('--gen1int-dir',
+        action='store',
+        default=None,
+        help='path to Gen1Int library [default: %(default)s]',
+        metavar='PATH')
 
 # process input
 
@@ -273,6 +278,11 @@ def gen_cmake_command():
 
     if args.generator:
         command += ' -Wno-dev -G "%s"' % args.generator
+
+    # enables Gen1Int module by defining its path
+    if args.gen1int_dir:
+        command += ' -DENABLE_GEN1INT=ON'
+        command += ' -DLIB_GEN1INT_PATH="%s"' % args.gen1int_dir
 
     command += ' %s' % root_directory
 
