@@ -196,7 +196,7 @@ C
 #include <infind.h>
 #include <inftra.h>
 C
-      DIMENSION NEEDMU(6)
+      DIMENSION NEEDMU(-4:6)
 #include <ibtdef.h>
 C
       CALL QENTER('DRCACD')
@@ -204,12 +204,10 @@ C
          WRITE(LUPRI,'(/4(A,I7))')'  ICLOW :',ICLOW, '  ICHGH :',ICHGH,
      *                            '  ILOWDI:',ILOWDI,'  IHGHDI:',IHGHDI
       ENDIF
-      NEEDMU(1) = 0
+      NEEDMU(-4:6) = 0
       NEEDMU(2) = 1
       NEEDMU(3) = 1
-      NEEDMU(4) = 0
       NEEDMU(5) = 1
-      NEEDMU(6) = 0
       IF (LVLDRC .GE. 1) THEN
          NEEDMU(1) = 1
          NEEDMU(4) = 1
@@ -231,7 +229,7 @@ C
       KFREE  = 1
       LFREE  = LWRK
       IDIST  = 0
- 200  CALL NXTH2M(IC,ID,H2,NEEDMU,WRK,KFREE,LFREE,IDIST)
+ 200  CALL NXTH2M(IC,ID,H2,NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 9500
          IF ( IPRTRA.GT.150 ) THEN
            WRITE(LUPRI,'(/A,I8)')' DRCACD: Mulliken distribution',IDIST
@@ -532,8 +530,8 @@ C        and subtract from input CMO matrix
          DRCOLD = ABS(WRK(I)) .LE. THRZER
       END IF
       IF (DRCOLD .AND. IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-     *' DRCCTL abandoned: the required MO integrals in Dirac format',
-     *' are already available on the MODRCINT file.'
+     &' DRCCTL abandoned: the required MO integrals in Dirac format',
+     &' are already available on the MODRCINT file.'
       RETURN
       END
 C --- end of drcctl.F ---

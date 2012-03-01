@@ -142,7 +142,7 @@ C
       JTRSIR = ABS(ITRSIR)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
 C     ... USEDRC must be true for second order transformation
-C         can be true by input for higher order (e.g. for MP2 and RESPONS)
+C         can be true by input for higher order (e.g. for RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
 C     to the convention used in this program.
@@ -647,7 +647,7 @@ C
       END IF
 C
       IF (ITYPCD .GT. 0 .AND. ICDTRA(ICDNEW) .EQ. 0) THEN
-         WRITE(LUPRI,'(//A/)') 'NX2H2M ERROR: '//
+         WRITE(LUPRI,'(//A/)') 'N_NX2H2M ERROR: '//
      &     'needed integral distribution has not been calculated'
          WRITE(LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
          WRITE(LUPRI,*) 'IYPC  ,ITYPD  : ',COBTYP(ITYPC),
@@ -655,7 +655,11 @@ C
          WRITE (LUPRI,'(/A)') 'ICDTRA matrix:'
          DO I = 1,NORBT
             IR = IROW(I)
-            WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+            IF (ISUM(I,ICDTRA(IR+1),1) .EQ. 0) THEN
+               WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
+            ELSE
+               WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+            END IF
          END DO
          CALL QUIT('N_NX2H2M error: needed integrals not calculated')
       END IF

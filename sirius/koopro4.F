@@ -235,6 +235,27 @@ C Manu April 2009: now it is used in the NEVPT2-srDFT :-)
       do i=1,norbt
        zgel(i)=.false. ! is this orbital frozen ?
       enddo
+
+! hjaaj Jan 2012: make sure orbitals frozen in MCSCF are also frozen in NEVPT2
+      indom = 0
+      do is=1,NSYM
+         if (NFRO(is) .gt. NFRNEVPT2(is)) then
+            if (indom .eq. 0) then
+               write(lupri,'(/a)')
+     & ' INFO: orbitals frozen in MCSCF are also frozen in NEVPT2'
+               write(lupri,'(a,8I5)')
+     & ' .FROZEN in MCSCF  input  :',(NFRO(i),i=1,nsym)
+               write(lupri,'(a,8I5)')
+     & ' .FROZEN in NEVPT2 input  :',(NFRNEVPT2(i),i=1,nsym)
+            end if
+            NFRNEVPT2(is) = NFRO(is)
+            indom = indom + 1
+         end if
+      end do
+      if (indom .gt. 0) then
+               write(lupri,'(a,8I5)')
+     & ' .FROZEN in NEVPT2 revised:',(NFRNEVPT2(i),i=1,nsym)
+      end if
 C
 C     in2d(jorb_nevpt2) = jorb_dalton : from nevpt2 to dalton orbital order
 C     nevpt2: loop type, symmetry; dalton: loop symmetry, type
@@ -4953,8 +4974,7 @@ C Manu: for NEVPT2-srDFT
 #include <inftap.h>
 #include <infinp.h>
 C#include <priunit.h>
-      DIMENSION NEEDTP(6)
-c      DATA NEEDTP /0,0,1,0,0,0/
+      DIMENSION NEEDTP(-4:6) ! for NXTH2M
       allocatable h2m(:,:)
       ALLOCATABLE CMO(:)
       ALLOCATABLE H1AO(:)
@@ -4974,9 +4994,7 @@ C
 C
       call dzero(aj,nnorbx)
       call dzero(atwo,n2ashx*n2ashx)
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
       needtp(3)=1
       KFRSAV = 1
       KFREE = KFRSAV
@@ -4984,7 +5002,7 @@ C
       allocate (h2m(norbt,norbt))
 c      write (lupri,*) 'Starting reading the integrals'
 c      call flshfo(lupri)
-  100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
 c      write (lupri,*) 'read',ic,id
 c      call flshfo(lupri)
       IF (IDIST .LT. 0) GO TO 800
@@ -5038,7 +5056,7 @@ c----Reading again the integrals: we need K for Heff
       needtp(2)=1
       KFREE=1
       IDIST = 0
-  200 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  200 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 900
 C     ... if idist .lt. 0 then no more distributions
 C

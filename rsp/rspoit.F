@@ -348,7 +348,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6), N2DIS(8)
+      DIMENSION NEEDMU(-4:6), N2DIS(8)
 
       CALL QENTER('OIT2M')
       KFREE  = KFRSAV
@@ -359,20 +359,13 @@ C     ... occupied-occupied distributions always needed
 C     ... unocc-occ distrib. needed for level 1 and higher
 C     ... all distributions are needed for level 2 and higher
 C
-      NEEDMU(1) = 1
-      NEEDMU(2) = 1
-      NEEDMU(3) = 1
-      IF (JTRLVL .GE. 1) THEN
-         NEEDMU(4) = 1
-         NEEDMU(5) = 1
-      ELSE
-         NEEDMU(4) = 0
-         NEEDMU(5) = 0
-      END IF
+      NEEDMU(-4:6) = 0
       IF (JTRLVL .GE. 2) THEN
-         NEEDMU(6) = 1
+         NEEDMU(1:6) = 1
+      ELSE IF (JTRLVL .GE. 1) THEN
+         NEEDMU(1:5) = 1
       ELSE
-         NEEDMU(6) = 0
+         NEEDMU(1:3) = 1
       END IF
 C
 C     Determine if in core or out of core:
@@ -551,7 +544,7 @@ C
       END IF
       JDIST = 0
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2CD,NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2CD,NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
          JDIST = JDIST + 1
@@ -1566,8 +1559,8 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
-C 100 CALL NXTH2X(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
+C     define NEEDTP(-4:6)
+C 100 CALL NXTH2X(IC,ID,H2CD,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
 C        LW1 = LFREE
