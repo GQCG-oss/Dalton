@@ -1,7 +1,14 @@
+if(NOT DEFINED DEFAULT_Fortran_COMPILER_FLAGS_SET)
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -g -fbacktrace")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-w -O3 -ffast-math -funroll-loops -ftree-vectorize")
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -static"
+            )
+    endif()
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
@@ -20,24 +27,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
-    set(CMAKE_Fortran_FLAGS         "-Wno=155 -fno-second-underscore -DVAR_G95 -fsloppy-char")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -ftrace=full")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
-    if(ENABLE_64BIT_INTEGERS)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -i8"
-            )
-    endif()
-    if(ENABLE_BOUNDS_CHECK)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -Wall -fbounds-check"
-            )
-    endif()
-    if(ENABLE_CODE_COVERAGE)
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS}"
-            )
-    endif()
+    message(FATAL_ERROR "g95 is not supported")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
@@ -45,6 +35,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-g -w -fpp -assume byterecl -traceback")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
+            )
+    endif()
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -52,7 +47,14 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
+            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -ftrapuv"
+            )
+    endif()
+
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        message("--Switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6")
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
 endif()
@@ -100,4 +102,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         PROPERTIES COMPILE_FLAGS
         "-qfixed"
         )
+endif()
+
+save_compiler_flags(Fortran)
 endif()

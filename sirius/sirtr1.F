@@ -361,7 +361,6 @@ C
 C Revisions
 C   2-May-1983 hjaaj.
 C  30-Jan-1985 hjaaj (use UTBO instead of UBO)
-C   3-Nov-1989 hjaaj (use UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C
 C This subroutine is called by TR1SUP to calculate the one-index
 C transformed inactive and active one-electron density matrices
@@ -521,7 +520,6 @@ C  /* Deck tr1fck */
 C
 C 890102 - hjaaj
 C New interface routine for Tr1Fck
-C 891103 - hjaaj : UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C
 C MOTECC-90: The algorithms used in this module, TR1FCK, are
 C            described in Chapter 8 Appendix 8B of MOTECC-90
@@ -700,7 +698,6 @@ C  29-Dec-1984 hjaaj (NCONF=0 option for call by ORBLIN)
 C  15-Jan-1985 hjaaj (moved calc. of UTBO outside TR1FCY)
 C  30 Jan '85 hjaaj  (ver 2; separated conf. and orb. trial vectors)
 C  31-Jan-1985 hjaaj (NCONF=0 option changed to NCSIM.lt.0)
-C 891103 - hjaaj : UBO(NORBT,NORBT) instead of UTBO(N2ORBT)
 C 891106 - hjaaj : only FXCAO if NISHT.gt.0
 C 921201 - hjaaj : Fock matrices from AO integrals
 C                  (partly following Hans Agren 911202)
@@ -746,7 +743,7 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1=1.0D0, D2 = 2.0D0)
 C
 C Used from common blocks:
-C   INFORB : N2ORBX,N2ORBT,N2BASX,NNASHX
+C   INFORB : N2ORBX,N2BASX,NNASHX
 C   INFIND : ?
 C   INFVAR : JWOPSY
 C   INFLIN : IPRLIN
@@ -1120,7 +1117,7 @@ C
       PARAMETER ( DP5 = 0.5D0 )
 C
 C Used from common blocks:
-C   INFORB : N2ORBX,N2ORBT,N2BASX,NNASHX
+C   INFORB : N2ORBX,N2BASX,NNASHX
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(*)
 C
@@ -2258,7 +2255,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6)
+      DIMENSION NEEDMU(-4:6)
 
 #include <orbtypdef.h>
 
@@ -2281,11 +2278,8 @@ C
 C
 C     Set NEEDMU array
 C
-      DO 10 I = 1,6
-         NEEDMU(I) = 0
-   10 CONTINUE
-      NEEDMU(3) = 1
-C     ... active-active distributions always needed
+      NEEDMU(-4:6) = 0
+      NEEDMU(3) = 1 ! ... active-active distributions always needed
       IF (NOSIM .GT. 0) THEN
          IF (NODRC) THEN
 C           ... all distributions involving active orbitals needed
@@ -2334,7 +2328,7 @@ C ****************************************************************
 C     Loop over Mulliken distributions allowed in NEEDMU(6)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
       IF (P6FLAG(36) .OR. IPRLIN .GE. 40) THEN
@@ -2567,7 +2561,7 @@ C
 C     Local variables
 C
       LOGICAL   DOFXQ
-      DIMENSION NEEDDI(6)
+      DIMENSION NEEDDI(-4:6)
 C
       CALL QENTER('TR1H2D')
 C
@@ -2580,18 +2574,13 @@ C
 C
 C     Set NEEDDI array
 C
+      NEEDDI(-4:6) = 0
+      NEEDDI(3) = 1
       IF (DOFCFV) THEN
-C     ..OCCUPIED-OCCUPIED distributions needed
+C     .. all OCCUPIED-OCCUPIED distributions needed
          NEEDDI(1) = 1
          NEEDDI(2) = 1
-      ELSE
-         NEEDDI(1) = 0
-         NEEDDI(2) = 0
       END IF
-      NEEDDI(3) = 1
-      NEEDDI(4) = 0
-      NEEDDI(5) = 0
-      NEEDDI(6) = 0
 C
 C     Allocate work memory
 C
@@ -2629,13 +2618,14 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over DIRAC distributions allowed in NEEDDI(6)
+C     Loop over DIRAC distributions allowed in NEEDDI(-4:6)
 C
       IDIST = 0
       LUINTD = -1
       IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'DRCINT','OLD',' ',
      &                              'UNFORMATTED',IDUMMY,.FALSE.)
-  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI,LUINTD,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI(1),LUINTD,
+     &            WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -2755,3 +2745,4 @@ C
       END IF
       RETURN
       END
+C --- end of sirius/sirtr1.F ---

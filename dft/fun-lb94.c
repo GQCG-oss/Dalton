@@ -64,6 +64,7 @@ static void lb94_fourth(FourthFuncDrv *ds, real factor,
 
 Functional LB94Functional = {"LB94",      /* name */
                              lb94_isgga,  /* gga-corrected */
+   1,
                              lb94_read,   /* set common blocks */
                              NULL,         /* reporter */
                              lb94_energy, 

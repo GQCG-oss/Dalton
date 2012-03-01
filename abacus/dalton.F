@@ -32,6 +32,10 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+      use gen1int_interface
+#endif
 #include <implicit.h>
 #include <dummy.h>
 #include <mtags.h>
@@ -53,7 +57,6 @@ Cef end
       INTEGER omp_get_num_procs
 #endif
       CHARACTER LABEL1*8, STHELP*10
-      PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 
 !     this is to echo input files to the output
       character(100)     :: line
@@ -93,12 +96,10 @@ C
 #endif
 
 C
-C     Read environment variables for LMWORK and BASDIR
+C     Read environment variables for LMWORK, LMWORK_NODES, and BASDIR
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
 C
-      LMWORK = 0
       CALL GETMMBAS(LMWORK,BASDIR,LBASDIR)
-      IF (LMWORK .LE. 0) LMWORK = LWORK_DEF
 C
       NBYTES  = (LMWORK+2) * 8
       XMBYTES = (LMWORK+2) * 8.D0
@@ -392,16 +393,22 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
                END IF
          END IF
 
-Cahs#ifdef THIS_IS_CMAKE_BUILD
-Cahs         write(lupri, '(//a/a/)')
-Cahs     &     'Compilation info',
-Cahs     &     '----------------'
-Cahs         call print_compilation_info()
-Cahs         call print_git_revision_info()
-Cahs#endif
+#ifdef THIS_IS_CMAKE_BUILD
+!radovan: this is not fully portable
+!         don't understand why
+!        write(lupri, '(//a/a/)')
+!    &     'Compilation information',
+!    &     '-----------------------'
+!        call print_binary_info()
+#endif
+
+#if defined (VAR_MPI)
+         IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
+     &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+#endif
 
 #ifdef VAR_OMP
-         write(lupri,'(//A,I5)')
+         write(lupri,'(/A,I5)')
      &   ' * openMP activated, number of threads:',
      &   omp_get_num_procs()
 #endif
@@ -461,7 +468,7 @@ C
          CALL RECVNAMES
 !
 !        call main driver routine
-         call exedrv(work,lmwork,wrkdlm)
+         call dalton_exedrv(work,lmwork,wrkdlm)
 
          CALL FLSHFO(LUPRI)
 
@@ -506,7 +513,7 @@ C     ... I am a "slave" ... (MYNUM .ne. MASTER)
             CALL DALTON_GNRLINP
 
 !           call main driver routine (co-workers do it as well if PARIO == .true.)
-            call exedrv(work,lmwork,wrkdlm)
+            call dalton_exedrv(work,lmwork,wrkdlm)
 
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
@@ -564,7 +571,7 @@ C
       work(2+lmwork) = wrkdlm
 
 !     call main co-workers driver routine
-      call exedrv(work,lmwork,wrkdlm)
+      call dalton_exedrv(work,lmwork,wrkdlm)
 
 !     release dynamically allocated memory
       deallocate(work)
@@ -611,12 +618,15 @@ C...  cleans up for Gen1Int interface
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER*(*) BASDIR
-      CHARACTER*20  WRKMEM
+      CHARACTER*20  WRKMEM, NODE_WRKMEM
 #include <maxorb.h>
 #include <infpar.h>
+
+C     If LMWORK .le. 0 use default value (LWORK_DEF)
+      PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
+
 C
-C     Dynamic memory allocation; check for WRKMEM in environment
-C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96
+C     Dynamic memory allocation; check for WRKMEM and NODE_WRKMEM in environment
 C
       IF (.NOT. SLAVE) THEN
 C     ... only master reads environment, transferred
@@ -624,16 +634,22 @@ C         to slave with MPI_BCAST.
 C         On some MPI implementations it requires extra
 C         options to transfer UNIX environment variables to
 C         slave nodes. /hjaaj June 2005
-        WRKMEM = '                    '
+        WRKMEM = ' '
+        NODE_WRKMEM = ' '
 #if defined (SYS_T3D) || defined (SYS_T90)
         CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
+        CALL PXFGETENV('NODE_WRKMEM',11,NODE_WRKMEM,LWRKMM,IERR)
         CALL PXFGETENV('BASDIR',6,BASDIR,LBASDR,IERR)
 #else
         CALL GETENV('WRKMEM',WRKMEM)
+        CALL GETENV('NODE_WRKMEM',NODE_WRKMEM)
         CALL GETENV('BASDIR',BASDIR)
         !debug! write (0,*) 'GETENV WRKMEM ',WRKMEM
         !debug! write (0,*) 'GETENV BASDIR ',BASDIR
 #endif
+
+!       WRKMEM -> LMWORK
+
         READ(WRKMEM, '(I20)', ERR=10) LMWORK
         IF (LMWORK .GE. 0) GO TO 20
    10     WRITE(LUERR,'(/3A/A,I20)')
@@ -645,7 +661,9 @@ C
 C       Either default memory size,
 C
         IF (LMWORK .LE. 0) THEN
-          WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
+          LMWORK = LWORK_DEF
+          WRITE (LUERR,'(/A,I20)')
+     &      ' DALTON: default work memory size used.',LMWORK
         ELSE
 C
 C       ... or user specified memory size.
@@ -655,14 +673,50 @@ C
      &    ' DALTON: user specified work memory size used,',
      &    '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
         END IF
-      END IF
+
+!       NODE_WRKMEM -> LMWORK_NODES
+
+      IF (NODTOT .GT. 0) THEN ! not relevant if no slaves
+        READ(NODE_WRKMEM, '(I20)', ERR=60) LMWORK_NODES
+        IF (LMWORK_NODES .GE. 0) GO TO 70
+   60     WRITE(LUERR,'(/3A/A,I20)')
+     &    ' DALTON: NODE_WRKMEM conversion error; NODE_WRKMEM = "',
+     &      NODE_WRKMEM,'"',
+     &    ' DALTON: read as LMWORK_NODES = ',LMWORK_NODES
+          LMWORK_NODES = 0
+   70   CONTINUE
+C
+C       Either default memory size,
+C
+        IF (LMWORK_NODES .LE. 0) THEN
+          LMWORK_NODES = LMWORK
+          WRITE (LUERR,'(/A,I20)')
+     &    ' DALTON: master work memory size also used for slaves.',
+     &    LMWORK_NODES
+        ELSE
+C
+C       ... or user specified memory size.
+C
+          LWMEM = MAX(1,LNBLNK(NODE_WRKMEM))
+          WRITE(LUERR,'(/A/3A)')
+     &    ' DALTON: user specified work memory size used,',
+     &    '         environment variable NODE_WRKMEM = "',
+     &    NODE_WRKMEM(1:LWMEM),'"'
+        END IF
+      END IF ! NODTOT .gt. 0
+
+      END IF ! .not. slave
+
       IF (LNBLNK(BASDIR) .LT. 1) BASDIR = './:'
 #if defined(VAR_MPI)
 C
-C     Transfer LMWORK and BASDIR to slaves
+C     Transfer LMWORK_NODES and BASDIR to slaves
 C
-      CALL MPIXBCAST(LMWORK,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(LMWORK_NODES,1,'INTEGE',MASTER)
       CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',MASTER)
+      IF (SLAVE) THEN
+         LMWORK = LMWORK_NODES
+      END IF
 #endif /* defined(VAR_MPI) */
       END
 C  /* Deck GPIO_INI_DALTON */

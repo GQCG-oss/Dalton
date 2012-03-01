@@ -8289,7 +8289,7 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.SOLVAT','.MXSLIT','.ETOLSL','.TTOLSL','.LTOLSL',
      *            '.PTSOLV','.CCMM','.DISCEX','.REPTST','.RELMOM',
-     *            '.SLOTH '  ,'.MXINIT','.SKIPNC','.XXXXXX','.XXXXXX'/
+     *            '.SLOTH '  ,'.MXINIT','.SKIPNC','.HFFLD ','.CCFIXF'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -8322,6 +8322,9 @@ C=====================================================================*
       RELMOM = .FALSE.
       SLOTH = .FALSE.
       SKIPNC = .FALSE.
+      HFFLD   = .FALSE. ! Do polarization based on fixed HF/MM reaction field - in doi:10.1039/C0C901075H denoted model 1
+      FFIRST   = .TRUE.   ! Dumps Ghf to file in first cc iteration
+      CCFIXF   = .FALSE.   ! Do polarization based on fixed CC/MM reaction field neglecting resp terms - ie only static polarization. Model 2 in doi:10.1039/C0C901075H 
 
 *---------------------------------------------------------------------*
 * read input:
@@ -8348,7 +8351,7 @@ C=====================================================================*
 
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) ,IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_SLVINP.')
 C
 C-----------------------
@@ -8470,15 +8473,15 @@ C
 C-----------------------
 C
 14          CONTINUE
+              HFFLD  = .TRUE.
             GO TO 100
 C
 C-----------------------
 C
-C-----------------------
-C
-15           CONTINUE
+15          CONTINUE
+              CCFIXF = .TRUE.
             GO TO 100
-C
+
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -8506,7 +8509,14 @@ C-------------------------------------------------------------------
 C
       CCSLV  = (ICHANG.GT.0)
       IF (CCSLV) RSPIM = .TRUE.
-      IF (CC2) NONHF = .TRUE.
+C 
+      IF (CC2 ) NONHF = .TRUE.
+
+      IF ( (HFFLD) .AND. (CCFIXF) ) THEN
+        WRITE(LUPRI,*) 'You have specified both CCFIXF and HFFLD. 
+     &       Make a choice!'
+        CALL QUIT('Error in PECC input')
+      ENDIF
 C
       RETURN
       END

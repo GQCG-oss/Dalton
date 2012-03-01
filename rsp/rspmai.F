@@ -243,7 +243,7 @@ C  TODO hjaaj:  When NEWTRA and USEDRC, all integrals are
 C           stored and calculated twice, both as Mulliken
 C           and Dirac; but only occ-occ Dirac distributions
 C           are needed in rspoli.F (if .not. NEWTRA then
-C           only occ-occ Dirac dist. are saved on DRCINT).
+C           only occ-occ Dirac dist. are saved on MODRCINT).
 C           hjaaj Nov 2001
          ELSE
             JTRLVL = -4
@@ -649,6 +649,9 @@ C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
      *            '*SPIN-O', '*ESG   ', '*HFC   '/
+
+      logical, external :: fun_is_ready_for_qr
+      logical, external :: fun_is_ready_for_cr
 C
 C     Include block data RSPINF which initializes /INFRSP/
 C
@@ -710,10 +713,39 @@ C
       GO TO 200
  3    CALL LINEAR(WORD)
       GO TO 200
- 4    CALL QUADRA(WORD)
-      GO TO 200
- 5    CALL CUBIC(WORD)
-      GO TO 200
+
+ 4    call quadra(word)
+#ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
+      if (dodft) then
+         if (.not. fun_is_ready_for_qr()) then
+            write(lupri, *) 'ERROR: functional not fully implemented'
+            write(lupri, *) '       or tested for QR'
+            write(lupri, *) 'to disable this stop recompile'
+            write(lupri, *) 'with -DDISABLE_XC_RESPONSE_SANITY_CHECK'
+            write(lupri, *) 'note that GGAKEY functionals are always'
+            write(lupri, *) 'stopped although they could be correct'
+            call quit('functional not fully implemented/tested for QR')
+         end if
+      end if
+#endif
+      go to 200
+
+ 5    call cubic(word)
+#ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
+      if (dodft) then
+         if (.not. fun_is_ready_for_cr()) then
+            write(lupri, *) 'ERROR: functional not fully implemented'
+            write(lupri, *) '       or tested for CR'
+            write(lupri, *) 'to disable this stop recompile'
+            write(lupri, *) 'with -DDISABLE_XC_RESPONSE_SANITY_CHECK'
+            write(lupri, *) 'note that GGAKEY functionals are always'
+            write(lupri, *) 'stopped although they could be correct'
+            call quit('functional not fully implemented/tested for CR')
+         end if
+      end if
+#endif
+      go to 200
+
  6    CALL C6INP(WORD)
       GO TO 200
  7    CALL ESRINP(WORD)

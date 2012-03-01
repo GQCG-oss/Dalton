@@ -318,6 +318,10 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+#ifdef BUILD_GEN1INT
+C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
+      use gen1int_interface
+#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -378,8 +382,11 @@ C
       TIMINT = D0
       FRSDER = MAXDIF .GE. 1
       SECDER = MAXDIF .EQ. 2
-      IF(THRS.EQ.0D0) THRS = 1.D-15 ! to avoid log(0.0d0) below
-      TOLS   = THRS*THRS
+      IF (THRS.LE.0.0D0) THEN
+         TOLS   = 1.0D-30 ! to avoid log(0.0d0) below
+      ELSE
+         TOLS   = THRS*THRS
+      END IF
       TOLOG  = - LOG(TOLS)
       IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
          CALL GPOPEN(LUITMP,' ','NEW',' ','UNFORMATTED',IDUMMY,.FALSE.)
@@ -550,53 +557,54 @@ C
       CALL DZERO(STHMAT,N_STHMA*NNBASX)
       CALL IZERO(ISOFRA, 8)
 
-#ifdef BUILD_GEN1INT
-C...  added by Bin Gao, Feb. 15, 2011
-      if (ECP) then
-C...    computes expectation values
-        if (PROPTY) then
-C...      expectation values from ECP integrals
-          call gen1int_ifc_main("ECP", .false., 0, 0, 0, .true.,
-     &                          .false., .false., NNBASX,
-     &                          WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
-     &                          .true., .false., .false.,
-     &                          WORK(KLAST:KLAST), LUPRI, IPRINT)
-          ENERNA = ENERNA+WORK(KLAST)
-C...      expectation values and writing the integrals of first-order geometric derivatives
-          if (SECDER .OR. DIFDIP .OR. DIFQDP) then
-            call gen1int_ifc_main("ECP", .false., 0, 1, MAXDIF, .true.,
-     &                            .false., .true., NNBASX,
-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
-     &                            .true., .false., .false., GRADNA,
-     &                            LUPRI, IPRINT)
-C...      expectation values of first-order geometric derivatives
-          else
-            call gen1int_ifc_main("ECP", .false., 0, 1, MAXDIF, .true.,
-     &                            .false., .false., NNBASX,
-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
-     &                            .true., .false., .false., GRADNA,
-     &                            LUPRI, IPRINT)
-          end if
-C...      expectation values of second-order geometric derivatives
-          if (SECDER) then
-            call gen1int_ifc_main("ECP", .false., 0, 2, MAXDIF, .true.,
-     &                            .false., .false., NNBASX,
-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
-     &                            .true., .true., .false., HESSNA,
-     &                            LUPRI, IPRINT)
-          end if
-C...    ECP in Gen1Int is not efficient, backs to ECPINT temporarily,
-C...    also needs ECPINT to debug the results from Gen1Int
-C...    ECP integrals, do not write the integrals (FIXME)?
-C...        else
-C...          call gen1int_ifc_main("ECP", .false., 0, 0, 0, .true.,
-C...     &                          .true., .false., NNBASX,
-C...     &                          STHMAT(:,2), 1, NNBASX, 1, DENMAT,
-C...     &                          .false., .false., .false., (/DUMMY/),
-C...     &                          LUPRI, IPRINT)
-        end if
-      end if
-#endif
+C-Bin Gao: disabled temporarily before F77 driver implemented
+C-#ifdef BUILD_GEN1INT
+C-C...  added by Bin Gao, Feb. 15, 2011
+C-      if (ECP) then
+C-C...    computes expectation values
+C-        if (PROPTY) then
+C-C...      expectation values from ECP integrals
+C-          call gen1int_ifc_main("ECP", .false., 0, 0, 0, .true.,
+C-     &                          .false., .false., NNBASX,
+C-     &                          WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                          .true., .false., .false.,
+C-     &                          WORK(KLAST:KLAST), LUPRI, IPRINT)
+C-          ENERNA = ENERNA+WORK(KLAST)
+C-C...      expectation values and writing the integrals of first-order geometric derivatives
+C-          if (SECDER .OR. DIFDIP .OR. DIFQDP) then
+C-            call gen1int_ifc_main("ECP", .false., 0, 1, MAXDIF, .true.,
+C-     &                            .false., .true., NNBASX,
+C-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                            .true., .false., .false., GRADNA,
+C-     &                            LUPRI, IPRINT)
+C-C...      expectation values of first-order geometric derivatives
+C-          else
+C-            call gen1int_ifc_main("ECP", .false., 0, 1, MAXDIF, .true.,
+C-     &                            .false., .false., NNBASX,
+C-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                            .true., .false., .false., GRADNA,
+C-     &                            LUPRI, IPRINT)
+C-          end if
+C-C...      expectation values of second-order geometric derivatives
+C-          if (SECDER) then
+C-            call gen1int_ifc_main("ECP", .false., 0, 2, MAXDIF, .true.,
+C-     &                            .false., .false., NNBASX,
+C-     &                            WORK(KLAST+1:), 1, NNBASX, 1, DENMAT,
+C-     &                            .true., .true., .false., HESSNA,
+C-     &                            LUPRI, IPRINT)
+C-          end if
+C-C...    ECP in Gen1Int is not efficient, backs to ECPINT temporarily,
+C-C...    also needs ECPINT to debug the results from Gen1Int
+C-C...    ECP integrals, do not write the integrals (FIXME)?
+C-C...        else
+C-C...          call gen1int_ifc_main("ECP", .false., 0, 0, 0, .true.,
+C-C...     &                          .true., .false., NNBASX,
+C-C...     &                          STHMAT(:,2), 1, NNBASX, 1, DENMAT,
+C-C...     &                          .false., .false., .false., (/DUMMY/),
+C-C...     &                          LUPRI, IPRINT)
+C-        end if
+C-      end if
+C-#endif
 
       IDENA = 0
       DO 100 ISHELA = 1,KMAX

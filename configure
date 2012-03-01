@@ -1232,7 +1232,7 @@ fi
 rm configure_conftest.c configure_conftest > /dev/null 2>&1
 
 # added by Bin Gao, other plugins may be used in Dalton
-# 1) Gen1Int
+# 1) Gen1Int library
 $ECHO "\nGen1Int is a tool package for computing many different one-electron integrals as well as"
 $ECHO "their high-order magnetic and geometric derivatives using London atomic-orbitals."
 $ECHO "Please see http://sourceforge.net/projects/gen1int for more details and"
@@ -1242,27 +1242,32 @@ $ECHO "\n--> In DALTON release Dalton2011 Gen1Int is only used for ECPs; activat
 $ECHO   "--> makes it possible to calculate many more types of ECPs than in Dalton 2.0"
 get_yes_or_no "\nDo you want to activate Gen1Int package for ECPs in DALTON?" n
 if [ "$answer" = "y" ]; then
-  $ECHO "\n-->Trying to find Gen1Int library libgen1int.a ..."
-  lib_genint=`locate libgen1int.a`
-  # ask user to manually provide the path of libgen1int.a
-  if test ${#lib_genint} -eq 0; then
-    $ECHO "\n-->Gen1int not found on the system. Please specify path of libgen1int.a, or enter to skip."
-    read lib_genint
+  $ECHO "\n-->Trying to find Gen1Int library ..."
+  GEN1INT_PATH=`locate gen1int.F90`
+  # asks user to manually provide the path of Gen1Int library
+  if test ${#GEN1INT_PATH} -eq 0; then
+    $ECHO "\n-->Gen1int not found. Please specify path of Gen1Int library, or enter to skip."
+    read GEN1INT_PATH
+    length=${#GEN1INT_PATH}
+  else
+    # removes /src/gen1int.F90
+    length=${#GEN1INT_PATH}
+    let "length=$length-16"
   fi
-  # checks if there is Gen1Int on the system
-  if test ${#lib_genint} -gt 0; then
-    $ECHO "\n-->Found Gen1Int $lib_genint"
+  # checks if there is Gen1Int library on the system
+  if test $length -gt 0; then
+    GEN1INT_PATH=${GEN1INT_PATH:0:$length}
+    $ECHO "\n-->Found Gen1Int library at $GEN1INT_PATH"
     # everything is OK to install Gen1Int
     $ECHO "\n-->Modifying Makefile.config ..."
     $ECHO   "-->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
-    $ECHO   "-->(2) Adding $lib_genint to LIBS"
+    $ECHO   "-->(2) Specifying the path of Gen1Int library to LIB_GEN1INT_PATH"
     cpp="-DBUILD_GEN1INT $cpp"
-    LIB="$LIB $lib_genint"
   else
     $ECHO "\n-->Gen1Int libary was not found and Gen1Int code will not be activated!"
     $ECHO "\n-->You can still activate Gen1Int manually by modifying Makefile.config as follows:"
     $ECHO   "-- -->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
-    $ECHO   "-- -->(2) Appending libgen1int.a to LIBS"
+    $ECHO   "-- -->(2) Specifying the path of Gen1Int library to LIB_GEN1INT_PATH"
   fi
 fi
 
@@ -1293,6 +1298,7 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 #
+LIB_GEN1INT_PATH = $GEN1INT_PATH
 default : dalton $def
 EOF
 

@@ -154,6 +154,7 @@ static void b97_1_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional B97_1Functional = {
   "B97-1",       /* name */
   b97_1_isgga,   /* gga-corrected */
+   1,
   b97_1_read,
   NULL,
   b97_1_energy,

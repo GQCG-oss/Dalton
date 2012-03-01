@@ -58,6 +58,7 @@ static void lyp_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
 Functional LYPFunctional = {
     "LYP",      /* name */
     lyp_isgga,  /* gga-corrected */
+   3,
     lyp_read,   /* no extra input expected, just set the common block */
     NULL, /* reporter */
     lyp_energy, 

@@ -111,6 +111,7 @@ static void camb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
 Functional Camb3lypFunctional = {
   "Camb3lyp",       /* name */
   camb3lyp_isgga,   /* gga-corrected */
+   3,
   camb3lyp_read,
   camb3lyp_report,
   camb3lyp_energy,

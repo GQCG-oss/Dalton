@@ -94,6 +94,7 @@ static void mpwx_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional mPWxFunctional = {
   "mPWx",       /* name */
   mpwx_isgga,   /* gga-corrected */
+   1,
   mpwx_read,
   NULL,
   mpwx_energy,

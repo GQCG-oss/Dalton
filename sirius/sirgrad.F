@@ -23,6 +23,8 @@
 !
 #include <single.h>
 C
+C FILE: sirius/sirgrad.F
+C
 #ifdef REVISION_LOG
 ===========================================================================
 Revision 1.2  2001/01/17 10:41:33  vebjornb
@@ -792,7 +794,7 @@ C
 C  /* Deck geth2 */
       SUBROUTINE GETH2(DV,PV,H2AC,FQ,ORDIAG,FULODG,WRK,LFRSAV)
 C
-C Fall '83, Hans Joergen Aa. Jensen
+C Fall 1983, Hans Joergen Aa. Jensen
 C Rewritten Oct 89 hjaaj
 C Modified  11-Nov-89 for abacus.dertra, hjaaj
 C
@@ -841,7 +843,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6)
+      DIMENSION NEEDMU(-4:6)
 C
 C     Definition of orbital types
 C
@@ -855,20 +857,15 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
 C     if full orbital diagonal then only secondary-secondary
-C     distributions not needed (but we don't need all distribu-
+C     distributions not needed (but we do not need all distribu-
 C     tions with inactive orbitals -- code -1),
 C     else only active-active distributions needed.
+      NEEDMU(-4:6) = 0
       IF (FULODG) THEN
-         DO 10 I = 1,5
-            NEEDMU(I) = -1
-   10    CONTINUE
+         NEEDMU(1:5) = -1
          NEEDMU(3) = 1
-         NEEDMU(6) = 0
          NKLWOP = NOCCT*NORBT
       ELSE
-         DO 20 I = 1,6
-            NEEDMU(I) = 0
-   20    CONTINUE
          NEEDMU(3) = 1
          NKLWOP = 0
       END IF
@@ -901,10 +898,9 @@ C ****************************************************************
 C     Loop over active-active distributions
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IPRSIR .GT. 65) THEN
-         WRITE (LUPRI,*)
-         WRITE (LUPRI,*)
+         WRITE (LUPRI,'(/A)')
      &      '***GETH2 Next H2CD(a,b) = (ab|cd) distribution'
          WRITE (LUPRI,*) 'IDIST,IC,ID = ',IDIST,IC,ID
          WRITE (LUPRI,*) 'KFREE,LFREE = ',KFREE,LFREE
@@ -3115,8 +3111,10 @@ Clf         CALL DSPTSI(NASHT,DV,WRK(KUDV))
             NORBJ = NORB(JSYM)
             NBASJ = NBAS(JSYM)
             JCMO  = ICMO(JSYM) + 1 + NISH(JSYM)*NBASJ
-            JUDV  = KUDV + IASH(ISYM)*NASHT + IASH(JSYM)
-            CALL DGEMM('N','N',NBASJ,NASHI,NASHJ,1.D0,
+!           JUDV  = KUDV + IASH(ISYM)*NASHT + IASH(JSYM)
+!           CALL DGEMM('N','N',NBASJ,NASHI,NASHJ,1.D0,
+            JUDV  = KUDV + IASH(JSYM)*NASHT + IASH(ISYM)
+            CALL DGEMM('N','T',NBASJ,NASHI,NASHJ,1.D0,
      &                 CMO(JCMO),NBASJ,
      &                 WRK(JUDV),NASHT,0.D0,
      &                 WRK(KDAO1),NBASJ)
@@ -3228,3 +3226,4 @@ C END OF MAKE_DS_LOCALSPIN
 C
       RETURN
       END
+C --- end of sirius/sirgrad.F ---

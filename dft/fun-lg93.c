@@ -110,6 +110,7 @@ static void lg93_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional LG93xFunctional = {
   "LG93x",       /* name */
   lg93_isgga,   /* gga-corrected */
+   1,
   lg93_read,
   NULL,
   lg93_energy,

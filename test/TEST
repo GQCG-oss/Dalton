@@ -34,7 +34,14 @@ if [ -x '/usr/bin/time' ]; then
 else
  TIMING_OF=" "
 fi
-DALTON="`pwd`/../bin/dalton"
+if [ -x '../bin/dalton' ]; then
+  DALTON="`pwd`/../bin/dalton"
+elif [ -x '../build/dalton' ]; then
+  DALTON="`pwd`/../build/dalton"
+else
+  echo 'Fatal error: could not find dalton script'
+  exit 1 
+fi
 
 #########################################################################
 # define all the different test suites

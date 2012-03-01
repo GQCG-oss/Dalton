@@ -158,6 +158,7 @@ static void hcth93_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional HCTH93Functional = {
   "HCTH93",       /* name */
   hcth93_isgga,   /* gga-corrected */
+   1,
   hcth93_read,
   NULL,
   hcth93_energy,

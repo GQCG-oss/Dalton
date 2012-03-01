@@ -1968,7 +1968,7 @@ C
       IF(FNDLAB(GABLAB,LUPROP)) THEN
          READ(LUPROP,ERR=10,END=20) GABM
       ELSE IF (GABLAB(6:8) .EQ. 'XXX') THEN
-         WRITE(LUPRI,'(/A,A8,A)') '*** WARNING  GETGAB: ',
+         WRITE(LUPRI,'(/A,A8,A)') '***  INFO  GETGAB: ',
      &        GABLAB,' not found on AOPROPER. Regenerating.'
          CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
          IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER',

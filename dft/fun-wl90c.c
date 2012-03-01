@@ -97,6 +97,7 @@ static void wl90c_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional WL90cFunctional = {
   "WL90c",       /* name */
   wl90c_isgga,   /* gga-corrected */
+   1,
   wl90c_read,
   NULL,
   wl90c_energy,

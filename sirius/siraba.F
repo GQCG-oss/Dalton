@@ -702,7 +702,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6)
+      DIMENSION NEEDMU(-4:6)
 
       CALL QENTER('TR1L2M')
       KFRSAV = 1
@@ -720,9 +720,7 @@ C     ... only one-index transformation if orbital vectors
 C
 C     Set NEEDMU array
 C
-      DO 10 I = 1,6
-         NEEDMU(I) = 0
-   10 CONTINUE
+      NEEDMU(-4:6) = 0
       NEEDMU(3) = 1
 C     ... active-active distributions always needed
       IF (NODRC) THEN
@@ -753,7 +751,7 @@ C ****************************************************************
 C     Loop over Mulliken distributions allowed in NEEDMU(6)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
       IF (P6FLAG(36) .OR. IPRLIN .GE. 40) THEN

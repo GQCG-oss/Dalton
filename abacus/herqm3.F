@@ -4458,6 +4458,7 @@ C
             QMMM = .TRUE.
             NYQMMM = .TRUE.
             LGFILE = .FALSE. !sne assignment. 
+            LHFFIL = .FALSE.
           GO TO 100
 C
     2     CONTINUE

@@ -77,6 +77,7 @@ static void becke86_fourth(FunFourthFuncDrv *ds, real factor,
 Functional B86xFunctional = {
     "B86x",      /* name */
     becke86_isgga,  /* gga-corrected */
+   1,
     becke86_read,   /* set bloody common blocks */
     NULL,         /* reporter */
     becke86_energy, 

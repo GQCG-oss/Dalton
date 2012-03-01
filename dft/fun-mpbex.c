@@ -96,6 +96,7 @@ static void mpbex_fourth(FunFourthFuncDrv *ds,   real factor,
 Functional mPBExFunctional = {
   "mPBEx",       /* name */
   mpbex_isgga,   /* gga-corrected */
+   1,
   mpbex_read,
   NULL,
   mpbex_energy,

@@ -315,3 +315,15 @@ dft_isgga_(void)
 int
 dft_isgga__(void)
 { return selected_func->is_gga(); }
+
+
+// find out whether functional is tested for qr and higher
+int
+fun_is_ready_for_qr_(void)
+{ return (selected_func->highest_tested_resp_order > 1); }
+
+
+// find out whether functional is tested for cr and higher
+int
+fun_is_ready_for_cr_(void)
+{ return (selected_func->highest_tested_resp_order > 2); }

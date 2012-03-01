@@ -54,6 +54,7 @@ static void example3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp
 Functional Example3Functional = {
   "Example3",         /* name */
   example3_isgga,     /* gga-corrected */
+   1,
   example3_read, 
   NULL,              /* reporter */
   example3_energy, 

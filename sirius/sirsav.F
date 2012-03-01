@@ -23,7 +23,13 @@
 !
 #include <single.h>
 C
-C  Principal author of this file: Hans Jørgen Aa. Jensen
+C  FILE: sirius/sirsav.F
+C
+C  Purpose:
+C
+C     Save MCSCF/CI information on SIRIUS.RST
+C     For some KEYWRDs: update CI vector and rotate orbitals before saving.
+C     See comments in SIRSAV on ICTL for more information.
 C
 C  /* Deck sirsav */
       SUBROUTINE SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,
@@ -695,7 +701,7 @@ C
 C Used from common blocks:
 C   INFINP : ??
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
-C   INFORB : NSYM,N2ORBT,NCMOT,...
+C   INFORB : NSYM,NCMOT,...
 C   INFDIM : NORBMA
 C   INFPRI : P6FLAG()
 C
@@ -870,3 +876,4 @@ C
 C ** End of subroutine MO_ROTATE
 C
       END
+C --- end of sirius/sirsav.F ---

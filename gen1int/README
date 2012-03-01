@@ -20,13 +20,12 @@
    * Makefile
      adds Gen1Int module
    * setup
-     tries to find Gen1Int library libgen1int.a and enables Gen1Int interface
+     enables Gen1Int interface when specifying the path of Gen1Int library
    * CMakeLists.txt
-     tries to find Gen1Int library libgen1int.a, and sets the corresponding compiler 
-     flag (-DBUILD_GEN1INT) and adds the source codes of Gen1Int interface if found
-     Gen1Int library
+     sets the corresponding compiler flag (-DBUILD_GEN1INT) and adds the source codes
+     of Gen1Int library and interface
    * abacus/dalton.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_ifc_clean) to clean up memory etc. for Gen1Int interface
+     calls \fn(gen1int_ifc_clean) to clean up memory etc. used by Gen1Int interface
    * abacus/herdrv.F (please search BUILD_GEN1INT)
      calls \fn(gen1int_ifc_test) to perform test suite of Gen1Int interface
    * abacus/herrdn.F (please search BUILD_GEN1INT)
@@ -36,37 +35,17 @@
      removes the interface of calling old ECP subroutine
    * abacus/her1drv.F (please search BUILD_GEN1INT)
      calls \fn(gen1int_ifc_main) to calculate property integrals
-   * include/cbiher.h
-     adds logical variable \var(TEST_GEN1INT) to perform test suite of Gen1Int interface
 
    and added the following files:
    * gen1int directory
-     source codes of Gen1Int interface, README, installation instruction, Makefile,
-     and test sutie
+     source codes of Gen1Int interface, README, installation instruction, Makefile
 
 3. Important files in Gen1Int interface
 
    * Makefile              : Makefile for Dalton
-   * gen1int_ifc_clean.F90 : cleans up the data used in Gen1Int interface after
-                             all calculations
-   * gen1int_ifc_init.F90  : initializes the data used in Gen1Int interface before
-                             any calculation
-   * gen1int_ifc_test.F90  : test suite of Gen1Int interface
-   * gen1int_ifc_main.F90  : main driver of calling Gen1Int interface from Dalton,
-                             loops over different total geometric derivatives, and
-                             calls gen1int_ifc_prop() to perform calculations
-   * gen1int_ifc_prop.F90  : calculates property integrals and/or expectation values,
-                             loops all necessary AO sub-shells, the contracted integrals
-                             between two AO sub-shells are then calculated through
-                             the subroutines in module gen1int_shell
-   * gen1int_shell.F90     : defines the AO sub-shells used in Gen1Int interface and
-                             corresponding subroutines
-   * gen1int_prop_attr.F90 : returns the number of operators (including different derivatives)
-                             and total geometric derivatives, kind of integral matrices according
-                             to given property name and the information of total geometric
-                             derivatives; this file should be consistent with subroutine
-                             \fn(gen1int_shell_prop) in gen1int_shell.F90!!
-   * err_thrsh.h           : threshold of error for test suite
+   * gen1int_interface.F90 : Gen1Int interface module
+   * gen1int_shell.F90     : AO sub-shell module used in Gen1Int interface
+   * gen1int_matrix.F90    : matrix module used in Gen1Int interface
    * stdout.h              : IO unit of standard output
    * xkind.h               : kind type parameter of real numbers
 
