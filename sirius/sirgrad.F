@@ -3111,8 +3111,10 @@ Clf         CALL DSPTSI(NASHT,DV,WRK(KUDV))
             NORBJ = NORB(JSYM)
             NBASJ = NBAS(JSYM)
             JCMO  = ICMO(JSYM) + 1 + NISH(JSYM)*NBASJ
-            JUDV  = KUDV + IASH(ISYM)*NASHT + IASH(JSYM)
-            CALL DGEMM('N','N',NBASJ,NASHI,NASHJ,1.D0,
+!           JUDV  = KUDV + IASH(ISYM)*NASHT + IASH(JSYM)
+!           CALL DGEMM('N','N',NBASJ,NASHI,NASHJ,1.D0,
+            JUDV  = KUDV + IASH(JSYM)*NASHT + IASH(ISYM)
+            CALL DGEMM('N','T',NBASJ,NASHI,NASHJ,1.D0,
      &                 CMO(JCMO),NBASJ,
      &                 WRK(JUDV),NASHT,0.D0,
      &                 WRK(KDAO1),NBASJ)
@@ -3224,3 +3226,4 @@ C END OF MAKE_DS_LOCALSPIN
 C
       RETURN
       END
+C --- end of sirius/sirgrad.F ---
