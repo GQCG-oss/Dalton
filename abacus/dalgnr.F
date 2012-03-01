@@ -591,8 +591,8 @@ C
       CALL QEXIT('ABACUS')
       RETURN
       END
-C  /* Deck exedrv */
-      SUBROUTINE EXEDRV(WORK, LMWORK, WRKDLM)
+C  /* Deck dalton_exedrv */
+      SUBROUTINE DALTON_EXEDRV(WORK, LMWORK, WRKDLM)
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -735,9 +735,9 @@ C
                NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
-     &         ' Too many atomic centers: MXCENT exceed in EXEDRV for',
+     &         ' Too many atomic centers: MXCENT exceeded for',
      &         ' solvent cavity,',' Current limit:',MXCENT
-                  CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
+                  CALL QUIT('*** ERROR *** MXCENT exceeded')
                END IF
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
@@ -928,9 +928,9 @@ C
                NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
-     &         ' Too many atomic centers: MXCENT exceed in EXEDRV for',
+     &         ' Too many atomic centers: MXCENT exceeded for',
      &         ' solvent cavity,',' Current limit:',MXCENT
-                  CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
+                  CALL QUIT('*** ERROR *** MXCENT exceeded')
                END IF
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
@@ -1014,9 +1014,9 @@ C
             NAMDPX(3*NUCDEP  ) = 'cavity z'
             IF (NUCDEP .GT. MXCENT) THEN
                WRITE (LUPRI,'(//2A,/A,I5)')
-     &          ' Too many atomic centers: MXCENT exceed in EXEDRV for',
+     &          ' Too many atomic centers: MXCENT exceeded for',
      &          ' solvent cavity,',' Current limit:',MXCENT
-               CALL QUIT('*** ERROR *** MXCENT exceeded in EXEDRV')
+               CALL QUIT('*** ERROR *** MXCENT exceeded')
             END IF
             CORD(1,NUCIND) = D0
             CORD(2,NUCIND) = D0
@@ -1207,8 +1207,6 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
-         WRITE(LUPRI,'(/A,I5,A)')
-     &      " * PARALLEL: Using", NODTOT+1, " CPUs."
       END IF
 C
 C ...............

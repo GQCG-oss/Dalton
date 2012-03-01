@@ -2227,7 +2227,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6)
+      DIMENSION NEEDMU(-4:6)
 
 #include <orbtypdef.h>
 
@@ -2250,11 +2250,8 @@ C
 C
 C     Set NEEDMU array
 C
-      DO 10 I = 1,6
-         NEEDMU(I) = 0
-   10 CONTINUE
-      NEEDMU(3) = 1
-C     ... active-active distributions always needed
+      NEEDMU(-4:6) = 0
+      NEEDMU(3) = 1 ! ... active-active distributions always needed
       IF (NOSIM .GT. 0) THEN
          IF (NODRC) THEN
 C           ... all distributions involving active orbitals needed
@@ -2303,7 +2300,7 @@ C ****************************************************************
 C     Loop over Mulliken distributions allowed in NEEDMU(6)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
       IF (P6FLAG(36) .OR. IPRLIN .GE. 40) THEN
@@ -2536,7 +2533,7 @@ C
 C     Local variables
 C
       LOGICAL   DOFXQ
-      DIMENSION NEEDDI(6)
+      DIMENSION NEEDDI(-4:6)
 C
       CALL QENTER('TR1H2D')
 C
@@ -2549,18 +2546,13 @@ C
 C
 C     Set NEEDDI array
 C
+      NEEDDI(-4:6) = 0
+      NEEDDI(3) = 1
       IF (DOFCFV) THEN
-C     ..OCCUPIED-OCCUPIED distributions needed
+C     .. all OCCUPIED-OCCUPIED distributions needed
          NEEDDI(1) = 1
          NEEDDI(2) = 1
-      ELSE
-         NEEDDI(1) = 0
-         NEEDDI(2) = 0
       END IF
-      NEEDDI(3) = 1
-      NEEDDI(4) = 0
-      NEEDDI(5) = 0
-      NEEDDI(6) = 0
 C
 C     Allocate work memory
 C
@@ -2598,13 +2590,14 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over DIRAC distributions allowed in NEEDDI(6)
+C     Loop over DIRAC distributions allowed in NEEDDI(-4:6)
 C
       IDIST = 0
       LUINTD = -1
-      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'MODRCINT','OLD',' ',
+      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'DRCINT','OLD',' ',
      &                              'UNFORMATTED',IDUMMY,.FALSE.)
-  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI,LUINTD,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI(1),LUINTD,
+     &            WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -2724,3 +2717,4 @@ C
       END IF
       RETURN
       END
+C --- end of sirius/sirtr1.F ---

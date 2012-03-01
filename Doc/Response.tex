@@ -111,14 +111,14 @@ Turns off direct one-index transformation \cite{ovhahjajjcc15}.
 In this way all one-index transformed integrals are stored on disk.
 
 \item{\Key{NOITRA}}
-No integral transformation. Normally the two-electron integrals are
-transformed in the beginning of a response calculation. In some cases
-this is not desirable, {\it e.g.\/}, if the response part is only used for
+No two-electron integral transformation. Normally the two-electron integrals are
+transformed to MO basis in the beginning of a response calculation. In a few cases
+this is not necessary, {\it e.g.\/}, if the response part is only used for
 calculating average values of an operator, or if the transformed two-electron
-integrals already exist from a previous response calculation.
+integrals have been saved from a previous response calculation (not standard).
 
 \item{\Key{OPTORB}}
-Orbital trial vectors are calculated with optimal orbital
+Orbital trial vectors are calculated with the optimal orbital
 trial\index{optimal orbital trial vector} vector
 algorithm \cite{tuhjahjajpjjcp84}.
 

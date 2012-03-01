@@ -235,9 +235,9 @@ C     EXEINF: FTRCTL
 C     INFORB: NORBT,NRHF,?
 C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
-C     INFINP: FLAG(25)
+C     INFINP: FLAG(25),DIRFCK
 C     INFIND: ISX, ISMO
-C     INFTRA: NEWTRA, USEDRC, AO2INTFILE_LABEL
+C     INFTRA: NEWTRA, AO2INTFILE_LABEL
 C
 #include <maxorb.h>
 #include <maxash.h>
@@ -341,27 +341,25 @@ cmjp If response calculation then make space for the correlation coefficients.
       IF (FLAG(25) .AND. .NOT.SRMP2_SRINTS) THEN
          CALL MEMGET('REAL',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
          CALL DZERO(WRK(KKAPPA),NPHTOT(1))
-         JTRLVL = -10
-         USEDRC = .TRUE.
       ELSE
          CALL MEMGET('REAL',KKAPPA,0,WRK,KFREE,LFREE)
-         IF (.NOT.NEWTRA .AND. (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) ) THEN
-C           2. order integral transformation (ir/js)
-C           (but not for NEWTRA which uses Dirac format and that is
-C            not implemented in sirmp2.F module)
-            JTRLVL = 4
-         ELSE
-C           3. order integral transformation (ir/st)
-C           (needed for occ-virt block of density matrix)
-            JTRLVL = 5
-         END IF
-      ENDIF
+      END IF
+
+      IF (.NOT.NEWTRA .AND. (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) ) THEN
+C        2. order integral transformation (ir/js)
+C        (but not for NEWTRA which uses Dirac format and that is
+C         not implemented in sirmp2.F module)
+         JTRLVL = 4
+      ELSE
+C        3. order integral transformation (ir/st)
+C        (needed for occ-virt block of density matrix)
+         JTRLVL = 5
+      END IF
 C
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C     JTRLVL =  4 : code for 2. order transformation for MP2 with MP2_NO_OCCVIR.
 C     JTRLVL =  5 : code for 3. order transformation for MP2 density matrix.
-C     JTRLVL = 10 : code for full transformation if SOPPA response follows.
 C     JTRLVL negative: delete AO integral file after transformation.
 C
       CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KFREE),LFREE)
@@ -1596,13 +1594,15 @@ C
 C     
       LOGICAL CHOLE,DHOLE, L_MP2_TDA
 
-      DIMENSION NEEDTP(6)
-      DATA NEEDTP /0,1,1,1,1,0/
-C     ... only particle-hole distributions needed
-C         assumed: NRHF(isym) .ge. NISH(isym)
-C              and NVIR(isym) .le. NSSH(isym)
+      DIMENSION NEEDTP(-4:6)
 C
       CALL QENTER('MP2MUL')
+
+      NEEDTP(-4:6) = 0 ! negative: frozen orbital in distribution
+      NEEDTP(2:5)  = 1 !  ... only particle-hole distributions needed
+                       !      assumed: NRHF(isym) .ge. NISH(isym)
+                       !           and NVIR(isym) .le. NSSH(isym)
+
       KFREE = KFRSAV
       LFREE = LFRSAV
       IF (MP2FRO) THEN
@@ -1629,7 +1629,7 @@ C ****************************************************************
 C     Loop over Mulliken distributions allowed in NEEDTP(6)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1792,13 +1792,14 @@ C
 C
       LOGICAL AHOLE, BHOLE, CHOLE, DHOLE
 
-      DIMENSION NEEDTP(6)
-      DATA NEEDTP /0,1,1,1,1,0/
-C     ... only particle-hole distributions needed
-C         assumed: NRHF(isym) .ge. NISH(isym)
-C              and NVIR(isym) .le. NSSH(isym)
+      DIMENSION NEEDTP(-4:6)
 C
       CALL QENTER('MP2PHD')
+
+      NEEDTP(-4:6) = 0 ! negative: frozen orbital in distribution
+      NEEDTP(2:5)  = 1 !  ... only particle-hole distributions needed
+                       !      assumed: NRHF(isym) .ge. NISH(isym)
+                       !           and NVIR(isym) .le. NSSH(isym)
 C
 C     >>> zero H2PHD
 C
@@ -1812,7 +1813,7 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2CD,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C

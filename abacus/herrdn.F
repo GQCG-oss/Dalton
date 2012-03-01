@@ -334,8 +334,8 @@ C     ... make sure variables are not reinitialized, maybe after reading input
 C
 C     ccom.h:
 C
-      THRS = 1.0D-15
-      SPHNRM = .TRUE. ! basis functions normalized, also for d, f, ...
+      THRS   = 1.0D-12 ! default integral accuracy
+      SPHNRM = .TRUE.  ! basis functions normalized, also for d, f, ...
 C
 C     cbirea.h:
 C
@@ -810,8 +810,10 @@ C            user has not specified THRS
             WRITE (LUPRI,'(1P,2(/2X,A,D12.2))')
      &'INFO from READIN: Threshold for discarding integrals was',THRS,
      &'INFO from READIN: Threshold is reset to minimum value   ',THRMIN
+            THRS = THRMIN
+         ELSE
+            THRS = 1.D-12 ! new default value Feb. 2012
          END IF
-         THRS = THRMIN
 C        note that her2drv.F has explicit THRESH = MAX(THRS,1.0D-15)
 C        - hjaaj, aug99
       ENDIF
@@ -2485,7 +2487,7 @@ C     Output for multiple basis sets (WK/UniKA/04-11-2002).
             ENDIF
          END IF
          WRITE (LUPRI,'(/A,1P,D10.2)')
-     &      '  Threshold for integrals:',THRS
+     &      '  Threshold for neglecting AO integrals:',THRS
       END IF
 C
 ! hjaaj: info not availiable here any more - don't really understand

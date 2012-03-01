@@ -54,7 +54,6 @@ cat > rsp_soppafcnosymm.dal <<'%EOF%'
 .MP2
 **RESPONSE
 .S0MIX
-.NOITRA
 .TRPFLG
 .SOPPA
 *LINEAR

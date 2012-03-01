@@ -261,7 +261,7 @@ C
          IF (TRPLET) THEN
             CALL HSOORB(.TRUE.,1,DUMMY1,
      *         WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB),
-     *         UDV    ,GP,DUMMY2,TRPDEN)
+     *         UDV    ,GP,TRPDEN)
          ELSE
 C
 C Quick fix for high spin matrices which do not fit neatly into HSOORB
@@ -270,16 +270,16 @@ C
 C
             CALL HSOORB(.TRUE.,1,DUMMY1,
      *         WRK(KFC),WRK(KFV),WRK(KQA),WRK(KQB),
-     *         WRK(KD),GP,DUMMY2,TRPDEN)
+     *         WRK(KD),GP,TRPDEN)
          END IF
 C        CALL HSOORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-C    *                  EVECS,ZYMAT,TRPDEN)
+C    *                  EVECS,TRPDEN)
 C
 C
-         IF (IPRHSO.GT.2) CALL TIMER('RSPORB',ORBSTA,ORBTIM)
+         IF (IPRHSO.GT.2) CALL TIMER('HSOORB',ORBSTA,ORBTIM)
       END IF
 C
-C  Compensate for the sign in RSPORB
+C  Compensate for the sign in HSOORB
 C
       CALL DSCAL(KZWOPT,DM1,GP(1+KZCONF),1)
       CALL DSCAL(KZWOPT,DM1,GP(1+KZCONF+KZVAR),1)
@@ -1737,7 +1737,7 @@ C
       END
 C  /* Deck hsoorb */
       SUBROUTINE HSOORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,
-     *                  EVECS,ZYMAT,TRPDEN)
+     *                  EVECS,TRPDEN)
 C
 C WRITTEN 14-FEB 1986
 C adapted 5-Apr 2001
@@ -1810,7 +1810,6 @@ C
       DIMENSION FC(*),FCX(NORBT,NORBT,*),FVX(NORBT,NORBT,*)
       DIMENSION QAX(NORBT,NASHDI,*),QBX(NORBT,NASHDI,*)
       DIMENSION UDV(NASHDI,NASHDI,*), EVECS(KZYVAR,*)
-      DIMENSION ZYMAT(NORBT,NORBT,*)
 C
 C  INFDIM : NASHDI
 C
@@ -2029,11 +2028,11 @@ C
  3000 CONTINUE
 C
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,*)' LINEAR TRANSFORMATION WITH  E(2)'
+         WRITE(LUPRI,*)' HSOORB: LINEAR TRANSFORMATION WITH  E(2)'
          CALL OUTPUT(EVECS,1,KZYVAR,1,NSIM,KZYVAR,NSIM,1,LUPRI)
       END IF
 C
-C END OF RSPORB
+C END OF HSOORB
 C
       RETURN
       END

@@ -33,7 +33,7 @@ Revision 1.3  2000/05/24 18:48:53  hjj
 new GETREF calls with NDREF (fixing triplet with CSF)
 change dummy 2 to * in DIMENSION
 polish in output
-do not save S(2) CI diagonal on LURSP4 ( all 1's)
+do not save S(2) CI diagonal on LURSP4 ( all ones)
 
 revision 1.2 2000/04/14 14:33:01 hjj
 1) partial bug fix for triplet and CSFs (more need to be done)
@@ -656,7 +656,7 @@ C    *              XINDX,CMO,WRK,LWRK)
 
       CALL FLSHFO(LUPRI)
 C
-C FLAG(16) MEANS SOLVENT CALCULATION
+C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
      *    (peqm .and. (lpol(0).or.lpol(1)) .and..not. pe_gspol)) THEN
@@ -669,7 +669,7 @@ C
       RETURN
       END
 C  /* Deck rsporb */
-      SUBROUTINE RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV, EVECS,ZYMAT)
+      SUBROUTINE RSPORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV, EVECS)
 C
 C WRITTEN 14-FEB 1986
 C
@@ -689,7 +689,7 @@ C
 C  2)CREATE LINEAR TRANSFORMED VECTOR S[2]*N FOR N EQUAL TO EITHER A
 C    ORBITAL OR A CONFIGURATION TRIAL VECTOR
 C
-C    ONEIND = .TRUE. FOR A ORBITAL TRIAL VECTOR
+C    ONEIND = .TRUE. FOR AN ORBITAL TRIAL VECTOR
 C
 C                ******************************
 C
@@ -741,7 +741,6 @@ C
       DIMENSION FC(*),FCX(NORBT,NORBT,*),FVX(NORBT,NORBT,*)
       DIMENSION QAX(NORBT,NASHDI,*),QBX(NORBT,NASHDI,*)
       DIMENSION UDV(NASHDI,NASHDI,*), EVECS(KZYVAR,*)
-      DIMENSION ZYMAT(NORBT,NORBT,*)
 C
 C  INFINP : DOMCSRDFT
 C  INFDIM : NASHDI
@@ -1614,7 +1613,6 @@ C
  5020    FORMAT(/' *** MICROITERATIONS STOPPED DUE TO MAX',
      *           ' ITERATIONS REACHED.')
          WRITE (LUPRI,5031) KEXCNV
- 5031    FORMAT(/' *** REQUESTED',I5,' SOLUTION VECTORS NOT CONVERGED')
       ELSE IF (KZYRED + 2*NTEST .GT. MAXRM) THEN
 C
 C        MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED
@@ -1630,6 +1628,8 @@ C        MICROITERATIONS NOT CONVERGED
 C
          KCONV=0
       ENDIF
+ 5031 FORMAT(/' *** WARNING : REQUESTED',I5,
+     &        ' SOLUTION VECTORS NOT CONVERGED')
       IF (LMAXIT .OR. KCONV .LT. 0 .OR. IPRRSP .GE. 11
      &    .OR. (IPRRSP .GE. 2 .AND. KCONV .EQ. 1) ) THEN
          WRITE (LUPRI,96) THCRSP,KZYRED,(I,TEST(I),I=1,KEXCNV)
@@ -1695,8 +1695,8 @@ C
          ELSE
 C           singularities
             WRITE(LUPRI,1010)I, ALFAR(I),ALFAI(I),BETA(I)
- 1010       FORMAT(/' *** SINGULARITY IN REDUCED MCRSP :',
-     +             /'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
+ 1010       FORMAT(/' *** WARNING SINGULARITY IN REDUCED MCRSP,',
+     +             /' I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
          END IF
 C        IF(ABS(ALFAR(I)).GT.ZEROT) THEN
 C    +   .OR.(ABS(ALFAR(I)).LE.ZEROT.AND.ABS(ALFAI(I)).GT.ZCRIT)) THEN
@@ -1705,8 +1705,8 @@ C        RATIO= ABS(ALFAI(I)/ALFAR(I))
 C        IF(RATIO.GT.ZCRIT) WRITE(LUPRI,1020) ALFAR(I),ALFAI(I)
          IF(ABS(ALFAI(I)).GT.D0) THEN
             WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
- 1020       FORMAT(/' *** COMPLEX EIGENVALUE IN REDUCED MCRSP :',
-     +          /'     REAL AND IMAGINARY PART :   ',I6,1P,2D13.6)
+ 1020       FORMAT(/' *** WARNING COMPLEX EIGENVALUE IN REDUCED MCRSP,',
+     +          ' REAL AND IMAGINARY PART :',I6,1P,2D13.6)
 C
 C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS
@@ -1716,7 +1716,7 @@ C
          END IF
   10  CONTINUE
       IF (IPRRSP .GT. 15) THEN
-         WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
+         WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2) :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
       END IF
 C
@@ -3301,30 +3301,14 @@ C
          END IF
       END IF
 C
-C COUNT NUMBER OF CONFIGURATION START VECTORS
+C     Can we use PHP vectors for CI start vectors ?
 C
-      NCTOT = 0
-      IRX   = 0
-      ISIMX = 1
-      DO  50 ISIM = 1,KEXSTV
-         IF (ISTART(ISIMX) .LE. KZCONF) THEN
-            NCTOT = NCTOT + 1
-         ENDIF
-         ISIMX = ISIMX + IEQUAL(ISIM)
- 50   CONTINUE
       IF ( KEXSTV.GT.NPCVAR ) THEN
          DOEVEC = .FALSE.
       ELSE
          DOEVEC = .TRUE.
       END IF
-      IF (IPRRSP.GT.3) THEN
-         WRITE(LUPRI,*)NCTOT,' START configuration VECTORS USING'
-         IF (DOEVEC) THEN
-            WRITE(LUPRI,*)' LOWEST EIGENVALUES OF PHP'
-         ELSE
-            WRITE(LUPRI,*)' LOWEST DIAGONAL HESSIAN ELEMENTS'
-         END IF
-      END IF
+
       NOVLMX = 0
       CALL REWSPL(LURSP3)
       CALL REWSPL(LURSP5)
@@ -3389,7 +3373,7 @@ Chj         ... PHP pointer in KPNTR is also based on KZCONF
             ENDIF
             ISIMX = ISIMX + IEQUAL(ISIM)
  80      CONTINUE
-         IF (IPRRSP.GT.20) THEN
+         IF (IPRRSP.GT.6) THEN
             WRITE(LUPRI,*)' REFERENCE VECTOR HAS LARGEST OVERLAP WITH'
             IF (DOEVEC) THEN
                WRITE(LUPRI,*)'EIGENVECTOR NO',NOVLMX,' OF PHP'
@@ -3411,6 +3395,10 @@ Chj      ... record 1 on LURSP5 should never be read when KOFFTY.eq.1 !
       ISIMX = 1
       NCNUM = 0
       NCCOUN = 0
+
+      NCTOT = 0
+      NOTOT = 0
+
       DO 150 ISIM = 1,KEXSTV,NSIM
          NBX    = MIN(NSIM,(KEXSTV+1-ISIM))
          NLOAD  = NLOAD + 1
@@ -3527,6 +3515,8 @@ C        CALL RSPORT(BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
          END IF
          NTSIM = NTSIM + NLSIM
          ISIMX = ISIMX + IRX
+         NCTOT = NCTOT + NCSIM
+         NOTOT = NOTOT + NOSIM
  150  CONTINUE
       KEXSTV = NTSIM - KOFFTY
       IF (NLOAD.EQ.1) THEN
@@ -3541,6 +3531,16 @@ C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK(1),1)
       ELSE
          BINMEM = .FALSE.
       ENDIF
+      IF (IPRRSP.GT.3) THEN
+         IF (DOEVEC) THEN
+            WRITE(LUPRI,*)NCTOT,' START configuration VECTORS USING'//
+     &         ' LOWEST EIGENVALUES OF PHP'
+         ELSE
+            WRITE(LUPRI,*)NCTOT,' START configuration VECTORS USING'//
+     &          ' LOWEST DIAGONAL HESSIAN ELEMENTS'
+         END IF
+         WRITE(LUPRI,*)NOTOT,' START orbital VECTORS'
+      END IF
 C
 C     END OF PPST
 C
