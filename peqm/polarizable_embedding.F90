@@ -2385,7 +2385,14 @@ function nrm2(x)
     real(dp) :: nrm2
     real(dp), dimension(:), intent(in) :: x
 
-    nrm2 = dnrm2(size(x), x, 1)
+    integer :: n
+    integer :: incx
+
+    incx = 1
+
+    n = size(x)
+
+    nrm2 = dnrm2(n, x, incx)
 
 end function nrm2
 
@@ -2398,7 +2405,15 @@ function dot(x,y)
     real(dp) :: dot
     real(dp), dimension(:), intent(in) :: x, y
 
-    dot = ddot(size(x), x, 1, y, 1)
+    integer :: n
+    integer :: incx, incy
+
+    incx = 1
+    incy = 1
+
+    n = size(x)
+
+    dot = ddot(n, x, incx, y, incy)
 
 end function dot
 
@@ -2408,13 +2423,26 @@ subroutine axpy(x, y, a)
 
     external :: daxpy
 
-    real(dp), optional :: a
+    real(dp), intent(in), optional :: a
     real(dp), dimension(:), intent(in) :: x
     real(dp), dimension(:), intent(inout) :: y
 
-    if (.not. present(a)) a = 1.0d0
+    real(dp) :: o_a
+    integer :: n
+    integer :: incx, incy
 
-    call daxpy(size(x), a, x, 1, y, 1)
+    if (present(a)) then
+        o_a = a
+    else
+        o_a = 1.0d0
+    end if
+
+    incx = 1
+    incy = 1
+
+    n = size(x)
+
+    call daxpy(n, o_a, x, incx, y, incy)
 
 end subroutine axpy
 
