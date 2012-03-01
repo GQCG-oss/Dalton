@@ -1795,19 +1795,23 @@ subroutine response_matrix(B, invert, wrt2file)
     real(dp), dimension(:), intent(out) :: B
     logical, intent(in), optional :: invert, wrt2file
 
-    logical :: exclude, lexist
+    logical :: exclude, lexist, inv, wrt
     integer :: info, lutemp
     integer :: i, j, k, l, m, n
     real(dp) :: R, R3, R5, T
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: alphainv
 
-    if (.not. present(invert)) then
-        invert = .true.
+    if (present(invert)) then
+        inv = invert
+    else
+        inv = .true.
     end if
 
-    if (.not. present(wrt2file)) then
-        wrt2file = .true.
+    if (present(wrt2file)) then
+        wrt = wrt2file
+    else
+        wrt = .true.
     end if
 
     B = 0.0d0
@@ -1892,10 +1896,10 @@ subroutine response_matrix(B, invert, wrt2file)
                 end do
             end do
         end do
-        if (invert) then
+        if (inv) then
             call invert_packed_matrix(B, 's')
         end if
-        if (wrt2file) then
+        if (wrt) then
             call openfile('pe_response_matrix.bin', lutemp, 'new', 'unformatted')
             rewind(lutemp)
             write(lutemp) B
