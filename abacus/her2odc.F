@@ -575,7 +575,9 @@ C
       IF (ITYPE .EQ. 12) THEN
          IELCTR = 1
          SRFMAX = D0
-         THRSH  = THRESH
+         THRSH  = 0.01D0*THRESH
+         ! some tests indicate that a factor 1/100 is needed in the ODC test
+         ! to get integrals of accuracy THRESH
       ELSE
          IELCTR = 2
 C
@@ -583,7 +585,7 @@ C     This adjustment of screening thresholds seems to lead to stalling and
 C     odd convergence behaviour. Disabled. kr-230106
 C     hjaaj-071017: reenabled; I think the problem was SRFMAX was not saved
 C
-         THRSH  = THRESH/OLDMAX
+         THRSH  = 0.01D0*THRESH/OLDMAX
 Chj      THRSH  = THRESH
       END IF
 Chj aug99: find max relevant isymop

@@ -664,44 +664,57 @@ C
         CALL WRTMAT(B,NBROW,NBCOL,NBROW,NBCOL,0)
       END IF
 C
-      CALL SETVEC(C,0.0D0,NCROW*NCCOL)
+!     CALL SETVEC(C,0.0D0,NCROW*NCCOL)
 C
+C     input
+      LDA = MAX(1,NAROW)
+      LDB = MAX(1,NBROW)
+C     output
+      LDC = MAX(1,NCROW)
+      FACTORC = 0.0D0
+      FACTORAB = 1.0D0
       IF( ITRNSP .NE. 0 ) GOTO 001
-        DO 50 J = 1,NCCOL
-          DO 40 K = 1,NBROW
-            BKJ = B(K,J)
-            DO 30 I = 1, NCROW
-              C(I,J) = C(I,J) + A(I,K)*BKJ
-  30        CONTINUE
-  40      CONTINUE
-  50    CONTINUE
+        CALL DGEMM('N','N',NCROW,NCCOL,NBROW,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+!       DO 50 J = 1,NCCOL
+!         DO 40 K = 1,NBROW
+!           BKJ = B(K,J)
+!           DO 30 I = 1, NCROW
+!             C(I,J) = C(I,J) + A(I,K)*BKJ
+! 30        CONTINUE
+! 40      CONTINUE
+! 50    CONTINUE
 C
 C
   001 CONTINUE
 C
       IF ( ITRNSP .NE. 1 ) GOTO 101
 C... C = A(T) * B
-         DO 150 J = 1, NCCOL
-           DO 140 K = 1, NBROW
-             BKJ = B(K,J)
-             DO 130 I = 1, NCROW
-               C(I,J) = C(I,J) + A(K,I)*BKJ
-  130        CONTINUE
-  140      CONTINUE
-  150    CONTINUE
+        CALL DGEMM('T','N',NCROW,NCCOL,NBROW,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+!        DO 150 J = 1, NCCOL
+!          DO 140 K = 1, NBROW
+!            BKJ = B(K,J)
+!            DO 130 I = 1, NCROW
+!              C(I,J) = C(I,J) + A(K,I)*BKJ
+! 130        CONTINUE
+! 140      CONTINUE
+! 150    CONTINUE
 C
   101 CONTINUE
 C
       IF ( ITRNSP .NE. 2 ) GOTO 201
 C... C = A*B(T)
-        DO 250 J = 1,NCCOL
-          DO 240 K = 1,NBCOL
-            BJK = B(J,K)
-            DO 230 I = 1, NCROW
-              C(I,J) = C(I,J) + A(I,K)*BJK
- 230        CONTINUE
- 240      CONTINUE
- 250    CONTINUE
+        CALL DGEMM('N','T',NCROW,NCCOL,NBCOL,FACTORAB,A,LDA,
+     &                 B,LDB,FACTORC,C,LDC)
+!       DO 250 J = 1,NCCOL
+!         DO 240 K = 1,NBCOL
+!           BJK = B(J,K)
+!           DO 230 I = 1, NCROW
+!             C(I,J) = C(I,J) + A(I,K)*BJK
+!230        CONTINUE
+!240      CONTINUE
+!250    CONTINUE
 C
 C
   201 CONTINUE

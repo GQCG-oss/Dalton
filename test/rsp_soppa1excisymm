@@ -50,7 +50,6 @@ cat > rsp_soppa1excisymm.dal <<'%EOF%'
 .HF
 .MP2
 **RESPONSE
-.NOITRA
 .SOPPA
 *LINEAR
 .SINGLE RESIDUE

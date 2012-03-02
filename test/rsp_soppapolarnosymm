@@ -52,7 +52,6 @@ cat > rsp_soppapolarnosymm.dal <<'%EOF%'
 .MP2
 **RESPONSE
 .S0MIX
-.NOITRA
 .SOPPA
 *LINEAR
 .DIPLEN

@@ -60,40 +60,39 @@ opt_noarch=0
 opt_valgrind=0
 
 
-
-
 #
 # Define usage message
 #
 usage (){
-	  echo
-	  echo "Usage: $0 [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
-	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory]"
-        echo  " dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
         echo
-	  echo 'Options:'
-	  echo ' -b dir    prepend dir to directory list for basis set searches.'
-	  echo '           Current directory and dalton basis library are included automatically.'
-	  echo ' -d        delete job scratch directory before calculation starts'
-	  echo ' -D        do not delete job scratch directory after calculation stops'
-	  echo ' -nobackup do not backup files, simply overwrite outputs'
-	  echo ' -noarch   do not create tar.gz archive'
-	  echo ' -valgrind run with valgrind'
-	  echo ' -ext log  change output extension from ".out" to ".log"'
-	  echo ' -get "file1 file2"  get files back from TMPDIR after calculation stops'
-	  echo ' -put "file1 file2"  put files to TMPDIR before calculation starts'
-	  echo ' -o file   redirect output from program to this file in WRKDIR'
-        echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
-	  echo ' -M mb     set scratch memory to mb Megabytes'
-	  echo ' -m mem    set scratch memory to mem double precision words'
-	  echo ' -N num    use MPI version with num nodes'
-	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-        echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
-        echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
-        echo ' -mmsv file copy relay matrix from $TMPDIR to $WRKDIR/$file'
-        echo ' -mmcp file copy relay matrix from $WRKDIR/$file to $TMPDIR'
-	  echo
-	 }
+        echo "Usage: $0 [-b dir] [-d] [-D] [-ext log | -o file] [-f dalmol] [-mb mb] [-nb mb]"
+        echo  " [-N num] [-t dir] dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
+        echo
+        echo 'Options:'
+        echo ' -b dir     : prepend dir to directory list for basis set searches'
+        echo '              (current directory and dalton basis library are included automatically).'
+        echo ' -d         : delete job scratch directory before calculation starts'
+        echo ' -D         : do not delete job scratch directory after calculation stops'
+        echo ' -o file    : redirect output from program to this file in WRKDIR'
+        echo ' -ext log   : change output extension from ".out" to ".log"'
+        echo ' -nobackup  : do not backup files, simply overwrite outputs'
+        echo ' -mb mb     : set dalton max usable work memory to mb Megabytes'
+        echo ' -mw mem    : set dalton max usable work memory to mem double precision words'
+        echo ' -nb mb     : set node max usable work memory to mb Megabytes'
+        echo ' -nw mem    : set node max usable work memory to mem double precision words'
+        echo ' -N num     : use MPI version with num nodes'
+        echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
+        echo ' -t dir     : change TMPDIR to dir. Default: ' $TMPDIR
+        echo ' -w dir     : change WRKDIR to dir. Default: ' $WRKDIR
+        echo ' -noarch    : do not create tar.gz archive'
+        echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into TMPDIR before calculation starts'
+        echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
+        echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
+        echo ' -mmsv file : copy MM relay matrix from TMPDIR to WRKDIR/file'
+        echo ' -mmcp file : copy MM relay matrix from WRKDIR/file to TMPDIR'
+        echo ' -valgrind  : run with valgrind'
+        echo
+         }
 #
 # Define backup function
 #
@@ -134,8 +133,10 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -lam* ) optlam=$2; shift;;
-      -m ) WRKMEM=$2; export WRKMEM; shift;;
-      -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
+      -m|-mw ) WRKMEM=$2; export WRKMEM; shift;;
+      -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
+         -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; shift;;
+         -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) optt=1; TMPDIR=$2; shift;;
@@ -291,14 +292,14 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
          echo "====================="
          echo "The '-f' option is active, now unpacking $optf.tar.gz into:"
-	   tar -z -x -v -f $WRKDIR/$optf.tar.gz
+         tar -z -x -v -f $WRKDIR/$optf.tar.gz
          echo "====================="
       elif [ -s $WRKDIR/$optf -a -r $WRKDIR/$optf ] ; then
 #     hjaaj: at least GNU tar finds out autmatically if tar, tar.gz or
 #     tar.bzip2 -- hopefully your tar program also does that!
          echo "====================="
          echo "The '-f' option is active, now unpacking $optf into:"
-	   tar -x -v -f $WRKDIR/$optf
+         tar -x -v -f $WRKDIR/$optf
          echo "====================="
       else
          echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
@@ -316,24 +317,25 @@ fi
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -s $DALMPI -a -x $DALMPI ]; then
-	 if [ -n "$optlam" ] ; then
-	    lamboot -v  $WRKDIR/$optlam
-	    $MPIRUN -wd $TMPDIR -np $optn $DALMPI
+         cp $DALMPI ./dalton_mpi_copy.x
+         if [ -n "$optlam" ] ; then
+            lamboot -v  $WRKDIR/$optlam
+            $MPIRUN -wd $TMPDIR -np $optn ./dalton_mpi_copy.x
             ierr=$?
-	    wipe    -v  $WRKDIR/$optlam
-	 else
-	    $MPIRUN -np $optn $DALMPI
-#	    $MPIRUN --prefix /usr/local/lib/openmpi -np $optn $DALMPI
+            wipe    -v  $WRKDIR/$optlam
+         else
+            $MPIRUN -np $optn ./dalton_mpi_copy.x
+#           $MPIRUN --prefix /usr/local/lib/openmpi -np $optn $DALMPI
             ierr=$?
-	 fi
+         fi
          if [ $ierr -ne 0 ];then
             echo "Error in $MPIRUN -np $optn $DALMPI, exit code $ierr"
 #           No "exit $ierr" here, because we want to save output and 
 #           tar-file for restart possibilities !!!!!!
          fi
       else
-	 echo "$DALMPI does not exist or is not executable"
-	 exit 1
+         echo "$DALMPI does not exist or is not executable"
+         exit 1
       fi
    else
       echo "$MPIRUN does not exist or is not executable"
@@ -341,10 +343,11 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $DALTON -a -x $DALTON ]; then
+      cp $DALTON dalton_copy.x
       if [ $opt_valgrind -eq 1 ]; then
-          valgrind $DALTON
+          valgrind ./dalton_copy.x
       else
-          $DALTON
+          ./dalton_copy.x
       fi
       ierr=$?
       if [ $ierr -ne 0 ];then
