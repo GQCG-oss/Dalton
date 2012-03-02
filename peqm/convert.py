@@ -60,6 +60,8 @@ elif mulorder == 0:
 
 for line in fin:
     line = line.split()
+    if not line:
+        continue
     exlist = [int(n) for n in line[0:lexlst]]
     exlists.append(exlist)
     coord = [float(x) for x in line[lexlst+elems:lexlst+elems+3]]
