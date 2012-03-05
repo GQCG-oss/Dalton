@@ -1845,7 +1845,7 @@ subroutine response_matrix(B, invert, wrt2file)
         do i = 1, nsites
             if (zeroalphas(i)) cycle
             alphainv = alphas(:,i)
-            call invert_packed_matrix(alphainv, 'p')
+            call invert_packed_matrix(alphainv, 's')
             do l = 3, 1, -1
                 do j = i, nsites
                     if (zeroalphas(j)) cycle
