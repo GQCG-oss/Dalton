@@ -123,7 +123,7 @@ module polarizable_embedding
     integer :: ndens = 0
     ! size of packed matrix in AO basis
     integer, save :: nnbas = 0
-    ! number nuclei in qm region
+    ! number of nuclei in qm region
     integer, save :: qmnucs = 0
     ! nuclear charges
     real(dp), dimension(:,:), allocatable, save :: Zm
@@ -231,15 +231,14 @@ end subroutine pe_dalton_input
 
 subroutine pe_read_potential(work, coords, charges)
 
-    ! input parameters could be options given in dalton input
-    ! so that cutoffs etc. are handled in here.
-
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, k, s
     integer :: lupot, nlines
+    integer, dimension(:), allocatable :: idxs
+    real(dp) :: r
     real(dp), dimension(15) :: temp
     character(len=2) :: auoraa
     character(len=80) :: word
@@ -389,6 +388,8 @@ subroutine pe_read_potential(work, coords, charges)
 
 100 continue
 
+    close(lupot)
+
     ! initialize nloop
     nloop = nsites
 
@@ -406,6 +407,19 @@ subroutine pe_read_potential(work, coords, charges)
         end do
     end if
 
+!   ! Handle quantum-classical boundary
+    mindist = 2.0d0
+    allocate(idxs(nsites))
+!   r = 1.0d10
+!   do i = 1, qmnucs
+!       do j = 1, nsites
+!           if (nrm2(Rm(:,i) - Rs(:,j)) < r) then
+!               r = nrm2(Rm(:,i) - Rs(:,j))
+!               idx = j
+!           end if
+!       end do
+!   end do
+
     ! number of polarizabilities different from zero
     if (lpol(0) .or. lpol(1)) then
         allocate(zeroalphas(nsites))
@@ -418,8 +432,6 @@ subroutine pe_read_potential(work, coords, charges)
             end if
         end do
     end if
-
-    close(lupot)
 
     ! write to Dalton output file
 101 write(luout,'(//2x,a)') 'Polarizable Embedding potential'
@@ -1466,7 +1478,7 @@ subroutine induced_dipoles(Mu, F)
     real(dp), dimension(:,:), intent(out) :: Mu
     real(dp), dimension(:,:), intent(in) :: F
 
-    integer :: i, j
+    integer :: i, j, l
     real(dp), dimension(:), allocatable :: B
 
     allocate(B(3*npols*(3*npols+1)/2))
@@ -1475,6 +1487,17 @@ subroutine induced_dipoles(Mu, F)
 
     do i = 1, ndens
         call spmv(B, F(:,i), Mu(:,i), 'L')
+    end do
+
+    do i = 1, ndens
+        l = 1
+        do j = 1, npols
+            if (nrm2(Mu(l:l+2,i)) > 1.0d0) then
+                print *, 'large induced dipole encountered'
+                print *, Mu(l:l+2,i)
+            end if
+            l = l + 3
+        end do
     end do
 
     deallocate(B)
@@ -1811,7 +1834,7 @@ subroutine response_matrix(B, invert, wrt2file)
     logical :: exclude, lexist, inv, wrt
     integer :: info, lutemp
     integer :: i, j, k, l, m, n
-    real(dp) :: d5, d3
+    real(dp) :: damp, d5, d3
     real(dp) :: R, R2, R3, R5, T
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: alphainv
@@ -1842,7 +1865,7 @@ subroutine response_matrix(B, invert, wrt2file)
         do i = 1, nsites
             if (zeroalphas(i)) cycle
             alphainv = alphas(:,i)
-            call invert_packed_matrix(alphainv, 'p')
+            call invert_packed_matrix(alphainv, 's')
             do l = 3, 1, -1
                 do j = i, nsites
                     if (zeroalphas(j)) cycle
