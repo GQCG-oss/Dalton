@@ -1706,7 +1706,8 @@ end subroutine monopole_field
 subroutine dipole_field(Fi, Ri, Rj, Q1j)
 
     real(dp), dimension(3), intent(out) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj, Q1j
+    real(dp), dimension(3), intent(in) :: Ri, Rj
+    real(dp), dimension(3), intent(in) :: Q1j
 
     integer :: a, b
     integer, parameter :: k = 2
@@ -1718,7 +1719,7 @@ subroutine dipole_field(Fi, Ri, Rj, Q1j)
 
     call Tk_tensor(Tji, k, Rji)
 
-    call full_2nd_tensor(Tf, Tji)
+    call unpack_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -1735,7 +1736,8 @@ end subroutine dipole_field
 subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
 
     real(dp), dimension(3), intent(out) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj, Q2j
+    real(dp), dimension(3), intent(in) :: Ri, Rj
+    real(dp), dimension(6), intent(in) :: Q2j
 
     integer :: a, b, g
     integer, parameter :: k = 3
@@ -1748,8 +1750,8 @@ subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
 
     call Tk_tensor(Tji, k, Rji)
 
-    call full_2nd_tensor(Q2f, Q2j)
-    call full_3rd_tensor(Tf, Tji)
+    call unpack_tensor(Q2f, Q2j)
+    call unpack_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -1768,7 +1770,8 @@ end subroutine quadrupole_field
 subroutine octopole_field(Fi, Ri, Rj, Q3j)
 
     real(dp), dimension(3), intent(out) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj, Q3j
+    real(dp), dimension(3), intent(in) :: Ri, Rj
+    real(dp), dimension(10), intent(in) :: Q3j
 
     integer :: a, b, g, d
     integer, parameter :: k = 4
@@ -1781,8 +1784,8 @@ subroutine octopole_field(Fi, Ri, Rj, Q3j)
 
     call Tk_tensor(Tji, k, Rji)
 
-    call full_3rd_tensor(Q3f, Q3j)
-    call full_4th_tensor(Tf, Tji)
+    call unpack_tensor(Q3f, Q3j)
+    call unpack_tensor(Tf, Tji)
 
     Fi = 0.0d0
 
@@ -2044,7 +2047,32 @@ end subroutine Tk_tensor
 
 !------------------------------------------------------------------------------
 
-subroutine full_2nd_tensor(Tf, Ts)
+subroutine unpack_tensor(Tf, Ts)
+
+    real(dp), dimension(:), intent(in) :: Ts
+    real(dp), dimension(*), intent(out) :: Tf
+
+    if (size(Ts) == 1) then
+        stop('Error in unpack_tensor: no unpacking necessary')
+    else if (size(Ts) == 3) then
+        stop('Error in unpack_tensor: no unpacking necessary')
+    else if (size(Ts) == 6) then
+        call unpack_2nd_order(Tf, Ts)
+    else if (size(Ts) == 10) then
+        call unpack_3rd_order(Tf, Ts)
+    else if (size(Ts) == 15) then
+        call unpack_4th_order(Tf, Ts)
+    else if (size(Ts) > 15) then
+        stop('Error in unpack_tensor: wrong size or not implemented')
+    else
+        stop('Error in unpack_tensor: packed tensor is wrong size')
+    end if
+
+end subroutine unpack_tensor
+
+!------------------------------------------------------------------------------
+
+subroutine unpack_2nd_order(Tf, Ts)
 
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3), intent(out) :: Tf
@@ -2055,11 +2083,11 @@ subroutine full_2nd_tensor(Tf, Ts)
     Tf(2,1) = Ts(2); Tf(2,2) = Ts(4); Tf(2,3) = Ts(5)
     Tf(3,1) = Ts(3); Tf(3,2) = Ts(5); Tf(3,3) = Ts(6)
 
-end subroutine full_2nd_tensor
+end subroutine unpack_2nd_order
 
 !------------------------------------------------------------------------------
 
-subroutine full_3rd_tensor(Tf, Ts)
+subroutine unpack_3rd_order(Tf, Ts)
 
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3,3), intent(out) :: Tf
@@ -2076,11 +2104,11 @@ subroutine full_3rd_tensor(Tf, Ts)
     Tf(3,2,1) = Ts(5); Tf(3,2,2) = Ts(8); Tf(3,2,3) = Ts(9)
     Tf(3,3,1) = Ts(6); Tf(3,3,2) = Ts(9); Tf(3,3,3) = Ts(10)
 
-end subroutine full_3rd_tensor
+end subroutine unpack_3rd_order
 
 !------------------------------------------------------------------------------
 
-subroutine full_4th_tensor(Tf, Ts)
+subroutine unpack_4th_order(Tf, Ts)
 
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3,3,3), intent(out) :: Tf
@@ -2117,7 +2145,7 @@ subroutine full_4th_tensor(Tf, Ts)
     Tf(3,3,2,1) = Ts(9);  Tf(3,3,2,2) = Ts(13); Tf(3,3,2,3) = Ts(14)
     Tf(3,3,3,1) = Ts(10); Tf(3,3,3,2) = Ts(14); Tf(3,3,3,3) = Ts(15)
 
-end subroutine full_4th_tensor
+end subroutine unpack_4th_order
 
 !------------------------------------------------------------------------------
 
