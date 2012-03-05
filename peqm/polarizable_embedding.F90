@@ -15,7 +15,7 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
-    logical, public, save :: pe_damp = .true.
+    logical, public, save :: pe_damp = .false.
     logical, public, save :: pe_gspol = .false.
     logical, public, save :: pe_nomb = .false.
     logical, public, save :: pe_twoint = .false.
@@ -48,6 +48,9 @@ module polarizable_embedding
 
     ! thresholds
     real(dp), parameter :: zero = 1.0d-6
+
+    ! damping parameter
+    real(dp) :: damp = 2.1304d0
 
     ! variables used for timings
     real(dp) :: t1, t2
@@ -185,6 +188,15 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
+        ! induced dipole - induced dipole damping
+        else if (trim(option(2:)) == 'DAMP') then
+            read(luinp,*) option
+            backspace(luinp)
+            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+               &.and. option(1:1) /= '!') then
+                read(luinp,*) damp
+            end if
+            pe_damp = .true.
         ! neglect dynamic response from environment
         else if (trim(option(2:)) == 'GSPOL') then
             pe_gspol = .true.
@@ -1877,19 +1889,19 @@ subroutine response_matrix(B, invert, wrt2file)
 !                        end if
                         ! damping parameters
                         ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
-                        ! a = 2.1304
+                        ! a = 2.1304 = damp
                         ! d3 = 1-(a²r²/2+ar+1)*exp(-ar)
                         ! d5 = 1-(a³r³/6+a²r²/2+ar+1)*exp(-ar)
                         if (pe_damp) then
-                            d3 = 2.1304d0**2 * R2 / 2.0d0
-                            d3 = d3 + 2.1304d0 * R
+                            d3 = damp**2 * R2 / 2.0d0
+                            d3 = d3 + damp * R
                             d3 = d3 + 1.0d0
-                            d3 = 1.0d0 - d3 * exp(-2.1304d0 * R)
-                            d5 = 2.1304d0**3 * R3 / 6.0d0
-                            d5 = d5 + 2.1304d0**2 * R2 / 2.0d0
-                            d5 = d5 + 2.1304d0 * R
+                            d3 = 1.0d0 - d3 * exp(-damp * R)
+                            d5 = damp**3 * R3 / 6.0d0
+                            d5 = d5 + damp**2 * R2 / 2.0d0
+                            d5 = d5 + damp * R
                             d5 = d5 + 1.0d0
-                            d5 = 1.0d0 - d5 * exp(-2.1304d0 * R)
+                            d5 = 1.0d0 - d5 * exp(-damp * R)
                             R3 = R3 * d3
                             R5 = R5 * d5
                         end if
