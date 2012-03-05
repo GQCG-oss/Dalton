@@ -79,8 +79,6 @@ if (VALGRIND_EXECUTABLE)
 	set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full")
 	#set(MEMORYCHECK_SUPPRESSIONS_FILE ${CMAKE_BINARY_DIR}/valgrind.supp)
 endif()
-configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake.in
-	        ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
 install(FILES include/xcfun.h DESTINATION include)
 
