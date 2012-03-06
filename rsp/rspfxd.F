@@ -71,8 +71,7 @@ C
       DIMENSION ZYMAT1(NORBT,NORBT),ZYMAT2(NORBT,NORBT)
       DIMENSION ZYMAT3(NORBT,NORBT)
       DIMENSION WRK(*)
-      DIMENSION NEEDED(6)
-      DATA NEEDED /1,1,1,1,1,0/
+      DIMENSION NEEDED(-4:6)
 C
       LOGICAL LCON, LORB
 C
@@ -88,7 +87,12 @@ C
       ID1 = 1
       ID2 = N2ASHX*N2ASHX + 1
       CALL DZERO(H2,N2ORBX)
-      IF (IKLVL.GE.2) NEEDED(6) = 1
+      NEEDED(-4:6) = 0
+      IF (IKLVL.GE.2) THEN
+         NEEDED(1:6) = 1
+      ELSE
+         NEEDED(1:5) = 1
+      END IF
       IF (IPRFX.GT.200) THEN
          WRITE(LUPRI,'(/A)')   '>>>>>> ENTERING RSPFXD <<<<<<'
          WRITE(LUPRI,'(A,I5)') 'IDAX =',IDAX

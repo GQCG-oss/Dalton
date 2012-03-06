@@ -1176,9 +1176,6 @@ C
       DIMENSION XINDX(*)
       DIMENSION WRKO(*), WRKC(*)
 C
-      DIMENSION NEEDED(6)
-      DATA NEEDED /1,1,1,0,0,0/
-C
       LOGICAL LCON, LORB, LREFST, HSORUN, DFTSAV, ADDFOCK
 C
       CALL QENTER('RSP2GR')
@@ -1342,8 +1339,7 @@ C
       DIMENSION DEN1(NASHDI,NASHDI), DEN2(NASHDI,NASHDI,NASHDI,NASHDI)
       DIMENSION PVDEN(NASHDI,NASHDI)
       DIMENSION WRK(*)
-      DIMENSION NEEDED(6)
-      DATA NEEDED /1,1,1,0,0,0/
+      DIMENSION NEEDED(-4:6)
 C
       LOGICAL LCON, LORB
 C
@@ -1352,6 +1348,8 @@ C
 C     Put up the structure for reading the (transformed) integrals:
 C     IEND < 0 flags the completeness of the distributions
 C
+      NEEDED(-4:6) = 0
+      NEEDED( 1:3) = 1
       IFCKSY = MULD2H(INTSYM,ISYMDN)
       IDIST = 0
 1000  CALL NXTH2X(IP,IQ,H2X,IDAX,NEEDED,WRK,KFREE,LFREE,IDIST)

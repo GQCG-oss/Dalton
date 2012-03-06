@@ -39,15 +39,14 @@ C
 C Output: Spin-orbit property vector returned in first elements of WRK
 C
 #include <implicit.h>
-      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK),NEEDSO(6)
+      DIMENSION  GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
       CHARACTER*8 WORD
-      DATA NEEDSO/1,1,1,1,1,0/
 C
-      PARAMETER(D0=0D0, D1=1D0, DM1=-1D0, D2=2D0)
-      LOGICAL SO2TRA, FILE_EXISTS, FOPEN, DO1, DO2, LORB, LCON, TRPDEN
+      PARAMETER (D0=0.D0, D1=1.D0, DM1=-1.D0, D2=2.D0)
+      LOGICAL    SO2TRA, FILE_EXISTS, FOPEN, DO1,DO2, LORB, LCON, TRPDEN
       CHARACTER*8 LABEL
-      LOGICAL  FNDLAB
-      EXTERNAL FNDLAB
+      LOGICAL    FNDLAB
+      EXTERNAL   FNDLAB
 C
 C Used from common blocks:
 C  MULD2H,ISMO,ISW,IOBTYP,IDBTYP,NISHT,NORBT,NASHT,NNASHX
@@ -248,7 +247,7 @@ C
       IF (DO1) THEN
          CALL DAXPY(N2ORBX,D1,WRK(KH1),1,WRK(KFC),1)
          IF (TDHF.AND.NASHT.GT.0) THEN
-            CALL DAXPY(N2ORBX,-D1,WRK(KH1),1,WRK(KFV),1)
+            CALL DAXPY(N2ORBX,DM1,WRK(KH1),1,WRK(KFV),1)
          END IF
       END IF
 C
@@ -1624,8 +1623,8 @@ C  /* Deck hsofckmo  */
      &   WRK,KWRK1,LWRK1)
 #include <implicit.h>
       DIMENSION FC(*), FV(*), QA(*), QB(*), H2AC(*), UDV(*), PV(*), 
-     &   WRK(*)
-      LOGICAL LORB, LCON
+     &          WRK(*)
+      LOGICAL   LORB, LCON
 #include <infhso.h>
 #include <maxorb.h>
 #include <maxash.h>
@@ -1633,9 +1632,7 @@ C  /* Deck hsofckmo  */
 #include <inforb.h>
 #include <priunit.h>
 #include <wrkrsp.h>
-      PARAMETER (D1=1.0D0)
-      INTEGER NEEDSO(6)
-      DATA NEEDSO/1,1,1,1,1,0/
+      INTEGER NEEDSO(-4:6)
       CALL QENTER('HSOFCK')
       CALL DZERO(FC,N2ORBX)
       IF (LORB) THEN
@@ -1653,12 +1650,14 @@ C  /* Deck hsofckmo  */
       CALL MEMGET('REAL',KH2,N2ORBX,WRK,KWRK1,LWRK1)
       CALL MEMGET('REAL',KPV12,N2ASHX,WRK,KWRK1,LWRK1)
       CALL MEMGET('REAL',KPV21,N2ASHX,WRK,KWRK1,LWRK1)
-      IDIST = 0
-      KFREE = 1
-      LFREE = LWRK1
 C
 C Read distributions
 C
+      NEEDSO(-4:6) = 0
+      NEEDSO( 1:5) = 1
+      IDIST = 0
+      KFREE = 1
+      LFREE = LWRK1
  90   CALL NXTHSO(IC,ID,WRK(KH2),NEEDSO,WRK(KWRK1),KFREE,LFREE,IDIST)
       IF (IDIST.LT.0) GOTO 95
       IF (IC.EQ.ID) GOTO 90
@@ -1699,7 +1698,7 @@ C
          ELSE
             NCDW = IROW(NDW) + NCW
             KH2XY = 1 + (NCDW-1)*NNASHX
-            CALL DAXPY(N2ORBX,-D1,WRK(KH2),1,WRK(KWRK1-1+KFREE),1)
+            CALL DAXPY(N2ORBX,-1.0D0,WRK(KH2),1,WRK(KWRK1-1+KFREE),1)
             CALL ADH2AC(H2AC(KH2XY),WRK(KWRK1-1+KFREE),KCDSYM)
          END IF
       END IF

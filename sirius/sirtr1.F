@@ -2297,10 +2297,10 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
       IF (P6FLAG(36) .OR. IPRLIN .GE. 40) THEN
@@ -2596,7 +2596,7 @@ C
       LUINTD = -1
       IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'DRCINT','OLD',' ',
      &                              'UNFORMATTED',IDUMMY,.FALSE.)
-  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI(1),LUINTD,
+  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI,LUINTD,
      &            WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions

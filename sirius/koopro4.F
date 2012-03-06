@@ -5002,7 +5002,7 @@ C
       allocate (h2m(norbt,norbt))
 c      write (lupri,*) 'Starting reading the integrals'
 c      call flshfo(lupri)
-  100 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
 c      write (lupri,*) 'read',ic,id
 c      call flshfo(lupri)
       IF (IDIST .LT. 0) GO TO 800
@@ -5056,7 +5056,7 @@ c----Reading again the integrals: we need K for Heff
       needtp(2)=1
       KFREE=1
       IDIST = 0
-  200 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  200 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 900
 C     ... if idist .lt. 0 then no more distributions
 C

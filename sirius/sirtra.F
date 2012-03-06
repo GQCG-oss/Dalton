@@ -2542,7 +2542,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -2556,7 +2556,7 @@ C
 #include <implicit.h>
 #include <iratdef.h>
 #include <priunit.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTM,LBINTM
@@ -2596,7 +2596,7 @@ C        distributions must be available (needtp .gt. 0).
      &         'NXTH2M error, LVLMOL on LUINTM too small'
             WRITE (LUPRI,*) 'LVLMOL =',LVLMOL
             WRITE (LUPRI,*) 'need   :',LVLMIN
-            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=1,6)
+            WRITE (LUPRI,*) 'NEEDTP :',(NEEDTP(J),J=-4,6)
             CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF
@@ -2664,7 +2664,7 @@ C    Read next Mulliken two-electron integral distribution (**|cd)
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); non-zero for needed (cd) distribution types
+C       NEEDTP(-4:6); non-zero for needed (cd) distribution types
 C                  if .gt. 0 all distributions of that type needed
 C       IDIST; .eq. 0 first read
 C              .gt. 1 intermediate read
@@ -2684,7 +2684,7 @@ C
 #include <inftap.h>
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTM), IBUF(LBINTM)
 #include <priunit.h>
-      DIMENSION NEEDTP(6)
+      DIMENSION NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2827,7 +2827,7 @@ C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
-C     define NEEDTP(1:6)
+C     define NEEDTP(-4:6)
 C 100 CALL NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
@@ -2841,7 +2841,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFTAP : LUINTD,LBINTD
@@ -2930,7 +2930,7 @@ C    Read next Dirac two-electron integral distribution <**|cd>
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); non-zero for needed (cd) distribution types
+C       NEEDTP(i); non-zero for needed (cd) distribution types
 C                  if .gt. 0 all distributions of that type needed
 C       IDIST; .eq. 0 first read
 C              .gt. 1 intermediate read
@@ -2948,7 +2948,7 @@ C
 #include <implicit.h>
 #include <inftap.h>
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTD),IBUF(LBINTD)
-      DIMENSION NEEDTP(6)
+      DIMENSION NEEDTP(-4:6)
 C
 C
 C Used from common blocks:
@@ -2990,7 +2990,7 @@ C *** Initialize H2CD
 C
       CALL DZERO(H2CD,N2ORBX)
 C
-C *** Read next distribution which is needed according to NEEDTP(6)
+C *** Read next distribution which is needed according to NEEDTP(*)
 C     into H2CD
 C
 C  ITYPCD values:  1=i*i :  2=t*i : 3=t*t : 4=a*i : 5=a*t : 6=a*a
