@@ -2665,7 +2665,7 @@ C problem with KZRED*2 vectors is used.
 C
 C Input:
 C  ICTL, flow control
-C         =1, extend the reduced L-matrix
+C         =1, extend the reduced E2 and S2 matrices
 C         =2, find the new eigenvalues and -vectors
 C         =3, both
 C  REDE,REDS, the old reduced matrices (dimension: KZYRED-2*N)
@@ -2761,16 +2761,16 @@ C IN CORE
 C
       NCTOT = 0
       NOTOT = 0
-      DO 4000 INUM = 1,N
+      DO INUM = 1,N
          IF ( IBTYP(KOFFTY+IZRED+INUM) .EQ. JBONDX ) THEN
             NOTOT = NOTOT + 1
          ELSE
             NCTOT = NCTOT + 1
          END IF
- 4000 CONTINUE
+      END DO
       ICTOT = 0
       IOTOT = 0
-      DO 4010 INUM = 1,N
+      DO INUM = 1,N
          IF ( IBTYP(KOFFTY+IZRED+INUM) .EQ. JBONDX ) THEN
             IOTOT = IOTOT + 1
             IVENU(INUM) = NCTOT + IOTOT
@@ -2778,7 +2778,7 @@ C
             ICTOT = ICTOT + 1
             IVENU(INUM) = ICTOT
          END IF
- 4010 CONTINUE
+      END DO
       IF ( IPRRSP .GT. 20 ) THEN
          WRITE(LUPRI,' (/A)')
      *   ' INDEX VECTOR FOR E(2) TRANSFORMED TRIAL VECTORS'
@@ -3081,7 +3081,7 @@ C        CALL RGG(NM,N,A,B,ALFR,ALFI,BETA,MATZ,Z,IERR)
 C
          IF ( IERR.NE.0 ) THEN
             WRITE(LUPRI,'(/A)')
-     *      ' EIGENVALUE PROBLEM NOT CONVERGED '
+     *      ' WARNING: EIGENVALUE PROBLEM NOT CONVERGED '
             CALL QUIT(' RSPRED: EIGENVALUE EQUATION NOT CONVERGED ')
          END IF
 C
