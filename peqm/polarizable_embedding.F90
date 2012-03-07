@@ -21,7 +21,7 @@ module polarizable_embedding
     logical, public, save :: pe_twoint = .false.
     logical, public, save :: pe_repuls = .false.
     logical, public, save :: pe_savden = .false.
-    logical, public, save :: pe_qmes = .false.
+    logical, public, save :: pe_fd = .false.
     logical, public, save :: pe_timing = .false.
 
     ! calculation type
@@ -212,11 +212,11 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! get fock matrix for repulsion potential
         else if (trim(option(2:)) == 'REPULS') then
             pe_repuls = .true.
-        ! QM electrostatics from frozen densities
-        else if (trim(option(2:)) == 'QMES') then
+        ! electrostatics from frozen densities
+        else if (trim(option(2:)) == 'FD') then
             ! number of frozen densities
             read(luinp,*) nfds
-            pe_qmes = .true.
+            pe_fd = .true.
         else if (option(1:1) == '*') then
             word = option
             exit
@@ -261,9 +261,8 @@ subroutine pe_read_potential(work, coords, charges)
         call openfile('POTENTIAL.INP', lupot, 'old', 'formatted')
     else
         if (pe_savden) then
-! TODO: needs fix
             return
-        else if (pe_qmes) then
+        else if (pe_fd) then
             goto 101
         else
             stop('POTENTIAL.INP not found!')
@@ -456,7 +455,7 @@ subroutine pe_read_potential(work, coords, charges)
         write(luout,'(4x,a)') 'Anisotropic'//&
                               ' dipole-dipole polarizabilities.'
     end if
-    if (pe_qmes) then
+    if (pe_fd) then
         write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
     end if
 
@@ -776,7 +775,7 @@ subroutine pe_fock(denmats, fckmats, Epe, work)
     do i = 0, 3
         if (lmul(i)) es = .true.
     end do
-    if (pe_qmes) es = .true.
+    if (pe_fd) es = .true.
     do i = 0, 1
         if (lpol(i)) pol = .true.
     end do
@@ -1020,7 +1019,7 @@ subroutine pe_electrostatic(denmats, fckmats, work)
 #ifdef VAR_MPI
         if (myid == 0) then
 #endif
-            if (pe_qmes) then
+            if (pe_fd) then
                 if (fock) then
                     call es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
                 else if (energy) then
@@ -1412,7 +1411,7 @@ subroutine pe_polarization(denmats, fckmats, work)
 #endif
     call nuclear_fields(Fnuc)
     call multipole_fields(Fmul)
-    if (pe_qmes) then
+    if (pe_fd) then
         call frozen_density_field(Ffd)
     else
         Ffd = 0.0d0
@@ -1428,7 +1427,7 @@ subroutine pe_polarization(denmats, fckmats, work)
         Epol(1,i) = - 0.5d0 * dot(Mu(:,i), Fel(:,i))
         Epol(2,i) = - 0.5d0 * dot(Mu(:,i), Fnuc)
         Epol(3,i) = - 0.5d0 * dot(Mu(:,i), Fmul)
-        if (pe_qmes) Epol(4,i) = - 0.5d0 * dot(Mu(:,i), Ffd)
+        if (pe_fd) Epol(4,i) = - 0.5d0 * dot(Mu(:,i), Ffd)
     end do
 
 #ifdef VAR_MPI
