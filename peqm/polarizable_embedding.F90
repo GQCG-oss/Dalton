@@ -2048,7 +2048,9 @@ subroutine response_matrix(B, invert, wrt2file)
     logical :: exclude, lexist, inv, wrt
     integer :: info, lutemp
     integer :: i, j, k, l, m, n
-    real(dp) :: d5, d3
+    real(dp) :: d3 = 1.0d0
+    real(dp) :: d5 = 1.0d0
+    real(dp) :: Rd, ai, aj
     real(dp) :: R, R2, R3, R5, T
     real(dp), dimension(3) :: Rij
     real(dp), dimension(6) :: alphainv
@@ -2127,37 +2129,32 @@ subroutine response_matrix(B, invert, wrt2file)
                         ! damping parameters
                         ! JPC A 102 (1998) 2399 & Mol. Sim. 32 (2006) 471
                         ! a = 2.1304 = damp
-                        ! d3 = 1-(a²r²/2+ar+1)*exp(-ar)
-                        ! d5 = 1-(a³r³/6+a²r²/2+ar+1)*exp(-ar)
+                        ! u = R / (alpha_i * alpha_j)**(1/6)
+                        ! d3 = 1-(a²u²/2+au+1)*exp(-au)
+                        ! d5 = 1-(a³u³/6+a²u²/2+au+1)*exp(-au)
                         if (pe_damp) then
-                            d3 = damp**2 * R2 / 2.0d0
-                            d3 = d3 + damp * R
-                            d3 = d3 + 1.0d0
-                            d3 = 1.0d0 - d3 * exp(-damp * R)
-                            d5 = damp**3 * R3 / 6.0d0
-                            d5 = d5 + damp**2 * R2 / 2.0d0
-                            d5 = d5 + damp * R
-                            d5 = d5 + 1.0d0
-                            d5 = 1.0d0 - d5 * exp(-damp * R)
-                            R3 = R3 * d3
-                            R5 = R5 * d5
+                            ai = (alphas(1,i)+alphas(4,i)+alphas(6,i))/3.0d0
+                            aj = (alphas(1,j)+alphas(4,j)+alphas(6,j))/3.0d0
+                            Rd = (damp*R)/((ai*aj)**(1.0d0/6.0d0))
+                            d3 = 1.0d0-(0.5d0*Rd**2+Rd+1.0d0)*exp(-Rd)
+                            d5 = d3-(Rd**3/6.0d0)*exp(-Rd)
                         end if
                         if (l == 3) then
                             do k = 1, 3
-                                T = 3.0d0 * Rij(1) * Rij(k) / R5
-                                if (k == 1) T = T - 1.0d0 / R3
+                                T = 3.0d0 * Rij(1) * Rij(k) * d5 / R5
+                                if (k == 1) T = T - 1.0d0 * d3 / R3
                                 B(m+k) = - T
                             end do
                         else if (l == 2) then
                             do k = 1, 3
-                                T = 3.0d0 * Rij(2) * Rij(k) / R5
-                                if (k == 2) T = T - 1.0d0 / R3
+                                T = 3.0d0 * Rij(2) * Rij(k) * d5 / R5
+                                if (k == 2) T = T - 1.0d0 * d3 / R3
                                 B(m+k) = - T
                             end do
                         else if (l == 1) then
                             do k = 1, 3
-                                T = 3.0d0 * Rij(3) * Rij(k) / R5
-                                if (k == 3) T = T - 1.0d0 / R3
+                                T = 3.0d0 * Rij(3) * Rij(k) * d5 / R5
+                                if (k == 3) T = T - 1.0d0  * d3 / R3
                                 B(m+k) = - T
                             end do
                         end if
