@@ -217,6 +217,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! neglect dynamic response from environment
         else if (trim(option(2:)) == 'GSPOL') then
             pe_gspol = .true.
+        ! neglect many-body interactions
         else if (trim(option(2:)) == 'NOMB') then
             pe_nomb = .true.
         ! calculate intermolecular two-electron integrals
@@ -437,6 +438,18 @@ subroutine pe_read_potential(work, coords, charges)
     end if
     if (pe_fd) then
         write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
+    end if
+    if (pe_damp) then
+        write(luout,'(4x,a,f8.4)')&
+            & 'Induced dipole-induced dipole interactions will be damped using&
+              & damping coefficient:', damp
+    end if
+    if (pe_gspol) then
+        write(luout,'(4x,a)') 'Dynamic response from environment will be&
+                              & neglected during response calculation.'
+    end if
+    if (pe_nomb) then
+        write(luout,'(4x,a)') 'Many-body interactions will be neglected.'
     end if
 
    ! default exclusion list (everything polarizes everything)
