@@ -15,6 +15,7 @@ module polarizable_embedding
 
     ! options
     logical, public, save :: peqm = .false.
+    logical, public, save :: pe_border = .false.
     logical, public, save :: pe_damp = .false.
     logical, public, save :: pe_gspol = .false.
     logical, public, save :: pe_nomb = .false.
@@ -46,11 +47,11 @@ module polarizable_embedding
     ! 1 bohr = 0.5291772108 Aa
     real(dp), parameter :: aa2au = 1.8897261249935897d0
 
-    ! thresholds
+    ! thresholds and other stuff
     real(dp), parameter :: zero = 1.0d-6
-
-    ! damping parameter
     real(dp) :: damp = 2.1304d0
+    real(dp) :: Rmin = 2.2d0
+    character(len=6) :: border_type = 'REDIST'
 
     ! variables used for timings
     real(dp) :: t1, t2
@@ -123,7 +124,7 @@ module polarizable_embedding
     integer :: ndens = 0
     ! size of packed matrix in AO basis
     integer, save :: nnbas = 0
-    ! number nuclei in qm region
+    ! number of nuclei in qm region
     integer, save :: qmnucs = 0
     ! nuclear charges
     real(dp), dimension(:,:), allocatable, save :: Zm
@@ -178,6 +179,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
     integer, intent(in) :: lupri
 
     character(len=7) :: option
+    character(len=2) :: aaorau
 
     luout = lupri
 
@@ -188,6 +190,21 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! do a Polarizable Embedding calculation
         if (trim(option(2:)) == 'PEQM') then
             peqm = .true.
+        ! handling sites near quantum-classical border
+        else if (trim(option(2:)) == 'BORDER') then
+            read(luinp,*) option
+            backspace(luinp)
+            if (option(1:1) /= '.' .and. option(1:1) /= '*'&
+               &.and. option(1:1) /= '!') then
+                read(luinp,*) border_type, Rmin, aaorau
+                call upcase(border_type)
+                if (border_type /= 'REMOVE' .or. border_type /= 'REDIST') then
+                    stop('Error: unknown handling of border sites!')
+                end if
+                call upcase(aaorau)
+                if (aaorau == 'AA') Rmin = Rmin * aa2au
+            end if
+            pe_border = .true.
         ! induced dipole - induced dipole damping
         else if (trim(option(2:)) == 'DAMP') then
             read(luinp,*) option
@@ -231,15 +248,15 @@ end subroutine pe_dalton_input
 
 subroutine pe_read_potential(work, coords, charges)
 
-    ! input parameters could be options given in dalton input
-    ! so that cutoffs etc. are handled in here.
-
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, k, s
     integer :: lupot, nlines
+    integer :: nidx, idx, jdx, kdx, ldx
+    integer, dimension(:), allocatable :: idxs
+    real(dp) :: r
     real(dp), dimension(15) :: temp
     character(len=2) :: auoraa
     character(len=80) :: word
@@ -388,6 +405,8 @@ subroutine pe_read_potential(work, coords, charges)
 
 100 continue
 
+    close(lupot)
+
     ! initialize nloop
     nloop = nsites
 
@@ -396,31 +415,6 @@ subroutine pe_read_potential(work, coords, charges)
         Rs = Rs * aa2au
     end if
 
-    ! default exclusion list (everything polarizes everything)
-    if (.not. allocated(exlists)) then
-        lexlst = 1
-        allocate(exlists(lexlst,nsites))
-        do i = 1, nsites
-            exlists(1,i) = i
-        end do
-    end if
-
-    ! number of polarizabilities different from zero
-    if (lpol(0) .or. lpol(1)) then
-        allocate(zeroalphas(nsites))
-        do i = 1, nsites
-            if (abs(maxval(alphas(:,i))) >= zero) then
-                zeroalphas(i) = .false.
-                npols = npols + 1
-            else
-                zeroalphas(i) = .true.
-            end if
-        end do
-    end if
-
-    close(lupot)
-
-    ! write to Dalton output file
 101 write(luout,'(//2x,a)') 'Polarizable Embedding potential'
     write(luout,'(2x,a)')   '-------------------------------'
     write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites
@@ -434,17 +428,231 @@ subroutine pe_read_potential(work, coords, charges)
         write(luout,'(4x,a)') 'Multipole moments upto 0th order.'
     end if
     if (lpol(0) .and. lpol(1)) then
-        write(luout,'(4x,a)') 'Isotropic and anisotropic'//&
-                              ' dipole-dipole polarizabilities.'
+        write(luout,'(4x,a)') 'Isotropic and anisotropic&
+                              & dipole-dipole polarizabilities.'
     else if (lpol(0) .and. .not. lpol(1)) then
-        write(luout,'(4x,a)') 'Isotropic'//&
-                              ' dipole-dipole polarizabilities.'
+        write(luout,'(4x,a)') 'Isotropic dipole-dipole polarizabilities.'
     else if (.not. lpol(0) .and. lpol(1)) then
-        write(luout,'(4x,a)') 'Anisotropic'//&
-                              ' dipole-dipole polarizabilities.'
+        write(luout,'(4x,a)') 'Anisotropic dipole-dipole polarizabilities.'
     end if
     if (pe_fd) then
         write(luout,'(4x,a,i4)') 'Number of frozen densities:', nfds
+    end if
+
+   ! default exclusion list (everything polarizes everything)
+    if (.not. allocated(exlists)) then
+        lexlst = 1
+        allocate(exlists(lexlst,nsites))
+        do i = 1, nsites
+            exlists(1,i) = i
+        end do
+    end if
+
+    ! handling of sites near quantum-classical border
+    ! -----------------------------------------------
+    if (pe_border) then
+        ! first locate all sites within given threshold of QM nuclei
+        allocate(idxs(nsites))
+        idxs = 0; nidx = 0
+        do i = 1, qmnucs
+            do j = 1, nsites
+                lexist = .false.
+                do k = 1, nidx
+                    if (j == idxs(k)) then
+                        lexist = .true.
+                        exit
+                    end if
+                end do
+                if (lexist) cycle
+                if (nrm2(Rm(:,i) - Rs(:,j)) <= Rmin) then
+                    nidx = nidx + 1
+                    idxs(nidx) = j
+                end if
+            end do
+        end do
+
+        if (border_type == 'REMOVE') then
+            do i = 1, nidx
+                write(luout,'(4x,a,i6,a)') 'Removing parameters on site:',&
+                                           & idxs(i), elems(1,idxs(i))
+                if (lmul(0)) then
+                    Q0s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(1)) then
+                    Q1s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(2)) then
+                    Q2s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(3)) then
+                    Q3s(:,idxs(i)) = 0.0d0
+                endif
+!                if (lmul(4)) then
+!                Q4s(:,idxs(i)) = 0.0d0
+!                endif
+!                if (lmul(5)) then
+!                    Q5s(:,idxs(i)) = 0.0d0
+!                endif
+                if (lpol(0) .or. lpol(1)) then
+                    alphas(:,idxs(i)) = 0.0d0
+                end if
+            end do
+        else if (border_type == 'REDIST') then
+            do i = 1, nidx
+                r = 1.0d10
+                do j = 1, nsites
+                    lexist = .false.
+                    do k = 1, nidx
+                        if (j == idxs(k)) then
+                            lexist = .true.
+                            exit
+                        end if
+                    end do
+                    if (lexist) cycle
+                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= r) then
+                        r = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                        idx = j
+                    end if
+                end do
+                if (lmul(0)) then
+                    Q0s(:,idx) = Q0s(:,idx) + Q0s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(1)) then
+                    Q1s(:,idx) = Q1s(:,idx) + Q1s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(2)) then
+                    Q2s(:,idx) = Q2s(:,idx) + Q2s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(3)) then
+                    Q3s(:,idx) = Q3s(:,idx) + Q3s(:,idxs(i)) / 3.0d0
+                endif
+!                if (lmul(4)) then
+!                    Q4s(:,idx) = Q4s(:,idx) + Q4s(:,idxs(i)) / 3.0d0
+!                endif
+!                if (lmul(5)) then
+!                   Q5s(:,idx) = Q5s(:,idx) + Q5s(:,idxs(i)) / 3.0d0
+!                endif
+!                if (lpol(0) .or. lpol(1)) then
+!                    alphas(:,idx) = alphas(:,idx) + alphas(:,idxs(i)) / 3.0d0
+!                end if
+
+                r = 1.0d10
+                do j = 1, nsites
+                    if (j == idx) cycle
+                    lexist = .false.
+                    do k = 1, nidx
+                        if (j == idxs(k)) then
+                            lexist = .true.
+                            exit
+                        end if
+                    end do
+                    if (lexist) cycle
+                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= r) then
+                        r = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                        jdx = j
+                    end if
+                end do
+                if (lmul(0)) then
+                    Q0s(:,jdx) = Q0s(:,jdx) + Q0s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(1)) then 
+                    Q1s(:,jdx) = Q1s(:,jdx) + Q1s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(2)) then
+                Q2s(:,jdx) = Q2s(:,jdx) + Q2s(:,idxs(i)) / 3.0d0
+                endif       
+                if (lmul(3)) then
+                    Q3s(:,jdx) = Q3s(:,jdx) + Q3s(:,idxs(i)) / 3.0d0
+                endif
+!                if (lmul(4)) then
+!                    Q4s(:,jdx) = Q4s(:,jdx) + Q4s(:,idxs(i)) / 3.0d0
+!                endif  
+!                if (lmul(5)) then
+!                    Q5s(:,jdx) = Q5s(:,jdx) + Q5s(:,idxs(i)) / 3.0d0
+!                endif
+!                if (lpol(0) .or. lpol(1)) then
+!                    alphas(:,jdx) = alphas(:,jdx) + alphas(:,idxs(i)) / 3.0d0
+!                end if
+
+                r = 1.0d10
+                do j = 1, nsites
+                    if (j == idx .or. j == jdx) cycle
+                    lexist = .false.
+                    do k = 1, nidx
+                        if (j == idxs(k)) then
+                            lexist = .true.
+                            exit
+                        end if
+                    end do
+                    if (lexist) cycle
+                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= r) then
+                        r = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                        kdx = j
+                    end if
+                end do
+                if (lmul(0)) then
+                    Q0s(:,kdx) = Q0s(:,kdx) + Q0s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(1)) then 
+                    Q1s(:,kdx) = Q1s(:,kdx) + Q1s(:,idxs(i)) / 3.0d0
+                endif
+                if (lmul(2)) then
+                    Q2s(:,kdx) = Q2s(:,kdx) + Q2s(:,idxs(i)) / 3.0d0
+                endif       
+                if (lmul(3)) then
+                    Q3s(:,kdx) = Q3s(:,kdx) + Q3s(:,idxs(i)) / 3.0d0
+                endif
+!                if (lmul(4)) then
+!                    Q4s(:,kdx) = Q4s(:,kdx) + Q4s(:,idxs(i)) / 3.0d0
+!                endif  
+!                if (lmul(5)) then
+!                    Q5s(:,kdx) = Q5s(:,kdx) + Q5s(:,idxs(i)) / 3.0d0
+!                endif
+!                if (lpol(0) .or. lpol(1)) then
+!                    alphas(:,kdx) = alphas(:,kdx) + alphas(:,idxs(i)) / 3.0d0
+!                end if
+
+                if (lmul(0)) then
+                    Q0s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(1)) then
+                    Q1s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(2)) then
+                    Q2s(:,idxs(i)) = 0.0d0
+                endif
+                if (lmul(3)) then
+                    Q3s(:,idxs(i)) = 0.0d0
+                endif
+!                if (lmul(4)) then
+!                    Q4s(:,idxs(i)) = 0.0d0
+!                endif
+!                if (lmul(5)) then
+!                    Q5s(:,idxs(i)) = 0.0d0
+!                endif
+                if (lpol(0) .or. lpol(1)) then
+                    alphas(:,idxs(i)) = 0.0d0
+                end if
+
+                write(luout,'(4x,a,i6)') 'Redistributing parameters on site:',&
+                                         & idxs(i)
+                write(luout,'(4x,a,3i6)') 'equally to sites:', idx, jdx, kdx
+            end do
+        end if
+    end if
+    ! ------------------------------------------------
+
+    ! number of polarizabilities different from zero
+    if (lpol(0) .or. lpol(1)) then
+        allocate(zeroalphas(nsites))
+        do i = 1, nsites
+            if (abs(maxval(alphas(:,i))) >= zero) then
+                zeroalphas(i) = .false.
+                npols = npols + 1
+            else
+                zeroalphas(i) = .true.
+            end if
+        end do
     end if
 
 end subroutine pe_read_potential
@@ -1465,7 +1673,7 @@ subroutine induced_dipoles(Mu, F)
     real(dp), dimension(:,:), intent(out) :: Mu
     real(dp), dimension(:,:), intent(in) :: F
 
-    integer :: i, j
+    integer :: i, j, l
     real(dp), dimension(:), allocatable :: B
 
     allocate(B(3*npols*(3*npols+1)/2))
@@ -1474,6 +1682,20 @@ subroutine induced_dipoles(Mu, F)
 
     do i = 1, ndens
         call spmv(B, F(:,i), Mu(:,i), 'L')
+    end do
+
+    ! check induced dipoles
+    do i = 1, ndens
+        l = 1
+        do j = 1, nsites
+            if (zeroalphas(i)) cycle
+            if (nrm2(Mu(l:l+2,i)) > 1.0d0) then
+                write(luout,'(4x,a,i6)') 'Large induced dipole encountered at&
+                                         & site:', j
+                write(luout,'(f10.4)') nrm2(Mu(l:l+2,i))
+            end if
+            l = l + 3
+        end do
     end do
 
     deallocate(B)
