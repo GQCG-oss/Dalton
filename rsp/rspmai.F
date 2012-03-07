@@ -418,9 +418,12 @@ C
      &        .FALSE.)
       END IF
 C Open files for trial and sigma vectors
-      CALL GPOPEN(LURSP3,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LURSP4,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LURSP5,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LURSP3,'RSP_BVEC','UNKNOWN',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LURSP4,'RSP_DIAG','UNKNOWN',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LURSP5,'RSP_SVEC','UNKNOWN',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
 C
 C     Calculate open shell triplet expectation values
 C     ====================================================

@@ -157,26 +157,27 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/london_mom_hgto.F90
                      ${LIB_GEN1INT_PATH}/src/const_contr_ints.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_deriv.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_init.F90
-                     ${LIB_GEN1INT_PATH}/src/carmom_to_hbra.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_hbra.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_hrr_ket.F90
+                     ${LIB_GEN1INT_PATH}/src/carmom_moment.F90
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_csgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/aux_boys_vec.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_nderv.F90
+                     ${LIB_GEN1INT_PATH}/src/nucpot_geom.F90
                      ${LIB_GEN1INT_PATH}/src/nucpot_hket.F90
                      ${LIB_GEN1INT_PATH}/src/nucpot_hbra.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_to_carmom.F90
-                     ${LIB_GEN1INT_PATH}/src/nucpot_to_hgto.F90
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_nucpot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_nucpot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_nucpot.F90
-                     ${LIB_GEN1INT_PATH}/src/gaupot_nderv.F90
+                     ${LIB_GEN1INT_PATH}/src/gaupot_geom.F90
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_gaupot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_gaupot.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_odist.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_odist.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_odist.F90
                      ${LIB_GEN1INT_PATH}/src/gen1int.F90)
     # Gen1Int interface source code
     set(FREE_FORTRAN_SOURCES

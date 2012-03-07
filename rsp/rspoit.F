@@ -490,7 +490,7 @@ C
 #include <implicit.h>
       DIMENSION OITMAT(N2ORBX), H2CD(N2ORBX), H2XCD(N2ORBX)
       DIMENSION H2X(LH2X,NH2XCD), WRK(*), N2DIS(8)
-      DIMENSION ICDTRA(NORBT,NORBT), NEEDMU(6), INDAB(NORBT,NORBT)
+      DIMENSION ICDTRA(NORBT,NORBT), NEEDMU(-4:6), INDAB(NORBT,NORBT)
       DIMENSION INDCD(NORBT,NORBT), IN2CD(NORBT,NORBT)
       PARAMETER ( D1 = 1.0D0 )
 C
@@ -536,7 +536,7 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
       CALL IZERO(INDCD,N2ORBX)
       IF (ICTOIT .EQ. 2) THEN
@@ -544,7 +544,7 @@ C
       END IF
       JDIST = 0
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2CD,NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2CD,NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
          JDIST = JDIST + 1
@@ -798,7 +798,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6), N2DIS(8)
+      DIMENSION NEEDMU(-4:6), N2DIS(8)
 
       CALL QENTER('OIT2X')
       KFREE  = KFRSAV
@@ -809,20 +809,13 @@ C     ... occupied-occupied distributions always needed
 C     ... unocc-occ distrib. needed for level 1 and higher
 C     ... all distributions are needed for level 2 and higher
 C
-      NEEDMU(1) = 1
-      NEEDMU(2) = 1
-      NEEDMU(3) = 1
-      IF (JTRLVL .GE. 1) THEN
-         NEEDMU(4) = 1
-         NEEDMU(5) = 1
-      ELSE
-         NEEDMU(4) = 0
-         NEEDMU(5) = 0
-      END IF
+      NEEDMU(-4:6) = 0
       IF (JTRLVL .GE. 2) THEN
-         NEEDMU(6) = 1
+         NEEDMU(1:6) = 1
+      ELSE IF (JTRLVL .GE. 1) THEN
+         NEEDMU(1:5) = 1
       ELSE
-         NEEDMU(6) = 0
+         NEEDMU(1:3) = 1
       END IF
 C
 C     Determine if in core or out of core
@@ -947,7 +940,7 @@ C
 #include <implicit.h>
       DIMENSION OITMAT(N2ORBX), H2CD(N2ORBX), H2XCD(N2ORBX)
       DIMENSION H2X(LH2X,NH2XCD), WRK(*), N2DIS(8)
-      DIMENSION ICDTRA(NORBT,NORBT), NEEDMU(6), INDAB(NORBT,NORBT)
+      DIMENSION ICDTRA(NORBT,NORBT), NEEDMU(-4:6), INDAB(NORBT,NORBT)
       DIMENSION INDCD(NORBT,NORBT), IN2CD(NORBT,NORBT)
       PARAMETER ( D1 = 1.0D0 )
 C
@@ -996,7 +989,7 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
       CALL IZERO(INDCD,N2ORBX)
       IF (ICTOIT .EQ. 2) THEN
@@ -1560,7 +1553,7 @@ C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
 C     define NEEDTP(-4:6)
-C 100 CALL NXTH2X(IC,ID,H2CD,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+C 100 CALL NXTH2X(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
 C     IF (IDIST .GT. 0) THEN
 C        KW1 = KFREE
 C        LW1 = LFREE
@@ -1572,7 +1565,7 @@ C
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION H2CD(*),NEEDTP(6),WRK(LFREE)
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFORB : N2ORBX
@@ -1679,7 +1672,7 @@ C    Read next Mulliken two-electron integral distribution (**|cd)
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); positive for needed (cd) distribution types
+C       NEEDTP(i); positive for needed (cd) distribution types
 C                  negative if not all distributions needed
 C                  zero if no distributions needed for this type
 C       IDIST; .eq. 0 first read
@@ -1698,7 +1691,7 @@ C ****************************************************************
 C
 #include <implicit.h>
       DIMENSION H2CD(NORBT,NORBT), H2CDPK(N2ORBT)
-      INTEGER   NEEDTP(6), ICDTRA(NORBT,NORBT), N2DIS(8)
+      INTEGER   NEEDTP(-4:6), ICDTRA(NORBT,NORBT), N2DIS(8)
 C
 C
 C Used from common blocks:
@@ -1740,7 +1733,7 @@ C
          END IF
       END IF
 C
-C *** Read next distribution which is needed according to NEEDTP(6)
+C *** Read next distribution which is needed according to NEEDTP(*)
 C     into H2CD
 C
 C  ITYPCD values:  1=i*i :  2=t*i : 3=t*t : 4=a*i : 5=a*t : 6=a*a

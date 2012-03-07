@@ -1626,10 +1626,10 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDTP(6)
+C     Loop over Mulliken distributions allowed in NEEDTP(*)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2M,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2M,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1797,7 +1797,7 @@ C
       CALL QENTER('MP2PHD')
 
       NEEDTP(-4:6) = 0 ! negative: frozen orbital in distribution
-      NEEDTP(2:5)  = 1 !  ... only particle-hole distributions needed
+      NEEDTP( 2:5) = 1 !  ... only particle-hole distributions needed
                        !      assumed: NRHF(isym) .ge. NISH(isym)
                        !           and NVIR(isym) .le. NSSH(isym)
 C
@@ -1808,12 +1808,12 @@ C
 C
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDTP(6)
+C     Loop over Mulliken distributions allowed in NEEDTP(*)
 C
       KFREE = KFRSAV
       LFREE = LFRSAV
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,H2CD,NEEDTP(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C

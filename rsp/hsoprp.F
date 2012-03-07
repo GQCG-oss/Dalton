@@ -41,15 +41,15 @@ C Output: Spin-orbit property vector returned in first elements of WRK
 C
 #include <implicit.h>
 #include <dummy.h>
-      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK),NEEDSO(6)
       CHARACTER*8 WORD
-      DATA NEEDSO/1,1,1,1,1,0/
+      DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
 C
-      PARAMETER(D0=0D0, D1=1D0, DM1=-1D0)
-      LOGICAL SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON
+      PARAMETER (D0=0D0, D1=1D0, DM1=-1D0)
+      DIMENSION NEEDSO(-4:6)
+      LOGICAL   SO2TRA, MOEXIS, FOPEN, DO1, DO2, LORB, LCON
       CHARACTER*8 LABEL
-      LOGICAL FNDLAB
-      EXTERNAL FNDLAB
+      LOGICAL   FNDLAB
+      EXTERNAL  FNDLAB
 C
 C Used from common blocks:
 C  MULD2H,ISMO,ISW,IOBTYP,IDBTYP,NISHT,NORBT,NASHT,NNASHX
@@ -264,6 +264,8 @@ C
 C
 C Read distributions
 C
+      NEEDSO(-4:6) = 0
+      NEEDSO( 1:5) = 1
       IDIST = 0
       KFREE = 1
       LFREE = LWRK1

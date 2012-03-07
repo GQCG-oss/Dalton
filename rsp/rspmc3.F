@@ -151,12 +151,6 @@ C
          CALL PRIAC2(DEN2,NASHT,LUPRI)
       END IF
 C
-C  KONE = 1 is needed in the call to RSPFX. Putting the constant 1
-C  in that call gives a MEMGET error in NXTH2X.
-C  28/3-1996-ekd
-C
-      KONE   = 1
-C
       KH2AX  = 1
       LH2AX  = N2ASHX * N2ASHX
       IF (DIROIT) THEN
@@ -170,9 +164,9 @@ C
       KPVD   = KQB    + NORBT  * NASHDI
       KH2    = KPVD   + N2ASHX * N2ASHX
       KH2X   = KH2    + N2ORBX
-      KFREE  = KH2X   + N2ORBX
-      LFREE  = LWRK   - KFREE
-      IF (LFREE.LT.0) CALL ERRWRK('MELTWO',KFREE-1,LWRK)
+      KWRK1  = KH2X   + N2ORBX
+      LWRK1  = LWRK   - KWRK1
+      IF (LWRK1.LT.0) CALL ERRWRK('MELTWO',KWRK1-1,LWRK)
 C
       CALL DCOPY(N2ORBX,H1,1,WRK(KFI),1)
       CALL DZERO(WRK(KFA),N2ORBX)
@@ -196,16 +190,18 @@ C     floating point exception on DEC alpha. /July 2001 HJAaJ
 C
       LCON = .TRUE.
       LORB = .FALSE.
+      KFREE = 1
+      LFREE = LWRK1
       IF (DIROIT) THEN
          CALL RSPFXD(WRK(KFI),WRK(KFA),WRK(KQA),WRK(KQB),WRK(KH2AX),
      *                  IDAX,INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),
-     *                  WRK(KH2),WRK(KH2X),WRK(KFREE),KONE,LFREE,
+     *                  WRK(KH2),WRK(KH2X),WRK(KWRK1),KFREE,LFREE,
      *                  LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,ISPIN3,
      *                  IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3)
       ELSE
          CALL RSPFX(WRK(KFI),WRK(KFA),WRK(KQA),WRK(KQB),WRK(KH2AX),IDAX,
      *              INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),WRK(KH2X),
-     *              WRK(KFREE),KONE,LFREE,LCON,LORB,IPRRSP) 
+     *              WRK(KWRK1),KFREE,LFREE,LCON,LORB,IPRRSP) 
       END IF
 C     
 C     The transformed two-electron integrals do not have the factor 1/2

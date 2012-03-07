@@ -951,7 +951,7 @@ C     Loop over active-active distributions
       NEEDMU(3) = 1 ! only active-active distributions needed (type 3)
 C
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -1080,13 +1080,13 @@ C
       CALL MEMGET('REAL',KH2CD,N2ORBX,WRK,KFREE,LFREE)
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
       NEEDMU(-4:6) = 0
       NEEDMU(3) = 1 ! only active-active distributions needed (type 3)
 
       IDIST = 0
-  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU(1),WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
