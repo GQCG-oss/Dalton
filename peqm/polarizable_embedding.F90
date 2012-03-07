@@ -2733,27 +2733,29 @@ function elem2charge(elem)
     real(dp) :: elem2charge
 
     integer :: i
-    real(dp), dimension(89) :: charges
-    character(len=2), dimension(89) :: elements
+    character(len=2), dimension(112) :: elements
 
-    elements = (/ 'H' , 'He', 'Li', 'Be', 'B' , 'C' , 'N' , 'O' , 'F' , 'Ne',&
-                & 'Na', 'Mg', 'Al', 'Si', 'P' , 'S' , 'Cl', 'Ar', 'K' , 'Ca',&
-                & 'Sc', 'Ti', 'V' , 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',&
-                & 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y' , 'Zr',&
+    elements = (/ 'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',&
+                & 'Na', 'Mg', 'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar', 'K ', 'Ca',&
+                & 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',&
+                & 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y ', 'Zr',&
                 & 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn',&
-                & 'Sb', 'Te', 'I' , 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',&
+                & 'Sb', 'Te', 'I ', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',&
                 & 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',&
-                & 'Lu', 'Hf', 'Ta', 'W' , 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',&
-                & 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'X'/)
+                & 'Lu', 'Hf', 'Ta', 'W ', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg',&
+                & 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th',&
+                & 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk,' 'Cf', 'Es', 'Fm',&
+                & 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds',&
+                & 'Rg', 'Cn'/)
 
-    do i = 1, 88
-        charges(i) = real(i, dp)
-    end do
-    charges(89) = 0.0d0
+    if (elem == 'X') then
+        elem2charge = 0.0d0
+        return
+    end if
 
-    do i = 1, 88
-        if (elem == elements(i)) then
-            elem2charge = charges(i)
+    do i = 1, 112
+        if (elem == trim(elements(i))) then
+            elem2charge = real(i, dp)
             exit
         end if
     end do
