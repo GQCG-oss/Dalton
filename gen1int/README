@@ -14,11 +14,6 @@
 
    In order to implement Gen1Int into Dalton, we have modified the following files:
 
-   * configure
-     tries to find Gen1Int library libgen1int.a and sets the corresponding compiler
-     flag (-DBUILD_GEN1INT) if found Gen1Int library
-   * Makefile
-     adds Gen1Int module
    * setup
      enables Gen1Int interface when specifying the path of Gen1Int library
    * CMakeLists.txt
@@ -42,18 +37,225 @@
 
 3. Important files in Gen1Int interface
 
-   * Makefile              : Makefile for Dalton
    * gen1int_interface.F90 : Gen1Int interface module
    * gen1int_shell.F90     : AO sub-shell module used in Gen1Int interface
    * gen1int_matrix.F90    : matrix module used in Gen1Int interface
    * stdout.h              : IO unit of standard output
    * xkind.h               : kind type parameter of real numbers
 
-   When you use this Gen1Int interface, please be aware that (see gen1int_ifc_main.F90):
-     * \var(val_ints) contains the upper and diagonal parts if using triangular format;
-     * \var(val_expt) should be zero before calculations
-
-   The parallelization may be implemented in gen1int_ifc_main.F90 and/or gen1int_ifc_prop.F90,
-   which correspond to total geometric derivatives and AO sub-shells, respectively.
-
 4. Please see INSTALL for installation instructions
+
+5. Use of Gen1Int interface and Gen1Int library
+
+   5.1 some limitations:
+   (1) current Gen1Int interface in Dalton can only treat molecules by specifying
+       C1 symmetry, i.e., you can not use symmetry in MOLECULE.INP
+   (2) the integrals can not be written on file, you may write them by yourself
+   (3) the interface is not parallel for the time being, the parallelization may be
+       implemented in gen1int_shell.F90 for AO sub-shells
+
+   5.2 a very rough illustration of using the interface:
+
+       ! Gen1Int interface module
+       use gen1int_interface
+
+       ! number of atomic orbtials
+       integer :: num_ao = ?
+       ! size of integral matrices
+       integer size_ints
+       ! information of property integrals
+       type(one_prop_t) prop_operator
+       ! number of integral matrices for the property
+       integer num_prop
+       ! kind of integrals matrices: symmetric, anti-symmetric or square
+       integer kind_prop
+       ! we could use triangular storage format for symmetric and anti-symmetric matrices
+       logical triangular
+       ! indicates if the integral matrices are symmetric or anti-symmetric
+       logical symmetric
+       ! number of different derivatives, you have to specify by yourself for now
+       integer :: num_derv = ?
+       ! integral matrices, the matrix type is defined in gen1int_matrix.F90
+       type(matrix), allocatable :: Int_Matrix(:)
+       ! integrals to which the above matrices associated to, it is the real place
+       ! where integrals are saved
+       real(REALK), allocatable :: Val_Ints(:)
+       ! start and end addresses of matrix elements in \var(Val_Ints)
+       integer start_elms, end_elms
+       ! IO unit of standard output
+       integer :: io_viewer = ?
+       ! level of print
+       integer :: level_print = ?
+       ! incremental recorder over matrices
+       integer imat
+       ! error information
+       integer ierr
+
+       ! creates an operator -\frac{\partial}{\partial C}\frac{8}{r_{C}},
+       ! where C=(/0.0,0.0,0.0/) and is a non-atomic center (idx_nuclei<1),
+       ! i.e., the first order geometric derivatives of a point charge potential
+       ! around a non-atomic center (/0.0,0.0,0.0/) with respect to the
+       ! non-atomic center
+       !
+       ! as regards the defined property integrals (INT_POT_ENERGY, ...), please refer to
+       ! the manual of Gen1Int library (https://repo.ctcc.no/projects/gen1int), Section 3.2.1
+       call OnePropCreate(prop_name=INT_POT_ENERGY,     &
+                          one_prop=prop_operator,       &
+                          info_prop=ierr,               &
+                          num_prop=num_prop,            &
+                          kind_prop=kind_prop,          &
+                          idx_nuclei=(/-1/),            &
+                          coord_nuclei=(/0.0,0.0,0.0/), &
+                          charge_nuclei=(/-8.0/),       &
+                          order_geo_pot=1)
+       if (ierr/=0) stop "failed to create operator"
+
+       ! for this example, the returned argument \var(num_prop) will be
+       ! (\var(order_geo_pot)+1)*(\var(order_geo_pot)+2)/2
+       !
+       ! if you set \var(order_geo_pot)=2, what you get is the following
+       ! derivatives (6 integral matrices):
+       !     dxdx, dxdy, dydy, dxdz, dydz, dzdz
+       ! 
+       ! you will get 10 integral matrices:
+       !     dxdxdx, dxdxdy, dxdydy, dydydy, dxdxdz, dxdydz, dydydz, dxdzdz, dydzdz, dzdzdz
+       ! for \var(order_geo_pot)=3
+       !
+       ! briefly, if we put the derivatives in a triangle with dx...dxdx, dy...dydy,
+       ! and dz...dzdz in the three corners, the derivatives in Gen1Int starts from
+       ! dx...dxdx to dy...dydy, followed by dx...dxdz to dy...dydz, ..., the last
+       ! is dz...dzdz, you may generate these derivatives from
+       ! 
+       ! do dz = 0, order_geo_pot
+       !   do dy = 0, order_geo_pot-dz
+       !     dx = order_geo_pot-(dy+dz)
+       !     return (/dx,dy,dz/)
+       !   end do
+       ! end do
+       !
+       ! please refer to the manual of Gen1Int library for more details about the results
+       ! you get, see Section 2.2
+
+       ! allocates memory for integrals
+       select case(kind_prop)
+       ! symmetric, or anti-symmetric matrices, we could use triangular storage format
+       case(SYMM_INT_MAT, ANTI_INT_MAT)
+         triangular = .true.
+         symmetric = (kind_prop==SYMM_INT_MAT)
+         size_ints = num_ao*(num_ao+1)/2
+       ! square matrices
+       case default
+         triangular = .false.
+         symmetric = .false.
+         size_ints = num_ao*num_ao
+       end select
+       allocate(Val_Ints(num_prop*size_ints), stat=ierr)
+       if (ierr/=0) stop "failed to allocate memory for integrals"
+
+       ! associates the matrices due to that Gen1Int interface requires
+       ! the matrix type arguments
+       allocate(Int_Matrix(num_prop), stat=ierr)
+       if (ierr/=0) stop "failed to allocate matrices"
+       start_elms = 1
+       end_elms = size_ints
+       do imat = 1, num_prop
+         call MatAssociate(work_alpha=Val_Ints(start_elms:end_elms), &
+                           A=Int_Matrix(imat),                       &
+                           triangular=triangular,                    &
+                           symmetric=symmetric)
+         start_elms = end_elms+1
+         end_elms = end_elms+size_ints
+       end do
+
+       ! calculates the integrals, please refer to the comments in subroutine
+       ! \fn(gen1int_ifc_main) in gen1int_interface.F90, as regards the unique
+       ! or redundant total geometric derivatives, please refer to Section 3.2.2
+       ! and 4.3 of the Gen1Int library manual
+       !
+       ! NOTE:
+       ! \var(Int_Matrix) contains the upper and diagonal parts if using triangular format,
+       ! \var(val_expt) should be zero before calculations, it is intent(inout)
+       call gen1int_ifc_main(one_prop=prop_operator, &  !input
+                             num_ints=num_prop,      &  !input
+                             order_geo_total=?,      &  !optional input
+                             max_num_cent=?,         &  !optional input
+                             val_ints=Int_Matrix,    &  !optional output
+                             redunt_ints=?,          &  !optional input
+                             num_dens=?,             &  !input
+                             ao_dens=?,              &  !optional input
+                             val_expt=?,             &  !optional output
+                             redunt_expt=?,          &  !optional input
+                             io_viewer=io_viewer,    &  !input
+                             level_print=level_print)   !input
+
+       ! frees the space of information of property integrals
+       call OnePropDestroy(one_prop=prop_operator)
+
+       ! frees the space of matrices
+       do imat = 1, num_prop
+         call MatNullify(A=Int_Matrix(imat))
+       end do
+       deallocate(Int_Matrix)
+
+       ! the results are saved in Val_Ints(:)
+
+   5.3 FAQ
+
+       (1) It isn't obvious to me what I can set and what is set in your
+           routines. For instance can I set the triangular and symmetric variables?
+
+       Inside Gen1Int module, it will check if the integral matrices is symmetric,
+       anti-symmetric or square, which you can not change.
+
+       But you could have a triangular integral matrix return if it is symmetric
+       (kind_prop=SYMM_INT_MAT) or anti-symmetric (kind_prop=ANTI_INT_MAT) by
+
+       select case(kind_prop)
+       case(SYMM_INT_MAT,ANTI_INT_MAT)
+         ! if the integral matrices are triangular or square
+         triangular = .true.
+         ! if the integral matrices are symmetric or anti-symmetric
+         symmetric = (kind_prop==SYMM_INT_MAT)
+         ! number of elements in one integral matrix, \var(num_ao) is the number of atomic orbitals
+         num_elms = num_ao*(num_ao+1)/2
+       case default
+         triangular = .false.
+         symmetric = .false.
+         num_elms = num_ao*num_ao
+       end select
+       ! number of different derivatives, set as 1 if you do not have any derivatives
+       num_derv = 1
+       ! allocates integral matrices
+       allocate(Int_Matrix(num_prop*num_derv), stat=ierr)
+       if (ierr/=0) stop "failed to allocate matrices"
+       do imat = 1, num_prop*num_derv
+         ! you could have the returned integrals in a real(8) array
+         ! work_space(1:num_elms*num_prop*num_derv),
+         ! the pointers in matrix Int_Matrix(imat) will be associated to
+         ! work_space(num_elms*(imat-1)+1:num_elms*imat)
+         call MatAssociate(work_alpha=work_space(num_elms*(imat-1)+1:num_elms*imat), &
+                           A=Int_Matrix(imat), triangular=triangular, symmetric=symmetric)
+       end do
+
+       after you getting the integrals back, you could free space by
+
+       ! frees space taken by integral matrices
+       do imat = 1, num_prop*num_derv
+         ! de-associates the pointers in matrices
+         call MatNullify(A=Int_Matrix(imat))
+       end do
+       deallocate(Int_Matrix)
+
+       the results are still in work_space(:).
+
+       (2) What is the max_num_cent used for?
+
+       max_num_cent is the maximum number of differentiated centers for total
+       geometric derivatives. The reason of using this parameter is that we may
+       only want, for instance, one-center or two-center fourth order total
+       geometric derivatives. Then Gen1Int only return such total geometric
+       derivatives, it will not return three- and four-center fourth order
+       total geometric derivatives.
+
+       you do not need to provide this argument if you do not calcualte total
+       geometric derivatives.
