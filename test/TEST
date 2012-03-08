@@ -39,8 +39,7 @@ if [ -x '../bin/dalton' ]; then
 elif [ -x '../build/dalton' ]; then
   DALTON="`pwd`/../build/dalton"
 else
-  echo 'Fatal error: could not find dalton script'
-  exit 1 
+  DALTON=NON_DEFAULT
 fi
 
 #########################################################################
@@ -308,6 +307,11 @@ while echo $1 | egrep -q '^-'; do
 done
 if [ $help ]; then
   usage
+fi
+
+if [ ! -x $DALTON ]; then
+  echo 'Fatal error: could not find dalton script'
+  exit 1 
 fi
 
 if [ "${DALTON:0:1}" != "/" ]; then
