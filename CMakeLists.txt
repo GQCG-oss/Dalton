@@ -242,10 +242,10 @@ target_link_libraries(
     ${LIBS}
     ) 
 
-# get size of static allocations in dalton.x
+# get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/static_size.py dalton.x
+    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dalton.x
     )
 
 include(Install)
