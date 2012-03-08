@@ -1,8 +1,10 @@
 !! Give future long- and short-term developments
 
 Short-term:
-1) cleans up the test suite of F90 interface module
-2) adds functionality of Cartesian multipole moment integrals
+1) cleans up the interface module gen1int_interface.F90 to provide both
+   Fortran 77 and 90 interafces
+2) adds functionality of Cartesian/spherical multipole moment integrals;
+   parallelizes gen1int_shell.F90
 3) tests the calculations of expectation values; why calling PR1IN1
    with expectation values returned gives wrong results
 4) changes the interface so that users could pass information of basis sets

@@ -199,7 +199,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) border_type, Rmin, aaorau
                 call upcase(border_type)
                 if (border_type /= 'REMOVE' .or. border_type /= 'REDIST') then
-                    stop('Error: unknown handling of border sites!')
+                    stop 'Error: unknown handling of border sites!'
                 end if
                 call upcase(aaorau)
                 if (aaorau == 'AA') Rmin = Rmin * aa2au
@@ -284,7 +284,7 @@ subroutine pe_read_potential(work, coords, charges)
         else if (pe_fd) then
             goto 101
         else
-            stop('POTENTIAL.INP not found!')
+            stop 'POTENTIAL.INP not found!'
         end if
     end if
 
@@ -694,9 +694,9 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
         energy = .false.
         response = .false.
         if (.not. present(fckmats)) then
-            stop('Output matrices are missing from input!')
+            stop 'Output matrices are missing from input!'
         else if (.not. present(Epe)) then
-            stop('The energy variable is missing from input!')
+            stop 'The energy variable is missing from input!'
         end if
     else if (runtype == 'energy') then
         energy = .true.
@@ -709,10 +709,10 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, work)
         fock = .false.
         energy = .false.
         if (.not. present(fckmats)) then
-            stop('Output matrices are missing from input!')
+            stop 'Output matrices are missing from input!'
         end if
     else
-        stop('Could not determine calculation type.')
+        stop 'Could not determine calculation type.'
     end if
 
     ndens = nmats
@@ -2288,9 +2288,9 @@ subroutine unpack_tensor(Tf, Ts)
     real(dp), dimension(*), intent(out) :: Tf
 
     if (size(Ts) == 1) then
-        stop('Error in unpack_tensor: no unpacking necessary')
+        stop 'Error in unpack_tensor: no unpacking necessary'
     else if (size(Ts) == 3) then
-        stop('Error in unpack_tensor: no unpacking necessary')
+        stop 'Error in unpack_tensor: no unpacking necessary'
     else if (size(Ts) == 6) then
         call unpack_2nd_order(Tf, Ts)
     else if (size(Ts) == 10) then
@@ -2298,9 +2298,9 @@ subroutine unpack_tensor(Tf, Ts)
     else if (size(Ts) == 15) then
         call unpack_4th_order(Tf, Ts)
     else if (size(Ts) > 15) then
-        stop('Error in unpack_tensor: wrong size or not implemented')
+        stop 'Error in unpack_tensor: wrong size or not implemented'
     else
-        stop('Error in unpack_tensor: packed tensor is wrong size')
+        stop 'Error in unpack_tensor: packed tensor is wrong size'
     end if
 
 end subroutine unpack_tensor
