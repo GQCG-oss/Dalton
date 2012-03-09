@@ -10,7 +10,7 @@ if not os.path.isfile(binary):
     print('binary does not exist')
     sys.exit()
 
-command = "size %s 2> /dev/null | grep dirac.x" % binary
+command = "size %s 2> /dev/null | grep %s" % (binary, binary)
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 output = process.stdout.read().strip()
 
