@@ -102,19 +102,20 @@
     integer, intent(in) :: level_print
     real(REALK), parameter :: ERR_THRSH = 10.0_REALK**(-8)    !threshold of error
     real(REALK), parameter :: RATIO_THRSH = 10.0_REALK**(-6)  !threshold of ratio to the referenced result
-    integer, parameter :: NUM_TEST = 3                        !number of tests
-    character*14, parameter :: PROP_NAME(NUM_TEST) = &        !labels of testing property integrals,
-      (/INT_KIN_ENERGY, INT_OVERLAP, INT_POT_ENERGY/)         !see Gen1int library src/gen1int.F90
+    integer, parameter :: NUM_TEST = 4                        !number of tests
+    character*20, parameter :: PROP_NAME(NUM_TEST) = &        !labels of testing property integrals,
+      (/INT_KIN_ENERGY, INT_OVERLAP, INT_POT_ENERGY, &        !see Gen1int library src/gen1int.F90
+        INT_CART_MULTIPOLE/)
     character*8, parameter :: HERM_PROP(NUM_TEST) = &         !labels of property integrals,
-      (/"KINENERG", "OVERLAP ", "POTENERG"/)                  !see \fn(PR1IN1) in abacus/her1pro.F
+      (/"KINENERG", "OVERLAP ", "POTENERG", "CARMOM  "/)      !see \fn(PR1IN1) in abacus/her1pro.F
     logical, parameter :: LONDON_AO(NUM_TEST) = &             !if using London atomic orbitals
-      (/.false., .false., .false./)
+      (/.false., .false., .false., .false./)
     integer, parameter :: ORDER_MOM(NUM_TEST) = &             !order of Cartesian multipole moments
-      (/0, 0, 0/)
+      (/0, 0, 0, 1/)
     integer, parameter :: ORDER_GEO_TOTAL(NUM_TEST) = &       !order of total geometric derivatives
-      (/0, 0, 0/)
+      (/0, 0, 0, 0/)
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &          !maximum number of differentiated centers
-      (/0, 0, 0/)
+      (/0, 0, 0, 0/)
     logical, parameter :: WRT_INTS = .false.                  !if writing integrals on file
     logical, parameter :: WRT_EXPT = .false.                  !if writing expectation values on file
     type(one_prop_t) prop_operator                !operator for property integrals
@@ -202,14 +203,21 @@
       if (HERM_PROP(itst)=="POTENERG") cycle
 #endif
       ! initializes the information of one-electron property integrals
-      call OnePropCreate(prop_name=PROP_NAME(itst), one_prop=prop_operator,      &
-                         info_prop=ierr, num_prop=num_prop, kind_prop=kind_prop, &
-                         dipole_origin=DIPORG, coord_nuclei=CORD(:,1:NUCDEP),    &
-                         charge_nuclei=-CHARGE(1:NUCDEP))
+      call OnePropCreate(prop_name=trim(PROP_NAME(itst)), &
+                         one_prop=prop_operator,          &
+                         info_prop=ierr,                  &
+                         num_prop=num_prop,               &
+                         kind_prop=kind_prop,             &
+                         coord_nuclei=CORD(:,1:NUCDEP),   &
+                         charge_nuclei=-CHARGE(1:NUCDEP), &
+                         dipole_origin=DIPORG,            &
+                         order_mom=ORDER_MOM(itst))
       if (ierr/=0) then
         write(io_viewer,999) "failed to creat "//trim(PROP_NAME(itst))
         test_failed = .true.
         cycle
+      else
+        test_failed = .false.
       end if
 !FIXME: creates n-ary tree here
       dim_unique_geo = (3*NUCDEP)**ORDER_GEO_TOTAL(itst)
@@ -221,16 +229,16 @@
       ! size and addresses of referenced integrals
       select case(kind_prop)
       case(SYMM_INT_MAT,ANTI_INT_MAT)
-        size_int = num_ao*(num_ao+1)*num_opt_derv/2
+        size_int = num_ao*(num_ao+1)/2
         triangular = .true.
         symmetric = kind_prop==SYMM_INT_MAT
       case default
-        size_int = num_ao*num_ao*num_opt_derv
+        size_int = num_ao*num_ao
         triangular = .false.
         symmetric = .false.
       end select
       strt_herm_int = end_herm_expt+1
-      end_herm_int = strt_herm_int+size_int-1
+      end_herm_int = strt_herm_int+size_int*num_opt_derv-1
       if (end_herm_int>len_work) then
         write(io_viewer,100) "test of "//trim(PROP_NAME(itst))//".Gen1Int failed!"
         write(io_viewer,999) "required memory", end_herm_int
@@ -325,7 +333,7 @@
       ! checks the results
       write(io_viewer,100) "checks the results of "//trim(PROP_NAME(itst))
       do imat = 1, num_opt_derv
-!FIXME for several integral matrices, values=
+        end_herm_int = strt_herm_int+size_int-1
         call MatArrayAlmostEqual(A=val_ints(imat),                               &
                                  values=wrk_space(strt_herm_int:end_herm_int),   &
                                  io_viewer=io_viewer, almost_equal=almost_equal, &
@@ -333,6 +341,7 @@
                                  threshold=ERR_THRSH, ratio_thrsh=RATIO_THRSH)
         if (.not.almost_equal) test_failed = .true.
         call MatDestroy(A=val_ints(imat))
+        strt_herm_int = end_herm_int+1
       end do
       deallocate(val_ints)
 #if !defined (PRG_DIRAC)
