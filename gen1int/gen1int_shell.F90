@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-!...  This file takes care the atomic orbital (AO) sub-shells used in Gen1Int interface.
+!...  This file takes care the atomic orbital (AO) sub-shell used in Gen1Int interface.
 !
 !...  2011-10-02, Bin Gao
 !...  * first version
@@ -29,7 +29,7 @@
 #include "stdout.h"
 #include "xkind.h"
 
-!> \brief defines the AO sub-shells used in Gen1Int interface and corresponding subroutines
+!> \brief defines the AO sub-shell used in Gen1Int interface and corresponding subroutines
 !> \author Bin Gao
 !> \date 2011-10-02
 module gen1int_shell
@@ -74,14 +74,11 @@ module gen1int_shell
   end type sub_shell_t
 
   public :: Gen1IntShellCreate
-  public :: Gen1IntShellDims
-  public :: Gen1IntShellIdx
+  public :: Gen1IntShellAttr
+  public :: Gen1IntShellGetRangeAO
   public :: Gen1IntShellView
   public :: Gen1IntShellEvaluate
   public :: Gen1IntShellDestroy
-
-  ! reorders Dalton p-shell spherical GTOs
-  private :: dal_reorder_p_sgto
 
   contains
 
@@ -176,19 +173,19 @@ module gen1int_shell
     end if
   end subroutine Gen1IntShellCreate
 
-  !> \brief gets the dimensions of an AO sub-shell
+  !> \brief gets the numbers of atomic orbitals and contractions of an AO sub-shell
   !> \author Bin Gao
   !> \date 2011-10-04
   !> \param sub_shell is the AO sub-shell
   !> \return num_ao is the number of atomic orbitals
   !> \return num_contr is the number of contractions
-  subroutine Gen1IntShellDims(sub_shell, num_ao, num_contr)
+  subroutine Gen1IntShellAttr(sub_shell, num_ao, num_contr)
     type(sub_shell_t), intent(in) :: sub_shell
     integer, intent(out) :: num_ao
     integer, intent(out) :: num_contr
     num_ao = sub_shell%num_ao
     num_contr = sub_shell%num_contr
-  end subroutine Gen1IntShellDims
+  end subroutine Gen1IntShellAttr
 
   !> \brief gets the indices of the first and last orbtials for the given AO sub-shell
   !> \author Bin Gao
@@ -196,13 +193,13 @@ module gen1int_shell
   !> \param sub_shell is the AO sub-shell
   !> \return idx_first is the index of the first orbital
   !> \return idx_last is the index of the last orbital
-  subroutine Gen1IntShellIdx(sub_shell, idx_first, idx_last)
+  subroutine Gen1IntShellGetRangeAO(sub_shell, idx_first, idx_last)
     type(sub_shell_t), intent(in) :: sub_shell
     integer, intent(out) :: idx_first
     integer, intent(out) :: idx_last
     idx_first = sub_shell%base_idx+1
     idx_last = sub_shell%base_idx+sub_shell%num_ao*sub_shell%num_contr
-  end subroutine Gen1IntShellIdx
+  end subroutine Gen1IntShellGetRangeAO
 
   !> \brief visualizes the information of several AO sub-shells
   !> \author Bin Gao
@@ -449,16 +446,16 @@ module gen1int_shell
                                  num_gto_ket=sub_shells(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints)
             ! reorders p-shell spherical GTOs
-            if (sub_shells(ishell)%ang_num==1)                          &
-              call dal_reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
-                                         *sub_shells(jshell)%num_ao     &
-                                         *sub_shells(jshell)%num_contr, &
-                                      num_opt, contr_ints)
-            if (sub_shells(jshell)%ang_num==1)                       &
-              call dal_reorder_p_sgto(sub_shells(ishell)%num_ao      &
-                                      *sub_shells(ishell)%num_contr, &
-                                      sub_shells(jshell)%num_contr,  &
-                                      num_opt, contr_ints)
+            if (sub_shells(ishell)%ang_num==1)                      &
+              call reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
+                                     *sub_shells(jshell)%num_ao     &
+                                     *sub_shells(jshell)%num_contr, &
+                                  num_opt, contr_ints)
+            if (sub_shells(jshell)%ang_num==1)                   &
+              call reorder_p_sgto(sub_shells(ishell)%num_ao      &
+                                  *sub_shells(ishell)%num_contr, &
+                                  sub_shells(jshell)%num_contr,  &
+                                  num_opt, contr_ints)
           ! Cartesian GTOs
           else
             ! calls Gen1Int subroutines to evaluate property integrals, and reorders
@@ -644,16 +641,16 @@ module gen1int_shell
                                  num_gto_ket=sub_shells(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints)
             ! reorders p-shell spherical GTOs
-            if (sub_shells(ishell)%ang_num==1)                          &
-              call dal_reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
-                                         *sub_shells(jshell)%num_ao     &
-                                         *sub_shells(jshell)%num_contr, &
-                                      num_opt, contr_ints)
-            if (sub_shells(jshell)%ang_num==1)                       &
-              call dal_reorder_p_sgto(sub_shells(ishell)%num_ao      &
-                                      *sub_shells(ishell)%num_contr, &
-                                      sub_shells(jshell)%num_contr,  &
-                                      num_opt, contr_ints)
+            if (sub_shells(ishell)%ang_num==1)                      &
+              call reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
+                                     *sub_shells(jshell)%num_ao     &
+                                     *sub_shells(jshell)%num_contr, &
+                                  num_opt, contr_ints)
+            if (sub_shells(jshell)%ang_num==1)                   &
+              call reorder_p_sgto(sub_shells(ishell)%num_ao      &
+                                  *sub_shells(ishell)%num_contr, &
+                                  sub_shells(jshell)%num_contr,  &
+                                  num_opt, contr_ints)
           ! Cartesian GTOs
           else
             ! calls Gen1Int subroutines to evaluate property integrals, and reorders
@@ -839,16 +836,16 @@ module gen1int_shell
                                  num_gto_ket=sub_shells(jshell)%num_ao,        &
                                  num_opt=num_opt, contr_ints=contr_ints)
             ! reorders p-shell spherical GTOs
-            if (sub_shells(ishell)%ang_num==1)                          &
-              call dal_reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
-                                         *sub_shells(jshell)%num_ao     &
-                                         *sub_shells(jshell)%num_contr, &
-                                      num_opt, contr_ints)
-            if (sub_shells(jshell)%ang_num==1)                       &
-              call dal_reorder_p_sgto(sub_shells(ishell)%num_ao      &
-                                      *sub_shells(ishell)%num_contr, &
-                                      sub_shells(jshell)%num_contr,  &
-                                      num_opt, contr_ints)
+            if (sub_shells(ishell)%ang_num==1)                      &
+              call reorder_p_sgto(1, sub_shells(ishell)%num_contr   &
+                                     *sub_shells(jshell)%num_ao     &
+                                     *sub_shells(jshell)%num_contr, &
+                                  num_opt, contr_ints)
+            if (sub_shells(jshell)%ang_num==1)                   &
+              call reorder_p_sgto(sub_shells(ishell)%num_ao      &
+                                  *sub_shells(ishell)%num_contr, &
+                                  sub_shells(jshell)%num_contr,  &
+                                  num_opt, contr_ints)
           ! Cartesian GTOs
           else
             ! calls Gen1Int subroutines to evaluate property integrals, and reorders
@@ -988,36 +985,5 @@ module gen1int_shell
       end if
     end do
   end subroutine Gen1IntShellDestroy
-
-  !> \brief reorders the p-shell contracted real solid-harmonic Gaussians in Dalton's
-  !>        order on bra or ket center
-  !> \author Bin Gao
-  !> \date 2011-08-03
-  !> \param dim_bra_sgto is the dimension of SGTOs on bra center
-  !> \param num_contr_ket is the number of contractions of ket center
-  !> \param num_opt is the number of operators
-  !> \param gen_ints contains the contracted integrals from Gen1Int
-  subroutine dal_reorder_p_sgto(dim_bra_sgto, num_contr_ket, num_opt, gen_ints)
-    integer, intent(in) :: dim_bra_sgto
-    integer, intent(in) :: num_contr_ket
-    integer, intent(in) :: num_opt
-    real(REALK), intent(inout) :: gen_ints(dim_bra_sgto,3,num_contr_ket,num_opt)
-    real(REALK), allocatable :: pshell_ints(:)  !temporary integrals
-    integer icontr, iopt                        !incremental recorders
-    integer ierr                                !error information
-    ! Dalton's order of SGTOs: px(1), py(-1), pz(0),
-    ! while those in Gen1Int is: py(-1), pz(0), px(1)
-    allocate(pshell_ints(dim_bra_sgto), stat=ierr)
-    if (ierr/=0) stop "dal_reorder_p_sgto>> failed to allocate pshell_ints!"
-    do iopt = 1, num_opt
-      do icontr = 1, num_contr_ket
-        pshell_ints = gen_ints(:,3,icontr,iopt)
-        gen_ints(:,3,icontr,iopt) = gen_ints(:,2,icontr,iopt)
-        gen_ints(:,2,icontr,iopt) = gen_ints(:,1,icontr,iopt)
-        gen_ints(:,1,icontr,iopt) = pshell_ints
-      end do
-    end do
-    deallocate(pshell_ints)
-  end subroutine dal_reorder_p_sgto
 
 end module gen1int_shell

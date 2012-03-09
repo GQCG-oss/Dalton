@@ -20,7 +20,7 @@
      sets the corresponding compiler flag (-DBUILD_GEN1INT) and adds the source codes
      of Gen1Int library and interface
    * abacus/dalton.F (please search BUILD_GEN1INT)
-     calls \fn(gen1int_ifc_clean) to clean up memory etc. used by Gen1Int interface
+     calls \fn(gen1int_ifc_clean) to clean memory etc. used by Gen1Int interface
    * abacus/herdrv.F (please search BUILD_GEN1INT)
      calls \fn(gen1int_ifc_test) to perform test suite of Gen1Int interface
    * abacus/herrdn.F (please search BUILD_GEN1INT)
@@ -30,6 +30,9 @@
      removes the interface of calling old ECP subroutine
    * abacus/her1drv.F (please search BUILD_GEN1INT)
      calls \fn(gen1int_ifc_main) to calculate property integrals
+   * include/cbiher.h
+     adds logical variable \var(TEST_GEN1INT) indicating if performing test suite
+     of Gen1Int interface
 
    and added the following files:
    * gen1int directory
@@ -37,9 +40,11 @@
 
 3. Important files in Gen1Int interface
 
-   * gen1int_interface.F90 : Gen1Int interface module
    * gen1int_shell.F90     : AO sub-shell module used in Gen1Int interface
    * gen1int_matrix.F90    : matrix module used in Gen1Int interface
+   * dalton_shell.F90      : Dalton AO sub-shells
+   * gen1int_interface.F90 : interface for Fortran 77 users
+   * reorder_p_sgto.F90    : reorders the p-shell contracted real solid-harmonic Gaussians
    * stdout.h              : IO unit of standard output
    * xkind.h               : kind type parameter of real numbers
 
@@ -56,11 +61,11 @@
 
    5.2 a very rough illustration of using the interface:
 
-       ! Gen1Int interface module
-       use gen1int_interface
+       ! module of Dalton AO sub-shells
+       use dalton_shell
 
        ! number of atomic orbtials
-       integer :: num_ao = ?
+       integer num_ao
        ! size of integral matrices
        integer size_ints
        ! information of property integrals
@@ -73,8 +78,19 @@
        logical triangular
        ! indicates if the integral matrices are symmetric or anti-symmetric
        logical symmetric
-       ! number of different derivatives, you have to specify by yourself for now
-       integer :: num_derv = ?
+       ! number of atoms
+       integer :: num_atoms = ?
+       ! order of total geometric derivatives
+       integer :: order_geo_total = ?
+       ! maximum number of differentiated centers for total geometric derivatives,
+       ! should be <=4 and >=0
+       integer :: max_num_cent = ?
+       ! n-ary tree for total geometric derivatives
+       type(geom_tree_t) geom_tree
+       ! number of different derivatives
+       integer num_derv
+       ! number of integral matrices
+       integer num_matrices
        ! integral matrices, the matrix type is defined in gen1int_matrix.F90
        type(matrix), allocatable :: Int_Matrix(:)
        ! integrals to which the above matrices associated to, it is the real place
@@ -91,7 +107,7 @@
        ! error information
        integer ierr
 
-       ! creates an operator -\frac{\partial}{\partial C}\frac{8}{r_{C}},
+       ! (1) creates an operator -\frac{\partial}{\partial C}\frac{8}{r_{C}},
        ! where C=(/0.0,0.0,0.0/) and is a non-atomic center (idx_nuclei<1),
        ! i.e., the first order geometric derivatives of a point charge potential
        ! around a non-atomic center (/0.0,0.0,0.0/) with respect to the
@@ -136,7 +152,23 @@
        ! please refer to the manual of Gen1Int library for more details about the results
        ! you get, see Section 2.2
 
-       ! allocates memory for integrals
+       ! (2) initializes the information of n-ary tree for total geometric derivatives
+       call GeomTreeCreate(num_atoms=num_atoms, order_geo=order_geo_total, &
+                           max_ncent=max_num_cent, geom_tree=geom_tree,    &
+                           info_geom=ierr)
+       if (ierr/=0) stop "failed to create n-ary tree"
+       ! gets the total number of unique geometric derivatives
+       call GeomTreeDimUnique(geom_tree=geom_tree, dim_unique_geo=num_derv)
+       ! or if you want to return all possible redundant total geometric derivatives,
+       ! you could set
+       ! num_derv = (3*num_atoms)**order_geo_total
+       ! redunt_ints = .true.
+       ! redunt_expt = .true.
+       ! sets the number of integral matrices including property integrals and derivatives
+       num_matrices = num_prop*num_derv
+
+       ! (3) allocates memory for integrals
+       call DaltonShellGetNumAO(num_ao=num_ao)  !gets the number of atomic orbitals
        select case(kind_prop)
        ! symmetric, or anti-symmetric matrices, we could use triangular storage format
        case(SYMM_INT_MAT, ANTI_INT_MAT)
@@ -149,16 +181,16 @@
          symmetric = .false.
          size_ints = num_ao*num_ao
        end select
-       allocate(Val_Ints(num_prop*size_ints), stat=ierr)
+       allocate(Val_Ints(size_ints*num_matrices), stat=ierr)
        if (ierr/=0) stop "failed to allocate memory for integrals"
 
-       ! associates the matrices due to that Gen1Int interface requires
+       ! (4) associates the matrices due to that Gen1Int interface requires
        ! the matrix type arguments
-       allocate(Int_Matrix(num_prop), stat=ierr)
+       allocate(Int_Matrix(num_matrices), stat=ierr)
        if (ierr/=0) stop "failed to allocate matrices"
        start_elms = 1
        end_elms = size_ints
-       do imat = 1, num_prop
+       do imat = 1, num_matrices
          call MatAssociate(work_alpha=Val_Ints(start_elms:end_elms), &
                            A=Int_Matrix(imat),                       &
                            triangular=triangular,                    &
@@ -167,32 +199,34 @@
          end_elms = end_elms+size_ints
        end do
 
-       ! calculates the integrals, please refer to the comments in subroutine
-       ! \fn(gen1int_ifc_main) in gen1int_interface.F90, as regards the unique
-       ! or redundant total geometric derivatives, please refer to Section 3.2.2
+       ! (5) calculates the integrals, please refer to the comments in subroutine
+       ! \fn(DaltonShellEvaluate) in dalton_shell.F90, as regards the unique or
+       ! redundant total geometric derivatives, please refer to Section 3.2.2
        ! and 4.3 of the Gen1Int library manual
        !
        ! NOTE:
        ! \var(Int_Matrix) contains the upper and diagonal parts if using triangular format,
        ! \var(val_expt) should be zero before calculations, it is intent(inout)
-       call gen1int_ifc_main(one_prop=prop_operator, &  !input
-                             num_ints=num_prop,      &  !input
-                             order_geo_total=?,      &  !optional input
-                             max_num_cent=?,         &  !optional input
-                             val_ints=Int_Matrix,    &  !optional output
-                             redunt_ints=?,          &  !optional input
-                             num_dens=?,             &  !input
-                             ao_dens=?,              &  !optional input
-                             val_expt=?,             &  !optional output
-                             redunt_expt=?,          &  !optional input
-                             io_viewer=io_viewer,    &  !input
-                             level_print=level_print)   !input
+       call DaltonShellEvaluate(one_prop=prop_operator, &  !input
+                                num_ints=num_matrices,  &  !input
+                                geom_tree=geom_tree,    &  !optional input
+                                val_ints=Int_Matrix,    &  !optional output
+                                redunt_ints=?,          &  !optional input
+                                num_dens=?,             &  !input
+                                ao_dens=?,              &  !optional input
+                                val_expt=?,             &  !optional output
+                                redunt_expt=?,          &  !optional input
+                                io_viewer=io_viewer,    &  !input
+                                level_print=level_print)   !input
 
-       ! frees the space of information of property integrals
+       ! (6) frees the space of information of property integrals
        call OnePropDestroy(one_prop=prop_operator)
 
-       ! frees the space of matrices
-       do imat = 1, num_prop
+       ! (7) frees space taken by a n-ary tree for total geometric derivatives
+       call GeomTreeDestroy(geom_tree=geom_tree)
+
+       ! (8) frees the space of matrices
+       do imat = 1, num_matrices
          call MatNullify(A=Int_Matrix(imat))
        end do
        deallocate(Int_Matrix)
