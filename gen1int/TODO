@@ -1,17 +1,13 @@
 !! Give future long- and short-term developments
 
 Short-term:
-1) cleans up the interface module gen1int_interface.F90 to provide both
-   Fortran 77 and 90 interafces
-2) adds functionality of Cartesian/spherical multipole moment integrals;
-   parallelizes gen1int_shell.F90
-3) tests the calculations of expectation values; why calling PR1IN1
+1) cleans the test suite in gen1int_interface.F90
+2) tests Cartesian/spherical multipole moment integrals
+3) parallelizes gen1int_shell.F90
+4) tests the calculations of expectation values; why calling PR1IN1
    with expectation values returned gives wrong results
-4) changes the interface so that users could pass information of basis sets
-   as arguments
-5) enables London atomic orbitals (indicating by logical variable \var(is_lao))
-6) implement more property integrals
-7) uses header files in Gen1Int library
+5) enables London atomic orbitals (indicating by logical variable \var(london_ao))
+6) uses header files in Gen1Int library?
 
 Long-term:
 1) adds functionality of reading/writing integrals and/or expectation values on file

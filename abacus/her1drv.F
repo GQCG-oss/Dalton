@@ -318,10 +318,6 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
-#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
