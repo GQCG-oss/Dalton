@@ -2312,11 +2312,21 @@ subroutine unpack_2nd_order(Tf, Ts)
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3), intent(out) :: Tf
 
-    Tf = 0.0d0
+    integer :: i
+    integer :: a, b
 
-    Tf(1,1) = Ts(1); Tf(1,2) = Ts(2); Tf(1,3) = Ts(3)
-    Tf(2,1) = Ts(2); Tf(2,2) = Ts(4); Tf(2,3) = Ts(5)
-    Tf(3,1) = Ts(3); Tf(3,2) = Ts(5); Tf(3,3) = Ts(6)
+    i = 1
+    do b = 1, 3
+        do a = b, 3
+            if (a == b) then
+                Tf(a,b) = Ts(i)
+            else
+                Tf(a,b) = Ts(i)
+                Tf(b,a) = Ts(i)
+            end if
+            i = i + 1
+        end do
+    end do
 
 end subroutine unpack_2nd_order
 
@@ -2327,17 +2337,34 @@ subroutine unpack_3rd_order(Tf, Ts)
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3,3), intent(out) :: Tf
 
-    Tf = 0.0d0
+    integer :: i, a, b, g
 
-    Tf(1,1,1) = Ts(1); Tf(1,1,2) = Ts(2); Tf(1,1,3) = Ts(3)
-    Tf(1,2,1) = Ts(2); Tf(1,2,2) = Ts(4); Tf(1,2,3) = Ts(5)
-    Tf(1,3,1) = Ts(3); Tf(1,3,2) = Ts(5); Tf(1,3,3) = Ts(6)
-    Tf(2,1,1) = Ts(2); Tf(2,1,2) = Ts(4); Tf(2,1,3) = Ts(5)
-    Tf(2,2,1) = Ts(4); Tf(2,2,2) = Ts(7); Tf(2,2,3) = Ts(8)
-    Tf(2,3,1) = Ts(5); Tf(2,3,2) = Ts(8); Tf(2,3,3) = Ts(9)
-    Tf(3,1,1) = Ts(3); Tf(3,1,2) = Ts(5); Tf(3,1,3) = Ts(6)
-    Tf(3,2,1) = Ts(5); Tf(3,2,2) = Ts(8); Tf(3,2,3) = Ts(9)
-    Tf(3,3,1) = Ts(6); Tf(3,3,2) = Ts(9); Tf(3,3,3) = Ts(10)
+    i = 1
+    do g = 1, 3
+        do b = g, 3
+            do a = b, 3
+                if (a == b .and. b == g) then
+                    Tf(a,b,g) = Ts(i)
+                else if (a == b .and. b /= g) then
+                    Tf(a,b,g) = Ts(i)
+                    Tf(a,g,b) = Ts(i)
+                    Tf(g,a,b) = Ts(i)
+                else if (a /= b .and. b == g) then
+                    Tf(a,b,g) = Ts(i)
+                    Tf(b,a,g) = Ts(i)
+                    Tf(b,g,a) = Ts(i)
+                else if (a /= b .and. b /= g) then
+                    Tf(a,b,g) = Ts(i)
+                    Tf(a,g,b) = Ts(i)
+                    Tf(b,a,g) = Ts(i)
+                    Tf(b,g,a) = Ts(i)
+                    Tf(g,a,b) = Ts(i)
+                    Tf(g,b,a) = Ts(i)
+                end if
+                i = i + 1
+            end do
+       end do
+    end do
 
 end subroutine unpack_3rd_order
 
@@ -2348,37 +2375,77 @@ subroutine unpack_4th_order(Tf, Ts)
     real(dp), dimension(:), intent(in) :: Ts
     real(dp), dimension(3,3,3,3), intent(out) :: Tf
 
-    Tf = 0.0d0
+    integer :: i, a, b, g, d
 
-    Tf(1,1,1,1) = Ts(1);  Tf(1,1,1,2) = Ts(2);  Tf(1,1,1,3) = Ts(3)
-    Tf(1,1,2,1) = Ts(2);  Tf(1,1,2,2) = Ts(4);  Tf(1,1,2,3) = Ts(5)
-    Tf(1,1,3,1) = Ts(3);  Tf(1,1,3,2) = Ts(5);  Tf(1,1,3,3) = Ts(6)
-    Tf(1,2,1,1) = Ts(2);  Tf(1,2,1,2) = Ts(4);  Tf(1,2,1,3) = Ts(5)
-    Tf(1,2,2,1) = Ts(4);  Tf(1,2,2,2) = Ts(7);  Tf(1,2,2,3) = Ts(8)
-    Tf(1,2,3,1) = Ts(5);  Tf(1,2,3,2) = Ts(8);  Tf(1,2,3,3) = Ts(9)
-    Tf(1,3,1,1) = Ts(3);  Tf(1,3,1,2) = Ts(5);  Tf(1,3,1,3) = Ts(6)
-    Tf(1,3,2,1) = Ts(5);  Tf(1,3,2,2) = Ts(8);  Tf(1,3,2,3) = Ts(9)
-    Tf(1,3,3,1) = Ts(6);  Tf(1,3,3,2) = Ts(9);  Tf(1,3,3,3) = Ts(10)
-
-    Tf(2,1,1,1) = Ts(2);  Tf(2,1,1,2) = Ts(4);  Tf(2,1,1,3) = Ts(5)
-    Tf(2,1,2,1) = Ts(4);  Tf(2,1,2,2) = Ts(7);  Tf(2,1,2,3) = Ts(8)
-    Tf(2,1,3,1) = Ts(5);  Tf(2,1,3,2) = Ts(8);  Tf(2,1,3,3) = Ts(9)
-    Tf(2,2,1,1) = Ts(4);  Tf(2,2,1,2) = Ts(7);  Tf(2,2,1,3) = Ts(8)
-    Tf(2,2,2,1) = Ts(7);  Tf(2,2,2,2) = Ts(11); Tf(2,2,2,3) = Ts(12)
-    Tf(2,2,3,1) = Ts(8);  Tf(2,2,3,2) = Ts(12); Tf(2,2,3,3) = Ts(13)
-    Tf(2,3,1,1) = Ts(5);  Tf(2,3,1,2) = Ts(8);  Tf(2,3,1,3) = Ts(9)
-    Tf(2,3,2,1) = Ts(8);  Tf(2,3,2,2) = Ts(12); Tf(2,3,2,3) = Ts(13)
-    Tf(2,3,3,1) = Ts(9);  Tf(2,3,3,2) = Ts(13); Tf(2,3,3,3) = Ts(14)
-
-    Tf(3,1,1,1) = Ts(3);  Tf(3,1,1,2) = Ts(5);  Tf(3,1,1,3) = Ts(6)
-    Tf(3,1,2,1) = Ts(5);  Tf(3,1,2,2) = Ts(8);  Tf(3,1,2,3) = Ts(9)
-    Tf(3,1,3,1) = Ts(6);  Tf(3,1,3,2) = Ts(9);  Tf(3,1,3,3) = Ts(10)
-    Tf(3,2,1,1) = Ts(5);  Tf(3,2,1,2) = Ts(8);  Tf(3,2,1,3) = Ts(9)
-    Tf(3,2,2,1) = Ts(8);  Tf(3,2,2,2) = Ts(12); Tf(3,2,2,3) = Ts(13)
-    Tf(3,2,3,1) = Ts(9);  Tf(3,2,3,2) = Ts(13); Tf(3,2,3,3) = Ts(14)
-    Tf(3,3,1,1) = Ts(6);  Tf(3,3,1,2) = Ts(9);  Tf(3,3,1,3) = Ts(10)
-    Tf(3,3,2,1) = Ts(9);  Tf(3,3,2,2) = Ts(13); Tf(3,3,2,3) = Ts(14)
-    Tf(3,3,3,1) = Ts(10); Tf(3,3,3,2) = Ts(14); Tf(3,3,3,3) = Ts(15)
+    i = 1
+    do d = 1, 3
+        do g = d, 3
+            do b = g, 3
+                do a = b, 3
+                    if (a == b .and. b == g .and. g == d) then
+                        Tf(a,b,g,d) = Ts(i)
+                    else if (a == b .and. b == g .and. g /= d) then
+                        Tf(a,b,g,d) = Ts(i)
+                        Tf(a,b,d,g) = Ts(i)
+                        Tf(a,d,b,g) = Ts(i)
+                        Tf(d,a,b,g) = Ts(i)
+                    else if (a == b .and. g == d .and. a /= g) then
+                        Tf(a,b,g,d) = Ts(i)
+                        Tf(a,g,b,d) = Ts(i)
+                        Tf(g,a,b,d) = Ts(i)
+                        Tf(g,a,d,b) = Ts(i)
+                        Tf(g,d,a,b) = Ts(i)
+                        Tf(a,g,d,b) = Ts(i)
+                    else if (a == b .and. b /= g .and. g /= d) then
+                        Tf(a,b,g,d) = Ts(i)
+                        Tf(a,g,b,d) = Ts(i)
+                        Tf(a,g,d,b) = Ts(i)
+                        Tf(g,d,a,b) = Ts(i)
+                        Tf(g,a,d,b) = Ts(i)
+                        Tf(g,a,b,d) = Ts(i)
+                        Tf(a,b,d,g) = Ts(i)
+                        Tf(a,d,b,g) = Ts(i)
+                        Tf(a,d,g,b) = Ts(i)
+                        Tf(d,g,a,b) = Ts(i)
+                        Tf(d,a,g,b) = Ts(i)
+                        Tf(d,a,b,g) = Ts(i)
+                    else if (a /= b .and. b == g .and. g == d) then
+                        Tf(a,b,g,d) = Ts(i)
+                        Tf(b,a,g,d) = Ts(i)
+                        Tf(b,g,a,d) = Ts(i)
+                        Tf(b,g,d,a) = Ts(i)
+                    else if (a /= b .and. b == g .and. g /= d) then
+                        Tf(a,b,g,d) = Ts(i)
+                        Tf(a,b,d,g) = Ts(i)
+                        Tf(a,d,b,g) = Ts(i)
+                        Tf(d,a,b,g) = Ts(i)
+                        Tf(d,b,a,g) = Ts(i)
+                        Tf(d,b,g,a) = Ts(i)
+                        Tf(b,a,g,d) = Ts(i)
+                        Tf(b,g,a,d) = Ts(i)
+                        Tf(b,g,d,a) = Ts(i)
+                        Tf(b,d,a,g) = Ts(i)
+                        Tf(b,d,g,a) = Ts(i)
+                        Tf(b,a,d,g) = Ts(i)
+                    else if (a /= b .and. b /= g .and. g == d) then
+                        Tf(a,b,g,d) = Ts(i)
+                        Tf(a,g,b,d) = Ts(i)
+                        Tf(a,g,d,b) = Ts(i)
+                        Tf(b,a,g,d) = Ts(i)
+                        Tf(b,g,a,d) = Ts(i)
+                        Tf(b,g,d,a) = Ts(i)
+                        Tf(g,a,b,d) = Ts(i)
+                        Tf(g,a,d,b) = Ts(i)
+                        Tf(g,d,a,b) = Ts(i)
+                        Tf(g,b,a,d) = Ts(i)
+                        Tf(g,b,d,a) = Ts(i)
+                        Tf(g,d,b,a) = Ts(i)
+                    end if
+                    i = i + 1
+                end do
+            end do
+        end do
+    end do
 
 end subroutine unpack_4th_order
 
@@ -2839,34 +2906,6 @@ subroutine spmv(ap, x, y, uplo, alpha, beta)
     call dspmv(o_uplo, n, o_alpha, ap, x, incx, o_beta, y, incy)
 
 end subroutine spmv
-
-!------------------------------------------------------------------------------
-
-subroutine tpttr(ap, a, uplo)
-
-    external :: dtpttr
-
-    real(dp), dimension(:), intent(in) :: ap
-    real(dp), dimension(:,:), intent(out) :: a
-    character(len=1), intent(in), optional :: uplo
-
-    integer :: n, lda, info
-    character(len=1) :: o_uplo
-
-    if (present(uplo)) then
-        o_uplo = uplo
-    else
-        o_uplo = 'L'
-    end if
-
-    n = size(a, 2)
-    lda = max(1, size(a, 1))
-
-    call dtpttr(o_uplo, n, ap, a, lda, info)
-
-    if (info /= 0) call xerbla('tpttr', info)
-
-end subroutine tpttr
 
 !------------------------------------------------------------------------------
 
