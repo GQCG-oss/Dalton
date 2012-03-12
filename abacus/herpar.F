@@ -203,8 +203,8 @@ C           MAXREP -
 C           ISYMDM - Symmetries of density matrices
 C           IFCTYP - Fock matrix types (see twoint).
 C           IATOM  -
-C           NODV   - Density matrix neglected in TWOEXP
-C           NOPV   -           -   "   -
+C           NODV   - 1-el. Density matrix neglected in TWOEXP
+C           NOPV   - 2-el.           -   "   -
 C           NOCONT -           -   "   -
 C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT

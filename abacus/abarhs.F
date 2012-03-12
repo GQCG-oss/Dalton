@@ -152,6 +152,7 @@ C
    23             NODV = .TRUE.
                GO TO 100
    24             NOPV = .TRUE.
+                  RUNPTR = .FALSE.
                GO TO 100
    25             TESTFS = .TRUE.
                GO TO 100
@@ -189,7 +190,7 @@ C
                GO TO 100
    41             READ (LUCMD,*) IPRSOR
                GO TO 100
-   42             RUNPTR = .FALSE.
+   42             RUNPTR = .FALSE.          ! .PTRSKIp
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -478,11 +479,12 @@ C
       IF (IPRMAX .GT. 0) WRITE (LUPRI,'(A/)')
      *   '  <<<<<<<<<< Output from RHSIDE >>>>>>>>>>'
 C
-C     Set for RHF
+C     Set for RHF and HSROHF
 C
-      IF (NASHT .EQ. 0) THEN
-         NODV   = .TRUE.
+      IF (NACTEL .LE. 1 .OR. HSROHF) THEN
+         NODV   = NACTEL .EQ. 0
          NOPV   = .TRUE.
+         RUNPTR = .FALSE.
          RUNTRA = .FALSE.
       END IF
 C
@@ -685,8 +687,7 @@ C
 CTROND
                DDFOCK = (ITYPE.EQ.-5).OR.(ITYPE.EQ.8)
 CTROND
-               IF ((MAGSUS .OR. MOLGFA) .AND. NASHT .GT. 0 .AND.
-     &              RUNPTR) THEN
+               IF ((MAGSUS .OR. MOLGFA) .AND. RUNPTR) THEN
                   NOBLK = .TRUE.
                ELSE
                   NOBLK = .FALSE.
@@ -728,8 +729,7 @@ C                     also when WORK(KFMAT) is not used.
 C
 C                 Transform densities
 C
-                  IF ((MAGSUS .OR. MOLGFA) .AND. NASHT .GT. 0) THEN
-                     IF (RUNPTR) THEN
+                  IF ((MAGSUS .OR. MOLGFA) .AND. RUNPTR) THEN
 C
 C                       Symmetric part
 C
@@ -781,7 +781,6 @@ C
      &                             IPRSOR,ANTI,PANTI)
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)
-                     END IF
                   END IF
 C
                   KFMAT = KLAST
@@ -929,8 +928,8 @@ C                END IF
                ENDIF
 
 C
-               IF ((MAGSUS .OR. MOLGFA) .AND. LONDON .AND. NASHT.GT.0
-     &                    .AND. RUNPTR) CALL GPCLOSE(LUPAS,'DELETE')
+               IF ((MAGSUS .OR. MOLGFA) .AND. LONDON .AND. RUNPTR)
+     &                    CALL GPCLOSE(LUPAS,'DELETE')
 C
 C              Fock matrices for geometrical derivatives
 C
