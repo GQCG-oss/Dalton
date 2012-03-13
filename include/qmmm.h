@@ -11,8 +11,8 @@ C
      *        NELEME,ELEME,IPQMMM,
      *        MXMMCT,MXEXCL
 C 
-      PARAMETER(MXMMCT = 90000)
-      PARAMETER(MXEXCL = 200)
+      PARAMETER(MXMMCT = 9000)
+      PARAMETER(MXEXCL = 80)
 
 C
 #if defined (SYS_CRAY)

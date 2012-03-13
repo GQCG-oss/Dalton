@@ -139,6 +139,7 @@ if(ENABLE_GEN1INT)
     # Gen1int library source code
     set(Gen1Int_SRCS ${LIB_GEN1INT_PATH}/src/error_stop.F90
                      ${LIB_GEN1INT_PATH}/src/xtimer.F90
+                     ${LIB_GEN1INT_PATH}/src/str_decode.F90
                      ${LIB_GEN1INT_PATH}/src/norm_contr_cgto.F90
                      ${LIB_GEN1INT_PATH}/src/norm_contr_sgto.F90
                      ${LIB_GEN1INT_PATH}/src/reorder_ints.F90
@@ -156,6 +157,7 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/hgto_to_sgto.F90
                      ${LIB_GEN1INT_PATH}/src/london_mom_hgto.F90
                      ${LIB_GEN1INT_PATH}/src/const_contr_ints.F90
+                     ${LIB_GEN1INT_PATH}/src/const_contr_gto.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_deriv.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_hbra.F90
                      ${LIB_GEN1INT_PATH}/src/carmom_hrr_ket.F90
@@ -178,6 +180,9 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_odist.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_odist.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_odist.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_value.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_value.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_value.F90
                      ${LIB_GEN1INT_PATH}/src/gen1int.F90)
     # Gen1Int interface source code
     set(FREE_FORTRAN_SOURCES
@@ -187,6 +192,8 @@ if(ENABLE_GEN1INT)
         gen1int/reorder_p_sgto.F90
         gen1int/gen1int_shell.F90
         gen1int/dalton_shell.F90
+        gen1int/get_ao_dens.F90
+        gen1int/gen1int_cube.F90
         gen1int/gen1int_interface.F90)
 endif()
 

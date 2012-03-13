@@ -33,6 +33,13 @@
    * include/cbiher.h
      adds logical variable \var(TEST_GEN1INT) indicating if performing test suite
      of Gen1Int interface
+   * include/infinp.h
+     adds logical variable \var(DO_CUBE) indicating if generating cube files using
+     Gen1Int library
+   * sirius/sirinp.F
+     calls \fn(gen1int_cube_input) to process information of cube file in DALTON.INP
+   * sirius/sirctl.F
+     calls \fn(gen1int_cube_main) to generate cube files
 
    and added the following files:
    * gen1int directory
@@ -40,13 +47,17 @@
 
 3. Important files in Gen1Int interface
 
-   * gen1int_shell.F90     : AO sub-shell module used in Gen1Int interface
-   * gen1int_matrix.F90    : matrix module used in Gen1Int interface
-   * dalton_shell.F90      : Dalton AO sub-shells
-   * gen1int_interface.F90 : interface for Fortran 77 users
-   * reorder_p_sgto.F90    : reorders the p-shell contracted real solid-harmonic Gaussians
-   * stdout.h              : IO unit of standard output
-   * xkind.h               : kind type parameter of real numbers
+   * gen1int_shell.F90      : AO sub-shell module used in Gen1Int interface
+   * gen1int_matrix.F90     : matrix module used in Gen1Int interface
+   * dalton_shell.F90       : Dalton AO sub-shells
+   * gen1int_interface.F90  : interface for Fortran 77 users
+   * reorder_p_sgto.F90     : reorders the p-shell contracted real solid-harmonic Gaussians
+   * get_ao_dens.F90        : gets AO density matrix from SIRIFC, used by gen1int_cube.F90
+   * gen1int_cube.F90       : module to generate cube files
+   * gen1int_cube_input.F90 : processes information of cube files in DALTON.INP
+   * stdout.h               : IO unit of standard output
+   * xkind.h                : kind type parameter of real numbers
+   * max_len_str.h          : maximum length of a string
 
 4. Please see INSTALL for installation instructions
 
@@ -192,22 +203,23 @@
        end_elms = size_ints
        do imat = 1, num_matrices
          call MatAssociate(work_alpha=Val_Ints(start_elms:end_elms), &
-                           A=Int_Matrix(imat),                       &
-                           triangular=triangular,                    &
+                           num_row=num_ao, A=Int_Matrix(imat),       &
+                           info_mat=ierr, triangular=triangular,     &
                            symmetric=symmetric)
+         if (ierr/=0) stop "failed to associate integral matrices"
          start_elms = end_elms+1
          end_elms = end_elms+size_ints
        end do
 
        ! (5) calculates the integrals, please refer to the comments in subroutine
-       ! \fn(DaltonShellEvaluate) in dalton_shell.F90, as regards the unique or
+       ! \fn(DaltonShellIntegral) in dalton_shell.F90, as regards the unique or
        ! redundant total geometric derivatives, please refer to Section 3.2.2
        ! and 4.3 of the Gen1Int library manual
        !
        ! NOTE:
        ! \var(Int_Matrix) contains the upper and diagonal parts if using triangular format,
        ! \var(val_expt) should be zero before calculations, it is intent(inout)
-       call DaltonShellEvaluate(one_prop=prop_operator, &  !input
+       call DaltonShellIntegral(one_prop=prop_operator, &  !input
                                 num_ints=num_matrices,  &  !input
                                 geom_tree=geom_tree,    &  !optional input
                                 val_ints=Int_Matrix,    &  !optional output
@@ -268,7 +280,9 @@
          ! the pointers in matrix Int_Matrix(imat) will be associated to
          ! work_space(num_elms*(imat-1)+1:num_elms*imat)
          call MatAssociate(work_alpha=work_space(num_elms*(imat-1)+1:num_elms*imat), &
-                           A=Int_Matrix(imat), triangular=triangular, symmetric=symmetric)
+                           num_row=num_ao, A=Int_Matrix(imat), info_mat=ierr,        &
+                           triangular=triangular, symmetric=symmetric)
+         if (ierr/=0) stop "failed to associate integral matrices"
        end do
 
        after you getting the integrals back, you could free space by
