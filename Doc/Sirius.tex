@@ -2461,6 +2461,60 @@ specified by the two transformation level keywords.
 
 
 \pagebreak[3]
+\subsection{\label{ref-cube}\Sec{CUBE}}
+
+{\bf Purpose:}
+
+Generates cube file\index{cube file} of total SCF electron density and/or
+molecular orbitals after SCF calculations. The keyword \quotekw{\Key{INTERFACE}}
+must be specified.
+
+\begin{description}
+\item[\Key{DENSITY}]
+  Generates cube file ``\kw{density.cube}'' with total SCF electron density.
+
+\item[\Key{HOMO}]
+  Generates cube file ``\kw{homo.cube}'' with the information of the highest
+occupied molecular orbitals.
+
+\item[\Key{LUMO}]
+  Generates cube file ``\kw{lumo.cube}'' with the information of the lowest
+unoccupied molecular orbitals.
+
+\item[\Key{MO}]
+  \kw{READ (LUINP,*) IDX\_MO} \\
+  Generates cube file ``\kw{mo.cube}'' with specified indices of molecular orbitals
+by ``\kw{IDX\_MO}''. For instance, valid format is like ``1-6,7,10-12'' only including
+digits, minus sign and comma.
+
+\item[\Key{FORMAT}]
+  \kw{READ (LUINP,*) CUBE\_FORMAT} \\
+  Specifies cube file format, only ``\kw{GAUSSIAN}'' (Gaussian cube file format,
+see\linebreak \verb|http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm|) for the
+time being.
+
+\item[\Key{ORIGIN}]
+  \kw{READ (LUINP,*) CUBE\_ORIGIN} \\
+  Reads the coordinates (a.u.) of origin/initial point.
+
+\item[\Key{INCREMENT}]
+  \kw{READ (LUINP,*) N1, X1, Y1, Z1} \\
+  \kw{READ (LUINP,*) N2, X2, Y2, Z2} \\
+  \kw{READ (LUINP,*) N3, X3, Y3, Z3} \\
+  Reads the number of increments and increments (a.u.) along three running directions,
+in which ``\kw{(X1,Y1,Z1)}'' is the slowest running direction, and ``\kw{(X3,Y3,Z3)}''
+is the fastest running direction.
+
+As described at \verb|http://www.gaussian.com/g_tech/g_ur/u_cubegen.htm|, if the
+origin/initial point is (X0,Y0,Z0), then the point at (I1,I2,I3) has coordinates:
+
+X-coordinate: X0+(I1-1)*X1+(I2-1)*X2+(I3-1)*X3\\
+Y-coordinate: Y0+(I1-1)*Y1+(I2-1)*Y2+(I3-1)*Y3\\
+Z-coordinate: Z0+(I1-1)*Z1+(I2-1)*Z2+(I3-1)*Z3
+\end{description}
+
+
+\pagebreak[3]
 \section{\label{sec:ref-molorbinp} \Sec{*MOLORB} input module}
 
 If formatted input of the molecular orbitals has been specified in

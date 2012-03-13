@@ -23,6 +23,9 @@
 !
 !...  This file takes care the atomic orbital (AO) sub-shell used in Gen1Int interface.
 !
+!...  2012-03-11, Bin Gao
+!...  * adds subroutine Gen1IntShellMO to calculate molecular orbitals at grid points
+!
 !...  2011-10-02, Bin Gao
 !...  * first version
 
@@ -77,7 +80,8 @@ module gen1int_shell
   public :: Gen1IntShellAttr
   public :: Gen1IntShellGetRangeAO
   public :: Gen1IntShellView
-  public :: Gen1IntShellEvaluate
+  public :: Gen1IntShellIntegral
+  public :: Gen1IntShellMO
   public :: Gen1IntShellDestroy
 
   contains
@@ -272,7 +276,7 @@ module gen1int_shell
   !> \param wrt_expt indicates if writing expectation values on file
   !> \return val_ints contains the integral matrices
   !> \return val_expt contains the expectation values
-  subroutine Gen1IntShellEvaluate(num_shells, sub_shells, one_prop, london_ao,   &
+  subroutine Gen1IntShellIntegral(num_shells, sub_shells, one_prop, london_ao,   &
                                   order_mag_bra, order_mag_ket, order_mag_total, &
                                   order_ram_bra, order_ram_ket, order_ram_total, &
                                   order_geo_bra, order_geo_ket, geom_tree,       &
@@ -317,6 +321,8 @@ module gen1int_shell
     integer num_opt          !number of operators including derivatives
     integer ishell, jshell   !incremental recorders over AO sub-shells
     logical spher_gto        !if spherical GTOs
+    integer max_num_ao       !maximum number of AOs in sub-shells
+    integer max_num_contr    !maximum number of contractions of sub-shells
     real(REALK), allocatable :: contr_ints(:,:,:,:,:,:)  !contracted integrals between two AO sub-shells
     real(REALK), allocatable :: unique_expt(:,:,:)       !expectation values with unique geometric derivatives
     integer, allocatable :: redunt_list(:,:)             !list addresses of redundant total geometric derivatives
@@ -392,7 +398,7 @@ module gen1int_shell
     ! allocates the expectation values with unique geometric derivatives
     if (p_redunt_expt) then
       allocate(unique_expt(num_unique_geo,num_prop,num_dens), stat=ierr)
-      if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate unique_expt!")
+      if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate unique_expt!")
       unique_expt = 0.0_REALK
     end if
     select case(kind_prop)
@@ -412,7 +418,7 @@ module gen1int_shell
                               sub_shells(jshell)%num_ao,    &
                               sub_shells(jshell)%num_contr, &
                               num_prop,num_unique_geo), stat=ierr)
-          if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate contr_ints!")
+          if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate contr_ints!")
           ! spherical GTOs
           if (spher_gto) then
             ! calls Gen1Int subroutines to evaluate property integrals
@@ -503,7 +509,7 @@ module gen1int_shell
             if (p_redunt_ints) then
               call GeomTreeNumRedunt(geom_tree, num_redunt_geo)
               allocate(redunt_list(2,num_redunt_geo), stat=ierr)
-              if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate redunt_list!")
+              if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate redunt_list!")
               call GeomTreeReduntList(geom_tree, redunt_list)
               iopt = 0
               do iprop = 1, num_prop
@@ -607,7 +613,7 @@ module gen1int_shell
                               sub_shells(jshell)%num_ao,    &
                               sub_shells(jshell)%num_contr, &
                               num_prop,num_unique_geo), stat=ierr)
-          if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate contr_ints!")
+          if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate contr_ints!")
           ! spherical GTOs
           if (spher_gto) then
             ! calls Gen1Int subroutines to evaluate property integrals
@@ -698,7 +704,7 @@ module gen1int_shell
             if (p_redunt_ints) then
               call GeomTreeNumRedunt(geom_tree, num_redunt_geo)
               allocate(redunt_list(2,num_redunt_geo), stat=ierr)
-              if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate redunt_list!")
+              if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate redunt_list!")
               call GeomTreeReduntList(geom_tree, redunt_list)
               iopt = 0
               do iprop = 1, num_prop
@@ -802,7 +808,7 @@ module gen1int_shell
                               sub_shells(jshell)%num_ao,    &
                               sub_shells(jshell)%num_contr, &
                               num_prop,num_unique_geo), stat=ierr)
-          if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate contr_ints!")
+          if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate contr_ints!")
           ! spherical GTOs
           if (spher_gto) then
             ! calls Gen1Int subroutines to evaluate property integrals
@@ -893,7 +899,7 @@ module gen1int_shell
             if (p_redunt_ints) then
               call GeomTreeNumRedunt(geom_tree, num_redunt_geo)
               allocate(redunt_list(2,num_redunt_geo), stat=ierr)
-              if (ierr/=0) call QUIT("Gen1IntShellEvaluate>> failed to allocate redunt_list!")
+              if (ierr/=0) call QUIT("Gen1IntShellIntegral>> failed to allocate redunt_list!")
               call GeomTreeReduntList(geom_tree, redunt_list)
               iopt = 0
               do iprop = 1, num_prop
@@ -964,7 +970,152 @@ module gen1int_shell
                               unique_expt, dim_redunt_geo, val_expt)
       deallocate(unique_expt)
     end if
-  end subroutine Gen1IntShellEvaluate
+  end subroutine Gen1IntShellIntegral
+
+  !> \brief calculates molecular orbitals at grid points
+  !> \author Bin Gao
+  !> \date 2012-03-11
+  !> \param num_shells is the number of AO sub-shells
+  !> \param sub_shells are the AO sub-shells
+  !> \param num_ao is the number of atomic orbitals
+  !> \param num_mo is the number of molecular orbitals
+  !> \param mo_coef contains the molecular orbital coefficients
+  !> \param num_points is the number of grid points
+  !> \param grid_points contains the coordinates of grid points
+  !> \param london_ao indicates if using London atomic orbitals
+  !> \param num_derv is the number of derivatives
+  !> \param order_mag is the order of magnetic derivatives
+  !> \param order_ram is the order of derivatives w.r.t. total rotational angular momentum
+  !> \param order_geo is the order of geometric derivatives
+  !> \return val_mo contains the value of molecular orbitals at grid points
+  subroutine Gen1IntShellMO(num_shells, sub_shells, num_ao, num_mo, mo_coef, &
+                            num_points, grid_points, num_derv, val_mo,       &
+                            london_ao, order_mag, order_ram, order_geo)
+    integer, intent(in) :: num_shells
+    type(sub_shell_t), intent(in) :: sub_shells(*)
+    integer, intent(in) :: num_ao
+    integer, intent(in) :: num_mo
+    real(REALK), intent(in) :: mo_coef(num_ao,num_mo)
+    integer, intent(in) :: num_points
+    real(REALK), intent(in) :: grid_points(3,num_points)
+    integer, intent(in) :: num_derv
+    real(REALK), intent(out) :: val_mo(num_points*num_derv,num_mo)
+    logical, optional, intent(in) :: london_ao
+    integer, optional, intent(in) :: order_mag
+    integer, optional, intent(in) :: order_ram
+    integer, optional, intent(in) :: order_geo
+    integer p_order_mag  !order of magnetic derivatives
+    integer p_order_ram  !order of derivatives w.r.t. total rotational angular momentum
+    integer p_order_geo  !order of geometric derivatives
+    integer num_opt      !number of operators including grid points and derivatives
+    integer ishell       !incremental recorders over AO sub-shells
+    logical spher_gto    !if spherical GTOs
+    real(REALK), allocatable :: contr_value(:,:,:)  !contracted GTOs at grid points
+    real(REALK), allocatable :: tmp_value(:,:,:)    !temporary results from Gen1Int
+    integer imo, iopt, icontr, iao, jao             !incremental recorders
+    integer offset_ao                               !offset of AOs
+    integer ierr                                    !error information
+    ! checks the number of AOs
+    ierr = sub_shells(num_shells)%base_idx &
+         + sub_shells(num_shells)%num_ao*sub_shells(num_shells)%num_contr
+    if (num_ao/=ierr) stop "Gen1IntShellMO>> incorrect number of AOs!"
+    ! gets the number of derivatives
+    num_opt = 1
+    if (present(order_mag)) then
+      p_order_mag = order_mag
+      num_opt = num_opt*(order_mag+1)*(order_mag+2)/2
+    else
+      p_order_mag = 0
+    end if
+    if (present(order_ram)) then
+      p_order_ram = order_ram
+      num_opt = num_opt*(order_ram+1)*(order_ram+2)/2
+    else
+      p_order_ram = 0
+    end if
+    if (present(order_geo)) then
+      p_order_geo = order_geo
+      num_opt = num_opt*(order_geo+1)*(order_geo+2)/2
+    else
+      p_order_geo = 0
+    end if
+    if (num_opt/=num_derv) stop "Gen1IntShellMO>> incorrect number of derivatives!"
+    num_opt = num_opt*num_points
+    ! initializes
+    val_mo = 0.0_REALK
+    ! loops over AO sub-shells
+    do ishell = 1, num_shells
+      spher_gto = sub_shells(ishell)%spher_gto
+      allocate(contr_value(sub_shells(ishell)%num_ao,    &
+                           sub_shells(ishell)%num_contr, &
+                           num_opt), stat=ierr)
+      if (ierr/=0) call QUIT("Gen1IntShellMO>> failed to allocate contr_value!")
+      ! spherical GTOs
+      if (spher_gto) then
+        call contr_sgto_value(sub_shells(ishell)%coord_cent,        &
+                              sub_shells(ishell)%ang_num,           &
+                              sub_shells(ishell)%num_prim,          &
+                              sub_shells(ishell)%exponents,         &
+                              sub_shells(ishell)%num_contr,         &
+                              sub_shells(ishell)%contr_coef,        &
+                              p_order_geo, num_points, grid_points, &
+                              sub_shells(ishell)%num_ao, num_derv,  &
+                              contr_value)
+        ! reorders p-shell spherical GTOs
+        if (sub_shells(ishell)%ang_num==1)                     &
+          call reorder_p_sgto(1, sub_shells(ishell)%num_contr, &
+                              num_opt, contr_value)
+      ! Cartesian GTOs
+      else
+        if (sub_shells(ishell)%ang_num==0) then
+          call contr_cgto_value(sub_shells(ishell)%coord_cent,        &
+                                sub_shells(ishell)%ang_num,           &
+                                sub_shells(ishell)%num_prim,          &
+                                sub_shells(ishell)%exponents,         &
+                                sub_shells(ishell)%num_contr,         &
+                                sub_shells(ishell)%contr_coef,        &
+                                p_order_geo, num_points, grid_points, &
+                                sub_shells(ishell)%num_ao, num_derv,  &
+                                contr_value)
+        else
+          allocate(tmp_value(sub_shells(ishell)%num_ao,    &
+                             sub_shells(ishell)%num_contr, &
+                             num_opt), stat=ierr)
+          if (ierr/=0) call QUIT("Gen1IntShellMO>> failed to allocate tmp_value!")
+          call contr_cgto_value(sub_shells(ishell)%coord_cent,        &
+                                sub_shells(ishell)%ang_num,           &
+                                sub_shells(ishell)%num_prim,          &
+                                sub_shells(ishell)%exponents,         &
+                                sub_shells(ishell)%num_contr,         &
+                                sub_shells(ishell)%contr_coef,        &
+                                p_order_geo, num_points, grid_points, &
+                                sub_shells(ishell)%num_ao, num_derv,  &
+                                tmp_value)
+          ! reorders the results according to Cartesian powers
+          call reorder_cgtos(sub_shells(ishell)%ang_num, sub_shells(ishell)%num_ao,      &
+                             sub_shells(ishell)%powers, 1, sub_shells(ishell)%num_contr, &
+                             num_opt, tmp_value, contr_value)
+          deallocate(tmp_value)
+        end if
+      end if
+      ! sets the offset of AO
+      offset_ao = sub_shells(ishell)%base_idx
+      ! gets the value of MOs at grid points
+      do imo = 1, num_mo
+        do iopt = 1, num_opt
+          jao = offset_ao
+          do icontr = 1, sub_shells(ishell)%num_contr
+            do iao = 1, sub_shells(ishell)%num_ao
+              jao = jao+1
+              val_mo(iopt,imo) = val_mo(iopt,imo) &
+                               + mo_coef(jao,imo)*contr_value(iao,icontr,iopt)
+            end do
+          end do
+        end do
+      end do
+      deallocate(contr_value)
+    end do
+  end subroutine Gen1IntShellMO
 
   !> \brief frees space taken by the AO sub-shells
   !> \author Bin Gao
