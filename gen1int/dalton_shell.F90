@@ -53,7 +53,8 @@ module dalton_shell
 
   public :: DaltonShellView
   public :: DaltonShellGetNumAO
-  public :: DaltonShellEvaluate
+  public :: DaltonShellIntegral
+  public :: DaltonShellMO
   public :: DaltonShellDestroy
 
   contains
@@ -243,7 +244,7 @@ module dalton_shell
   !> \return val_ints contains the integral matrices
   !> \return val_expt contains the expectation values
   !> \note \var(val_expt) should be zero by users before calculations
-  subroutine DaltonShellEvaluate(one_prop, london_ao,                                &
+  subroutine DaltonShellIntegral(one_prop, london_ao,                                &
                                  order_mag_bra, order_mag_ket, order_mag_total,      &
                                  order_ram_bra, order_ram_ket, order_ram_total,      &
                                  order_geo_bra, order_geo_ket, geom_tree,            &
@@ -277,7 +278,7 @@ module dalton_shell
     integer ipath      !incremental recorder over different paths
     ! checks if we have the Dalton AO sub-shells
     if (.not.shells_created) &
-      stop "DaltonShellEvaluate>> Dalton AO sub-shells are not created!"
+      stop "DaltonShellIntegral>> Dalton AO sub-shells are not created!"
     ! dumps the information of Dalton AO sub-shells
     if (level_print>=10) call DaltonShellView(io_viewer=io_viewer)
     if (level_print>=5) then
@@ -361,7 +362,7 @@ module dalton_shell
       call GeomTreeIdxPath(geom_tree=geom_tree, idx_path=curr_path)
       call GeomTreeNumPath(geom_tree=geom_tree, num_paths=num_paths)
       ! calculates the property integrals of current path
-      call Gen1IntShellEvaluate(num_shells=num_sub_shells,       &
+      call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
                                 sub_shells=sub_shells,           &
                                 one_prop=one_prop,               &
                                 london_ao=london_ao,             &
@@ -391,7 +392,7 @@ module dalton_shell
         if (level_print>=20) &
           call GeomTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
         ! calculates the property integrals of current path
-        call Gen1IntShellEvaluate(num_shells=num_sub_shells,       &
+        call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
                                   sub_shells=sub_shells,           &
                                   one_prop=one_prop,               &
                                   london_ao=london_ao,             &
@@ -416,7 +417,7 @@ module dalton_shell
       end do
     ! no total geometric derivatives
     else
-      call Gen1IntShellEvaluate(num_shells=num_sub_shells,       &
+      call Gen1IntShellIntegral(num_shells=num_sub_shells,       &
                                 sub_shells=sub_shells,           &
                                 one_prop=one_prop,               &
                                 london_ao=london_ao,             &
@@ -438,8 +439,43 @@ module dalton_shell
                                 redunt_expt=redunt_expt,         &
                                 wrt_expt=wrt_expt)
     end if
-100 format("DaltonShellEvaluate>> ",A,I4)
-  end subroutine DaltonShellEvaluate
+100 format("DaltonShellIntegral>> ",A,I4)
+  end subroutine DaltonShellIntegral
+
+  !> \brief calculates molecular orbitals at grid points
+  !> \author Bin Gao
+  !> \date 2012-03-11
+  !> \param num_ao is the number of atomic orbitals
+  !> \param num_mo is the number of molecular orbitals
+  !> \param mo_coef contains the molecular orbital coefficients
+  !> \param num_points is the number of grid points
+  !> \param grid_points contains the coordinates of grid points
+  !> \param london_ao indicates if using London atomic orbitals
+  !> \param num_derv is the number of derivatives
+  !> \param order_mag is the order of magnetic derivatives
+  !> \param order_ram is the order of derivatives w.r.t. total rotational angular momentum
+  !> \param order_geo is the order of geometric derivatives
+  !> \return val_mo contains the value of molecular orbitals at grid points
+  subroutine DaltonShellMO(num_ao, num_mo, mo_coef, num_points, grid_points,  &
+                           num_derv, val_mo, london_ao, order_mag, order_ram, &
+                           order_geo)
+    integer, intent(in) :: num_ao
+    integer, intent(in) :: num_mo
+    real(REALK), intent(in) :: mo_coef(num_ao,num_mo)
+    integer, intent(in) :: num_points
+    real(REALK), intent(in) :: grid_points(3,num_points)
+    integer, intent(in) :: num_derv
+    real(REALK), intent(out) :: val_mo(num_points*num_derv,num_mo)
+    logical, optional, intent(in) :: london_ao
+    integer, optional, intent(in) :: order_mag
+    integer, optional, intent(in) :: order_ram
+    integer, optional, intent(in) :: order_geo
+    call Gen1IntShellMO(num_shells=num_sub_shells, sub_shells=sub_shells,      &
+                        num_ao=num_ao, num_mo=num_mo, mo_coef=mo_coef,         &
+                        num_points=num_points, grid_points=grid_points,        &
+                        num_derv=num_derv, val_mo=val_mo, london_ao=london_ao, &
+                        order_mag=order_mag, order_ram=order_ram, order_geo=order_geo)
+  end subroutine DaltonShellMO
 
   !> \brief frees the space taken by Dalton AO sub-shells after all calculations
   !> \author Bin Gao

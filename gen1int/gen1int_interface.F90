@@ -256,7 +256,7 @@
       ! computes the integrals and/or expectation values
       wrk_space(1:num_expt) = 0.0_REALK
 !FIXME: to evaluate expectaion values
-      call DaltonShellEvaluate(one_prop=prop_operator, london_ao=LONDON_AO(itst), &
+      call DaltonShellIntegral(one_prop=prop_operator, london_ao=LONDON_AO(itst), &
                                num_ints=num_opt_derv, val_ints=val_ints,          &
                                wrt_ints=WRT_INTS, num_dens=NUM_DENS,              &
                                io_viewer=io_viewer, level_print=level_print)
@@ -387,3 +387,176 @@
 !           ", Gen1Int>>",F18.12)
 999 format("gen1int_ifc_test>> ",A,I16)
   end subroutine gen1int_ifc_test
+
+#include "max_len_str.h"
+
+  !> \brief reads the information of cube file, enabled by adding the following lines
+  !>        in DALTON.INP/DIRAC.INP in **WAVE FUNCTIONS
+  !>        *CUBE
+  !>        .DENSITY
+  !>        .HOMO
+  !>        .LUMO
+  !>        .MO
+  !>        1,5-9,12
+  !>        .FORMAT
+  !>        GAUSSIAN
+  !>        .ORIGIN
+  !>        -2.0  -4.0   -5.0
+  !>        .INCREMENT
+  !>        100    0.0    0.0    0.1  #of increments in the slowest running direction
+  !>         80    0.0    0.1    0.0
+  !>         40    0.1    0.0    0.0  #of increments in the fastest running directio
+  !>        where .DENSITY, .HOMO, .LUMO, and .MO (followed by the indices of molecular orbtials)
+  !>        are not all necessarily needed
+  !> \author Bin Gao
+  !> \date 2012-03-09
+  !> \param io_input is the IO unit of standard input
+  !> \param io_viewer is the IO unit of standard output
+  !> \param word is the keyword from Dalton
+  subroutine gen1int_cube_input(io_input, io_viewer, word)
+    ! module of generating cube files
+    use gen1int_cube
+    ! to decode the string of MOs
+    use str_decode
+    implicit none
+    integer, intent(in) :: io_input
+    integer, intent(in) :: io_viewer
+    character*(*), intent(inout) :: word
+    ! uses MXCORB
+#include "maxorb.h"
+    ! uses DO_CUBE
+#include "infinp.h"
+    character(MAX_LEN_STR) key_word  !key words read from standard input
+    type(decode_str_t) str_idx_mo    !string of indices of MOs
+    integer ipoint                   !incremental recorder over points
+    integer ix, iy, iz               !incremental recorders along XYZ directions
+    integer ixyz                     !incremental recorder over XYZ coordinates
+    integer ierr                     !error information
+
+    call QENTER("gen1int_cube_input")
+
+    read(io_input,"(A)",err=999,end=999) key_word
+    do while(key_word(1:1)/="*")
+      select case(trim(key_word))
+      ! electron density
+      case(".DENSITY")
+        do_density_cube = .true.
+      ! HOMO
+      case(".HOMO")
+        do_homo_cube = .true.
+      ! LUMO
+      case(".LUMO")
+        do_lumo_cube = .true.
+      ! MOs
+      case(".MO")
+        read(io_input,"(A)",err=999,end=999) key_word
+        call StrDecodeCreate(the_str=trim(key_word), conn_char="-", &
+                             sep_char=",", num_ints=num_cube_mo,    &
+                             decode_str=str_idx_mo)
+        allocate(idx_cube_mo(num_cube_mo), stat=ierr)
+        if (ierr/=0) call QUIT("Failed to allocate idx_cube_mo!")
+        call StrDecodeGetInts(decode_str=str_idx_mo, num_ints=num_cube_mo, &
+                              convert_ints=idx_cube_mo)
+        call StrDecodeDestroy(decode_str=str_idx_mo)
+        do_mo_cube = .true.
+      ! format of cube file
+      case(".FORMAT")
+        read(io_input,"(A)",err=999,end=999) cube_format
+      ! origin
+      case(".ORIGIN")
+        read(io_input,*,err=999,end=999) cube_origin
+      ! increments
+      case(".INCREMENT")
+        num_cube_points = 1
+        do ix = 1, 3
+          ! cube_increment(:,1) is the increment for X
+          ! cube_increment(:,2) is the increment for Y
+          ! cube_increment(:,3) is the increment for Z
+          ! reads N, X, Y, Z
+          read(io_input,*,err=999,end=999) cube_num_inc(ix), cube_increment(ix,:)
+          num_cube_points = num_cube_points*cube_num_inc(ix)
+        end do
+        ! allocates memory for the XYZ coordinates of points of cube file
+        allocate(cube_coord(3,num_cube_points), stat=ierr)
+        if (ierr/=0) call QUIT("Failed to allocate cube_coord!")
+        ! sets the XYZ coordinates of points of cube file
+        ipoint = 0
+        do iz = 1, cube_num_inc(1)
+          do iy = 1, cube_num_inc(2)
+            do ix = 1, cube_num_inc(3)
+              ! if the origin is (X0,Y0,Z0), and the increment is (X1,Y1,Z1),
+              ! then point (I1,I2,I3) has the coordinates:
+              ! X-coordinate: X0+(I1-1)*X1+(I2-1)*X2+(I3-1)*X3
+              ! Y-coordinate: Y0+(I1-1)*Y1+(I2-1)*Y2+(I3-1)*Y3
+              ! Z-coordinate: Z0+(I1-1)*Z1+(I2-1)*Z2+(I3-1)*Z3
+              ipoint = ipoint+1
+              do ixyz = 1, 3
+                cube_coord(ixyz,ipoint) = cube_origin(ixyz) &
+                  + real(iz-1,REALK)*cube_increment(1,ixyz) &
+                  + real(iy-1,REALK)*cube_increment(2,ixyz) &
+                  + real(ix-1,REALK)*cube_increment(3,ixyz)
+              end do
+            end do
+          end do
+        end do
+      ! comments or illegal keyword
+      case default
+        if (key_word(1:1)/="#" .and. key_word(1:1)/="!") &
+          call QUIT("Keyword """//trim(key_word)//""" is not recognized in *CUBE!")
+      end select
+      ! reads next line
+      read(io_input,"(A)",err=999,end=999) key_word
+    end do
+
+    ! writes input information to check
+    if (do_density_cube) &
+      write(io_viewer,100) "generates cube file of electron density"
+    if (do_homo_cube) &
+      write(io_viewer,100) "generates cube file of HOMO"
+    if (do_lumo_cube) &
+      write(io_viewer,100) "generates cube file of LUMO"
+    if (do_mo_cube) then
+      write(io_viewer,100) "generates cube file of MOs"
+      write(io_viewer,110) idx_cube_mo
+    end if
+    write(io_viewer,100) "format: "//trim(cube_format)
+    write(io_viewer,100) "number of points:", num_cube_points
+    write(io_viewer,120) "origin:", cube_origin
+    do ix = 1, 3
+      write(io_viewer,130) "increments:", cube_num_inc(ix), cube_increment(ix,:)
+    end do
+
+    ! returns the last read keyword back
+    word = trim(key_word)
+    ! doing cube file generation later on
+    DO_CUBE = .TRUE.
+
+    call QEXIT("gen1int_cube_input")
+
+    return
+
+999 call QUIT("Failed to process input after reading "//trim(key_word)//"!")
+
+100 format("gen1int_cube_input>> ",A,I8)
+110 format("gen1int_cube_input>> ",10I5)
+120 format("gen1int_cube_input>> ",A,3F16.8)
+130 format("gen1int_cube_input>> ",A,I8,3F16.8)
+  end subroutine gen1int_cube_input
+
+  !> \brief generates the cube file of the electron density and/or molecular orbitals
+  !>        using Gen1Int library
+  !> \author Bin Gao
+  !> \date 2012-03-09
+  !> \param len_work is the length of Dalton/Dirac workspace
+  !> \param wrk_space is the Dalton/Dirac workspace
+  !> \param io_viewer is the IO unit of standard output
+  subroutine gen1int_cube_main(len_work, wrk_space, io_viewer)
+    ! module of generating cube files
+    use gen1int_cube
+    implicit none
+    integer, intent(in) :: len_work
+    real(REALK), intent(inout) :: wrk_space(len_work)
+    integer, intent(in) :: io_viewer
+    call Gen1IntCubeCreate(len_work, wrk_space, io_viewer)
+    return
+  end subroutine gen1int_cube_main

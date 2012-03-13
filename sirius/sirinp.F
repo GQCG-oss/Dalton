@@ -431,6 +431,9 @@ C <---
 C     ... It is followed by an abacus run
       CORHOL    = .FALSE.
       CORRLX    = .FALSE.
+C added by Bin Gao for generating cube files
+C March 9, 2012
+      DO_CUBE = .false.
 C
 C********** Default values section HAMINP *****
 C
@@ -1981,7 +1984,11 @@ C
 C
 C -- local variables and constants
 C
+#ifdef BUILD_GEN1INT
+      PARAMETER (NTBMOD = 24)
+#else
       PARAMETER (NTBMOD = 23)
+#endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
 C needed for lucita: nsym, norb
@@ -1996,7 +2003,11 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
+#ifdef BUILD_GEN1INT
+     *            '*AUXILL','*LUCITA','*CUBE  ','*END OF'/
+#else
      *            '*AUXILL','*LUCITA','*END OF'/
+#endif
 C
 C
 C  ***************************************************
@@ -2016,7 +2027,11 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
+#ifdef BUILD_GEN1INT
+     *                2900,3000,2400,3200,3600,8000), I
+#else
      *                2900,3000,2400,3200,8000), I
+#endif
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2092,6 +2107,12 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
        GO TO 910
+#ifdef BUILD_GEN1INT
+C added by Bin Gao, to generate cube files to visualize the results
+C March 9, 2012
+ 3600  call gen1int_cube_input(LUCMD, LUPRI, WORD)
+       goto 910
+#endif
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
