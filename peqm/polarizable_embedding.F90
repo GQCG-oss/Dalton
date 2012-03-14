@@ -43,15 +43,16 @@ module polarizable_embedding
     ! precision
     integer, parameter :: dp = selected_real_kind(15, 200)
 
-    ! constants (codata 2002)
-    ! 1 bohr = 0.5291772108 Aa
-    real(dp), parameter :: aa2au = 1.8897261249935897d0
-
     ! thresholds and other stuff
+    ! 1 bohr = 0.5291772108 Aa (codata 2002)
+    real(dp), parameter :: aa2au = 1.8897261249935897d0
     real(dp), parameter :: zero = 1.0d-6
     real(dp) :: damp = 2.1304d0
     real(dp) :: Rmin = 2.2d0
     character(len=6) :: border_type = 'REDIST'
+
+    ! C^(n)_ij coefficients for calculating T(k) tensor elements
+    integer, dimension(14,0:6,0:6) :: Cnij
 
     ! variables used for timings
     real(dp) :: t1, t2
@@ -461,7 +462,7 @@ subroutine pe_read_potential(work, coords, charges)
         end do
     end if
 
-    ! handling of sites near quantum-classical border
+    ! handling sites near quantum-classical border
     ! -----------------------------------------------
     if (pe_border) then
         ! first locate all sites within given threshold of QM nuclei
@@ -653,7 +654,6 @@ subroutine pe_read_potential(work, coords, charges)
             end do
         end if
     end if
-    ! ------------------------------------------------
 
     ! number of polarizabilities different from zero
     if (lpol(0) .or. lpol(1)) then
@@ -667,6 +667,8 @@ subroutine pe_read_potential(work, coords, charges)
             end if
         end do
     end if
+
+    call Tk_coefficients()
 
 end subroutine pe_read_potential
 
@@ -2182,103 +2184,78 @@ end subroutine response_matrix
 
 !------------------------------------------------------------------------------
 
+subroutine Tk_coefficients()
+
+    ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
+
+    integer :: i, j, k, l, m, n
+
+    Cnij(:,0,0) = 1
+    do n = 1, 14
+        if (mod(n,2) == 0) cycle
+        do i = 1, 6
+            if (mod(i,2) /= 0) then
+                k = i - 1
+            else if (mod(i,2) == 0) then
+                k = i
+            end if
+            do j = 0, i
+                if (mod(i+j,2) /= 0) cycle
+                if (j == 0) then
+                    Cnij(n,i,j) = Cnij(n,i-1,j+1)
+                else if (j /= i) then
+                    Cnij(n,i,j) = (j + 1) * Cnij(n,i-1,j+1)
+                    Cnij(n,i,j) = Cnij(n,i,j) - (n + k) * Cnij(n,i-1,j-1)
+                    k = k + 2
+                else if (j == i) then
+                    Cnij(n,i,j) = - (n + k) * Cnij(n,i-1,j-1)
+                end if
+            end do
+        end do
+    end do
+
+end subroutine Tk_coefficients
+
+!------------------------------------------------------------------------------
+
 subroutine Tk_tensor(Tk, k, Rij)
 
     integer, intent(in) :: k
     real(dp), dimension(:), intent(out) :: Tk
     real(dp), dimension(3), intent(in) :: Rij
 
-    integer :: i, a, b, g, d
-    real(dp) :: R, R2, R4
+    integer :: idx
+    integer :: l, m, n, x, y, z
+    real(dp) :: R, Cx, Cy, Cz
+
+    ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
 
     R = nrm2(Rij)
 
-    if (k == 0) then
-        Tk(1) = 1.0d0 / R
-    else if (k == 1) then
-        do a = 1, 3
-            Tk(a) = Rij(a)
-        end do
-        Tk = - Tk / R**3
-    else if (k == 2) then
-        R2 = R**2
-        i = 1
-        do a = 1, 3
-            do b = a, 3
-                Tk(i) = 3.0d0 * Rij(a) * Rij(b)
-                if (a == b) then
-                    Tk(i) = Tk(i) - R2
-                end if
-                i = i + 1
-            end do
-        end do
-        Tk = Tk / R**5
-    else if (k == 3) then
-        R2 = R**2
-        i = 1
-        do a = 1, 3
-            do b = a, 3
-                do g = b, 3
-                    Tk(i) = 15.0d0 * Rij(a) * Rij(b) * Rij(g)
-                    if (b == g) then
-                        Tk(i) = Tk(i) - 3.0d0 * R2 * Rij(a)
-                    end if
-                    if (a == g) then
-                        Tk(i) = Tk(i) - 3.0d0 * R2 * Rij(b)
-                    end if
-                    if (a == b) then
-                        Tk(i) = Tk(i) - 3.0d0 * R2 * Rij(g)
-                    end if
-                    i = i + 1
-                end do
-            end do
-        end do
-        Tk = - Tk / R**7
-    else if (k == 4) then
-        R2 = R**2
-        R4 = R**4
-        i = 1
-        do a = 1, 3
-            do b = a, 3
-                do g = b, 3
-                    do d = g, 3
-                        Tk(i) = 105.0d0 * Rij(a) * Rij(b) * Rij(g) * Rij(d)
-                        if (g == d) then
-                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(a) * Rij(b)
-                        end if
-                        if (b == d) then
-                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(a) * Rij(g)
-                        end if
-                        if (b == g) then
-                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(a) * Rij(d)
-                        end if
-                        if (a == d) then
-                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(b) * Rij(g)
-                        end if
-                        if (a == g) then
-                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(b) * Rij(d)
-                        end if
-                        if (a == b) then
-                            Tk(i) = Tk(i) - 15.0d0 * R2 * Rij(g) * Rij(d)
-                        end if
-                        if (a == b .and. g == d) then
-                            Tk(i) = Tk(i) + 3.0d0 * R4
-                        end if
-                        if (a == g .and. b == d) then
-                            Tk(i) = Tk(i) + 3.0d0 * R4
-                        end if
-                        if (a == d .and. b == g) then
-                            Tk(i) = Tk(i) + 3.0d0 * R4
-                        end if
-                        i = i + 1
+    Tk = 0.0d0
+
+    idx = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                do l = 0, x
+                    Cx = Cnij(1,x,l)*(Rij(1)/R)**l
+                    do m = 0, y
+                        Cy = Cx * Cnij(l+x+1,y,m)*(Rij(2)/R)**m
+                        do n = 0, z
+                            Cz = Cy * Cnij(l+x+y+m+1,z,n)*(Rij(3)/R)**n
+                            Tk(idx) = Tk(idx) + Cz
+                        end do
                     end do
                 end do
+                Tk(idx) = Tk(idx) / R**(x+y+z+1)
+                idx = idx + 1
             end do
         end do
-        Tk = Tk / R**9
-    end if
+    end do
 
-end subroutine Tk_tensor
+end subroutine
 
 !------------------------------------------------------------------------------
 
