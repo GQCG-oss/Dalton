@@ -708,6 +708,8 @@ soppa/so_twofock.F
 soppa/so_write.F
 soppa/so_writeset.F
 soppa/so_wrtve.F
+#csf stuff from jeppe
+lucita/lucia_nortci.F
     )
 set(FREE_FORTRAN_SOURCES
 gp/binary_info.F90
@@ -741,12 +743,9 @@ lucita/lucita_ci_task_interface.F90
 lucita/gasci_input_cfg.F90
 lucita/mcscf_or_gasci_2_define_cfg.F90
 lucita/lucita_mcscf_ci_interface_procedures.F90
-gen1int/gen1int_prop_attr.F90
-gen1int/gen1int_ifc_test.F90
-gen1int/gen1int_shell.F90
-gen1int/gen1int_ifc_prop.F90
-gen1int/gen1int_ifc_main.F90
-gen1int/gen1int_ifc_clean.F90
+#gen1int/gen1int_interface.F90
+#gen1int/gen1int_shell.F90
+#gen1int/gen1int_matrix.F90
 lucita/par_sync_cw.F90
     )
 set(OWN_BLAS_SOURCES
