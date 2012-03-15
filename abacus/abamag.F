@@ -128,7 +128,7 @@ C
       END IF
  300  CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults in EXPECT:',0)
+         CALL HEADER('Changes of defaults for EXPECT:',0)
          IF (MSKIP) THEN
             WRITE (LUPRI,'(A)')
      &          ' No magnetic expectation values calculated in this run'
@@ -1440,7 +1440,7 @@ C
                   READ (LUCMD,*) MAXTRP
                   IF (MAXTRP .EQ. 40) ICHANG = ICHANG - 1
                GO TO 100
-    4          CONTINUE
+    4          CONTINUE ! .THRESH
                   READ (LUCMD,*) THRTRP
                   IF (THRTRP .EQ. 1.D-04) ICHANG = ICHANG - 1
                GO TO 100
