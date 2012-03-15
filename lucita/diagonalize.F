@@ -694,7 +694,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
 * A : Input matrix
 * LGAS : Orbital partitioning
 * NOBPSM : Number of orbitals per symmetry
-* MXPOBS : Max number of orbitals per symmetry
+* MXPOBS : Max number of orbital symmetries
 * NSMOB  : Number of orbital symmetries
 * NGAS   : Number of orbital partitionings
 *
