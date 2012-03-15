@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_ETA_NODDY(LISTL,IDLSTL,IOPTRES,
@@ -43,14 +43,14 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <dummy.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
+#include "dummy.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
 
       LOGICAL LOCDBG, FD_TEST, XI_ONLY
       PARAMETER (LOCDBG=.FALSE., FD_TEST=.false., 
@@ -417,12 +417,12 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       LOGICAL L2INCL
 
@@ -518,11 +518,11 @@ C------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL E2AM(NT1AMX,NT1AMX)
@@ -586,11 +586,11 @@ C------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL XMMAT(NRHFT,NRHFT,NT1AMX)
@@ -672,11 +672,11 @@ C------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -753,11 +753,11 @@ C------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL DELTA, ZERO, HALF, SIXTH

@@ -1,14 +1,14 @@
 C#######################################################################
       SUBROUTINE LOCCTL(CMO,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       REAL*8 CMO(*)
       REAL*8 WORK(LWORK)
 !
 !  Localize orbitals 
 !
-#include <priunit.h>
-#include <infloc.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infloc.h"
+#include "inforb.h"
 !
       CALL QENTER('LOCCTL')
       CALL TITLER('Orbital localization','*',105)
@@ -211,7 +211,7 @@ C /* Deck boys */
 #ifdef __MAIN__
       IMPLICIT NONE
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
       INTEGER NAO,NMO,LWORK
       REAL*8 CMOIN(NAO,NMO), CMOOUT(NAO,NMO), WORK(LWORK)
@@ -224,7 +224,7 @@ C /* Deck boys */
       INTEGER LUPRI
       LUPRI=6
 #else
-#include <priunit.h>
+#include "priunit.h"
 #endif
 C
 C Input CMOIN
@@ -730,6 +730,6 @@ C
 #endif
 C#######################################################################
       BLOCK DATA INFLOC
-#include <infloc.h>
+#include "infloc.h"
       DATA BOYSEL /.FALSE./
       END

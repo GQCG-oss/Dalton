@@ -11,16 +11,16 @@ C
 C     PURPOSE: Set up T2-amplitudes for a given J and given
 C              symmetries of A, I, and B.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION T2SQ(LT2SQ), T2MP(LT2MP)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------------------
 C     Statement function INDEX.

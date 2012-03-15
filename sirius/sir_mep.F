@@ -6,29 +6,29 @@ C  /* Deck calc_mep */
 !                 in (x,y,z) points listed on MEP.INP file;
 !                 values are written to MEP.OUT file.
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "gnrinf.h"
 #ifdef VAR_MPI
 #include "mtags.h"
 #include "infpar.h"
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       DIMENSION WRK(LFRSAV)
@@ -212,29 +212,29 @@ C*******************************************************************************
 C  /* Deck MEP_SLAVE */
       SUBROUTINE MEP_SLAVE(WRK,LWRK)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "gnrinf.h"
 #ifdef VAR_MPI
 #include "mtags.h"
 #include "infpar.h"
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       DIMENSION WRK(LWRK)
@@ -300,29 +300,29 @@ C  /* Deck MEP_LOOP */
       SUBROUTINE MEP_LOOP(XMEP,YMEP,ZMEP,NCENTERS,DENS,
      &                      WRK,LWRK,MEP,MEFX,MEFY,MEFZ)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "gnrinf.h"
 #ifdef VAR_MPI
 #include "mtags.h"
 #include "infpar.h"
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       CHARACTER*8 LABINT(9*MXCENT)

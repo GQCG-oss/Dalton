@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccpt_etars_1e */
       SUBROUTINE CCPT_ETARS_1E(ETAIJ,ETAAB,
@@ -42,15 +42,15 @@ C              integrals!
 C
 C     Based on CC2_ETIJ/CC2_ETAB by A. Halkier & S. Coriani
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), ETAAB(*)
       DIMENSION XINTIJ(*), XINTAI(*), XINTIA(*), XINTAB(*)
       DIMENSION DIA(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_ETARS_1E')
 C
@@ -132,14 +132,14 @@ C              ISYM is the symmetry of both the density and the
 C              integrals!
 C     Based on CCDENZK0 by A. Halkier
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAKA(*), XINTIJ(*), XINTAI(*), XINTIA(*), XINTAB(*)
       DIMENSION DIA(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('ccpt_etaai_1e')
 C
@@ -198,15 +198,15 @@ C              contribution to CCSD(T) densities (d_pq;gamma,delta)
 C              ISYM is the symmetry of both the density and the
 C              integrals!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), ETAAB(*)
       DIMENSION XINTIJ(*), XINTAI(*), XINTIA(*), XINTAB(*)
       DIMENSION DIA(*),DAI(*),DSIJ(*),DSAB(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CCPT_ETARS_2E')
 C
@@ -364,14 +364,14 @@ C              d_pq(gamma,delta) to the Coupled Cluster densities
 C              ISYM is the symmetry of both the density and the 
 C              integrals!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAKA(*), XINTIJ(*), XINTAI(*), XINTIA(*), XINTAB(*)
       DIMENSION DAI(*), DIA(*), DSIJ(*), DSAB(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('ccpt_etaai_2e')
 C

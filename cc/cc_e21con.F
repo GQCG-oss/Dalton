@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_e21con */
@@ -49,10 +49,10 @@ C  /* Deck cc_e21con */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

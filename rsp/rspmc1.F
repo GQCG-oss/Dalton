@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 C===========================================================================
@@ -35,16 +35,16 @@ C===========================================================================
 C
 C     Layout the core for the calculation of A3 times two vectors
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -95,14 +95,14 @@ C      Outer driver routine for X[3] times two vectors. This subroutine
 C      calls the setup of the operator transformation, constructs a den-
 C      sity matrix if necessary  and calls RSP1GR to compute the gradient.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infrsp.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -159,23 +159,23 @@ C
      *                 IOPSYM,VEC1,VEC2,A3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D3 = 3D0, D6 = 6.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION A3TRS(KZYVR)
       DIMENSION XINDX(*)
@@ -297,23 +297,23 @@ C
      *                 IOPSYM,VEC1,VEC2,A3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0, DMH = -0.5D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION A3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -393,23 +393,23 @@ C
      *                 IOPSYM,VEC1,VEC2,A3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DMH = -0.5D0 , D1 = 1.0D0, D3 = 3.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION A3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -495,21 +495,21 @@ C
 C
 C     Layout the core for the calculation of X3 times two vectors
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -559,13 +559,13 @@ C      Outer driver routine for X[3] times two vectors. This subroutine
 C      calls the setup of the operator transformation, constructs a den-
 C      sity matrix if necessary  and calls RSP1GR to compute the gradient.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -611,23 +611,23 @@ C
      *                 IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -817,23 +817,23 @@ C
      *                 IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -933,23 +933,23 @@ C
      *                 IOPSYM,VEC1,VEC2,X3TRS,OPMAT,
      *                 DEN1,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.5D0 , D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION X3TRS(KZYVR), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)

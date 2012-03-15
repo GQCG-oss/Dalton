@@ -42,10 +42,10 @@ c     Therefore:
 c     1. upper triangle of the DSOMAT need to be set.
 c     This is done in numdso_finish() f77 routine.
 c
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <spnout.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "spnout.h"
       DIMENSION DSOMAT(MXCOOR,MXCOOR),RHO(NBLLEN),WGHT(NBLLEN)
       DIMENSION COOR(3,NBLLEN)
 c     Temporary arrays:
@@ -101,10 +101,10 @@ c                 analytical version.
 C  /* Deck numdso_finish */
       SUBROUTINE NUMDSO_FINISH(SPNDSO)
 c     see above for description.
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION SPNDSO(MXCOOR,MXCOOR)
-#include <nuclei.h>
+#include "nuclei.h"
       DO K = 1, NUCIND*3
          DO L = 1, K-1
             SPNDSO(K,L) = SPNDSO(L  ,K)
@@ -114,21 +114,21 @@ c      write(2,*)'SPNDSO:'
 c      CALL OUTPUT(SPNDSO,1,NUCIND*3,1,NUCIND*3,MXCOOR,MXCOOR,1,2)
       END
       SUBROUTINE getdsosz(nDSODIM)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       nDSODIM = MXCOOR
       END
 #ifdef VAR_MPI
       SUBROUTINE dsosyncslaves(dmat,nind,work,lwork)
-#include <implicit.h>
-#include <mpif.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <spnout.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "mpif.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "spnout.h"
+#include "inforb.h"
+#include "infpar.h"
       DIMENSION DMAT(NBAST,NBAST)
       IF(MYNUM.EQ.0) CALL dftdns(dmat, work, lwork, 0)
       CALL MPI_Bcast(dmat, N2BASX, MPI_DOUBLE_PRECISION,

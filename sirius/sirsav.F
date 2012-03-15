@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  FILE: sirius/sirsav.F
 C
@@ -65,15 +65,15 @@ C        =4 save MC information, after SIRCAN
 C        =5 save CI information, after CICTL
 C        =6 save MC optimization information, when N-R used.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*(*) KEYWRD
       DIMENSION CMO(*),IBNDX(*),EVEC(*),REDL(*),XKAP(*),INDXCI(*)
       DIMENSION WRK(LFREE)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       PARAMETER (THRTT = 1.0D-4, D0 = 0.0D0, D1 = 1.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,FLAG(*),?
@@ -83,15 +83,15 @@ C   INFOPT : EMCOLD,DEPRED,BETA,GAMMA,RTRUST,ITMAC,NREDL,?
 C   INFDIM : NORBMA,NBASMA,IVEX4,INTOT, MAXRL
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL DOCNO, DOXKAP, FNDLAB
       CHARACTER*6 CNOLBL
@@ -690,7 +690,7 @@ C Output: CMO new orbitals
 C
 C Scratch:WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XKAP(*),CMO(*), WRK(*)
 C
 C local parameters:
@@ -705,14 +705,14 @@ C   INFORB : NSYM,NCMOT,...
 C   INFDIM : NORBMA
 C   INFPRI : P6FLAG()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('MO_ROTATE')

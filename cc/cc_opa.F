@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_OPA */
 *=====================================================================*
@@ -40,12 +40,12 @@ c /* deck CC_OPA */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <ccopainf.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <second.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "ccopainf.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "second.h"
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -269,15 +269,15 @@ c /* deck ccopaprt */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <pgroup.h>
-#include <ccroper.h>
-#include <ccopainf.h>
-#include <ccxopainf.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <codata.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "ccroper.h"
+#include "ccopainf.h"
+#include "ccxopainf.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "codata.h"
+#include "ccorb.h"
 
 
       CHARACTER*5  BLANKS
@@ -595,7 +595,7 @@ C     Thomas Bondo Pedersen, January 2005.
 C
 C     Purpose: set up and print rotatory strength tensors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIPMOM(3,2), ANGMOM(3,2), QUAMOM(3,3,2)
       CHARACTER*(*) GAUGE
 
@@ -805,12 +805,12 @@ c /* deck ccopa_setup */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <ccopainf.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "ccopainf.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
 
 * local parameters:
       CHARACTER*(21) MSGDBG

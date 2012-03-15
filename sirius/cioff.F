@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cioff */
       SUBROUTINE CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
@@ -29,8 +29,8 @@ c Generate offset arrays for CI vector with symmetry IREFSM
 c ICORHC = 1 => store in C arrays
 c ICORHC = 2 => store in HC arrays
 c
-#include <implicit.h>
-#include <detbas.h>
+#include "implicit.h"
+#include "detbas.h"
       DIMENSION XNDXCI(*)
 c
       IF(ICORHC.EQ.1) THEN
@@ -60,12 +60,12 @@ c  ISO  : Address of first element with a-string of given symmetry
 c  IOOS : Address of first element of given SOO type
 c  NDTAS: Number of dets with a-strings of given symmetry
 c
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <inforb.h>
-#include <ciinfo.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "inforb.h"
+#include "ciinfo.h"
 c
       DIMENSION XNDXCI(*)
       DIMENSION IOFF(*),ISO(*),IOOS(NOCTPB,NOCTPA,MAXSYM),NDTAS(*)

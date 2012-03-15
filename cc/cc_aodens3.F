@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_aodens3 */
       SUBROUTINE CC_AODENS3(XLAMDP1,ISYMP1,XLAMDH2,ISYMH2,
@@ -42,15 +42,15 @@ C     ORDER IS IMPORTANT: always P1*H2 (+ P3*H4)
 C     Debug 12.8.99 OK
 C     Reinsert in AODENS2 at some point
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XLAMDP1(*), XLAMDH2(*), XLAMDP3(*), XLAMDH4(*)
       DIMENSION DENS(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
 C
 *
 * Symmetry test

@@ -21,25 +21,25 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE TMOINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infrsp.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <inftmo.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
-#include <inflin.h>
-#include <inftap.h>
+#include "inftmo.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
+#include "inflin.h"
+#include "inftap.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 20)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_ETADRV */
 *=====================================================================*
@@ -52,13 +52,13 @@ c /* deck CC_ETADRV */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cclists.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cclists.h"
+#include "dummy.h"
+#include "r12int.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -566,8 +566,8 @@ c /* deck CC_ETA_SETUP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(22) MSGDBG

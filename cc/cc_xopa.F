@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_XOPA */
 *=====================================================================*
@@ -41,14 +41,14 @@ c /* deck CC_XOPA */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <ccxopainf.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <second.h>
-#include <ccexcinf.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "ccxopainf.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "second.h"
+#include "ccexcinf.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -287,13 +287,13 @@ c /* deck ccxopa_setup */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <ccxopainf.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "ccxopainf.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER*(22) MSGDBG

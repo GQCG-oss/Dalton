@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_ADEN_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -39,14 +39,14 @@ C
 *     Written by Christof Haettig, Jan 2003, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <ccr2rsp.h>
-#include <ccr1rsp.h>
-#include <ccer1rsp.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "ccr2rsp.h"
+#include "ccr1rsp.h"
+#include "ccer1rsp.h"
+#include "ccnoddy.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -930,9 +930,9 @@ C       ---------------------------------------
 *     Written by Christof Haettig, Jan 2003, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       INTEGER ISYMWB, ISYMTH
       PARAMETER (ISYMWB = 1, ISYMTH = 1)
@@ -1657,9 +1657,9 @@ c     2) remove forbidden elements
 *     Written by Christof Haettig, Jan 2003, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL CUBIC, DO_DIA
 
@@ -2215,10 +2215,10 @@ c        thetay(em,fn,dk) * xprop(kl) + thetax(em,fn,dk) * yprop(kl)
 *     to represent the second-order amplitudes T3^XY
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -2573,17 +2573,17 @@ C  /* Deck ccsdt_gwbic */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
 
 C
       LOGICAL LOCDBG
@@ -3486,15 +3486,15 @@ C                 -----------------------------
 *=====================================================================*
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccinftap.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccinftap.h"
+#include "inftap.h"
 C
       LOGICAL LOCDBG, TOT_T3Y, HAVET3Y, PRINT_T3
       PARAMETER(LOCDBG = .FALSE., TOT_T3Y = .TRUE.)

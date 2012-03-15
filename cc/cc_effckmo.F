@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_EFFCKMO(FOCK,ISYFCK,CMO,OVERLP,WORK,LWORK)
@@ -40,9 +40,9 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

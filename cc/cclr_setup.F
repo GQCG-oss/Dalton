@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cclr_setup */
 *=====================================================================*
@@ -48,16 +48,16 @@ c /* deck cclr_setup */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccsdinp.h>
-#include <ccexpfck.h>
-#include <cclists.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccsdinp.h"
+#include "ccexpfck.h"
+#include "cclists.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG

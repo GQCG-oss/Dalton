@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_SOP */
 *=====================================================================*
@@ -43,32 +43,32 @@ c /* deck CC_SOP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclrinf.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <second.h>
-#include <dummy.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclrinf.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "second.h"
+#include "dummy.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C     
 CTOCD
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ctocdcc.h>
-#include <sigma.h>
-#include <suscpt.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ctocdcc.h"
+#include "sigma.h"
+#include "suscpt.h"
 CTOCD
 
 * local parameters:
@@ -431,11 +431,11 @@ c /* deck ccsopprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cclrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cclrinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*5  BLANKS
@@ -469,15 +469,15 @@ c /* deck ccsopprt */
       PARAMETER (DPOLAUTSI =  1.648778D-41)
 
 CTOCD
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <sigma.h> 
-#include <suscpt.h>
-#include <symmet.h>
-#include <ctocdcc.h>
-#include <nuclei.h>
-#include <suscc.h>
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "sigma.h" 
+#include "suscpt.h"
+#include "symmet.h"
+#include "ctocdcc.h"
+#include "nuclei.h"
+#include "suscc.h"
 C           
       LOGICAL JUMP
       INTEGER IY, IDUM, LU29
@@ -1439,18 +1439,18 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Origin-dependence of length gauge OR.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GLEN(3,*), DELTA(3,*)
       CHARACTER*10 MODEL
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cclrinf.h>
-#include <cbiher.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cclrinf.h"
+#include "cbiher.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_ORGIN')
@@ -1468,7 +1468,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     Print title.
 C     ------------
@@ -1540,18 +1540,18 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Origin-dependence of length gauge OR.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DELTA(3,*)
       CHARACTER*10 MODEL
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cclrinf.h>
-#include <cbiher.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cclrinf.h"
+#include "cbiher.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_ORANL')
@@ -1569,7 +1569,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '         oo    ')
       PARAMETER (UNDEF  = '      undefined')
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     Print title.
 C     ------------
@@ -1644,18 +1644,18 @@ C     - based on ABACUS routine lnrout.
 C
 C     Purpose: Optical activity print, length and/or velocity gauge.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GLEN(3,*), GVEL(3,*), GTST(3,*), WORK(LWORK)
       CHARACTER*10 MODEL
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cclrinf.h>
-#include <cbiher.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cclrinf.h"
+#include "cbiher.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_OROUT')
@@ -1674,7 +1674,7 @@ C        = 288.0D-30 * pi**2 * bohr**4 * Avogadro, with bohr in Angstrom
       CHARACTER*15 INFITY, UNDEF
       PARAMETER (INFITY = '        oo     ')
       PARAMETER (UNDEF  = '      undefined')
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     Print title.
 C     ------------
@@ -1900,15 +1900,15 @@ C     ------------------------
 C  /* Deck ccdipgrapr */
       SUBROUTINE CCDIPGRAPR(SOPROP,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <abainf.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <cbisol.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "abainf.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "cbisol.h"
 
       DIMENSION SOPROP(NBLRFR,NLROP,2)
       DIMENSION WORK(LWORK)
@@ -1994,7 +1994,7 @@ C     --------------
 C  /* Deck cctrsp12 */
       SUBROUTINE CCTRSP12(XMAT,N1,N2,N3,SCR,LSCR)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XMAT(N1*N2*N3)
       DIMENSION SCR(LSCR)
 
@@ -2022,17 +2022,17 @@ C
 C  /* Deck cc_getdgr */
       SUBROUTINE CC_GETDGR(SOPROP,PROP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <chrxyz.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "nuclei.h"
 
       DIMENSION SOPROP(NBLRFR,NLROP,2)
       DIMENSION PROP(3*NUCDEP,3,NBLRFR)

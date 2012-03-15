@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck hr2drv */
       SUBROUTINE HR2DRV(HERINT,INDHER,COOR12,COOR34,EXP12,EXP34,FAC12,
@@ -34,15 +34,15 @@ C
 C     gnrinf.h needed for PANAS correction factor, and CHIVAL,ERFEXP,
 C              SRINTS for partition of r_12 (MCDFT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL NOINT, ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
      &          COOR12(*), COOR34(*), EXP12(*), EXP34(*), FAC12(*),
      &          FAC34(*), SIGNT(*), WORK(LWORK)
-#include <gnrinf.h>
-#include <twosta.h>
+#include "gnrinf.h"
+#include "twosta.h"
       LRJ000 = (JMAX + 1)*NUABCD
       KRJ000 = 1
       KPQX   = KRJ000 + LRJ000
@@ -69,14 +69,14 @@ C  /* Deck hr2dr1 */
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,SRINTS)
 C     Modified for r12 integrals (WK/UniKA/15-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
-#include <drw2el.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
+#include "drw2el.h"
+#include "maxaqn.h"
       PARAMETER (D1 = 1.D0)
       LOGICAL NOINT, ONECEN, ERFEXP, SRINTS
-#include <twosta.h>
+#include "twosta.h"
 C     HERINT is declared 3-dimensional for r12 integrals (WK/UniKA/14-11-2002).
       DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*), IODDHR(*),
      &          RJ000(NUABCD,*), WORK(LWORK),
@@ -192,12 +192,12 @@ C  /* Deck r000 */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <twosta.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "twosta.h"
+#include "r12int.h"
       LOGICAL ONECEN, NOINT, ERFEXP, SRINTS
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
@@ -255,13 +255,13 @@ C  /* Deck r0001 */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <codata.h>
-#include <drw2el.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "codata.h"
+#include "drw2el.h"
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0,DP25 = 0.25D0)
       LOGICAL ONECEN, NOINT, ERFEXP, SRINTS
       DIMENSION RJ000(NUABCD,0:JMAX),EJ000(NUABCD,0:JMAX),
@@ -270,9 +270,9 @@ C
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WVALU(NUABCD,NTALPHX), TALPHA(NUABCD,NTALPHX), 
      &          INDADR(NUABCD),SCLFAC(NUABCD,NTALPHX),WORK(LWORK)
-#include <twosta.h>
-#include <dftcom.h>
-#include <subdir.h>
+#include "twosta.h"
+#include "dftcom.h"
+#include "subdir.h"
 C-----------------------------------------------------------------------
 C
 C     *****************
@@ -852,10 +852,10 @@ C
 C  /* Deck getgam */
       SUBROUTINE GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,FJWS,INDADS,
      &                  WVALS,REXPW,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "pi.h"
       PARAMETER (HALF = 0.5D0)
       PARAMETER (D1 = 1.D0, D10 = 10.D0)
       PARAMETER (D2 = 2.D0, D4 = 4.D0, D12 = 12.D0, TENTH = 0.1D0)
@@ -867,7 +867,7 @@ C  /* Deck getgam */
      &           GFAC3 = -D2*0.3811559346 D0)
       PARAMETER (SQRPIH = SQRTPI/D2)
       PARAMETER (PID4 = PI/D4, PID4I = D4/PI)
-#include <gamcom.h>
+#include "gamcom.h"
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),
      &          WVALU(*), RJ000(NUABCD,0:JMAX), INDADS(NODS,3),
      &          WVALS(NODS,3), REXPW(NODS)
@@ -879,7 +879,7 @@ C
       D2JP36 = 2.0D0*JMAX + 36.0D0
 C NECgh980808 As sth suggested, this loop DO 100 can savely 
 C             be vectorized.
-#include <ivdep.h>
+#include "ivdep.h"
       DO 100 I = 1, NODS
          WVAL = WVALU(I)
          IF (WVAL .LT. D12) THEN
@@ -999,15 +999,15 @@ C     undetermined numbers - tuh
 C
 C     Modified for triangular addressing March 92 - tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       INTEGER T, U, V, TUV
       DIMENSION WORK(LWORK), RJ000(NUABCD,0:JMAX), IODDHR(*),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), HERINT(NUABCD,NTUV)
-#include <twosta.h>
-#include <hertop.h>
+#include "twosta.h"
+#include "hertop.h"
 C
 C     The final R(T,U,V) integrals are arranged as follows:
 C
@@ -1086,17 +1086,17 @@ C  /* Deck hrecur */
       SUBROUTINE HRECUR(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NUABCD,NTUV,IPQX,IPQY,IPQZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
       DIMENSION CUR(NUABCD,NTUV), OLD(NUABCD,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          RJ000(NUABCD,0:JMAX)
-#include <doxyz.h>
-#include <hertop.h>
+#include "doxyz.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -1249,8 +1249,8 @@ C  /* Deck herswp */
 C
 C     TUH 87
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION HERINT(NUABCD,NTUV), WORK(LWORK)
       NHRINT = NTUV*NUABCD
       IF (NHRINT .GT. LWORK) CALL STOPIT('HERSWP',' ',LWORK,NHRINT)
@@ -1284,10 +1284,10 @@ C  /* Deck r000x */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),
@@ -1295,9 +1295,9 @@ C
      &          COOR12(NUC1*NUC2,3), COOR34(NUC3*NUC4,3),
      &          EXP12 (NUC1*NUC2),   EXP34 (NUC3*NUC4),
      &          FAC12 (NUC1*NUC2),   FAC34 (NUC3*NUC4)
-#include <gamcom.h>
-#include <twosta.h>
-#include <subdir.h>
+#include "gamcom.h"
+#include "twosta.h"
+#include "subdir.h"
       IF (.NOT.DPATH1) THEN
          SIGN   = - D1
       ELSE

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 
 c /* Deck dftlnd */
@@ -29,13 +29,13 @@ c /* Deck dftlnd */
 C
 C     T. Helgaker Jan 2004 
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
-#include <inforb.h>
+#include "inforb.h"
 #include "dftbrhs.h"
       DIMENSION FD(N2BASX,3), WORK(LWORK)
-#include <dftcom.h>
+#include "dftcom.h"
       EXTERNAL DFTBRHS1
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
@@ -89,14 +89,14 @@ C
 C
       SUBROUTINE DFTBRHS1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
      &                    COORD,WGHT,FMAT)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &          FMAT(NBAST,NBAST,3)
-#include <dftinf.h>
+#include "dftinf.h"
 C
       CALL DFTBRHS2(NBLEN,NBLCNT,NBLOCKS,LDAIB,
      &              GAO(1,1,1),GAO(1,1,2),GAO(1,1,NSOB),GAO(1,1,NSOB1),
@@ -111,23 +111,23 @@ C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C     differentiated with respect to magnetic field
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 C
 #include "dftbrhs.h"
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <orgcom.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "orgcom.h"
+#include "symmet.h"
 C
       DIMENSION COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
@@ -239,22 +239,22 @@ C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C     differentiated with respect to magnetic field
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (D2 = 2.0D0)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <orgcom.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "orgcom.h"
+#include "symmet.h"
 C
       LOGICAL FROMVX, DOGGA
       DIMENSION GAO(NBAST), GAO1(NBAST,3), 
@@ -366,10 +366,10 @@ C     with respect to the magnetic field).
 C     
 C     D.J. Wilson, T. Helgaker  May 2004
 C     
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SUSCP(3,3)
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION WORK(LWORK)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       EXTERNAL DFTBHES1
@@ -410,13 +410,13 @@ C /* Deck dftbhes1 */
 C
 C     D.J.Wilson May 04
 C
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
      &          BDATA(9 + N2BASX)
-#include <dftinf.h>
+#include "dftinf.h"
       KDMAT  = 1
       KSUSDF = KDMAT  + N2BASX
       KLAST  = KSUSDF + 9
@@ -429,17 +429,17 @@ C /* Deck dftbhes2 */
       SUBROUTINE DFTBHES2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,GAO1,
      &                    RHOA,GRADA,COORD,WGHT,DMAT,SUSDFT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, DP5 = 0.5D0, D2 = 2.0D0)
-#include <inforb.h>
-#include <orgcom.h>
-#include <symmet.h>
-#include <shells.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "orgcom.h"
+#include "symmet.h"
+#include "shells.h"
+#include "dftcom.h"
 #include "dftbrhs.h"
 C
       DIMENSION NBLOCKS(2,LDAIB,8), COORD(3,NBLEN), NBLCNT(8),

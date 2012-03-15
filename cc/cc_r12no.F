@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=======================================================================
       SUBROUTINE CC_R12NO(T1AM,T2AM,WORK,LWORK)
@@ -35,12 +35,12 @@ C
 *-----------------------------------------------------------------------
 C
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <inftap.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "inftap.h"
+#include "r12int.h"
 C
       INTEGER KFOCKD,KYMAT,KEIVAL,KEIVEC,KT2SQ,KSCR,KFCKR12
       INTEGER KCMO,KFCKHF,LUFCK,KOFF1,KOFF2,KOFF3,KCMOTR

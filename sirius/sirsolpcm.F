@@ -24,7 +24,7 @@
 C File: sirius/sirsolpcm.F
 C       (sirsol.F modified for pcm)
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck pcmgrd */
       SUBROUTINE PCMGRD(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE)
@@ -38,18 +38,18 @@ C   Output:
 C    G          MCSCF gradient with solvation contribution added
 C    ESOLT      total solvation energy
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
 C
       DIMENSION CREF(*), CMO(*), INDXCI(*)
       DIMENSION DV(*),   G(*),   WRK(*)
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0,
      &            DCVAL = D2, FPI = 4.0D0 * PI )
-#include <thrzer.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "thrzer.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "mxcent.h"
 C
 C Used from common blocks:
 C   INFVAR: NCONF,  NWOPT,  NVAR,   NVARH
@@ -58,20 +58,20 @@ C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <orgcom.h>
-#include <pcmnuclei.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "orgcom.h"
+#include "pcmnuclei.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infpri.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 C
       LOGICAL     FIRST, FNDLAB, EXP1VL, TOFILE, TRIMAT
@@ -463,35 +463,35 @@ C
 C   Output:
 C    FSOL  : generalized Fock matrix  with solvation contribution added
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <thrzer.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <codata.h>
+#include "thrzer.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "codata.h"
 C
 C Used from common blocks:
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
-#include <orgcom.h>
-#include <dftcom.h>
+#include "orgcom.h"
+#include "dftcom.h"
 C
       PARAMETER (ANTOAU=1.0D+00/XTANG)
 C
@@ -719,7 +719,7 @@ C
 C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
 C Common driver for PCMLNC and PCMLNO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       DIMENSION VTEX(*)
@@ -728,13 +728,13 @@ C
 C Used from common blocks:
 C   INFLIN : NWOPPT,NVARPT
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <priunit.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <pcm.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "priunit.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "pcm.h"
 C
       CALL QENTER('PCMLIN')
 C
@@ -785,18 +785,18 @@ C  Purpose:  Calculate MCSCF Hessian contribution from a
 C            surrounding medium to a csf trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*) 
       DIMENSION INDXCI(*), DV(*),   DTV(NNASHX,*)
       DIMENSION SVEC(NVARPT,*),     WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C
 C  Used from common blocks:
@@ -804,17 +804,17 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "pcm.h"
+#include "pcmlog.h"
       DIMENSION VTEX(NTS,NCSIM)
 C
       CALL QENTER('PCMLNC')
@@ -996,17 +996,17 @@ C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
 C  NSVEC     may be NVAR or NWOPT, dependent on LINTRN
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION BOVECS(NWOPPT,*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),        DV(*)
       DIMENSION SVEC(NSVEC,*),    WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, DP5 = 0.5D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C
 C  Used from common blocks:
@@ -1015,22 +1015,22 @@ C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFPRI : IPRSOL
 C
-#include <pcmdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "pcmdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
       CHARACTER*8 LABINT(9*MXCENT)
       DIMENSION VTEX(NTS,NOSIM), QTEX(NTS,NOSIM), INTREP(9*MXCENT),
      &          INTADR(9*MXCENT)
-#include <infinp.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "infinp.h"
+#include "pcm.h"
+#include "pcmlog.h"
 #include "orgcom.h"
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FULHES, TOFILE, TRIMAT, EXP1VL
 C
@@ -1304,16 +1304,16 @@ C     ... end of pcmlno.
 
 C  /* Deck NEQENR */
       SUBROUTINE NEQENR(ESOLT,POTMAT,QSEGR,POTGR,POT,WORK,LWRK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <pi.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "pi.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0,
      &            DCVAL = D2, FPI = 4.0D0 * PI )
       DIMENSION POTMAT(NTS,*),QSEGR(*),POTGR(*),
@@ -1410,8 +1410,8 @@ C
 C     Interface routine to read PCM potential integrals of a given symmetry
 C     K.Ruud, nov.2001
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*8 LABNAM, WHERE
       LOGICAL FOUND, FNDLAB
       DIMENSION ARRAY(LENGTH)

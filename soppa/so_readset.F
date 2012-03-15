@@ -9,8 +9,8 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Read a set of arrays from a file.
 C
-#include <implicit.h>
-#include <soppinf.h>
+#include "implicit.h"
+#include "soppinf.h"
 C
       DIMENSION   ARRAY(LVEC,NVEC)
       CHARACTER*7 FILENM

@@ -17,9 +17,9 @@ SUBROUTINE xcfun_ksmlda(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO, &
 !C     P. Salek and T. Helgaker oct 2003
 !C
   use xcfun_dalton
-#include <implicit.h>
+#include "implicit.h"
   PARAMETER (D2 = 2.0D0)
-#include <inforb.h>
+#include "inforb.h"
   DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),&
        RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),&
        FKSM(*)
@@ -67,8 +67,8 @@ SUBROUTINE xcfun_KSMGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO, &
      RHOA,GRADA,COORD,WGHT,FKSM)
   !C     P. Salek and T. Helgaker oct 2003
   use xcfun_dalton
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
   DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN), &
        RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8), &
        FKSM(*)
@@ -125,7 +125,7 @@ END SUBROUTINE xcfun_KSMGGA
 SUBROUTINE xcfun_HESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT, &
      NBLEN, DOGGA)
   use xcfun_dalton
-#include <implicit.h>
+#include "implicit.h"
   LOGICAL DOGGA
   PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
   DIMENSION WGHT(NBLEN), RHOA(NBLEN), GRADAT(NBLEN,3) 

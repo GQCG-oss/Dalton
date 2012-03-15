@@ -27,12 +27,12 @@ C     Antisymmetric Squareup of the integral distribution,
 C     for orbit-orbit Breit-Pauli correction
 C     S. Coriani, April 2003. Based on CCSD_SYMSQO.
 C     Modified for [T1+T2,r12]-Integrals (Elena Vollmer, September 2003)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
       PARAMETER (ONE = 1.0D0)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSD_ASYMSQ')
 C

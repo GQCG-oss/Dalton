@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sircan */
       SUBROUTINE SIRCAN (IPRCAN,CREF,CMO,OCC,WRK,KFRSAV,LFRSAV)
@@ -38,13 +38,13 @@ C   CREF : CI-vector in natural orbitals
 C   CMO  : canonical/natural orbitals
 C   OCC  : occupation numbers for natural orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*), CMO(*), OCC(*), WRK(*)
 C
 C -- local variables and constants
 C
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,NROOTS,THRGRD,FLAG(*),LSYM,?
@@ -53,14 +53,14 @@ C   INFVAR : NCONF,?
 C   INFDIM : NBASMA,LCINDX,?
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CHARACTER STAR8*8, KEYCNO*6, RTNLBL(2)*8, LAB123(3)*8
       LOGICAL REDOCI, ONLYNO, ONLYFD
@@ -247,8 +247,8 @@ C   CMO   : canonical/natural orbitals
 C   AOCC  : occupation of natural active orbitals
 C
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       CHARACTER*6 KEYCNO
       DIMENSION CVECS(NCONF,*),  CMO(*), AOCC(*), INDXCI(*), WRK(*)
 C
@@ -267,17 +267,17 @@ C   INFIND : IROW(*),ISSMO(*),...
 C   INFDIM : NBASMA,?
 C   INFTAP : 
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
 C
       DIMENSION DVZRAS(3)
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
@@ -750,7 +750,7 @@ C Zero blocks in one-electron density matrix DV
 C connecting different RAS spaces (RAS1, RAS2, RAS3).
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(NNASHX),DVZRAS(3)
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -758,10 +758,10 @@ C Used from common blocks:
 C   INFORB : NASHT, NNASHX
 C   INFIND : IROW(*),IACTYP(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       DIMENSION DVZTMP(3,3)
 C
@@ -793,12 +793,12 @@ C Purpose:
 C  Calculate natural orbital occupation numbers and, if NATORB is true,
 C  transform orbitals to natural orbitals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CVEC(*), OCCNO(*), UNO(NASHT,*), CMO(*), INDXCI(*),
      *          WRK(*)
       LOGICAL   ORDER, NATORB, MOISNO, NOAVER
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0)
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C Used from common blocks:
 C  GNRINF: WRINDX
@@ -806,12 +806,12 @@ C  INFINP: LSYM
 C  INFORB: ICMO(*),...
 C  INFIND: ISSMO()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETNO ')
       KFREE  = KFRSAV

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_TRDRV
       SUBROUTINE CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
@@ -101,22 +101,22 @@ C     Changes for CC-R12 by Christof Haettig, Jun 2003.
 C
 C-------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <cclr.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <aovec.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "cclr.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "aovec.h"
+#include "r12int.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )

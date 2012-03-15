@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -65,11 +65,11 @@ C     SPNCOM,CSFDET
 C
 c Jeppe Olsen
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDFTP(*),ICFTP(*),DTOC(*)
       DIMENSION WORK(*)
-#include <spinfo.h>
+#include "spinfo.h"
 C
 C .. SET UP DETERMINANTS AND UPPER DETERMINANTS
 C
@@ -171,8 +171,8 @@ C    IFLAG = 2 : DETERMINANTS AND UPPER DETS
 C    IFLAG = 3 : ONLY UPPER DETS
 C
 c Jeppe Olsen
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER   ADD
       DIMENSION IABDET(NOPEN,*),IABUPP(NOPEN,*)
       DIMENSION IWORK(*)
@@ -290,8 +290,8 @@ C     WRTMA,MSSTRN
 c
 c Jeppe Olsen
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDET(NOPEN,NDET),ICSF(NOPEN,NCSF)
       DIMENSION CDC(NDET,NCSF)
       DIMENSION WORK(*)
@@ -323,7 +323,7 @@ C EXPANSION COEFFICIENT OF DETERMINANT JDET FOR CSF JCSF
       COEF = 1.0D0
       SIGN = 1.0D0
       JDADD = (JDET-1)*NOPEN
-#include <scalar.h>
+#include "scalar.h"
       DO 700 IOPEN = 1, NOPEN
 C
 C + + CASE
@@ -394,8 +394,8 @@ C Jeppe Olsen
 c
 C THE TWO PROCEDURES ARE IDENTICAL .
 
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION INSTRN(NOPEN),UTSTRN(NOPEN)
 C
       UTSTRN(1) = DFLOAT(INSTRN(1)) - 0.5D0
@@ -423,7 +423,7 @@ C sign array for switching between the two formats .
 C
 C Jeppe Olsen January 1989
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ICTSDT(*)
       INTEGER ORBSYM(*),SYMPRO(8,8)
       INTEGER IDFTP(*)
@@ -471,8 +471,8 @@ C
 C if IFLAG .NE. 0 determinant diagonal is changed to
 C average diagonal values .
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CSFDIA(*),DETDIA(*)
       DIMENSION NCNFTP(NTYP),NDTFTP(NTYP),NCSFTP(NTYP)
       DIMENSION ICTSDT(*)
@@ -530,10 +530,10 @@ C MOTECC-90: This module, CSDTVC, and the algorithms used
 C            are described in Chapter 8 Setion D.1 of MOTECC-90
 C            "RAS-CI Expansions in a CSF basis"
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <spinfo.h>
-#include <ciinfo.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "spinfo.h"
+#include "ciinfo.h"
       DIMENSION CSFVEC(*),DETVEC(*)
       DIMENSION DTOCMT(*),ICTSDT(*)
 C
@@ -623,12 +623,12 @@ C  /* Deck iabnum */
 C
 C Encapsulation routine for IABNUS
 C
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <ciinfo.h>
-#include <strnum.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "ciinfo.h"
+#include "strnum.h"
+#include "inforb.h"
       DIMENSION IASTR(*),IBSTR(*),XNDXCI(*)
       INTEGER   ORBSYM(*)
 C
@@ -659,12 +659,12 @@ C stored in sign of ICTSDT(I)
 C The sign is thus to be multiplied with determinant
 C vector ordered in CSF ordering.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxpdim.h>
-#include <strnum.h>
-#include <spinfo.h>
-#include <ciinfo.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxpdim.h"
+#include "strnum.h"
+#include "spinfo.h"
+#include "ciinfo.h"
       DIMENSION ICONF(*),IPRODT(*), ICTSDT(*), IWORK(*),XNDXCI(*)
       INTEGER   ORBSYM(*)
 C
@@ -754,8 +754,8 @@ C
 C A DETERMINANT IS GIVEN BY STRINGS IASTR,IBSTR .
 C FIND NUMBER OF THIS DETERMINANT
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IOFF(*)
       DIMENSION IASTR(NAEL),IBSTR(NBEL)
       DIMENSION IAORD(*),IBORD(*)
@@ -825,8 +825,8 @@ C
 C THIS CODE CONTAINS THE OLD ORDER CODE OF JOE GOLAB
 C ( HE IS HEREBY AKNOWLEDGED , AND I AM EXCUSED )
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IINST(NELMNT),IOUTST(NELMNT)
 C
       CALL ICOPVE(IINST,IOUTST,NELMNT)
@@ -875,8 +875,8 @@ C Construct the corresponding determinants in contracted  form .
 C
 C JEPPE OLSEN , NOVEMBER 1988
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ICONF(NORB), IPDET(*       ), IDET(NEL,NDET)
 C     DIMENSION ICONF(NORB), IPDET(NOP,NDET), IDET(NEL,NDET)
 C     890417-hj: new IPDET definition to avoid error when NOP.eq.0
@@ -950,8 +950,8 @@ C BETA STRING
 C
 C JEPPE OLSEN NOVEMBER 1988
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDET(NEL)
       DIMENSION IASTR(NAEL),IBSTR(NBEL)
       DIMENSION IWORK(*)
@@ -1014,15 +1014,15 @@ C
 c
 cJeppe Olsen , 1989
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION ICONF(*),IIOC(*),IICL(*),IIOP(*)
       INTEGER SYMPRO(8,8)
       INTEGER ORBSYM(NORB)
 C
-#include <spinfo.h>
-#include <ciinfo.h>
+#include "spinfo.h"
+#include "ciinfo.h"
 C
 C.. Loop over types of configurations
 C
@@ -1328,8 +1328,8 @@ C MULTS ACCORDING TO WEYLS FORMULAE
 C
 C     (2S+1)/(NOPEN+1) * BION(NOPEN+1/0.5NOPEN-S)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       NTEST = 0
 C
@@ -1355,7 +1355,7 @@ C  /* Deck msymp2 */
 C
 C A STRING of objects given. find total symmetry
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER SYMPRO(8,8),ORBSYM(1)
       INTEGER ISTR(1)
 C
@@ -1396,10 +1396,10 @@ C OUTPUT:
 C D  CONTAIN NEW CONFIGURATION TRIAL VECTOR (can use the same
 C                                   locations as xvec,res,or diag)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <phpinf.h>
+#include "phpinf.h"
 C
       LOGICAL OLSEN
 C
@@ -1451,8 +1451,8 @@ C DIAG   HAS APPENDED AT THE END POINTERS TELLING WHICH DIAGONAL
 C        ELEMENTS ARE CONTAINED IN H(0),EIGENVECTORS FOR H(0), AND
 C        EIGENVALUES FOR H(0)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from common blocks:
 C  INFINP : FLAG(27),LSYM,?
@@ -1461,16 +1461,16 @@ C  CIINFO : ICOMBI,IPSIGN,NDTASM,NCSASM
 C  DETBAS : KLTSOB,?
 C  CBREOR : SLREOR
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <phpinf.h>
-#include <mxpdim.h>
-#include <ciinfo.h>
-#include <detbas.h>
-#include <csfbas.h>
-#include <strnum.h>
-#include <cbreor.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "phpinf.h"
+#include "mxpdim.h"
+#include "ciinfo.h"
+#include "detbas.h"
+#include "csfbas.h"
+#include "strnum.h"
+#include "cbreor.h"
 C
       DIMENSION XNDXCI(*),FCAC(*),H2AC(*),DIAG(*),WRK(*)
 C
@@ -1591,11 +1591,11 @@ C    &               FIJKL,RJ,RK,ILTSOB)
 C  /* Deck phpini */
       SUBROUTINE PHPINI(LPHPT,NCVAR,NOVAR,MAXPHP)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C SPACE ALLOCATION FOR NEXCI ROUTINES
 C
-#include <phpinf.h>
+#include "phpinf.h"
       MXPDIM = MAXPHP
       KDIACI = 1
       KDIAOR = KDIACI + NCVAR
@@ -1680,8 +1680,8 @@ c
 c Externals   GPRCTV
 c===========
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c
       DIMENSION D(*), X(*),G(*),DIAG(*)
       DIMENSION IPNTR(*),PEIGVL(*),PEIGVC(*), WORK(*)
@@ -1787,7 +1787,7 @@ c VECUT : Output vector (you guessed ?? ), can occupy same space
 c         as VECIN or DIAG
 c XH0PSX  = X(T)(H0+SHIFT)**(-1)X
 c
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*),VECIN(*),VECUT(*)
       DIMENSION IPNTR(*),PEIGVL(*),PEIGVC(*)
       DIMENSION WORK(*)
@@ -1824,8 +1824,8 @@ c INVERTED SHIFTED SUBSPACE MATRIX TIMES VECTOR
 c
 c Last revision, oct 1989
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION EIGVC(NSBDIM,NSBDIM),EIGVL(NSBDIM),INDEX(NSBDIM)
       DIMENSION X1(NSBDIM),X2(NSBDIM)
       DIMENSION VECI(*),VECO(*)
@@ -1852,7 +1852,7 @@ C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
 C
 C VDSV = SUM(I) VECIN(I) ** 2 /( DIAG(I) + SHIFT )
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
       THRES=1.0D-5
@@ -1915,14 +1915,14 @@ c    FNDMNX,WRTMAT,ISTVC2,XTRDI
 c    GETCNF,CNHCN
 c Jeppe Olsen , Summer of '89
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION PHP(*),IPCSF(*),IPCNF(*),XNDXCI(*),DIAG(*)
       DIMENSION DTOC(*),IPRODT(*),ICONF(*)
       DIMENSION ONEBOD(*),SCR(*)
       DIMENSION EIGVEC(*),EIGVAL(*)
       DIMENSION FIJKL(*),RJ(*),RK(*),ILTSOB(*)
-#include <spinfo.h>
+#include "spinfo.h"
 c
 c* 1 : Obtain primary subspace
 c
@@ -2147,9 +2147,9 @@ c Type in KTYP
 c
 c Jeppe Olsen , summer of '89
 c
-#include <implicit.h>
-#include <priunit.h>
-#include <spinfo.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "spinfo.h"
 c
       DIMENSION KCNF(*),ICONF(*)
 c
@@ -2197,11 +2197,11 @@ c        the corresponding sign array   ,ISIGN
 c
 c Jeppe Olsen , Summer of '89
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ICONF(*),XNDXCI(*),ISCR(*),IPRODT(*)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*), SIGN(*)
-#include <spinfo.h>
+#include "spinfo.h"
 c
       NTEST =  0
       NEL = NAEL + NBEL
@@ -2254,12 +2254,12 @@ c Obtain Hamilton matrix over CSF's of configurations ICNL,ICNR
 c
 c Jeppe Olsen , Summer of '89
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ICNL(*),ICNR(*),XNDXCI(*),SCR(*)
       DIMENSION IPRODT(*),DTOC(*),ONEBOD(*), CNHCNM(*)
       DIMENSION FIJKL(*),RJ(*),RK(*),ILTSOB(*)
-#include <spinfo.h>
+#include "spinfo.h"
 c Length of SCR : LSCR
       NTEST = 0
 c
@@ -2367,13 +2367,13 @@ c     Externals
 c
 c     RSMXMN,GRAPW
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER Z(*), ISCR(*)
 c
-#include <mxpdim.h>
-#include <strnum.h>
-#include <ciinfo.h>
+#include "mxpdim.h"
+#include "strnum.h"
+#include "ciinfo.h"
 c
 c IAB = 1 : alpha electrons
 c IAB = 2 : beta  electrons
@@ -2440,8 +2440,8 @@ c
 c     CONSTRUCT ACCUMULATED MAX AND MIN ARRAYS FOR A RAS SPACE
 c     OF STRINGS
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION  MINEL(*),MAXEL(*)
 c
       NORB = NORB1 + NORB2 + NORB3
@@ -2501,8 +2501,8 @@ c
 c      REVERSE LEXICAL ORDEREING IS USED WITH
 c      WEIGHTS OF UNOOCUPIED ORBITALS SETR TO ZERO
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER W(NORB+1,NEL+1)
       INTEGER Y(NORB,NEL)
       INTEGER MAXEL(NORB),MINEL(NORB)
@@ -2568,8 +2568,8 @@ c     ISTVC2,NXTORD,IWRTMA,ICOPVE,ISCAVE
 c
 c     Jeppe Olsen , sometime, someplace  in 1989
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c.Input
       INTEGER Z(*), IREORD(*), ISTR(NEL,MAXSTR)
 c.Scratch
@@ -2718,8 +2718,8 @@ c     IWRTMA
 c
 c Jeppe Olsen , 1990
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION INUM(*)
 c
        IF( IPRINT.GT.30 ) THEN
@@ -2787,16 +2787,16 @@ c Jeppe Olsen, 1989
 c
 c Note . In this version, MS2 is assumed to be a input parameter
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c
       INTEGER SYMPRO(8,8)
       INTEGER ORBSYM(NACTOB)
       DIMENSION IWORK(*)
 c
-#include <ciinfo.h>
-#include <spinfo.h>
-#include <csfbas.h>
+#include "ciinfo.h"
+#include "spinfo.h"
+#include "csfbas.h"
 c
       KFREEO = KFREE
 c
@@ -2982,15 +2982,15 @@ c     ISETVC,IWRTMA
 c
 c     Jeppe Olsen , 1989
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IWORK(*)
       INTEGER SYMPRO(8,8)
       INTEGER ORBSYM(NORB)
       DIMENSION IICL(*),IIOP(*),IIOC(*)
 c
-#include <spinfo.h>
-#include <ciinfo.h>
+#include "spinfo.h"
+#include "ciinfo.h"
 c
       CALL ISETVC(NCNFTP,0,MAXSYM*MTYP)
       CALL ISETVC(NCSASM,0,MAXSYM)
@@ -3297,15 +3297,15 @@ c     SIRIUS version
 c
 c Version where lower IATP.GT.IBTP always is imposed
 c before IASM .GT. IBSM
-#include <implicit.h>
-#include <cbgetdis.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "cbgetdis.h"
+#include "priunit.h"
       EXTERNAL BDJEP
-#include <tstjep.h>
+#include "tstjep.h"
 c
-#include <mxpdim.h>
-#include <maxash.h>
-#include <mxsmob.h>
+#include "mxpdim.h"
+#include "maxash.h"
+#include "mxsmob.h"
 c
       LOGICAL PERMSM  , IH8SM
       INTEGER TAIJ,TATO,TASYM ,SYMPRO(8,8),DISSYM
@@ -4115,7 +4115,7 @@ c     IBRFTP : First string in R of given type
 c
 c     Jeppe Olsen , Sept 1989
 c
-#include <implicit.h>
+#include "implicit.h"
 c
       INTEGER R
       DIMENSION ITO(NEXCI,*),IIJ(NEXCI,*),NSTFTP(*),ITYPST(*),
@@ -4235,8 +4235,8 @@ c =================
 c SIRIUS version ||
 c =================
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER SYMPRO(8,8)
       REAL * 8 IJKL(*)
       DIMENSION IEX(*),ITO(*),IEXPSM(MAXSYM+1,NSTR),
@@ -4363,7 +4363,7 @@ c         string in symmetry block.
 c
 c     Jeppe Olsen , sept '89
 c
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IEX(*),ITO(*),KLTP(*),ITYPST(*)
       DIMENSION INDEXS(IDIM,*),INDEXG(*)
       DIMENSION FACTOR(IDIM,*),NEXFTP(*),G(*)
@@ -4427,8 +4427,8 @@ c MXGCTP : last column type with a nonvanishing number of rows
 c
 c Jeppe Olsen , October 1989
 c
-#include <implicit.h>
-#include <mxpdim.h>
+#include "implicit.h"
+#include "mxpdim.h"
       DIMENSION C(*),CG(*),NFRFTP(*),NGRFTP(*),NFCFTP(*),
      &          IBOUT(MXPTP,MXPTP),IG(*),SIGN(*),
      &          IOCOC(NTYPR,NTYPC)
@@ -4549,15 +4549,15 @@ c
 c Jeppe Olsen , Sept 1989 , LRFEX5 version july 1990
 c               Sept 1990 , ADDON added
 c
-#include <implicit.h>
+#include "implicit.h"
       INTEGER R
       DIMENSION ITO(*),IIJ(*),NSTFTP(*),ITYPST(*),
      &          IEXPSM(NSMSX+1,*)
       DIMENSION L(*),R(*),SIGN(*),NLFTP(*),NRFTP(*),IBRFTP(*)
       DIMENSION ISELST(*),ISELTP(*)
 c
-#include <mxpdim.h>
-#include <maxash.h>
+#include "mxpdim.h"
+#include "maxash.h"
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
      &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
 c
@@ -4653,8 +4653,8 @@ c NSCPTP   : Number of strings on ISCAT per type
 c
 c JEPPE OLSEN , SLC, DEC 1989, Revised July 1990
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c.Input
       INTEGER STRING(NEL,NSTRIN),ITPFST(NSTRIN)
 c.Output
@@ -4713,15 +4713,15 @@ c
 c JEPPE OLSEN , SLC, DEC 1989, Revised July 1990
 c                                     Sept. 1990 ( Addon added
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c.Input
       INTEGER STRING(NEL,*),NSSO(NTYPE)
 c.Output
       DIMENSION ISCAT(*),NSCPTP(*)
 c
-#include <mxpdim.h>
-#include <maxash.h>
+#include "mxpdim.h"
+#include "maxash.h"
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
      &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
 
@@ -4792,8 +4792,8 @@ c
 c Obtain type of each excitation
 c
 c.Input
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ITPFOB(NORB)
 c.Output
       DIMENSION IJTYP(NORB * NORB )
@@ -4824,8 +4824,8 @@ c (ITP-1)*3 + JTP , where ITP,JTP are the types of orbitals
 c (1 to 3 ) in excitation IJ
 c
 c.Input
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION NL1FTP(NTYPE),NL2FTP(NTYPE),NL3FTP(NTYPE)
 c.Output
       DIMENSION IJTST(9,*)
@@ -4898,8 +4898,8 @@ c
 c Obtain total number of allowed single excitations
 c
 c.Input
-#include <implicit.h>      
-#include <priunit.h>
+#include "implicit.h"      
+#include "priunit.h"
       DIMENSION NL1FTP(NTYPE),NL2FTP(NTYPE),NL3FTP(NTYPE)
       DIMENSION NSTFTP(NTYPE),IJTST(9,NTYPE)
 
@@ -4966,10 +4966,10 @@ c      NFTP(ITYPE) : Number of strings of type ITYPE containing KORB
 c      NSTRIN      : Total number of strings of sym ISM containing IORB
 c      ISTRIN      : Strings containing KORB
 c
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
 C
       DIMENSION XNDXCI(*)
       DIMENSION ISTRIN(*),NFTP(*)
@@ -5024,8 +5024,8 @@ c NSCPTP   : Number of strings on ISCAT per type
 c
 c JEPPE OLSEN , SLC, DEC 1989, Revised July 1990
 c
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c.Input
       INTEGER STRING(NEL,*),NSSO(NTYPE,*),ISSO(NTYPE,*)
 c.Output
@@ -5098,8 +5098,8 @@ C     IBOUT  : ADRESS OF FIRST ELEMENT IN CG BELONGING TO A
 C              SUBBLOCK DEFINED BY GIVEN ROW AND COLUMN TYPE
 C     MXGCTP : LAST COLUMN TYPE WITH A NONVANISHING NUMBER OF ROWS
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION C(*),CG(*),NFRFTP(*),NGRFTP(*),NFCFTP(*),
      &          IBOUT(MXPTP,*),IG(*),SIGN(*),
@@ -5190,7 +5190,7 @@ C              BY HAVING LOGICAL ORDER | OF OFFSET ARRAYS
 C              AND HAVING ICINP REFERRING TO A GIVEN BLOCK
 C              IWAY IS ALSO AN ADDITION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CIN(*),COUT(*)
       DIMENSION IOCOC(NOCTPA,NOCTPB)
@@ -5268,10 +5268,10 @@ C      NTERM  : NUMBER OF L,R PAIRS OBTAINED
 C      IBRFTP : OFFSET FOR R STRINGS OF A GIVEN TYPE
 C      IAB    : = 1 => A-STRINGS, =2 => B-STRINGS.
 C
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
 C
       DIMENSION XNDXCI(*), SIGN(*)
       INTEGER SXSTSM(*)
@@ -5351,11 +5351,11 @@ C     ILTFRT  : LEFT TYPE CORRESONDING TO GIVEN R-TYPE
 C     NTERM   :  NUMBER OF STRINGS IN L AND R
 C     IBRFTP  : FIRST STRING IN R OF GIVEN TYPE
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <mxpdim.h>
-#include <maxash.h>
+#include "priunit.h"
+#include "mxpdim.h"
+#include "maxash.h"
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
      &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
       INTEGER   R,DISSYM(*),SXSTSM(NSMSX,*)
@@ -5447,8 +5447,8 @@ C
 C     PURPOSE: NUMBER OF DETERMINANT AND OFFSET VECTOR
 C              FOR GIVEN SYMMETRY BLOCK
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION IOCOC(NOCTPA,NOCTPB),NSOA(NOCTPA),NSOB(NOCTPB)
       DIMENSION IOFF(MXPTP,MXPTP),NDTPBL(MXPTP,MXPTP)
@@ -5495,10 +5495,10 @@ C              LARGEST allowed excitation class is MXTP
 C              IF(IGTJ.NE.0.only excitations E(ij) with i.ge.j are
 C              included
 C
-#include <implicit.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
 C
       DIMENSION XNDXCI(*)
       INTEGER SXSTSM(NSMSX,*)
@@ -5547,8 +5547,8 @@ C              THE J-STRINGS ARE ENUMERATED WITH START OF GIVEN
 C              SYMORB TYPE AS BASE.
 C               ONLY EXCITATIONS LARGER THAN IJMIN ARE INCLUDED
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION IOFST(NOCTP,*)
       DIMENSION IOFXST(NSMSX+1,*),IJ(*),ITO(*)
@@ -5627,7 +5627,7 @@ C
 C     PURPOSE: OBTAIN MATRIX GIVING PRODUCT SYMMETRY OF
 C              EXCITATION TIMES STRING
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       INTEGER SXSTM(NSMSX,NSMST)
 C
@@ -5647,7 +5647,7 @@ C              SYMMETRY OF ONE STRING IS ISM , THE SYMMETRY OF THE
 C              OTHER STRING IS ISMOST(ISM),
 C              WITH A ZERO INDICATING A FORBIDDEN COMBINATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ISMOST(*)
 C
@@ -5668,12 +5668,12 @@ C  /* Deck densit */
      &                  ITPFOB,ISPIN1,ISPIN2,ILVERV,ILTSOB,ISTLOB,
      &                  RHOW,L,R,SIGNAR,SGNAR2,IIJSX,ITOSX,VEC1,SCR1,
      &                  NSXPTP,KOC,NFTPK,RHO1A,RHO1B,RHO2A,RHO2B)
-#include <implicit.h>
+#include "implicit.h"
       REAL * 8 INPROD
       LOGICAL PERMSM
       EXTERNAL BDJEP
-#include <tstjep.h>
-#include <priunit.h>
+#include "tstjep.h"
+#include "priunit.h"
 c.Input vectors
       DIMENSION CL(*),CR(*)
 c.Input string information
@@ -5689,8 +5689,8 @@ c. Detailed string information for lower level routines
       DIMENSION XNDXCI(*)
 c. Output
       DIMENSION RHO1(*),RHO2(*)
-#include <mxpdim.h>
-#include <maxash.h>
+#include "mxpdim.h"
+#include "maxash.h"
 c. Scratch blocks
       DIMENSION ILOFF(MXPTP,MXPTP),IROFF(MXPTP,MXPTP)
       DIMENSION ILOFF2(MXPTP,MXPTP),IROFF2(MXPTP,MXPTP)
@@ -6312,13 +6312,13 @@ C
 C Retrieve NVEC PHP solution vectors in CVECS, starting
 C with number I1VEC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CVECS(NCONF,NVEC), DIAG(LPHP)
 C
 C Used from common blocks :
 C   PHPINF : LPHP,KPEVEC,NPCVAR,KPNTR
 C
-#include <phpinf.h>
+#include "phpinf.h"
 C
       IF (NVEC .GT. 0) THEN
          CALL DZERO(CVECS,NVEC*NCONF)
@@ -6332,8 +6332,8 @@ C
       END
 C  /* Deck bdjep */
       BLOCK DATA BDJEP
-#include <implicit.h>
-#include <tstjep.h>
+#include "implicit.h"
+#include "tstjep.h"
       DATA ITSTLP/0/
       END
 

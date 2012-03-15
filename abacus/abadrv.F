@@ -21,48 +21,48 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
 C
-#include <abainf.h>
-#include <cbisol.h>
-#include <magone.h>
-#include <energy.h>
-#include <moldip.h>
-#include <dipole.h>
-#include <difsec.h>
-#include <sigma.h>
-#include <cbilnr.h>
-#include <cbiexc.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <taysol.h>
-#include <inforb.h>
-#include <spnout.h>
-#include <infinp.h>
-#include <numder.h>
-#include <dftcom.h>
-#include <expopt.h>
-#include <pcmlog.h>
-#include <ccinftap.h>
+#include "abainf.h"
+#include "cbisol.h"
+#include "magone.h"
+#include "energy.h"
+#include "moldip.h"
+#include "dipole.h"
+#include "difsec.h"
+#include "sigma.h"
+#include "cbilnr.h"
+#include "cbiexc.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "taysol.h"
+#include "inforb.h"
+#include "spnout.h"
+#include "infinp.h"
+#include "numder.h"
+#include "dftcom.h"
+#include "expopt.h"
+#include "pcmlog.h"
+#include "ccinftap.h"
 CSPAS : 6/11-2009 AO-SOPPA included
-#include <soppinf.h>
-#include <gnrinf.h>
+#include "soppinf.h"
+#include "gnrinf.h"
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
-#include <past.h>
+#include "past.h"
 C
       CHARACTER LABEL1*8, STHELP*10
 C---------------------------------------------------------------------
@@ -702,13 +702,13 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "priunit.h"
       PARAMETER (NDIR = 28, NTABLE = 59, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
@@ -718,40 +718,40 @@ C
      *          WORDL*12
       DIMENSION IPOINT(MXCOOR), IDOSYM(8), WORK(LWORK)
 C
-#include <abainf.h>
-#include <gnrinf.h>
-#include <energy.h>
-#include <orgcom.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <cbisol.h>
-#include <past.h>
-#include <exeinf.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <esg.h>
-#include <cbiwlk.h>
-#include <dftcom.h>
-#include <cbilnr.h>
-#include <qmmm.h>
+#include "abainf.h"
+#include "gnrinf.h"
+#include "energy.h"
+#include "orgcom.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "cbisol.h"
+#include "past.h"
+#include "exeinf.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "esg.h"
+#include "cbiwlk.h"
+#include "dftcom.h"
+#include "cbilnr.h"
+#include "qmmm.h"
 C
 C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
 C use from COMMON /INFSOP/ :  N2P2HS,N2P2HT
 C use from COMMON /INFRSP/ :  SOPPA
 C     Aug. 97/spas+hjaaj
-#include <infdim.h>
-#include <infmp2.h>
-#include <infsop.h>
-#include <infrsp.h>
-#include <infinp.h>
+#include "infdim.h"
+#include "infmp2.h"
+#include "infsop.h"
+#include "infrsp.h"
+#include "infinp.h"
 CSPAS : 6/11-2009 AO-SOPPA included
-#include <soppinf.h>
+#include "soppinf.h"
 CKeinSPASmehr
 CPFP: 27/03-2006: SOS for spin-spin coupling included
-#include <locinf.h>
+#include "locinf.h"
 Cend-PFP
 C
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
@@ -2151,15 +2151,15 @@ CKeinSPASmehr
 C
 C <<< Final results from ABACUS >>>
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <aovec.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "aovec.h"
+#include "ccinftap.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
       CHARACTER NAME*6, SPDCAR*1, LAPRPC*8, mlab1*8, mlab2*8, mlab3*8
@@ -2181,23 +2181,23 @@ CKeinSPASmehr
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
       LOGICAL OD, FIRST
-#include <abainf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <shells.h>
-#include <symmet.h>
-#include <helfey.h>
-#include <moldip.h>
-#include <sigma.h>
-#include <relcor.h>
-#include <aatens.h>
-#include <pcmlog.h>
-#include <difsec.h>
-#include <expopt.h>
-#include <primit.h>
+#include "abainf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "shells.h"
+#include "symmet.h"
+#include "helfey.h"
+#include "moldip.h"
+#include "sigma.h"
+#include "relcor.h"
+#include "aatens.h"
+#include "pcmlog.h"
+#include "difsec.h"
+#include "expopt.h"
+#include "primit.h"
 CSPAS : 6/11-2009 AO-SOPPA included
-#include <soppinf.h>
+#include "soppinf.h"
 CKeinSPASmehr
 C
 C     Heading
@@ -2671,27 +2671,27 @@ C     TUH 1985
 C
 C     Revised 12-Nov-1989 tuh
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       CHARACTER*8 LABEL(4)
       LOGICAL AROUND
-#include <abainf.h>
-#include <past.h>
-#include <energy.h>
-#include <taymol.h>
-#include <dipole.h>
-#include <moldip.h>
-#include <sigma.h>
-#include <suscpt.h>
-#include <spinro.h>
-#include <molgfa.h>
-#include <quadru.h>
-#include <nqcc.h>
-#include <aatens.h>
-#include <gdvec.h>
+#include "abainf.h"
+#include "past.h"
+#include "energy.h"
+#include "taymol.h"
+#include "dipole.h"
+#include "moldip.h"
+#include "sigma.h"
+#include "suscpt.h"
+#include "spinro.h"
+#include "molgfa.h"
+#include "quadru.h"
+#include "nqcc.h"
+#include "aatens.h"
+#include "gdvec.h"
 C
       LUSTAR = -1
       CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
@@ -2777,26 +2777,26 @@ C
 C     Write ABACUS restart information
 C     tuh 1985
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <past.h>
-#include <energy.h>
-#include <taymol.h>
-#include <dipole.h>
-#include <moldip.h>
-#include <nuclei.h>
-#include <sigma.h>
-#include <suscpt.h>
-#include <spinro.h>
-#include <molgfa.h>
-#include <quadru.h>
-#include <nqcc.h>
-#include <aatens.h>
-#include <gdvec.h>
+#include "past.h"
+#include "energy.h"
+#include "taymol.h"
+#include "dipole.h"
+#include "moldip.h"
+#include "nuclei.h"
+#include "sigma.h"
+#include "suscpt.h"
+#include "spinro.h"
+#include "molgfa.h"
+#include "quadru.h"
+#include "nqcc.h"
+#include "aatens.h"
+#include "gdvec.h"
 C
       LUSTAR = -1
       CALL GPOPEN(LUSTAR,'ABACUS.RESTART','UNKNOWN',' ','UNFORMATTED',
@@ -2867,11 +2867,11 @@ C  /* Deck timsta */
      *                     TIMDRC,TIMORT,TIMDIP,TIMQPG,TIMRES,TIMREL,
      *                     TIMTST,TIMVIB,TIMWLK,
      *                     TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCTO)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <infpri.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "infpri.h"
+#include "abainf.h"
       CALL HEADER('CPU time statistics for ABACUS',0)
       CALL TIMPRI('INPUT ',TIMINP,TIMALL)
       CALL TIMPRI('TRAROT',TIMTRO,TIMALL)
@@ -2909,20 +2909,20 @@ C
 C  /* Deck qdrres */
       SUBROUTINE QDRRES(IPRINT)
 C Feb 05 djw - principal axis displays included.
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "codata.h"
       PARAMETER (DM1 = -1.0D0, D1 = 1.0D0,
      &           CGS = (ECHARGE*XTANG**2*CCM*1.D11),
      &           SI  = ECHARGE*XTANGM10**2*1.0D+40)
       DIMENSION QUADRT(3,3) 
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6)
-#include <symmet.h>
-#include <quadru.h>
-#include <abainf.h>
+#include "symmet.h"
+#include "quadru.h"
+#include "abainf.h"
       CHARACTER*6 ABC(3)
       DATA ABC /'Q_aa','Q_bb','Q_cc'/ 
 C
@@ -2975,16 +2975,16 @@ C
       END
 C  /* Deck secres */
       SUBROUTINE SECRES(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DM1 = -1.0D0, D1 = 1.0D0)
       DIMENSION SECNDT(3,3)
-#include <symmet.h>
-#include <secmom.h>
-#include <abainf.h>
+#include "symmet.h"
+#include "secmom.h"
+#include "abainf.h"
 C
       CALL TITLER('ABACUS - Molecular second order moments','*',113)
       CALL DCOPY(9,SCMEL,1,SECNDT,1)
@@ -3005,16 +3005,16 @@ C
       END
 C  /* Deck octres */
       SUBROUTINE THRDRES(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DM1 = -1.0D0, D1 = 1.0D0)
       DIMENSION SECNDT(3,3)
-#include <symmet.h>
-#include <thimom.h>
-#include <abainf.h>
+#include "symmet.h"
+#include "thimom.h"
+#include "abainf.h"
 C
       CALL TITLER('ABACUS - Molecular third order moments','*',113)
       CALL DCOPY(27,THDMEL,1,THDTOT,1)
@@ -3036,26 +3036,26 @@ c     CALL PRIOCT(THDTOT,'CGS',1)
 C
 C  /* Deck susres */
       SUBROUTINE SUSRES(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "dftcom.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, THRESH = 1.0D-5,
      &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
      &           CGS = SI*XFMOL*1.0D6)
       LOGICAL D12, D23
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6), DIASUS(3,3),
      &          PARSUS(3,3), PVAL1(6), PVAL2(6)
-#include <symmet.h>
-#include <suscpt.h>
-#include <abainf.h>
-#include <inftap.h>
+#include "symmet.h"
+#include "suscpt.h"
+#include "abainf.h"
+#include "inftap.h"
 C
 CTOCD
-#include <ctocdcc.h> 
+#include "ctocdcc.h" 
 CTOCD
 C
       CHARACTER*6 ABC(3)
@@ -3326,12 +3326,12 @@ C
 C     Output routine for nuclear quadrupole coupling constants
 C     Based on O.Christiansens output routines, K.Ruud, Nov.-94
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
 C
       PARAMETER (XMUB =  ECHARGE*HBAR/(2.0D0*EMASS))
       PARAMETER (AUFGR = XTJ*1D10*1D10/(ECHARGE*XTANG**2))
@@ -3342,11 +3342,11 @@ C
 cmbh string variable
       CHARACTER*8 laname 
 cmbh end
-#include <nuclei.h>
-#include <symmet.h>
-#include <qm3.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "qm3.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GE. 0) THEN
          CALL TITLER('ABACUS - Nuclear Quadrupole moments','*',116)
@@ -3508,17 +3508,17 @@ C
       END
 C  /* Deck efgpri */
       SUBROUTINE EFGPRI(VMAT,TEXT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       DIMENSION VMAT(3,3,MXCENT)
       CHARACTER*33 TEXT
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       NATOM = 1
       DO 10 I = 1, NUCIND
@@ -3538,9 +3538,9 @@ chj-s-090516 : defined ISUBSI, NSISY(0) for .NOT.QM3 so test is passed
 C  /* Deck iniall */
       SUBROUTINE ABAINIALL
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
 C
       CALL NUCINI
       CALL ONEINI

@@ -21,32 +21,32 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck r12aux */  
       SUBROUTINE R12AUX(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>   
+#include "implicit.h"
+#include "priunit.h"   
 C
       PARAMETER (D0 = 0D0, D1 = 1D0)
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "cbirea.h"
+#include "r12int.h"
 #include "incore.h"
       LOGICAL DELEMO, FOUND, LDUMMY, TEMP_DIRFCK
       INTEGER NBASF(8)
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('R12AUX')
       TEMP_DIRFCK = DIRFCK
@@ -346,14 +346,14 @@ C
       END
 C  /* Deck auxort */
       SUBROUTINE AUXORT(CMO,AUX,SCRA,LSCRA)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(*), AUX(*), SCRA(*)
       PARAMETER (D1 = 1.0D0)
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <r12int.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "r12int.h"
       KOVLP = 1
       KSMOS = KOVLP + NNBAST
       KSCR1 = KSMOS
@@ -392,7 +392,7 @@ C  /* Deck auxnrm */
 C
 C     PROJECT OUT M1 VECTORS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION S(*), VC(*), W(*)
       PARAMETER ( D0 = 0D0, D1 = 1D0)
       IF (M1. LE. 0 .OR. M2 .LE. 0) RETURN
@@ -418,23 +418,23 @@ C
 C     The matrix <ij|r12**2|kl> must be recomputed if canonical virtual
 C     orbitals have been replaced by natural orbitals (WK/UniKA/22-11-2005).
 C
-#include <implicit.h>
-#include <priunit.h>   
+#include "implicit.h"
+#include "priunit.h"   
       LOGICAL FOUND
       DIMENSION WORK(LWORK), CMO(*), NBASF(8)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <r12int.h>
-#include <memint.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "r12int.h"
+#include "memint.h"
 C
       CALL QENTER('R12AUX1')
 C

@@ -22,7 +22,7 @@ C
 C  where C and B are (NDIMA,NCOLB) matrices
 C  and AP is a packed, symmetric NDIMA by NDIMA matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),B(NDIMA,NCOLB),C(NDIMA,NCOLB)
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -52,7 +52,7 @@ C
 C  where VOUT and VIN are N vectors
 C  and AP is a packed, symmetric N by N matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),VIN(*),VOUT(*)
       PARAMETER (D0 = 0.0D0)
 C
@@ -80,7 +80,7 @@ C
 C  where VOUT and VIN are N vectors
 C  and AP is a packed, symmetric N by N matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),VIN(*),VOUT(*)
       PARAMETER (D0 = 0.0D0)
 C
@@ -108,7 +108,7 @@ C
 C  where VOUT and VIN are N vectors
 C  and AP is a packed, symmetric N by N matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),VIN(*),VOUT(*)
       PARAMETER (D0 = 0.0D0)
 C
@@ -133,7 +133,7 @@ C  1-Nov-1989 HJAaJ
 C
 C Copy A to B
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NRDIMA,NCOLA), B(NRDIMB,NCOLA)
 C
       DO J = 1,NCOLA
@@ -153,7 +153,7 @@ C when virtual memory
 C
 C Calculate B = A(transposed)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NRDIMA,NCOLA), B(NRDIMB,NROWA)
       PARAMETER (NBLK = 128)
 C
@@ -186,7 +186,7 @@ C  HT( ij ) =  SUM (k,l = 1,...,NAO)  U (i,k) H(kl) U(l,j)
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H(*),HT(*),U(NAO,*),WRK(*)
 C
       J1 = 1
@@ -222,7 +222,7 @@ C  HT( ij ) =  SUM (k,l = 1,...,NAO)  U (i,k) H(kl) U(l,j)
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H(*),HT(*),U(NAO,*),WRK(*)
 C
       J1 = 1
@@ -256,7 +256,7 @@ C  APT( ij ) =  SUM (k,l = 1,...,NAO)  U (i,k) AP(kl) U(l,j)
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),APT(*),U(NAO,*),WRK(*)
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -309,7 +309,7 @@ C
 C                                                   T
 C  HT( ij ) =  SUM (k,l = 1,...,NMO)  U(i,k) H(kl) U (l,j)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H(*),HT(*),U(NAO,*)
       PARAMETER (D0 = 0.0D0)
 C
@@ -323,7 +323,7 @@ C
          DO 410 L = 1,K
             KL   = KL + 1
             HKL  = H(KL)
-#include <nosync.h>
+#include "nosync.h"
             DO 240 I = 1,NAO
                IROW = (I*I-I)/2
                IF (K .NE. L) THEN
@@ -362,7 +362,7 @@ C
 C                                                              T
 C  HT( ij ) =  HT( ij ) + SUM (k,l = 1,...,NMO)  U(i,k) H(kl) U (l,j)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H(*),HT(*),U(NAO,*)
 C
       KL = 0
@@ -370,7 +370,7 @@ C
          DO 410 L = 1,K
             KL   = KL + 1
             HKL  = H(KL)
-#include <nosync.h>
+#include "nosync.h"
             DO 240 I = 1,NAO
                IROW = (I*I-I)/2
                IF (K .NE. L) THEN
@@ -409,7 +409,7 @@ C  HMO( ij ) =  SUM (k,l = 1,...,NAO)  U (i,k) HAO(kl) U(l,j)
 C
 C This routine is optimized with respect to vector operations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION HAO(*),HMO(*),U(*),WRK(*), NAO(NSYM), NMO(NSYM)
 C
       IUOFF  = 1
@@ -444,7 +444,7 @@ C  /* Deck dv3dot */
 C
 C     7-Aug-1986 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION V1(*), V2(*), V3(*)
       PARAMETER ( D0 = 0.0D0 )
       T = D0
@@ -461,7 +461,7 @@ C 28-Feb-1989 Hans Joergen Aa. Jensen
 C
 C Calculate dot product with metric: DDOTM = ut A v
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION U(NU), A(NRDIMA,NV), V(NV)
 C
       SUM = 0.0D0

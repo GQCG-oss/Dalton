@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -57,12 +57,12 @@ C
 C     PURPOSE : Driver routine for the test calculation of the
 C               two-electron part of the fock matrices.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (MAXDIS=500)
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
       KGMAT = 1
@@ -116,14 +116,14 @@ C
 C
 C     PURPOSE : Calculate fock matrices using distributions.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (ONE=1.0D00, HALF=0.5D00, FOURTH=0.25D00)
       INTEGER   P,Q,R,S
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT)
       DIMENSION GMAT(NBAST,NBAST,NUMDIS), INDEX(NUMDIS)
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 100 I = 1,NUMDIS
 C
@@ -180,19 +180,19 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
       DIMENSION WORK(LWORK)
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
+#include "inforb.h"
+#include "cbitwo.h"
+#include "dorps.h"
 C
       CALL ABARUN(ABA)
 C
@@ -282,12 +282,12 @@ C     routines instead of GETFCK.
 #else
       SUBROUTINE FCKTES(WORK,LWORK,MAXDIF,NODV,NOPV,NOCONT,TKTIME,
      &                  IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
       LOGICAL NODV, NOPV, NOCONT, TKTIME, RETUR, DIRECT
       DIMENSION WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (NODV) THEN
          NDMAT = 1
@@ -344,10 +344,10 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL DZERO(DMAT,NBAST*NBAST)
       ISOFF = 0
@@ -370,20 +370,20 @@ C
       END
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(LWORK)
 C
 C Used from common blocks:
 C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <cbirea.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "cbirea.h"
+#include "symmet.h"
+#include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO
       SAVE    SFIRST
@@ -441,13 +441,13 @@ C
 C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or ERIFCK
 C     (old integral routines or new ERI integral routines)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       LOGICAL USEERI, LDUMMY
       PARAMETER (D0 = 0.0D0)
 C
@@ -458,16 +458,16 @@ C Used from common blocks:
 C   gnrinf: SEGBAS, PARCAL
 C   infpar: NODTOT
 C
-#include <infpar.h>
-#include <inforb.h>
-#include <gnrinf.h>
-#include <abainf.h>
-#include <blocks.h>
-#include <cbihr2.h>
-#include <cbieri.h>
-#include <veclen.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "abainf.h"
+#include "blocks.h"
+#include "cbihr2.h"
+#include "cbieri.h"
+#include "veclen.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('HERFCK')
 C
@@ -560,14 +560,14 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
       LOGICAL   ABA
       PARAMETER (D0 = 0.D0)
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT),
@@ -580,17 +580,17 @@ C  CBITWO: IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,?
 C  GNRINF: PARCAL
 C  INFPAR: NODTOT
 C
-#include <abainf.h>
-#include <dftcom.h>
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <blocks.h>
+#include "abainf.h"
+#include "dftcom.h"
+#include "inforb.h"
+#include "cbitwo.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "blocks.h"
 C
-#include <memint.h> 
+#include "memint.h" 
       IF (NDMAT .LE. 0) RETURN  
       CALL QENTER('HRFCK1')
       I2TYP = 0
@@ -809,17 +809,17 @@ C
       END
 C  /* Deck aindex */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL DOINDX
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
-#include <blocks.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "blocks.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IORB = 0
       MULA   = ISTBSH(ISHELA)
@@ -851,7 +851,7 @@ C
       END
 C  /* Deck abarun */
       SUBROUTINE ABARUN(RUNABA)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ABA, RUNABA
       SAVE ABA
       DATA ABA /.FALSE./

@@ -28,9 +28,9 @@ C  /* Deck r12qv */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccfro.h"
       DIMENSION QQ(*),X1(*),Y1(*),Z1(*),X2(*),Y2(*),Z2(*),
      *          UU(*),ZZ(*),WORK(LWORK),S0(*)
       LOGICAL FROS,FOUND,FEL,IFEL
@@ -77,9 +77,9 @@ C  /* Deck makeqv */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -110,9 +110,9 @@ C  /* Deck makeqf */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -144,9 +144,9 @@ C  /* Deck makeqvi */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -176,9 +176,9 @@ C  /* Deck makev */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -209,9 +209,9 @@ C  /* Deck makef */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -244,9 +244,9 @@ C  /* Deck makv */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -279,9 +279,9 @@ C  /* Deck makf */
 C
 C     This subroutine computes the integrals (ak|r12**2|jl).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -313,10 +313,10 @@ C
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym,nvir0(8)
       integer kt,idx,nvir0t,koffj,koffa,koffk,koffl
@@ -382,10 +382,10 @@ c
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym,nvir0(8)
       integer kt,idx,nvir0t,koffj,koffa,koffk,koffl
@@ -459,8 +459,8 @@ C     matrix A. B is returned through the array BB as
 C     square matrix.
 C
 c     Modified UTHZ
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AA(*),UU(NBAST,NOCCT),ZZ(NBAST,NOCCT),
      *          WORK(NBAST,NOCCT),BB(NOCCT,NOCCT,2)
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -498,9 +498,9 @@ C     This subroutine computes the integrals (i'k|r12**2|jl).
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION X1(NORBT,NORBT,2),Y1(NORBT,NORBT,2),
      *          Z1(NORBT,NORBT,2),X2(NORBT,NORBT,2),
      *          Y2(NORBT,NORBT,2),Z2(NORBT,NORBT,2),
@@ -531,9 +531,9 @@ c---------------------------------------------------------------------------
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym
       integer nvir0(8),kt,idx,koffj,koffa,koffk,koffl
@@ -602,10 +602,10 @@ c
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym,nvir0(8)
       integer kt,idx,nvir0t,koffj,koffa,koffk,koffl
@@ -668,10 +668,10 @@ c
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer irhffr(8),isymj,isyma,idxkl,isym,nvir0(8)
       integer kt,idx,nvir0t,koffj,koffa,koffk,koffl
@@ -738,9 +738,9 @@ c
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym
       integer kt,idx,koffj,koffa,koffk,koffl
@@ -795,13 +795,13 @@ c---------------------------------------------------------------------
 c     Make s_{kl}^{Ij*}
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
+#include "ccsdinp.h"
 #if defined (SYS_CRAY)
       real zero,one
       real work(*),v2am(*),f2am(*)
@@ -1138,10 +1138,10 @@ C
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym,nvir0(8)
       integer kt,idx,nvir0t,koffj,koffa,koffk,koffl
@@ -1205,10 +1205,10 @@ c
 c---------------------------------------------------------------------
 
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccfro.h"
       integer isymkl,isymij,isyml,isymk,isymaj
       integer isymj,isyma,idxkl,isym,nvir0(8)
       integer kt,idx,nvir0t,koffj,koffa,koffk,koffl

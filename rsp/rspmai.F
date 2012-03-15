@@ -2198,7 +2198,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
-#include <gnrinf.h>
+#include "gnrinf.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
@@ -3971,8 +3971,8 @@ C
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
-#include <gnrinf.h>
-#include <qm3.h>
+#include "gnrinf.h"
+#include "qm3.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4552,12 +4552,12 @@ C
 C
 C Excited State Gradient input
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <infpri.h>
+#include "infpri.h"
 #include "rspprp.h"
-#include <esg.h>
+#include "esg.h"
 C
       PARAMETER ( NTABLE = 1 )
       CHARACTER WORD*7, STRING*7
@@ -4580,28 +4580,28 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <infspi.h>
-#include <infhso.h>
-#include <inflr.h>
-#include <inflin.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <esg.h>
-#include <gnrinf.h>
+#include "infpp.h"
+#include "infspi.h"
+#include "infhso.h"
+#include "inflr.h"
+#include "inflin.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "esg.h"
+#include "gnrinf.h"
       DATA TABLE /'.ROOTS', '.THCPP ', '.MAX IT', '.MAXITO', '.THCLR ',
      *            '.RESTPP','.PRINT ', '.STATE '/
 C

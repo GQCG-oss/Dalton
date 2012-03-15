@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -99,24 +99,24 @@ C                   ORTHO  (REORDERING AND ORTHONORMALIZATION
 C                           OF TRIAL MOLECULAR ORBITALS).
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LFREE)
 C
 C -- local constants
 C
-#include <dummy.h>
+#include "dummy.h"
 C
 C -- common blocks
 C    INFINP : FLAG(*),?
 C    INFORB : NCMOT,...
 C    INFPRI : LUPNCH
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL QENTER('SIRINP')
 C
@@ -202,9 +202,9 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
       DIMENSION CMO(LCMO)
 C
 C -- local variables and constants
@@ -230,27 +230,27 @@ C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
 C   SPINFO : MULTS, MS2
 C
-#include <gnrinf.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <scbrhf.h>
-#include <infmp2.h>
-#include <pcmlog.h>
-#include <siripc.h>
-#include <huckel.h>
-#include <cbihrs.h>
-#include <spinfo.h>
-#include <dftcom.h>
-#include <dfterg.h>
+#include "gnrinf.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "scbrhf.h"
+#include "infmp2.h"
+#include "pcmlog.h"
+#include "siripc.h"
+#include "huckel.h"
+#include "cbihrs.h"
+#include "spinfo.h"
+#include "dftcom.h"
+#include "dfterg.h"
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
@@ -1980,7 +1980,7 @@ C
       use input_reader
       use lucita_cfg
       use lucita_orbital_spaces
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -1994,8 +1994,8 @@ C
 C needed for lucita: nsym, norb
       DIMENSION NORB(*)
 C
-#include <priunit.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "gnrinf.h"
 C
       CALL QENTER('NEWINP')
 C
@@ -2167,7 +2167,7 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*20, TITLIN*80, SR_FUNCS*80
@@ -2183,15 +2183,15 @@ C  INFTAP : LUSUPM
 C  GNRINF : DOCCSD,
 C  CBIHER : SUPMAT,
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <inftra.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "inftra.h"
+#include "dftcom.h"
 C
 #if !defined (VAR_NONAMELIST)
       NAMELIST /NMLSIR/ NPATH, MAXMIC
@@ -2576,7 +2576,7 @@ C  /* Deck haminp */
 C
 C Copyright Nov 1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 2)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -2586,10 +2586,10 @@ C
 C INFINP : NFIELD,EFIELD,LFIELD
 C INFPRI : P6FLAG
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
 C
       DATA TABLE /'.FIELD ','.PRINT '/
 C
@@ -2659,7 +2659,7 @@ C  /* Deck wavinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -2670,11 +2670,11 @@ C INFORB : NASH, NISH, NSYM,...
 C INFINP : NACTEL,ISPIN,FLAG(*),MCTYP,..
 C SPINFO : MULTS, MS2
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <spinfo.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "spinfo.h"
 C
       LOGICAL RAS1EL
 C
@@ -2857,7 +2857,7 @@ C 8-May-1989 Hans Joergen Aa. Jensen
 C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 26)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
@@ -2873,19 +2873,19 @@ C INFTAP : LUSUPM
 C INFPRI : IPRSIR,IPRRHF
 C DFTACB : DFTIPT, DFTBR1, DFTBR2
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <gnrinf.h>
-#include <scbrhf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <dftacb.h>
+#include "gnrinf.h"
+#include "scbrhf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "dftacb.h"
 C
       LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
@@ -3159,7 +3159,7 @@ C  /* Deck optinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 33)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -3175,15 +3175,15 @@ C INFOPT : RAT*
 C INFOPT : NFRO
 C INFPRI : LUPRI
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "inforb.h"
 C
       DATA TABLE /'.ABSORP','.ALWAYS','.ACTROT','.FROZEN','.MAXAPM',
      *            '.SYM CH','.THRCGR','.STATE ','.COREHO','.CORERE',
@@ -3541,7 +3541,7 @@ C  /* Deck cicinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 12)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -3551,10 +3551,10 @@ C
 C GNRINF : THR_REDFAC
 C INFINP : DOCINO, DOFCI, DOCISD,FLAG(*), NROOCI, THRCI, THRPWF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
 C
       DATA TABLE /'.CINO  ','.CIDENS','.CIROOT','.DISKH2','.THRESH',
      *            '.THRPWF','.WEIGHT','.ZEROEL','.STATE ','.FULLCI',
@@ -3677,8 +3677,8 @@ C  /* Deck orbinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C -- local variables and constants
 C
@@ -3695,12 +3695,12 @@ C INFINP : FLAG,IMOORD,CMAXMO,SUPSYM,THRSSY
 C INFORB : NBAS
 C HUCKEL : DOHUCKEL
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <huckel.h>
-#include <r12int.h>
-#include <infloc.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "huckel.h"
+#include "r12int.h"
+#include "infloc.h"
 C
       DATA TABLE /'XXXXXXX','.5D7F9G','.DELETE','.MOSTAR','.FREEZE',
      *            '.GRAM-S','.SYMMET','.PUNCHI','.PUNCHO','.REORDE',
@@ -4013,7 +4013,7 @@ C  /* Deck civinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 5)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -4022,9 +4022,9 @@ C Used from common:
 C
 C INFINP : FLAG(*), ICI0,
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
 C
       DATA TABLE /'.PLUS C','.SELECT','.STARTH','.ABACUS','.STARTO'/
 C
@@ -4095,7 +4095,7 @@ C  /* Deck stpinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4108,10 +4108,10 @@ C
 C INFINP : FLAG(*)
 C INFOPT : BET*,RT*,RAT*,STP*
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infopt.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infopt.h"
 C
       DATA TABLE /'.DAMPIN','.MAX DA','.MIN DA','.NO EXT','.GOOD R',
      *            '.MIN RA','.REJECT','.TRUST ','.TOLERA','.INCREM',
@@ -4227,7 +4227,7 @@ C                  any population analysis option sets flag(73) false
 C                  new option: .PRINT
 C 13-sep-90 hjaaj: IPRMUL = MAX(IPRMUL,xxx)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4355,7 +4355,7 @@ C  /* Deck trainp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4370,12 +4370,12 @@ C INFINP : FLAG(*)
 C INFDIM : MWORK
 C INFTRA : ITRLVL, THRP
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <infdim.h>
-#include <inftra.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "infdim.h"
+#include "inftra.h"
 C
       DATA TABLE /'.RESIDE','.FINAL ','.LEVEL ','.OLD TR','.PRINT ',
      *            '.P THRE','xxxxxxx','xxxxxxx'/
@@ -4459,7 +4459,7 @@ C  /* Deck updinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4471,9 +4471,9 @@ C Used from common:
 C
 C INFINP : FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
 C
       DATA TABLE /'.FIXED ','.INVERS'/
 C
@@ -4528,7 +4528,7 @@ C
 C 1-Oct 1987 Hans Agren
 C Revised Nov 1989 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4546,10 +4546,10 @@ C
 C
 C INFPRI : IPRSOL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
 C
       DATA TABLE /'.CAVITY','.DIELEC','.MAX L ','.PRINT ',
      *            '.INERSI','.INERSF'/
@@ -4659,7 +4659,7 @@ C  /* Deck priinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4675,11 +4675,11 @@ C INFINP : FLAG(*),
 C INFPRI : LU*, IPR*,
 C INFTRA : IPRTRA
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <inftra.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inftra.h"
 C
       DATA TABLE /'XXXXXXX','.IPRKAP','.IPRDIA','.IPRSIG','.IPRDNS',
      *            '.IPRSOL','.RESFIL','.PRINTL','.PRINTF','.IPRCIX',
@@ -4857,7 +4857,7 @@ C  /* Deck auxinp */
 C
 C 1-Oct 1987 Hans Agren
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C -- local variables and constants
 C
@@ -4870,10 +4870,10 @@ C
 C INFINP :
 C INFTAP : LUSUPM
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DATA TABLE /'XXXXXXX','.NOSUPM'/
 C
@@ -4929,7 +4929,7 @@ C
 C     ***** ERROR MESSAGES IN INPUT SECTION *****
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER TAB1*15,TAB2*30
       PARAMETER (TAB1=' ERROR MESSAGE:')
@@ -4939,15 +4939,15 @@ C
 C Used from common blocks:
 C   INFVAR : NWOPT
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       INPERR = INPERR + 1
@@ -5036,7 +5036,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFINP : DOMC,DOCI,DIRFCK,FLAG(21),MCTYPE,THR*,NFIELD,...,?
@@ -5051,28 +5051,28 @@ C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
 C   pcmlog : PCM
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
-#include <infinp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <scbrhf.h>
-#include <infmp2.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <huckel.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <dftacb.h>
-#include <siripc.h>
-#include <gnrinf.h>
-#include <pcmlog.h>
-#include <spinfo.h>
+#include "infinp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "scbrhf.h"
+#include "infmp2.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "huckel.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "dftacb.h"
+#include "siripc.h"
+#include "gnrinf.h"
+#include "pcmlog.h"
+#include "spinfo.h"
 C
       CHARACTER*6 RDMOLB(12)
       CHARACTER*8  WFTYPE
@@ -5094,7 +5094,7 @@ C
       DATA RELEAS(1:36) /'*SIRIUS* a direct, restricted step, '/
       DATA RELEAS(37:70)/'second order MCSCF program       *'/
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
 C     ***** WRITE PROGRAM IDENTIFICATION *****
 C
@@ -5710,7 +5710,7 @@ C  /* Deck nevpt2inp */
 C
 C  2003 -- input for NEVPT2
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (NTABLE = 3)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
@@ -5722,12 +5722,12 @@ C INFORB : NSYM
 C INFMP2 : NFRMP2(*)
 C INFPRI : IPRMP2
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infpt2.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infpt2.h"
 C
       DATA TABLE /'.FROZEN','.THRESH','.STATE'/
 C

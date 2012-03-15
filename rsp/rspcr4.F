@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CRLRV2(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                  WRK,LWRK)
@@ -31,8 +31,8 @@ C   Purpose: use RSPCTL and RSPEVE to solve the eigenvalue problem
 C            to get the two-index response vectors
 C
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*), FOCK(*)
@@ -40,22 +40,22 @@ C
       LOGICAL FOUND, CONV
       PARAMETER (D0 = 0.0D0)
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <indqr.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "indqr.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <inftap.h>
-#include <inforb.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <infdim.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "infdim.h"
 C
       CALL QENTER('CRLRV2')
 C

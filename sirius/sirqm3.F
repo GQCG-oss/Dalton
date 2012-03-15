@@ -28,25 +28,25 @@ C  /* Deck qm3fck */
       SUBROUTINE QM3FCK(DCAO,DVAO,FSOL,EQM3T,ENSEL,EPOL,EELEL,
      *                  WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <thrzer.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "thrzer.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infpar.h"
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
@@ -109,22 +109,22 @@ C ***********************************************************************
 C  /* Deck qm3_rra */
       SUBROUTINE QM3_RRA(DCAO,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
 #include "nuclei.h"
 
 
@@ -352,21 +352,21 @@ C*********************************************************************
 C  /* Deck qm3_ns */
       SUBROUTINE QM3_NS(DCAO,DFTNS,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 
 
@@ -522,21 +522,21 @@ C  /* Deck qm3_nsp */
 C
 C     The parallel version of the routine QM3_NS, Arnfinn nov. -08
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "mtags.h"
 #include "infpar.h"
@@ -547,7 +547,7 @@ C
       LOGICAL TOFILE, TRIMAT, EXP1VL
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
-#include <ibtfun.h>
+#include "ibtfun.h"
       IPRTYP = 16
       
       CALL QENTER('QM3_NSP')
@@ -629,29 +629,29 @@ C
 C*********************************************************************
       SUBROUTINE QM3_NSPM(IPRTYP,DCAO,DFTNS,WRK,LWRK,IPRINT,
      &                     EXP1VL,TOFILE,ENSEL,FAC1,LNUM,INUM)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
-#include <cbiher.h>
+#include "cbiher.h"
 
 C     The master routine
 
@@ -726,30 +726,30 @@ C     Collect data from all slaves
 C*********************************************************************
 
       SUBROUTINE QM3_NSPS(WRK,LWRK,IPRTMP)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <gnrinf.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "gnrinf.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
-#include <cbiher.h>
+#include "cbiher.h"
 
 C     The slave routine
 
@@ -834,22 +834,22 @@ C*********************************************************************
 C  /* Deck qm3_fmo */
       SUBROUTINE QM3_FMO(FSOL,WRK,LWRK,IPRINT)   
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
 #include "nuclei.h"
 
 
@@ -1139,22 +1139,22 @@ C*********************************************************************
 C  /* Deck qm3_energy */
       SUBROUTINE QM3_ENERGY(DFTNS,EEL,EPOL,EELEL,EQM3T,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION FFJ(3), DFTNS(*)
@@ -1313,20 +1313,20 @@ C*************************************************************************
 C  /* Deck qm3grad */
       SUBROUTINE QM3GRAD(CREF,CMO,INDXCI,G,EQM3T,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <inflin.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "inflin.h"
 
       DIMENSION CREF(*),CMO(*),INDXCI(*)
       DIMENSION G(*),WRK(LWRK)
@@ -1418,12 +1418,12 @@ C  /* Deck qm3lin */
       SUBROUTINE QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &                  SOVECS,ORBLIN,WRK,LWRK)
 C
-#include <implicit.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "infpri.h"
 
       DIMENSION BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION SOVECS(*),WRK(LWRK)
@@ -1469,20 +1469,20 @@ C  /* Deck qm3hess */
       SUBROUTINE QM3HESS(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &                   DV,SVEC,NSVEC,WRK,LWRK)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <maxash.h>
-#include <infind.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <orgcom.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "maxash.h"
+#include "infind.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "orgcom.h"
+#include "infinp.h"
 #include "nuclei.h"
 C
       DIMENSION BOVECS(NWOPPT,*),CREF(*),CMO(*),INDXCI(*)
@@ -1777,12 +1777,12 @@ C  /* Deck qm3fck */
 C
 C     Construct the QM/MM contribution to the Fock-matrix in MO basis
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <infopt.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "infopt.h"
 C
       DIMENSION CMO(*), FSOL(*), WRK(LWRK)
 C

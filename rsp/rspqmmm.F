@@ -32,33 +32,33 @@ C  Purpose:  Calculate SCF/DFT E^2 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector. New QMMM
 C            code.
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
       DIMENSION UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
@@ -310,34 +310,34 @@ C  Purpose:  Calculate SCF/DFT E^3 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector. New 
 C            QMMM code
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <ccinftap.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "ccinftap.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
 
@@ -616,29 +616,29 @@ C  Purpose:  Calculate SCF/DFT E^4 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector. New 
 C            QMMM code
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <ccinftap.h>
-#include <nuclei.h>
-#include <dummy.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "ccinftap.h"
+#include "nuclei.h"
+#include "dummy.h"
+#include "infpar.h"
 
       PARAMETER (ZERO=0.0D0, ONE=1.0D0)
       DIMENSION ETRS(KZYVR),XINDX(*)
@@ -938,33 +938,33 @@ C-------------------------------------------------------------------------------
 C  /* Deck mmlno_iter1 */
       SUBROUTINE MMLNO_ITER1(J,EEX,EEY,EEZ,UDV,UDVTR,UCMO,UBO,
      *                       WRK,LWRK,IPRTMP)
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION UDV(NASHDI,NASHDI),UDVTR(N2ASHX)
       DIMENSION UCMO(NORBT*NBAST),UBO(N2ORBX),WRK(LWRK)
@@ -1131,33 +1131,33 @@ C-------------------------------------------------------------------------------
 C  /* Deck mmlno_iter2 */
       SUBROUTINE MMLNO_ITER2(J,XIND,YIND,ZIND,UCMO,RXYO,
      *                       WRK,LWRK,IPRTMP)
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION RXYO(*),UCMO(*),WRK(LWRK)
  
@@ -1293,32 +1293,32 @@ C  /* Deck mmqro_iter1 */
       SUBROUTINE MMQRO_ITER1(J,EF1,EF2,UDV,UCMO,ISYMT,ISYMV1,ISYMV2,
      &                       ZYM1,ZYM2,WRK,LWRK,IPRTMP)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
 
@@ -1516,31 +1516,31 @@ C  /* Deck mmqro_iter2 */
       SUBROUTINE MMQRO_ITER2(J,EIND1,EIND2,TRES,UCMO,
      &                      ISYMT,ISYMV2,ZYM2,WRK,LWRK,IPRTMP)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
 
@@ -1696,32 +1696,32 @@ C  /* Deck mmcro_iter1 */
      &                       ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
      &                       WRK,LWRK,IPRTMP)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
 
@@ -1983,31 +1983,31 @@ C  /* Deck mmcro_iter2 */
      &                      ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
      &                      WRK,LWRK,IPRTMP)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WRK(LWRK), EIND1(3), EIND2(3), EIND3(3)
       DIMENSION UCMO(*),ZYM2(*),ZYM3(*),TRES(*)
@@ -2208,33 +2208,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <gnrinf.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "gnrinf.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK), UBO(*), UCMO(*)
       DIMENSION UDVTR(*), UDV(NASHDI,NASHDI), CEFIELD(3*NNZAL)
@@ -2312,33 +2312,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
 
@@ -2411,32 +2411,32 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UCMO(*), RXYO(N2ORBX), XINDMOM(3*NNZAL)
@@ -2492,33 +2492,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
 
@@ -2568,32 +2568,32 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UDV(NASHDI,NASHDI),UCMO(*),ZYM1(*),ZYM2(*),EF1(*),EF2(*)
@@ -2675,33 +2675,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
 
@@ -2776,31 +2776,31 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UCMO(*),ZYM2(*),TRES(*),ZIND1(3*NNZAL),ZIND2(3*NNZAL)
@@ -2864,33 +2864,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
 
@@ -2949,32 +2949,32 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION UCMO(*),UDV(NASHDI,NASHDI)
@@ -3064,33 +3064,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
 
@@ -3176,31 +3176,31 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WRK(LWRK)
       DIMENSION ZIND1(3*NNZAL),ZIND2(3*NNZAL),ZIND3(3*NNZAL)
@@ -3282,33 +3282,33 @@ C
 C  JK, Nov.08
 C  Parallel version. AHS Nov.09
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
-#include <infdim.h>
+#include "cbiher.h"
+#include "gnrinf.h"
+#include "infdim.h"
 
       DIMENSION WRK(LWRK)
 

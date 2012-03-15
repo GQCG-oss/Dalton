@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_LOG
 !===========================================================================
@@ -49,11 +49,11 @@ C     Modified for symmetry tuh 060988
 C     Solvent added dec 92
 C     l.r. aug. 98 hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxmom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxmom.h"
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DIPOK, FNDLAB, MCSSYM
@@ -68,18 +68,18 @@ C   INFOPT : EMCSCF,EPOT,EMY,EACTIV,ESOLT
 C   PAST   : PASDIP, PASORT, PASRES
 C   CBISOL : SOLVNT, ...
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
-#include <cbdtra.h>
-#include <inftap.h>
-#include <past.h>
-#include <cbisol.h>
-#include <cbirhs.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
+#include "cbdtra.h"
+#include "inftap.h"
+#include "past.h"
+#include "cbisol.h"
+#include "cbirhs.h"
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
@@ -385,17 +385,17 @@ C                      TRIANGULARIZED OR SQUARED.
 C  SUFFIX  Y           EXAMPLE: NASHY = NASHX*(NASHX + 1)/2
 C  SUFFIX  (K)         SYMMETRY NUMBER
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "mxcent.h"
 C -- local constants
       PARAMETER (D1=1.0D0, D2=2.0D0)
-#include <dummy.h>
+#include "dummy.h"
       DIMENSION WORK(LFREE)
-#include <litinfo.h>
+#include "litinfo.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,LSYM,MCTYPE,?
@@ -407,18 +407,18 @@ C   INFTRA : ITRLVL,THRP,THRQ
 C   INFTAP : LUSIFC
 C   priunit.h : LUERR,...
 C
-#include <abainf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "abainf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "linaba.h"
 C
       CHARACTER*8 RTNLBL(2)
 C

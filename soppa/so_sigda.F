@@ -12,8 +12,8 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Calculate SIGDA1(DELTA,A) and SIGDA2(DELTA,A)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION SIGDA1(LSIGDA1), SIGDA2(LSIGDA2)
@@ -22,9 +22,9 @@ C
       DIMENSION CMO(LCMO)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

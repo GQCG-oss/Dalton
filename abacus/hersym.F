@@ -22,7 +22,7 @@
 !
 !
 C FILE    : hersym.F
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
@@ -44,11 +44,11 @@ C
 C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxsymm.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
+#include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
 
@@ -89,23 +89,23 @@ C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,
      &            TMPARR,TMP2AR,NONTYP,NSYMOP,NONT,
      &            KATOM,KASYM,LENTMP,CLASS,VRML_SYM,WORK,KFREE,LFREE)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
+#include "mxcent.h"
+#include "maxorb.h"
 
-#include <nuclei.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <cbirea.h>
-#include <cbisol.h>
-#include <cbihr1.h>
-#include <molinp.h>
-#include <numder.h>
-#include <pcmlog.h>
-#include <pcmdef.h>
-#include <pcm.h>
+#include "nuclei.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "cbirea.h"
+#include "cbisol.h"
+#include "cbihr1.h"
+#include "molinp.h"
+#include "numder.h"
+#include "pcmlog.h"
+#include "pcmdef.h"
+#include "pcm.h"
 
 
 ! infpar.h: MASTER, MYNUM
@@ -394,8 +394,8 @@ C ::                                          ::
 C ::       Prints all elements of array       ::
 C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
          CHARACTER*(*) TEXT
          DIMENSION ARR(6,0:MXM)
          I = LEN(TEXT)
@@ -446,9 +446,9 @@ C ::                              ::
 C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxsymm.h"
       DIMENSION ARR(6,0:MXM), VEC(3)
       IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
       IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
@@ -559,8 +559,8 @@ C ::                                         ::
 C ::       Deletes all duplicate atoms       ::
 C ::                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3)
          N = NINT(ATMARR(1,0))
          CALL SRTATM(MXM, ATMARR, .TRUE.)
@@ -708,8 +708,8 @@ C ::                                       ::
 C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
          DIMENSION ATMARR(6,0:NUCLP), SUM(3)
          N = NINT(ATMARR(1,0))
 C
@@ -816,9 +816,9 @@ C ::                                                    ::
 C ::       Turns molecule to sensible orientation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
          DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
@@ -1237,11 +1237,11 @@ C ::       Checks if the mol. has rotational axis of order IORDER      ::
 C ::                     around the given vector                       ::
 C ::                                                                   ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), ROTVEC(3)
          LOGICAL PROPER,EQL
          DIMENSION VROT(3), V1(3), V2(3)

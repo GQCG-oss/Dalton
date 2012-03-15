@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 c /* deck cc_mcdcal */
@@ -41,24 +41,24 @@ c /* deck cc_mcdcal */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>                      
-#include <ccorb.h>
-#include <ccsdsym.h>                     
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccsdinp.h"                      
+#include "ccorb.h"
+#include "ccsdsym.h"                     
+#include "ccroper.h"
 C#include <ccropr2.h>
-#include <ccmcdinf.h>
-#include <ccexci.h>
-#include <cclists.h>
-#include <ccr1rsp.h>
-#include <ccpl1rsp.h>
-#include <ccel1rsp.h>
-#include <ccer1rsp.h>
-#include <cclrmrsp.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <cco2rsp.h>
-#include <dummy.h>
+#include "ccmcdinf.h"
+#include "ccexci.h"
+#include "cclists.h"
+#include "ccr1rsp.h"
+#include "ccpl1rsp.h"
+#include "ccel1rsp.h"
+#include "ccer1rsp.h"
+#include "cclrmrsp.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "cco2rsp.h"
+#include "dummy.h"
 * arguments
       INTEGER LWORK
 #if defined (SYS_CRAY)

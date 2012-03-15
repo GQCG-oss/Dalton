@@ -24,7 +24,7 @@
 C
 C FILE    : graphic.F
 C
-#include <single.h>
+#include "single.h"
 C
 C/* Deck MOLPLT */
       SUBROUTINE MOLPLT(KINDS,KOLOR,TITMOL,WORK,LWORK)

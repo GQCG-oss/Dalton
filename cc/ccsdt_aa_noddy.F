@@ -39,12 +39,12 @@
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG, PRINT_T3
       PARAMETER (LOCDBG=.FALSE., PRINT_T3=.FALSE.)

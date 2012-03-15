@@ -9,8 +9,8 @@ C
 C     PURPOSE: Initialize the NR arrays ARRAY of length LARRAY
 C              kept in file LUFILE to zero.
 C
-#include <implicit.h>
-#include <soppinf.h>
+#include "implicit.h"
+#include "soppinf.h"
 C
       DIMENSION   ARRAY(LARRAY)
       CHARACTER*7 FILENM

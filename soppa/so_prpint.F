@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_prpint */
       SUBROUTINE SO_PRPINT(LTYPE,NLBTOT,WORK,LWORK)
@@ -12,22 +12,22 @@ C     PURPOSE: Request that needed property integrals are calculated
 C              and written to file LUPROP. Property labels and
 C              symmetry are stored in LABAPP and LABSYM.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <cbiexc.h>
-#include <cbilnr.h>
-#include <inftap.h>
+#include "mxcent.h"
+#include "cbiexc.h"
+#include "cbilnr.h"
+#include "inftap.h"
 CSPAS:10/11-2003: is merged with maxorb.h
-#include <maxorb.h>
+#include "maxorb.h"
 C#include <mxorb.h>
 CKeinSPASmehr
-#include <maxaqn.h>
-#include <symmet.h>
-#include <gnrinf.h>
+#include "maxaqn.h"
+#include "symmet.h"
+#include "gnrinf.h"
 CSPAS:29/03-2006: we need IPRSOP from soppinf.h
-#include <soppinf.h>
+#include "soppinf.h"
 CKeinSPASmehr
 C
       DIMENSION   WORK(LWORK)

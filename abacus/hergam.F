@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C FILE    : hergam.F
 C
 C  /* Deck gamfun */

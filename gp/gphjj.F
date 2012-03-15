@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)

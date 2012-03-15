@@ -24,21 +24,21 @@
 #include "single.h"
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LWORK
       REAL*8 WORK(LWORK)
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <inflr.h> 
-#include <inflin.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <gtensor.h>
+#include "inflr.h" 
+#include "inflin.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "gtensor.h"
       INTEGER KFREE, LFREE, LWRK1, KWRK1
       INTEGER KINDX, KCMO, KUDV, KPVX, KFOCK, KFC, KFV, KFCAC, KH2AC
       INTEGER ISYM
@@ -139,17 +139,17 @@ C
       EXTERNAL DDOT, DNRM2
       INTEGER INDPRP
       EXTERNAL INDPRP
-#include <gtensor.h>
-#include <qrinf.h>
-#include <inforb.h>
+#include "gtensor.h"
+#include "qrinf.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <wrkrsp.h>
+#include "inflr.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "wrkrsp.h"
       INTEGER KFREE, LFREE
       LOGICAL LDUMMY, FOUND, CONV, OPENED
       INTEGER I, J, KLEN, LU, KANG, ISYM, IPRP, ISO
@@ -209,15 +209,15 @@ C
 
 C /* Deck ginit */
       SUBROUTINE GINIT
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AVER(3)
-#include <gtensor.h>
-#include <maxorb.h>
-#include <infinp.h>
+#include "gtensor.h"
+#include "maxorb.h"
+#include "infinp.h"
 #include "rspprp.h"
-#include <inflr.h>
+#include "inflr.h"
 #include "infave.h"
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL FNDLB2
       EXTERNAL FNDLB2
       LQRGP = .TRUE.
@@ -336,14 +336,14 @@ C              LRRANK( INDPRP(SOLBL(3,J))) = 0
       END
 C /* Deck gset */
       SUBROUTINE GSET(CMO,UDV,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), UDV(*), XINDX(*), WRK(LWRK)
-#include <gtensor.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <cbihr1.h>
-#include <cbiher.h>
-#include <orgcom.h>
+#include "gtensor.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "cbihr1.h"
+#include "cbiher.h"
+#include "orgcom.h"
       LOGICAL FNDLAB,FNDLB2,PRINTF
       EXTERNAL FNDLAB,FNDLB2
       CHARACTER*7 RTNLBL(2)
@@ -386,11 +386,11 @@ C
       END
 C
       SUBROUTINE SETECC(WORK,KFREE,LFREE)
-#include <implicit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gtensor.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gtensor.h"
+#include "priunit.h"
       DIMENSION WORK(*)
       INTEGER KFREE, LFREE  
       CHARACTER*8 RTNLBL(2)
@@ -426,13 +426,13 @@ C
       END
 
       SUBROUTINE GET_TD(D,WORK,KFREE,LFREE)
-#include <implicit.h>   
+#include "implicit.h"   
       DIMENSION WORK(*), D(*)
       INTEGER KFREE, LFREE   
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.0D0)
       LOGICAL CLOSED
 C      
@@ -469,22 +469,22 @@ C
       END
 
       SUBROUTINE ECCSET(CMO,UDV,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), UDV(*), WRK(LWRK)
-#include <maxorb.h>
-#include <priunit.h>
-#include <gtensor.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <orgcom.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <wrkrsp.h>
-#include <iratdef.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gtensor.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "orgcom.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "wrkrsp.h"
+#include "iratdef.h"
+#include "infrsp.h"
       LOGICAL FNDLB2
       CHARACTER*7 RTNLBL(2)
       DIMENSION AVER(3)
@@ -570,17 +570,17 @@ C
 C
       SUBROUTINE GINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "infs0.h"
-#include <infpri.h>
-#include <infdim.h>
-#include <trhso.h>
-#include <infhso.h>
-#include <gtensor.h>
-#include <priunit.h>
+#include "infpri.h"
+#include "infdim.h"
+#include "trhso.h"
+#include "infhso.h"
+#include "gtensor.h"
+#include "priunit.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE =  12 )
@@ -695,19 +695,19 @@ C
 C *** END OF GINP
 C
       SUBROUTINE GETRMC(CMO,XINDX,AVE,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),XINDX(*),WRK(*)
-#include <gtensor.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <codata.h>
-#include <gfac.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <infinp.h>
+#include "gtensor.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "codata.h"
+#include "gfac.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "infinp.h"
 C
       LOGICAL OLDDX
       LOGICAL FNDLB2
@@ -775,25 +775,25 @@ C
       RETURN
       END
       SUBROUTINE GETGC1(CMO,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),XINDX(*),WRK(*)
-#include <gtensor.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <codata.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <dummy.h>
+#include "gtensor.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "codata.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dummy.h"
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('GETGC1')
 C
@@ -901,25 +901,25 @@ C
       END
 C Deck Scaled effective gauge correction 
       SUBROUTINE GETGC2SCA(CMO,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),XINDX(*),WRK(*)
-#include <gtensor.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <codata.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <dummy.h>
-#include <infinp.h>
+#include "gtensor.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "codata.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "dummy.h"
+#include "infinp.h"
       LOGICAL FNDLB2
       LOGICAL OLDDX
       CHARACTER*7 RTNLBL(2)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('GETGC2SCA')
 C
@@ -1035,11 +1035,11 @@ C
       END
 C /* Deck gset  */
       SUBROUTINE GOZHSO(I,J,XPROP)
-#include <implicit.h>
+#include "implicit.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <wrkrsp.h>
-#include <gtensor.h>
+#include "inflr.h"
+#include "wrkrsp.h"
+#include "gtensor.h"
       CHARACTER*8 ALAB,BLAB
       ALAB=LBLLR(KSYMOP,I)
       BLAB=LBLLR(KSYMOP,J)
@@ -1070,19 +1070,19 @@ C /* Deck gset  */
       END
 C  /* Deck gprint  */
       SUBROUTINE GPRINT(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(*)
-#include <infpri.h>
-#include <gtensor.h>
-#include <codata.h>
-#include <gfac.h>
-#include <orgcom.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
+#include "infpri.h"
+#include "gtensor.h"
+#include "codata.h"
+#include "gfac.h"
+#include "orgcom.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
       INTEGER SWRITE
       EXTERNAL SWRITE
 C
@@ -1317,8 +1317,8 @@ C           GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
       END
 C /* Deck bdg */
       BLOCK DATA BDG
-#include <implicit.h>
-#include <gtensor.h>
+#include "implicit.h"
+#include "gtensor.h"
       DATA GCALC,G_ALL /.FALSE.,.FALSE./
       DATA G_LINE/' '/
       DATA DOALL,DORMC,DOGC1,DOGC2,DOOZSO,DOOZSO1,DOOZSO2,SCALED_CHARGES
@@ -1330,28 +1330,28 @@ C
 C CALCULATE AVERAGE VALUE OF PROPERTIES
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), XINDX(*), WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 C
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infind.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
 #include "infave.h"
-#include <infpri.h>
-#include <inftap.h>
-#include <iratdef.h>
-#include <aovec.h>
-#include <gtensor.h>
-#include <codata.h>
-#include <priunit.h>
-#include <blocks.h>
-#include <infinp.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "iratdef.h"
+#include "aovec.h"
+#include "gtensor.h"
+#include "codata.h"
+#include "priunit.h"
+#include "blocks.h"
+#include "infinp.h"
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0 )
       PARAMETER ( D1INF = 0.99999D0 , CKMXPR = 1.0D-6 )
@@ -1570,23 +1570,23 @@ C
 C Write an interface file for Gerry Lushingtons 2esg2 program
 C for testing ROHF evaluation of 2-electron gauge correction
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), DENSNG(*), DENTRP(*), WORK(*)
-#include <inforb.h> /* NBAST, NISHT, NORBT, N2ORBX */
-#include <mxcent.h> /* MXCENT */
-#include <nuclei.h> /* NUCIND */
-#include <maxorb.h>
-#include <infinp.h> /* ISPIN  */
-#include <blocks.h> /* MAXSHL, NHKTSH, NUCOSH, NRCSH, NCNTSH */
-#include <molinp.h> /* MLINE  */
-#include <aovec.h>
-#include <primit.h> /* PRIEXP, PRICCF */
-#include <inftap.h> /* LUSIFC, FNSIFC, LBSIFC */
-#include <infpri.h> /* LUERR */
-#include <iratdef.h>/* IRAT */
-#include <maxash.h>
-#include <infind.h> /* ISMO */
-#include <pgroup.h> /* REP */
+#include "inforb.h" /* NBAST, NISHT, NORBT, N2ORBX */
+#include "mxcent.h" /* MXCENT */
+#include "nuclei.h" /* NUCIND */
+#include "maxorb.h"
+#include "infinp.h" /* ISPIN  */
+#include "blocks.h" /* MAXSHL, NHKTSH, NUCOSH, NRCSH, NCNTSH */
+#include "molinp.h" /* MLINE  */
+#include "aovec.h"
+#include "primit.h" /* PRIEXP, PRICCF */
+#include "inftap.h" /* LUSIFC, FNSIFC, LBSIFC */
+#include "infpri.h" /* LUERR */
+#include "iratdef.h"/* IRAT */
+#include "maxash.h"
+#include "infind.h" /* ISMO */
+#include "pgroup.h" /* REP */
       PARAMETER (D0=0.0D0, DH=0.5D0, D1=1.0D0, D2=2.0D0)
       CHARACTER SPD(8)
       CHARACTER*10 FMT
@@ -1793,7 +1793,7 @@ C
       END
 
       SUBROUTINE WRFMTD(LU,FMT,RMAT,N)
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LU, N
       DIMENSION RMAT(N,N)
       CHARACTER*(*) FMT
@@ -1804,7 +1804,7 @@ C
       END
 
       SUBROUTINE INDSRT(EIG,IVEC,N)
-#include <implicit.h>
+#include "implicit.h"
 C
 C Sort vector EIG(N)
 C IVEC(N) will give the index in the original vector
@@ -1842,16 +1842,16 @@ C
       END
       SUBROUTINE P2ORG(NCONTS,ISHIND,NNSHL,LUPAO,LUPAS,LUP,
      &   WORK,KFREE,LFREE,PANTI)
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 )
       DIMENSION NCONTS(MXSHEL,MXAOVC,2)
       DIMENSION ISHIND(NNSHL,NNSHL)

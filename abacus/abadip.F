@@ -21,18 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbidip.h>
+#include "abainf.h"
+#include "cbidip.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
      *            'xXXXXXX', 'xXXXXXX', '.STOP  '/
 C
@@ -116,10 +116,10 @@ C  /* Deck dipini */
 C
 C     Initialize /CBIDIP/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbidip.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbidip.h"
       IPRINT = IPRDEF
       NODC   = .FALSE.
       NODV   = .FALSE.
@@ -135,15 +135,15 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
-#include <cbidip.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "cbidip.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infdim.h"
 C
       IF (SKIP) RETURN
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -178,29 +178,29 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "iratdef.h"
       PARAMETER (DM1 = -1.0D0)
-#include <dipole.h>
-#include <orgcom.h>
-#include <moldip.h>
-#include <cbidip.h>
+#include "dipole.h"
+#include "orgcom.h"
+#include "moldip.h"
+#include "cbidip.h"
 C
-#include <symmet.h>
-#include <dorps.h>
-#include <abainf.h>
-#include <linaba.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <inflin.h>
+#include "symmet.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "linaba.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "inflin.h"
 C
       CHARACTER*8 LABINT(3*MXCOOR)
       DIMENSION CMO(NCMOT), DVSP(NNASHX), DV(NASHT,NASHT),
@@ -208,7 +208,7 @@ C
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
       LOGICAL OLDDX
-#include <chrxyz.h>
+#include "chrxyz.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from DIPCT1','*',103)
 C
@@ -331,11 +331,11 @@ C
       END
 C  /* Deck dipadd */
       SUBROUTINE DIPADD(AMAT)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(3,MXCOOR)
-#include <nuclei.h>
-#include <moldip.h>
+#include "nuclei.h"
+#include "moldip.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, 3
          DO 200 J = 1, NCOORD
@@ -350,23 +350,23 @@ C
 C   ITYPE = 1 : electric polarizability
 C   ITYPE = 2 : magnetic susceptibility
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
-#include <inirep.h>
-#include <abainf.h>
-#include <inftap.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "inirep.h"
+#include "abainf.h"
+#include "inftap.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "chrxyz.h"
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0
@@ -465,22 +465,22 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
       DIMENSION HELP1(3,3), HELP2(3,3), HELP3(3,3), CORR(3,3)
       DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR), WRK(LWRK)
       DIMENSION QAPT(*), CSTRA(*), SCTRA(*)
       LOGICAL ALL
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cbisol.h>
-#include <chrxyz.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbisol.h"
+#include "chrxyz.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
      &                           .AND. DOSYM(ISYMAX(3,1)+1)
       IF (ALL) THEN
@@ -537,15 +537,15 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
-#include <dipole.h>
-#include <moldip.h>
-#include <symmet.h>
-#include <pcmlog.h>
+#include "dipole.h"
+#include "moldip.h"
+#include "symmet.h"
+#include "pcmlog.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)
@@ -576,12 +576,12 @@ C     reference with CI property gradient
 C
 C     tuh 080190
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (THRS = 1.0D-10)
       CHARACTER TEXT*(*)
-#include <abainf.h>
+#include "abainf.h"
 C
       IF (IPRINT .GE. 5) THEN
          CALL TITLER('Output from CHKPRP','*',103)
@@ -610,17 +610,17 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include <symmet.h>
-#include <dorps.h>
-#include <moldip.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "dorps.h"
+#include "moldip.h"
+#include "chrxyz.h"
       NAXES = 0
       DO 100 IREP = 0, MAXREP
          IF (DOREPS(IREP) .AND. (NAXREP(IREP,1).GT.0)) THEN
@@ -681,14 +681,14 @@ C
       END
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)
-#include <symmet.h>
+#include "symmet.h"
       DO 100 I = 1, 3
         DO 200 J = 1, 3
            IF (KEY .EQ. 'TOSYM') THEN

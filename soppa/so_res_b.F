@@ -10,16 +10,16 @@ C
 C     PURPOSE: Calculate the third contributions to RES1E and RES1D
 C              in eqs. (34) and (35).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E),   RES1D(LRES1D), SIGAI1(LSIGAI1)
       DIMENSION SIGAI2(LSIGAI2), CMO(LCMO)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

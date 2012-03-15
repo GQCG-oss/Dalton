@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck lintst */
       SUBROUTINE LINTST(CMO,CREF,EACTVN,GORB,DV,PV,FC,FV,FCAC,H2AC,
@@ -31,17 +31,17 @@ C     24-Oct-1989 pj
 C
 C     Calculate full L matrix explicitly for test purposes.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),CREF(*),GORB(*),DV(*),PV(*),FC(*),FV(*)
       DIMENSION FCAC(*),H2AC(*),INDXCI(*),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFVAR : NCONF,NWOPT,JWOPSY
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infpri.h"
 C
 C
       PARAMETER ( DTOL = 1.0D-8 )

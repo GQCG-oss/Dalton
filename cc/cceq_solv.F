@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cceq_sol */
       SUBROUTINE CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
@@ -124,16 +124,16 @@ C JK&OC 080802:
 C Dirty hack to allow small number of iterations for CCSLV/MM calc.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <ccslvinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "ccslvinf.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 C
       PARAMETER (TOL = 1.0D-14)
 Cholesky
@@ -472,21 +472,21 @@ C Included projection, Sonia Coriani 1997
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      *            THRLDP = 1.0D-20 , THRDIA = 1.0D-6 )
-#include <priunit.h>
-#include <ibndxdef.h>
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccinf.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <leinf.h>
-#include <ccinf.h>
-#include <ccexci.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ibndxdef.h"
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccinf.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "leinf.h"
+#include "ccinf.h"
+#include "ccexci.h"
+#include "dummy.h"
+#include "r12int.h"
 C
       LOGICAL LOCDBG, LNOREAD
       PARAMETER (LOCDBG = .FALSE.) 
@@ -768,10 +768,10 @@ C PURPOSE:
 C  Calculate converged solutions to the LED sets of linear
 C  equations in RD starting with equation number LEDST
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "leinf.h"
 C
       CHARACTER*(*) C1FIL,C2FIL,C12FIL
       LOGICAL TRIPLET,CCR12
@@ -817,18 +817,18 @@ C                                   trial vectors.
 C
 C RMXNORM : maximum norm of residuals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "r12int.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
       LOGICAL LOCDBG,LNOREAD
       PARAMETER ( LOCDBG = .FALSE. )
@@ -1281,14 +1281,14 @@ C    vectors
 C 2. determine NVEC solution vectors, returned in SOLEQ for eigenvalue 
 C    equation the reduced eigenvalues are returned in EIVAL
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <leinf.h>
-#include <ccrc1rsp.h>
-#include <r12int.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "leinf.h"
+#include "ccrc1rsp.h"
+#include "r12int.h"
+#include "ccsdsym.h"
 C
       PARAMETER (D1 = 1.0D0 , D0 = 0.0D0, THRZER = 1.0D-99 )
 C
@@ -1761,7 +1761,7 @@ C  Reorder and normalize eigenpairs from RG.
 C
 C  LSORT = .FALSE. --> ascending order
 C  LSORT = .TRUE.  --> descending order
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LSORT
       DIMENSION WR(N), WI(N), Z(NM,N)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
@@ -1834,11 +1834,11 @@ C
 C Scratch:
 C  require WRK of length NCCVAR
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       CHARACTER C1FIL*(*),C2FIL*(*),C12FIL*(*),S2FIL*(*),S12FIL*(*)
       DIMENSION BVECS(NCCVAR,*),WRK(NCCVAR)
@@ -2208,7 +2208,7 @@ C 22-Aug-1989 Hans Joergen Aa. Jensen
 C
 C Print overlap matrix between the NVECS input vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECS(LVEC,NVECS), OVLP(*), SVECS(LVEC,NVECS)
 C
       IJ = 0
@@ -2230,8 +2230,8 @@ C
 C Calculate inverse diagonal,
 C for generalized conjugate gradient algorithm.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DIAG(NDIAG)
       PARAMETER ( D1 = 1.0D0 )
 C
@@ -2250,16 +2250,16 @@ C
 C     Ove Christiansen 14-11-1996
 C     Write vec to file based on list and list number.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <leinf.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "leinf.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C
       CHARACTER*(*) LIST
@@ -2317,13 +2317,13 @@ C
 *
 *     Sonia Coriani sept 1997. Revised march 2000
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <leinf.h>
-#include <ccexci.h>
-#include <ccsdsym.h>
-#include <cbirea.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "leinf.h"
+#include "ccexci.h"
+#include "ccsdsym.h"
+#include "cbirea.h"
 *
       DIMENSION VECT(*), WORK(*)
       CHARACTER*10 MODFIL
@@ -2431,9 +2431,9 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
 * CVECT = left/right vector  for the constant
 * SVECT = right/left vector to be subtracted
 *================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
 *
       DIMENSION VECT(NDIMVPR),CVECT(NDIMVPR),SVECT(NDIMVPR)
       LOGICAL LOCDBG
@@ -2461,12 +2461,12 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
       SUBROUTINE CC_PRECOND(VECTORS,NVEC,NCCVAR,ISYMTR,TRIPLET,
      &                      WORK,LWORK)
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "r12int.h"
 
       LOGICAL TRIPLET, LCCEQ
       INTEGER NVEC, NCCVAR, ISYMTR, LWORK

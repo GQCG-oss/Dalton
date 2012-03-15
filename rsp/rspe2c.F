@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
@@ -74,7 +74,7 @@ C  /* Deck e2sym */
       SUBROUTINE E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      &                 WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE THAT
 C  1)  READ LINEAR TRANSFORMED VECTORS FOR (Z,Y) VECTORS FROM LURSP3 AND
@@ -84,11 +84,11 @@ C
 C  2)  SET UP REDUCED E(2) AND S(2) AS SQUARE MATRICES
 C      AND CHECK THE STRUCTURE
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , DM1=-1.0D0 , D1 = 1.0D0 , DTOL = 1.0D-6 )
       PARAMETER ( DUMMY = 1.0D20 )
@@ -96,7 +96,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       CALL HEADER('Test output requested with .ABSYM',-1)
 C
@@ -590,21 +590,21 @@ C                 (PR,YQ)*DENA(R,Y)*0.5 - (PY,RQ)*DENB(R,Y)*0.5 )
 C
 C THE ROUTINE IS CALLED FOR EACH INTEGRAL DENSITY (CD,**) (C<D)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2(NORBT,*),         ZYMAT(NORBT,NORBT,*)
       DIMENSION FCONE(NORBT,NORBT,*),FVONE(NORBT,NORBT,*)
       DIMENSION DENA(NORBT,NASHDI,*),DENB(NORBT,NASHDI,*)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -791,21 +791,21 @@ C PURPOSE:
 C    ADD CONTRIBUTION TO ONE-INDEX TRANSFORMED FOCK MATRICES WHICH
 C    ORIGINATE FROM TRANSFORMING THE FOCK MATRICES
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FC(*),FV(*),ZYMAT(NORBT,NORBT,*)
       DIMENSION FCONE(NORBT,NORBT,*),FVONE(NORBT,NORBT,*)
 C
-#include <thrzer.h>
+#include "thrzer.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
@@ -913,19 +913,19 @@ C    FVTD(P,Q) = SUM(X,Y) [(PQ,XY)-0.5*(PY,XQ)] * DVT(X,Y)
 C
 C THE ROUTINE IS CALLED FOR EACH INTEGRAL DENSITY (CD,AB) (C<D)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FVTD(NORBT,NORBT,*),H2(NORBT,*),DVT(NASHDI,NASHDI,*)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
 C -- local constants
 C
@@ -1025,23 +1025,23 @@ C
 C H2XAC CONTAIN HALF TRANSFORMED INTEGRALS. THE ONE INDEX TRANSFORMED
 C INTEGRALS ARE OBTAINED FROM H2XAC IN GETINT.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FCONE(NORBT,NORBT,*),ZYMAT(NORBT,NORBT,*)
       DIMENSION H2XAC(N2ASHX,NNASHX,*)
       DIMENSION EVECS(KZYVAR,*),XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
 C
       LOGICAL NOH2
 C
@@ -1172,27 +1172,27 @@ C          DIAGONAL HESSIAN MATRIX ELEMENTS
 C
 C          IF NTYPE.EQ.1 USE OLD TRIAL VECTORS
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 LAB1, LAB2
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(*),GD(*),REDGD(*)
       DIMENSION REDS(*),REDE(*),UDV(*),FCAC(*),H2AC(*),XINDX(*),WRK(*)
       PARAMETER ( DTEST = 1.0D-4, D0=0.0D0, D1=1.0D0, D1TEST = 1.0D-6)
       PARAMETER ( DM1 = -1.0D0 )
-#include <thrldp.h>
-#include <ibndxdef.h>
+#include "thrldp.h"
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C   INFRSP : ???,SOPPA
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <phpinf.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "phpinf.h"
 C
       LOGICAL BINMEM
       LOGICAL FNDLAB, FOUND, CONV
@@ -1643,22 +1643,22 @@ C SOL(I)    : SOLUTION VECTOR
 C RES(I)    : RESIDUE
 C SOPR(I,J) : SECOND ORDER PROPERTY FOR PROPERTY I,J
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
-#include <codata.h>
+#include "codata.h"
       PARAMETER ( DTOL   = 1.0D-10 )
 C
-#include <priunit.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <mxcent.h>
-#include <gtensor.h>
-#include <elweak.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "mxcent.h"
+#include "gtensor.h"
+#include "elweak.h"
+#include "dummy.h"
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       DIMENSION SOPR(NFREQ,NOP,*)
@@ -1811,7 +1811,7 @@ C                UDV(*,*)*(FC(*,*)+FV(*,*))
 C
 C                ******************************
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
       DIMENSION FC(*),FV(*),FOCK(*),UDV(NASHDI,NASHDI)
@@ -1820,16 +1820,16 @@ C
       PARAMETER ( D0 = 0.0D0 )
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -1945,20 +1945,20 @@ C  ARE DETERMINED FROM ACTIVE-ACTIVE DIRAC INTEGRAL DISTRIBUTION
 C  <AB,CD> C>D (DIRAC NOTATION).
 C  CONTRIBUTIONS FROM MULLIKEN DISTRIBUTION ARE CALCULATED IN QONEMU
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION QAONE(NORBT,NASHDI,*),QBONE(NORBT,NASHDI,*)
       DIMENSION ZYMAT(NORBT,NORBT,*),H2(NORBT,*),H2X(NORBT,*)
       DIMENSION PVX(*),PVCD2(NASHDI,*),PVCD3(NASHDI,*),PVDC2(NASHDI,*)
       DIMENSION PVDC3(NASHDI,*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
@@ -2206,16 +2206,16 @@ C  ARE DETERMINED FROM ACTIVE-ACTIVE MULLIKEN INTEGRAL DISTRIBUTION
 C  (**,CD) C>D .
 C  CONTRIBUTIONS FROM DIRAC DISTRIBUTION XY CALCULATED IN QONEDI
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       DIMENSION QAONE(NORBT,NASHT,*),QBONE(NORBT,NASHT,*)
       DIMENSION ZYMAT(NORBT,NORBT,*),PVX(*),PVCD(NASHT,*),H2(NORBT,*)
@@ -2346,14 +2346,14 @@ C  CALCULATE THE CONTRIBUTIONS TO QATD AND QBTD MATRICES WHICH
 C  ARE DETERMINED FROM INTEGRAL DISTRIBUTION  (AB,CD) ,D>=C
 C  (MULLIKEN NOTATION)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "wrkrsp.h"
 C
       DIMENSION QATD(NORBT,NASHDI,*),QBTD(NORBT,NASHDI,*)
       DIMENSION PVTD(N2ASHX,N2ASHX,*),PVDEN(NASHT,*)
@@ -2411,19 +2411,19 @@ C     |0(L)> =  SUM(N) S'(N)*|N>
 C
 C MODIFIED 5-5-1988 : ASSUME |0(L)> = 0 i.e. S' = 0 AND
 C                     NOT STORED'
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ZYCVEC(KZCONF,*),FCAC(*),H2AC(*)
       DIMENSION EVECS(KZYVAR,*),XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <cbgetdis.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "cbgetdis.h"
 C
       LOGICAL NOH2, IH8SM
 C
@@ -2551,8 +2551,8 @@ C    LINEAR DEPENDENCE IS REMOVED)
 C
 C MAXRIT: MAXIMUM NUMBER OF MICROITERATIONS
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( MAXVEC = 12, DM1 = -1.0D0 )
       DIMENSION CMO(*),UDV(NASHDI,*),PV(*),FC(*),FV(*)
@@ -2560,20 +2560,20 @@ C
       DIMENSION REDE(*),REDS(*),IBTYP(*),EIVAL(*),RESID(*),EIVEC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C  /WRKRSP/: ??
 C  /INFPRI/: LUERR
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infsop.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
 C
       LOGICAL BINMEM, LINEQ, OPTSAV, LMAXIT
       CHARACTER*8 LAB123(3),RESTAR, LAB1, LAB2
@@ -3090,15 +3090,15 @@ C  /* Deck rspdia */
 C
 C CONSTRUCT DIAGONAL OF E(2) + SHIFT* S(2)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER ( DMP5 = -0.5D0, D1 = 1.0D0 , DM2=-2.0D0 )
       PARAMETER ( D0 = 0.0D0 )
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL REWSPL(LURSP4)
 #if defined (VAR_SPLITFILES)
@@ -3162,13 +3162,13 @@ C  /* Deck rspedg */
 C
 C CONSTRUCT DIAGONAL OF E(2) (z part)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL REWSPL(LURSP4)
 #if defined (VAR_SPLITFILES)
@@ -3211,14 +3211,14 @@ C  /* Deck rspsod */
 C
 C READ DIAGONAL OF ORBITAL PART OF S(2)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION A(*)
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL REWSPL(LURSP4)
       JRSP4 = 0
@@ -3264,9 +3264,9 @@ C     CONTROL CALCULATION OF EXCITATION ENERGIES AND TRANSITION
 C     MOMENTS
 C     (PP for Polarization Propagator)
 C
-#include <implicit.h>
+#include "implicit.h"
 #include "maxorb.h"
-#include <dummy.h>
+#include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
       CHARACTER BLANK*8, PRI_LINE*80
@@ -3285,7 +3285,7 @@ C
       PARAMETER ( D2R3 = (2.0D0/3.0D0))
 C
 C
-#include <codata.h>
+#include "codata.h"
       PARAMETER (RAU2CGS = ECHARGE*ECHARGE*XTANG*CCM*1D36*HBAR/EMASS)
       PARAMETER (ESUECD = RAU2CGS)
 C
@@ -3295,19 +3295,19 @@ C  /INFRSP/ : most items (/INFRSP/ gives control information for
 C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
 #include "infinp.h"
-#include <infpri.h>
-#include <inftap.h>
-#include <esg.h>
+#include "infpri.h"
+#include "inftap.h"
+#include "esg.h"
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
@@ -4170,25 +4170,25 @@ C
 C     Driver Routine for Linear Response:
 C     DETERMINE SECOND ORDER MOLECULAR PROPERTIES
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "thrzer.h"
 C
       CHARACTER*8 BLANK
       PARAMETER (D0 = 0.0D0, BLANK = '        ')
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <infdim.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "infdim.h"
+#include "inforb.h"
 C
 C Local variables
 C
@@ -4408,8 +4408,8 @@ C
 C  /* Deck rds2 */
       SUBROUTINE RDS2(LABEL,UDV,XINDX,WRK,LWRK)
 C 28-Jun-1991 PJ+HJJ
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       CHARACTER*8 LABEL
       DIMENSION XINDX(*),UDV(*),WRK(*)
       PARAMETER ( D1 = 1.0D0 )
@@ -4417,11 +4417,11 @@ C
 C Used from common blocks:
 C   INFDIM : NVARMA
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       LOGICAL OLDDX
 C
@@ -4466,19 +4466,19 @@ C     Calculate S[2] * RD where we use RD_Y = -RD_Z
 C  /* Deck rds2x */
       SUBROUTINE RDS2X(NLAB,UDV,XINDX,WRK,LWRK)
 C Made from RDS2 by klb feb. 1997.
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       DIMENSION XINDX(*),UDV(*),WRK(*)
       PARAMETER ( D1 = 1.0D0 )
 C
 C Used from common blocks:
 C   INFDIM : NVARMA
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       LOGICAL OLDDX
 C
@@ -4529,8 +4529,8 @@ C On input, vector X(I) is placed in RD(I+1), I = 1,NBX.
 C On output, vector RD(I) is placed in RD(I), I = 1,NBX.
 C LWRK is available work space in RD.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
       DIMENSION GD(*),UDV(*),RD(*),XINDX(*)
       PARAMETER (  D0 = 0.0D0 , DM1=-1.0D0)
@@ -4540,12 +4540,12 @@ C  INFRSP: ?
 C  WRKRSP: KZVAR,KZYVAR
 C          LURSP5
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C CONSTRUCT -W(I) * S[2]*X(I) IN FIRST NBX ELEMENTS OF RD
 C
@@ -4699,18 +4699,18 @@ C
 C PURPOSE:
 C   CALCULATION OF EIGENVECTORS FROM REDUCED SPACE
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BVECS(KZYVAR,*),WRK(*)
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       NTOT= NBX*KZYVAR
       CALL DZERO(BVECS,NTOT)
@@ -4780,17 +4780,17 @@ C  /* Deck rspes2 */
      *                  CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      *                  WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE THAT
 C  1)  CALCULATE THE E(2) AND S(2) MATRICES EXPLICITLY BY CARRYING
 C      OUT LINEAR TRANSFORMATIONS ON UNIT VECTORS
 C  2)  DIAGONALIZE THE E(2) AND S(2)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-8 )
       DIMENSION GD(*),REDGD(*),REDE(*),REDS(*),EIVAL(*),EIVEC(*)
@@ -5078,15 +5078,15 @@ C  /* Deck oropti */
 C
 C PURPOSE SOLVE ORBITAL PART OF LINEAR SET OF EQUATIONS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION EIVAL(*),IBTYP(*),A1(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FCAC(*),XINDX(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DM1 = -1.0D0 )
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C PUT DIAGONAL ORBITAL PART OF E(2) AND S(2) IN WRK(1) AND
 C AND WRK(1+KZYCON)
@@ -5128,7 +5128,7 @@ C  /* Deck e2osym */
       SUBROUTINE E2OSYM(KOZRED,OBVEC,OEVEC,OSVEC,
      *           CMO,UDV,PV,FC,FV,FCAC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE TO CHECK THE ORBITAL PART OF THE
 C  RESPONSE MATRICES
@@ -5138,10 +5138,10 @@ C      AS SQUARE MATRICES AND CHECK THE STRUCTURE
 C
 C  2)  CHECK ORTHOGONALITY OF TRIAL VECTORS
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-6 )
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
@@ -5481,7 +5481,7 @@ C  /* Deck e2ochk */
       SUBROUTINE E2OCHK(OBVEC,OEVEC,OSVEC,CMO,UDV,PV,FC,FV,FCAC,XINDX,
      *                  WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE TO CHECK THE ORBITAL PART OF THE
 C  RESPONSE MATRICES
@@ -5492,10 +5492,10 @@ C      THE BLOCK IS FORMED USING UNIT VECTORS AS TRIAL
 C      VECTORS. TOTALLY MAXCHK VECTORS ARE USED WITH ONE IN
 C      ELEMENTS ISTCHK TO ISTCHK+MAXCHK-1
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-6 )
       DIMENSION OBVEC(KZYWOP,*),OEVEC(KZYWOP,*),OSVEC(KZYWOP,*)
@@ -5841,8 +5841,8 @@ C
 C  /* Deck lrnsl */
       SUBROUTINE LRNSL(CMO,UDV,PV,FC,XINDX,VECB,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
 C PURPOSE:
 C CALCULATION OF LINEAR POLARIZABILITIES WITHOUT USING
@@ -5857,16 +5857,16 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*)
       DIMENSION XINDX(*),VECB(*), WRK(LWRK)
 C
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "wrkrsp.h"
 C
 C
       WRITE(LUPRI,'(A)') ' '
@@ -5916,15 +5916,15 @@ C
       END
 
       subroutine printelweak(nop,sopr,ksymop)
-#include <implicit.h>
-#include <priunit.h>
-#include <codata.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <mxcent.h>
-#include <elweak.h>
-#include <nuclei.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "codata.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "mxcent.h"
+#include "elweak.h"
+#include "nuclei.h"
+#include "chrnos.h"
 
       dimension sopr(1,nop,nop),pvodd(mxcent)
       character*8 lab1, lab2
@@ -6055,16 +6055,16 @@ C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
 C
 C     (subroutine based on RSPPRO tuh)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(PTHRS = 1.D-08)
       DIMENSION WOP(*)
       DIMENSION CMO2(NORBT,NORBT,2)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
  
       CALL HEADER('PBHT MO Overlap Diagnostic',-1)
       WRITE(LUPRI,'(A/A/)')

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_XI_NODDY(IOPTRES,XI1,XI2,XI1EFF,XI2EFF,
@@ -41,13 +41,13 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -234,13 +234,13 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -401,17 +401,17 @@ C     ----------------------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <ccexci.h>
-#include <ccfield.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "ccexci.h"
+#include "ccfield.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG, PRINT_T3
       PARAMETER (LOCDBG=.FALSE.,PRINT_T3=.FALSE.)
@@ -735,11 +735,11 @@ c         ----------------------------------
 *     response versions XINT1SB=(ck|db)-bar and XINT2SB=(ck|lj)-bar
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL DO_INTS1, DO_INTT1
       INTEGER LWORK
@@ -840,10 +840,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL ONE
@@ -887,10 +887,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL HALF
@@ -962,10 +962,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
  
 #if defined (SYS_CRAY)
       REAL HALF
@@ -1037,10 +1037,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
 #if defined (SYS_CRAY)
       REAL XKSI2(NT1AMX,NT1AMX)
@@ -1092,10 +1092,10 @@ C           ---------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
 #if defined (SYS_CRAY)
       REAL OMEGA2(NT1AMX,NT1AMX)
@@ -1161,11 +1161,11 @@ C
 C     Compute a response Fock matrix:
 C        FOCK(kc) = FOCK(kc) + sum_ia L_kcia t_ia
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XLIAJB(NT1AMX,NT1AMX)
       DIMENSION T1AM(NT1AMX)
       DIMENSION FOCK(NORBT,NORBT)
@@ -1201,14 +1201,14 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
 
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <cclists.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "cclists.h"
+#include "ccroper.h"
 
       CHARACTER*12 FNDEFF
       PARAMETER( FNDEFF = 'TMP-XIETADEN' )
@@ -1651,7 +1651,7 @@ c         ---------------------------------------------------------
 *     Written by Christof Haettig, Nov 2002, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

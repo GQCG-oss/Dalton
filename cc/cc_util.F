@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccrhs_cio */
       SUBROUTINE CCRHS_CIO2(OMEGA2,T2AM,XLAMDH,WORK,LWORK,
@@ -64,12 +64,12 @@ C
 C#include <implicit.h>
       implicit none
 
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
+#include "r12int.h"
 
       integer lwork, isyvec, isycim, luc, iv, iopt,ioptb, lucb,
      &        ioffb, iopte
@@ -557,7 +557,7 @@ C
 C     PURPOSE:
 C             Calculate the D-term 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
@@ -565,12 +565,12 @@ C
       LOGICAL   R12CON
       INTEGER   NC(8), NT1CK(8), IT1CK(8,8), NMATAC(8), IMATAC(8,8),
      &          IBASX(8), ILAMDX(8), NT1AO2(8), IT1AO2(8,8), IT2SQP(8,8)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
+#include "r12int.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1019,15 +1019,15 @@ C
 *     Christof Haettig 20-6-1998
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION EMAT1(*),EMAT2(*),FOCK(*),ONEHAM(*)
       DIMENSION RAIM(*),RBIM(*),GAIM(*),GBIM(*)
       DIMENSION XLAMDHA(*),XLAMDHB(*), XLAMDPA(*), XLAMDPB(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1250,10 +1250,10 @@ C
 *
 * C. Haettig August 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(DMONE=-1.0D0)
       DIMENSION GAMMA(*),EMAT2(*)
 C
@@ -1336,12 +1336,12 @@ c /* deck cc_iajb2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccisao.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccisao.h"
+#include "r12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1526,10 +1526,10 @@ c /* deck cc_iajb3 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C#include <maxorb.h>
 C#include <ccisao.h>
 
@@ -1661,9 +1661,9 @@ C            T2PK(ia,jb) = T2SQ(ia,jb) + T2SQ(jb,ia)
 C
 C     Ch. Haettig, August 1998
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ONE = 1.0D0)
       DIMENSION T2PK(*), T2SQ(*)
@@ -1760,16 +1760,16 @@ C
 C     PURPOSE:
 C             Calculate the C-term 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
       CHARACTER CFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2099,16 +2099,16 @@ C
 C     PURPOSE:
 C             Calculate the D-term 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION OMEGA2(*),T2AM(*),XLAMDH(*),EMAT1(*)
       DIMENSION WORK(LWORK)
       CHARACTER DFIL*(*), DBFIL*(*), CFIL*(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -2412,11 +2412,11 @@ c/* deck cc_cd */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "r12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2709,13 +2709,13 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <second.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3012,10 +3012,10 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
 
       LOGICAL LOCDBG
@@ -3171,15 +3171,15 @@ C     Calculate in place two exchange plus coulomb of Z2 amplitudes.
 C
 C     Ch. Haettig, August 1998
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION Z2AM(*)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3291,7 +3291,7 @@ C
 C    C. Haettig, 1999, restructured for R12 in 2006
 C
       IMPLICIT NONE
-#include <ccorb.h>
+#include "ccorb.h"
       INTEGER ISYZIN,ISYMC2,ISYTIN,IOPT,LWORK
 #if defined (SYS_CRAY)
       REAL ZINT(*), CTR2(*), TINT(*), WORK(LWORK)
@@ -3398,13 +3398,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3723,11 +3723,11 @@ C     Extended for generalized symmetry.         ch  15-01-99
 C     Extended for CMOP different from CMOH.     ch  01-11-99
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0)
       DIMENSION XLAMDH(*), XLAMDP(*), T1AM(*), CMOH(*), CMOP(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('LAMDA2')
 C
@@ -3785,11 +3785,11 @@ C
 C     revised and extended for general symmetry of CMO 
 C     by Christof Haettig, Jan '99
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), XLAMDA(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3877,16 +3877,16 @@ C     Christof Haettig                       22-Jan-1999
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XLAMDP0(*), XLAMDH0(*), XLAMDP1(*), XLAMDH1(*)
       DIMENSION DENS(*), WORK(LWORK)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       IF (IOPT.GE.1) THEN
          ISYDEN = MULD2H(ISYLM0,ISYLM1)
@@ -4028,10 +4028,10 @@ C
 *
 * C. Haettig August 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
       DIMENSION CDBAR(*),EMAT1(*)
       LOGICAL LCBS
@@ -4191,17 +4191,17 @@ C                  + XLAMPB(alpha,d) XLAMDPC(beta,k) BF(alpha i beta j)
 C
 C     NOTE: Linear response options only valid and debugged for OMEGOR!
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION RHO1(*), CTR2(*), OMEGA2(*), RHO2(*), GAMMA(*),
      *          XLAMPC(*), XLAMPB(*), WORK(*), GIMB(*), GIMC(*)
       LOGICAL LGAMMA, LO3BF, LBFZETA
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+#include "cclr.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C

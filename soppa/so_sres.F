@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_sres */
       SUBROUTINE SO_SRES(NOLDTR, NNEWTR,  DENSIJ, LDENSIJ, 
@@ -12,17 +12,17 @@ C
 C     PURPOSE: Driver routine for making a linear transformation of
 C              a trialvector with the SOPPA overlap matrix S[2].
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

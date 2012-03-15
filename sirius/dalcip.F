@@ -23,8 +23,8 @@
 !
       subroutine dalcip(nela,nelb,ndet,c,ne,trou,part,nd,nm,
      *           inact,iact,nact,lfermi,nisht,nsym,LUN98,mult)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 
 ! ** Before 2011, the nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
 ! ** Now code is compiled for all compilers, if your compiler cannot handle
@@ -401,7 +401,7 @@ c**************************************************************
       end
 c****************************************************************
       subroutine orderfe(ifirst,ilast,c,ne,nd,trou,part,npos)
-#include <implicit.h>      
+#include "implicit.h"      
       DIMENSION c(*)
       integer*2 ne(*),trou(*),part(*)
       dimension nd(*),npos(*)
@@ -547,7 +547,7 @@ c
 c---------------------------------------------------------------
       subroutine ascend(nd,ne,trou,part,c,ndet,nm,iecci,nexmax,nocc,norb
      $     ,mult,iorb,ispin)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION c(*)
       dimension nd(*),ne(*),trou(*),part(*),iorb(*),ispin(*)
       integer*2 ne,trou,part,ibu(100),ipa(100),iorb,ispin

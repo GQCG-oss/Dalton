@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_dens */
       SUBROUTINE SO_DENS(DENSIJ,LDENSIJ,DENSAB,LDENSAB,
@@ -12,8 +12,8 @@ C
 C     PURPOSE: Calculate second-order SOPPA one-electron density
 C              matrices Dij and Dab from T2 amplitudes.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
@@ -22,10 +22,10 @@ C
       DIMENSION T2AM(LT2AM)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------------------
 C     Statement function INDEX.

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c===========================================================================
 c/* old abaedrv_log */
@@ -37,27 +37,27 @@ c      END
 c===========================================================================
 C  /* Deck resinp */
       SUBROUTINE RESINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxash.h"
       PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbires.h>
+#include "cbires.h"
 C
 C     Used from common blocks:
 C       GNRINF : THR_REDFAC
 C       ANRINF : THRNR, MAXNR
 C       NUCLEI : NDCORD
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <infind.h>
-#include <nuclei.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "infind.h"
+#include "nuclei.h"
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXSIM', '.NEWRD ','.NOTRIA','.RDVECS',
      *            '.NONEXT', '.NRREST','.NOAVER','.D1DIAG',
@@ -227,12 +227,12 @@ C  /* Deck resini */
 C
 C     Initialize /CBIRES/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <anrinf.h>
-#include <cbires.h>
-#include <abainf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "anrinf.h"
+#include "cbires.h"
+#include "abainf.h"
+#include "nuclei.h"
 C
       IPRINT = IPRDEF
       MAXSIM = 15
@@ -274,11 +274,11 @@ C     Modified 14-jun-1985 TUH
 C
 C     Purpose: Solve response equations
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
 C
@@ -288,15 +288,15 @@ C        INFDIM : NVARMA
 C        NUCLEI : NUCDEP, DCORD(MXCENT,3)
 C        INFTAP : LUGDR,LURDR, LRGDR,LRRDR, NBGDR,NBRDR
 C
-#include <cbires.h>
-#include <abainf.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <inftap.h>
+#include "cbires.h"
+#include "abainf.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "inftap.h"
 C
       LOGICAL OLDDX
 C
@@ -373,13 +373,13 @@ C      If INGD is TRUE one set of linear equations are solved.
 C      The routine then assumes GD is the first NVAR elements in WRK
 C      and returns RD as the first NVAR elements in WRK.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <ibndxdef.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "ibndxdef.h"
+#include "iratdef.h"
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION WRK(*)
@@ -390,21 +390,21 @@ C   ABAINF : POLAR, DOSYM
 C   INFLIN : NCONRF,?
 C   INFDIM : LACIMX, LBCIMX, LCINDX, NVARMA,...
 C
-#include <abainf.h>
-#include <inflin.h>
-#include <linaba.h>
-#include <cbires.h>
-#include <cbisol.h>
-#include <gdvec.h>
-#include <energy.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <gnrinf.h>
+#include "abainf.h"
+#include "inflin.h"
+#include "linaba.h"
+#include "cbires.h"
+#include "cbisol.h"
+#include "gdvec.h"
+#include "energy.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "gnrinf.h"
 C
       CALL QENTER('RESMC')
 C
@@ -592,9 +592,9 @@ C Purpose:
 C   Read that MC information written by WRSIFC in SIRIUS which
 C   is needed for RESMC.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       DIMENSION CMO(*),CREF(*),DV(*),PV(*),FOCK(*),
      *          FC(*),FV(*),FCAC(*),H2AC(*),GORB(*),WRK(*)
@@ -602,14 +602,14 @@ C
 C Used from common blocks:
 C  INFINP : LSYM,FLAG(1:NFLAG)
 C
-#include <infinp.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infopt.h>
-#include <inforb.h>
+#include "infinp.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infopt.h"
+#include "inforb.h"
 C
       LOGICAL FNDLAB
 C
@@ -701,26 +701,26 @@ C  Modified Jan 16 1988 tuh -  ENDRD introduced since Alliant
 C             sometimes aborts when trying to read DA record
 C             after end of file
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ibndxdef.h"
       PARAMETER ( VECTOL=1.0D-3 , THRLDP=1.0D-20 , DTEST = 1.D-3 )
       PARAMETER ( D0 = 0.0D0 )
       DIMENSION IBNDX(*),CREF(*),DIACI(*),DIAOR(*),WRK(*)
       LOGICAL INGD, FNDTRI, FINDDX, ENDRD
-#include <cbires.h>
+#include "cbires.h"
 C
-#include <inftap.h>
-#include <gdvec.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "inftap.h"
+#include "gdvec.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "linaba.h"
 C
 C     Define maximum number of simultaneous vectors
 C

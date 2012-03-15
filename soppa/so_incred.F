@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_incred */
       SUBROUTINE SO_INCRED(NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
@@ -12,10 +12,10 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Calculates the reduced eigenvalue problem.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
       PARAMETER (ZERO = 0.0D+00, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THREE = 3.0D0)

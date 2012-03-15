@@ -22,7 +22,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_KMATRIX */
@@ -42,9 +42,9 @@ c/* Deck CC_KMATRIX */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdio.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdio.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

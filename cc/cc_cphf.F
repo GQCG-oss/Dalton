@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_cphf */
 *=====================================================================*
@@ -42,23 +42,23 @@ c /* deck cc_cphf */
       INTEGER IPRLIN, LSYMRF, LSYMPT, LSYMST,
      &        NCONRF, NCONST, NWOPPT, NVARPT
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <exeinf.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <inflin.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "exeinf.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "inflin.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 
 * local parameters:
@@ -438,10 +438,10 @@ c /* deck cc_sirinf */
 *---------------------------------------------------------------------*
 *   Purpose: read some variables from SIRIUS common blocks
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infdim.h"
 
       NCMOT1  = NCMOT
       NASHT1  = NASHT
@@ -461,11 +461,11 @@ C
 C  Christof Haettig, summer 2003         
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>    
-#include <ccfro.h>    
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"    
+#include "ccfro.h"    
 
 #if defined (SYS_CRAY)
       REAL XKAPPA(*)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CCETACOR(ETAAI,ZKDIA,WORK,LWORK)
 C
@@ -34,32 +34,32 @@ C     Written by Sonia Coriani, Fall 2001. Based on CC2_DEN
 C
 C     Current models: CCD, CCSD, CCSD(T)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <inftap.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "inftap.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccfro.h"
 C
       CHARACTER MODEL*10
       CHARACTER NAME1*8

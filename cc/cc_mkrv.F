@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck makerv*/ 
       SUBROUTINE MAKERV(V2AM,R2AM,U2AM,S2AM,T2AM,
@@ -35,8 +35,8 @@ C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C     Ansatz 3 added on 15 May 2004.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0, DELTA=0.0D0)
       REAL*8  SU, US, SV, VU, VR, RR, UR, RU, UT, TU, QQIJKL, QQIJLK,
@@ -74,11 +74,11 @@ C
       CHARACTER*8 EOFLAB
       LOGICAL FRSTWR
       INTEGER NKILJ(8)
-#include <r12int.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccr12int.h>
+#include "r12int.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccr12int.h"
       DATA APPROX 
      &/'0  ','A  ','A  ','A'' ','A* ','A* ','A*''','B  ',
      & 'B  ','xxx','xxx','B* ','B* ','xxx','xxx',
@@ -1128,18 +1128,18 @@ C  /* Deck ryr*/
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       DIMENSION R2AM(*), SF(*), TF(*),
      *          ISB(8), Q11(NOCDIM,NOCDIM,NOCDIM,NOCDIM)
       INTEGER IDUM
       LOGICAL LDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       CALL DZERO(Q11,NOCDIM**4)
       ISB(1) = 0
@@ -1424,8 +1424,8 @@ C     are diagonal in the secondary-secondary block. This is tested for.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       PARAMETER (THRDIA = 1D-9)
@@ -1433,10 +1433,10 @@ C
      *          ISB(8), Q11(NOCDIM,NOCDIM,NOCDIM,NOCDIM)
       LOGICAL LDUM
       INTEGER IDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       CALL DZERO(Q11,NOCDIM**4)
       ISB(1) = 0
@@ -1745,8 +1745,8 @@ C     utilizing the secondary basis RI approximation.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>  
+#include "implicit.h"
+#include "priunit.h"  
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0,
      *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
       PARAMETER (THRDIA = 1D-9)
@@ -1754,10 +1754,10 @@ C
       REAL*8  RR, VV, XBD, XAC, DSM
       LOGICAL LDUM
       INTEGER IDUM
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       ISB(1) = 0
       DO 100 ISYM = 2, NSYM

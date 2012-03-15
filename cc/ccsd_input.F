@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_input */
       SUBROUTINE CC_INPUT(WORD,IREST,MSYM)
@@ -70,36 +70,36 @@ C     MINSCR, MINMEM
 C
 C-------------------------------------------------------------
 C            
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <inftap.h>
-#include <ccfield.h>
-#include <cclr.h>
-#include <ccfop.h>
-#include <leinf.h>
-#include <gnrinf.h>
-#include <ccrspprp.h>
-#include <ccpack.h>
-#include <eribuf.h>
-#include <cbieri.h>
-#include <ccroper.h>
-#include <cch2d.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "inftap.h"
+#include "ccfield.h"
+#include "cclr.h"
+#include "ccfop.h"
+#include "leinf.h"
+#include "gnrinf.h"
+#include "ccrspprp.h"
+#include "ccpack.h"
+#include "eribuf.h"
+#include "cbieri.h"
+#include "ccroper.h"
+#include "cch2d.h"
 Cholesky
-#include <cc_cho.h>
-#include <ccdeco.h>
-#include <chodbg.h>
-#include <chomp2.h>
-#include <chocc2.h>
+#include "cc_cho.h"
+#include "ccdeco.h"
+#include "chodbg.h"
+#include "chomp2.h"
+#include "chocc2.h"
 C
-#include <center.h>
+#include "center.h"
 Cholesky  
 C
       PARAMETER (NTABLE = 120)
@@ -923,17 +923,17 @@ C
 C     K.Ruud, Jan.-96. Split from CC_INPUT in order to place CC output more 
 C     adequatly in SIRIUS Print of input processing
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclrinf.h>
-#include <cclr.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclres.h>
-#include <ccqr2r.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclrinf.h"
+#include "cclr.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclres.h"
+#include "ccqr2r.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
 C
       IF (ICHANG .GT. 0) THEN
          IF (IWUNIT .eq. LUPRI) THEN
@@ -1077,15 +1077,15 @@ C     It is assumed that the molecule is properly oriented.
 C
 C     ASM & JCh  February 1996
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccfield.h"
+#include "ccorb.h"
 C
       PARAMETER (ZERO = 0.0D0)
 C
@@ -1094,7 +1094,7 @@ C
       CHARACTER*6 FLDTYP
       CHARACTER*1 FLDDIR
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C----------------------------------------------
 C     Calculate total electric field.
@@ -1219,10 +1219,10 @@ C     If field was set in Hartree-Fock transfer to CC.
 C
 C     Ove Christiansen 11-6-1996
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
 C
       DIMENSION EFIEL(MXFEL)
       CHARACTER*8 LFIEL(MXFEL)
@@ -1258,17 +1258,17 @@ C    Ove Christiansen 24-10 1996
 C    Kasper Hald & Christof Haettig 12-08-99, changes for triplet
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <cclres.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "cclres.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -1774,17 +1774,17 @@ C
 C    Ove Christiansen 24-10 1996
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <cclres.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "cclres.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -2393,12 +2393,12 @@ C    Christof Haettig, Dec 2002 / Oct 2003
 C
 C=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsections.h>
-#include <ccrspprp.h>
-#include <ccopainf.h>
-#include <cctpainf.h>
-#include <ccxopainf.h>
+#include "priunit.h"
+#include "ccsections.h"
+#include "ccrspprp.h"
+#include "ccopainf.h"
+#include "cctpainf.h"
+#include "ccxopainf.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -2881,8 +2881,8 @@ C    Christof Haettig, Jan 2003
 C
 C=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccnoddy.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -3292,18 +3292,18 @@ C
 C    Ove Christiansen April 1997
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <cclres.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccqr2r.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "cclres.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccqr2r.h"
 
 * local parameters:
       CHARACTER SECNAM*(10)
@@ -3539,18 +3539,18 @@ C
 C    Ove Christiansen august-1997
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccgr.h>
-#include <ccfdgeo.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccgr.h"
+#include "ccfdgeo.h"
 
 * local parameters:
       CHARACTER SECNAM*(7)
@@ -3683,17 +3683,17 @@ C
 C    Ove Christiansen 4-2-1997
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <leinf.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccexgr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "leinf.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccexgr.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -3947,15 +3947,15 @@ C  Asger Halkier ultimo Nov. 1999: First-order Direct Perturbation
 C                                  Theory (DPT) energy corrections.
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclr.h>
-#include <ccfop.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclr.h"
+#include "ccfop.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -4257,21 +4257,21 @@ C      IMPLICIT NONE
 C#else
 #  include <implicit.h>
 C#endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "codata.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 CTOCD  
-#include <ctocdcc.h>
+#include "ctocdcc.h"
 CTOCD  
 
 
@@ -4973,11 +4973,11 @@ C
 C              LRELAX is the flag that will be associated with
 C              each perturbation operator for relaxation.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABELA(NA), LABELB(NB)
       LOGICAL     LDIAGO, LRELAX
-#include <cclrinf.h>
-#include <priunit.h>
+#include "cclrinf.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_LRINPREQ')
@@ -5078,12 +5078,12 @@ c /* deck cc_qrinp */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccqrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccqrinf.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -5664,10 +5664,10 @@ c /* deck cc_crinp */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cccrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cccrinf.h"
 C#include <ccrspprp.h>
 
 * local parameters:
@@ -6364,10 +6364,10 @@ c /* deck CC_4RINP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cc4rinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cc4rinf.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -6697,11 +6697,11 @@ c /* deck CC_5RINP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cc5rinf.h>
-#include <cc5perm.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cc5rinf.h"
+#include "cc5perm.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -7020,8 +7020,8 @@ C           -------------
 C  /* Deck indprpcc */
       INTEGER FUNCTION INDPRPCC(NEWLBL)
 C
-#include <ccrspprp.h>
-#include <priunit.h>
+#include "ccrspprp.h"
+#include "priunit.h"
 C
       CHARACTER*8 NEWLBL
       INTEGER I
@@ -7050,7 +7050,7 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT1OP(INDOP,NOP,MAXOP,OPERATOR,ROUTINE)
 C
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*(*) ROUTINE
       CHARACTER*(*) OPERATOR
       CHARACTER*80 MESSAGE
@@ -7130,7 +7130,7 @@ C
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT2OP(INDOP1,INDOP2,NOP,MAXOP,OPERATOR,ROUTINE)
 C
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*(*) ROUTINE
       CHARACTER*(*) OPERATOR
       CHARACTER*80 MESSAGE
@@ -7209,10 +7209,10 @@ c /* deck cc_exlrinp */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccexlrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccexlrinf.h"
 
 * local parameters:
       CHARACTER MSGDBG*(20)
@@ -7575,11 +7575,11 @@ C      IMPLICIT NONE
 C#else
 #  include <implicit.h>
 C#endif
-#include <priunit.h>
-#include <cctm.h>
-#include <cctminf.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "cctm.h"
+#include "cctminf.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
 
 * local parameters:
       CHARACTER SECNAM*(8)
@@ -7915,10 +7915,10 @@ C           _______________________________________________
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccmcdinf.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "ccmcdinf.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -8265,14 +8265,14 @@ C    SLV98,OC
 C    Ove Christiansen April 1998
 C
 C=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_SLVINP')
@@ -8525,12 +8525,12 @@ c/* deck cc_r12in */
       SUBROUTINE CC_R12IN(WORD)
 C     Purpose: Read input for R12 calculations.
 C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
 CCN
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
 CCN
       LOGICAL SET
       CHARACTER SECNAM*(8)
@@ -8772,10 +8772,10 @@ C     Thomas Bondo Pedersen, May 2002.
 C
 C     Purpose: Read input for CC Cholesky debug input section.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <chodbg.h>
+#include "priunit.h"
+#include "chodbg.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHODBINP')
@@ -8900,12 +8900,12 @@ C     Thomas Bondo Pedersen, July 2002.
 C
 C     Purpose: Read input for Cholesky based MP2 calculation.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <chomp2.h>
+#include "priunit.h"
+#include "chomp2.h"
 Casm
-#include <chomp2_b.h>
+#include "chomp2_b.h"
 Casm
 
       CHARACTER*12 SECNAM
@@ -9133,10 +9133,10 @@ C     Thomas Bondo Pedersen, August 2002.
 C
 C     Purpose: Read input for Cholesky based CC2 calculation.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <chocc2.h>
+#include "priunit.h"
+#include "chocc2.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOCC2INP')
@@ -9339,8 +9339,8 @@ C
 C     Thomas Bondo Pedersen, October 2002.
 C
 C     Initialize chomp2.h
-#include <implicit.h>
-#include <chomp2.h>
+#include "implicit.h"
+#include "chomp2.h"
 
       MP2SAV = .FALSE.
       CHOMO  = .FALSE.
@@ -9364,10 +9364,10 @@ C
 C     Thomas Bondo Pedersen, October 2002.
 C
 C     Initialize chocc2.h
-#include <implicit.h>
-#include <chocc2.h>
+#include "implicit.h"
+#include "chocc2.h"
 Casm
-#include <chomp2_b.h>
+#include "chomp2_b.h"
 C
       LOGICAL SET
       SAVE SET
@@ -9411,9 +9411,9 @@ C     TBP, JLC, BFR, AS, and HK,  May 2003.
 C
 C     Purpose: Set defaults for Cholesky denominator CCSD(T) program.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0)
-#include <cc_cho.h>
+#include "cc_cho.h"
 
       MXCHVE = MIN(MAXCHO,10)
       THRCHO = -1.0D10
@@ -9460,10 +9460,10 @@ C
 C     Purpose: Process input for changing defaults for the Cholesky denominator
 C              CCSD(T) program.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <cc_cho.h>
+#include "priunit.h"
+#include "cc_cho.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOPTINP')
@@ -9644,10 +9644,10 @@ C
 C     Purpose: Set up operator list for CTOCD calculations
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclrinf.h>
-#include <ctocdcc.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclrinf.h"
+#include "ctocdcc.h"
 C
       PARAMETER (MAXOPR = 10 * MXLROP)
 C
@@ -9777,12 +9777,12 @@ C     Alfredo Sanchez de Meras. May 2008
 C
 C     Purpose: Read input for CC Active section
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*7 WORD
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <center.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "center.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ACTINP')

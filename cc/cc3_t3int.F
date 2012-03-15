@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_t3int */
       SUBROUTINE CC3_T3INT(XINT,XLAMDP,XLAMDH,C1AM,ISYMTR,
@@ -33,13 +33,13 @@ C
 C     Purpose: Calculate integrals used in CC3 model T3 amplitudes.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),WORK(LWORK)
       DIMENSION XLAMDP(*),XLAMDH(*),C1AM(*)
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CHARACTER*(*) FNOUT1, FNOUT2
 C
@@ -195,12 +195,12 @@ C
 C     Purpose: Calculate integrals used in CC3 model T3 amplitudes.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*),XCKD(*),XCKJ(*),WORK(LWORK)
       DIMENSION XLAMD1(*),XLAMD2(*),XLAMD3(*),XLAMD4(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       ISYDIS = MULD2H(ISYDEL,ISYMOP)
 
@@ -300,10 +300,10 @@ C     Purpose: Resort integral distribution from
 C              X(ck,d) to X(dk,c).
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XCKD(*),WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       IF (LWORK .LT. NCKATR(ISYCKD))
      *   CALL QUIT('Insufficient work space in CC3_CKDSOR')

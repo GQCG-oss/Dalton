@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       Subroutine symtrafo(LUPROP,LUPROP2,PROPRI,IPRINT,WRK,LFREE)
 cbs   
@@ -31,10 +31,10 @@ cbs
 cbs   LUPROP has the atomic integrals, LUPROP2 will have the molecular 
 cbs   integrals    
 cbs   
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <para.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "para.h"
       parameter(maxorbs=700)
       parameter(maxcent=40)
       character*8 xa,ya,za,xa2

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 
 *=======================================================================
@@ -47,14 +47,14 @@ C
 *-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccrspprp.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccrspprp.h"
+#include "second.h"
 
 C-----------------------------------------------------------------------
 C variables/parameter:
@@ -820,14 +820,14 @@ C-----------------------------------------------------------------------
 *-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccrspprp.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccrspprp.h"
+#include "second.h"
 
 C-----------------------------------------------------------------------
 C variables/parameter:
@@ -1368,11 +1368,11 @@ C
 C     Christian Neiss 2005 
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
 
       logical locdbg 
       parameter(locdbg = .false.)
@@ -1473,11 +1473,11 @@ C
 C     Christian Neiss 2005 
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
 
       logical locdbg 
       parameter(locdbg = .false.)
@@ -1731,9 +1731,9 @@ C
 C     Christian Neiss 2005
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -1946,10 +1946,10 @@ C
 C     Christian Neiss,  Feb. 2005, based on CC_ONEP
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -2040,9 +2040,9 @@ C
 C     Christian Neiss,  Feb. 2005
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -2166,12 +2166,12 @@ C
 C     Christian Neiss,  Feb. 2005
 C----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 #if defined (SYS_CRAY)
       real zero,one,work(*)
@@ -2282,12 +2282,12 @@ C  Christian Neiss  Mar. 2005
 C-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -2370,13 +2370,13 @@ C  Christian Neiss  Mar. 2005
 C-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -2587,13 +2587,13 @@ C  Christian Neiss  April 2005
 C-----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg, lao
       parameter (locdbg = .false.)
@@ -2872,8 +2872,8 @@ c
 c     C. Neiss, jan. 2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccorb.h"
 
       integer isymr,isymy,istartx,iendx,isymx,dimx(8),dimk(8),x,y
       integer nxk(8),ixk(8,8),nkl(8),ikl(8,8),nxkyl(8),ixkyl(8,8)
@@ -2972,11 +2972,11 @@ c
 c     C. Neiss, march 2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       integer lusifc,idum,isym,nsymx,norbtsx,nbastx,nlamdsx,nlamdsxtd,
      &        nrhfsx(8),norbsx(8),nbasxtd(8),norbxtd(8)

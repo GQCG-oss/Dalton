@@ -20,10 +20,10 @@ C NNEWTR          # of new trial vectors
 C
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <soppinf.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "soppinf.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D+00, ONE = 1.0D0)
 C

@@ -30,11 +30,11 @@ c     of Z-Vector Equations (cc_r12grad)
 c---------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 #if defined (SYS_CRAY)
       real zero,one
 #else
@@ -223,13 +223,13 @@ C  /* Deck cc_r12grad */
 C     Calculate MP2-R12 contributions to the right hand side of Z-Vector
 C     Equations
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       logical locdbg
       logical lauxd,ldum
       parameter (locdbg = .false.)
@@ -638,13 +638,13 @@ C=====================================================================*
 C  /* Deck r12gradap */
       subroutine r12gradap(ipdd,res,orb,work,v2am,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
-#include <ccsdinp.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
+#include "ccsdinp.h"
       integer kccr12,krsing,krtrip,kctil,kend1,lwrk1,nrhftria,n2 
       integer lwork,lu43,idxkl,isymv,isymi,isymj,isymk,idxij
       integer isyml,isymkl,isymij,idxji,idxklij,idxijkl,idxklji
@@ -1089,12 +1089,12 @@ C  /* Deck r12gradaxd */
       subroutine r12gradaxd(ipdd,kccr12,kctil,dklij,work,v2am,res,
      &                      lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       character*8 CCR12YIJ
       integer krsing,krtrip,kend1,lwrk1,nrhftria,n2
       integer lwork,lu43,idxkl,isymv,isymi,isymj,isymk,idxij
@@ -1439,12 +1439,12 @@ C=====================================================================*
 C  /* Deck r12gradb */
       subroutine r12gradb(res,dklij,work,ntklaj,ncvai,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       logical locdbg
       parameter (locdbg = .false.) 
       integer kqajkl,kqijal,kuijal,krajkl,kend1
@@ -1702,13 +1702,13 @@ C=====================================================================*
 C  /* Deck r12gradbd */
       subroutine r12gradbd(res,dklij,work,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
-#include <ccsdinp.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
+#include "ccsdinp.h"
       integer lxdmmu,nr1bast,isymak,isymk,isyma,nr1bas(8)
       integer lwork,kxmujkl,kxdmmu,kend1,nmum,luvajkl
       integer isymkl,isymij,isymi,isymj,idxkl,koffd,isymaj
@@ -2239,14 +2239,14 @@ C=====================================================================*
 C  /* Deck r12exdens*/
       subroutine r12exdens(res,cmo,dens,work,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
-#include <inftap.h>
-#include <ccsdinp.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
+#include "inftap.h"
+#include "ccsdinp.h"
 ccc#include <inforb.h>
       integer kcmo,lwork,kfrsav,kfree,lfree,kfvao,kfcao,kdcao,kdvao,kdv
       integer pq,kcao,isym,ioff,ioff1,kexia,isymi,NNORB1
@@ -2259,8 +2259,8 @@ ccc#include <inforb.h>
       logical onlyfc
 c
       integer icoun3,imatfq(8,8),kxij,kxijij,ncvij,nvirf(8)
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
       real*8 res(*),cmo(*),emcmy,zero,one,two,work(*),dens(*),densx
       parameter (zero = 0.0d0,one = 1.0d0, two = 2.0d0)
 

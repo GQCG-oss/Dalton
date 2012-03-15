@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C   /* Deck cc_qm3 */
        SUBROUTINE CC_QM3(AODEN,CONVERGED,WORK,LWORK)
@@ -33,22 +33,22 @@ C      QM3, JK+AO+OC+KMI,01
 C
 C*********************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
+#include "qm3.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C
@@ -395,25 +395,25 @@ C     written to file when TGT is called next time.
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "thrzer.h"
 
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
@@ -644,23 +644,23 @@ C     evaluates the O(mmss) factor at the center of mass a
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <qm3.h>
-#include <ccslvinf.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "qm3.h"
+#include "ccslvinf.h"
+#include "ccinftap.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C
@@ -782,22 +782,22 @@ C     format and calculate the expectation value of Ns.
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccinftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccinftap.h"
+#include "qm3.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C
@@ -876,21 +876,21 @@ C     allready in the h1 "vacuum" operator.
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C
@@ -1317,22 +1317,22 @@ C     LR = 'L','R','0','F','P'
 C
 C**************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <qm3.h>
-#include <ccinftap.h>
-#include <ccslvinf.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "qm3.h"
+#include "ccinftap.h"
+#include "ccslvinf.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
@@ -1937,15 +1937,15 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <ccisao.h>
-#include <dummy.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "ccisao.h"
+#include "dummy.h"
+#include "qm3.h"
 C
 C local parameters:
 C
@@ -2065,22 +2065,22 @@ C Thus, this is only a pseudo HF result.
 C
 C**************************************************************
 C      
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccinftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccinftap.h"
+#include "qm3.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C
@@ -2204,22 +2204,22 @@ C  /* Deck epert2 */
       SUBROUTINE EPERT2(EPOL,WORK,LWORK)
 C**************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccinftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccinftap.h"
+#include "qm3.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C
@@ -2322,8 +2322,8 @@ C  /* Deck cc_put31 */
       SUBROUTINE CC_PUT31(FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
 C**************************************************************
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       CHARACTER*(*) FLNAME
       INTEGER   NMBU,NULOOP
@@ -2350,9 +2350,9 @@ C  /* Deck cc_get31 */
       SUBROUTINE CC_GET31(FLNAME,NULOOP,OMMSx,OMMSy,OMMSz)
 C**************************************************************
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
 C
 C
       INTEGER   NMBU,NULOOP
@@ -2406,24 +2406,24 @@ C Calculates contributions from the T^gB , the ^CT^g
 C and ^CT^gB operators.
 C---------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*),CTR1(*),BTR1(*)
 C
@@ -2625,24 +2625,24 @@ C   in the NYQMMM formulation. This routine is not used for calculating Gc term 
 C   instead CCMM_TRANSFORMER in cc_qmmm
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),CTR1(*)
       DIMENSION TGB(*)
@@ -2920,24 +2920,24 @@ C
 C   JK+OC, marts 03
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),BTR1(*),CTR1(*)
       DIMENSION TGB(*)
@@ -3149,24 +3149,24 @@ C     transformation.
 C     JK+OC, marts 03
 C---------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -3399,24 +3399,24 @@ C     T^gCB = - sum_a <Lambda|[[Rr_a,C],B]|CC> Rr_a
 C     JK+OC, marts 03
 C-----------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION TGCB(*)
@@ -3575,24 +3575,24 @@ C
 C       The permutation creates 3 different contributions.
 C
 C------------------------------------------------------------------
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK),RHO1(*),RHO2(*)
 C
@@ -3821,24 +3821,24 @@ C
 C Calculates the CCMM ETA and XI vectors and write them to files.
 C
 C------------------------------------------------------------------
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       PARAMETER (HALF = 0.5D0)
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <qm3.h>
-#include <ccinftap.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "qm3.h"
+#include "ccinftap.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -3978,8 +3978,8 @@ C
 ************************************************************
 C  /* Deck quitmm */
       SUBROUTINE QUITMM(TEXT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER TEXT*(*)
 C
 C     Stamp date and time and hostname to output
@@ -4003,16 +4003,16 @@ C JK+OC, mai .03
 C
 C
 C-----------------------------------------------------------------
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
       DIMENSION WORK(LWORK)
@@ -4110,22 +4110,22 @@ C     QM/MM interaction energy.
 C     JK+OC, mai 03
 C**************************************************************
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <exeinf.h>
-#include <ccfdgeo.h>
-#include <ccinftap.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "exeinf.h"
+#include "ccfdgeo.h"
+#include "ccinftap.h"
+#include "qm3.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
 C

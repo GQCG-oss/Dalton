@@ -29,7 +29,7 @@ C
 #define VAR_INT64
 #endif
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 c===========================================================================
@@ -219,10 +219,10 @@ C  /* Deck quit */
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-#include <priunit.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "maxorb.h"
 C INFPAR: MYNUM
-#include <infpar.h>
+#include "infpar.h"
       CHARACTER TEXT*(*)
 C
 C     Stamp date and time and hostname to output
@@ -301,7 +301,7 @@ C
 C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
-#include <priunit.h>
+#include "priunit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 C
 C     CRAY has 8 byte integers.
@@ -720,9 +720,9 @@ C Direct access-specific output:
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "chrnos.h"
       CHARACTER*80 STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
       integer max_filename_length
@@ -733,9 +733,9 @@ C
       INTEGER FILELN, STATLN, ACCELN, FORMLN
       LOGICAL OLDDX, FEXST, FIRST
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <gnrinf.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "infpar.h"
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
@@ -1138,14 +1138,14 @@ C  STATUS   Indicate whether the file should be removed or kept
 C           ('KEEP' or 'DELETE'). Note that the default is that the file
 C           is to be deleted
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) DISP
       CHARACTER*80 FNNAME, FNNM2
       CHARACTER*3 IODIR
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <chrnos.h>
+#include "chrnos.h"
 C
 C     We first deal with the unit number
 C
@@ -1287,11 +1287,11 @@ C  /* Deck lmnval */
 C
 C     tuh March 87
 C
-#include <implicit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA
@@ -1312,14 +1312,14 @@ C     The routine is only needed when searching on a filename
 C
 C     K.Ruud, San Diego Aug 2000
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) FILENM, TASK
       CHARACTER FILTMP*80
       INTEGER FILELN
       LOGICAL VALUE
-#include <chrnos.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "chrnos.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
       FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN

@@ -20,20 +20,20 @@ C              needed if this is a response calculation. Thus, at least one
 C              iteration must be carried out. (Unless, of course, you opt for
 C              a rewriting of the code....)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
       LOGICAL RSPIM2
       COMMON /LUDIIS/ LUTDIS, LUSDIS
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <priunit.h>
-#include <chocc2.h>
-#include <cclr.h>
-#include <dummy.h>
-#include <ccfro.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "chocc2.h"
+#include "cclr.h"
+#include "dummy.h"
+#include "ccfro.h"
 
       LOGICAL LCONVG,LXDIS
 
@@ -370,9 +370,9 @@ C
 C     Purpose: Read Fock diagonal and SCF energy from SIRIUS
 C              interface file.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), WORK(LWORK)
-#include <dummy.h>
+#include "dummy.h"
 
       CALL CHO_RDSIR(POTNUC,ESCF,FOCKD,DUMMY,WORK,LWORK,.TRUE.,.TRUE.,
      &               .FALSE.)
@@ -400,13 +400,13 @@ C     are converged: the first iteration to get energy and vector function,
 C     and convergence will be found after the second (if the initial ones
 C     were in fact converged, obviously).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), T1AM(*), OMEGA1(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "dummy.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC2_INITAM')
@@ -604,7 +604,7 @@ C
 C     Purpose: Save CC2 amplitudes, vector function, and energy
 C              on disk.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(*), OMEGA1(*)
 
       CALL CHO_WRRST(ECC2,T1AM,OMEGA1)
@@ -619,11 +619,11 @@ C
 C     Purpose: T1-independent MO transformations of Cholesky
 C              vectors; results are written to disk.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC2_TRF0')
@@ -672,11 +672,11 @@ C
 C     Purpose: Partially transform AO one-electron integrals
 C              to MO basis. Result array h(ia) stored on disk.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC2_ONETRF')
@@ -770,14 +770,14 @@ C            - by calculation from separately Cholesky decomposed
 C              (ai|bj) integrals.
 C            - by decomposition of the amplitudes themselves.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), T1AM(*), OMEGA1(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC2_CHORHS')
@@ -945,13 +945,13 @@ C              Calculate T1-dependent energy contribution.
 C              On exit, the TRACE array contains the vector
 C              TRACE(J) = sum(ai) L(ia,J) * T1AM(ai).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(*), XLAMDP(*), XLAMDH(*), TRACE(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC2_TRFL')
@@ -1016,15 +1016,15 @@ C              On exit, the TRACE array contains the vector
 C
 C              TRACE(J) = sum(ai) L(ia,J) * T1AM(ai).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(*), XLAMDP(*), XLAMDH(*), TRACE(*), FOCK(*)
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC2_TRF1')
@@ -1387,12 +1387,12 @@ C              from file LUCHMO; this file is assumed
 C              to be open and to contain the transformed
 C              AO Cholesky vectors L(ai,J).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), FOCKD(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 
       INTEGER AI
 
@@ -1475,12 +1475,12 @@ C     Purpose: Calculate (minus) the diagonal of
 C              the CC2 amplitudes of symmetry ISYM.
 C              CHAI must contain the L(ai,J) vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), FOCKD(*), CHAI(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 
       INTEGER AI
 
@@ -1568,13 +1568,13 @@ C     Notes:
 C        (a) MO Cholesky vectors, L(ai,J), are assumed available on disk on
 C            opened unit LUCHMO (in subroutine CHO_AIBJ).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*), FOCKD(*), WORK(LWORK)
       INTEGER LISTBJ(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       INTEGER AI,BJ,AIBJ
 
@@ -1684,13 +1684,13 @@ C
 C     Notes:
 C        (a) MO Cholesky vectors, L(ai,J), are assumed stored in CHAI.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*), FOCKD(*), CHAI(*), CHBJ(*)
       INTEGER LISTBJ(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       INTEGER AI,BJ,AIBJ
 
@@ -1796,11 +1796,11 @@ C
 C     Purpose: "Invert" the compund index BJ of symmetry ISYMBJ
 C              to get B,ISYMB and J,ISYMJ.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER BJ
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1932,17 +1932,17 @@ C        (2) The norm of the packed amplitudes is returned in T2NRM,
 C            partly for debugging and partly for mimicking the output
 C            of the "standard" code.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), OMEGA1(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <chocc2.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "chocc2.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CHOCC2_YI')
@@ -2052,16 +2052,16 @@ C
 C     Purpose: Calculate Y intermediates and the I term for the CC2
 C              vector function.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), OMEGA1(*), FIA(*), WORK(LWORK)
       LOGICAL DELP1, DELP2
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chocc2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chocc2.h"
 
       INTEGER NCHP12(8)
 
@@ -2127,16 +2127,16 @@ C     Purpose: Calculate Y-intermediates and the I-term.
 C              Calculate energy contribution from doubles
 C              amplitudes.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), OMEGA1(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccisvi.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <chocc2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccisvi.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "chocc2.h"
 
       INTEGER ABEG, AEND
       INTEGER LVIR(8), IOFA1(8), IX1AM(8,8), NX1AM(8), IX2SQ(8)
@@ -2480,16 +2480,16 @@ C              Calculate contribution to energy from doubles.
 C
 C     Note: The Y-intermediate I/O section is probably crappy....
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*), WORK(LWORK)
       INTEGER LVIR(8), IOFA1(8), IX1AM(8,8), NX1AM(8), IX2SQ(8)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       INTEGER LROW, ICOL, ADDR
 
@@ -2819,12 +2819,12 @@ C     Thomas Bondo Pedersen, August 2002.
 C
 C     Purpose: Calculate the I-term from a batch of doubles amplitudes.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OMEGA1(*), T2AM(*), WORK(LWORK)
       INTEGER LVIR(8), IOFA1(8), IX1AM(8,8), NX1AM(8), IX2SQ(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC2_ITERM')
@@ -2914,12 +2914,12 @@ C
 C     The overall structure is taken from the standard "exchange"
 C     CCSD_T2TP routine by A. Sanchez and H. Koch.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*), WORK(LWORK)
       INTEGER LVIR(8), IOFB1(8), IX1AM(8,8), NX1AM(8), IX2SQ(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC2_TCME')
@@ -3185,17 +3185,17 @@ C
 C           (3) Generation from separately decomposed CC2 amplitudes
 C               (CHOT2 = .TRUE.)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(*), FOCKD(*), WORK(LWORK)
       INTEGER LVIR(8), IOFB1(8), IX1AM(8,8), NX1AM(8), IX2SQ(8)
       LOGICAL CLNRM
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <chocc2.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "chocc2.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccsdinp.h"
 
       INTEGER AI,BJ,AIBJ
       INTEGER NVECTOT(8)
@@ -3579,16 +3579,16 @@ C     Purpose: Calculate the CC2 JG-term.
 C
 C     Notice: TRACE is scaled by 2 on exit !!!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(*), OMEGA1(*), XLAMDP(*), XLAMDH(*), TRACE(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <chocc2.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "chocc2.h"
 
       INTEGER IOFFC(8), IOFFZ(8), IOFFY(8)
 
@@ -4067,15 +4067,15 @@ C     Thomas Bondo Pedersen, August 2002.
 C
 C     Purpose: Calculate the CC2 H-term.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OMEGA1(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <chocc2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "chocc2.h"
+#include "priunit.h"
 
       INTEGER IOFFX(8), IOFFC(8)
 
@@ -4349,10 +4349,10 @@ C
 C              OMEGA1(ai) = [e(a) - e(i)] * T1AM(ai)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), T1AM(*), OMEGA1(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       INTEGER AI
 
@@ -4388,17 +4388,17 @@ C     Use Cholesky vectors
 C
 C     asm September 2005
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccdeco.h>
-#include <chocc2.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccdeco.h"
+#include "chocc2.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
 C
       LOGICAL TINFO, IOPTPV
 C

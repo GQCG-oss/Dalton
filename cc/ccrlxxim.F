@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCRLXXIM(XIM,ISYXIM,LABEL,LORX,LPDBS,FREQ,
@@ -46,13 +46,13 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccfro.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccfro.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

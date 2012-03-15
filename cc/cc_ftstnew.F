@@ -21,17 +21,17 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FTSTNEW(WORK,LWORK,APROXR12)
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfro.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfro.h"
+#include "dummy.h"
 
       CHARACTER*3 APROXR12,LISTL,LISTR
       CHARACTER*6 FILFMAT
@@ -275,14 +275,14 @@ C      F-matrix by numerical differentiation of the Jacobian.
 C---------------------------------------------------------------------*
 C
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfro.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccfro.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       LOGICAL LOCDBG, LTESTV

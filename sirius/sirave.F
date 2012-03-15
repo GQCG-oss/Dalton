@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -77,18 +77,18 @@ C  /* Deck averag */
 C
 C 7-Jul-1992 hjaaj+hh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION VECS(NVDIM,NVSIM)
 C
 C Used from common blocks:
 C  INFINP : SUPSYM
 C  INFVAR : NWOPT,JWOPSY
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infpri.h"
 C
       CALL QENTER('AVERAG')
       IF (.NOT. SUPSYM) GO TO 9999
@@ -126,7 +126,7 @@ C Purpose: Average degenerate super symmetries
 C          (which are different components of a degenerate irrep).
 C          This corresponds to doing a microcanonical average.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECS(NVDIM,NVSIM)
 C
 C Used from common blocks:
@@ -134,13 +134,13 @@ C   INFORB : NSSYM,NORBSS(),IORBSS(),NINFSS(*,3), NOCCT,NORBT
 C   INFIND : ISW(*),ISSORD(*)
 C   INFVAR : NWOPT
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
 C
       PARAMETER (MAXDEG = 20, D1 = 1.0D0)
       DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG),IDEGV(MAXDEG)
@@ -254,18 +254,18 @@ C  /* Deck aveset */
 C
 C 2-Jul-1992 hjaaj : core allocation for AVESE1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), WRK(*)
 C
 C Used from common blocks:
 C  INFINP: SUPSYM
 C  INFORB: N2ORBX, MXSSYM
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('AVESET')
       IF (SUPSYM) THEN
@@ -311,16 +311,16 @@ C 7-Jul-1992 hjaaj
 C Set super symmetry information as symmetry information
 C (when super symmetry is not to be used()
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB : NSSYM, NORBSS(), IORBSS(); NSYM, NORB(), IORB(), NORBT
 C  INFIND : ISSMO(), ISSORD(); ISMO()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('AVESE0')
       NSSYM = NSYM
@@ -354,12 +354,12 @@ C  CMO; molecular orbitals
 C
 C Output:
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(NCMOT), TKMO(NORBT,NORBT), WRK(*)
       DIMENSION NDEGSS(*)
 C     DIMENSION NDEGSS(MXSSYM)
 C
-#include <threql.h>
+#include "threql.h"
       PARAMETER (TMXSSY = 1.0D-4)
 C
 C Used from common blocks:
@@ -368,13 +368,13 @@ C   INFORB : NSYM,NSSYM,NORBT,NORB(),?
 C   INFIND : ISSMO(),ISSORD(),?
 C   INFPRI : IPRAVE,NINFO,?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('AVESE1')
@@ -590,13 +590,13 @@ C The order of the super symmetry orbitals may be changed
 C in ORDRSS and ORD2SS calls, thus we need to remake ISSORD()
 C to be sure it is correct.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('AVEORD')
       IMOSS = 0
@@ -635,7 +635,7 @@ C
 C 920629-hjaaj:
 C Purpose: obtain TKMO(NORBT,NORBT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), TKMO(NORBT,NORBT), WRK(*)
 C
       CHARACTER*8 TKLABEL
@@ -645,9 +645,9 @@ C Used from common blocks:
 C   INFORB : NORBT,NNBAST,...
 C   INFPRI : IPRAVE
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       LOGICAL FOUND
 C
@@ -703,7 +703,7 @@ C   Purpose : find degeneracies, and construct
 C             INDX1(*) = labeling degenerate orbitals
 C             INDX2(*) = degeneracies of labels in INDX1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TKMO(NORBT,NORBT),INDX1(NORBT),INDX2(NORBT)
       DIMENSION NDEGSS(*)
 C     DIMENSION NDEGSS(MXSSYM)
@@ -713,13 +713,13 @@ C  INFINP : THRSSY
 C  INFORB : NORBT, NSSYM, NINFSS(MXSSYM,3),MXDGSS
 C  INFIND : ISSMO()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       CALL QENTER('AVEDEG')
       CALL IZERO(INDX1,NORBT)
@@ -832,7 +832,7 @@ C  /* Deck avedis */
       SUBROUTINE AVEDIS(ISSYM,ISYM,NDEGI,NORBI,NBASI,NSSMOI,NSSMON,
      *                  CMOI,TKMO,INDX1,UMAT,IMODEG,WRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMOI(NBASI,NORBI), TKMO(NORBT,NORBT)
       DIMENSION INDX1(NORBT),UMAT(NDEGI,NDEGI)
@@ -843,12 +843,12 @@ C  INFORB: NSSYM, NORBT, NORBSS(), IORBSS()
 C  INFIND: ISMO(),ISSORD()
 C  INFPRI: IPRAVE
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       CALL QENTER('AVEDIS')
       IF (IPRAVE .GE. 3) THEN
@@ -914,7 +914,7 @@ C  /* Deck avegtu */
       SUBROUTINE AVEGTU(NDEGI,NORBT,IMOSS,KMOSS,IMOI,IMOK,
      *                  UMAT,TKMO,UTUMAT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IMOI(NDEGI), IMOK(NDEGI)
       DIMENSION UMAT(NDEGI,NDEGI), TKMO(NORBT,NORBT)
       DIMENSION UTUMAT(NDEGI,NDEGI)
@@ -924,10 +924,10 @@ C Used from common blocks:
 C   INFINP : THRSSY
 C   INFPRI : IPRAVE
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
 C
       CALL QENTER('AVEGTU')
       DO 120 K = 1,NDEGI
@@ -1024,7 +1024,7 @@ C           of a set of degenerate mo.s.
 C           A block corresponds to orbitals following
 C           a row of an irrep.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(NCMOT), TKMO(NORBT,NORBT)
 C
 C Used from common blocks:
@@ -1032,13 +1032,13 @@ C   INFINP : THRSSY
 C   INFORB : NCMOT,NORBT,NORBSS(), IORBSS(),...,NINFSS(*,3),...
 C   INFIND : ISSORD()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       CALL QENTER('AVEPHA')
       IF (NINFSS(ISSYMR,2) .NE. ISSYMR) THEN
@@ -1119,7 +1119,7 @@ C
       END
 C  /* Deck aveudv */
 #if defined (VAR_NOTUSED  )
-#include <scalsub1.h>
+#include "scalsub1.h"
       SUBROUTINE AVEUDV(UDV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1128,19 +1128,19 @@ C     Purpose : perform an averaging of the one-electron density
 C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
-#include <implicit.h>
-#include <scalsub2.h>
+#include "implicit.h"
+#include "scalsub2.h"
       DIMENSION UDV(NASHT,*)
 C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ICH(*), ISSMO(*), ISSORD(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER ( MAXDEG = 20, D0 = 0.0D0, D1 = 1.0D0 )
       DIMENSION ISSOFF(MAXDEG),IDEGV(MAXDEG,2)
@@ -1248,7 +1248,7 @@ C
       END
 #endif
 C  /* Deck aveh1 */
-#include <scalsub1.h>
+#include "scalsub1.h"
       SUBROUTINE AVEH1(H1)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1257,20 +1257,20 @@ C     Purpose : perform an averaging of a one-electron
 C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
-#include <implicit.h>
-#include <scalsub2.h>
+#include "implicit.h"
+#include "scalsub2.h"
       DIMENSION H1(NORBT,*)
 C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ICH(*), ISSMO(*), ISSORD(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER ( MAXDEG = 20, D0 = 0.0D0, D1 = 1.0D0 )
       DIMENSION ISSOFF(MAXDEG),IDEGV(MAXDEG,2)
@@ -1374,7 +1374,7 @@ C
       RETURN
       END
 C  /* Deck avedv */
-#include <scalsub1.h>
+#include "scalsub1.h"
       SUBROUTINE AVEDV(DV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1383,20 +1383,20 @@ C     Purpose : perform an averaging of the one-electron density
 C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
-#include <implicit.h>
-#include <scalsub2.h>
+#include "implicit.h"
+#include "scalsub2.h"
       DIMENSION DV(NNASHX)
 C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : IROW(*), ICH(*), ISSMO(*), ISSORD(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER ( MAXDEG = 20, D0 = 0.0D0, D1 = 1.0D0 )
       DIMENSION ISSOFF(MAXDEG),IDEGV(MAXDEG)
@@ -1508,7 +1508,7 @@ C
       END
 C  /* Deck aveh1p */
 #if defined (VAR_NOTUSED  )
-#include <scalsub1.h>
+#include "scalsub1.h"
       SUBROUTINE AVEH1P(H1P)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1517,20 +1517,20 @@ C     Purpose : perform an averaging of a one-electron
 C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
-#include <implicit.h>
-#include <scalsub2.h>
+#include "implicit.h"
+#include "scalsub2.h"
       DIMENSION H1P(NNORBX)
 C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ISSMO(*), ISSORD(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER ( MAXDEG = 20, D0 = 0.0D0, D1 = 1.0D0 )
       DIMENSION ISSOFF(MAXDEG),IDEGV(MAXDEG)
@@ -1630,7 +1630,7 @@ C
       END
 #endif
 C  /* Deck avefck */
-#include <scalsub1.h>
+#include "scalsub1.h"
       SUBROUTINE AVEFCK(FCK)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1639,20 +1639,20 @@ C     Purpose : perform an averaging of a one-electron
 C     matrix. First we identify an IMO which is degenerate with
 C     other MO's, then we average the matrix rows and colums.
 C
-#include <implicit.h>
-#include <scalsub2.h>
+#include "implicit.h"
+#include "scalsub2.h"
       DIMENSION FCK(NNORBT)
 C
 C     Used from common blocks
 C     INFORB    : NSYM ,NSSYM, NORBSS(*), IORBSS(*), NINFSS(*,3)
 C     INFIND    : ISSMO(*), ISSORD(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER ( MAXDEG = 20, D0 = 0.0D0, D1 = 1.0D0 )
       DIMENSION ISMDEG(MAXDEG),ISSOFF(MAXDEG),IDEGV(MAXDEG)
@@ -1765,12 +1765,12 @@ C     7-Jul-92 Hinne Hettema and Hans Joergen Aa. Jensen.
 C     Revised 15-Jul-1993 hjaaj
 C     Purpose : write supersymmetry information
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       PARAMETER ( ISTEP = 10 )
 C
@@ -1831,13 +1831,13 @@ C
 C Purpose: change phases such that degenerate MO's have
 C          the same relative phase.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(NCMOT), WRK(*)
 C
 C Used from common blocks:
 C   INFORB : NCMOT,N2ORBX,NINFSS(*,4), NSSYM
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL QENTER('AVECPH')
       KFREE = KFRSAV
@@ -1865,21 +1865,21 @@ C
 C Purpose: Check supersymmetry information which has been built up
 C          up till now.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFINP : SUPSYM
 C   INFORB : NSSYM,NORBSS(),IORBSS(),NINFSS(*,3)
 C   INFIND : ISW(*),ISSORD(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <orbtypdef.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "orbtypdef.h"
 C
       PARAMETER (MAXDEG = 20, D1 = 1.0D0)
       DIMENSION ISSDEG(MAXDEG),ISSOFF(MAXDEG), WRK(LWRK)
@@ -1948,12 +1948,12 @@ C
 C     2-Jul-92 Hinne Hettema
 C     Purpose : dump supersymmetry information to output for debugging
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('AVEDMP')
       WRITE(LUWDMP,'(/A/A)')

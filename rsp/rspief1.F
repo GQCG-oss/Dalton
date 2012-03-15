@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVLOG
 ===========================================================================
@@ -49,18 +49,18 @@ C        does not depend only on the potential on that tessera
 C     2) For the time beeing I have not implemented the C3IEF
 C        for the memory efficent SCF calculations
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infcr.h>
+#include "infcr.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -182,23 +182,23 @@ C     properly: qei in particular and the total charges
 
 C
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <orgcom.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "orgcom.h"
+#include "inforb.h"
+#include "infpri.h"
 #include "infpar.h"
-#include <inftap.h>
-#include <infinp.h>
-#include <infrsp.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "inftap.h"
+#include "infinp.h"
+#include "infrsp.h"
+#include "pcm.h"
+#include "pcmlog.h"
 C
 Clf PCM NUCFLG
 C       NUCFLG = 0 MULTIPLY BY ELECTRONIC GHARGES
@@ -383,24 +383,24 @@ C=============================================================================
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,
      *              DBGFLG)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0, DM2 = -2.0D0,
      $            DP5= 0.5D0)
 C
-#include <maxorb.h>
+#include "maxorb.h"
 C#include <pcmdef.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -504,22 +504,22 @@ C=============================================================================
      *              ETRS,XINDX,ZYM1,ZYM2,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,DBGFLG)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0 , DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -618,22 +618,22 @@ C=============================================================================
      *              ETRS,XINDX,ZYM1,ZYM2,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D0 )
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)
@@ -720,24 +720,24 @@ C=============================================================================
      *              ETRS,XINDX,ZYM1,ZYM2,
      *              DEN1,UDV,WRK,LFREE,KZYVR,KZYV1,KZYV2,
      *              IGRSYM,ISYMV1,ISYMV2,CMO,MJWOP,DBGFLG)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, DH = 0.5D0 , DMP5 = -0.5D0,
      $     DM1 = -1.0D0)
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
-#include <infinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
+#include "infinp.h"
+#include "priunit.h"
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
       DIMENSION UDV(NASHDI,NASHDI),DEN1(NASHDI,NASHDI)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_BMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,IOPTRES,
@@ -45,13 +45,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <dummy.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "dummy.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG, PRINT_T3
       PARAMETER (LOCDBG=.FALSE., PRINT_T3=.FALSE.)
@@ -701,8 +701,8 @@ C     end if
 *    Purpose: compute triples result of B matrix transformation
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <dummy.h>
-#include <ccsdsym.h>
+#include "dummy.h"
+#include "ccsdsym.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0=1)
@@ -774,11 +774,11 @@ C     end if
 *     response versions XINT1SAB=(ck|db)-AB and XINT2SAB=(ck|lj)-AB
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       INTEGER LWORK
 #if defined (SYS_CRAY)

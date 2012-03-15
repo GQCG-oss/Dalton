@@ -1,8 +1,8 @@
       SUBROUTINE CHANNEL_VAR()
       IMPLICIT NONE
-#include <infvar.h>
-#include <channel.h>
-#include <wrkrsp.h>
+#include "infvar.h"
+#include "channel.h"
+#include "wrkrsp.h"
       INTEGER IOP, CIOP, J, CORBJ
       INTEGER CHANNEL_JWOP(2,MAXWOP)
 C
@@ -30,11 +30,11 @@ C
       END
       SUBROUTINE CHANNEL_VIR()
       IMPLICIT NONE
-#include <infvar.h>
-#include <channel.h>
-#include <wrkrsp.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "infvar.h"
+#include "channel.h"
+#include "wrkrsp.h"
+#include "inforb.h"
+#include "priunit.h"
       INTEGER IOP, CIOP, J, CORBJ,ISYM,IMAX
       INTEGER CHANNEL_JWOP(2,MAXWOP),MAXVIRT(8)
 C

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck pr4inm */
       SUBROUTINE PR4INM(RHO,NDIM,IPACK,LUPRI)
@@ -31,7 +31,7 @@ C
 C IPACK :
 C         1 : MATRIX IS PACKED USING 8-FOLD PERMUTATIONAL SYMMETRY
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RHO(*)
       PARAMETER ( THRPRI = 1.0D-8 , THRZER = 1.0D-15 )
 C     ... 880420: limit chosen based on the F13.8 format below
@@ -87,16 +87,16 @@ C  /* Deck prwf */
 C
 C  880528 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION C(*), XNDXCI(*)
 C
 C Used from common blocks:
 C  INFINP : LSYM
 C  INFORB : MULD2H
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
 C
       MAXPWF = 100
 C
@@ -107,7 +107,7 @@ C           ... use determinant expansion
          ELSE
             ICSF = 1
 #if defined (VAR_OLDCODE)
-#include <cinfo.h>
+#include "cinfo.h"
             WRITE (IOUT,'(/A/A)')
      *         ' Print of vector in CSF expansion not'//
      *         ' fully implemented yet.',
@@ -134,22 +134,22 @@ C OUTER ROUTINE FOR CI ANALYZER
 C
 C Revision 910812-hjaaj: transfer ILTSOB to ANACI2 and ANACSF
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CIVEC(*),XNDXCI(*)
       INTEGER   SYMPRO(8,8)
 C
-#include <mxpdim.h>
-#include <ciinfo.h>
-#include <detbas.h>
-#include <csfbas.h>
-#include <strnum.h>
+#include "mxpdim.h"
+#include "ciinfo.h"
+#include "detbas.h"
+#include "csfbas.h"
+#include "strnum.h"
 C
 c remco
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "priunit.h"
       allocatable detvec(:),cvec(:)
 c einde remco
       IF(INCSFB.EQ.0) THEN
@@ -209,11 +209,11 @@ C
 ! -0.06242366     2       2       2
 ! -0.07355010     2   2   1  -1   1  -1
 C
-#include <implicit.h>
-#include <mxpdim.h>
-#include <strnum.h>
-#include <spinfo.h>
-#include <ciinfo.h>
+#include "implicit.h"
+#include "mxpdim.h"
+#include "strnum.h"
+#include "spinfo.h"
+#include "ciinfo.h"
       DIMENSION ICONF(*),IPROCS(*),ILTSOB(*)
       DIMENSION CIVEC(*)
 C
@@ -342,11 +342,11 @@ C JEPPE OLSEN JANUARY 1989
 c
 c Modified Spring 1992 to allow vector with general norm
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infpt2.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infpt2.h"
       INTEGER SYMPRO(8,8)
       DIMENSION CIVEC(*)
       DIMENSION NSSOA(NOCTPA,MAXSYM),NSSOB(NOCTPB,MAXSYM)

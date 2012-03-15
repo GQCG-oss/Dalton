@@ -52,8 +52,8 @@ C-- common blocks:
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infinp.h"
-#include <dftcom.h>
-#include <pcmlog.h>
+#include "dftcom.h"
+#include "pcmlog.h"
 C
       PARAMETER (DHALF=0.5D0,D1=1.0D0,DM1=-1.0D0)
 C
@@ -333,7 +333,7 @@ C
 #include "implicit.h"
 C
 #include "priunit.h"
-#include <gnrinf.h>
+#include "gnrinf.h"
 #include "infrsp.h"
 #include "rspprp.h"
 #include "inflr.h"
@@ -567,8 +567,8 @@ C
       PARAMETER ( D0 = 0.0D0, DUMMY = 1.0D+20 )
       LOGICAL TRPSAVE
 C
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -583,12 +583,12 @@ C
 C
 C Common blocks for HFC/pNMR printing
 C
-#include <codata.h>
-#include <gfac.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <chrxyz.h>
-#include <parnmr.h>
+#include "codata.h"
+#include "gfac.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "chrxyz.h"
+#include "parnmr.h"
 C
 C Local variables for HFC values handling
 C
@@ -1278,13 +1278,13 @@ C     end of solgdt.
       END
 C  /* Deck FCOPER */
       SUBROUTINE FCOPER(ATMIND,LABINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       CHARACTER*8 LABINT
       INTEGER ATMIND
-#include <nuclei.h>
-#include <chrnos.h>
+#include "nuclei.h"
+#include "chrnos.h"
 C
        LABINT = 'FC '//NAMN(ATMIND)(1:3)//CHRNOS(ATMIND/10)
      *          //CHRNOS(MOD(ATMIND,10))
@@ -1293,18 +1293,18 @@ C
       END
 C  /* Deck SETDEG */
       SUBROUTINE SETDEG
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <parnmr.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "parnmr.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
       DO 50 I = 1, ESRNUC
           DEGEN(I) = 0.0D0
@@ -1318,11 +1318,11 @@ C
       END
 C  /* Deck SETISO */
       SUBROUTINE SETISO
-#include <implicit.h>
-#include <priunit.h>
-#include <parnmr.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "parnmr.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       DO 100 I=1,ESRNUC
          IF (ISODAT(1,NUCINF(I)) .EQ. 0) THEN
@@ -1341,20 +1341,20 @@ C
       END
 C  /* Deck SDOPER */
       SUBROUTINE SDOPER(ATMIND,LABINT,NCOOR)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <parnmr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "parnmr.h"
       INTEGER ATMIND, NCOOR
       CHARACTER LABINT(9*ATMNUM)*8
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
 C
       NCOOR=0
       DEGEN(ATMIND) = 0.0D0

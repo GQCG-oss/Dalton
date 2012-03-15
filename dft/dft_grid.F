@@ -22,14 +22,14 @@
 !
 !
       SUBROUTINE RADLMG(RADNDE,RADWT,NR,RADERR,NRADPT,NUCORB,AA,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0D0, D1 = 1D0,D2 = 2D0, D3 = 3D0)
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <priunit.h>
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "priunit.h"
       DIMENSION NUCORB(NHTYP,2),AA(2,NHTYP,2)
       DIMENSION RADWT(NRADPT), RADNDE(NRADPT)
       CHARACTER SPDCAR*1
@@ -225,9 +225,9 @@ C     Newton-Raphson search
       RETURN
       END
       FUNCTION GETMAXL()
-#include <implicit.h>
-#include <maxaqn.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "ccom.h"
       INTEGER GETMAXL
       GETMAXL = NHTYP
       END
@@ -239,20 +239,20 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
 C
-#include <nuclei.h>
-#include <ccom.h>
-#include <shells.h>
-#include <primit.h>
+#include "nuclei.h"
+#include "ccom.h"
+#include "shells.h"
+#include "primit.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -329,7 +329,7 @@ C
       END
 c     Trond: polynomial evaluation.
       FUNCTION POLVAL(NORDER,B,XVAL)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION B(NORDER+1)
       POLVAL = B(1)
       XBUF = 1

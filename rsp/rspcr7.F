@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE S4INIT(KZYVA,KZYVB,KZYVC,KZYVD,
      *                  ISYMA,ISYMB,ISYMC,ISYMD,
@@ -30,20 +30,20 @@ C
 C
 C     Layout the core for the calculation of S4 times three vectors
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <indcr.h>
-#include <infcr.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "indcr.h"
+#include "infcr.h"
 C
       DIMENSION WRK(*)
       DIMENSION S4TRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -75,21 +75,21 @@ C
 C     This subroutine unpacks the ZY matrices from the three vectors and
 C     does the transformation
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <indcr.h>
-#include <infcr.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "indcr.h"
+#include "infcr.h"
 C
       DIMENSION VEC1(KZYV1), VEC2(KZYV2), VEC3(KZYV3), MJWOP(2,MAXWOP,8)
       DIMENSION ZYMAT(NORBT,NORBT)
@@ -145,17 +145,17 @@ C
       SUBROUTINE GETNXY(OMEGA,RESVEC,CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *                  XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C  THIS IS A TEST ROUTINE THAT
 C  CALCULATES THE E(2) AND S(2) MATRICES EXPLICITLY BY CARRYING
 C  OUT LINEAR TRANSFORMATIONS ON UNIT VECTORS
 C  CONSTRUCTS E(2) - w*S(2) AND COMPUTES THE INVERSE
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 )
       DIMENSION RESVEC(*)

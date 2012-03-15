@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 #if defined (VAR_DEBUG)
 #define DEBUG .TRUE.
 #else
@@ -63,29 +63,29 @@ C                       ( Sj  )
 C
 C  Case 3 does not contribute for orbitally non-degenerate states (assumed)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infspi.h>
-#include <infhso.h>
-#include <trhso.h>
-#include <codata.h>
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infspi.h"
+#include "infhso.h"
+#include "trhso.h"
+#include "codata.h"
 C
 C Used from common:
 C
@@ -407,28 +407,28 @@ C  Case 3 does not contribute for orbitally non-degenerate states (assumed)
 C
 C     Drive the computation of A[2] times one vector
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0, DM1 = -1.0D0)
       PARAMETER (D2 = 2.0D0)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <trhso.h>
-#include <infhso.h>
-#include <codata.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "trhso.h"
+#include "infhso.h"
+#include "codata.h"
 C
       CHARACTER*8 OPLBL,HSOLBL(3)
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
@@ -735,17 +735,17 @@ C  /* Deck hso2cr */
 C
 C     Layout the core for RSP2GR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION WRK(*)
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
@@ -822,7 +822,7 @@ C  The operator is of the form
 C  HSO = h(r,s)T(r,s) + (rs|t^u)(e(+,-)  + 2e(-,+))(rstu)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.50D0, D2 = 2.0D0 )
       PARAMETER ( IPLUS = 0, IMINUS = 1 )
@@ -830,23 +830,23 @@ C
 C Used from common blocks:
 C  ?
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <orbtypdef.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "orbtypdef.h"
+#include "inftap.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infspi.h>
-#include <trhso.h>
-#include <cbgetdis.h>
-#include <infhso.h>
-#include <infdis.h>
+#include "infhyp.h"
+#include "infspi.h"
+#include "trhso.h"
+#include "cbgetdis.h"
+#include "infhso.h"
+#include "infdis.h"
 C
 C
       DIMENSION FI(NORBT,NORBT), FA(NORBT,NORBT)
@@ -1160,8 +1160,8 @@ C  is constructed. In a triplet calculation we normally have two densities
 C  stored after one another, e.g. ( <e(+,+)> <e(-,-)> )
 C  Referring to these densities INFDEN should be set to (0,0,1,1)
 C
-#include <infden.h>
-#include <inforb.h>
+#include "infden.h"
+#include "inforb.h"
       CALL QENTER('IPDENS')
       IF (ISPIN1.EQ.INFDEN(1) .AND. ISPIN2.EQ.INFDEN(2)) THEN
          IPDENS = 1
@@ -1177,7 +1177,7 @@ C
       END
 C  /* Deck ipset */
       SUBROUTINE IPSET(I,J,K,L)
-#include <infden.h>
+#include "infden.h"
       INFDEN(1) = I
       INFDEN(2) = J
       INFDEN(3) = K
@@ -1218,14 +1218,14 @@ C Work
 C
       INTEGER LWORK
       REAL*8 WORK(LWORK)
-#include <inforb.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <aovec.h>
-#include <dftcom.h>
-#include <dummy.h>
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "aovec.h"
+#include "dftcom.h"
+#include "dummy.h"
 C
 C Local
 C
@@ -1421,15 +1421,15 @@ C
 C
 C Simplified PRPGET
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABEL
       DIMENSION P(*)
 C
 C External
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
       LOGICAL FNDLB2, CLOSED
       EXTERNAL FNDLB2
 C

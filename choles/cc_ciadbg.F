@@ -15,12 +15,12 @@ C              even thousands, of times (the more symmetry, the more calls),
 C              it will also spend a *lot* of CPU time. So, use it only for
 C              small debug cases....
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CIADBG')
@@ -102,18 +102,18 @@ C     trying to invoke cc_cia in all conceivable ways.
 C
 C     NERR is *updated* with the number of errors detected.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccdeco.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
-#include <chomp2.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccdeco.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
+#include "chomp2.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CIADBG1')
@@ -506,12 +506,12 @@ C  /* Deck cc_ciadbganl2 */
 C
 C     Analyze for errors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), XCIA(*)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       INTEGER AI, BJ, AIBJ
 
@@ -603,12 +603,12 @@ C  /* Deck cc_ciadbgset */
 C
 C     Set index arrays.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IOFB1(8), LVIRB(8), NX1AMB(8), IX1AMB(8,8)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       IB2 = IB1 + NUMB - 1
 
@@ -647,10 +647,10 @@ C  /* Deck cc_ciadbganl */
       SUBROUTINE CC_DIADBGANL(XINT,XCIA,ISYMX,
      &                        XINNRM,CIANRM,DIFNRM,DIFRMS,RELNRM,IDIVZ)
 C
-#include <implicit.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccorb.h"
 
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0)
       PARAMETER (BIG = 1.0D10)
@@ -689,13 +689,13 @@ C  /* Deck cc_ciadbgrc1 */
 C
 C     Set up full calculation.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       LOGICAL LLID, LSMT, LMIO, LLID2
 
@@ -751,18 +751,18 @@ C     Purpose: Test cc_cia for non-tot. sym. integral calculation.
 C
 C     NERR is *updated* with the number of errors detected.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccdeco.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
-#include <chomp2.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccdeco.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
+#include "chomp2.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CIADBG2')

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_GIM1(DSRHF,ISYRHF,XMGD,ISYMGD,GIM,IOPT,LSQRAB,
@@ -47,9 +47,9 @@ C
 * LSQRAB option, Sonia Coriani, November 1999
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
       DIMENSION DSRHF(*),XMGD(*),GIM(*),WORK(LWORK)
       LOGICAL LSQRAB

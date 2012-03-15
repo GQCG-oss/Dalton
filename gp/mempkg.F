@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 !===========================================================================
@@ -39,7 +39,7 @@ C
 C     Define output units for memory allocation routines
 C     Initialize mempkg warning count NWNMEM to zero
 C
-#include <implicit.h>
+#include "implicit.h"
 #include "memcb1.h"
 C
       LUWMEM = LUWME1
@@ -61,7 +61,7 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
       CALL MEMGET2(DATA_TYPE,'-MEMGET-',KBASE,LENGTH,WORK,KFREE,LFREE)
@@ -79,11 +79,11 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 #include "memcb1.h"
 C
 Chj1  CALL QENTER('MEMGET2 ')
@@ -245,7 +245,7 @@ C
 C Check memory allocation from WORK(KFIRST)
 C then free memory from WORK(KREL)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
 C

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_aden_cub */
       SUBROUTINE CC3_ADEN_CUB(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -34,11 +34,11 @@ C  /* Deck cc3_aden_cub */
      *                            LU3FOP2X,FN3FOP2X)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CHARACTER LISTL*3, LISTR*3
       CHARACTER*(*) FNTOC, FN3VI, FNDKBC3, FN3FOPX, FN3FOP2X
@@ -268,16 +268,16 @@ C  /* Deck cc3_adenocc_cub */
 *************************************************************************
 *            
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <ccr2rsp.h>
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "ccr2rsp.h"
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -1738,10 +1738,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETACB')
 C
@@ -1862,9 +1862,9 @@ C F. Pawlowski, 02-10-2003, Aarhus.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYT30JK, ISYMT2, ISYINT, ISYMJ, ISYMK, LWORK
       INTEGER ISYMDAI, ISYMBCD, ISYMDA, ISYMBC, ISYMBCA, ISYMDBI  
@@ -2074,10 +2074,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETJKCB')
 C
@@ -2252,10 +2252,10 @@ C  /* Deck aden_dab_lm_cub */
      *                           WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER IOPT
       INTEGER ISYMTHLM,ISYMWLM,LWORK
@@ -2449,21 +2449,21 @@ C  /* Deck cc3_adenvir_cub */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccr2rsp.h>
-#include <ccer1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccr2rsp.h"
+#include "ccer1rsp.h"
 
 C
       INTEGER ISYM0
@@ -4935,10 +4935,10 @@ C
       DOUBLE PRECISION T2TP(*), FOCKY(*), WMAT(*)
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('WBXT2')
 
@@ -5334,9 +5334,9 @@ C  /* Deck wbarxbd_l1 */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER AIBJCK_PERM
       INTEGER ISYMT1, ISINT1, LENSQ, ISYMB, ISYMC
@@ -5687,10 +5687,10 @@ C
 
       IMPLICIT NONE 
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER AIBJCK_PERM
       INTEGER ISYMT2,ISWMAT,ISINT2,ISYMB,ISYMC,ISYRES,ISYMBC
@@ -6972,14 +6972,14 @@ C  /* Deck wx_bd_o */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
 C
       LOGICAL LW,LWBAR
@@ -7249,10 +7249,10 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       CHARACTER LISTRZ*3,LISTRU*3,LISTL*3
 C
@@ -7838,9 +7838,9 @@ C  /* Deck dij_cont_cub */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL TRANSPOSEW
 C
@@ -7968,9 +7968,9 @@ C  /* Deck dab_cont_cub */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL TRANSPOSEW
 C
@@ -8083,10 +8083,10 @@ C  /* Deck read_t3_albj */
 
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <cc3t3d.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "cc3t3d.h"
+#include "ccorb.h"
 C
       CHARACTER*(*) FNFILE
 C
@@ -8183,10 +8183,10 @@ C  /* aden_dai_t2_d_cub */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMDAI,ISYMT2,ISYMTETA,ISYMD,ISYML,LWORK
       INTEGER KT2AM,KEND1,LWRK1
@@ -8295,13 +8295,13 @@ C     t2am(ai,bj) = t2tp(aijb)
 C 
 C     F. Pawlowski, Fall 2003, Aarhus.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION T2AM(*),T2TP(*)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('T2AI_BJ')
 C
@@ -8369,9 +8369,9 @@ C     Filip Pawlowski, Aarhus, Winter 2003
 *     Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYT30JK,ISYMT2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCL,ISYML,ISYMC,ISYBAI
@@ -8536,14 +8536,14 @@ C     Written by F. Pawlowski, Fall 2003.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LWRK, KFCLF, KEND0, LWRK0, KOFF1, KOFF2, KTB, KEND1, LWRK1
       INTEGER NL, NF, KOFFY, KOFFT2, KOFFT, KOFFW, KTD, KW
@@ -8756,9 +8756,9 @@ C
 C     F. Pawlowski, Aarhus, Fall 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBAC,ISYMC,ISYAB,ISYBA,ISYMB,ISYMA
       INTEGER KOFF1,KOFF2
@@ -8813,8 +8813,8 @@ C  /* Deck wxbd_t2_cub */
 
       IMPLICIT NONE
 
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 
       LOGICAL T2XNET2Z
 
@@ -8910,14 +8910,14 @@ C
       DOUBLE PRECISION HALF, ONE, ZERO
 #endif
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
 C
@@ -9482,9 +9482,9 @@ C  /* Deck intvir_t3x_jk */
 **********************************************************
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT, LUFIL, LWORK
       INTEGER ISYMD, ISYCKA, KINTVI, KEND1, LWRK1, IOFF

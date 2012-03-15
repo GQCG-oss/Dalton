@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_den_pt2 */
       SUBROUTINE CC_DEN_PT2(ETAAI,ETAIJ,ETAAB,WORK,LWORK,
@@ -37,33 +37,33 @@ C     drive the calculation of the "pure d_pqrs(T)" contributions to the
 C     ^kappabar-eta_pq RHS of the orbital multipliers
 C     LTSTEN = true, test densities via energy calculation
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ETAIJ(*), ETAAB(*), WORK(LWORK)
       LOGICAL LTSTEN
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <inftap.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "inftap.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccfro.h"
 C
       CHARACTER MODEL*10
       CHARACTER NAME1*8

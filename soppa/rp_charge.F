@@ -10,22 +10,22 @@ C
 C     PURPOSE: Calculate RPA charge radius (second moment of charge)
 C              of ground and excited states and molecular orbitals.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION WORK(LWORK)
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <soppinf.h>
-#include <maxorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "soppinf.h"
+#include "maxorb.h"
 CSPAS:15/03-2006: merge with Dalton-2.0  
 C#include <cbilrs.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
 CKeinSPASmehr
-#include <secmom.h>
+#include "secmom.h"
 C
       DIMENSION SECMAT(3,MXNEXI,NSYM)
       CHARACTER*8 LABEL,RTNLBL(2)

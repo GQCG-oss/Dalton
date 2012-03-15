@@ -23,10 +23,10 @@
 !
       SUBROUTINE DFTINT(DMAT,NDMAT,NGEODRV,DOLND,WORK,LWORK,CB,
      &                  CBDATA,ELECTRONS)
-#include <implicit.h>      
-#include <inforb.h>
-#include <dftcom.h>
-#include <priunit.h>
+#include "implicit.h"      
+#include "inforb.h"
+#include "dftcom.h"
+#include "priunit.h"
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
@@ -52,16 +52,16 @@ C
 C
 C     P. Salek and T. Helgaker, October 2003
 C
-#include <implicit.h>      
-#include <priunit.h>
+#include "implicit.h"      
+#include "priunit.h"
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <shells.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "shells.h"
+#include "dftcom.h"
 #ifdef VAR_MPI
-#include <infpar.h>
-#include <mpif.h>
+#include "infpar.h"
+#include "mpif.h"
 #endif
 C     choose reasonably large. Exceeding this limit means that boxes are
 C     too large.
@@ -188,10 +188,10 @@ C     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       RETURN
       END
       SUBROUTINE CONSTRUCT_IORIDX(IORIDX)
-#include <implicit.h>
-#include <maxorb.h>
-#include <shells.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "inforb.h"
 c KMAX in this context is an upper limit for the number of blocks.
       DIMENSION IORIDX(2,KMAX,NSYM)
 c
@@ -206,12 +206,12 @@ c     if given shell does not contribute to any orbital in given
 c     symmetry, then the corresponding iordix elements are [0,-1]
 c     and the shell should be skipped.
 c
-#include <pincom.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <symmet.h>
+#include "pincom.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "symmet.h"
 c
-#include <ibtfun.h>
+#include "ibtfun.h"
 c       Just to find out errors in the code.
       ISTRA = 1
       DO IREPA = 0, MAXREP
@@ -246,27 +246,27 @@ c     as early as possible so that slaves can take right decisions
 c     regarding which functionals to run etc.
 c     
 c     NORBT, N2ORBX,NOCCT, NVIRT are needed for....?
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <mpif.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "mpif.h"
 c
-#include <infpar.h>
-#include <inforb.h>
-#include <lmns.h>
-#include <primit.h>
-#include <nuclei.h>
-#include <onecom.h>
-#include <pincom.h>
-#include <shells.h>
-#include <dftcom.h>
-#include <sphtrm.h>
-#include <symmet.h>
-#include <xyzpow.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "lmns.h"
+#include "primit.h"
+#include "nuclei.h"
+#include "onecom.h"
+#include "pincom.h"
+#include "shells.h"
+#include "dftcom.h"
+#include "sphtrm.h"
+#include "symmet.h"
+#include "xyzpow.h"
 c     sync inforb:
 !     write(lupri,*) ' arrived in DFTINTBCAST', mytid
       CALL MPI_Bcast(muld2h, 8*8,   my_MPI_INTEGER,
@@ -374,10 +374,10 @@ c
       SUBROUTINE DFTINTCOLLECT(ELECTRONS)
 #ifdef VAR_MPI
 c
-#include <implicit.h>
-#include <mpif.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "mpif.h"
+#include "maxorb.h"
+#include "infpar.h"
       A = ELECTRONS
 !     print *, 'A is for mytid',mytid
       CALL MPI_Reduce(A,ELECTRONS,1,MPI_DOUBLE_PRECISION,MPI_SUM,

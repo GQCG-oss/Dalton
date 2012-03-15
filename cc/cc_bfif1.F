@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_bfif1 */
@@ -45,11 +45,11 @@ C  /* Deck cc_bfif1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(*) FNBFI
       INTEGER LWORK, ISYMGD1, ISYMGD2, ISYRHF0, ISYRHF1

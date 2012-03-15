@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck fonedn */
       SUBROUTINE FONEDN(NSIM,FCOCO,FVOCO,FCOEX,FVOEX)
@@ -34,15 +34,15 @@ C 3)
 C SUM UP ONE INDEX TRANSFORMED DENSITY CONTRIBUTIONS TO FOCK
 C MATRICES ( FCOEX  = FCOCO  + FCOEX )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
       DIMENSION FCOCO(NORBT,NORBT,*),FVOCO(NORBT,NORBT,*)
       DIMENSION FCOEX(NORBT,NORBT,*),FVOEX(NORBT,NORBT,*)
@@ -106,18 +106,18 @@ C
 C  FVOEX(P,Q) = FVOEX(P,Q) + SUM(R) (XQ/PR)*DENA(R,X)   (Q OCC)
 C                          - SUM(R) (PY/QR)*DENB(R,Y)   (P OCC)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "orbtypdef.h"
 C
       DIMENSION H2(NORBT,*)
       DIMENSION FCOEX(NORBT,NORBT,*),FVOEX(NORBT,NORBT,*)
@@ -270,18 +270,18 @@ C  FCOCO(P,Q) = FCOCO(P,Q) + SUM(R) <QJ/PR>*(ZYMAT(J,R)-ZYMAT(R,J))
 C
 C  FVOCO(P,Q) = FVOCO(P,Q) + SUM(R) <QY/PR>*(DENB(R,Y)-DENA(R,Y))
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "orbtypdef.h"
       DIMENSION H2D(NORBT,*)
       DIMENSION FCOCO(NORBT,NORBT,*),FVOCO(NORBT,NORBT,*)
       DIMENSION FCOEX(NORBT,NORBT,*),FVOEX(NORBT,NORBT,*)
@@ -525,18 +525,18 @@ C
 C  FV(P,Q) = FV(P,Q) -0.5*SUM(X,Y)*<XY/QP>*DVT(X,Y)
 C THE SUM X,Y ARE TAKEN BY READING IN ALL DIRAC DISTRIBUTIONS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "orbtypdef.h"
 C
       DIMENSION FVTD(NORBT,NORBT,*),DVT(NASHT,NASHT,*)
       PARAMETER ( DMP5 = -0.5D0 )
@@ -596,18 +596,18 @@ C
 C  FV(P,Q) = FV(P,Q) + SUM(X,Y)*(PQ/XY)*DVT(X,Y)
 C THE SUM X,Y ARE TAKEN BY READING IN ALL MULLIKEN DISTRIBUTIONS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "orbtypdef.h"
 C
       DIMENSION FVTD(NORBT,NORBT,*),DVT(NASHT,NASHT,*)
       DIMENSION H2(NORBT,*)

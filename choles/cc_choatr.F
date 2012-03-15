@@ -14,11 +14,11 @@ C
 C     The (global) E intermediates must be available on disk (files opened
 C     through subroutine CHO_IMOP).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), X1AM(*), FREQ(NUMX), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -186,15 +186,15 @@ C
 C     Purpose: Calculate Y intermediates for right-hand Jacobian
 C              transformation.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), SIGMA1(*), FIA(*), WORK(LWORK)
       LOGICAL DELP1, DELP2
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
 
 C     Set Cholesky vector type for amplitude assembly.
 C     ------------------------------------------------
@@ -242,15 +242,15 @@ C
 C     Purpose: Calculate Y intermediates for left-hand Jacobian
 C              transformation.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), X1AM(*), FIA(*), WORK(LWORK)
       LOGICAL DELP1, DELP2
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
 
 C     Set Cholesky vector type for amplitude assembly.
 C     ------------------------------------------------
@@ -298,12 +298,12 @@ C
 C     Purpose: Calculate the GIJ and H terms for ISIDE=-1, or
 C              the G and H terms for ISIDE=1.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), SIGMA1(*), X1AM(*), WORK(LWORK)
       LOGICAL DELY
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOATR1')
@@ -375,13 +375,13 @@ C                - sum(Jj) Y(aj,J) * L(ji,J)
 C
 C     where g,d refer to AO basis.
 C     
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), SIGMA1(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER IOFFL(8), IOFFZ(8), IOFFY(8)
 
@@ -731,14 +731,14 @@ C                     + 2 LamP(d,i) * sum(bj) {L(jb,J)*C(bj) + L(bj,J)*X(bj)} ]
 C
 C     where g,d refer to AO basis, and L(gd,J) = L(dg,J) is used.
 C     
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), SIGMA1(*), X1AM(*), CIM(*)
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER IOFFL(8), IOFFZ(8), IOFFY(8)
 
@@ -1263,11 +1263,11 @@ C        SIGMA1(ai) = sum(b) E(ab) * X(bi) - sum(j) X(aj) * E(ji)
 C
 C     NOTICE: the content of SIGMA1 is overwritten!
 C     
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), X1AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1339,10 +1339,10 @@ C              SIGMA1(ai) = sum(b) E(ba) * X(bi) - sum(j) X(aj) * E(ij)
 C
 C     NOTICE: the content of SIGMA1 is overwritten!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), X1AM(*), EIJ(*), EAB(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0)
 
@@ -1415,10 +1415,10 @@ C              SIGMA1(ai) = sum(b) E(ab) * X(bi) - sum(j) X(aj) * E(ji)
 C
 C     NOTICE: the content of SIGMA1 is overwritten!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), X1AM(*), EIJ(*), EAB(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0)
 
@@ -1509,12 +1509,12 @@ C     amplitudes (as C intermediates in left-hand transformation). The
 C     canonical orbital energies (FOCKD) are needed for this decomposition,
 C     if it has not already been done.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), XLAMDP(*), XLAMDH(*), SIGMA1(*), X1AM(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHORTRI2J')
@@ -1593,11 +1593,11 @@ C                         + sum(g,d) XLAMDH(g,a) * WMAT(d,g) * XLAMDP(d,i)
 C
 C              [with SIGMA1(ia) stored as ai]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), SIGMA1(*), WMAT(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHORTRFJB')
@@ -1670,11 +1670,11 @@ C
 C              SIGMA1(ai) = SIGMA1(ai)
 C                         + sum(g,d) XLAMDP(g,a) * WMAT(g,d) * XLAMDH(d,i)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), SIGMA1(*), WMAT(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHORTRJ')
@@ -1746,14 +1746,14 @@ C              unit vectors.
 C
 C     NOTE: this routine requires a *lot* of memory!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK), TBAR(*)
       LOGICAL MULSOL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOAEFFD')
@@ -2009,10 +2009,10 @@ C  /* Deck dbgdifaibj */
 C
 C     Thomas Bondo Pedersen, February 2003.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TARGET(*), TEST(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       TRGNRM = DSQRT(DDOT(NT2SQ(1),TARGET,1,TARGET,1))
       TSTNRM = DSQRT(DDOT(NT2SQ(1),TEST,1,TEST,1))
@@ -2057,11 +2057,11 @@ C     Purpose: Set up effective Jacobian by transformations
 C              with unit vectors. For ISIDE = -1, AEFF is stored
 C              transposed (i.e. row-wise).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AEFF(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOAEFFD2')

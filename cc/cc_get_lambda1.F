@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_GET_LAMBDA1(IRELAX, IOPER, IOPT, XLAMDPQ, XLAMDHQ, 
@@ -39,11 +39,11 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccfro.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccfro.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_ETADRV1 */
 *=====================================================================*
@@ -52,15 +52,15 @@ c /* deck CC_ETADRV1 */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
 Csonia
-#include <cclists.h>
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -527,8 +527,8 @@ c /* deck CC_ETA_SETUP1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(23) MSGDBG

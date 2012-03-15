@@ -9,11 +9,11 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Get MO coefficients and reorder.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <inftap.h>
+#include "ccorb.h"
+#include "inftap.h"
 C
       DIMENSION CMO(LCMO), WORK(LWORK)
 C     LOGICAL   OPENY

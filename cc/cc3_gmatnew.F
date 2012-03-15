@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_gmatnew */
       SUBROUTINE CC3_GMATNEW(LISTL,IDLSTL,LISTB,IDLSTB,
@@ -64,16 +64,16 @@ C  /* Deck cc3_gmatnew */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccl1rsp.h>
-#include <ccsdsym.h>
-#include <ccr1rsp.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccl1rsp.h"
+#include "ccsdsym.h"
+#include "ccr1rsp.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
 C
       LOGICAL SKIPGEI
 C

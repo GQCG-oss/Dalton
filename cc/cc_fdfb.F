@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FDFBMAT(CMOQ,LISTL,IDLSTL,LISTR,IDLSTR,
@@ -36,19 +36,19 @@ C
 C S. Coriani & Ch. Haettig, march 1999
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <ccinftap.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "ccinftap.h"
+#include "dummy.h"
 C
 C------------------------------------------------------------
 C     the displacement for the finite difference calculation:
@@ -307,21 +307,21 @@ C
 C Christof Haettig, march 1999
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <dummy.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "dummy.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "cclists.h"
 C
 C------------------------------------------------------------
 C     the displacement for the finite difference calculation:
@@ -596,20 +596,20 @@ C Test routine for calculating the Eta{O} vector to test F{O}
 C Sonia, dec 1999
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "cclists.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION RHODIF1(*), RHODIF2(*)

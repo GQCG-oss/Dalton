@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_grad_1 */
       SUBROUTINE CC_GRAD_1(GRADH1,GRADFS,WORK,LWORK,IOPT)
@@ -44,18 +44,18 @@ C
 C     IOPT = 1, gradient (never used basically)
 C     IOPT = 2, used in DPT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       LOGICAL LOCDBG
       PARAMETER ( LOCDBG = .FALSE. )
@@ -71,21 +71,21 @@ C
       logical LCCSD_SAV
 !
 C
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccinftap.h>
-#include <ccsdio.h>
-#include <inftap.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccinftap.h"
+#include "ccsdio.h"
+#include "inftap.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
 C
       CALL QENTER('CC_GRAD_1')
 C

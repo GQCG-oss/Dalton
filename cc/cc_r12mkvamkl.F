@@ -44,12 +44,12 @@ c
 c     adapted for CABS, Christian Neiss, winter 2005/2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
 
       logical locdbg
       parameter(locdbg=.false.)
@@ -802,12 +802,12 @@ c     iopt = 1      initialize V_(alpha j)^(kl)
 c     iopt = 2      initialize V_(ij)^(kl) 
 c--------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
  
       logical locdbg
       parameter (locdbg = .false.)
@@ -1048,10 +1048,10 @@ c     C. Neiss 29-04-2005: result is always added on vijkl (if lres=.T.)
 c                          with a factor FAC
 c---------------------------------------------------------------------
       implicit none 
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 #if defined (SYS_CRAY)
       real zero,one
 #else
@@ -1179,10 +1179,10 @@ c
 c     H. Fliegl, C. Haettig spring 2003
 c--------------------------------------------------------------------
       implicit none 
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       integer ij,kl,nrhftria,nr12t
 #if defined (SYS_CRAY)
@@ -1250,10 +1250,10 @@ c             for dimensions and cc_r12xvint for an example of use)
 c
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       logical lauxd,locdbg,lauxbeta 
       parameter(locdbg=.false.)
@@ -1411,10 +1411,10 @@ c
 c     H. Fliegl, C. Haettig winter 2003
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       logical lauxd,locdbg 
       parameter(locdbg=.false.)
@@ -1513,10 +1513,10 @@ c
 c     H. Fliegl, C. Haettig spring 2003
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 #if defined (SYS_CRAY)
       real zero,one
       real vijkl(*)
@@ -1567,12 +1567,12 @@ c
 c     H. Fliegl, C. Haettig spring 2003 
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h> 
-#include <ccr12int.h> 
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h" 
+#include "ccr12int.h" 
       logical ldum,etest,locdbg
       parameter(etest = .false., locdbg = .false.)
 #if defined (SYS_CRAY)
@@ -1682,12 +1682,12 @@ c		2	response amplitudes adressed by listr, idlstr
 c     isymc     symmetry of the amplitude vecor 
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical locdbg
       parameter(locdbg = .false.)
@@ -1863,13 +1863,13 @@ c     listr:	type of response vector (see CC_WRRSP.F)
 c     idlstr:	index of response vector
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h> 
-#include <r12int.h> 
-#include <ccr12int.h> 
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h" 
+#include "r12int.h" 
+#include "ccr12int.h" 
 
       integer lwork, kend1, kpck, lwrk1, lu43, idum, 
      &        ifile, lufc12, isymc, iopt
@@ -1950,11 +1950,11 @@ c
 c     H. Fliegl, C. Haettig, spring 2004
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 
       integer lwork,isyomg,isymc,isymkl,isymaj,isymmuj,isyma,
      &        isymmu,isymj,isymi,isymij,kvint,kend1,kend2,
@@ -2091,11 +2091,11 @@ c
 c     Christian Neiss  Feb. 2005 
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 
       logical locdbg,linv
       parameter(locdbg = .false.)
@@ -2190,9 +2190,9 @@ c     Christian Neiss  April 2005
 C----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isym,isymi,isymj,isymk,isyml
       integer isymij,isymkl,isymki,isymlj,isymli,isymkj
@@ -2333,12 +2333,12 @@ c
 c     C. Neiss  august 2005
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dummy.h"
  
       logical locdbg
       parameter (locdbg = .false.)
@@ -2472,11 +2472,11 @@ c
 c     H. Fliegl, C. Haettig, autumn 2005
 c---------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "dummy.h"
+#include "priunit.h"
 
 #if defined (SYS_CRAY)
       real vxykl(*),work(*),ddot,one,zero,cmo(*)

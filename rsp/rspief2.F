@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C=============================================================================
 C    /* Deck E3IEF */
 C=============================================================================
@@ -37,24 +37,24 @@ C     Completely rewritten from scratch!
 C
 
 C now we build the V[3] term of the gradient
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infcr.h>
-#include <infspi.h>
-#include <infden.h>
-#include <pcmdef.h>
-#include <pcm.h>
+#include "infcr.h"
+#include "infspi.h"
+#include "infden.h"
+#include "pcmdef.h"
+#include "pcm.h"
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0, DM2 = -2.0D0,
      $            DP5= 0.5D0, DMP5= -0.5D0)
 
@@ -224,14 +224,14 @@ C=============================================================================
      $     ZYM1,ZYM2,ZYM3,UDV,ETRS,CHG,CMO,XINDX,
      $     WORK,LWORK)
 C
-#include <implicit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <dummy.h>
-#include <infspi.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "dummy.h"
+#include "infspi.h"
 C
 c     Makes the potential part of the PCM solvent contribution to the
 c     quadratic (and cubic) response gradient.
@@ -369,13 +369,13 @@ C=============================================================================
      $     ISYMV2,ISYMV3,ISYMDN,DYNCHG,OVLAP,ZYM1,ZYM2,ZYM3,TCHG,
      $     CTS,DEN,CMO,WORK,LWORK)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <priunit.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "priunit.h"
+#include "orgcom.h"
 C
 C     Makes the charge part of the PCM solvent contribution of the
 C     quadraticn and (possibly) the cubic response. The subroutine
@@ -521,17 +521,17 @@ C
 C     Compute the gradient resulting from multiplying the S matrix
 C     with one ore more vectors. Copied from RSP1GR
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infpri.h>
+#include "infhyp.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infpri.h"
 C
       LOGICAL LORB, LCON, LREFST
 C
@@ -581,8 +581,8 @@ C=============================================================================
 C    /* Deck DENGET */
 C=============================================================================
       SUBROUTINE DENGET(NCASE,DEN1)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       LOGICAL LREF
 C
 C     L. Frediani, Nov 2005. Purpose: initialization of parameters for

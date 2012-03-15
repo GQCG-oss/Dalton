@@ -11,11 +11,11 @@ C     PURPOSE: Repack the AO property integrals to the order used
 C              in the CC and SOPPA codes. The repacked integrals
 C              are kept in a full square matrix.  
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER   (ONE = 1.0D0)
       DIMENSION   PAOI(LPAOI), PRP1(LPRP1)

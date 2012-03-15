@@ -25,11 +25,11 @@
 C
 C     P. Salek and T. Helgaker October 2003
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)
       EXTERNAL DFTKSMGGA,DFTKSMLDA
       LOGICAL DOGGA, DFT_ISGGA
@@ -89,9 +89,9 @@ C
 C
 C     P. Salek and T. Helgaker oct 2003
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.0D0)
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -123,8 +123,8 @@ c
 C
 C     P. Salek and T. Helgaker oct 2003
 C
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -171,8 +171,8 @@ c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
@@ -210,8 +210,8 @@ c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST,4), COEF(2,NBLEN),GRAD(3,NBLEN)
@@ -254,8 +254,8 @@ c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
@@ -307,8 +307,8 @@ c     NBLEN - number of grid points in the batch.
 c     NBLCNT - number of "active" blocks in each symmetry.
 c     NBLOCKS(:,) - start and stop indexes for each blocks in each symmetry.
 c
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 c
       DIMENSION NBLCNT(NSYM),NBLOCKS(2,LDAIB,NSYM)
       DIMENSION GAOS(NBLEN,NBAST,4), COEF(2,NBLEN),GRAD(3,NBLEN)
@@ -350,13 +350,13 @@ c     evaluation module.
 c
       SUBROUTINE KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRINT)
 c     do nothing when running serial code.
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DMAT(NBAST,NBAST)
 C
 #ifdef VAR_MPI
-#include <maxorb.h>
-#include <infpar.h>
-#include <mpif.h>
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
       IF(MYNUM.EQ.MASTER) THEN
 c        IPRTYP=4 is registered for KSM Slave driver.
          IPRTYP = 4
@@ -372,10 +372,10 @@ c        IPRTYP=4 is registered for KSM Slave driver.
 c
 #ifdef VAR_MPI
       SUBROUTINE DFT_KSMSLAVE(WRK,LWRK,IPRINT)
-#include <implicit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
       DIMENSION WRK(LWRK)
       CALL QENTER('DFT_KSMSLAVE')
 c
@@ -393,24 +393,24 @@ c
       END
 c      
       SUBROUTINE KSMSYNC(DMAT)
-#include <implicit.h>
-#include <mpif.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "mpif.h"
+#include "priunit.h"
+#include "inforb.h"
       CALL MPI_Bcast(DMAT,NBAST*NBAST,MPI_DOUBLE_PRECISION,
      &               0, MPI_COMM_WORLD,ierr)
       END
 #endif
       SUBROUTINE KSMCOLLECT(FMAT,ENERGY,WRK,LFREE)
 c
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FMAT(*), WRK(LFREE)
 #ifdef VAR_MPI
 c
-#include <mpif.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <inforb.h>
+#include "mpif.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
       IF(LFREE.LE.N2BASX) CALL STOPIT('KSMCOLLECT',' ',LFREE,N2BASX)
       ETMP = ENERGY
       CALL MPI_Reduce(ETMP,ENERGY,1,MPI_DOUBLE_PRECISION,MPI_SUM,

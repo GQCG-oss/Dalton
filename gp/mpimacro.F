@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C-------------------------------------------------------------
 C    Paal Dahle Jan-2001
@@ -38,10 +38,10 @@ C
 C  /* Deck mpixinit */
       SUBROUTINE MPIXINIT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
 #if !defined (VAR_MPI)
       MYNUM  = 0
@@ -90,8 +90,8 @@ C
 C  /* Deck mpifinalize */
       SUBROUTINE MPIXFINALIZE
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 C
@@ -104,11 +104,11 @@ C
 C  /* Deck mpixbcast */
       SUBROUTINE MPIXBCAST(BUFFER,COUNT,TYPE,ROOT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, ROOT
@@ -135,11 +135,11 @@ C
 C  /* Deck mpixrecv */
       SUBROUTINE MPIXRECV(BUFFER,COUNT,TYPE,SOURCE,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
       DIMENSION my_STATUS(MPI_STATUS_SIZE)
       CHARACTER*6 TYPE
@@ -174,11 +174,11 @@ C
 C  /* Deck mpixsend */
       SUBROUTINE MPIXSEND(BUFFER,COUNT,TYPE,DEST,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
       CHARACTER*6 TYPE
       INTEGER COUNT, DATATYPE, DEST, TAG
@@ -224,8 +224,8 @@ C
 C  /* Deck mpi_myfail */
       SUBROUTINE MPI_MYFAIL(IERR)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INCLUDE 'mpif.h'
       CHARACTER ERRBUF*40
 C

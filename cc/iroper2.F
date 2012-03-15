@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck iroper2 */
@@ -43,9 +43,9 @@ C  /* Deck iroper2 */
 * Christof Haettig, March 99
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccroper.h>
-#include <ccropr2.h>
+#include "priunit.h"
+#include "ccroper.h"
+#include "ccropr2.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

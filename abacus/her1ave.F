@@ -226,20 +226,20 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB), STDER0(KCKTAB,2),
      &          STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2),
      &          HESSKE(MXCOOR,MXCOOR), HESFS2(MXCOOR,MXCOOR)
-#include <onecom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <energy.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "energy.h"
+#include "ibtfun.h"
 C
 C     Multiply densities and Fock elements with integrals
 C
@@ -1090,7 +1090,7 @@ C        Expectation value of undifferentiated elements
 C
          SAVR0  = D0
 #if defined (SYS_HAL)
-#include <scalar.h>
+#include "scalar.h"
 #endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
@@ -1199,16 +1199,16 @@ C  /* Deck aveexp */
 C
 C     tuh & fj feb 2002
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB), 
      &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
-#include <onecom.h>
-#include <symmet.h>
-#include <expopt.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "expopt.h"
 C
       DO I = 1, NUCA
       DO J = 1, NUCB
@@ -1233,20 +1233,20 @@ C  /* Deck aveqdp */
 C
 C     K.Ruud, spring 2003
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.0D0)
       DIMENSION DSHELL(KHKTAB), SINT1(KCKTAB,3), QINT1(KCKTAB,3,6)
-#include <onecom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <cbiqpg.h>
-#include <difsec.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "cbiqpg.h"
+#include "difsec.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
          NAX = 3*NCENTA - 2
          NAY = 3*NCENTA - 1
@@ -1264,7 +1264,7 @@ C
          SAVRY  = D0
          SAVRZ  = D0
 #if defined (SYS_CONVEX) || defined (SYS_HAL)
-#include <scalar.h>
+#include "scalar.h"
 #endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
@@ -1496,11 +1496,11 @@ C
       END
 C  /* Deck avepcm */
       SUBROUTINE AVEPCM(PCMINT,MAXCMP,DSHELL,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1508,17 +1508,17 @@ C Used from common blocks:
 C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
-#include <onecom.h>
-#include <symmet.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <taysol.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "taysol.h"
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(MAXCMP)
       DIMENSION PCMINT(KCKTAB,7,NTSIRR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1

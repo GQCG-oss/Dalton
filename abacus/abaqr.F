@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 cs--------------------------------------------------------------cs
 cs    abaqr.F=insieme di subroutines per la risposta quadratica cs
@@ -30,18 +30,18 @@ cs--------------------------------------------------------------cs
 C  /* Deck aqrinp */
       SUBROUTINE AQRINP(WORD)
 cs
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 12)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <inforb.h>
-#include <cbiqr.h>
+#include "inforb.h"
+#include "cbiqr.h"
 C
-#include <abainf.h>
-#include <dorps.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "dorps.h"
+#include "nuclei.h"
       DATA TABLE /'.SKIP  ', '.IPRINT','.MAXITE','.THRESH',
      *            '.MAXRED', '.MAXPHP','.XXXXXX',
      *            '.OPTORB', '.PRINT ', '.STOP  ', '.B FREQ',
@@ -201,10 +201,10 @@ C  /* Deck aqrini */
 C
 C     Initialize /QRSRES/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiqr.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiqr.h"
+#include "abainf.h"
 C
 cs    iprdef= deve essere il default (applicato per entrambi i print level)
 cs
@@ -233,25 +233,25 @@ cs
 cs    driver vero e proprio della risposta quadratica in abacus
 cs    chiamata quando .MCD, .HYPER e .VERDET = .TRUE.
 cs
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <abainf.h>
-#include <exeinf.h>
-#include <inforb.h>
-#include <cbiqr.h>
-#include <infrsp.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "abainf.h"
+#include "exeinf.h"
+#include "inforb.h"
+#include "cbiqr.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
       LOGICAL PASS, HFCLC, CICLC, TRIPLE, EXECLC, FOUND
       CHARACTER*8 LABEL, DLAB(9*MXCENT)
       DIMENSION WORK(LWORK)

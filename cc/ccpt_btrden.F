@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C=====================================================================
 C  /* Deck btrabidel */
@@ -37,14 +37,14 @@ C     S. Coriani, January 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER LWORK
       integer LUDENSTY, LUDEN4MO
@@ -197,14 +197,14 @@ C     S. Coriani, February 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
 
       INTEGER LWORK
@@ -360,14 +360,14 @@ C     S. Coriani, February 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER LWORK
       INTEGER ISYRES, KSTART, ISYDEN
@@ -486,14 +486,14 @@ C     S. Coriani, February 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER LWORK, IOPT
       INTEGER ISYRES, KSTART, ISYDEN
@@ -638,14 +638,14 @@ C     S. Coriani, December 2001
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER LWORK,IOPT
       INTEGER ISYRES, KSTART, ISYDEN
