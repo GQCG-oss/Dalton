@@ -21,22 +21,22 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sirout */
       SUBROUTINE SIROUT(ICONV,WRK,LWRK)
 C
 C  4-June-1991 hjaaj: driver routine for core allocation
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WRK(LWRK)
-#include <litinfo.h>
-#include <iratdef.h>
+#include "litinfo.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C  INFINP : MAXMAC
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
 C
       KIINFO = 1
       KDINFO = 1 + MAXMAC*((LIINFO-1)/IRAT + 1)
@@ -63,11 +63,11 @@ C            Documentation of MOTECC-90.
 C
       use polarizable_embedding, only: peqm, pe_fd, Ees, Epol,
      &                                 lmul, lpol
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <litinfo.h>
+#include "litinfo.h"
       DIMENSION IINFO(LIINFO,*),DINFO(LDINFO,*),WRK(LWRK)
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
@@ -76,25 +76,25 @@ C   INFVAR : NCONF,NWOPT
 C   INFORB : NCMOT,NORBT,NNASHX,NISHT,?
 C   INFDIM : LCINDX
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <priunit.h>
-#include <molde.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <qm3.h>
-#include <qmmm.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "priunit.h"
+#include "molde.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "qm3.h"
+#include "qmmm.h"
 C
 C
 C EXTERNAL FUNCTIONS

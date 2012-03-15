@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_FMATRIX */
@@ -44,11 +44,11 @@ c/* Deck CC_FMATRIX */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdinp.h"
 #include "maxorb.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 #include "ccsdio.h"
 #include "ccnoddy.h"
@@ -329,7 +329,7 @@ c/* Deck CC_FTRAN */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "maxorb.h"
 #include "ccorb.h"
 #include "ccsdsym.h"
@@ -497,29 +497,29 @@ c/* Deck CC_FMATNEW */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <ccsdio.h>
-#include <ccorb.h>
-#include <cciccset.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <iratdef.h>
-#include <eribuf.h>
-#include <ccisao.h>
-#include <ccfield.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <ccslvinf.h>
-#include <ccnoddy.h>
-#include <second.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "ccsdio.h"
+#include "ccorb.h"
+#include "cciccset.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "iratdef.h"
+#include "eribuf.h"
+#include "ccisao.h"
+#include "ccfield.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "ccslvinf.h"
+#include "ccnoddy.h"
+#include "second.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
 * local parameters:
@@ -2694,14 +2694,14 @@ C  /* Deck ccfpreint */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cciccset.h>
-#include <ccfield.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cciccset.h"
+#include "ccfield.h"
+#include "second.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -3107,10 +3107,10 @@ c/* Deck CCFOPEN*/
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3293,11 +3293,11 @@ c/* Deck CCFSAVE*/
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3456,11 +3456,11 @@ c/* Deck CCFPRE2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cciccset.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cciccset.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3657,12 +3657,12 @@ c/* Deck CCFINT2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "second.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3850,16 +3850,16 @@ c/* Deck CCFMAT2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsections.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsections.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
 * local parameters:
@@ -4669,9 +4669,9 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(*) FILPQMO
       INTEGER LWORK, ISYRES, ISYINT, ISYPQI, LUPQMO, IADRPQMO(*)
@@ -4761,7 +4761,7 @@ c/* Deck CC_ZETADEN */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
 
@@ -4887,10 +4887,10 @@ C     Christof Haettig, September 1998
 C     based on Asger Halkiers CCLT_CT1AO routine 
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDP(*),CHI(*),XI(*)
@@ -4962,10 +4962,10 @@ C  /* Deck cc_bfif */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(*) FNBFI
       INTEGER LWORK, ISYMGD, ISYRHF, IADR, IDEL, LUBFI, IADRBF(*)
@@ -5047,10 +5047,10 @@ C  /* Deck cc_bfifsort */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5209,10 +5209,10 @@ C
 *
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
       DIMENSION DSRHF(*),XMGD(*),GIM(*),WORK(LWORK)
 C
@@ -5276,10 +5276,10 @@ C
 *
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER(TWO=2.0D0,ONE=1.0D0)
       DIMENSION XMGD(*),WORK(LWORK)
@@ -5351,9 +5351,9 @@ C
 * Christof Haettig, May 2002
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       CHARACTER*(25) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCSDT_F2B_SETUP> ')  
@@ -5527,14 +5527,14 @@ c/* Deck CC_R12FMAT */
 *        
 *=====================================================================*
        implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "ccfield.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

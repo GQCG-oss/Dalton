@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck c2driv */
       SUBROUTINE C2DRIV(AOINT,HCINT,COEF34,INDHER,CONT3,CONT4,WORK,
@@ -30,16 +30,16 @@ C  /* Deck c2driv */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
      &          LMNV12(*), LMNV34(*), IODD12(*), IODD34(*),
      &          NPNT34(*), NRED34(*)
-#include <twoao.h>
-#include <twosta.h>
+#include "twoao.h"
+#include "twosta.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2DRIV','*',103)
 C
@@ -113,11 +113,11 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.00 D00)
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL DORDER(2), DHOVEC
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
       DIMENSION AOINT(*), IODD12(KCKT12,2), IODD34(KCKT34,2),
@@ -125,11 +125,11 @@ C
      &          COEF34(*),NHCC(KCKT34,2), CONT3(*), CONT4(*),
      &          NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*), NPNT34(*),
      &          NRED34(*)
-#include <twoao.h>
-#include <twosta.h>
-#include <derzer.h>
-#include <drw2el.h>
-#include <expopt.h>
+#include "twoao.h"
+#include "twosta.h"
+#include "derzer.h"
+#include "drw2el.h"
+#include "expopt.h"
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
       COMMON /DHCINF/ IDHC(10), IHCSYM(10)
@@ -153,7 +153,7 @@ C     4   XQ00 YQ00 ZQ00
 C     7   XXPP XYPP XZPP YYPP YZPP ZZPP
 C     13  XXQQ XYQQ XZQQ YYQQ YZQQ ZZQQ
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HINT','*',103)
 C
@@ -372,11 +372,11 @@ C  /* Deck c2hin1 */
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
      &                  SSINT,CSINT,NHCMAX)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "maxaqn.h"
+#include "maxorb.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
@@ -390,13 +390,13 @@ C
      &          LMNV34(KCKMX,5,2), NHCC(KCKT34,2),
      &          CONT3(*), CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*), NRED34(*)
-#include <hertop.h>
-#include <twoao.h>
-#include <twocom.h>
-#include <sphtrm.h>
-#include <codata.h>
-#include <drw2el.h>
-#include <expopt.h>
+#include "hertop.h"
+#include "twoao.h"
+#include "twocom.h"
+#include "sphtrm.h"
+#include "codata.h"
+#include "drw2el.h"
+#include "expopt.h"
       DIMENSION INCDPT(3,3), INCHOO(3,3), ITYDPT(3,3), ITYHOO(3,3), 
      &          INCEXP(3,0:3)
       DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
@@ -404,7 +404,7 @@ C
       DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
       DATA ITYHOO/3, 1, 1, 1, 3, 1, 1, 1, 3/
       DATA INCEXP/0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
       IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
@@ -788,9 +788,9 @@ C  /* Deck c2eint */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL DCOOR, DCOOR0, DCOORH, DCOORE, DATOM,
      &        DATOM0, DATOMH, DATOME, DCORDH(2), DCORDE(2), DEOVEC,
      &        DETVEC, DMXVEC, DEO, DET, DMX
@@ -801,8 +801,8 @@ C
      &          IODD12(KCKT12,2), IODD34(KCKT34,2),
      &          CONT3(*), CONT4(*), WORK(LWORK), NPCO3(*), NPCO4(*),
      &          NUCS34(*), INDHER(*), NPNT34(*), NRED34(*)
-#include <twoao.h>
-#include <twosta.h>
+#include "twoao.h"
+#include "twosta.h"
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DEOFAC/ FEOVEC(54)
       COMMON /DEOADR/ IEOVEC(54)
@@ -925,7 +925,7 @@ C     HCHX HCEX1 HCEX2
 C     HCHY HCEY1 HCEY2
 C     HCHZ HCEZ1 HCEZ2
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2EINT','*',103)
 C
@@ -1277,9 +1277,9 @@ C  /* Deck c2ein1 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER T, U, V
       COMMON /COMC2E/ JSTRHC(27,9), JENDHC(27,9),
@@ -1298,12 +1298,12 @@ C
      &          IODD12(KCKT12,2), IODD34(KCKT34,2), SCR1(*), SCR2(*),
      &          NPCO3(*), NPCO4(*), NUCS34(*), NRED34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*)
-#include <hertop.h>
-#include <twoao.h>
-#include <twocom.h>
-#include <sphtrm.h>
+#include "hertop.h"
+#include "twoao.h"
+#include "twocom.h"
+#include "sphtrm.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2EIN1','*',103)
 C
@@ -1555,8 +1555,8 @@ C
 C  /* Deck c2cont */
       SUBROUTINE C2CONT(CCPRIM,CCONT,CONT3,CONT4,SCR1,SCR2,NPCO3,NPCO4,
      &                  NUCS34,NHCCMP,NPNT34,NRED34,IPRINT,ANTICO)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     tuh Mar 1988
 C     Modified for no transformations (NOCNT) tuh Apr 1989
@@ -1582,7 +1582,7 @@ C
 C     DM1 and THRESH are added for antihermitean 
 C     integrals (WK/UniKA/18-11-2002).
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, THRESH = 1.0D-13)
-#include <twoao.h>
+#include "twoao.h"
       LOGICAL ANTICO
       DIMENSION CCPRIM(*), CCONT(*), SCR1(*), SCR2(*),
      &          CONT3(*), CONT4(*), NPCO3(NSET3,2), NPCO4(NSET4,2),
@@ -1779,14 +1779,14 @@ C
 C  /* Deck c2sphr */
       SUBROUTINE C2SPHR(CCONT,CSINT,SSINT,NHCC,CSP3,CSP4,NHCMAX,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CCONT(NO1234*NHCMAX,KCKT34),
      &          CSINT(NO1234*NHCMAX,KHKT4),
      &          SSINT(NO1234*NHCMAX,KHKT34),
      &          CSP3(KHKT3,KCKT3), CSP4(KHKT4,KCKT4), NHCC(KCKT34,2)
-#include <twoao.h>
+#include "twoao.h"
 C
       CALL DZERO(SSINT,NO1234*NHCMAX*KHKT34)
 C

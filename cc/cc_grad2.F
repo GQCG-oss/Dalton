@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_grad2 */
       SUBROUTINE CC_GRAD2(I1DXORD,WORK,LWORK)
@@ -50,42 +50,42 @@ C                                from one-index transformed densities
 C
 C     Current models: CCD, CCSD
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ccorb.h"
 CCN #include <infind.h> not compatible with R12!
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <inftap.h>
-#include <cclr.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccfop.h>
-#include <ccfro.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
-#include <chrxyz.h>
-#include <ccinftap.h>
-#include <cch2d.h>
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "inftap.h"
+#include "cclr.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccfop.h"
+#include "ccfro.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
+#include "chrxyz.h"
+#include "ccinftap.h"
+#include "cch2d.h"
 C
       LOGICAL LOCDBG 
       PARAMETER( LOCDBG = .FALSE. )

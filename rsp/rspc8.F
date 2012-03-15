@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef revlog
 !===========================================================================
@@ -34,24 +34,24 @@ C
 C  /* Deck rspc6 */
       SUBROUTINE RSPC6(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL IDONE
-#include <iratdef.h>
+#include "iratdef.h"
 C
       CHARACTER*8 BLANK
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infc6.h>
-#include <inflr.h>
-#include <infdim.h>
-#include <inforb.h>
+#include "infc6.h"
+#include "inflr.h"
+#include "infdim.h"
+#include "inforb.h"
 C
       PARAMETER ( ZERO = 0.0D0  , DM1 = -1.0D0 , BIG = 1.0D10 )
       PARAMETER ( DLRTST = 1.0D-6, BLANK = '        ' )
@@ -269,16 +269,16 @@ C                             AND THE W4 COEFFICIENT.
 C
 C OUTPUT EIVAL(KZRED) AND XMOM(KZRED,NOP)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
 #include "rspprp.h"
-#include <infc6.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infc6.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       LOGICAL IDONE
       DIMENSION XMOM(MAXRM,*)
@@ -430,19 +430,19 @@ c addressing and allows at the same time for properties which are not
 c symmetric in the indices.
 c------------------------------------------------------------------------
 c
-#include <implicit.h>
+#include "implicit.h"
 c
-#include <pi.h>
-#include <dummy.h>
+#include "pi.h"
+#include "dummy.h"
 c
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infc6.h>
-#include <wrkrsp.h>
+#include "infc6.h"
+#include "wrkrsp.h"
 C
-#include <inforb.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infpri.h"
 c
       DIMENSION EIVAL(*),XMOM(MAXRM,*)
       DIMENSION GRIDSQ(0:NGRDMX),ALPHA(1:NSYMOP,1:NSYMOP,0:NGRDMX)
@@ -644,16 +644,16 @@ c EFPOLL
 c The Cauchy moments begin with S(0) here, instead of S(-2) as in EFPOLL
 c-----------------------------------------------------------------------
 c
-#include <implicit.h>
+#include "implicit.h"
 c
-#include <pi.h>
+#include "pi.h"
 c
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infc6.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "infc6.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 c
       DIMENSION EIVAL(*),XMOM(MAXRM,*)
       DIMENSION GRIDSQ(0:NGRDMX),ALPHA(1:NSYMOP,1:NSYMOP,0:NGRDMX)
@@ -788,8 +788,8 @@ C 25-Jun-1990 PJ+HJAAJ
 C
 C     Print pseudo-spectrum
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       LOGICAL     IDONE
       CHARACTER*8 OPTYPE
       DIMENSION   XMOM(KZRED),EIVAL(KZRED)
@@ -797,8 +797,8 @@ C
       DIMENSION   SUMOSC(NSUM)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
       IF (IDONE) THEN
          WRITE(LUPRI,'(//A)') ' Final pseudo-spectrum for'
@@ -858,10 +858,10 @@ C  /* Deck paddy */
 #if defined (VAR_PADDY)
 C920722: Old C6 code by Patrick Fowler
       SUBROUTINE PADDY(NCAUCH,NI,CAUCHY,COMI,WRK )
-#include <implicit.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 )
 C
       DIMENSION PLVAL(16)
@@ -936,7 +936,7 @@ C
       RETURN
       END
       SUBROUTINE POLVAL(NUM,POLCOF,FREQ,VALUE)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION POLCOF(NUM)
       VALUE = 0.0D0
       DO 100 I = 1,NUM
@@ -945,9 +945,9 @@ C
       RETURN
       END
       SUBROUTINE C6INT(A1,A2,SUM)
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <pi.h>
+#include "pi.h"
 C
       DIMENSION RLOW(8),WLOW(8)
       DIMENSION W(16),A1(16),A2(16)
@@ -1021,8 +1021,8 @@ C
 C OUTPUT : A : INVERSE MATRIX ( ORIGINAL MATRIX THUS DESTROYED )
 C WARNINGS ARE ISSUED IN CASE OF CONVERGENCE PROBLEMS )
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(MATDIM,MATDIM),B(MATDIM,MATDIM)
 C
       DETERM=0.0D0
@@ -1048,7 +1048,7 @@ C       FROM "DLYTAP".
 C
 C*      DOUBLE PRECISION E,F
 C*      DOUBLE PRECISION A,EL,D,DSQRT,C,S,DETERP
-#include <implicit.h>
+#include "implicit.h"
         DIMENSION A(NSIZE,1),EL(NSIZE,1)
         IF(N.LT.2)GO TO 140
         ISL2=0

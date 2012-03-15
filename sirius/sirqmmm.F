@@ -29,24 +29,24 @@ C   added parallel QMMM routines.
 C  /* Deck qmmmfck */
       SUBROUTINE QMMMFCK(DCAO,DVAO,FSOL,EQMMM,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <thrzer.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "thrzer.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
 
       DIMENSION DCAO(*), DVAO(*)
       DIMENSION FSOL(*), WRK(LWRK)
@@ -87,28 +87,28 @@ C******************************************************************************
 C  /* Deck qmmm_fck_ao */
       SUBROUTINE QMMM_FCK_AO(FSOL,DCAO,ESOLT,WRK,LWRK,IPRINT)   
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
 
       DIMENSION WRK(LWRK)
@@ -218,27 +218,27 @@ C  /* Deck qmmm_charge */
       SUBROUTINE QMMM_CHARGE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(*)
       LOGICAL LOCDEB, FIRST
@@ -326,27 +326,27 @@ C  /* Deck qmmm_dipole */
       SUBROUTINE QMMM_DIPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(*)
       LOGICAL LOCDEB, FIRST
@@ -433,27 +433,27 @@ C  /* Deck qmmm_quadpole */
       SUBROUTINE QMMM_QUADPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(*)
       LOGICAL LOCDEB, FIRST
@@ -540,27 +540,27 @@ C  /* Deck qmmm_octupole */
       SUBROUTINE QMMM_OCTUPOLE(DCAO,ESOLT,TAO,LOCDEB,FIRST,
      &                       WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(*)
       LOGICAL LOCDEB, FIRST
@@ -648,27 +648,27 @@ C  /* Deck qmmm_polari */
       SUBROUTINE QMMM_POLARI(DCAO,ESOLT,TAO,LOCDEB,
      &                       WRK,LWRK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), DCAO(*)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -885,13 +885,13 @@ C  /* Deck qmmmfckmo */
 C
 C     Construct the QMMM contribution to the Fock-matrix in MO basis
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <infopt.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "infopt.h"
 C
       DIMENSION CMO(*), FSOL(*), WRK(LWRK)
 C
@@ -964,26 +964,26 @@ C Oct 2010: AHS
 C   Sharing of parallel and serial routines
 C Jan 2011: JMO
 C   Construct the classical response matrix using packed storage.
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       CHARACTER LLAB
       LOGICAL EXCENT,FNDLAB, LSKIP
@@ -1355,25 +1355,25 @@ C       EFX,EFY,EFZ    - components of the electric field strength vector
 C
 C KA, 2008 Oct. 22
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C
 
       DOUBLE PRECISION Q,XORI,YORI,ZORI
@@ -1425,25 +1425,25 @@ C                        vector
 C
 C KA, 2008 Oct. 22
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C
       DOUBLE PRECISION MJUX,MJUY,MJUZ
       DOUBLE PRECISION XORI,YORI,ZORI
@@ -1509,25 +1509,25 @@ C                                 vector
 C
 C KA, 2008 Oct. 22
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C
       DOUBLE PRECISION QXX,QXY,QXZ,QYY,QYZ,QZZ
       DOUBLE PRECISION XORI,YORI,ZORI
@@ -1612,8 +1612,8 @@ C******************************************************************************
 C  /* Deck Put_To_File_1 */
       SUBROUTINE PUT_TO_FILE_1(FLNAME,NULOOP,DDATA)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       CHARACTER*(*) FLNAME
       INTEGER   NMBU,NULOOP
@@ -1639,8 +1639,8 @@ C  /* Deck Get_From_File_1 */
       SUBROUTINE GET_FROM_FILE_1(FLNAME,NULOOP,DDATA)
 C**************************************************************
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       CHARACTER*(*) FLNAME
       INTEGER   NMBU,NULOOP
@@ -1670,12 +1670,12 @@ C  /* Deck MM_PROPS */
 C
 C  Calculates properties of the MM region.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "infpri.h"
 
       PARAMETER ( D2 = 2.0D0, D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0) 
@@ -1732,12 +1732,12 @@ C
 C  Contracts the Relay matrix to the group and molecular
 C  polarizabilities
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
 
       LOGICAL FNDLAB,LOCDEB
       DOUBLE PRECISION INVMAT,FULLMAT,BMATS,POLMAT
@@ -1870,12 +1870,12 @@ C  /* Deck MM_DIPANDCHARGE */
 C
 C     Calculates the MM total charge and dipole moment
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
 
       PARAMETER ( D2 = 2.0D0, D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
@@ -1999,12 +1999,12 @@ C  /* Deck MM_OPTROT */
 C
 C  Contracts the Relay matrix to the molecular optical rotation (beta)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
 
       LOGICAL FNDLAB,LOCDEB
       DOUBLE PRECISION INVMAT,FULLMAT,BMAT,TEMP
@@ -2138,28 +2138,28 @@ C
 C Sep 2010 - JMO & KS:
 C Started sharing of DFT/MM and CC/MM field routines
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "infpar.h"
 
       LOGICAL EXCENT,LOCDEB,DIPCON, LSKIP
       LOGICAL TOFILE,TRIMAT,EXP1VL
@@ -2306,27 +2306,27 @@ C     INDDIA is the diagonal part of the induced dipole moments,
 C            i.e. the part corresponding directly to the F ELF vector.
 C JK
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infpar.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infpar.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 
 
       LOGICAL EXCENT,LOCDEB,DIPCON
@@ -2582,25 +2582,25 @@ C     NDIM is 3*(the number of polarizable sites)
 C     ITER is the iteration number
 C JK
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 
       LOGICAL LOCDEB
 
@@ -2756,25 +2756,25 @@ C                           vector
 C
 C JK, 2009 July
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C
       DOUBLE PRECISION QXXX,QXXY,QXXZ,QXYY,QXYZ
       DOUBLE PRECISION QXZZ,QYYY,QYYZ,QYZZ,QZZZ
@@ -2911,25 +2911,25 @@ C******************************************************************************
 C  /* Deck MAKE_QMMM_INVERSE_RESPONSE_MATRIX */
       SUBROUTINE MAKE_QMMM_INVERSE_RESPONSE_MATRIX(INVMAT,POLDIM) ! Construct inverse response matrix
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <qm3.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "qm3.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C
       DOUBLE PRECISION AMATS
       DIMENSION AMATS(6)
@@ -3141,15 +3141,15 @@ C       ENSEL  - Energy due to QM electrons
 C       ENSNUC - Energy due to QM nuclear 
 C       TAO    - Integrals
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "orgcom.h"
+#include "priunit.h"
 
       DIMENSION WRK(LWRK), DCAO(NNBASX), TAO(NNBASX)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -3263,15 +3263,15 @@ C  /* Deck dipole_iter */
       SUBROUTINE DIPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      *                       TAO,WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "orgcom.h"
+#include "priunit.h"
 
       DIMENSION WRK(LWRK), DCAO(NNBASX), TAO(NNBASX)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -3448,15 +3448,15 @@ C  /* Deck quadpole_iter */
       SUBROUTINE QUADPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "orgcom.h"
+#include "priunit.h"
 
       DIMENSION WRK(LWRK), DCAO(NNBASX), TAO(NNBASX)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -3601,15 +3601,15 @@ C  /* Deck octupole_iter */
       SUBROUTINE OCTUPOLE_ITER(I,DCAO,ENSEL,ENSNUC,LOCDEB,
      &                       TAO,WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "orgcom.h"
+#include "priunit.h"
 
       DIMENSION WRK(LWRK), DCAO(NNBASX), TAO(NNBASX)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -3904,14 +3904,14 @@ C  /* Deck get_field */
      &                         LOCDEB,WRK,LWRK)
 
       IMPLICIT NONE
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "orgcom.h"
+#include "priunit.h"
 
       INTEGER LWRK, I, LRI
       DOUBLE PRECISION WRK, DCAO, ELF, ELFEL, ELFNU
@@ -3980,15 +3980,15 @@ C  /* Deck get_pol_contr */
       SUBROUTINE GET_POL_CONTR(I,DINDMOM,EDALL,DCAO,TAO,
      &                         WRK,LWRK)
 
-#include <implicit.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <gnrinf.h>
-#include <orgcom.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "orgcom.h"
+#include "priunit.h"
 
       DIMENSION WRK(LWRK), DCAO(NNBASX), TAO(NNBASX)
       DIMENSION DINDMOM(3),EDALL(6)
@@ -4273,8 +4273,8 @@ C Output: MY
 C Get the polarizability tensor MY at site I due to polarizability
 C tensor DIP at site J.
       IMPLICIT NONE
-#include <mxcent.h>
-#include <qmmm.h>
+#include "mxcent.h"
+#include "qmmm.h"
 
       LOGICAL EXCENT
       INTEGER I, J, K, L, NLDIM, NTOTI
@@ -4385,10 +4385,10 @@ C  /* Deck qmmmtimes */
 
       IMPLICIT NONE
 
-#include <priunit.h>
-#include <mxcent.h>
-#include <qmmm.h>
-#include <mmtimes.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "qmmm.h"
+#include "mmtimes.h"
       CHARACTER*(*) WORD
       DOUBLE PRECISION ZERO
       PARAMETER(ZERO = 0.0D0)
@@ -4458,31 +4458,31 @@ C  /* Deck parqmmm_m */
       SUBROUTINE PARQMMM_M(DCAO,TAO,ESOLT,LOCDEB,WRK,LWRK,
      &                         IPRINT)
 
-#include <implicit.h>
+#include "implicit.h"
 !  mxcoor in nuclei.h
-#include <mxcent.h>
+#include "mxcent.h"
 !  nnbasx, icmo, nbast, 
-#include <inforb.h>
+#include "inforb.h"
 !  nctot, cord, charge, nucind, nucdep
-#include <nuclei.h>
+#include "nuclei.h"
 ! luprop
-#include <inftap.h>
+#include "inftap.h"
 ! npatom, ipatom
-#include <cbiher.h>
+#include "cbiher.h"
 ! qmcom, isytp, qmdamp
-#include <qm3.h>
+#include "qm3.h"
 ! mmcent, mul0mm, mul1mm etc, rcutmm, delfld, nmult, nexlst, exlist
 ! nnzal (updates), spldip, zeroal (updates?), idamp, ipoltp, 
 ! From potfile: mmcent, nmult, ipoltp, nexlst, neleme
 !               exlist
-#include <qmmm.h>
+#include "qmmm.h"
 C ----
 #include "maxorb.h"
 ! MXSHEL
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 C#include <cbiher.h>
 
@@ -4616,36 +4616,36 @@ C******************************************************************************
 C  /* Deck parqmmm_s */
       SUBROUTINE PARQMMM_S(WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
+#include "implicit.h"
 !  mxcoor in nuclei.h
-#include <mxcent.h>
+#include "mxcent.h"
 !  nnbasx, icmo, nbast, 
-#include <inforb.h>
+#include "inforb.h"
 !  nctot, cord, charge, nucind, nucdep
-#include <nuclei.h>
+#include "nuclei.h"
 ! luprop
-#include <inftap.h>
+#include "inftap.h"
 ! npatom, ipatom
-#include <cbiher.h>
+#include "cbiher.h"
 ! qmcom, isytp, qmdamp
-#include <qm3.h>
+#include "qm3.h"
 ! mmcent, mul0mm, mul1mm etc, rcutmm, delfld, nmult, nexlst, exlist
 ! nnzal (updates), spldip, zeroal (updates?), idamp, ipoltp, 
 ! From potfile: mmcent, nmult, ipoltp, nexlst, neleme
 !               exlist
-#include <qmmm.h>
+#include "qmmm.h"
 #include "maxorb.h"
 ! MXSHEL
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 ! qmmm
-#include <gnrinf.h>
+#include "gnrinf.h"
 ! diporg
-#include <orgcom.h>
-#include <priunit.h>
+#include "orgcom.h"
+#include "priunit.h"
 
       DIMENSION WRK(LWRK)
       LOGICAL LOCDEB
@@ -4804,34 +4804,34 @@ C******************************************************************************
 C  /* Deck mm_field_m1 */
       SUBROUTINE MM_FIELD_M1(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C ----
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "gnrinf.h"
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
@@ -4936,34 +4936,34 @@ C******************************************************************************
 C  /* Deck mm_field_s1 */
       SUBROUTINE MM_FIELD_S1(WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C ----
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "gnrinf.h"
 
       DIMENSION WRK(LWRK)
       INTEGER POLDIM
@@ -5065,34 +5065,34 @@ C******************************************************************************
 C  /* Deck mm_field_m2 */
       SUBROUTINE MM_FIELD_M2(DCAO,ELF,POLDIM,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C ----
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "gnrinf.h"
 
       INTEGER POLDIM
       DIMENSION WRK(LWRK), ELF(*)
@@ -5176,34 +5176,34 @@ C******************************************************************************
 C  /* Deck mm_field_s2 */
       SUBROUTINE MM_FIELD_S2(WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C ----
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "gnrinf.h"
 
       DIMENSION WRK(LWRK)
       INTEGER POLDIM
@@ -5284,34 +5284,34 @@ C******************************************************************************
 C  /* Deck mm_polar_contr_m */
       SUBROUTINE MM_POLAR_CONTR_M(DCAO,TAO,CINDMOM,WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C ----
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "gnrinf.h"
 
       DIMENSION WRK(LWRK), TAO(NNBASX), CINDMOM(*)
 
@@ -5432,34 +5432,34 @@ C******************************************************************************
 C  /* Deck mm_polar_contr_s */
       SUBROUTINE MM_POLAR_CONTR_S(WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 
-#include <qmmm.h>
-#include <qm3.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <codata.h>
+#include "qmmm.h"
+#include "qm3.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "codata.h"
 C ----
 #include "infpar.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
-#include <gnrinf.h>
+#include "cbiher.h"
+#include "gnrinf.h"
 
       DIMENSION WRK(LWRK)
 
@@ -5578,16 +5578,16 @@ C  /* Deck mmiter_inddip_m */
       SUBROUTINE MMITER_INDDIP_M(POLDIM,INDP1,INDMOM,VEC,INDDIA,
      *                    WRK,LWRK,LOCDEB,DIPCON,LM)
 
-#include <implicit.h>
+#include "implicit.h"
 C      IMPLICIT NONE
 
-#include <mxcent.h>
-#include <qmmm.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "mxcent.h"
+#include "qmmm.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
 
@@ -5723,14 +5723,14 @@ C******************************************************************************
 C  /* Deck mmiter_inddip_s */
       SUBROUTINE MMITER_INDDIP_S(WRK,LWRK,IPRINT)
 
-#include <implicit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <qmmm.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "qmmm.h"
 #include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       INTEGER POLDIM, POLARRAY

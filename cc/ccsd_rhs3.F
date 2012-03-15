@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccrhsn3 */
       SUBROUTINE CCRHSN3(WORK,LWORK)
@@ -45,24 +45,24 @@ C  /* Deck ccrhsn3 */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <second.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "second.h"
+#include "r12int.h"
 !
       INTEGER LWORK, ISYMTR, LUCSIM, LUDTIM, IERRCS, IERRDT
       INTEGER KOMG1, KOMG2, KLAMDP, KLAMIP, KLAMDH, KDENSI

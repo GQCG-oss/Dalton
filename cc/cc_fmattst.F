@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FMATTST(LLIST,ILLNR,RLIST,IRLNR,WORK,LWORK)
@@ -42,28 +42,28 @@ C
 *     Heavily revised to reduce operation count by C. Haettig July 1998
 *     `Left' B intermediate revised in November 1998, C. Haettig
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <cclr.h>
-#include <blocks.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccroper.h>
-#include <ccinftap.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "cclr.h"
+#include "blocks.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccroper.h"
+#include "ccinftap.h"
+#include "r12int.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF=-0.5D0,XHALF=0.5D0,THREE=3.0D0,XMONE=-1.0D0)

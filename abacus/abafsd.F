@@ -22,7 +22,7 @@ c -*-mode:fortran; fortran-continuation-string: "&" -*-
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck getfd */
       SUBROUTINE GETFD(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
@@ -31,18 +31,18 @@ C  /* Deck getfd */
 C
 C  3-Nov-1988 hjaaj -- interface routine for GETFD
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL   TWOH1, NOH1, NOH2, NODC, NODV, DERIV(3),
      *          NOORBI, AOMAT, DOREAL
       DIMENSION CMO(*), DV(*), FCD(N2BASX,3), FVD(N2ORBX,3),
      *          EMYD(3), FDFTD(N2BASX,3), WORK(LWORK)
-#include <priunit.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFORB : NNBASX,...
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL QENTER('GETFD')
       KFCAOX = 1
@@ -88,28 +88,28 @@ C     and active) in MO basis.
 C
 C     tuh Sep 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.0D0, DP5 = 0.50D00)
       LOGICAL TWOH1, NOH1, NOH2, NODC, NODV, DERIV(3), DERX, DERY, DERZ,
      *        NOORBI, AOMAT, DOFV, DOREAL
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION IBUF(4,600), CMO(*), DV(*),
      *          FCD(N2BASX,3), FVD(N2ORBX,3), FDFTD(N2BASX,3),
      *          FCSOX(NNBASX), FCSOY(NNBASX), FCSOZ(NNBASX),
      *          FVSOX(NNBASX), FVSOY(NNBASX), FVSOZ(NNBASX),
      *          DCSO(NNBASX),  DVSO(NNBASX),
      *          EMYD(3), DCFOLD(*), WORK(LWORK)
-#include <ccom.h>
-#include <abainf.h>
-#include <dftcom.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "abainf.h"
+#include "dftcom.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "ibtfun.h"
       DOFV = (NISHT .GT. 0) .AND. (NASHT .GT. 0) .AND. (.NOT.NOORBI)
       DERX = DERIV(1)
       DERY = DERIV(2)
@@ -480,14 +480,14 @@ C     density matrices in SO basis (contravariant).
 C
 C     tuh 310888
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL NODC, NODV
       INTEGER R, S, U, V, UV, UR, US, VR, VS, RS
       DIMENSION CMO(*), DV(*), DCSO(*), DVSO(*), DCFOLD(*)
-#include <inforb.h>
+#include "inforb.h"
 C
 C     ***** Print Section *****
 C
@@ -612,20 +612,20 @@ C     Note: Canonical ordering of indices assumed
 C
 C     tuh 120988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER (TWO = 2.00 D00, THRHLF = 1.50 D00,
      *           HALF = 0.50D00, IBIT08 = 255)
       INTEGER P, Q, R, S
       LOGICAL FIRST, ACTIVE
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION BUF(600), IBUF(4,600), ITRI(MXCORB),
      *          FC(3*NNBASX), FV(3*NNBASX),
      *          DC(NNBASX),   DV(NNBASX)
       SAVE FIRST, ITRI, ACTIVE, IOFF
       DATA FIRST /.TRUE./
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (FIRST) THEN
          DO 100 I = 1, NBAST
@@ -926,11 +926,11 @@ C     | This subroutine adds magnetic-field derivative two-electron  |
 C     | integrals to the active and inactive Fock matrices.          |
 C     ================================================================
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.50D00, IBIT08 = 255)
       LOGICAL SYMMET
       INTEGER P, Q, R, S, X
@@ -938,11 +938,11 @@ C
      &          FCSQ(NBAST,NBAST,3), FVSQ(NBAST,NBAST,3),
      &          DCSQ(NBAST,NBAST), DVSQ(NBAST,NBAST),
      &          IBUF(4,600), WORK(*)
-#include <dftcom.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <ibtfun.h>
+#include "dftcom.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "ibtfun.h"
 C
       LBUF = 600
       JBUF = 256
@@ -1090,8 +1090,8 @@ C
       END
 C  /* Deck trsoao */
       SUBROUTINE TRSOAO(FCSO,WORK,LWORK,IDIM,IATOM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FCSO(*), WORK(LWORK)
 C
       IF (IPRINT .GT. 2) CALL TITLER('Subroutine TRSOAO','*',103)
@@ -1121,11 +1121,11 @@ C
       END
 C  /* Deck traoso */
       SUBROUTINE TRAOSO(FCAO,WORK,LWORK,IDIM,IATOM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION FCAO(*), WORK(LWORK)
-#include <aosotr.h>
+#include "aosotr.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Subroutine TRAOSO','*',103)
 C
@@ -1161,18 +1161,18 @@ C     tuh Sep 07 1988
 C
 C     hjaaj 2008: IATOM .eq. -1 introduced, called p.t. by abamolden.F
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
       DIMENSION ORBTRA(IDIM,IDIM)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IATOM .GT. 0) THEN
          FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
@@ -1224,9 +1224,9 @@ C     matrix in MO basis and tests by taking the trace of the Fock
 C     matrix and comparing it with the appropriate integral
 C     contributions to the molecular gradient.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D00, TWO = 2.D00)
       INTEGER P, Q, T, U, TU, QU
       LOGICAL NOH1, NOH2, NODC, NODV, NOPV
@@ -1236,9 +1236,9 @@ C
 C Used from common blocks:
 C  INFDIM: NASHDI
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <energy.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "energy.h"
       ITRI(I) = I*(I - 1)/2
 C
       CALL DZERO(FTD(1,1),NOCCT*NORBT)
@@ -1309,8 +1309,8 @@ C
       END
 C  /* Deck testtr */
       SUBROUTINE TESTTR(IATOM,ICOOR,IOPSYM,PV,H2D,QD,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     *****************************************************
 C     ***  Take trace of Q matrices and PV.H2D product  ***
@@ -1318,18 +1318,18 @@ C     ***  as a check of transformation.  This version  ***
 C     ***  handles symmetry.                            ***
 C     *****************************************************
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D00, D1 = 1.D00, TWO = 2.D00)
       PARAMETER (HALF = 0.5D00)
       INTEGER T, U, V, X, TU, VX
       DIMENSION PV(NNASHX,NNASHX), H2D(NNASHX,NNASHX)
       DIMENSION QD(NORBT,NASHT)
-#include <symmet.h>
-#include <inforb.h>
-#include <energy.h>
+#include "symmet.h"
+#include "inforb.h"
+#include "energy.h"
       ITRI(I) = I*(I - 1)/2
 C
       WRITE (LUPRI,'(/,A,/)')
@@ -1412,18 +1412,18 @@ C     This routine performs a test on differentiated overlap matrices by
 C     calculating the gradient reorthonormalization in MO basis and
 C     comparing it with the results obtained in AO basis.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.D00, TWO = 2.D00)
       LOGICAL DERIV(3)
       DIMENSION TD(NNORBX,3), FT(*), TRACE(3)
-#include <symmet.h>
-#include <inforb.h>
-#include <energy.h>
+#include "symmet.h"
+#include "inforb.h"
+#include "energy.h"
 C
       CALL HEADER('Reorthonormalization of gradient from'//
      *            ' overlap matrices in MO basis',0)
@@ -1481,14 +1481,14 @@ C     This routine transforms derivative SO matrices to MO basis.
 C
 C     tuh 010988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "infdim.h"
       DIMENSION CMO(NCMOT), WORK(LWORK),
      *          SQMO(NORBT,NORBT), SQSO(N2BASX)
       LOGICAL   NONSYM
@@ -1586,8 +1586,8 @@ C Put the lower triangle of A into the upper triangle of B
 C (if A = B, the matrix will become (anti)symmetric
 C  based on the lower triangle)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C
        DIMENSION A(NA,*), B(NB,*)
@@ -1624,14 +1624,14 @@ C     routine, K.Ruud, Nov.-93
 C     
 C     tuh 051088
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL DERIV(3), DIAGTD, DIVIDE, DOTD
       PARAMETER (D1 = 1.0D0)
       CHARACTER*4 KEY
-#include <abainf.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "inforb.h"
       DIMENSION CMO(*), TD(N2BASX,3), WORK(LWORK)
       CALL QENTER('GETSD')
       IF (IPRINT .GT. 05) THEN
@@ -1703,25 +1703,25 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER TMAT
       LOGICAL DERX, DERY, DERZ
       CHARACTER*4 KEY
       CHARACTER*7 KEY2
-#include <inforb.h>
+#include "inforb.h"
 #include "gnrinf.h"
-#include <abainf.h>
-#include <cbisol.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <qmmm.h>
-#include <efield.h>
-#include <infpar.h>
+#include "abainf.h"
+#include "cbisol.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "qmmm.h"
+#include "efield.h"
+#include "infpar.h"
       DIMENSION OMATX(N2BASX), OMATY(N2BASX), OMATZ(N2BASX),
      &          WORK(LWORK)
       IF (IPRINT .GT. 5) CALL TITLER('Output from ONEDRL','*',103)
@@ -1915,23 +1915,23 @@ C
 C     This subroutine retrieves one-electron differentiated matrices
 C     (one-electron Hamiltonian or overlap)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL DNULL, TOTSYM, FNDLAB
       CHARACTER*4 KEY
       CHARACTER*8 LABEL
-#include <nuclei.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <chrnos.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "chrnos.h"
       DIMENSION WORK(N2BASX), ONEMAT(N2BASX), TRONEM(NNBASX)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GE. 10) CALL TITLER('Output from ONEDER','*',103)
       CALL DZERO(TRONEM,NNBASX)
@@ -2042,8 +2042,8 @@ C
       END
 C  /* Deck gettd */
       SUBROUTINE GETTD(TD,NORBT,DIAGTD,DIVIDE,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D00, DP25 = 0.25D00)
       LOGICAL DIAGTD, DIVIDE
       DIMENSION TD(NORBT,NORBT)
@@ -2066,19 +2066,19 @@ C
 C     Collect the half differentiated overlap matrice needed when using
 C     new connections. K.Ruud June-94
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
       CHARACTER*8 LABEL
       DIMENSION WORK(N2BASX), ONEMAT(N2BASX)
       LOGICAL DNULL, FNDLAB, OPTST
-#include <inforb.h>
-#include <inftap.h>
-#include <chrnos.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "chrnos.h"
 C
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &            'UNFORMATTED',IDUMMY,.FALSE.)

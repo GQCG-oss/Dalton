@@ -21,17 +21,17 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck locini */
       SUBROUTINE LOCINI
 C
 C     Initialize LOCINF
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
-#include <locinf.h>
+#include "locinf.h"
 C
       CALL QENTER('LOCINI')
 C
@@ -52,10 +52,10 @@ C
 C***********************************************************************
 C  /* Deck locinp */
        SUBROUTINE LOCINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
        PARAMETER (NTABLE = 10, D0 = 0.0D0, NLAB = 20)
        PARAMETER (IZERO = 0)
@@ -64,8 +64,8 @@ C
        LOGICAL NEWDEF
        CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <locinf.h>
-#include <inforb.h>
+#include "locinf.h"
+#include "inforb.h"
 C
 CSPAS:31.05.11: MULLOC is not yet working correctly
 C      DATA TABLE /'.FOSBOY','.FBOVIR','.FBSETV','.FBSTVO','.MULLOC',
@@ -395,29 +395,29 @@ C      Stephan P. A. Sauer 18/11-1998
 C
 C      This routine is 
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C 
 C IRAT used from include file iratdef.h
 C LUPRI used from include file priunit.h
 C MXCENT is needed in COMMON /
 C inforb for NBAST
-#include <iratdef.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "iratdef.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
 C NBAST, NNBASX, N2BASX, NORBT, NSYM, NOCCT, NVIRT,
 C NRHF(8), NVIR(8), NBAS(8), NORB(8) used from COMMON /INFORB/
 C NWOPPT used from COMMON /INFLIN/
 C LUPROP used from COMMON /INFTAP/
-#include <inforb.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <locinf.h>
-#include <infpri.h>
-#include <molde.h>
+#include "inforb.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "locinf.h"
+#include "infpri.h"
+#include "molde.h"
 C
       PARAMETER (D0 = 0.0D+00, D1 = 1.0D+00, D2 = 2.0D+00)
       PARAMETER (THRLOC = 1.0D-12)
@@ -918,21 +918,21 @@ C     DR     INITIAL SUM OF (R**2)
 C     DS     FINAL SUM
 C     NR     ITERATION COUNTER
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C MAXORB is needed in COMMON /INFIND/
 C MAXASH is needed in COMMON /INFIND/
-#include <maxorb.h>
-#include <maxash.h>
+#include "maxorb.h"
+#include "maxash.h"
 C
 C NSYM, NOCCT, NORBT, NRHF(8), NVIR(8) used from COMMON /INFORB/
 C ISX(MAXORB) used from COMMON /INFIND/
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
 CPFP
-#include <locinf.h>
+#include "locinf.h"
 Cend-PFP
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DP25 = 0.25D0, THRSLD = 1.0D-15)
@@ -1234,9 +1234,9 @@ C     RM     DIPOLE LENGTH INTEGRALS
 C     CC     CENTROIDS
 C     DD     WORK ARRAY
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
       PARAMETER (D4 = 4.0D+00)
 C
@@ -1245,7 +1245,7 @@ C
       DIMENSION   DD(NOCCT,NOCCT)
 C
 C NOCCT used from COMMON /INFORB/
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL QENTER('DAB')
 C
@@ -1285,9 +1285,9 @@ C      THETA  TRANSFORMATION ANGLE
 C      RM     DIPOLE LENGTH INTEGRALS TO BE UPDATED
 C      SS     TRANSFORMATION MATRIX TO BE UPDATED
 C
-#include <implicit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
       DIMENSION   RM(NOCCT,NOCCT,3)
       DIMENSION   SS(NOCCT,NOCCT)
@@ -1295,9 +1295,9 @@ C
 C JTINAC, JTSEC, IOBTYP, ISW(MAXORB) used from COMMON /INFIND/
 C JWOP used from COMMON /INFVAR/
 C NOCCT used from COMMON /INFORB/
-#include <infind.h>
-#include <infvar.h>
-#include <inforb.h>
+#include "infind.h"
+#include "infvar.h"
+#include "inforb.h"
 C
       CALL QENTER('LOCROT')
 C
@@ -1360,19 +1360,19 @@ C
 C      This routine transforms a gradient <a|O|i> to localized orbitals.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C MAXASH used from include file maxash.h
 C MAXORB, MAXOCC used from include file maxorb.h
-#include <maxash.h>
-#include <maxorb.h>
+#include "maxash.h"
+#include "maxorb.h"
 C
 C JTINAC, JTSEC, IOBTYP, ISW(MAXORB) used from COMMON /INFIND/
 C JWOP used from COMMON /INFVAR/
 C NOCCT, NVIRT used from COMMON /INFORB/
-#include <infind.h>
-#include <infvar.h>
-#include <inforb.h>
+#include "infind.h"
+#include "infvar.h"
+#include "inforb.h"
 C
       DIMENSION CLOCO(NOCCT,NLOCC)
       DIMENSION CLOCV(NVIRT,NLOCC)
@@ -1431,21 +1431,21 @@ C      TT   SAME FOR VIRTUAL MO'S.
 C      VEC  WORK ARRAY, NVIRT*NVIRT
 C      TM   DITTO
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C MAXASH used from include file maxash.h
 C MAXORB, MAXOCC used from include file maxorb.h
-#include <maxash.h>
-#include <maxorb.h>
+#include "maxash.h"
+#include "maxorb.h"
 C
 C JWOP used from COMMON /INFVAR/
 C NOCCT, NVIRT used from COMMON /INFORB/
 C NWOPPT used from COMMON /INFLIN/
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <locinf.h>
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "locinf.h"
 C
       PARAMETER ( S0 = 0, D0 = 0.0D+00, D1 = 1.0D+00 )
 C
@@ -1753,20 +1753,20 @@ C     NOMAT: N. of rows.
 C     NSMAT: N. of colomns.
 C-------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C MAXASH used from include file maxash.h
 C MAXORB, MAXOCC used from include file maxorb.h
-#include <maxash.h>
-#include <maxorb.h>
+#include "maxash.h"
+#include "maxorb.h"
 C
 C JWOP used from COMMON /INFVAR/
 C NOCCT, NVIRT used from COMMON /INFORB/
 C NWOPPT used from COMMON /INFLIN/
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <inflin.h>
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "inflin.h"
 C
       PARAMETER ( D0 = 0.0D+00, D1 = 1.0D+00 )
       PARAMETER ( DCTE = 1.0D-02 )
@@ -1909,7 +1909,7 @@ C         If 'false' print only virtual orbitals
 C  KSET: Number of rows of either OMO or VMO (NLOCC or NLVIR).
 C  IOUT: output file unit
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*)
       LOGICAL   PROCC
       CHARACTER *8 ORBKND
@@ -1919,11 +1919,11 @@ C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('PLOCORB')
 C
@@ -1994,14 +1994,14 @@ C
 C     The vector in CX-array must be normalized.
 C     The vector in CY-array is normalized.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
       DIMENSION CX(N,NVEC)
       DIMENSION CY(N)
@@ -2052,21 +2052,21 @@ C  /* Deck mullloc */
 C
 C      Localize molecular orbitals with  Mulliken population functional
 C 
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C MAXORB is needed in COMMON /INFIND/
 C MAXASH is needed in COMMON /INFIND/
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
 C
 C NSYM, NOCCT, NORBT, NRHF(8), NVIR(8) used from COMMON /INFORB/
 C ISX(MAXORB) used from COMMON /INFIND/
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h> 
-#include <nuclei.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h" 
+#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D+00, D1 = 1.0D+00, D2 = 2.0D+00)
       PARAMETER (DP25 = 0.25D+00)
@@ -2163,20 +2163,20 @@ C     This subroutine generates sum over al the atoms calculating
 C     Aij Bij acording with formulas 29a 29b
 C----------------------------------------------------------------
 C      
-#include <implicit.h>
+#include "implicit.h"
 C     
 C     LUPRI used from include file priunit.h
 C     MAXORB is needed in COMMON /INFIND/
 C     MAXASH is needed in COMMON /INFIND/
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
 C     NSYM, NOCCT, NORBT, NRHF(8), NVIR(8) used from COMMON /INFORB/
 C     ISX(MAXORB) used from COMMON /INFIND/
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <nuclei.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D+00, D1 = 1.0D+00, D2 = 2.0D+00)
       PARAMETER (DP25 = 0.25D+00)
@@ -2223,21 +2223,21 @@ C     This subroutine calculates DMAX
 C    (some kind of threshold for convergence)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C MAXORB is needed in COMMON /INFIND/
 C MAXASH is needed in COMMON /INFIND/
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
 C
 C NSYM, NOCCT, NORBT, NRHF(8), NVIR(8) used from COMMON /INFORB/
 C ISX(MAXORB) used from COMMON /INFIND/
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h> 
-#include <nuclei.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h" 
+#include "nuclei.h"
 C   
       DIMENSION   AIJ(NOCCT,NOCCT),BIJ(NOCCT,NOCCT)
 C
@@ -2263,21 +2263,21 @@ C
 C     This subroutine does the actualization of the orbitals 
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C MAXORB is needed in COMMON /INFIND/
 C MAXASH is needed in COMMON /INFIND/
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
 C
 C NSYM, NOCCT, NORBT, NRHF(8), NVIR(8) used from COMMON /INFORB/
 C ISX(MAXORB) used from COMMON /INFIND/
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h> 
-#include <nuclei.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h" 
+#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D+00, D1 = 1.0D+00, D2 = 2.0D+00)
       PARAMETER (DP25 = 0.25D+00)
@@ -2339,12 +2339,12 @@ C       This subroutine copies the molden.inp ( with nonlocalized mo's )
 C       to molden1.inp ( with localized orbitals )
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <maxorb.h>
-#include <molde.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "maxorb.h"
+#include "molde.h"
        PARAMETER( N1 = 4, N2 = 7)
        DIMENSION CLMO(*),OCCUP(*)       
 CPFP
@@ -2466,22 +2466,22 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 ckr#include <bassel.h>
-#include <cbieri.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <maxorb.h>
+#include "cbieri.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "maxorb.h"
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aosotr.h>
-#include <chrsgn.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aosotr.h"
+#include "chrsgn.h"
 C
-#include <nuclei.h>
-#include <symmet.h>
-#include <molde.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "molde.h"
 C    
       LOGICAL WRTELEM,WRTZERO
       DIMENSION ORVAL(*), OCCUP(*)
@@ -2575,26 +2575,26 @@ C***********************************************************************
 C  /* Deck lmoatoms */
       SUBROUTINE LMOATOMS(WORD)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 
       CHARACTER*4 NAME
       CHARACTER*4 WORD
 CPFP with pgi77
-#include <molde.h>
+#include "molde.h"
 Cend-PFP
-#include <priunit.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <cbirea.h>
-#include <inftap.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "priunit.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "cbirea.h"
+#include "inftap.h"
+#include "chrxyz.h"
+#include "chrsgn.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 CPFP with g77
 C#include <molde.h>
 Cend-PFP

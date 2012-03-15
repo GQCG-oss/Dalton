@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_inifro */
       SUBROUTINE CC_INIFRO(WORK,LWORK)
@@ -30,21 +30,21 @@ C     Written by Asger Halkier 22/5 - 1998.
 C
 C     Set up index arrays needed for frozen core gradients.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION WORK(LWORK)
 C
       EXTERNAL INIDAT
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <symsq.h>
-#include <ccisao.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "symsq.h"
+#include "ccisao.h"
+#include "r12int.h"
 C
 C----------------------------------------
 C     Calculate index arrays for lengths.
@@ -258,16 +258,16 @@ C
 C     To reorder the solution vector from the abacus-response
 C     solver to cc-standards.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION SOLU(*), ZKAM(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       IF (FROIMP) THEN
 C
@@ -335,16 +335,16 @@ C
 C     To reorder the eta-kappa-0 vector for the abacus-response
 C     solver.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ETAAI(*), AFROI(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       IF (FROIMP) THEN
 C
@@ -405,20 +405,20 @@ C     Written by Asger Halkier 25/5 - 1998.
 C
 C     To calculate the frozen-occupied block (iJ) of kappa-bar-0.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       DIMENSION RES(*), T2MAM(*), WORK(LWORK)
       INTEGER YIJIJ, YIJIJT
       LOGICAL   R12PRP
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C---------------------------
 C     Work space allocation.
@@ -584,15 +584,15 @@ C
 C     To read in and change the symmetry ordering of the FULL
 C     MO coefficient matrix from Sirius to CC-ordering.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION CMO(*),WORK(LWORK)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "r12int.h"
 C
 C----------------------------------------------
 C     Read MO-coefficients from interface file.
@@ -660,18 +660,18 @@ C
 C     To calculate the integrals (cJ|dk) needed for frozen-core gradients.
 C     AO integrals are assumed totally symmetric.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "r12int.h"
 C
 C---------------------------------------
 C     Initial symmetries and allocation.
@@ -839,19 +839,19 @@ C     To calculate the integrals (pJ|Ik) needed for frozen-core gradients.
 C     AO integrals are assumed totally symmetric.
 c     based on cc_frcoin (Elena Vollmer 29/09/04) 
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
       integer  ilorbi(8),iv2fro(8,8),iv1fro(8,8)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "r12int.h"
 C
 C---------------------------------------
 C     Initial symmetries and allocation.
@@ -1036,19 +1036,19 @@ C     To calculate the integrals (pJ|IK) needed for frozen-core gradients.
 C     AO integrals are assumed totally symmetric.
 c     based on cc_frcoin (Elena Vollmer 29/09/04) 
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
       integer  iglmrf(8,8),ilorbi(8),iv2fro(8,8),iv1fro(8,8)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "r12int.h"
 C
 C---------------------------------------
 C     Initial symmetries and allocation.
@@ -1240,18 +1240,18 @@ C     R12 version of CC_FRCOIN (WK/UniKA/20-08-2003)
 C
 C     Transform (ab|cd) into (p'J|kL), with J and L frozen.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "r12int.h"
 C
 C---------------------------------------
 C     Initial symmetries and allocation.
@@ -1398,14 +1398,14 @@ C
 C     To read in and change the symmetry ordering of the FULL
 C     Fock matrix diagonal from Sirius to CC-ordering.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION FOCKD(*),WORK(LWORK)
-#include <priunit.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       IF (LWORK .LT. NORBTS) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', NORBTS
@@ -1471,15 +1471,15 @@ C
 C     To calculate the contributions to the AO one electron
 C     density AODEN from the frozen core blocks.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION AODEN(*), DIJ(*), DJI(*), DAI(*), DIA(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       CHARACTER MODEL*5
 C
@@ -1671,15 +1671,15 @@ C     Written by Asger Halkier 28/5 - 1998.
 C
 C     To calculate the integral batch (al be | fro del).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XINT(*), DSFRO(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       DO 100 ISYMG = 1,NSYM
 C
@@ -1708,15 +1708,15 @@ C     Written by Asger Halkier 28/5 - 1998.
 C
 C     To calculate the integral batch (cor fro | cor del).
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION DSRHF(*), DSRES(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C-------------------------------------------------------
 C     Outer symmetry loop and work space allocation one.
@@ -1814,15 +1814,15 @@ C
 C     To calculate the direct contribution to the frozen part of
 C     eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAFRO(*), DSINT(*), TINT(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C----------------------------
 C     Calculate contribution.
@@ -1867,15 +1867,15 @@ C
 C     To calculate the coulomb part of the indirect virtual
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION ETAFRO(*), XINTFR(*), ZKAB(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -1992,15 +1992,15 @@ C
 C     To calculate the exchange part of the indirect virtual
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAFRO(*), XINTFR(*), ZKAB(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C------------------------------------------------
 C     Initial symmetries & work space allocation.
@@ -2131,15 +2131,15 @@ C
 C     To calculate the coulomb part of the indirect correlated
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
       DIMENSION ETAFRO(*), XINTFR(*), ZKIJ(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2256,15 +2256,15 @@ C
 C     To calculate the exchange part of the indirect correlated
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAFRO(*), XINOFO(*), ZKIJ(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2352,15 +2352,15 @@ C
 C     To calculate the coulomb part of the indirect frozen
 C     contribution to the correlated part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, EIGHT = 8.0D0)
       DIMENSION ETAAI(*), XINOFO(*), ZKJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2416,15 +2416,15 @@ C
 C     To calculate the coulomb part of the indirect frozen
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, EIGHT = 8.0D0)
       DIMENSION ETAFRO(*), XINTFR(*), ZKJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2541,15 +2541,15 @@ C
 C     To calculate the first exchange part of the indirect frozen
 C     contribution to the correlated part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAAI(*), XINOFO(*), ZKJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2632,15 +2632,15 @@ C
 C     To calculate the second exchange part of the indirect frozen
 C     contribution to the correlated part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAAI(*), DSFRO(*), ZKJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2772,15 +2772,15 @@ C
 C     To calculate the second exchange part of the indirect frozen
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAFRO(*), DSFRO(*), ZKJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -2912,15 +2912,15 @@ C
 C     To calculate the first exchange part of the indirect frozen
 C     contribution to the frozen part of eta in MP2 calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAFRO(*), DSRHF(*), ZKJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -3061,16 +3061,16 @@ C              electron integrals or a submatrix alfa,beta of the two
 C              electron integrals (alfa beta|gamma delta)!
 C              ISYM is the integral symmetry!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION XFIJ(*), XFJI(*), XFAI(*), XFIA(*), XFII(*)
       DIMENSION XAOINT(*), XLAMDP(*), XLAMDH(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C------------------------------
 C     Initialize result arrays.
@@ -3241,16 +3241,16 @@ C
 C     Purpose: To calculate the contributions to eta-ai-0 from
 C              intermediate looping over frozen.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), XFIJ(*), XFJI(*), XFAI(*), XFIA(*), DFIJ(*)
       DIMENSION DFJI(*), DFAI(*), DFIA(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C------------------------------
 C     Do the four direct terms.
@@ -3446,16 +3446,16 @@ C
 C     Purpose: To calculate the contributions to eta-ab-0 from
 C              intermediate looping over frozen.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAB(*), XFIJ(*), XFJI(*), XFAI(*), XFIA(*), DFIJ(*)
       DIMENSION DFJI(*), DFAI(*), DFIA(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C------------------------------
 C     Do the four direct terms.
@@ -3598,16 +3598,16 @@ C
 C     Purpose: To calculate the contributions to eta-ij-0 from
 C              intermediate looping over frozen.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), XFIJ(*), XFJI(*), XFAI(*), XFIA(*), DFIJ(*)
       DIMENSION DFJI(*), DFAI(*), DFIA(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C------------------------------
 C     Do the four direct terms.
@@ -3747,14 +3747,14 @@ C     Version: 1.0
 C
 C     Purpose: To calculate the simple frozen-frozen 1 electron density.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(TWO = 2.0D0)
       DIMENSION DFII(*)
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       CALL DZERO(DFII,NFROFR(1))
 C
@@ -3780,18 +3780,18 @@ C     Purpose: To calculate eta-iJ-0. ISYM is the symmetry of the
 C              integrals and densities and IOPT controls the one
 C              and two electron contributions.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), DIJ(*), DAB(*), DAI(*), DIA(*), DIJT(*)
       DIMENSION DFII(*), DFIJ(*), DFJI(*), DFAI(*), DFIA(*), XIJ(*)
       DIMENSION XAI(*), XIA(*), XIJT(*), XABT(*), XFIJ(*), XFJI(*)
       DIMENSION XFAI(*), XFIA(*), XFII(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C-------------------------------
 C     Do the direct terms first.
@@ -3982,16 +3982,16 @@ C     Purpose: To calculate eta-IJ-0. ISYM is the symmetry of the
 C              integrals and densities and IOPT controls the one
 C              and two electron contributions.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), DFII(*), DFIJ(*), DFJI(*), DFAI(*), DFIA(*)
       DIMENSION XFIJ(*), XFJI(*), XFAI(*), XFIA(*), XFII(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       DO 100 ISYMI = 1,NSYM
 C
@@ -4087,17 +4087,17 @@ C     Written by Asger Halkier 15/8 - 1998.
 C
 C     To calculate the frozen-occupied block (iJ) of kappa-bar-0.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       DIMENSION ZKDIA(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C---------------------------
 C     Work space allocation.
@@ -4160,18 +4160,18 @@ C     Purpose: To calculate eta-aI-0. ISYM is the symmetry of the
 C              integrals and densities and IOPT controls the one
 C              and two electron contributions.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), DAB(*), DAI(*), DIA(*), DIJT(*), DABT(*)
       DIMENSION DFII(*), DFIJ(*), DFJI(*), DFAI(*), DFIA(*), XIJ(*)
       DIMENSION XAB(*), XAI(*), XIA(*), XABT(*), XFIJ(*), XFJI(*)
       DIMENSION XFAI(*), XFIA(*), XFII(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>      
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"      
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C-------------------------------
 C     Do the direct terms first.
@@ -4351,15 +4351,15 @@ C
 C     To calculate the coulomb part and the first exchange part of the
 C     intermediate needed for the frozen-correlated correction to eta-ai.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, EIGHT = 8.0D0)
       DIMENSION XINTAI(*), XINOFO(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -4412,15 +4412,15 @@ C
 C     To dump intermediates needed for the frozen-correlated corrections
 C     to eta-ai & eta-aI to disc.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, EIGHT = 8.0D0)
       DIMENSION XINTAI(*), XINAIF(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       CHARACTER NAME1*8
       CHARACTER NAME2*8
@@ -4458,15 +4458,15 @@ C
 C     To calculate the frozen-correlated corrections to eta-ai &
 C     eta-aI from intermediates on disc.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, ONE = 1.0D0)
       DIMENSION ETAAI(*), ETAAIF(*), ZETAJK(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       CHARACTER NAME1*8
       CHARACTER NAME2*8
@@ -4623,15 +4623,15 @@ C
 C     To calculate the second exchange part of the intermediates needed
 C     for the frozen-correlated correction to eta-ai and eta-aI.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINTAI(*), XINAIF(*), DSFRO(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -4756,15 +4756,15 @@ C
 C     To calculate the coulomb part of the intermediates needed
 C     for the frozen-correlated correction to eta-aI.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, EIGHT = 8.0D0)
       DIMENSION XINAIF(*), DSFRO(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.
@@ -4869,15 +4869,15 @@ C
 C     To calculate the first exchange part of the intermediates
 C     needed for the frozen-correlated correction to eta-aI.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINAIF(*), DSRHF(*), CMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
 C--------------------------------------------------
 C     Initial symmetries and work space allocation.

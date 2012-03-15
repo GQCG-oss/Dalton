@@ -2906,7 +2906,7 @@ C
       IMPLICIT NONE
       INTEGER IATOM
 C
-#include <ecpinf.h>
+#include "ecpinf.h"
 C
       INTEGER ITYP, INONT
 C

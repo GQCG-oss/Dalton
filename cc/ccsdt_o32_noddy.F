@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_O32_NODDY(LISTX,IDLSTX,LISTY,IDLSTY,
@@ -43,11 +43,11 @@ C
 *     Written by Christof Haettig, Mai 2003, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "ccr1rsp.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -251,9 +251,9 @@ C       CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,HALF,WORK(KT3AMPXY),1)
 *     Written by Christof Haettig, May 2003, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>  
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"  
 
       LOGICAL HAVEX, HAVEY, HAVEXY, LT3AMPXY, LWXYOINT, LWXYVINT
 
@@ -533,9 +533,9 @@ C     END IF
 *     Written by Christof Haettig, May 2003, Friedrichstal            *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>  
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"  
 
       LOGICAL HAVEX, HAVEY, HAVEXY, LOTRN, LVTRN, LTXYOINT, LTXYVINT
 
@@ -739,12 +739,12 @@ C     END IF
 * Written by Christof Haettig, Jun 2003, Friedrichstal                *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <ccr1rsp.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "ccr1rsp.h"
+#include "ccnoddy.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)

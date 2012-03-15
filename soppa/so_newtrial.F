@@ -16,10 +16,10 @@ C              matrices.
 C              The orthogonalization of the new trial vector is
 C              not performed here but in SO_ORTH_TRN.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (DTHRES = 1.0D-04)

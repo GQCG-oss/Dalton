@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_AATST */
@@ -294,21 +294,21 @@ C
 C Christof Haettig, july 1999
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "cclists.h"
 C
 C------------------------------------------------------------
 C     the displacement for the finite difference calculation:

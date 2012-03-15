@@ -38,18 +38,18 @@ C     CC2 (without frozen core) by A. Halkier & S. Coriani 20/01-2000.
 C     CCSD(T) by S. Coriani 05/04/2003. 
 C     OBS: CCSD(T) is treated as an addition to CCSD 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "eridst.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL SAVDIR, LEX, SAVHER, OLDDX
@@ -63,20 +63,20 @@ C
       CHARACTER*5 FNDPTIA
       logical LCCSD_SAV
 !
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
-#include <drw2el.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
+#include "drw2el.h"
 C
       CALL QENTER('CC2EEXP_1')
 C

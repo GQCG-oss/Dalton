@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CDENS1(ISYMB,CMO,ZYMB,DXCAO,WRK,LWRK)
 C
@@ -38,7 +38,7 @@ C Input:
 C   CMO(*)  molecular orbital coefficients
 C   ZYMB(*)  kappa matrix 1  unpacked
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT)
       DIMENSION CMO(*),DXCAO(*),WRK(*)
 C
@@ -48,11 +48,11 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C
       CALL DZERO(DXCAO,N2BASX)
@@ -81,7 +81,7 @@ C   CMO(*)  molecular orbital coefficients
 C   ZYMB(*)  kappa matrix 1  unpacked
 C   JINDX    indicates the inactive sumation index
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT)
       DIMENSION CMO(*),DXCAO(*),WRK(*)
 C
@@ -89,11 +89,11 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C
       KDXAO1 = 1
@@ -160,7 +160,7 @@ C   CMO(*)  molecular orbital coefficients
 C   ZYMB(*)  kappa matrix 1  unpacked
 C   ZYMC(*)  kappa matrix 2  unpacked
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT),ZYMC(NORBT,NORBT)
       DIMENSION CMO(*),DXCAO(*),DXAO1(*),DXAO2(*),XKAP(*)
 C
@@ -170,12 +170,12 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       CALL CDEN2(ISYMB,ISYMC,CMO,1,D1 ,ZYMB,ZYMC,DXCAO,DXAO1,DXAO2,XKAP)
       CALL CDEN2(ISYMB,ISYMC,CMO,2,DM1,ZYMB,ZYMC,DXCAO,DXAO1,DXAO2,XKAP)
@@ -206,7 +206,7 @@ C   ZYMB(*)  kappa matrix 1  unpacked
 C   ZYMC(*)  kappa matrix 2  unpacked
 C   JINDX    indicates the inactive sumation index
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT),ZYMC(NORBT,NORBT)
       DIMENSION CMO(*),DXCAO(*),DXAO1(N2BASX),DXAO2(N2BASX),XKAP(N2ORBX)
 C
@@ -214,12 +214,12 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
 C
       CALL DZERO(DXAO2,N2BASX)
@@ -289,7 +289,7 @@ C   ZYMB(*)  kappa matrix 1  unpacked
 C   ZYMC(*)  kappa matrix 2  unpacked
 C   ZYMD(*)  kappa matrix 3  unpacked
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT),ZYMC(NORBT,NORBT),ZYMD(NORBT,NORBT)
       DIMENSION CMO(*),DXCAO(*),DXAO1(*),DXAO2(*),XKAP(*)
 C
@@ -299,12 +299,12 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       CALL CDEN3(ISYMB,ISYMC,ISYMD,CMO,1,D1,
      &                  ZYMB,ZYMC,ZYMD,DXCAO,DXAO1,DXAO2,XKAP)
@@ -348,7 +348,7 @@ C   ZYMC(*)  kappa matrix 2  unpacked
 C   ZYMD(*)  kappa matrix 3  unpacked
 C   JINDX    indicates the inactive sumation index
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT),ZYMC(NORBT,NORBT),ZYMD(NORBT,NORBT)
       DIMENSION CMO(*),DXCAO(*),DXAO1(N2BASX),DXAO2(N2BASX),XKAP(N2ORBX)
 C
@@ -356,12 +356,12 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
 C
       CALL DZERO(DXAO2,N2BASX)
@@ -432,15 +432,15 @@ C Input:
 C   ZYMB(*)  kappa matrix 1  unpacked
 C   ZYMC(*)  kappa matrix 2  unpacked
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMB(NORBT,NORBT),ZYMC(NORBT,NORBT)
       DIMENSION ZYMBC(NORBT,NORBT)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C loop over symmetries then put result in ZYMBC
 C
@@ -490,15 +490,15 @@ C Input:
 C   ZYMBC(*)  kappa matrix product
 C   ZYMD (*)  kappa matrix unpacked
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYMBC(NORBT,NORBT),ZYMD(NORBT,NORBT)
       DIMENSION ZYMBCD(NORBT,NORBT)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C loop over symmetries then put result in ZYMBCD
 C
@@ -554,15 +554,15 @@ C   ZYM(*)  kappa matrix
 C   CMO(*)  MO coefficients
 C   TMP(*)  temporary matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYM(NORBT,NORBT),TMP(NORBT,NORBT)
       DIMENSION CMO(*),DAO(NBAST,NBAST)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C loop over symmetries
 C
@@ -637,15 +637,15 @@ C   ZYM(*)  kappa matrix
 C   CMO(*)  MO coefficients
 C   TMP(*)  temporary matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ZYM(NORBT,NORBT),TMP(NORBT,NORBT)
       DIMENSION CMO(*),DAO(NBAST,NBAST)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C loop over symmetries
 C

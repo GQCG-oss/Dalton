@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCFBINT2(ITRAN,   LABELH, TA2AMP, 
@@ -62,12 +62,12 @@ C
 * (OBS: the routine is not called for CCS!!!)
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccfield.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

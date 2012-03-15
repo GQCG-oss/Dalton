@@ -21,14 +21,14 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck xerox */
       SUBROUTINE XEROX(N,DX,DY)
 C
 C     dy(i) = dx(i)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DX(N), DY(N)
 C
       DO I = 1, N
@@ -42,7 +42,7 @@ C  /* Deck dxerox */
 C
 C     dy(i) = dy(i) + dx(i)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DX(N), DY(N)
 C
       DO I = 1, N
@@ -56,7 +56,7 @@ C  /* Deck ixerox */
 C
 C     iy(j) = iy(j) + ix(j)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IX(N), IY(N)
 C
       DO J = 1, N
@@ -70,8 +70,8 @@ C  /* Deck draise */
 C
 C     dy(i) = dx(i)^k
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D00)
       DIMENSION DX(N), DY(N)
 C
@@ -100,8 +100,8 @@ C  /* Deck caxpi */
 C
 C     dy(i) = da*dx(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX(N), DY(N)
 C
       DO I = 1, N
@@ -115,8 +115,8 @@ C  /* Deck cady */
 C
 C     dy(i) = da*dx1(i)*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       DO I = 1, N
@@ -130,8 +130,8 @@ C  /* Deck dady */
 C
 C     dy(i) = dy(i) + da*dx1(i)*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       DO I = 1, N
@@ -145,8 +145,8 @@ C  /* Deck caddy */
 C
 C     dy(i) = da*dx1(i)^k*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       IF (K .EQ. 0) THEN
@@ -174,8 +174,8 @@ C  /* Deck daddy */
 C
 C     dy(i) = dy(i) + da*dx1(i)^k*dx2(i)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DX1(N), DX2(N), DY(N)
 C
       IF (K .EQ. 0) THEN
@@ -232,7 +232,7 @@ C          FLORIDA, GAINESVILLE
 C..........VERSION = 09/05/73/03
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO=0.D00)
       INTEGER   BEGIN
       LOGICAL   TEST
@@ -416,7 +416,7 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO=0.D00)
       INTEGER   ROWDIM,COLDIM,KCOL,BEGIN
       LOGICAL   TEST
@@ -514,7 +514,7 @@ C
       END
 C  /* Deck getname */
       SUBROUTINE GETNAME(HSTNAM)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(20) HSTNAM
 C
 #if defined (SYS_HAL) || defined (VAR_G95)
@@ -527,8 +527,8 @@ C
       END
 C  /* Deck getdate */
       SUBROUTINE GETDATE
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
 #endif

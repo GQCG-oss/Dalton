@@ -30,11 +30,11 @@ c     MP2-R12 gradient
 c---------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       logical ldum
 #if defined (SYS_CRAY)
       real zero,one
@@ -198,13 +198,13 @@ C  /* Deck cc_r12gradfr */
       subroutine cc_r12gradfr(ipdd,orb,v2am,work,lwork)
 C     Calculate MP2-R12 contributions for frozen core gradients 
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       logical locdbg,ldum
       parameter (locdbg = .false.)
       character*10 CCR12YIJIJ
@@ -611,12 +611,12 @@ C=====================================================================*
 C  /* Deck r12gradapfr */
       subroutine r12gradapfr(ipdd,res,orb,work,v2am,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       integer kccr12,krsing,krtrip,kctil,kend1,lwrk1,nrhftria,n2 
       integer lwork,lu43,idxkl,isymv,isymi,isymj,isymk,idxij
       integer isyml,isymkl,isymij,idxji,idxklij,idxijkl,idxklji
@@ -1061,12 +1061,12 @@ C  /* Deck r12gradaxd */
       subroutine r12gradaxdfr(ipdd,kccr12,kctil,dklij,work,v2am,res,
      &                      lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       character*8 CCR12YIJ
       integer krsing,krtrip,kend1,lwrk1,nrhftria,n2
       integer lwork,lu43,idxkl,isymv,isymi,isymj,isymk,idxij
@@ -1298,12 +1298,12 @@ C=====================================================================*
 C  /* Deck r12gradbfr */
       subroutine r12gradbfr(res,dklij,work,ntklaj,ncvai,lwork)
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <r12int.h>
-#include <priunit.h>
-#include <ccfro.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "r12int.h"
+#include "priunit.h"
+#include "ccfro.h"
       logical locdbg
       parameter (locdbg = .false.)
       integer kqajkl,kqijal,kuijal,krajkl,kend1

@@ -35,19 +35,19 @@ C     suggests. Since the amplitudes are constructed on-the-fly, each
 C     list (L or R) must be coded explicitly with the current structure
 C     of the program.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) LISTL, LISTR, LISTD
       CHARACTER*10  FILDEN
       LOGICAL   DELDEN
       INTEGER   IPDEN(3,NPDEN)
       INTEGER   ORDER
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOPDEN')
@@ -174,25 +174,25 @@ C     in LISTR as specified in IPDEN(2,*)):
 C
 C        D(jk),D(jb),D(cb).
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IPDEN(3,NPDEN)
       CHARACTER*(*) LISTR, LISTD
       CHARACTER*10  MODEL, FILDEN
       DIMENSION WORK(LWORK)
       LOGICAL   DELDEN, SKPSNG
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ciarc.h>
-#include <ccr1rsp.h>
-#include <chocc2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ciarc.h"
+#include "ccr1rsp.h"
+#include "chocc2.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1D')
@@ -1119,18 +1119,18 @@ C              vectors are available on disk in files specified through
 C              ITY1 and ITY2 (number of vectors in each symmetry in NUMCHO).
 C              The Cholesky vectors are assumed total symmetric.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), TBAR1(*), FIA(*), WORK(LWORK)
       INTEGER   LAIJ(8), NUMCHO(8)
       LOGICAL   DEL1, DEL2
       CHARACTER*8 FILMUL(8)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <ciarc.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "ciarc.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOMUL0')
@@ -1503,15 +1503,15 @@ C
 C        LWRK   : Dimension of work space reserved for
 C                 tbar(#ai,#bj) integral/amplitude batch.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LAIJ(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <priunit.h>
-#include <ciarc.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "priunit.h"
+#include "ciarc.h"
+#include "chocc2.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ML0MSP')
@@ -1942,11 +1942,11 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Get start and end info of a virtual batch from IOFA1 and LVIRA.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER ABEG, AEND
       INTEGER IOFA1(8), LVIRA(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
 C     Find first and last a.
 C     ----------------------
@@ -2024,18 +2024,18 @@ C                 principle be fixed by reading the relevant L blocks when
 C                 needed. This, however, leads to two reads for larger
 C                 batch sizes (and, notably, in calculations without symmetry).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DENJK(*), DENJB(*), DENCB(*), XL1AM(*), XR2AM(*)
       DIMENSION WORK(LWORK)
       INTEGER   LAIJ(8)
       CHARACTER*8 FILMUL(8)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <ciarc.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "ciarc.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1D1')
@@ -2569,16 +2569,16 @@ C     Purpose: Calculate Eta(A)*T(B) doubles contribution to the linear
 C              response function using the right first-order density.
 C              For debugging.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER       IPDEN(3,NPDEN)
       CHARACTER*(*) LISTR,LISTD
       CHARACTER*10  MODEL
       DIMENSION     WORK(LWORK)
       LOGICAL       STPDBG
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccr1rsp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccr1rsp.h"
 
       CHARACTER*13 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1DBGAO')
@@ -2748,17 +2748,17 @@ C     Purpose: Calculate Eta(A)*T(B) doubles contribution to the linear
 C              response function using the right first-order density.
 C              For debugging.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER       IPDEN(3,NPDEN)
       CHARACTER*(*) LISTR,LISTD
       CHARACTER*10  MODEL,FILDEN
       DIMENSION     WORK(LWORK)
       LOGICAL       DELDEN,STPDBG
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "dummy.h"
 
       CHARACTER*13 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1DBGMO')
@@ -2982,15 +2982,15 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Initialize densities on disk.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IPDEN(3,NPDEN)
       CHARACTER*(*) LISTR
       CHARACTER*10  FILDEN
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccr1rsp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccr1rsp.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHODINI')
@@ -3035,11 +3035,11 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Debug CC_CHOR1D1.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XL2AM(*), XR2AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*13 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1D1DBG')
@@ -3156,24 +3156,24 @@ C     in LISTR as specified in IPDEN(2,*)):
 C
 C        D(jk),D(jb),D(cb).
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IPDEN(3,NPDEN)
       CHARACTER*(*) LISTR
       CHARACTER*10  MODEL, FILDEN
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ciarc.h>
-#include <ccr1rsp.h>
-#include <chocc2.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ciarc.h"
+#include "ccr1rsp.h"
+#include "chocc2.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOR1DS')

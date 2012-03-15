@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c  /* Deck cc_drv */
       SUBROUTINE CC_DRV(WORK,LWORK)
@@ -89,36 +89,36 @@ C            CC(3),CCSDR(3), CC3,CC1A,CC1B
 C            (see list below for name of logical flags.)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <ccgr.h>
-#include <cclrinf.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccfdgeo.h>
-#include <ccslvinf.h>
-#include <ccexci.h>
-#include <prpc.h>
-#include <ccfop.h>
-#include <ccfro.h>
-#include <eribuf.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <grdccpt.h>
-#include <ccfield.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "ccgr.h"
+#include "cclrinf.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccfdgeo.h"
+#include "ccslvinf.h"
+#include "ccexci.h"
+#include "prpc.h"
+#include "ccfop.h"
+#include "ccfro.h"
+#include "eribuf.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "grdccpt.h"
+#include "ccfield.h"
+#include "qm3.h"
 C
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C
       PARAMETER(NMODEL = 18)
@@ -1171,27 +1171,27 @@ C              cluster routines: ground state energies, excitation energies etc.
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "dummy.h"
       DIMENSION WORK(LWORK)
       CHARACTER*80  STR
       CHARACTER STHELP*10
       CHARACTER LABEL*10, LABEL1*8
       
-#include <codata.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <cclr.h>
-#include <prpc.h>
-#include <ccpack.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <numder.h>
+#include "codata.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "cclr.h"
+#include "prpc.h"
+#include "ccpack.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "numder.h"
 C
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
@@ -1362,9 +1362,9 @@ C     Ove Christiansen 14-11-1995
 C
 C     Purpose: set all model flags to false.
 C
-#include <implicit.h>
-#include <ccsdinp.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "ccsdinp.h"
+#include "cclr.h"
 C
       CALL QENTER('CC_FALSE')
 C
@@ -1399,12 +1399,12 @@ C     Ove Christiansen 13-2-1997
 C
 C     Purpose: Set energy for finite difference gradient calculation.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccgr.h>
-#include <ccfdgeo.h>
-#include <infopt.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccgr.h"
+#include "ccfdgeo.h"
+#include "infopt.h"
 C
       CALL QENTER('CC_FDGD')
 C
@@ -1446,9 +1446,9 @@ C
 *    Purpose: read flags from /ABAINF/ common block used in CC
 *
 *=====================================================================*
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
 
       LOGICAL MOLGRDCC
 
@@ -1471,8 +1471,8 @@ C
 *     Purpose: Initialize coupled cluster unit numbers and file names
 *
 *=====================================================================*
-#include <implicit.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "ccinftap.h"
 C
       CALL QENTER('CCTAPINI')
 C
@@ -1492,10 +1492,10 @@ C     Ove Christiansen Nov. 1999
 C
 C     Purpose: Write out operators.
 C
-#include <implicit.h>
-#include <ccsdinp.h>
-#include <ccroper.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "ccsdinp.h"
+#include "ccroper.h"
+#include "dummy.h"
 C
       CALL QENTER('CC_WPRPC  ')
 C
@@ -1521,10 +1521,10 @@ C
 C     Purpose: Reorder PRPC list to fit old PRPC2 lists.
 C              Property list for numerical differentiation.
 C
-#include <implicit.h>
-#include <prpc.h>
-#include <priunit.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "prpc.h"
+#include "priunit.h"
+#include "ccinftap.h"
       CHARACTER LABELI*10, LABXI*8, LABYI*8, LABZI*8, LABUI*8
       CHARACTER LABELJ*10, LABXJ*8, LABYJ*8, LABZJ*8, LABUJ*8
 C
@@ -1641,9 +1641,9 @@ C     IF IOPT = 1 the properties on file is output.
 C     IF IOPT = 2 the properties in vector propin is output with
 C                 labels etc. comming from the prpc list.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <prpc.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "prpc.h"
       CHARACTER STHELP*10
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
       DIMENSION PROPIN(*)

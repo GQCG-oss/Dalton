@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_AAMAT */
 *=====================================================================*
@@ -51,14 +51,14 @@ c /* deck CC_AAMAT */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       CHARACTER*1 CDUMMY
       PARAMETER (CDUMMY = ' ')

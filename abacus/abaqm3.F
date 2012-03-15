@@ -34,15 +34,15 @@ c
 c VEC2 (OUTPUT)  : contribution to be added to perturbed Fock matrix
 c NCOMP (INPUT)  : number of independent perturbation (3)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
+#include "inforb.h"
 C#include <infpri.h>
 C#include <infvar.h>
 C
@@ -242,15 +242,15 @@ c
 c VEC2 (OUTPUT)  : contribution to be added to perturbed Fock matrix
 c NCOMP (INPUT)  : number of independent perturbation (3)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
+#include "inforb.h"
 Cahs#include <infpar.h>
 Cahs#include <mtags.h>
 Cahs#if defined(VAR_MPI)
@@ -339,20 +339,20 @@ C-----------------------------------------------------
 C
       SUBROUTINE QM3FIRST_M1(VEC2,IATNOW,NOSIM,INUM,LNUM,WORK,LWORK)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "inforb.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 C
       CHARACTER*8 LABINT(9*MXCENT)
@@ -429,21 +429,21 @@ C     Collect data from all slaves
 C-----------------------------------------------------
       SUBROUTINE QM3FIRST_S1(WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
-#include <magone.h>
+#include "inforb.h"
+#include "magone.h"
 
-#include <infpar.h>
-#include <mtags.h>
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       CHARACTER*8 LABINT(9*MXCENT)
@@ -535,21 +535,21 @@ C-----------------------------------------------------
       SUBROUTINE QM3FIRST_M2(RAX,RAY,RAZ,ENSAX,ENSAY,ENSAZ,LM,
      &                       VEC2,IATNOW,NOSIM,INUM,LNUM,WORK,LWORK)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
-#include <magone.h>
+#include "inforb.h"
+#include "magone.h"
 
-#include <infpar.h>
-#include <mtags.h>
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
@@ -638,21 +638,21 @@ C     Collect data from all slaves
 C-----------------------------------------------------
       SUBROUTINE QM3FIRST_S2(WRK,LWRK,IPRTMP)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
-#include <magone.h>
+#include "inforb.h"
+#include "magone.h"
 
-#include <infpar.h>
-#include <mtags.h>
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL EXP1VL, TRIMAT
@@ -799,15 +799,15 @@ c Copenhagen, January 2006, K.Ruud
 c
 c EXPVAL (OUTPUT): contribution to be added to diamagnetic magnetizability
 c
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 #include "nuclei.h"
 #include "qm3.h"
-#include <inforb.h>
+#include "inforb.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL

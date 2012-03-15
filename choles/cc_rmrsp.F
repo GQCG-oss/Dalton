@@ -9,11 +9,11 @@ C
 C     Originally written with the purpose of deleting effective rhs
 C     vector files in Cholesky CC2.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) LIST
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_RMRSP')

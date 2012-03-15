@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #if defined (SYS_CRAY)
       SUBROUTINE CCSD_DIIS(S,T,NDIM,NITER)
@@ -31,7 +31,7 @@ C.... USES S AS PARAMETER VECTOR AND S-T AS ERROR VECTOR
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 C
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER (MAXVEC=8)
       COMMON/DICED/IPOSP(MAXVEC+1),IPOSE(MAXVEC+1),A(MAXVEC+1,MAXVEC+1)
       DIMENSION B(MAXVEC+1),C(MAXVEC+1),WK1(MAXVEC+1),WK2(MAXVEC+1),
@@ -124,7 +124,7 @@ C
 C
       SUBROUTINE LUS(A,LDA,N,IPVT,X,B)
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION A(LDA,1),X(1),B(1),IPVT(1)
 C
 C     SIMULTANEOUS EQUATION AX=B GIVEN PRIOR LU
@@ -264,9 +264,9 @@ C     The S vector contain the perturbation estimate and T the previous
 C     amplitudes. On exit the T contain the diis estimate of the new
 C     amplitudes.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (MAXVEC=80)
       PARAMETER (ZERO=0.0D0,ONE=1.0D0)
@@ -283,7 +283,7 @@ C
 cKeld      DIMENSION B(MAXVEC+1),C(MAXVEC+1),WK1(MAXVEC+1),WK2(MAXVEC+1),
 cKeld     +          A(MAXVEC+1,MAXVEC+1),AA(MAXVEC+1,MAXVEC+1)
 C
-#include <ccsdinp.h>
+#include "ccsdinp.h"
 C
       SAVE FIRST
       DATA FIRST /.TRUE./
@@ -371,7 +371,7 @@ C
       RETURN
       END
       SUBROUTINE LUS(A,LDA,N,IPVT,X,B)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(LDA,1),X(1),B(1),IPVT(1)
 C
 C     SIMULTANEOUS EQUATION AX=B GIVEN PRIOR LU
@@ -402,8 +402,8 @@ C
       RETURN
       END
       SUBROUTINE LU(A,LDA,N,IPVT,INFO)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(LDA,*),IPVT(*)
 C
 C     LU DECOMPOSITION OF A
@@ -449,7 +449,7 @@ C
       RETURN
       END
       SUBROUTINE SMXPY(N1,Y,N2,LDA,X,A)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION Y(*),X(*),A(LDA,*)
 C
 C     Y = Y +A X
@@ -474,7 +474,7 @@ C
       RETURN
       END
       SUBROUTINE SXMPY(N1,LDY,Y,N2,LDX,X,LDA,A)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION Y(LDY,*),X(LDX,*),A(LDA,*)
 C
 C
@@ -498,7 +498,7 @@ C
       RETURN
       END
       SUBROUTINE F04ATF(A,IA,B,N,C,AA,IAA,WKS1,IPVT,IFAIL)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(IA,N),B(N),C(N),AA(IAA,N),WKS1(N),IPVT(N)
 C
 C     THIS IS NOT THE NAG ROUTINE F04ATF, THOUGH THE

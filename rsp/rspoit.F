@@ -21,13 +21,13 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
 /* Comdeck notes */
 940728-hjaaj: defined IRIX (recl=*4 words, not bytes)
-#include <single.h>
+#include "single.h"
 931004-pj+hjaaj:
 OITH1X: this routine written by OV is never called currently. It may be
   called in rspoit instead of OITH1 if sec-sec block is not needed.
@@ -53,15 +53,15 @@ C
 C Output:
 C  IDAXN  : file index for the transformed integrals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(NORBT,NORBT), WRK(*)
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBX
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       EXTERNAL OITBD
 C
@@ -126,7 +126,7 @@ C
       END
 C  /* Deck oitbd */
       BLOCK DATA OITBD
-#include <cbdax.h>
+#include "cbdax.h"
       DATA LUDAX /51,52,53,54,55/
       DATA IOPEN, IUSED, LSYDAX, LVLDAX
      *     /MXDAX*0, MXDAX*0, MXDAX*0, MXDAX*0/
@@ -141,18 +141,18 @@ C If IDAXO .gt. 0 then open old unit.
 C    IDAXO .eq. 0 refers to untransformed integrals.
 C If IDAXN .gt. 0 then open new unit.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   CBDAX  : *
 C   INFORB : MULD2H
 C   INFTAP : LUINTM
 C
-#include <cbdax.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "cbdax.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
 C
 C
       IDAXN1 = IDAXN
@@ -229,14 +229,14 @@ C
 C Close unit with index IDAXN, if DISPOS(1:3) = 'DEL' then
 C delete the file.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) DISPOS
 C
 C Used from common blocks:
 C   CBDAX  : LUDAX(*), IOPEN(*), ISUED(*)
 C
-#include <cbdax.h>
-#include <priunit.h>
+#include "cbdax.h"
+#include "priunit.h"
 C
       IF (IDAXN .LT. 1 .OR. IDAXN .GT. MXDAX) THEN
          WRITE (LUPRI,*) 'OITCLO ERROR: IDAXN =',IDAXN
@@ -275,13 +275,13 @@ C                  = H1X(a,b)
 C                  + sum(c) [ OITMAT(a,c) H1(c,b)
 C                           - H1(a,c) OITMAT(c,b) ]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NORBT, NORB(*), IORB(*)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
 C
 C One-index transform both indices and add to previous content.
@@ -334,17 +334,17 @@ C   WRK(KFRSAV:KFRSAV-1+LFRSAV)
 C
 C *********************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(N2ORBX), WRK(LFRSAV)
 C
 C Used from common blocks
 C   INFORB : NSYM,N2ORBX,N2ORBT,NNORBX,NORBT,...
 C   INFDIM : MWORK,NORBMA,...
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
 C     Local variables
 C
@@ -487,7 +487,7 @@ C   WRK(KFRSAV:KFRSAV-1+LFRSAV)
 C
 C *********************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(N2ORBX), H2CD(N2ORBX), H2XCD(N2ORBX)
       DIMENSION H2X(LH2X,NH2XCD), WRK(*), N2DIS(8)
       DIMENSION ICDTRA(NORBT,NORBT), NEEDMU(-4:6), INDAB(NORBT,NORBT)
@@ -498,12 +498,12 @@ C Used from common blocks
 C   INFORB : NSYM,N2ORBX,N2ORBT,NNORBX,NORBT,...
 C   INFIND : ISMO(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       LOGICAL CDEQDC
 
@@ -623,7 +623,7 @@ C
                ISYMX = MULD2H(IXYSYM,ISYMY)
                IXST  = IORB(ISYMX) + 1
                IXEND = IORB(ISYMX) + NORB(ISYMX)
-#include <ivdep.h>
+#include "ivdep.h"
                DO 1100 IX = IXST,IXEND
                   IRECXY = ICDTRA(IX,IY)
                   IF (IRECXY .GT. 0) THEN
@@ -784,17 +784,17 @@ C   WRK(KFRSAV:KFRSAV-1+LFRSAV)
 C
 C *********************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(N2ORBX), WRK(LFRSAV)
 C
 C Used from common blocks
 C   INFORB : NSYM,N2ORBX,N2ORBT,NNORBX,NORBT,...
 C   INFDIM : MWORK, NORBMA, ...
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
 C     Local variables
 C
@@ -937,7 +937,7 @@ C   WRK(KFRSAV:KFRSAV-1+LFRSAV)
 C
 C *********************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(N2ORBX), H2CD(N2ORBX), H2XCD(N2ORBX)
       DIMENSION H2X(LH2X,NH2XCD), WRK(*), N2DIS(8)
       DIMENSION ICDTRA(NORBT,NORBT), NEEDMU(-4:6), INDAB(NORBT,NORBT)
@@ -948,12 +948,12 @@ C Used from common blocks
 C   INFORB : NSYM,N2ORBX,N2ORBT,NNORBX,NORBT,...
 C   INFIND : ISMO(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 
       LOGICAL CDEQDC
 
@@ -1065,7 +1065,7 @@ C
                ISYMX = MULD2H(IXYSYM,ISYMY)
                IXST  = IORB(ISYMX) + 1
                IXEND = IORB(ISYMX) + NORB(ISYMX)
-#include <ivdep.h>
+#include "ivdep.h"
                DO 1100 IX = IXST,IXEND
                   IRECXY = ICDTRA(IX,IY)
                   IF (IRECXY .GT. 0) THEN
@@ -1210,13 +1210,13 @@ C
 C IWAY .ge. 0 : Pack H2XCD in H2X
 C      else   : Unpack H2X in H2XCD
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2XCD(NORBT,NORBT), H2X(N2ORBT)
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBT,N2ORBX,NSYM,MULD2H
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (IWAY .LT. 0) CALL DZERO(H2XCD,N2ORBX)
       ISTH2X = 1
@@ -1247,13 +1247,13 @@ C Copyright 16-Nov-1990 Hans Joergen Aa. Jensen
 C
 C Find index for integral (AB) in symmetry packed integral list
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION INDAB(NORBT,NORBT), N2DIS(8)
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBT,N2ORBX,NSYM,MULD2H
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       LOGICAL NOIND
 C
@@ -1322,7 +1322,7 @@ C
 C     ITRTYP(1:NORBT) = number of integral indices in which this orbital
 C     enters (i.e. 0,1,2,3, or 4)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ICDTRA(NORBT,NORBT), ITRTYP(NORBT)
       PARAMETER (KTRLVL = 2)
 C
@@ -1330,12 +1330,12 @@ C Used from common blocks:
 C  INFORB : NSYM,NORBT,...
 C  INFIND : ISMO(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       CHARACTER*35 EXTPRM(3)
       DATA EXTPRM/'inactive + active orbitals         ',
@@ -1427,8 +1427,8 @@ C  Input:
 C   CDEQDC: if true then INDCD(i,j) = INDCD(j,i)
 C   IDST  : Starting ID
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION INDCD(NORBT,NORBT),IN2CD(NORBT,NORBT),INDAB(NORBT,NORBT)
       DIMENSION H2XCD(N2ORBX),H2X(LH2X,NH2XCD)
       LOGICAL   CDEQDC
@@ -1437,10 +1437,10 @@ C  Used from common blocks:
 C    INFORB: NORBT, N2ORBT,...
 C    INFIND: ISMO(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('OITCOR')
 C
@@ -1563,16 +1563,16 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
 C   INFORB : N2ORBX
 C   INFPRI : LUERR
 C
-#include <inforb.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "infpri.h"
 C
       DIMENSION N2DIS(8)
       LOGICAL CDSWAP
@@ -1689,7 +1689,7 @@ C       H2CDPK(*) is used for packed integrals on disk.
 C
 C ****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT), H2CDPK(N2ORBT)
       INTEGER   NEEDTP(-4:6), ICDTRA(NORBT,NORBT), N2DIS(8)
 C
@@ -1699,14 +1699,14 @@ C   INFORB : N2ORBX,NORBT,NSYM,...
 C   INFIND : IOBTYP(*),?
 C   INFPRI : IPRSIR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       SAVE      ICOLD,IDOLD
 C
@@ -1823,13 +1823,13 @@ C                  = H1X(a,b)
 C                  + sum(c) [ OITMAT(a,c) H1(c,b)
 C                           - H1(a,c) OITMAT(c,b) ]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NORBT, NORB(*), IORB(*)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
 C
 C One-index transform both indices and add to previous content.

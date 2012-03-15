@@ -21,18 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck fltinp */
       SUBROUTINE FLTINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbiflt.h>
+#include "abainf.h"
+#include "cbiflt.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.RESPON', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*FLOAT ')
@@ -107,10 +107,10 @@ C  /* Deck fltini */
 C
 C     Initialize /CBIFLT/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbiflt.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbiflt.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -135,17 +135,17 @@ C     If no floating orbitals are used this arrays are set
 C     equal to HESMOL(MXCOOR,MXCOOR), DIP1(3,MXCOOR) and
 C     POLFLT(3,3)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
       LOGICAL POLDIP
       DIMENSION WORK(LWORK)
-#include <abainf.h>
-#include <cbiflt.h>
-#include <taymol.h>
-#include <moldip.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "cbiflt.h"
+#include "taymol.h"
+#include "moldip.h"
+#include "nuclei.h"
       IF (SKIP) RETURN
       IF (.NOT. (MOLHES .OR. DIPDER .OR. POLAR)) RETURN
       CALL QENTER('FLTORB')
@@ -238,14 +238,14 @@ C
       END
 C  /* Deck fltgmt */
       SUBROUTINE FLTGMT(GII,GID,GDI,GDD,IVIND,IVDEP,NIND,NDEP)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiflt.h>
-#include <abainf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <moldip.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiflt.h"
+#include "abainf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "moldip.h"
       DIMENSION GII(NIND,NIND), GID(NIND,NDEP), GDI(NDEP,NIND),
      *          GDD(NDEP,NDEP), IVIND(NIND), IVDEP(NDEP)
       LOGICAL DEPEND
@@ -327,11 +327,11 @@ C
       END
 C  /* Deck foldin */
       SUBROUTINE FOLDIN(GRED,GII,GID,GDI,GDD,KPVT,NIND,NDEP)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiflt.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiflt.h"
+#include "abainf.h"
       DIMENSION GII(NIND,NIND), GID(NIND,NDEP), GDI(NDEP,NIND),
      *          GDD(NDEP,NDEP), KPVT(NDEP),GRED(NIND,NIND)
 C
@@ -373,14 +373,14 @@ C
       END
 C  /* Deck flthdp */
       SUBROUTINE FLTHDP(GRED,NIND)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiflt.h>
-#include <abainf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <moldip.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiflt.h"
+#include "abainf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "moldip.h"
       DIMENSION GRED(NIND,NIND)
 C
       IF (IPRINT. GE .5) CALL TITLER('Output from FLTHDP','*',103)
@@ -418,13 +418,13 @@ C
       END
 C  /* Deck fltgdi */
       SUBROUTINE FLTGDI(RESPON,NIND,NDEP,POLDIP)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL POLDIP
       DIMENSION RESPON(NDEP,NIND)
       CHARACTER*6 LABEL(5), NAME
-#include <nuclei.h>
+#include "nuclei.h"
 C
       WRITE (LUPRI,'(//)')
       CALL HEADER('Orbital Center Responses',-1)
@@ -463,11 +463,11 @@ C
 C     The purpose of this subroutine is to calculate the contributions
 C     from each floating orbital to the polarizability corrections.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D00, D100 = 100.0D00, THRESH = 1.0D-04)
-#include <nuclei.h>
+#include "nuclei.h"
       DIMENSION GID(NIND,NDEP), GDI(NDEP,NIND), PCNT(6,NDEP)
 C
       WRITE (LUPRI,'()')

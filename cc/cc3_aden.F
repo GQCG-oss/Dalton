@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_aden */
       SUBROUTINE CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -35,11 +35,11 @@ C  /* Deck cc3_aden */
      *                            LU3FOP2X,FN3FOP2X)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       LOGICAL DO_YMMAT, DO_DIA
 C
@@ -197,18 +197,18 @@ C  /* Deck cc3_adenocc */
 *=====================================================================*
 C
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccn2rsp.h>
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccn2rsp.h"
 C
       LOGICAL DO_DIA
       LOGICAL LSKIPL1R
@@ -992,9 +992,9 @@ C  /* Deck intvir_t30_ij */
 **********************************************************
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT, LUDELD, LWORK
       INTEGER ISYMD, ISYCKA, KINTVI, KTRVI1, KEND1, LWRK1, IOFF
@@ -1079,9 +1079,9 @@ C  /* Deck intvir_t3bx_jk */
 C Integrals (kc ! ad) stored as I^D(cka) sorted as I(adck)
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT, ISYLAMP, LU3VI, LU3FOP, LWORK
       INTEGER ISYMD, ISYCKA, KINTVI, KTRVI1, KEND1, LWRK1, IOFF
@@ -1209,9 +1209,9 @@ C  /* Deck sort_intvir_t30 */
 **************************************************************************
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMD,ISYCKA,LWORK
       INTEGER ISYMA,ISYMCK,ISYAD,ISYMC,ISYMK,ISYADC
@@ -1296,9 +1296,9 @@ C     Filip Pawlowski, Aarhus, Winter 2003
 *     The memory bug fixed on 27-Oct-2003, Aarhus, FP.
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYT30JK,ISYMT2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCL,ISYML,ISYMC,ISYBAI
@@ -1957,9 +1957,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYT30JK, ISYMT2, ISYINT, ISYMJ, ISYMK, LWORK
       INTEGER ISYMDAI, ISYMBCD, ISYMDA, ISYMBC, ISYMBCA, ISYMDBI  
@@ -2476,9 +2476,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBAC,ISYMC,ISYAB,ISYBA,ISYMB,ISYMA
       INTEGER KOFF1,KOFF2
@@ -2540,9 +2540,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYBCA,ISYMC,ISYAB,ISYMB,ISYMA,ISYBC
       INTEGER KOFF1,KOFF2
@@ -2604,9 +2604,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>  
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"  
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYACB,ISYMC,ISYAB,ISYMB,ISYAC,ISYMA
       INTEGER KOFF1,KOFF2 
@@ -2668,9 +2668,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYCAB,ISYMC,ISYAB,ISYMB,ISYCA,ISYMA
       INTEGER KOFF1,KOFF2
@@ -2732,9 +2732,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>  
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"  
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYCBA,ISYMC,ISYAB,ISYMB,ISYMA,ISYCB
       INTEGER KOFF1,KOFF2
@@ -2802,9 +2802,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT,ISYMI,ISYABC,ISYMC,ISYAB,ISYCI,ISYMB,ISYMA
       INTEGER NAB,NCI
@@ -2883,9 +2883,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER IOPT
       INTEGER ISYMT,ISYMI,ISYABC,ISYMC,ISYAB,ISYMB,ISYMA
@@ -2963,9 +2963,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT,ISYMI,ISYMK,ISYAKI,ISYMJ,ISYAK,ISYMA
       INTEGER KOFF1,KOFF2
@@ -3017,9 +3017,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT,ISYMI,ISYAKI,ISYMJ,ISYAK,ISYMK,ISYMA,ISYJA
       INTEGER KOFF1,KOFF2,NAK
@@ -3075,9 +3075,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT,ISYMK,ISYMI,ISYAKI,ISYMJ,ISYAK,ISYMA,ISYAI
       INTEGER KOFF1,KOFF2,NAI
@@ -3131,9 +3131,9 @@ C I^K(BAC) = T3VIJG1(abck)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMK, ISYINT
       INTEGER ISYMBAC, ISYMABC, ISYMA, ISYMBA, ISYMC, ISYMB, ISYMAB
@@ -3188,9 +3188,9 @@ C I^K(CAB) = T3VIJG1(abck)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMK, ISYINT
       INTEGER ISYMCAB, ISYMABC, ISYMA, ISYMCA, ISYMC, ISYMB, ISYMAB
@@ -3244,9 +3244,9 @@ C I^K(cba) = T3VIJG1(abck)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMK, ISYINT
       INTEGER ISYMCBA, ISYMABC, ISYMA, ISYMCB, ISYMC, ISYMB, ISYMAB
@@ -3300,9 +3300,9 @@ C I^K(ABC) = T3VIJG1(abck)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMK, ISYINT
       INTEGER ISYMABC, ISYMA, ISYMC, ISYMB, ISYMAB
@@ -3354,9 +3354,9 @@ C I^K(BCA) = T3VIJG1(abck)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMK, ISYINT
       INTEGER ISYMABC, ISYMBCA, ISYMBC, ISYMA, ISYMC, ISYMB, ISYMAB
@@ -3410,9 +3410,9 @@ C I^K(acb) = T3VIJG1(abck)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMK, ISYINT
       INTEGER ISYMACB, ISYMABC, ISYMA, ISYMAC, ISYMC, ISYMB, ISYMAB
@@ -3469,9 +3469,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT2,ISYMB,ISYAIJ,ISYMJ,ISYAI,ISYIA,ISYIAB,ISYMI,ISYMA
       INTEGER KOFF1,KOFF2
@@ -3535,9 +3535,9 @@ C
 C     F. Pawlowski, Aarhus, Winter 2003
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMT2,ISYMB,ISYAIJ,ISYMJ,ISYAI,ISYMI,ISYMA,ISYAB,ISYABJ
       INTEGER KOFF1,KOFF2,NABJ
@@ -3599,9 +3599,9 @@ C     t2tp(aijb) as I^I(abj)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMI, ISYMT2
       INTEGER ISYMABJ, ISYMJ, ISYMAB, ISYMB, ISYMA, ISYMAIJ, ISYMAI
@@ -3656,9 +3656,9 @@ C     t2tp(aijb) as I^J(abi)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMI, ISYMT2
       INTEGER ISYMABI, ISYMJ, ISYMAB, ISYMB, ISYMA, ISYMAIJ, ISYMAI
@@ -3713,9 +3713,9 @@ C     t2tp(aijb) as I^I(baj)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMI, ISYMT2
       INTEGER ISYMBAJ, ISYMJ, ISYMBA, ISYMB, ISYMA, ISYMAIJ, ISYMAI
@@ -3771,9 +3771,9 @@ C   XAB^IJ(ab) = t2tp(aijb)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMI, ISYMJ, ISYMT2
       INTEGER ISYMIJ, ISYMAB, ISYMA, ISYMB, ISYMAIJ, ISYMAI
@@ -3822,10 +3822,10 @@ C  T3^abc_iJK = T3^JK(bcai) = TBCAI/(F(A)+F(B)+F(C)-F(I)-F(J)-F(K))
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INTEGER ISYMBCAI,ISYMJ,ISYMK
       INTEGER NJ, NK, ISYMI, ISYMBCA, ISYMC, ISYMBC, ISYMB,ISYMA
@@ -3898,9 +3898,9 @@ C     IOPT = 7: Sum up the T3 amplitudes only with aibjck_perm
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMJ,ISYMK,ISYMBCAI,IOPT
       INTEGER ISYMBCA,ISYMBC
@@ -4050,10 +4050,10 @@ C  W3^abc_iJK = W3^JK(bcai) = WBCAI/(F(A)+F(B)+F(C)-F(I)-F(J)-F(K) - FREQ)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INTEGER ISYMBCAI,ISYMJ,ISYMK
       INTEGER NJ, NK, ISYMI, ISYMBCA, ISYMC, ISYMBC, ISYMB,ISYMA
@@ -4118,9 +4118,9 @@ C     Purpose : Remove the forbidden t3/t3-bar amplitudes.
 C
       IMPLICIT NONE
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMIM,ISYMJ,ISYMK,ISYABC,ISYMC,ISYMAB,ISYMB
       INTEGER ISYMA,KOFF1,ISYMAA,ISYMJK,ISYMAI,ISYMI
@@ -4226,9 +4226,9 @@ c     P. Jorgensen and F. Pawlowski, Spring 2003.
 c
       IMPLICIT NONE
 c
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, KOFF1, KOFF4, KOFF5, KOFF6, KOFF7
       INTEGER ISYMA, ISYMI, ISYMB, ISYMC
@@ -4371,9 +4371,9 @@ C Fixed for memory problems, 29-Oct-2003, Aarhus, FP.
 *
 ********************************************************************
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYT3B0JK,ISYML2,ISYINT,ISYMJ,ISYMK,LWORK
       INTEGER ISYKJ,ISYCN,ISYMN,ISYMC,ISYBAI
@@ -5659,9 +5659,9 @@ C  /* Deck intvir_t3b0_jk */
 C Integrals (kc ! ad) stored as I^D(cka) sorted as I(adck)
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYINT, LU3VI, LU3FOP, LWORK, ISYMLP
       INTEGER ISYMD, ISYCKA, KINTVI, KTRVI1, KEND1, LWRK1, IOFF
@@ -5791,9 +5791,9 @@ C Integrals (kc ! ad) stored as I^D(cka) (XCKA) sorted as I(adck) (XADCK)
 **************************************************************************
 C
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMD,ISYCKA,LWORK
       INTEGER ISYMA,ISYMCK,ISYAD,ISYMC,ISYMK,ISYADC
@@ -5873,9 +5873,9 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYT30JK, ISYML2, ISYINT, ISYMJ, ISYMK, LWORK
       INTEGER ISYMDAI, ISYMBCD, ISYMBCAI, ISYMDA, ISYMCBI, ISYMBC 
@@ -6920,10 +6920,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('WBX_JK_ETA')
 
@@ -7214,9 +7214,9 @@ C
 C
       PARAMETER (TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -7607,9 +7607,9 @@ C
 #endif
 C
       PARAMETER (ONE = 1.0D0)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('WBX_JK_FMAT')
 C
@@ -8511,9 +8511,9 @@ C
 C
       PARAMETER (TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -8629,10 +8629,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETAX_JK_BC')
 
@@ -8778,10 +8778,10 @@ C
 C
       PARAMETER (ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('TETAX_JK_A')
 
@@ -8849,10 +8849,10 @@ C  /* Deck aden_dij_jk */
       SUBROUTINE ADEN_DIJ_JK(DIJ,THLM,ISYMTHLM,WLM,ISYMWLM)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMTHLM,ISYMWLM
       INTEGER ISYMJ,ISYMDEF,ISYMI,KOFF1,KOFF2,KOFF3,NTOTDEF,NTOTI
@@ -8898,10 +8898,10 @@ C  /* Deck aden_dab_lm */
       SUBROUTINE ADEN_DAB_LM(DAB,THLM,ISYMTHLM,WLM,ISYMWLM,WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMTHLM,ISYMWLM,LWORK
       INTEGER ISYMN,ISYMDEB,ISYMDEA,ISYMB,ISYMDE,ISYMA
@@ -9027,10 +9027,10 @@ C d(ia) = d(ia) + t2tp(dLMe) * ( teta^LM(deai) - teta^LM(daei) )
 C                    I^LM(de)         I^LM(deai)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h> 
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h" 
+#include "ccorb.h"
 C
       INTEGER ISYMT2,ISTETAXKL,ISYML,ISYMM,LWORK
       INTEGER KT2DE,KTHDAEI,KEND1,LWRK1
@@ -9136,20 +9136,20 @@ C  /* Deck cc3_adenvir */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccn2rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccn2rsp.h"
 C
       CHARACTER*10 MODEL
 C
@@ -10490,14 +10490,14 @@ C
       DOUBLE PRECISION XNORMVAL,DDOT
 #endif
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0)
 C
@@ -10704,14 +10704,14 @@ C
       DOUBLE PRECISION HALF, ONE, ZERO
 #endif
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (HALF = 0.5D0, ONE = 1.0D0, ZERO = 0.0D0)
 C
@@ -11313,10 +11313,10 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C#include <cclr.h>
 C
       INTEGER AIBJCK_PERM
@@ -12194,10 +12194,10 @@ C
 C
       PARAMETER ( ONE = 1.0D0, DM1 =-1.0D0)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C
       CALL QENTER('ADEN_DAI_T2_D')
@@ -12256,9 +12256,9 @@ C                    - tbarZ^(dbc)_(jlk) t^y(db)_(ji) t^x(ca)_(kl)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL T2XNET2Y
       INTEGER ISWMAT,ISYMT2X,ISYMT2Y,IB,ISYMIB,ID,ISYMID,LWORK
@@ -12313,9 +12313,9 @@ C=========================================================================
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISWMAT,ISYMT2X,ISYMT2Y,IB,ISYMIB,ID,ISYMID,LWORK
       INTEGER ISYMB,ISYMC,ISYDJI,ISYALK,ISYKLI,ISYMDJ,ISYMKL,ISYMI
@@ -12864,10 +12864,10 @@ C=========================================================================
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       LOGICAL DO_DIA
 
@@ -13241,14 +13241,14 @@ C  /* Deck wxdl_v */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER IOPT,ISTMAT,ISYFKY,ISWMAT,LWRK
       INTEGER KFCFD,KEND0,LWRK0
@@ -13406,10 +13406,10 @@ C  W3^DL(em,fi) = W3^DL(em,fi) / (F(D)+F(E)+F(F)-F(L)-F(M)-F(I) - FREQ)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       INTEGER ISYMEMFI,ISYML,ISYMD
       INTEGER ISYMI,ISYMEMF,ISYMF,ISYMEM,ISYMFI,ISYMM,ISYME
@@ -13483,9 +13483,9 @@ C     sitting as T3^DL(em,fi)
 C
       IMPLICIT NONE
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
 C
       INTEGER ISYMIM,ISYMD,ISYML
       INTEGER ISYMM,ISYDEF,ISYMF,ISYDE,ISYME,ISYMEM,ISYMFI
@@ -13588,10 +13588,10 @@ C  /* Deck read_t3_aibl */
 
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <cc3t3d.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "cc3t3d.h"
+#include "ccorb.h"
 C
       CHARACTER*(*) FNFILE
 C
@@ -13650,9 +13650,9 @@ C                                   + DIJ0(ij) * TR1(aj)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYDIA,ISYDEN0,ISYMR1
       INTEGER ISYMA,ISYMI,ISYMB,ISYMJ
@@ -13724,9 +13724,9 @@ C     Calculate: XIJMJI = FAIBJ*XAIBJ(aibj) + FAJBI*XAIBJ(ajbi)
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYAIBJ
       INTEGER ISYMBJ,ISYMAI,ISYMJ,ISYMB,ISYMI,ISYMA,ISYMAJ,ISYMBI
@@ -13819,9 +13819,9 @@ C  /* Deck intocc_t3barx_jk */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       LOGICAL INTERNAL
 C
@@ -13939,11 +13939,11 @@ C  /* Deck mmatx */
 ***************************************************************************
 *
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cc3t3d.h"
 C
       CHARACTER LISTL*3
       CHARACTER FNWBAR*(*),FNT2Y*(*)
@@ -14108,13 +14108,13 @@ C  /* Deck mmatxl1 */
 ***************************************************************************
 *
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cc3t3d.h>
-#include <ccr1rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cc3t3d.h"
+#include "ccr1rsp.h"
+#include "dummy.h"
 C
       CHARACTER LISTL*3, LISTR*3
       CHARACTER FNWBAR*(*)

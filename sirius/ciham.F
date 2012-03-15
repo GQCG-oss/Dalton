@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ciham */
       SUBROUTINE CIHAM(IWAY,MXPRDT,ICSYM,IDET,CIDIA,NCONF,
@@ -34,8 +34,8 @@ C
 C Notes:
 C  - introduce symtest using IHSYM=0
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDET(*),CIDIA(*),FCAC(*),H2AC(*),XNDXCI(*),WRK(LWRK)
 C
 C Used from common blocks:
@@ -44,11 +44,11 @@ C   INFORB : MULD2H(8,8),NASHT,N2ASHX
 C   CIINFO : ICOMBI, IPSIGN
 C   DETBAS : KLTSOB
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <ciinfo.h>
-#include <detbas.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "ciinfo.h"
+#include "detbas.h"
 C
 C     Set some codes:
 C
@@ -177,8 +177,8 @@ C                 EIGVC CONTAINS EIGENVECTORS(COLUMNS) ON RETURN
 C
 C JEPPE OLSEN JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XNDXCI(*),WORK(*),HAMIL(*),CIDIA(*)
       DIMENSION ONEBOD(*),RJ(*),RK(*),FIJKL(*)
       DIMENSION IDET(MXPRDT), EIGVL(MXPRDT) , EIGVC(MXPRDT ** 2 )
@@ -188,9 +188,9 @@ C Used from common blocks:
 C   STRNUM : ...
 C   DETBAS : KLTSOB
 C
-#include <mxpdim.h>
-#include <strnum.h>
-#include <detbas.h>
+#include "mxpdim.h"
+#include "strnum.h"
+#include "detbas.h"
 C
       KFREEO = KFREE
 C
@@ -320,14 +320,14 @@ C IN IASTR2 AND IBSTR2
 C
 C NOTE ICOMBI IS INTRODUCED THROUGH CIINFO IN THIS IMPLEMENTATION
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER SYMPRO(8,8)
       DIMENSION IDET(*),IASTR2(*),IBSTR2(*),XNDXCI(*)
 C
-#include <mxpdim.h>
-#include <ciinfo.h>
-#include <detbas.h>
-#include <strnum.h>
+#include "mxpdim.h"
+#include "ciinfo.h"
+#include "detbas.h"
+#include "strnum.h"
 C
          CALL STFDT2(NDET,IDET,IASTR2,IBSTR2,MAXSYM,NOCTPA,NOCTPB,
      &               XNDXCI(KNSSOA),XNDXCI(KNSSOB),XNDXCI(KISSOA),
@@ -356,8 +356,8 @@ C IF ISYM .NE. 0 LOWER HALF OF HAMILTONIAN IS CONSTRUCTED
 C
 C JEPPE OLSEN JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION JASTR(NAEL,*),JBSTR(NBEL,*)
 C
@@ -790,8 +790,8 @@ C RAS VERSION
 C
 C JEPPE OLSEN , JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IDET(NDET),IASTR2(NAEL,NDET),IBSTR2(NBEL,NDET)
 C
       DIMENSION NSSOA(NOCTPA,MAXSYM),NSSOB(NOCTPB,MAXSYM)
@@ -864,8 +864,8 @@ C NELMN IS THE LARGEST NUMBER LOWER THAN MXELMN THAT DOES NOT
 C SPLIT DEGENERATE PAIRS
 C ORIGINAL PLACES OF THE LOWEST ELEMENTS ARE STORED IN IPLACE
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION VEC(NDIM),IPLACE(*)
 C
       PARAMETER ( D1 = 1.0D0 )
@@ -961,8 +961,8 @@ C NELMN IS THE LARGEST NUMBER LOWER THAN MXELMN THAT DOES NOT
 C SPLIT DEGENERATE PAIRS.
 C ORIGINAL PLACES OF THE LOWEST ELEMENTS ARE STORED IN IPLACE.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION VEC(NDIM),IPLACE(*)
 C
       PARAMETER ( D1 = 1.0D0 )
@@ -1062,8 +1062,8 @@ C   IWAY = 2 : PACKED TO FULL FORM
 C              APAK STORED IN LOWER HALF
 C               SIGN * APAK TRANSPOSED IS STORED IN UPPPER PART
 C.. NOTE : COLUMN WISE STORAGE SCHEME IS USED FOR PACKED BLOCKS
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AUTPAK(MATDIM,MATDIM),APAK(*)
 C
       IF( IWAY .EQ. 1 ) THEN
@@ -1115,8 +1115,8 @@ C
 C
 C ... JEPPE OLSEN JANUARY 1989
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AI(*),AO(*)
       DIMENSION LRC(NRC),LCC(NCC)
       DIMENSION IBLKI(NRC,NCC),IBLKO(NRC,NCC)
@@ -1199,7 +1199,7 @@ C
 C ISYM = 0 : DIAGONAL BLOCKS ARE STORED IN COMPLETE FORM
 C ISYM  .GT. 0 : DIAGONAL BLOCKS ARE STORED IN  PACKED FORM
 C                ( LOWER TRIANGULAR FORM;COLUMNWISE PACKED !! )
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AIN(*),AOUT(*)
 C
       IF( ISYM .EQ. 0 ) THEN
@@ -1244,8 +1244,8 @@ C
 C ISYM= 0 : DIAGONAL BLOCKS STORED IN COMPLETE FORM
 C ISYM.GT.0 : DIAGONAL BLOCKS ARE PACKED IN LOWER TRIANGULAR FORM
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AI(*),AO(*)
       DIMENSION LRC(NRC),LCC(NCC)
       DIMENSION IBLK(NRC,NCC)
@@ -1342,8 +1342,8 @@ C PRINT BLOCKED MATRIX
 C
 C JANUARY 1989 , JEPPE OLSEN
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION A(*)
       DIMENSION LRC(NRC),LCC(NCC),IBLK(NRC,NCC)
@@ -1374,8 +1374,8 @@ C
 C TRANSPOSE BLOCKED MATRIX AI AND STORE IN AO
 C ARRAYS FOR TRANSPOSED BLOCKING IS ALSE OBTAINED.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AI(*),AO(*)
       DIMENSION LRCI(NRCI),LCCI(NCCI),IBRCI(NRCI),IBCCI(NCCI)
       DIMENSION LRCO(NCCI),LCCO(NRCI),IBRCO(NCCI),IBCCO(NRCI)
@@ -1433,18 +1433,18 @@ C l.r. 18-apr-1990 hjaaj
 C
 C get (tu|vx) integral where t,u,v,x are in Lunar order
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2AC(NNASHX,NNASHX), ILTSOB(NASHT)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFORB : NASHT,NNASHX
 C   INFTAP : LUH2AC
 C   CBGETDIS : IADH2
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <cbgetdis.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "cbgetdis.h"
 C
 C     Obtain index in Sirius order
 C
@@ -1476,8 +1476,8 @@ C
       END
 C  /* Deck eigen */
       SUBROUTINE EIGEN(A,R,N,MV,MFKR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(*),R(*)
       DATA TESTIT/1.D-20/
       DATA TESTX /1.D-26/

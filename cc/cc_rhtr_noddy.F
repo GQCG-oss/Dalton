@@ -34,14 +34,14 @@
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <dummy.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
+#include "dummy.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -279,11 +279,11 @@
 *             one-index transformed integrals XINT1SC, XINT2SC
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -409,12 +409,12 @@
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       INTEGER LWORK
 #if defined (SYS_CRAY)
@@ -507,13 +507,13 @@
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "ccfield.h"
 
       LOGICAL LDBG, LDBGSD, SKIP_T3
       CHARACTER*(*) LISTDP, MODUL

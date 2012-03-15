@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_iabj */
 *======================================================================*
@@ -139,11 +139,11 @@ c /* deck cc_iabj */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
 #if defined (SYS_CRAY)
       REAL ONE, ZERO
@@ -413,11 +413,11 @@ c /* deck cc_iabj0 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
 #if defined (SYS_CRAY)
       REAL ONE, ZERO
@@ -888,10 +888,10 @@ c /* deck cc_iajb1 */
 #else
 #  include <implicit.h>
 #endif
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
 #if defined (SYS_CRAY)
       REAL XIAG(*), XIABJ(*), XLAMDA(*)
@@ -937,10 +937,10 @@ c /* deck cc_ijba1 */
 #else
 #  include <implicit.h>
 #endif
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
 #if defined (SYS_CRAY)
       REAL XIJG(*), XIJBA(*), XLAMDA(*)

@@ -21,11 +21,11 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE DFT_COMP_KSM(DMAT,KSM,WRK,LWORK,IPRFCK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), KSM(NBAST,NBAST), WRK(LWORK)
       KFREE = 1+NBAST*NBAST
       IF(KFREE.GT.LWORK) STOP "no mem in DFT_COMP_KSM"
@@ -41,10 +41,10 @@ C /* Deck dftexc */
 C
 C     T. Helgaker sep 99 / feb 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C 
       PARAMETER (FACTHR = 1.0D-8) 
       LOGICAL MAKDEN, DOERG, DOGRD, DOLND, DOATR, DOHES, TRPLET, DOGGA,
@@ -52,11 +52,11 @@ C
       DIMENSION DMAT(NBAST,NBAST,NDMAT), EXCMAT(NBAST,NBAST,NXCMAT),
      &          HES(*), WORK(LWORK)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <dfterg.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "dfterg.h"
 #include "functionals.h"
 C
       IPRINT = 5
@@ -123,25 +123,25 @@ C /* Deck dftdrv */
 C
 C     T. Helgaker sep 99 / feb 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0, DP3 = 1D0/3D0)
 c      PARAMETER (DFTHR0 = 1.0D-11, DFTHRL = 1.0D-14, DFTHRI = 1.0D-15)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <dftinf.h>
-#include <orgcom.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "dftinf.h"
+#include "orgcom.h"
 #include "functionals.h"
-#include <maxorb.h>
-#include <infpar.h>
-#include <expopt.h>
+#include "maxorb.h"
+#include "infpar.h"
+#include "expopt.h"
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, 
@@ -412,19 +412,19 @@ C  /* Deck dftatr */
 C
 C     T. Helgaker Sep 99 / Feb 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D2 = 2.0D0)
 C
       DIMENSION CMO(*),ZYMAT(NORBT,NORBT),FMAT(NORBT,NORBT),WORK(LWORK)
       LOGICAL DOPRNT, TRPLET
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       DOPRNT = .FALSE.
       IPRINT = 2
@@ -509,10 +509,10 @@ C  /* Deck dftatx */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
       PARAMETER (NOC = 7, NVT = 1)
 C
@@ -523,10 +523,10 @@ C
       SAVE FIRST, HES
       DATA FIRST/.TRUE./
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       DOPRNT = .FALSE.
       IPRINT = 2
@@ -608,11 +608,11 @@ c /* Deck dftlnd */
 C
 C     T. Helgaker oct 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION FX(N2BASX), FY(N2BASX), FZ(N2BASX), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       KXCMAT = 1
       KDAO   = KXCMAT + 3*N2BASX
@@ -637,13 +637,13 @@ C
       END
 C  /* Deck dftsol */
       SUBROUTINE DFTSOL(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION WORK(*)
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
 C
       KVEC = 1
       KFCK = KVEC + NWOPPT
@@ -654,16 +654,16 @@ C
       END
 C  /* Deck dftso1 */
       SUBROUTINE DFTSO1(VEC,FCK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
       PARAMETER (FAC = -1.0D0/4.0D0)
       DIMENSION VEC(*), FCK(*)
-#include <inftap.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inforb.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inforb.h"
       IA(I) = JWOP(1,I)
       IB(I) = JWOP(2,I)
       IAA(I) = IA(I)*(IA(I)+1)/2
@@ -696,17 +696,17 @@ C /* Deck dftltr */
 C
 C     T. Helgaker sep 99/oct 00
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dftcom.h>
-#include <wrkrsp.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dftcom.h"
+#include "wrkrsp.h"
 #include "functionals.h"
 C
       INTEGER A, B
@@ -920,14 +920,14 @@ C /* Deck dftest */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C 
       DIMENSION WORK(LWORK)
 C
-#include <inforb.h>
-#include <nuclei.h>
+#include "inforb.h"
+#include "nuclei.h"
 C
       KX    = 1
       KY    = KX   + NBUF
@@ -950,13 +950,13 @@ C /* Deck dftest */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <inforb.h>
-#include <dftinf.h>
+#include "inforb.h"
+#include "dftinf.h"
 C
       DIMENSION CORX(NBUF), CORY(NBUF), CORZ(NBUF), WEIGHT(NBUF),
      &          DMAT(NBAST,NBAST), GAO(NBAST), GAO1(NBAST,3),
@@ -1004,8 +1004,8 @@ C
       END
 C  /* Deck dftnum */
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, 
      &           DP3 = D1/D3, ADD = 1.0D-06)
       LOGICAL DODRC,DOVWN,DOLYP,DOBCK
@@ -1130,28 +1130,28 @@ C
 C     
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-9) 
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, 
@@ -1243,24 +1243,24 @@ C
 C     ACH 
 C     Takes info from master and allocate memory. 
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h>
-#include <infpar.h>
-#include <priunit.h>
-#include <inforb.h>      
-#include <mxcent.h>
+#include "maxorb.h"
+#include "infpar.h"
+#include "priunit.h"
+#include "inforb.h"      
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <dfterg.h>
-#include <dftinf.h>
-#include <energy.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dftcom.h>
-#include <orgcom.h>
+#include "nuclei.h"
+#include "dfterg.h"
+#include "dftinf.h"
+#include "energy.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dftcom.h"
+#include "orgcom.h"
 
       PARAMETER (FACTHR = 1.0D-8)
 C
@@ -1386,30 +1386,30 @@ C
 C     Moves everything that is needed. Something that is not needed is also 
 C     moved, but what ? 
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <onecom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
-#include <pincom.h>
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "onecom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "maxmom.h"
+#include "xyzpow.h"
+#include "pincom.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-9) 
@@ -1421,9 +1421,9 @@ C
      &          C0(NORBT), C1(NORBT,3), C2(NORBT),
      &          HES(NOCCT,NVIRT,NOCCT,NVIRT)
 C
-#include <wrkrsp.h>
-#include <lmns.h>
-#include <sphtrm.h>
+#include "wrkrsp.h"
+#include "lmns.h"
+#include "sphtrm.h"
 C
 C     Things needed by dftgrd: 
 C
@@ -1635,12 +1635,12 @@ C
 C     Ach 
 C     Updates the different energies and the exchange mat: 
 C     
-#include <implicit.h>       
+#include "implicit.h"       
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
 Ca
       DIMENSION EXCMAT(NBAST*NBAST*NXCMAT),WORK(LWORK)
 C
@@ -1679,15 +1679,15 @@ C
 C     Update gradient 
 C     Ach 
 C
-#include <implicit.h>       
+#include "implicit.h"       
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h> 
-#include <mxcent.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <infpar.h>
+#include "maxorb.h" 
+#include "mxcent.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "infpar.h"
       DIMENSION WORK(LWORK)
 C     
 #if defined (VAR_MPI)      

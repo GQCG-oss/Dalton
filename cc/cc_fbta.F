@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
        SUBROUTINE CC_FBTA( IFBTRAN, NFBTRAN, IOPTRES, LISTL, LISTR, 
@@ -41,8 +41,8 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "maxorb.h"
 
 * local
       LOGICAL LOCDBG
@@ -311,29 +311,29 @@ c /* deck cc_fbta1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <blocks.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <ccisao.h>
-#include <ccroper.h>
-#include <ccfro.h>
-#include <ccr1rsp.h>
-#include <chrxyz.h>
-#include <r12int.h>
-#include <cbieri.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "blocks.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "ccisao.h"
+#include "ccroper.h"
+#include "ccfro.h"
+#include "ccr1rsp.h"
+#include "chrxyz.h"
+#include "r12int.h"
+#include "cbieri.h"
 
 * local parameters:
       LOGICAL LOCDBG

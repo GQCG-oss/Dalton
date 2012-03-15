@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck t2am_reorder */
       SUBROUTINE T2AM_REORDER(T2AMOLD,T2AMNEW,IPRINT)
@@ -32,11 +32,11 @@ C     Reorder the T2 amplitudes for SOPPA.
 C     Outer loop over occupied orbitals, inner loop over virtual
 C     orbitals.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION T2AMOLD(*),T2AMNEW(*)
-#include <inforb.h>
-#include <ccsdsym.h>
+#include "inforb.h"
+#include "ccsdsym.h"
 C
       DIMENSION JB(8)
 C
@@ -96,12 +96,12 @@ C
 C     Calculates the second-order one electron density matrix.
 C     The density matrix is stored as the full square matrix.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(TWO=2.0D0)
       DIMENSION DONE(*),T1AM(*),T2AM(*),T2TP(*)
-#include <inforb.h>
-#include <ccsdsym.h>
+#include "inforb.h"
+#include "ccsdsym.h"
 C
 C-------------------------------
 C     Initialize density matrix.

@@ -7,12 +7,12 @@ C     Purpose: Driver routine for debugging Cholesky denominator
 C              CCSD(T). After setting up the necessary data arrays,
 C              control is handed over to CCHO_DBGDRV.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOPT_DBG')
@@ -168,14 +168,14 @@ C     JLC, BFR, TBP, HK, and AS, October 2002.
 C
 C     Purpose: Debug code for calculating CCSD(T) energy correction.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XIAJK(*),T1AM(*),T2AM(*),XIAJB(*),XAIBC(*)
       DIMENSION FOCKO(*),FOCKV(*)
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CCHO_DBGDRV')
@@ -396,7 +396,7 @@ C
       END
 C  /* Deck ccho_aterm_dbg */
       SUBROUTINE CCHO_ATERM_DBG(T2AM,XAIBC,DIFF,NVIRT,NRHFT,E4AT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XAIBC(NVIRT,NRHFT,NVIRT,NVIRT)
       DIMENSION DIFF(NVIRT,NRHFT)
@@ -437,7 +437,7 @@ C
       END
 C  /* Deck ccho_bterm_dbg */
       SUBROUTINE CCHO_BTERM_DBG(FO,FV,T2AM,XAIBC,NVIRT,NRHFT,E4BT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XAIBC(NVIRT,NRHFT,NVIRT,NVIRT)
       DIMENSION FO(NRHFT), FV(NVIRT)
@@ -486,7 +486,7 @@ C
       END
 C  /* Deck ccho_cterm_dbg */
       SUBROUTINE CCHO_CTERM_DBG(FOCKO,FOCKV,T2AM,XIAJK,NVIRT,NRHFT,E4CT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XIAJK(NRHFT,NRHFT,NRHFT,NVIRT)
       DIMENSION FOCKO(NRHFT),FOCKV(NVIRT)
@@ -551,7 +551,7 @@ C
       END
 C  /* Deck ccho_dterm_dbg */
       SUBROUTINE CCHO_DTERM_DBG(T2AM,XIAJK,XAIBC,DIFF,NVIRT,NRHFT,E4DT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XIAJK(NRHFT,NRHFT,NRHFT,NVIRT)
       DIMENSION XAIBC(NVIRT,NRHFT,NVIRT,NVIRT)
@@ -595,7 +595,7 @@ C
       END
 C  /* Deck ccho_iterm_dbg */
       SUBROUTINE CCHO_ITERM_DBG(T2AM,XAIBC,DIFF,NVIRT,NRHFT,E4IT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XAIBC(NVIRT,NRHFT,NVIRT,NVIRT)
       DIMENSION DIFF(NVIRT,NRHFT)
@@ -646,7 +646,7 @@ C
       END
 C  /* Deck ccho_jterm_dbg */
       SUBROUTINE CCHO_JTERM_DBG(T2AM,XIAJK,XAIBC,DIFF,NVIRT,NRHFT,E4JT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XIAJK(NRHFT,NRHFT,NRHFT,NVIRT)
       DIMENSION XAIBC(NVIRT,NRHFT,NVIRT,NVIRT)
@@ -747,7 +747,7 @@ C  /* Deck ccho_e1term_dbg */
      &                           NVIRT,WORK,LWORK,E_E1)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
      &               XIJKA(NRHFT,NRHFT,NRHFT,NVIRT),
@@ -820,7 +820,7 @@ C  /* Deck ccho_e2term_dbg */
      &                           NVIRT,WORK,LWORK,E_E2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
      &               XIJKA(NRHFT,NRHFT,NRHFT,NVIRT),
@@ -892,7 +892,7 @@ C  /* Deck ccho_fterm_dbg */
      &                          NVIRT,WORK,LWORK,EF1,EF2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
      &               XIJKA(NRHFT,NRHFT,NRHFT,NVIRT),
@@ -914,7 +914,7 @@ C  /* Deck ccho_f1term_dbg */
      &                           NVIRT,WORK,LWORK,E_F1)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
      &               XIJKA(NRHFT,NRHFT,NRHFT,NVIRT),
@@ -987,7 +987,7 @@ C  /* Deck ccho_f2term_dbg */
      &                           NVIRT,WORK,LWORK,E_F2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
      &               XIJKA(NRHFT,NRHFT,NRHFT,NVIRT),
@@ -1059,7 +1059,7 @@ C  /* Deck ccho_gterm_dbg */
      &                          NRHFT,NVIRT,WORK,LWORK,EG1,EG2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T1AM(NVIRT,NRHFT),
      &               T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
@@ -1096,7 +1096,7 @@ C  /* Deck ccho_rxmat_dbg */
       SUBROUTINE CCHO_RXMAT_DBG(T1AM,T2AM,XAIBJ,XAIBC,NVIRT,NRHFT,
      &                          RMAT,XMAT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(NVIRT,NRHFT)
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XAIBJ(NVIRT,NRHFT,NVIRT,NRHFT)
@@ -1205,7 +1205,7 @@ C  /* Deck ccho_g1term_dbg */
      &                           NRHFT,NVIRT,WORK,LWORK,EG1)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T1AM(NVIRT,NRHFT),
      &               T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
@@ -1249,7 +1249,7 @@ C  /* Deck ccho_g2term_dbg */
      &                           NRHFT,NVIRT,WORK,LWORK,EG2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T1AM(NVIRT,NRHFT),
      &               T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
@@ -1375,7 +1375,7 @@ C   /* Deck ccho_hterm_dbg */
      &                          NRHFT,NVIRT,WORK,LWORK,EH1,EH2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T1AM(NVIRT,NRHFT),
      &               T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
@@ -1413,7 +1413,7 @@ C
 C  /* Deck h_vw_2 */
       SUBROUTINE H_VW_2(XK1,XK2,XM1,XM2,VMAT,WMAT,NVIRT,NRHFT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XK1(NVIRT,NRHFT,NRHFT,NRHFT)
       DIMENSION XK2(NVIRT,NRHFT,NRHFT,NRHFT)
       DIMENSION XM1(NVIRT,NRHFT,NVIRT,NRHFT)
@@ -1549,7 +1549,7 @@ C  /* Deck h_vwpq */
       SUBROUTINE H_VWPQ(T1AM,T2AM,XIJKA,XAIBJ,VMAT,WMAT,PMAT,QMAT,
      &                  NVIRT,NRHFT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1AM(NVIRT,NRHFT)
       DIMENSION T2AM(NVIRT,NRHFT,NVIRT,NRHFT)
       DIMENSION XIJKA(NRHFT,NRHFT,NRHFT,NVIRT)
@@ -1750,7 +1750,7 @@ C  /* Deck ccho_h1term_dbg */
      &                           NRHFT,NVIRT,WORK,LWORK,EH1)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T1AM(NVIRT,NRHFT),
      &               T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
@@ -1793,7 +1793,7 @@ C  /* Deck ccho_h2term_dbg */
      &                           NRHFT,NVIRT,WORK,LWORK,EH2)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCC(NRHFT),FVIR(NVIRT),T1AM(NVIRT,NRHFT),
      &               T2AM(NVIRT,NRHFT,NVIRT,NRHFT),
@@ -1917,7 +1917,7 @@ C
 C  /* Deck chkint */
       SUBROUTINE CHKINT(XIAJK,XAIBC,NVIRT,NRHFT)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XIAJK(NRHFT,NRHFT,NRHFT,NVIRT)
       DIMENSION XAIBC(NVIRT,NRHFT,NVIRT,NVIRT)
 C
@@ -1970,12 +1970,12 @@ C  /* Deck chk_vec1 */
      &                    CHOL,CHOO,CHOV,ISYMMN,IA1,NUMIA,ISYMA,
      &                    J1,NUMIJ,ISYMJ,WORK,LWORK)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), CHOELE(*)
       DIMENSION CHOL(*), CHOO(*), CHOV(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       INTEGER IOFF2(8)
 
       write(6,*) 'CHK_VEC1: LWORK = ',LWORK
@@ -2082,12 +2082,12 @@ C  /* Deck chk_vec2 */
      &                    ISYDJA,IB1,NUMIB,ISYMB,II1,NUMII,ISYMI,WORK,
      &                    LWORK)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), CHOELE(*)
       DIMENSION CHOL(*), OCCHO(*), VICHO(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       INTEGER IOFT1(8)
 
       WRITE(6,*)
@@ -2236,11 +2236,11 @@ C  /* Deck chk_gt */
       SUBROUTINE CHK_GT(T1,T4,II1,NUMII,ISYMI,IB1,NUMIB,ISYMB,
      &                  IOFF5,IOFF6)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION T1(*), T4(*)
       INTEGER IOFF5(8), IOFF6(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ISYMCK = MULD2H(ISYMB,ISYMI)
       ICOUNE = 0
@@ -2288,11 +2288,11 @@ C
 C  /* Deck chk_hk12 */
       SUBROUTINE CHK_HK12(XK1,XK2,IK1,NUMIK,ISYMK,IOFK12)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XK1(*), XK2(*)
       INTEGER IOFK12(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       ICOUNE = 0
       NTST   = 0

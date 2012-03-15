@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C File:    sirgp.F
 C Purpose: general purpose routines for the Sirius module
@@ -33,7 +33,7 @@ C Version 6-Mar-1985 by hjaaj
 C
       CHARACTER*(*) STRING
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       CALL QENTER('ERRWRK')
       IF (LNEED .GE. 0) THEN
@@ -71,14 +71,14 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(NAO,*), SAO(*), WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, DMP5 = -0.5D0 )
       PARAMETER ( ITSMAX = 20, TMIN = 1.D-6, CNVFAC = 0.1D0)
       PARAMETER ( DIFMAX=1.0D-12, DIFMIN=1.0D-4)
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
       CALL QENTER('SYMORT')
 C
@@ -235,7 +235,7 @@ C           inaccuracy won't break symmetry (e.g. in a CI vector)
 C
 C  Quite slow because n ** 2 process
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(LEN)
       PARAMETER (D0 = 0.0D0)
 C
@@ -273,14 +273,14 @@ C ("WOP") to matrix form.
 C This could for instance be the orbital gradient, or
 C the kappa vector for use in one-index transformation.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UPWOP(NORBT,NORBT),WOP(NWOPT)
       INTEGER JWOP(2,NWOPT)
 C
 C Used from common blocks:
 C   INFORB : NORBT,N2ORBX
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL DZERO(UPWOP,N2ORBX)
       DO 200 IG = 1,NWOPT
@@ -301,14 +301,14 @@ C
 C This subroutine packs ("PK") an orbital rotation type vector
 C ("WOP") from matrix form (the reverse of UPKWOP)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UPWOP(NORBT,NORBT),WOP(NWOPT)
       INTEGER JWOP(2,NWOPT)
 C
 C Used from common blocks:
 C   INFORB : NORBT
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 200 IG = 1,NWOPT
          I = JWOP(1,IG)
@@ -326,7 +326,7 @@ C
 C 9-Nov-1985 hjaaj
 C 1-May-2000 hjaaj: Removed reading of KLWOP (KLWOP not in infvar.h any more)
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 XLABEL
 C
 C Used from common blocks:
@@ -336,13 +336,13 @@ C   INFLIN: LSYMRF,LSYMPT,LSYMST,NCONST,NWOPPT,NVARPT
 C   INFDIM: NWOPDI,NWOPMA,NCONMA,NVARMA
 C   INFPRI: NWARN
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       LOGICAL FNDLAB
 C
@@ -388,7 +388,7 @@ C 1-May-2000 hjaaj
 C
 C Purpose: Generate KLWOP array from JWOP
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION   KLWOP(NOCCT,NORBT)
       CHARACTER*8 XLABEL
 C
@@ -397,12 +397,12 @@ C   INFORB: NOCCT,NORBT
 C   INFIND: ISW(*)
 C   INFVAR: NWOPT,JWOP(2,*)
 C
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
       NKLWOP = NOCCT*NORBT
       CALL IZERO(KLWOP,NKLWOP)
@@ -439,15 +439,15 @@ C  if PRFAC  .lt. 0, write only elements with
 C                    value .le. PRFACX * min. pos value
 C                    where PRFACX = MAX(-PRFAC, -1.0/PRFAC)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XKAP(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C Used from common blocks:
 C   INFVAR : NWOPT,NWOPH,JWOPSY,JWOP(2,*)
 C
-#include <maxorb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infvar.h"
 C
 C Check if NKAPT legal
 C
@@ -558,15 +558,15 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolute value
 C                    .ge. PRFAC * (max. absolute value)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WOP(*)
       PARAMETER (PRFAC = 0.1D0, D0 = 0.0D0)
 C
 C Used from common blocks:
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
 C
-#include <maxorb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infvar.h"
 C
       IUNIT = IABS(IUNITX)
 C
@@ -640,14 +640,14 @@ C   9      from LUIT1 with label "NEWORB"
 C  10      from SIRIFC (LUSIFC)
 C
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),WRK(*)
       LOGICAL   FOUND
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
 C
       LOGICAL      NOSTOP
       CHARACTER*4  LABEL(104), IFLGC, ISTAR, IEVEC
@@ -803,19 +803,19 @@ C  else
 C     Overwrite 'NEWORB  ' on LUIT1
 C  end if
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 LABEL3
       DIMENSION CMO(NCMOT)
       LOGICAL   REWIT1
 C
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C  INFORB : NCMOT
 C  INFTAP : LUIT1
 C
-#include <inforb.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "inftap.h"
 C
       LOGICAL FNDLAB
       CHARACTER*8 MOLBL(3),LABTBL(3)
@@ -876,16 +876,16 @@ C
 C Write basis set information at beginning of LUIT1
 C 950825-hjaaj: also save NRHF(*) and IOPRHF for use with AUTOCC
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFORB: NSYM, NORB, NBAS, NRHF
 C  SCBRHF: IOPRHF
 C  INFTAP: LUIT1
 C
-#include <inforb.h>
-#include <scbrhf.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "scbrhf.h"
+#include "inftap.h"
 C
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
@@ -916,17 +916,17 @@ C
 C Purpose: Extract block with active-active orbital indices out
 C          of symmetry packed matrix (e.g. the Fock matrix).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FC(*), FCAC(*)
 C
 C INFORB : NASHT, NNASHX, NSYM, NASH(*), IIORB(*),
 C          NISH(*), NOCC(*)
 C INFIND : IROW(*), ICH(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETAC ')
       IF (NASHT .EQ. 0) GO TO 9999
@@ -971,16 +971,16 @@ C
 C Purpose: Extract block with active-active orbital indices out
 C          of full matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION HH(NORBT,NORBT), HHAC(NASHT,NASHT)
 C
 C INFORB : NORBT, NASHT, N2ASHX
 C INFIND : IOBTYP(*), ICH(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETAC1')
       IF (NASHT .EQ. 0) GO TO 9999
@@ -1013,16 +1013,16 @@ C
 C Purpose: Extract NNASHX block with active-active orbital indices out
 C          of NNORBX matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION HH(NNORBX), HHAC(NNASHX)
 C
 C INFORB : NORBT, NASHT, NNORBX,NNASHX
 C INFIND : IOBTYP(*), ICH(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETAC2')
       IF (NASHT .EQ. 0) GO TO 9999
@@ -1064,7 +1064,7 @@ C    end if
 C else
 C    Unpack from APK to ASP
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASP(*), APK(*), NDIM(NBLK)
       IF (IWAY .LT. 0) THEN
          NDIMT  = ISUM(NBLK,NDIM,1)
@@ -1325,13 +1325,13 @@ C
       END
 C  /* Deck ijkaux */
       SUBROUTINE IJKAUX(II,JJ,KK,LL)
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
 C ... only called from cc/ routines,
 C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
-#include <maxorb.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "r12int.h"
       LOGICAL FIRST
       DATA FIRST /.TRUE./
       DIMENSION IJ(MXCORB)
@@ -1360,13 +1360,13 @@ C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
       END
 C  /* Deck inoaux */
       SUBROUTINE INOAUX(II,JJ)
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
 C ... only used in RDONEL when called from cc/ routines,
 C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
-#include <maxorb.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "r12int.h"
       LOGICAL FIRST
       DATA FIRST /.TRUE./
       DIMENSION IJ(MXORBT)
@@ -1399,8 +1399,8 @@ C     Jan 90, Hans Joergen Aa. Jensen
 C     l.r. 2-Apr-1997 hjaaj
 C     (FMAT and DMAT now (NBAST,NBAST))
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(*), DMAT(*), WORK(*)
 C
 C Used from common blocks:
@@ -1409,10 +1409,10 @@ C  INFTAP : LUSUPM
 C  PRIUNIT : IPRSTAT
 C  CBIHRS : parameters for FORMSUP
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbihrs.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbihrs.h"
 C
 C     Local variables:
 C
@@ -1471,24 +1471,24 @@ C
       RETURN
       END
 C  /* Deck rdsupp */
-#include <vdir.h>
+#include "vdir.h"
       SUBROUTINE RDSUPP(NSIM,FMAT,DMAT,WORK,IWORK,LFREE)
 C
 C Jan 90, Hans Joergen Aa. Jensen
 C
 C NOTE: WORK and IWORK must be equivalenced.
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
 #if defined (VAR_SPLITFILES)
-#include <dummy.h>
-#include <2gbdef.h>
+#include "dummy.h"
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
       DIMENSION ITMP(7)
-#include <chrnos.h>
+#include "chrnos.h"
 #endif
       DIMENSION FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM)
       DIMENSION WORK(LFREE), IWORK(IRAT*LFREE)
@@ -1501,14 +1501,14 @@ C   INFVAR : JWOPSY
 C   INFTAP : LUSUPM
 C   PRIUNIT : LUERR, IPRSTAT
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL NOSYM
       DIMENSION MBAS(8)
@@ -1695,7 +1695,7 @@ C                    note NRS = IPQ
             DO 380 ISIM = 1,NSIM
                DPQ = DMAT(IPQ,ISIM)
                IF (ABS(DPQ) .GT. THRZER) THEN
-#include <ivdep.h>
+#include "ivdep.h"
                   DO 320 IRS = 1,NPQRS
                      FMAT( IWORK(INDP+IRS) , ISIM ) =
      &               FMAT( IWORK(INDP+IRS) , ISIM ) + DPQ * WORK(IRS)
@@ -1740,7 +1740,7 @@ C  /* Deck sirh1 */
 C
 C Copyright 29_nov-1990 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H1AO(*), WRK(LWRK)
 C
       PARAMETER ( D0 = 0.0D0 )
@@ -1749,12 +1749,12 @@ C Used from common blocks:
 C  INFINP : NFIELD, EFIELD, LFIELD
 C  INFORB : NNBAST,...
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <thrzer.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "thrzer.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       LOGICAL ANTSYM
 C
@@ -1817,8 +1817,8 @@ C  PRPAO  : AO property integrals
 C  ANTSYM : true if integral matrix is antisymmetric
 C           false if matrix is symmetric
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 WORD
       DIMENSION PRPAO(*)
       LOGICAL   ANTSYM
@@ -1826,9 +1826,9 @@ C
 C -- common blocks:
 C  INFORB : NNBASX, N2BASX
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "inforb.h"
 C
       CHARACTER*8 RTNLBL(2)
       LOGICAL OPEND, FNDLB2
@@ -1927,8 +1927,8 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*(*) KEY
       LOGICAL   FOUND
@@ -1940,10 +1940,10 @@ C   INFORB : NSYM,NCMOT,NNORBT,NNASHX
 C   INFOPT : POTNUC, EMY
 C   INFTAP : LUSIFC,FNSIFC,LBSIFC
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
 C
       LOGICAL CLSIFC, FNDLAB
 C
@@ -2048,7 +2048,7 @@ C
 C 26-Sep-1990 Hans Joergen Aa. Jensen
 C Read reference CI vector from LUIT1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*)
       PARAMETER ( D1 = 1.0D0 )
 C
@@ -2058,12 +2058,12 @@ C   INFVAR : NCONF
 C   INFTAP : LUIT1
 C   INFPRI : NWARN
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CHARACTER*8 RTNLBL(2), STAR8
       DATA STAR8/'********'/
@@ -2114,8 +2114,8 @@ C
 C Purpose: set up diagonal and PHP matrix for SIRIUS calculations.
 C          (Called by SIRNEO and SIRNR)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DIAGL(*),XNDXCI(*),FCAC(*),H2AC(*),WRK(*)
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
@@ -2127,16 +2127,16 @@ C   INFDIM : LPHPMX, MAXPHP
 C   INFTAP : LUIT2
 C   INFPRI : IPRI6
 C
-#include <maxorb.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "mxcent.h"
 Clf#include <pcmdef.h>
 Clf#include <pcm.h>
-#include <pcmlog.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "pcmlog.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CHARACTER*8 LABIT2(3)
       DATA LABIT2/'CIDIAG2 ','ORBDIAG ','SOLVDIAG'/
@@ -2197,8 +2197,8 @@ C
 C  PHPWRT = .true.  write information
 C         = .false. read information
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION PHPVEC(*)
       LOGICAL PHPWRT
 C
@@ -2206,7 +2206,7 @@ C Information used from common blocks;
 C
 C   INFTAP : LUIT2
 C
-#include <inftap.h>
+#include "inftap.h"
 C
       LOGICAL FNDLAB
       CHARACTER*8 LAB123(3),LBPHP,LBEOD
@@ -2247,13 +2247,13 @@ C  Copyright 6-May-1990 Hans Joergen Aa. Jensen
 C
 C  Unpack CMO from symmetry packed form to  UCMO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), UCMO(NBAST,NORBT)
 C
 C Used from common blocks:
 C  INFORB : NSYM,NBAST,NORBT,...
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL DZERO(UCMO,NBAST*NORBT)
       DO 400 ISYM = 1,NSYM

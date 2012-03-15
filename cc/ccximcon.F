@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCXIMCON(IXIM,NXIM,LISTQ,IXDOTS,XCONS,
@@ -48,17 +48,17 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <inftap.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "inftap.h"
+#include "iratdef.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

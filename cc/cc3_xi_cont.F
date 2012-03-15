@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_xi_cont */
       SUBROUTINE CC3_XI_CONT(LISTL,DOTPROD,
@@ -43,14 +43,14 @@ C  /* Deck cc3_xi_cont */
 *---------------------------------------------------------------------*
       IMPLICIT NONE  
 
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <cclists.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "cclists.h"
+#include "ccroper.h"
 
       CHARACTER*8 FNTOC, FN3VI2
       CHARACTER*6 FN3VI, FN3FOPX, FN3FOP2, FNCKJD, FNDELD
@@ -344,20 +344,20 @@ C  /* Deck cc3_xi_den */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cc3t3d.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccn2rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cc3t3d.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccn2rsp.h"
 
 C
       INTEGER ISYM0
@@ -1300,9 +1300,9 @@ C
       double precision xnormval,ddot
 #endif
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1476,10 +1476,10 @@ C=========================================================================
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cc3t3d.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cc3t3d.h"
 C
       INTEGER ISYM0,ISYFKY,LUT3,LUWBMAT,LWORK,ISYMD
       INTEGER ISYML,ISYMDL,ISWMAT,ISYMT3,ISYMN,ISYEMF,ISYMBN,ISYMEM
@@ -1636,9 +1636,9 @@ C=========================================================================
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISWMAT,ISYMT2,IB,ISYMIB,ID,ISYMID,LWORK
       INTEGER ISYMB,ISYMC,ISYDJI,ISYALK,ISYKLI,ISYMDJ,ISYMKL,ISYMI
@@ -2131,9 +2131,9 @@ C  /* Deck print_matij */
 C
       IMPLICIT NONE 
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       INTEGER ISYMIJ,ISYMJ,ISYMI
       INTEGER KOFF1
@@ -2179,9 +2179,9 @@ C  /* Deck print_matab */
 C
       IMPLICIT NONE 
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
 C
       INTEGER ISYMAB,ISYMB,ISYMA
@@ -2228,9 +2228,9 @@ C  /* Deck print_matia */
 C
       IMPLICIT NONE 
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
 C
       INTEGER ISYMIA,ISYMA,ISYMI
@@ -2277,9 +2277,9 @@ C  /* Deck print_matai */
 C
       IMPLICIT NONE 
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
 C
       INTEGER ISYMAI,ISYMI,ISYMA
@@ -2351,7 +2351,7 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL

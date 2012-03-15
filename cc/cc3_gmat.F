@@ -44,14 +44,14 @@ C                      +  <L3|[H^BC,tau_{2}]|HF>
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccinftap.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccinftap.h"
 C
       INTEGER IDLSTL,IDLSTB,IDLSTC,LWORK,LUCKJD,LUTOC,LU3VI,LUDKBC3
       INTEGER LU3FOPX,LU3FOP2X
@@ -1286,22 +1286,22 @@ C      The atomic integrals (alfa beta /gamma  del) have symmetry isymop
 C
       IMPLICIT NONE
 C
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
 C#include <cclr.h>
 C
       INTEGER ISYMX,ISYMY,ISYMZ,ISYMZ1,LWORK,LU3SRTR,LUCKJDR 
@@ -1519,10 +1519,10 @@ C     Purpose: Calculate X,Y,Z BAR integrals used in CC3.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMX,ISYMY,ISYMZ,LWORK,IDEL,ISYDEL,LUOUT1,LUOUT2
       INTEGER KXCKD,KXCKJ,ID,LENGTH,IOFF

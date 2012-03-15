@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_triplet */
       SUBROUTINE CC3_TRIPLET(ECURR,ISYMTR,OMEGA1,OMEGA2P,T2AM,
@@ -46,18 +46,18 @@ C  /* Deck cc3_triplet */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <eribuf.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <ccisao.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "eribuf.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "ccisao.h"
+#include "r12int.h"
 !
       INTEGER INDEX, LWORK, KCMO, KSCR1, KFOCKD, KINT1T
       INTEGER KINT2T, KINT3T, KINT4T, KINT1S, KINT2S, KINT3S, KINT4S
@@ -105,12 +105,12 @@ C  /* Deck cc3_triplet */
       PARAMETER (LOCDBG = .FALSE.)
 !
 !
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <second.h>
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "second.h"
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
@@ -632,10 +632,10 @@ C  /* Deck cc3_c3am */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 !
       INTEGER NAI, NCK, NCJ, NBK, NBJ, NDI, NDJ, NDK
       INTEGER NBL, NAL, NCL, NAK, NAJ, NCI, NBI
@@ -762,9 +762,9 @@ C  /* Deck cc3_omega1c3 */
 !
       IMPLICIT NONE
 !
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 !
       INTEGER NAI, NAJ, NBJ, NBK, NCK, NCI
       INTEGER VIR1, VIR2, OCC1, OCC2
@@ -839,10 +839,10 @@ C  /* Deck cc33_omega2t3 */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 !
       INTEGER NBK, NAK, NAI, NBJ, NCK, NCJ, NCI, NDJ
       INTEGER NDK, NDI, NBL, NCL, NAL
@@ -1015,9 +1015,9 @@ C  /* Deck cc33_omega2c3 */
 !
       IMPLICIT NONE
 !
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 !
       INTEGER NAI,NAJ,NBI,NBJ,NBK,NCK,NCI,NDJ,NDK,NDI
       INTEGER NBL, NAL, NCL, NAK
@@ -1188,10 +1188,10 @@ C  /* Deck ccsdt_t3am */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 !
       INTEGER NAI, NCK, NBJ, NDJ, NBL
 !
@@ -1265,10 +1265,10 @@ C  /* Deck cc3exci_int2 */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 !
       INTEGER IB, INDEX, IDEL, NAB
 !
@@ -1369,15 +1369,15 @@ C  /* Deck cc33_transtemp */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <eribuf.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "eribuf.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 !
       INTEGER NCK, NCL, NDK, NAI, NBJ, NBK
 !
@@ -1678,8 +1678,8 @@ C  /* Deck intcompare */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccsdsym.h"
 !
 #if defined (SYS_CRAY)
       REAL XIAJB(NT1AMX,NT1AMX), XIAJB2(NT1AMX,NT1AMX)
@@ -1756,9 +1756,9 @@ C  /* Deck gcompare */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 !
 #if defined (SYS_CRAY)
       REAL INT1(NORBT,NORBT,NORBT,NORBT)
@@ -1798,9 +1798,9 @@ C  /* Deck intcompare2 */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 !
 #if defined (SYS_CRAY)
       REAL XINT1S(NT1AMX,NVIRT,NVIRT)
@@ -1960,9 +1960,9 @@ C  /* Deck tcompare */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 !
 #if defined (SYS_CRAY)
       REAL XINT1T(NT1AMX,NVIRT,NVIRT)
@@ -2056,10 +2056,10 @@ C  /* Deck cc3exci_int1 */
 !
       IMPLICIT NONE
 !
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h> 
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h" 
       INTEGER INDEX, NAB, NDL, NCK, IDEL
 !
 #if defined (SYS_CRAY)

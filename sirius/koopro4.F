@@ -44,21 +44,21 @@ C        Spin free version of NEVPT
 C
 C
 C-----------------------------------------------------------------------
-#include <single.h>
-#include <implicit.h>
-#include <maxorb.h>
-#include <mxpdim.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpt2.h>
-#include <strnum.h>
-#include <dummy.h>
-#include <csfbas.h>
+#include "single.h"
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxpdim.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpt2.h"
+#include "strnum.h"
+#include "dummy.h"
+#include "csfbas.h"
 
 ! ** The nevpt2 code was not compiled unless PGF90, GFORTRAN or IFORT compiler.
 ! ** Now code is compiled for all compilers, if your compiler cannot handle
@@ -768,7 +768,7 @@ c-------------------------------------------------------------------
      $     zcapos,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca
      $     ,ioccb,flip)
       IMPLICIT REAL*8  (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
       dimension c(*),zcapos(*)
@@ -1476,7 +1476,7 @@ c--------------------------------------------------------------------
       subroutine ro3(c,daaa,nisht,nasht,thr,icomp,iconf,ioccfe,zcapos
      $,ncaptot,trou,part,ne,nd,ispinfe,iorbfe,itsym,iocca,ioccb,flip)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
 c      include 'rotwo.par'
       allocatable dbbb(:,:,:,:,:,:),daab(:,:,:,:,:,:),dbba(:,:,:,:,:,:)
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
@@ -1906,7 +1906,7 @@ c-------------------------------------------------------
       subroutine ro2(c,d2alal,nisht,nasht,thr,trou,part,ne,nd,
      $               ispinfe,iorbfe,itsym,iocca,ioccb,flip)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension d2alal(nasht,nasht,nasht,nasht)
       allocatable d2bebe(:,:,:,:),d2albe(:,:,:,:)
       dimension c(*)
@@ -2088,7 +2088,7 @@ c-----------------------------------------------------
 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 
-#include <priunit.h>
+#include "priunit.h"
       dimension d1(nasht,nasht)
       integer segno
       dimension c(*)
@@ -2148,7 +2148,7 @@ C     note: NOCB = nisht + lfermie
 c-------------------------------------------------
       subroutine ord2(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2174,7 +2174,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine ord3(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2224,7 +2224,7 @@ c--prima gli alfa poi i beta
 c----------------------------------------------------------------
       subroutine ord4(nv,nw,zseg,segno)
 c--prima gli alfa poi i beta
-#include <priunit.h>
+#include "priunit.h"
       logical*1 zseg
       integer segno
       dimension nv(*),nw(*)
@@ -2263,7 +2263,7 @@ c----------------------------------------------------------------
       subroutine giveocc2(m,iocca,ioccb,nasht,nisht,nocca,noccb,nocc,nec
      $     ,ndm,trou,part,iorbfe,ispinfe) 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension iocca(*),ioccb(*),trou(*),part(*),iorbfe(*),ispinfe(*)
       integer*2 trou,part,iorbfe,ispinfe
       do i=1,nasht
@@ -2311,7 +2311,7 @@ c--------------------------------------------------------------------
       subroutine perm3(d,i,j,k,l,m,n,nasht)
 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l,m,n)
@@ -2359,8 +2359,8 @@ c--block 6
       end
 c-----------------------------------------------------------
       subroutine perm2(d,i,j,k,l,m,n,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l,m,n)
@@ -2376,8 +2376,8 @@ c--block 2
       end
 c--------------------------------------------------------------------
       subroutine permbis(d,i,j,k,l,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension d(nasht,nasht,nasht,nasht)
 c--block 1
       a=d(i,j,k,l)
@@ -2393,8 +2393,8 @@ c--block 2
       end
 c--------------------------------------------------------------------
       subroutine permut123(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2434,8 +2434,8 @@ c---permutazioni dispari
       end
 c----------------------------------------------------------
       subroutine permut124(i,j,l,k,ip,jp,lp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2475,8 +2475,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut134(i,l,j,k,ip,lp,jp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2516,8 +2516,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut234(l,i,j,k,lp,ip,jp,kp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       lp=l
       if(ivolte.eq.1)then
@@ -2557,8 +2557,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1234(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -2591,8 +2591,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1324(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -2625,8 +2625,8 @@ c---permutazioni dispari
       end
 c--------------------------------------------------------------------
       subroutine permut1423(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
 c--permutazioni pari
       if(ivolte.eq.1)then
@@ -2659,8 +2659,8 @@ c---permutazioni dispari
       end
 c----------------------------------------------------------------------
       subroutine permut4(i,j,k,l,ip,jp,kp,lp,segno,ivolte)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer segno
       if(ivolte.eq.1)then
 c--permutazioni pari      
@@ -2818,7 +2818,7 @@ C     SSP DE RECHERCHE DES ELEMENTS D'INTERACTION
 C     ENTRE DEUX DETERMINANTS, NUMEROTES II ET JJ
 C     
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
-#include <priunit.h>
+#include "priunit.h"
       parameter (nmax=4)
       dimension ne(*),nd(*),trou(*),part(*)
       INTEGER*2 NE,TROU,PART
@@ -2940,7 +2940,7 @@ C     CALCUL DE L ELEMENT DE MATRICE
          END
 c------------------------------------------------------------------
       integer function index(i,j,k,l)
-#include <implicit.h>
+#include "implicit.h"
       if(i.ge.k)then
          ik=(i*i-i)/2+k
       else
@@ -2960,8 +2960,8 @@ c------------------------------------------------------------------
       end
 c------------------------------------------------------------------
       subroutine accum(amat,ip,jp,kp,lp,mp,np,op,pp,val,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #include "nevpt2.h"
       dimension amat(nwords,nasht,nasht,nasht,nasht)
       integer op,pp
@@ -2973,8 +2973,8 @@ c------------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       SUBROUTINE MATOUT(N,N2,A,NN)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c     CHARACTER*3 SYMB(NN)
 c     integer symb(*)
       DIMENSION A(NN,*)
@@ -3005,8 +3005,8 @@ c     WRITE(lupri,37) (SYMB(I),I=M,K)
 c-------------------------------------------------------------------
       subroutine koop2E(atwo,daaa,taa,dal,koopaa,koopeaa,nasht
      $     ,nisht,f,aj,itsym,its)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),
      $ taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3137,8 +3137,8 @@ c-------------------
 c-------------------------------------------------------------------
       subroutine koopman0pE(atwo,daaa,taa,dal,koopaa,koopbb,koopab
      $     ,nasht,nisht,f,aj,itsym,its)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),atwo(nasht,nasht,nasht,nasht),dal(nasht
@@ -3280,8 +3280,8 @@ c---F e' la matrice dei monoelettronici!
 c-------------------------------------------------------------------
       subroutine bamat(amat,atmat,atwo,ro4,daaa,taa,dal,nasht,nisht,f,aj
      $     ,itsym,its,norb)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3457,8 +3457,8 @@ c-------------------
       end
 c-------------------------------------------------------------------
       subroutine bbmat(atwo,bmat,btmat,daaa,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3525,8 +3525,8 @@ c-------------------------------------
       end
 c-------------------------------------------------------------------
       subroutine bcmat(atwo,cmat,ctmat,daaa,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3624,8 +3624,8 @@ c-------------------
       end
 c-------------------------------------------------------------------
       subroutine bdmat(atwo,dmat,dtmat,taa,dal,nasht,nisht,f,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 c---F e' la matrice dei monoelettronici con modif. Dyall e altra modif!
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension dmat(nasht,nasht)
@@ -3681,7 +3681,7 @@ c---------------------------
       end
 c-------------------------------------------------------------------
       function eeee(a,b,c,d,e,f,g,h,d3,d2,d1,ro4,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -3713,7 +3713,7 @@ c--a,c,e,g    b,d,f,h
       end
 c-------------------------------------------------------------------
       function eeeet(a,b,c,d,e,f,g,h,d3,d2,d1,ro4,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f,g,h
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -3725,7 +3725,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function eee2(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3739,7 +3739,7 @@ c--the same as eee but with the spinless density matrices as input
       end
 c-------------------------------------------------------------------
       function eee2t(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3749,7 +3749,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function eee2tl(a,b,c,d,e,f,daaa,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d,e,f
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),taa(nasht
      $     ,nasht,nasht,nasht),dal(nasht,nasht)
@@ -3759,7 +3759,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2=taa(a,c,b,d)
@@ -3768,7 +3768,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2t(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2t=-ee2(b,a,c,d,taa,dal,nasht)
@@ -3777,7 +3777,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ee2tr(a,b,c,d,taa,dal,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       ee2tr=-ee2(a,b,d,c,taa,dal,nasht)
@@ -3786,7 +3786,7 @@ c-------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function daaat(i,j,k,l,m,n,daaa,daa,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht),daa(nasht
      $     ,nasht,nasht,nasht),da(nasht,nasht)
       v=-daaa(i,j,k,l,m,n)
@@ -3816,7 +3816,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function dbbbt(i,j,k,l,m,n,dbbb,dbb,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension dbbb(nasht,nasht,nasht,nasht,nasht,nasht),dbb(nasht
      $     ,nasht,nasht,nasht),db(nasht,nasht)
       v=-dbbb(i,j,k,l,m,n)
@@ -3846,7 +3846,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function daabt(i,j,k,l,m,n,daab,daa,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension daab(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),daa(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
@@ -3863,7 +3863,7 @@ c----------------------------------------------------------------------
       end
 c----------------------------------------------------------------------
       function dbbat(i,j,k,l,m,n,dbba,dbb,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       dimension dbba(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),dbb(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
@@ -3880,7 +3880,7 @@ c----------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function daat(a,b,c,d,daa,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension daa(nasht,nasht,nasht,nasht),da(nasht,nasht)
       v=daa(a,b,c,d)
@@ -3893,7 +3893,7 @@ c--------------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function dbbt(a,b,c,d,dbb,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension dbb(nasht,nasht,nasht,nasht),db(nasht,nasht)
       v=dbb(a,b,c,d)
@@ -3906,7 +3906,7 @@ c--------------------------------------------------------------------------
       end
 c--------------------------------------------------------------------------
       function dabt(a,b,c,d,dab,da,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,d
       dimension dab(nasht,nasht,nasht,nasht),da(nasht,nasht),db(nasht
      $     ,nasht)
@@ -3918,7 +3918,7 @@ c--------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       function dat(a,b,da,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b
       dimension da(nasht,nasht)
       v=-da(a,b)
@@ -3928,7 +3928,7 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       function dbt(a,b,db,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b
       dimension db(nasht,nasht)
       v=-db(a,b)
@@ -3939,8 +3939,8 @@ c------------------------------------------------------------------------
 c------------------------------------------------------------------------
       subroutine koopE(atwo,koopipa,koopeaa,taa,dal,nasht,nisht,f
      $     ,aj)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       dimension koopipa(nasht,nasht),koopeaa(nasht,nasht)
       dimension atwo(nasht,nasht,nasht,nasht)
@@ -4008,7 +4008,7 @@ c     $          ,atwo(c,ie,a,d),taa(ap,c,d,ie)
 c------------------------------------------------------
       subroutine ord31(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
       integer segno,segno2,op,pp,op2,pp2,m,n,mp2,np2,mp,np
       integer ia,ic,ie,ig,ia2,ic2,ie2,ig2,nasht,ivolte,jvolte
       integer i1,i2,i3,i4,i5,i6,i7,i8,norm1,norm2,nwords,normind
@@ -4145,7 +4145,7 @@ c      write (6,'(''ord31 4'',8I3)') mp,np,op,pp
 c-----------------------------------------------------------
       subroutine ord22(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
 #include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,m,n
@@ -4335,7 +4335,7 @@ c      write (6,'(''ord22 6'',8I3)') mp,np,op,pp
 c------------------------------------------------------
       subroutine ordsame(ia,ic,ie,ig,ia2,ic2,ie2,ig2,val,amat,nasht,
      * m,n)
-#include <implicit.h>
+#include "implicit.h"
 #include "nevpt2.h"
       DIMENSION amat(nwords,nasht,nasht,nasht,nasht)
       integer segno,segno2,op,pp,op2,pp2,n,m
@@ -4405,7 +4405,7 @@ c      write (6,*) 'calling ordsame'
 c-----------------------------------------------------
       subroutine ord9(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,
      * i1,i2,i3,i4,i5,i6,i7,i8)
-#include <implicit.h>
+#include "implicit.h"
 c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
@@ -4466,7 +4466,7 @@ c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8
 c-----------------------------------------------------
       subroutine ord8(ia1,ic1,ie1,ig1,ia2,ic2,ie2,ig2,
      * i1,i2,i3,i4,i5,i6,i7,i8)
-#include <implicit.h>
+#include "implicit.h"
 c---  ordina in maniera decrescente ia1, ic1, ie1, ig1 in i1 i2 i3 i4
 c---  ed fa la stessa perm anche su ia2, ic2, ie2, ig2 in i5 i6 i7 i8
       dimension nv1(4),nv2(4)
@@ -4532,7 +4532,7 @@ c      write (6,'(''ord8 ou'',8I3)') i1,i2,i3,i4,i5,i6,i7,i8
       end
 c-------------------------------------------------------------------
       function ro3t(a,b,c,ap,bp,cp,d3,d2,d1,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,ap,bp,cp
       dimension d3(nasht,nasht,nasht,nasht,nasht,nasht),d2(nasht,nasht
      $     ,nasht,nasht),d1(nasht,nasht)
@@ -4574,7 +4574,7 @@ c-------------------------------------------------------------------
       end
 c-------------------------------------------------------------------
       function ro2t(ap,bp,a,b,d2,d1,nasht)
-#include <implicit.h>
+#include "implicit.h"
       integer a,b,c,ap,bp,cp
       dimension d2(nasht,nasht,nasht,nasht),d1(nasht,nasht)
       ro2t=d2(a,b,ap,bp)
@@ -4588,8 +4588,8 @@ c-------------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       subroutine bro3(ro4,daaa,nasht,nele)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
 #include "nevpt2.h"
       dimension ro4(nwords,nasht,nasht,nasht,nasht)
@@ -4619,8 +4619,8 @@ cc---controllo su contrazione della ro4
       end
 c-----------------------------------------------------------------
       subroutine bro2(daaa,taa,nasht,nele)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension daaa(nasht,nasht,nasht,nasht,nasht,nasht)
       dimension taa(nasht,nasht,nasht,nasht)
       do i=1,nasht
@@ -4640,7 +4640,7 @@ c-----------------------------------------------------------------
       end
 c-----------------------------------------------------------------
       subroutine bro1(taa,dal,nasht,nele)
-#include <implicit.h>
+#include "implicit.h"
       dimension taa(nasht,nasht,nasht,nasht),dal(nasht,nasht)
       do i=1,nasht
          do j=1,nasht
@@ -4655,7 +4655,7 @@ c-----------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr1(dal,coopeaa,coopipa,nasht,lun31)
-#include <implicit.h>
+#include "implicit.h"
       dimension dal(nasht,nasht),coopeaa(nasht,nasht)
      $     ,coopipa(nasht,nasht)
       write(lun31) nasht
@@ -4666,8 +4666,8 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr2(koopaa,taa,dal,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8  KOOPAA
       DIMENSION dal(nasht,nasht),koopaa(nasht,nasht,nasht,nasht
      $     ),taa(nasht,nasht,nasht,nasht)
@@ -4690,8 +4690,8 @@ c------------------------------------------------------------------------
       end
 c------------------------------------------------------------------------
       subroutine wr3(koopeaa,taa,koopaa,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8  koopaa(nasht,nasht,nasht,nasht),
      &           taa(nasht,nasht,nasht,nasht),
      &       koopeaa(nasht,nasht,nasht,nasht)
@@ -4716,8 +4716,8 @@ c-------scrittura matrici koopman doppia ionizzazione
       end
 c----------------------------------------------------------------------
       subroutine wr4(koopaa,koopbb,koopab,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       REAL*8  KOOPAA, KOOPBB, KOOPAB
       DIMENSION koopaa(nasht,nasht,nasht,nasht
      $     ),koopbb(nasht,nasht,nasht,nasht),koopab(nasht,nasht)
@@ -4732,8 +4732,8 @@ c----------------------------------------------------------------------
       end
 c------------------------------------------------------------------
       subroutine fdiff(bmat,cmat,btmat,ctmat,nasht)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension bmat(nasht,nasht,nasht,nasht),cmat(nasht,nasht,nasht
      $     ,nasht)
       dimension btmat(nasht,nasht,nasht,nasht),ctmat(nasht,nasht,nasht
@@ -4774,8 +4774,8 @@ c------------------------------------------------------------------
 c------------------------------------------------------------------------------
       subroutine wr5(daaa,amat,atmat,bmat,btmat,cmat,ctmat,dmat,dtmat
      $     ,nasht,lun31)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension bmat(nasht,nasht,nasht,nasht),cmat(nasht,nasht,nasht
      $     ,nasht)
       dimension amat(nasht,nasht,nasht,nasht,nasht,nasht),dmat(nasht
@@ -4831,8 +4831,8 @@ c----scrittura matrice dtmat
       end
 c-----------------------------------------------------------
       subroutine giveocc(ioccfe,m,nd,ne,trou,part,nocc,norb)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer*2 ne(*),trou(*),part(*)
       integer*1 ioccfe(*)
       integer nd(*)
@@ -4857,7 +4857,7 @@ c-----------------------------------------------------------
       end
 c------------------------------------------------------------------
       integer function ndiff(ioccfe,jocc,norb)
-#include <implicit.h>
+#include "implicit.h"
       integer*1 ioccfe(*),jocc(*)
       ndiff=0
       do i=1,norb
@@ -4870,8 +4870,8 @@ c------------------------------------------------------------------
 c--------------------------------------------------------
       subroutine esclass(nd,ne,trou,part,icomp,iconf,isegno,ncf,nocc
      $     ,norb,ispin,iocc)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       integer*2 ne,trou,part,icomp,iconf,isegno
       dimension nd(*),ne(*),trou(*),part(*),icomp(*),iconf(*),isegno(*)
       equivalence (ip1,ib1),(ip2,ib2)
@@ -4909,7 +4909,7 @@ c------------------------------------------------------------------------
 
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1 (Z)
 
-#include <priunit.h>
+#include "priunit.h"
       integer*2 ne,trou,part,ispinfe,iorbfe
       integer*1 flip
       dimension flip(*),ne(*),nd(*),trou(*),part(*),ispinfe(*),iorbfe(*)
@@ -4967,12 +4967,12 @@ C
       subroutine readint(onel,atwo,aj,dv,wrk,lfree,id2n,in2d,lupri)
 C      
 C      
-#include <implicit.h>
-#include <maxorb.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inforb.h"
 C Manu: for NEVPT2-srDFT
-#include <inftap.h>
-#include <infinp.h>
+#include "inftap.h"
+#include "infinp.h"
 C#include <priunit.h>
       DIMENSION NEEDTP(-4:6) ! for NXTH2M
       allocatable h2m(:,:)
@@ -5272,11 +5272,11 @@ C
 C This subroutine adds the symmetric UNPACKED matrix VSRAO to the
 C symmetry PACKED H1AO matrix 
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VSRAO(NBAST,NBAST),H1AO(*)   
 C 
-#include <inforb.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "priunit.h"
 C 
 
          IH1AO = 0 
@@ -5316,8 +5316,8 @@ C
 C
 c-----------------------------------------------------
       subroutine getnorm(ia,ic,ie,ig,norm)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension nv(4)
       integer ia,ic,ie,ig,norm,nv,i,j,jmax,imax,ndum
 
@@ -5357,9 +5357,9 @@ c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
       end
 c-----------------------------------------------------
       subroutine nwadd(nwall,nadd)
-#include <single.h>
-#include <implicit.h>
-#include <priunit.h>
+#include "single.h"
+#include "implicit.h"
+#include "priunit.h"
       nwall=nwall+nadd
 c      write (lupri,*) 'Alloc  :',nadd/8,nwall/8
 c      write (lupri,*) 'Alloc  :',nadd,nwall
@@ -5368,9 +5368,9 @@ c      call flshfo(lupri)
       end
 c-----------------------------------------------------
       subroutine nwdel(nwall,ndel)
-#include <single.h>
-#include <implicit.h>
-#include <priunit.h>
+#include "single.h"
+#include "implicit.h"
+#include "priunit.h"
       nwall=nwall-ndel
 c      write (lupri,*) 'Dealloc:',ndel/8,nwall/8
 c      write (lupri,*) 'Dealloc:',ndel,nwall
@@ -5378,7 +5378,7 @@ c      call flshfo(lupri)
       return
       end
       function vald2r8(a,i,j,n)
-#include <implicit.h>
+#include "implicit.h"
       dimension a(n,n)
       vald2r8 = a(i,j)
       return

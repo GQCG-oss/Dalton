@@ -21,15 +21,15 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       PROGRAM NODPRG_DALTON
 C
 C     Node program (slave program) for PVM
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mtags.h"
       PARAMETER (MWORK = 10 000 000)
       DIMENSION WORK(MWORK)
 C

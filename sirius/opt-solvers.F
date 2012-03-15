@@ -45,11 +45,11 @@ c     part, depending on the formulation of the problem) in the case of
 c     EDIIS.
 c
 c     nitpicking: function pointers would be ideal here...
-#include <implicit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "priunit.h"
+#include "inforb.h"
       CHARACTER*10 METHOD
       DIMENSION H1AO(NNBAST),SAOUNP(NBAST,NBAST)
       DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
@@ -104,8 +104,8 @@ c     DIIS-specific chunk of code
 c     -------------------------------------------------------------------
       SUBROUTINE diis_update_bmat(H1AO,SAOUNP,FAOS,DAOS,BMAT,NEVC,
      &     MXERRV,KFRSAV,LFRSAV,WRK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION H1AO(*),SAOUNP(*)
       DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
       DIMENSION BMAT(NEVC,NEVC),WRK(*)
@@ -161,11 +161,11 @@ c     conditioning of the bmatrix to get better lagrangian multipliers.
 c     -------------------------------------------------------------------
       SUBROUTINE diis_solve_for_coefs(NEVC,BMAT,CVEC)
 c     find optimal weights for DIIS using precomputed B matrix
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BMAT(NEVC,NEVC),CVEC(NEVC+1)
       DIMENSION CONSTR(NEVC+1,NEVC+1)
       INTEGER PIV(NEVC+1)
-#include <priunit.h>
+#include "priunit.h"
       NPAR = NEVC+1
       DO I = 1,NEVC
          CONSTR(NPAR,I) = 1.D0
@@ -193,7 +193,7 @@ c     -------------------------------------------------------------------
       SUBROUTINE c2diis_solve_for_coefs(NEVC,BMAT,CVEC,
      &       WRK,KFRSAV,LFRSAV)
 c     find optimal weights for C2DIIS using precomputed B matrix
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BMAT(NEVC,NEVC),CVEC(NEVC+1),WRK(*)
       PARAMETER (THREVC = 0.01D0, D1=1.0D0, DP5=0.5D0)
       IROW(I) = I*(I-1)/2
@@ -237,9 +237,9 @@ c     -------------------------------------------------------------------
 c     EDIIS-specific chunk of code
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_update_gvec(NEVC,ENERGTOT,H1AO,DAOS,GVEC,INDEVC)
-#include <implicit.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "priunit.h"
        DIMENSION H1AO(*),DAOS(NNBAST,NEVC,2),GVEC(*)
 #ifdef EDIIS_WITH_DIFFERENCES_FORMULAS
       GVEC(INDEVC) = ENERGTOT
@@ -250,9 +250,9 @@ c     -------------------------------------------------------------------
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_update_bmat(NEVC,H1AO,SAOUNP,FAOS,DAOS,BMAT,
      &                             GVEC,INDEVC)
-#include <implicit.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "priunit.h"
       INTEGER NEVC,I,J
       DIMENSION H1AO(NNBAST),SAOUNP(NBAST,NBAST)
       DIMENSION FAOS(NNBAST,NEVC,2),DAOS(NNBAST,NEVC,2)
@@ -309,9 +309,9 @@ c     -------------------------------------------------------------------
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_solve_for_coefs(NEVC,GVEC,BMAT,WEIGHTVEC,
      &                                 INDEVC,FEASIBLE)
-#include <implicit.h>
-#include <inforb.h>      
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"      
+#include "priunit.h"
 
       INTEGER NEVC
       DIMENSION GVEC(*),BMAT(NEVC,NEVC),WEIGHTVEC(*)
@@ -383,9 +383,9 @@ C
       END
       SUBROUTINE ediis_scan_whole_space(
      &           NEVC,GVEC,BMAT,WEIGHTVEC,INDEVC,FEASIBLE)
-#include <implicit.h>
-#include <inforb.h>      
-#include <priunit.h>
+#include "implicit.h"
+#include "inforb.h"      
+#include "priunit.h"
 
       INTEGER NEVC
       DIMENSION GVEC(*),BMAT(NEVC,NEVC),WEIGHTVEC(*)

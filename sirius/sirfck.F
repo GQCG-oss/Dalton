@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 !  #define SIRFCK_DEBUG
 C  /* Deck sirfck */
@@ -64,7 +64,7 @@ C     DIRECT = .TRUE.   Direct calculation using hermit.
 C              .FALSE.  Read integrals from AOTWOINT.
 Cholesky       Overriden by the CHOINT flag
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL   DIRECT, DOERG, DOATR, LSRHYBR
       LOGICAL   DO_SPINDNS, DFT_SPINDNS_SAVE
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,*)
@@ -72,7 +72,7 @@ C
       DIMENSION WRK(*), IFCTMP_SR(3)
       DIMENSION DFCOEFF(NBAST) !density-fitting coefficients
 C
-#include <dummy.h>
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, D4 = 4.0D0, 
      &           DMP5 = -0.5D0)
 C
@@ -83,31 +83,31 @@ C   INFTAP: LUINTA
 C   INFPRI: IPRFCK
 C   CBIREA: ATOMDF, NODDYDF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <dfterg.h>
-#include <cbirea.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "dfterg.h"
+#include "cbirea.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <sirftim.h>
-#include <choscf.h>
+#include "ccdeco.h"
+#include "sirftim.h"
+#include "choscf.h"
 Cholesky
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       LOGICAL SFIRST, PREHF, IOPTVP, DO_CHOINT
       SAVE SFIRST
       DATA SFIRST  /.TRUE./
 C
 C
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('SIRFCK')
 Cholesky
       DTIME  = SECOND()
@@ -1010,33 +1010,33 @@ C         Y = 1 Coulomb
 C         Y = 2 Exchange
 C         Y = 3 Coulomb + Exchange
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) FN2INT
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT), MBAS(8)
       DIMENSION WRK(LWORK)
 C
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
 C
 C Used from common blocks
 C   INFORB: NSYM, NBAS(:), N2BASX
 C   INFPRI: IPRFCK
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
 C for HFXFAC:
-#include <dftcom.h>
-#include <ibtfun.h>
+#include "dftcom.h"
+#include "ibtfun.h"
 
       CALL QENTER('SIRFCK2')
 
-#include <memint.h>
+#include "memint.h"
 #ifdef SIRFCK_DEBUG
       write(lupri,*)'SIRFCK2: NDMAT=', NDMAT
       write(lupri,*)'SIRFCK2: IFCTYP=', (IFCTYP(I),I=1,NDMAT)
@@ -1210,12 +1210,12 @@ C     only non-zero integrals are considered.  The symmetry of DMAT
 C     is not taken into account.
 C DFT modifications T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP25 = 0.25D0)
       INTEGER P, Q, R, S
-#include <inforb.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1271,11 +1271,11 @@ C     FMAT(P,R)  = - 0.5 SUM(q,s) (p q | r s) X(s,q)
 C                = + 0.5 SUM(q,s) (p q | r s) X(q,s)
 C     Note that X(q,s) = -X(s,q)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), XMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1319,10 +1319,10 @@ C     Symmetry is implicitly taken into account by the fact that
 C     only non-zero integrals are considered.  The symmetry of DMAT
 C     is not taken into account.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1356,14 +1356,14 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
-#include <dftcom.h>
+#include "inforb.h"
+#include "dftcom.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       EFAC = HFXFAC / 2
       DO 100 INT = 1, LENGTH
@@ -1408,13 +1408,13 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 INT = 1, LENGTH
 C        factor "-0.5" is multiplied on DMAT in SIRFCK
@@ -1449,9 +1449,9 @@ C     to be square matrices in full dimension without symmetry reduction
 C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -1485,8 +1485,8 @@ C
 C     Note: 0.5 factor is required in order to preserve
 C     symmetric content of FMAT from before SIRFCK call.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NBAST,NBAST)
       INTEGER   P, Q
 C
@@ -1510,8 +1510,8 @@ C
 C     Note: 0.5 factor is required in order to preserve
 C     symmetric content of FMAT from before SIRFCK call.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FMAT(NBAST,NBAST)
       INTEGER   P, Q
 C
@@ -1542,16 +1542,16 @@ C        (a) The density matrix *must* be tot. sym. (ISYDEN = 1).
 C        (b) FOCK and DEN are assumed stored as full square
 C            without symmetry reduction.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(*), DEN(*), WORK(LWORK)
-#include <infpri.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <choscf.h>
-#include <priunit.h>
-#include <ccdeco.h>
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "choscf.h"
+#include "priunit.h"
+#include "ccdeco.h"
 
       INTEGER NVECD(8), IVECD(8,8)
 
@@ -1796,21 +1796,21 @@ C        closed-shell optimization.
 C
 C     NB: NO SPARSITY IS USED WHATSOEVER !!!!!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DEN(*), CMO(*), FOCK(*), WORK(LWORK)
       INTEGER IVECD(8,8), NVECD(8)
       LOGICAL TINFO
-#include <iratdef.h>
-#include <infpri.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <sirftim.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "sirftim.h"
+#include "priunit.h"
 Casm
-#include <dftcom.h>
-#include <choscf.h>
+#include "dftcom.h"
+#include "choscf.h"
 Casm
 
       INTEGER IHOLE(8,8), NACHH(8), IALPHK(8,8), NALPHK(8)
@@ -2214,10 +2214,10 @@ C
 C     Purpose:
 C        Symmetry pack DEN.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       DIMENSION DEN(*), DENPK(*)
 
@@ -2241,9 +2241,9 @@ C  /* Deck sir_chodeco */
 C
 C     Henrik Koch   10-may-2002
 C
-#include <implicit.h>
-#include <infpri.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "infpri.h"
+#include "priunit.h"
 C
       DIMENSION XMAT(NDIM,NDIM),WORK(NDIM,*)
 C
@@ -2325,14 +2325,14 @@ C        (b) This is a pilot version: density driven but
 C            with use of neither sparsity of the Cholesky vectors
 C            nor screening.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(*), DEN(*), WORK(LWORK)
-#include <infpri.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       PARAMETER (HALF = 0.50D0, ONE = 1.00D0)
 
@@ -2457,17 +2457,17 @@ C                      -     Sum(gd) D(dg) (ad|bg)
 C
 C     NB: NO SPARSITY IS USED WHATSOEVER !!!!!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DEN(*), FOCK(*), WORK(LWORK)
       LOGICAL TINFO
-#include <iratdef.h>
-#include <infpri.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <priunit.h>
-#include <dftcom.h>
+#include "iratdef.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "dftcom.h"
 
       INTEGER IOFFC(8)
 

@@ -10,18 +10,18 @@ C
 C     PURPOSE: Calculate the symmetry correcting term to the A matrix,
 C              as expressed in eq. (44).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), AIJ(LAIJ),  AAB(LAAB)
       DIMENSION TR1E(LTR1E),   TR1D(LTR1D)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

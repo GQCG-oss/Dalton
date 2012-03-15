@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_BAMAT_NODDY(IOPTRES,FREQRES,LABELB,ISYMB,
@@ -47,12 +47,12 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)

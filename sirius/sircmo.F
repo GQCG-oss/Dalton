@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cmodel */
       SUBROUTINE CMODEL(CMO,GETCMO)
@@ -35,7 +35,7 @@ C     Written 870710-hjaaj
 C     revised 89050 -hjaaj: + GETCMO
 C             890703-hjaaj: MOLFTUC4
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*)
       LOGICAL   GETCMO
@@ -51,11 +51,11 @@ C     INFINP : KDEL, TYPE(*)
 C     INFORB : NSYM, NORB(8), NBAS(8)
 C     PRIUNIT : IPRSTAT, LUSTAT
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CHARACTER*4 MOLFTUC4, CTMPMO(MXCORB)
 C
@@ -471,8 +471,8 @@ C Output:
 C  CMO; molecular orbitals
 C  DELEMO set true if orbitals have been deleted
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(*),SCRA(*)
       LOGICAL   DELEMO
       PARAMETER (D1=1.0D0)
@@ -484,11 +484,11 @@ C   INFPRI : LUW4
 C   CBIREA : LMULBS
 C   R12INT : LAUXBS
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
       CALL QENTER('DELMO ')
 C
@@ -706,12 +706,12 @@ C Input: CMO : MO:s in normal order
 C
 C Output: CMO : MO:s in IORD order
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),CSCR(*),IORD(*)
 C
 C  INFORB : NCMOT, ICMO(8), NBAS(8), NORB(8)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       INEW1 = 1
       DO 10 ISYM = 1,NSYM
@@ -747,7 +747,7 @@ C         NORM   (GRAM-SCHMIDT ORTHONORMALIZATION)
 C         SYMORT (SYMMETRICAL ORTHONORMALIZATION)
 C         MOLLAB (OVERLAP MATRIX ON LUONEL)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),S(*),SIN(LSIN)
 C
       PARAMETER (D0 = 0.0D0)
@@ -757,11 +757,11 @@ C   INFINP : NWARN,CMAXMO,THROVL,?
 C   INFORB : NNBAST,NCMOT
 C   INFPRI : P4FLAG(*),P6FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       LOGICAL PROVLP
       SAVE    PROVLP
@@ -923,19 +923,19 @@ C
 C Output:
 C  CMO; molecular orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),SH1(*),SCRA(*)
 C
 C Used from common blocks:
 C   INFINP : FLAG(32)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
 C
       LOGICAL LSAVE1,LSAVE2,LSAVE3
 C
@@ -1015,7 +1015,7 @@ C
 C Input:
 C  CMO; molecular orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),WRK(*)
 C
 C Used from common blocks:
@@ -1023,13 +1023,13 @@ C  SCBRHF : IOPRHF
 C  INFORB : NRHF(), NNBAST,NNORBT,NBAST,...
 C  INFIND : IROW()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <scbrhf.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "scbrhf.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       CALL QENTER('H1OCC ')
 C
@@ -1124,12 +1124,12 @@ C Scratch:
 C  FC; the inactive Fock matrix and scratch area for overlap matrix
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),FC(*),SCRA(*)
 C
 C
       PARAMETER (D0=0.0D0, EMYCNV = 1.D-4)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C  INFINP : 
@@ -1137,16 +1137,16 @@ C  INFOPT : EPOT,EMY,EMCSCF
 C  SCBRHF : NFRRHF(*)
 C  INFIND : ...,ISSMO(*),?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
-#include <infpri.h>
-#include <gnrinf.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
+#include "infpri.h"
+#include "gnrinf.h"
 C
       LOGICAL LSAVE4,LSAVE6
 C
@@ -1296,12 +1296,12 @@ C            to modify virtual Hartree-Fock orbitals for CI/MC
 C
 C  Reference for .FC MVO: C.W. Bauschlicher, JCP 72 (1980) 880.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*), WRK(LFREE)
 C
       PARAMETER ( D0 = 0.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C   INFORB : NSYM, NNBAST, NNORBT, ...
 C   SCBRHF : IOPRHF, NMVO(), NMVOT
@@ -1309,14 +1309,14 @@ C   INFIND : IROW(*)
 C   INFPRI : IPRI6
 C   INFIND : SUPSYM
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infinp.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infinp.h"
 C
       DIMENSION MISH(8), MRHF(8)
 C
@@ -1426,7 +1426,7 @@ C  CMO:    MO orbital coefficients (symmetry blocked)
 C  PROCC:  print only occupied orbitals
 C  IOUT:   output file unit
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*)
       LOGICAL   PROCC
 C
@@ -1436,13 +1436,13 @@ C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
 C   CBIREA : LMULBS
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
 C *** FORMAT statements
 C
@@ -1529,15 +1529,15 @@ C Control:
 C   IPCTL .eq. 1: also punch occupation numbers
 C   else        : do not punch occupation numbers
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),OCC(*)
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
 C   INFORB : NSYM,NORB(*),NBAS(*)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CHARACTER*8 LBLDAT(2)
 C

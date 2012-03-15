@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck rspdm */
       SUBROUTINE RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
@@ -42,7 +42,7 @@ C  RHO2(IJKL) =    RHO2[NASHT,NASHT,NASHT,NASHT]
 C
 C  RHO2(IJKL) =    (L/ E(IJ,KL) - DELTA(JK) E(IL) /R )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CL(*), CR(*),RHO1(NASHT,*)
       DIMENSION RHO2(NASHT,NASHT,NASHT,*)
@@ -55,12 +55,12 @@ C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFVAR : ?? not used ?? /920920-hjaaj
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
 C
 C
       INTEGER RHOTYP
@@ -183,18 +183,18 @@ C  RHO2(IJKL) =    RHO2[NASHT,NASHT,NASHT,NASHT]
 C
 C  RHO2(IJKL) =    (CLREF/ E(IJ,KL) - DELTA(JK) E(IL) /-CR )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CLREF(*), CR(KZCONF,*),RHO1(NASHDI,NASHDI,*)
       DIMENSION RHO2(NASHDI*NASHDI,NASHDI*NASHDI,*)
       DIMENSION XINDX(*),WORK(*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "inforb.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
       LOGICAL  TDM, NORHO2
@@ -256,21 +256,21 @@ C  RHO2(IJKL) =    RHO2[NASHT,NASHT,NASHT,NASHT]
 C
 C  RHO2(IJKL) =    (CL/ E(IJ,KL) - DELTA(JK) E(IL) /-CR )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CL(KZVARL,*), CR(KZVARR,*)
       DIMENSION RHO1(NASHDI,NASHDI,*)
       DIMENSION RHO2(NASHDI*NASHDI,NASHDI*NASHDI,*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infdim.h>
-#include <qrinf.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infdim.h"
+#include "qrinf.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
       LOGICAL  TDM, NORHO2, LREF
@@ -406,14 +406,14 @@ C
 C     IPVDIS = 4  [**,KL] IN PVDEN[*,*]
 C                 SQARE PACKED DISTRIBUTIONS IN PVX
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PVDEN(NASHDI,*),PVX(NASHDI,NASHDI,NASHDI,*)
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
       IF ( IPRRSP.GT.2000 ) THEN

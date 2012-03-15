@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 /* Comdeck last_changes */
@@ -87,14 +87,14 @@ C                   E(IJ,LK) - DELTA(JL) E(IK) /L) ] / 2
 C             THE ONE ELECTRON TERMS ARE ADDED AFTER THE DENSI CALL
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION RHO1(NORB,NORB),RHOA(NORB,NORB),RHOB(NORB,NORB)
       DIMENSION RHO2(*)
       DIMENSION RHOW(NORB,NORB),ILTSOB(NORB),ISTLOB(NORB)
 C
-#include <cbrhotyp.h>
-#include <priunit.h>
+#include "cbrhotyp.h"
+#include "priunit.h"
 C
       GO TO (1,2,3),RHOTYP
       WRITE (LUPRI,'(/A,I8)')
@@ -178,7 +178,7 @@ C
 C               +                <0! EA(IJ)(EA(KL)+EA(LK)) !0>
 C               +  (-1)**(L1+L2)*<0! EB(IJ)(EB(KL)+EB(LK)) !0>
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RHO1(NORB,NORB),RHOA(NORB,NORB),RHOB(NORB,NORB)
       DIMENSION RHO2(*)
       DIMENSION RHOW(NORB,NORB),ILTSOB(NORB),ISTLOB(NORB)
@@ -186,7 +186,7 @@ C
 C Used from common blocks:
 C  CBREOR : SLREOR
 C
-#include <cbreor.h>
+#include "cbreor.h"
 C
       NNORB = (NORB*NORB + NORB)/2
       N2ORB = NORB*NORB
@@ -351,7 +351,7 @@ C
 C               -   DELTA(J,K) <L! E(IL) !R>
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION RHO1(NORB,NORB),RHOA(NORB,NORB),RHOB(NORB,NORB)
       DIMENSION RHO2(NORB,NORB,NORB,NORB)
@@ -508,7 +508,7 @@ C
 C               +  <L!(ES(IJ)(ES(KL)+ES(LK)) !R>
 C               +  <L!(ES(LK)+ES(KL))ES(JI)  !R>   ( S SUMS OVER A AND B)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION RHO1(NORB,NORB),RHOA(NORB,NORB),RHOB(NORB,NORB)
       DIMENSION RHO2(*)
@@ -517,7 +517,7 @@ C
 C Used from common blocks:
 C  CBREOR : SLREOR
 C
-#include <cbreor.h>
+#include "cbreor.h"
 C
       NNORB = (NORB*NORB + NORB)/2
       N2ORB = NORB*NORB
@@ -887,13 +887,13 @@ C
 C               -   DELTA(J,K) <L! E(IL) !R>
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION RHO1(NORB,NORB),RHOA(NORB,NORB),RHOB(NORB,NORB)
       DIMENSION RHO2(NORB,NORB,NORB,NORB)
       DIMENSION RHOW(NORB,NORB),ILTSOB(NORB),ISTLOB(NORB)
 C
-#include <infpri.h>
+#include "infpri.h"
 C
 C
       SIGN1 = (-1.0D0) ** L1
@@ -960,7 +960,7 @@ C MODIFIED TO ALLOW FOR REORDERING OF ORBITALS
 C Modified 890907-hjaaj for RHO2(NNORB,NNORB)
 C    instead of packed RHO2.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RHO1(NORB,NORB),RHO2(*)
       DIMENSION ILTSOB(NORB),ISTLOB(NORB)
 C
@@ -1046,7 +1046,7 @@ C
 C OUTPUT:
 C   RHO2(I,J,K,L) FOR ALL I,J,K,L
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RHO1(NORB,*),RHO2(NORB,NORB,NORB,*)
 C
       DO 400 K = 1,NORB
@@ -1077,9 +1077,9 @@ C
 C  /* Deck makdm */
       SUBROUTINE MAKDM(CREF,RHO1,RHO2,XNDXCI,WORK,LFREE)
 #if defined (VAR_PACKPV)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),RHO1(*),RHO2(*),XNDXCI(*),WORK(*)
-#include <inforb.h>
+#include "inforb.h"
       KRHO2 = 1
       KWRK  = KRHO2 + NNASHX*NNASHX
       LWRK  = LFREE - KWRK
@@ -1107,7 +1107,7 @@ C
 C  RHO2(IJKL)= 0.5 * (0/ E(IJ,KL) - DELTA(JK) E(IL)
 C                      + E(IJ,LK) - DELTA(JL) E(IK) /0)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*),RHO1(*),RHO2(*),XNDXCI(*),WORK(*)
       PARAMETER ( D0 = 0.0 D0 )
@@ -1117,10 +1117,10 @@ C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1168,22 +1168,22 @@ C
 C  RHO1(KL)  = (0/ E(KL) /0)   K>L
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*),RHO1(*),XNDXCI(*),WORK(*)
 C
       PARAMETER ( D0 = 0.0 D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1233,22 +1233,22 @@ C
 C     RHO1S(KL)  = (0/ EA(KL)-EB(KL) /0)   K>L
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*),RHO1S(*),XNDXCI(*),WORK(*)
 C
       PARAMETER ( D0 = 0.0 D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : LSYM,FLAG(*)
 C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1291,10 +1291,10 @@ C
 C  /* Deck maktdm */
       SUBROUTINE MAKTDM(NCSIM,BCVECS,CREF,RHO1,RHO2,XNDXCI,WORK,LWRK)
 #if defined (VAR_PACKPV)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(*),CREF(*),RHO1(*)
       DIMENSION RHO2(NNASHY,*), XNDXCI(*),WORK(*)
-#include <inforb.h>
+#include "inforb.h"
       KRHO2 = 1
       KWRKD = KRHO2 + NCSIM*NNASHX*NNASHX
       LWRKD = LWRK + 1 - KWRK
@@ -1326,7 +1326,7 @@ C                       E(IJ,LK) - DELTA(JL) E(IK) /R) +
 C                   (R/ E(IJ,KL) - DELTA(JK) E(IL) +
 C                       E(IJ,LK) - DELTA(JL) E(IK) /L) ]
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION BCVECS(NCONST,NCSIM),CREF(NCONRF)
       DIMENSION RHO1(NNASHX,NCSIM),RHO2(NNASHX*NNASHX,NCSIM)
@@ -1340,12 +1340,12 @@ C   INFORB : NASHT,N2ASHX,NNASHX
 C   INFLIN : LSYMRF,LSYMST,NCONRF,NCONST
 C   INFPRI : IPRDNS
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
@@ -1435,13 +1435,13 @@ C     PERMSM  =T  MS .eq. 0 for CL and CR
 C             =F  MS .ne. 0 for CL and/or CR or do not use symmetry
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CL(NCLDIM), CR(NCRDIM), RHO1(*), RHO2(*)
       DIMENSION XNDXCI(*), WORK(*)
       LOGICAL   USEPSM,CSFEXP, PERMSM, NORHO2, TDM
       INTEGER   RHOTYP
 C
-#include <priunit.h>
+#include "priunit.h"
 C
 C Used from common blocks:
 C   INFINP : LSYM
@@ -1450,14 +1450,14 @@ C   CIINFO : NDTASM
 C   STRNUM : EQUAL
 C   INFPRI : IPRDNS
 C
-#include <mxpdim.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <csfbas.h>
-#include <ciinfo.h>
-#include <strnum.h>
+#include "mxpdim.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "csfbas.h"
+#include "ciinfo.h"
+#include "strnum.h"
 C
-#include <infpri.h>
+#include "infpri.h"
 C
 C     work memory: WRK(KFRSAV:KFRSAV-1+LFRSAV)
 C
@@ -1626,15 +1626,15 @@ c
 c Version with Turbo densi /oct 90 , Jeppe Olsen
 
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CL(NLDET), CR(NRDET), RHO1(*), RHO2(*)
       LOGICAL   PERMSM
       DIMENSION XNDXCI(*), WORK(LWRK)
 C
       PARAMETER ( DP5 = 0.5D0 , D1 = 1.0D0 )
 C
-#include <priunit.h>
-#include <maxash.h>
+#include "priunit.h"
+#include "maxash.h"
 C
 C Used from common blocks:
 C   INFINP : ?
@@ -1646,15 +1646,15 @@ C   STRNUM : EQUAL, NAEL,NBEL,NASTR,NBSTR,NAEXCI,...
 C   CBRHOTYP : RHOTYP
 C
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <mxpdim.h>
-#include <detbas.h>
-#include <strnum.h>
-#include <cbrhotyp.h>
-#include <mxblk.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "mxpdim.h"
+#include "detbas.h"
+#include "strnum.h"
+#include "cbrhotyp.h"
+#include "mxblk.h"
 C
       RHOTYP = IRHOTP
 C

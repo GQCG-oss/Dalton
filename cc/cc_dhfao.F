@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccs_dhfao */
       SUBROUTINE CC_DHFAO(AODEN,ISYDAO,CMOP,ISYMP,CMOH,ISYMH,WORK,LWORK)
@@ -34,13 +34,13 @@ C                D_alp,bet = \sum_i  CMOP_alp,i CMOH_bet,i
 C
 C     Christof Haettig, spring 99, based on Asgers CCS_D1AO
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK), CMOP(*), CMOH(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
 C---------------------------
 C     Work space allocation.

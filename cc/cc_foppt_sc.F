@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccsdpt_dens2_sc */
       SUBROUTINE CCSDPT_DENS2_SC(T1AM,ISYMT1,T2TP,ISYMT2,MODEL,
@@ -48,16 +48,16 @@ C     For CCSD(T) we do not use LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
+#include "second.h"
 C
       INTEGER ISYMTR, ISYMT1, ISYMT2, ISYML1, ISYML2, LWORK
       INTEGER ISYRES, ISINT1, ISINT2, ISYMIM, KFOCKD
@@ -2090,10 +2090,10 @@ C     IOPT = 2. Calculate the terms from T3BAR.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYMT2, LWORK, LENSQ, ISYMB, ISYMD, IOPT
       INTEGER INDSQ(LENSQ,6)
@@ -2389,9 +2389,9 @@ C               densities d_{iajk} and d_{aijk} respectively.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, ISYMT2, LWORK,LENSQ, ISYMB, ISYMD, IOPT
       INTEGER INDSQ(LENSQ,6)
@@ -2681,9 +2681,9 @@ C               where the densities have a constant C.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYVIR, ISYMB, ISYMA, ISYMI, ISYMAI
       INTEGER KOFF1, KOFF2, ISYMBI

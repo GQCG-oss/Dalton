@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_FTST */
@@ -32,10 +32,10 @@ c/* Deck CC_FTST */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -199,29 +199,29 @@ c     END IF
 *     Heavily revised to reduce operation count by C. Haettig July 1998
 *     `Left' B intermediate revised in November 1998, C. Haettig
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <cclr.h>
-#include <blocks.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <ccroper.h>
-#include <ccinftap.h>
-#include <r12int.h>
-#include <second.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "cclr.h"
+#include "blocks.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "ccroper.h"
+#include "ccinftap.h"
+#include "r12int.h"
+#include "second.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMTWO= -2.0D0)
       PARAMETER (XMHALF=-0.5D0,XHALF=0.5D0,THREE=3.0D0,XMONE=-1.0D0)
@@ -2619,21 +2619,21 @@ C     (<HF|[[H,taumu],tauny]|HF>)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
 C
       DIMENSION WORK(LWORK)
       CHARACTER*(2) LLIST
 C
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
 C
       CALL QENTER('CCLR_FTST')
 C
@@ -2725,17 +2725,17 @@ C     Test routine for calculating the CC F-matrix by Transformation of
 C     unit vectors.
 C     Ove Christiansen April 1996
 C----------------------------------------------------------------------
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
 C
       DIMENSION WORK(LWORK),ITADR(2)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00 )
@@ -2853,18 +2853,18 @@ C     finite difference on the cc-left-hand transformation.
 C     Ove Christiansen April 1996 
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
 C
       DIMENSION WORK(LWORK),ITADR(2)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-07)
@@ -3324,14 +3324,14 @@ C----------------------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3624,11 +3624,11 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "iratdef.h"
+#include "dummy.h"
 
       INTEGER LUXYM
 

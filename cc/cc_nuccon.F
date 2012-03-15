@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       REAL*8  FUNCTION CC_NUCCON(LABEL,ISYM)
@@ -38,15 +38,15 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <dipole.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "dipole.h"
+#include "symmet.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

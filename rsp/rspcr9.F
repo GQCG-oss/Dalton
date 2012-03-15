@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE C3FOCK(IBEQC,FDTI,VECB,VECC,
      *                 ZYMB,ZYMC,KZYVB,KZYVC,
@@ -33,7 +33,7 @@ C To calculate Fock matrix (FDTI) with doubly one-index transformed
 C integrals to be used in direct cubic RPA.
 C March 1997: tsaue Just one call to SIRFCK, big speedup !
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FDTI(N2ORBX)
       DIMENSION VECB(*),VECC(*)
@@ -44,15 +44,15 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
       CALL QENTER('C3FOCK')
       IF (8*N2BASX .GT. LWRK) THEN
@@ -82,9 +82,9 @@ C To calculate Fock matrix (FDTI) with doubly one-index transformed
 C integrals to be used in direct cubic RPA.
 C March 1997: tsaue Just one call to SIRFCK, big speedup !
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "thrzer.h"
 C
       DIMENSION FDTI(N2ORBX)
       DIMENSION VECB(*),VECC(*)
@@ -95,16 +95,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
@@ -288,9 +288,9 @@ C PURPOSE:
 C To calculate Fock matrix (FDTI) with doubly one-index transformed
 C integrals to be used in direct cubic RPA.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "thrzer.h"
 C
       DIMENSION FDTI(N2ORBX)
       DIMENSION VECB(*),VECC(*)
@@ -301,16 +301,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
@@ -517,7 +517,7 @@ C March 1997: tsaue Just one call to SIRFCK, big speedup !
 C July 1997:  kruud. Interface routine; further path depends on available
 C                    memory
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FTTI(N2ORBX)
       DIMENSION VECB(*),VECC(*),VECD(*)
@@ -528,15 +528,15 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
       IF (14*N2BASX .GT. LWRK) THEN
          WRITE (LUPRI,'(A)') ' Due to potential lack of available '//
@@ -559,8 +559,8 @@ C
      *                  ZYMB,ZYMC,ZYMD,KZYVB,KZYVC,KZYVD,
      *                  ISYMA,ISYMB,ISYMC,ISYMD,
      *                  CMO,FC,MJWOP,WRK,LWRK)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION FTTI(N2ORBX)
       DIMENSION VECB(*),VECC(*),VECD(*)
@@ -571,16 +571,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D6 = 6.0D0 , D8 = 8.0D0 ,
      &           D12 = 12.0D0)
@@ -852,8 +852,8 @@ C To calculate Fock matrix (FTTI) with triply one-index transformed
 C integrals to be used in direct cubic RPA.
 C July  1997: kruud: Memory efficient version of C4FOCK
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION FTTI(N2ORBX)
       DIMENSION VECB(*),VECC(*),VECD(*)
@@ -864,16 +864,16 @@ C  INFDIM : NASHDI
 C  INFINP : DIRFCK
 C  WRKRSP : KSYMOP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infvar.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D6 = 6.0D0, D3 = 3.0D0)
 C
@@ -1167,15 +1167,15 @@ C
       END
       SUBROUTINE FAOMO(ISYMF,FAO,FMO,CMO,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FAO(N2BASX),FMO(N2ORBX),CMO(*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "wrkrsp.h"
 C
       CALL DZERO(FMO,N2ORBX)
       DO 100 ISYM=1,NSYM

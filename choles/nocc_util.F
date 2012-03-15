@@ -6,10 +6,10 @@ C
 C     Purpose: Find the largest (absolute value) element and its location
 C              in the packed doubles array T2AM of symmetry ISYM.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER AI, BJ, AIBJ
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       DIMENSION T2AM(*)
 C
@@ -103,11 +103,11 @@ C     NOTE: No header is written - must be done in calling routine!
 C           (Except for 'LMDA' option where occupied and virtual blocks
 C            are printed seperately.)
 C
-#include <implicit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <noccsym.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "noccsym.h"
+#include "priunit.h"
 C
       DIMENSION XMAT(*)
 C
@@ -354,12 +354,12 @@ C        TYP(1:4) = 'ALBE' : Print packed (alfa,beta) matrix (alfa .LE. beta).
 C
 C     NOTE: No header is written - must be done in calling routine!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <symsq.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "symsq.h"
 C
       DIMENSION XMAT(*)
 C

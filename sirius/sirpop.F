@@ -20,7 +20,7 @@
 !
 C File: sirius/sirpop.F
 C
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sirpop */
       SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE_INPUT)
@@ -249,8 +249,8 @@ C
 C Purpose:
 C      Form the kinetic energy and print an energy analysis
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION CMO(NCMOT),OCCUP(NOCCT),T(NNBAST)
 C
@@ -258,14 +258,14 @@ C   INFINP : POTNUC,
 C   INFORB : NBAST,
 C   INFOPT : EMCSCF,
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
 #include "infpop.h"
-#include <infinp.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infpri.h>
+#include "infinp.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infpri.h"
 C
       LOGICAL   FOUND
 C
@@ -500,16 +500,16 @@ C  Purpose:
 C         Given the mo coefficients and overlap integrals in cgto basis,
 C         to compute and print out a population analysis.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
 ! aosotr: AOINFO(:,3)
 ! nuclei: NAMDEP(:), NATOMS
-#include <maxorb.h>
-#include <aosotr.h>
-#include <nuclei.h>
+#include "maxorb.h"
+#include "aosotr.h"
+#include "nuclei.h"
 
       DIMENSION OCCUP(NOCCT),
      &          POPNAB(NATOMS,NATOMS),POPABI(NATOMS,NATOMS),
@@ -521,15 +521,15 @@ C   INFPOP ? MAXTYP, ...
 C   INFORB ? NBAST,
 C   INFTAP : LUTEMP
 C
-#include <maxaqn.h>
+#include "maxaqn.h"
 #include "infpop.h"
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 ! ccom.h : GTOTYP()
-#include <ccom.h>
+#include "ccom.h"
 ! shells.h : NCENT()
-#include <shells.h>
+#include "shells.h"
 C
       DIMENSION   POPTSM(MXCENT,2)
       CHARACTER*1 SPDCAR
@@ -939,7 +939,7 @@ C
 C PURPOSE:
 C     Compute the electronic and total dipole moments
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(NCMOT),DIPMAT(MATDIM,3),OCCUP(NOCCT)
 C
@@ -1068,17 +1068,17 @@ C 900709-hjaaj: corrected error in diagonalization of quadrupole tensor
 C    relative to mass center (off-diagonal elements were from tensor
 C    relative to origo).  Print <r2>.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(NCMOT),QUMAT(MATDIM,6),OCCUP(NOCCT)
 C
 C   INFORB ? NBAST,
 C
-#include <mxcent.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "mxcent.h"
+#include "priunit.h"
+#include "inforb.h"
 #include "infpop.h"
-#include <infpri.h>
+#include "infpri.h"
 C
       DIMENSION QUPOL(6),A(6),EIVR(9),WO(3),IWO(3),ELQPOL(6),
      1          QOPOL(6)

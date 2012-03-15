@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C-------------------------------------------------------------
 C    Paal Dahle Jan-2001
@@ -38,8 +38,8 @@ C
 C  /* Deck pvmxspawn */
       SUBROUTINE PVMXSPAWN(TASK,NTASK,TIDS)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -61,8 +61,8 @@ C
 C  /* Deck pvmxmytid */
       SUBROUTINE PVMXMYTID(TID)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -78,8 +78,8 @@ C
 C  /* Deck pvmxparent */
       SUBROUTINE PVMXPARENT(TID)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -95,8 +95,8 @@ C
 C  /* Deck pvmxexit */
       SUBROUTINE PVMXEXIT
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -111,8 +111,8 @@ C
 C  /* Deck pvmxhalt */
       SUBROUTINE PVMXHALT
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -127,8 +127,8 @@ C
 C  /* Deck pvmxinitsend */
       SUBROUTINE PVMXINITSEND(ENCODE)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -144,8 +144,8 @@ C
 C  /* Deck pvmxpack */
       SUBROUTINE PVMXPACK(BUFFER,COUNT,TYPE)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -177,8 +177,8 @@ C
 C  /* Deck pvmxunpack */
       SUBROUTINE PVMXUNPACK(BUFFER,COUNT,TYPE)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -210,8 +210,8 @@ C
 C  /* Deck pvmxsend */
       SUBROUTINE PVMXSEND(DEST,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -227,8 +227,8 @@ C
 C  /* Deck pvmxrecv */
       SUBROUTINE PVMXRECV(SOURCE,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -244,8 +244,8 @@ C
 C  /* Deck pvmxmcast */
       SUBROUTINE PVMXMCAST(SLAVES,TIDS,TAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
@@ -262,8 +262,8 @@ C
 C  /* Deck pvmxfail */
       SUBROUTINE PVMXFAIL(NTAG)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif

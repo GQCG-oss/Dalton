@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *======================================================================*
 C  /* Deck cc_rdaod */
@@ -48,21 +48,21 @@ C     based on Henrik Kochs CC_RDAO routine
 C     magnetic derivatives introduced 20-Sep-1999
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxash.h>
-#include <iratdef.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxash.h"
+#include "iratdef.h"
+#include "ccorb.h"
 CCN #include <infind.h> replaced by #include <ccisao.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <nuclei.h>
-#include <chrnos.h>
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "nuclei.h"
+#include "chrnos.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -404,14 +404,14 @@ C     based on Henrik Kochs CC_RDAO routine
 C     magnetic derivatives introduced 20-Sep-1999
 C
 *----------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <eribuf.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "eribuf.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ibtpar.h"
 C
       LOGICAL LOCDBG
       PARAMETER ( LOCDBG = .FALSE. )
@@ -425,7 +425,7 @@ C
       INTEGER NDIMPQ(NSYM)
 C
 C functions:
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'entered CCRDAOD1'
@@ -638,11 +638,11 @@ C  into array IRECNR
 *----------------------------------------------------------------------*
       IMPLICIT NONE
 
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <eribuf.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "eribuf.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

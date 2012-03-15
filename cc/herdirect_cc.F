@@ -21,19 +21,19 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck herdi1 */
       SUBROUTINE HERDI1(WORK,LWORK,IPRFCK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
       LOGICAL   ABA, OLDDX
       DIMENSION WORK(LWORK)
 C
@@ -41,15 +41,15 @@ C Used from common blocks:
 C  INFORB: N2BASX,NBAST,?
 C  CBITWO: IPRINT,?
 C
-#include <ccinftap.h>
-#include <inforb.h>
-#include <cbitwo.h>
-#include <nuclei.h>
-#include <dorps.h>
-#include <inftap.h>
-#include <symmet.h>
-#include <blocks.h>
-#include <eribuf.h>
+#include "ccinftap.h"
+#include "inforb.h"
+#include "cbitwo.h"
+#include "nuclei.h"
+#include "dorps.h"
+#include "inftap.h"
+#include "symmet.h"
+#include "blocks.h"
+#include "eribuf.h"
 C
 C
 C     Inquire if this is an ABACUS run or not:
@@ -119,14 +119,14 @@ C
 C  /* Deck herdi2 */
       SUBROUTINE HERDI2(WORK,LWORK,INDEXA,ISHELA,NAINTS,IPRFCK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
 
 CCOLD LOGICAL DOINDX, RELCAL, RETUR, TKTIME, NOCONT, NOPV, NODV
       LOGICAL DOINDX, RELCAL
@@ -139,15 +139,15 @@ C Used from common blocks:
 C  INFORB: N2BASX,NBAST,?
 C  CBITWO: IPRINT,?
 C
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <blocks.h>
-#include <eribuf.h>
-#include <r12int.h>
+#include "inforb.h"
+#include "cbitwo.h"
+#include "dorps.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "blocks.h"
+#include "eribuf.h"
+#include "r12int.h"
 C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
@@ -246,15 +246,15 @@ C                                   with two fixed indices.
 C                           = 2  :  Calculate exchange type integrals entering
 C                                   the diagonal elements.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <dummy.h>
-#include <choles.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "dummy.h"
+#include "choles.h"
 
       LOGICAL DOINDX, RELCAL,SETUP
       INTEGER NUMDIS
@@ -266,14 +266,14 @@ C Used from common blocks:
 C  INFORB: N2BASX,NBAST,?
 C  CBITWO: IPRINT,?
 C
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <blocks.h>
-#include <eribuf.h>
+#include "inforb.h"
+#include "cbitwo.h"
+#include "dorps.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "blocks.h"
+#include "eribuf.h"
 C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF

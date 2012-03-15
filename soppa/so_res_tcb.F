@@ -13,17 +13,17 @@ C                        ~
 C     PURPOSE: Calculate C times b contribution to 1p1h resultvectors
 C              as described in eq. (72) and (73).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RES1E(LRES1E), RES1D(LRES1D), DSRHF(LDSRHF)
       DIMENSION TR2E(LTR2E),   TR2D(LTR2D),   CMO(LCMO)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------------------
 C     Statement function INDEX.

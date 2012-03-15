@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck kapbet */
       SUBROUTINE KAPBET (NHORED,RTRUST,BETA,HORED,EVAL,EVEC,WRK,LFREE)
@@ -36,25 +36,25 @@ C
 C  This version is only for ground state optimization.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION HORED(*),EVEC(NHORED,*),EVAL(*)
       PARAMETER (ITBMAX = 50)
       DIMENSION WRK(ITBMAX,4)
 C
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER (ISTATE = 1,     BETMIN = 0.1D0, RTTOL = 1.1D0)
       PARAMETER (SECFAC = 0.1D0)
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (DP1 = 0.1D0, DP9 = 0.9D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C
 C Used from common blocks:
 C  INFPRI: IPRKAP
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
 C Local variable declarations:
 C
@@ -243,21 +243,21 @@ C Input:
 C
 C Output:
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDO(*),REDGO(*),EOVEC(*),SOVEC(NWOPT,*),BOVEC(NWOPT,*)
       DIMENSION GDM(*),DIAOR(*), CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*)
       DIMENSION WRK(*), EOVAL(*)
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, MINMIC = 2)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFVAR : NWOPT
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
 C
       LOGICAL DONEO
 C
@@ -437,21 +437,21 @@ C  BOVEC(*,NBOVEC+1) the new trial vectors
 C
 C
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION EOVEC(*),GDM(*),REDGO(*),DIAOR(*)
       DIMENSION BOVEC(NWOPT,*),SOVEC(NWOPT,*)
       LOGICAL   DONEO
 C
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( DTEST = 1.D-3, D0 = 0.0D0, D1 = 1.0D0 )
 C
 C Used from common blocks:
 C  INFVAR: NWOPT,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
 C
 C
       LOGICAL CHKCNV
@@ -653,8 +653,8 @@ C  REDGO, the new, extended reduced orbital gradient
 C  EOVEC :.not.doneo SOLUTION TO LINEAR SET OF EQUATIONS
 C        :     doneo LOWEST EIGENVECTOR (NEO)
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDO(*),REDGO(*),EOVEC(*)
       DIMENSION GDM(*),BOVEC(NWOPT,*),SOVEC(NWOPT,*)
       DIMENSION WRK(*)
@@ -666,11 +666,11 @@ C Used from common blocks:
 C   INFVAR : NWOPT
 C   INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infind.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('KAPRED')
@@ -824,24 +824,24 @@ C THE NORMALIZED MODIFIED GRADIENT VECTOR IS PLACED IN BOVEC(1,1)
 C THE RESULTING NBOVEC VECTORS ARE CONSTRUCTED FROM LUFIL3 AND
 C LUFIL5 WHEN IGDM=1 AND FROM PREVIOUS ITERATIONS OTHERWISE
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION REDO(*),REDGO(*),IBNDX(*),GDM(*),DIAOR(*)
       DIMENSION CMO(*), GORB(*), DV(*),   PV(*), FC(*),FV(*)
       DIMENSION BOVEC(NWOPT,*),  SOVEC(NWOPT,*), WRK(*)
       LOGICAL   DONEO
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER ( DTEST = 1.D-3, D0 = 0.0D0, D1=1.D0, DM8=1.0D-8 )
-#include <dummy.h>
+#include "dummy.h"
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Used from common blocks:
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('KAPST ')
       IF (IPRKAP.GE.9) WRITE (LUPRI,'(/A,3I5)')
@@ -977,15 +977,15 @@ C         ARE SOLVED.
 C DAMP    INITAL DAMPING FACTOR FOR SIMULTANEOUS ROOT OPTIMIZATION
 C         (MAX(DAMP,D1) WILL BE USED) .
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION GDM(NWOPT,*),IBNDX(*),THRKAP(*),EVAL(*),DIAOR(*)
       DIMENSION CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*), 
      &          WRK(*)
 C
 C Global parameters:
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C Local parameters:
 C
@@ -993,13 +993,13 @@ C
 C
 C Common blocks:
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       LOGICAL DONEO
 C
@@ -1246,7 +1246,7 @@ C
 C 15-Mar-1985 hjaaj
 C l.r. 4-May-1994 hjaaj (only elim. new vector if norm < THRLDP)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NVDIM,*)
       LOGICAL   LINDEP(*)
 C
@@ -1254,8 +1254,8 @@ C
 C
 C     Used from common blocks:
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
       CALL QENTER('ORTVEC')
 C

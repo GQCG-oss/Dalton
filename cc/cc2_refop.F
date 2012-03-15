@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc2_den */
       SUBROUTINE CC2_DEN(ETAAI,ZKDIA,WORK,LWORK,IOPT)
@@ -48,32 +48,32 @@ C             ETAAI.
 C
 C             IMPORTANT NOTE: NO FROZEN CORE SO FAR!!!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ccinftap.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ccinftap.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
       DIMENSION INDEXA(MXCORB) 
-#include <ccorb.h>
+#include "ccorb.h"
 CCN !#include <infind.h> not compatible with R12!
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
 C
       CHARACTER MODEL*10
       LOGICAL LOCDBG
@@ -920,14 +920,14 @@ C              electron contributions!
 C              ISYM is the symmetry of both the density and the
 C              integrals!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAIJ(*), XINTIJ(*), XINTAI(*), XINTIA(*), XINTAB(*)
       DIMENSION DIJ(*), DAI(*), DIA(*), DAB(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CC2_ETIJ')
 C
@@ -1130,14 +1130,14 @@ C              electron contributions!
 C              ISYM is the symmetry of both the density and the
 C              integrals!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ETAAB(*), XINTIJ(*), XINTAI(*), XINTIA(*), XINTAB(*)
       DIMENSION DIJ(*), DAI(*), DIA(*), DAB(*), T1AM(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       CALL QENTER('CC2_ETAB')
 C

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cclt_yps1 */
       SUBROUTINE CCLT_YPS1(CTR1,ISYCTR,YI,ISYMYI,XLAMDH1,
@@ -48,10 +48,10 @@ C     If ISYYPS is given in input, ISYLM1 and ISYLM2 not needed
 C
 C     Sonia Coriani, February 1999
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDH1(*),XLAMDH2(*),YPS(*),YI(*)

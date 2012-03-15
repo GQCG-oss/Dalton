@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_EXCI
        SUBROUTINE CC_EXCI(WORK,LWORK,LIST,APROXR12)
@@ -58,25 +58,25 @@ C
 C
 C-----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <pgroup.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <ccsections.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h> 
-#include <ccexgr.h>
-#include <ccfdgeo.h>
-#include <ccgr.h>
-#include <ccfro.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "pgroup.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "ccsections.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h" 
+#include "ccexgr.h"
+#include "ccfdgeo.h"
+#include "ccgr.h"
+#include "ccfro.h"
+#include "ccinftap.h"
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG=.FALSE.)
@@ -99,7 +99,7 @@ C
       PARAMETER (THRDEGEN = 1.0D-8)
       CHARACTER*8 LABEL,LABEL1
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       CALL QENTER('CC_EXCI')
 C
@@ -1531,16 +1531,16 @@ C
 C     Written by Ove Christiansen November 1994
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "leinf.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C
       LOGICAL TRIPLET
@@ -1680,16 +1680,16 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
 C
       PARAMETER(NTRIP = 4,MXISPT = 3)
 C
@@ -1705,7 +1705,7 @@ C
       PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
       PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       CALL QENTER('CC_PCEXCI')
 C
@@ -2062,19 +2062,19 @@ C              Used for calculating pert. corr. amplitudes in
 C              CCSDR(3)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION OMEGA1(*),OMEGA2(*),WORK(LWORK)
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -2238,16 +2238,16 @@ C              in this case OME is different
 C              from zero.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       DIMENSION OMEGA2(*),WORK(LWORK)
 C
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2401,16 +2401,16 @@ C
 C     removed problem with CCS left transformation, C.H., October 1997
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "r12int.h"
 C
       LOGICAL LCONT,LOCDBG
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FR2SD,FRHO12,FC12AM,FS12AM,
@@ -2768,18 +2768,18 @@ C     Written by Ove Christiansen 230899
 C
 C-----------------------------------------------------------------------------
 
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsections.h> 
-#include <ccexci.h> 
-#include <ccexgr.h>
-#include <ccfdgeo.h>
-#include <ccgr.h>
-#include <cclres.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsections.h" 
+#include "ccexci.h" 
+#include "ccexgr.h"
+#include "ccfdgeo.h"
+#include "ccgr.h"
+#include "cclres.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -2932,8 +2932,8 @@ C
 *     Written by Christof Haettig, Februar 2003, Aarhus
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "cclr.h"
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -2981,9 +2981,9 @@ C
 *=====================================================================*
       SUBROUTINE CC_EXCIT_CONT(ISTATE,ISYM,TRIPLET,MODEL,CONT,SCONT)
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "r12int.h"
 
       CHARACTER*(*) MODEL
       CHARACTER*(8) MULTIPLICITY

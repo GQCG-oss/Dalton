@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sirorb */
       SUBROUTINE SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,
@@ -40,7 +40,7 @@ C            "Intermediate Optimization of Orbitals for Fixed
 C            Configuration Coefficients"
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*),FQ(*),
      &          WRK(*)
@@ -48,7 +48,7 @@ C
       PARAMETER ( TKFAC=0.1D0, LUDMMY=-1)
       PARAMETER ( MAXBCK=5, CVOFAC=0.8D0 )
       PARAMETER ( D0=0.0D0, D1=1.0D0, DP5=0.5D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C  INFINP : FLAG(*),ISTATE,ITRLVL,?
 C  INFTAP : ?
@@ -56,17 +56,17 @@ C  INFOPT : ITMAC, RTRUST
 C  INFDIM : NWOPMA
 C  INFORB : N2BAST,..
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftra.h>
-#include <dfterg.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftra.h"
+#include "dfterg.h"
 C
       LOGICAL GETWOP, ACTROT, RHFCLC, NEWLVL
       CHARACTER*8 TABLE(4)
@@ -389,20 +389,20 @@ C Output:
 C  ISTEP, =0 if step is OK
 C         =1 if step is too large
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*),CMOOLD(*),XKAP(*)
 C
       PARAMETER (DP1=0.1D0, DP5=0.5D0, D1=1.0D0, D2=2.0D0)
       PARAMETER (THDE = 1.D-10)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infopt.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infopt.h"
 C
 C
       CALL QENTER('ORBSTP')
@@ -490,13 +490,13 @@ C
 C  CHECK IF THE CSF PART OF THE HESSIAN CONTAINS THE DESIRED NUMBER
 C  OF NEGATIVE EIGENVALUES. ORBABS IS THEN .TRUE. ELSE .FALSE.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IBNDX(*),WRK(*)
 C
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER ( D0=0.0D0 )
 C
-#include <inftap.h>
+#include "inftap.h"
 C
       LOGICAL FNDLAB
 C
@@ -576,16 +576,16 @@ C  IF DESIRED NUMBER OF NEGATIVE EIGENVALUES IN THE
 C  HESSIAN IS IN THE CSF SPACE, THEN ROTFLP IS FALSE,
 C  ELSE ROTFLP IS TRUE
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ROTFLP
       DIMENSION IBNDX(*),REDL(*),WRK(*)
       PARAMETER ( TOLFLP = 0.75D0 )
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C INFPRI: IPRI6
 C
-#include <priunit.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infpri.h"
 C
 C ALLOCATE WORK SPACE
 C

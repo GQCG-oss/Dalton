@@ -11,13 +11,13 @@ C
 C     PURPOSE: Calculate the 1p1h and 1h1p S[2] transformed trial
 C              vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION RESO1E(LRESO1E), RESO1D(LRESO1D)
       DIMENSION TR1E(LTR1E),     TR1D(LTR1D)
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

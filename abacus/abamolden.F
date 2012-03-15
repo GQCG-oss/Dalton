@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
@@ -32,11 +32,11 @@ C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <inftap.h>
-#include <molde.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "inftap.h"
+#include "molde.h"
 C
       DONEIT=.FALSE.
       DONEIU=.FALSE.
@@ -54,22 +54,22 @@ C
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 
-#include <implicit.h>
-#include <maxorb.h>
-#include <molde.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <aosotr.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "molde.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "aosotr.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <ccom.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <primit.h>
+#include "ccom.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "primit.h"
 
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
@@ -149,29 +149,29 @@ Clf 400              CONTINUE
 
       SUBROUTINE MOATOMS(WORD)
 C          
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "codata.h"
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
 
 C     include character ASYMB(103)*2 with atomic symbols
-#include <asymb.h>
+#include "asymb.h"
 
-#include <molde.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <cbirea.h>
-#include <inftap.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "molde.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "cbirea.h"
+#include "inftap.h"
+#include "chrxyz.h"
+#include "chrsgn.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
@@ -247,25 +247,25 @@ C UCMO   =  contains MO coefficients, symmetry unpacked
 C itask  =  1 print everything to file
 C           2 save orbital energies in CMO
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <inftap.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aosotr.h>
-#include <molde.h>
-#include <cbieri.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "inftap.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aosotr.h"
+#include "molde.h"
+#include "cbieri.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
     
       LOGICAL WRTELEM,WRTZERO
       DIMENSION CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
       DIMENSION ORBVEC(*)
 
-#include <chrsgn.h>
+#include "chrsgn.h"
 
       MOPRIN = 0
       IF (ITASK .EQ. 1) THEN
@@ -317,12 +317,12 @@ C           call traorb to generate SO to AO transformation
       END
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
-#include <implicit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <molde.h>
-#include <inftap.h>
+#include "implicit.h" 
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "molde.h"
+#include "inftap.h"
 
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
       SXFAMU = SQRT(XFAMU)
@@ -344,12 +344,12 @@ C           call traorb to generate SO to AO transformation
       END
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
-#include <implicit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <molde.h>
-#include <inftap.h>
+#include "implicit.h" 
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "molde.h"
+#include "inftap.h"
         LOGICAL WRITENOW
         IF(WRITENOW)THEN
            IF (.NOT. DONEIW) THEN 
@@ -370,12 +370,12 @@ C           call traorb to generate SO to AO transformation
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
-#include <implicit.h> 
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <molde.h>
-#include <inftap.h>
+#include "implicit.h" 
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "molde.h"
+#include "inftap.h"
       LOGICAL WRITENOW
       IF(WRITENOW)THEN
          

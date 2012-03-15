@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_bfbsort1 */
@@ -43,10 +43,10 @@ C  /* Deck cc_bfbsort1 */
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 
       LOGICAL LSQRAB
       INTEGER ISYRHF, ISYM, ISYMAK, ISYBET, ISYMK, ISYMAB, ISYALP

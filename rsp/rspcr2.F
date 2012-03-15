@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -36,9 +36,9 @@ new GETREF calls
 #endif
       SUBROUTINE CRLRV1(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <thrzer.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "thrzer.h"
 C
 C     Purpose:
 C     Solve linear equations for one-index response vectors
@@ -46,21 +46,21 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <indqr.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <inforb.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "indqr.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "inforb.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "infdim.h"
 C
 C Local variables
 C
@@ -236,32 +236,32 @@ C  CREATE THE SOLUTION VECTORS THAT ARE REQUIRED TO DO
 C  CUBIC RESPONSE
 C  SOLUTION OF LINEAR EQUATIONS ARE DETERMINED IN CRLRV1.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <indqr.h>
-#include <qrinf.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "indqr.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <inftap.h>      
-#include <infsmo.h>
-#include <infhyp.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "inftap.h"      
+#include "infsmo.h"
+#include "infhyp.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
       CALL QENTER('CRVEC2')
       IF (TOMOM) THEN
@@ -287,8 +287,8 @@ C
       SUBROUTINE XYVEC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 BLANK
@@ -305,25 +305,25 @@ C
       CHARACTER*8 XOPLBL,YOPLBL
 C
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <rspprp.h>
-#include <indqr.h>
-#include <infhyp.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <infdim.h>
-#include <inftpa.h>
-#include <inflr.h>
+#include "rspprp.h"
+#include "indqr.h"
+#include "infhyp.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "infdim.h"
+#include "inftpa.h"
+#include "inflr.h"
 C
 C
       CALL QENTER('XYVEC')

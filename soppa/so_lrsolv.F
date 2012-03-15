@@ -14,11 +14,11 @@ C
 C     PURPOSE: Solve the SOPPA linear response equations 
 C              using an AO-driven algorithm. 
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
-#include <ccsdsym.h>
+#include "soppinf.h"
+#include "ccsdsym.h"
 C
       LOGICAL   NONEWT
 C

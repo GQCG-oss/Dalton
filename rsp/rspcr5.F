@@ -21,17 +21,17 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE WRTRSP(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,
      &                  ISYM1,ISYM2,RSD,ANTSYM)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
 C
       CHARACTER*8 LAB1,LAB2,BLANK,LABEL
       PARAMETER   (BLANK='        ', D0 = 0.0D0)
@@ -65,15 +65,15 @@ C
 C Check if a linear equation needs to be solved or if a solution vector
 C already exists on file. FOUND indicates the result.
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <thrzer.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <gnrinf.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "thrzer.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "optinf.h"
 C
       LOGICAL FOUND, CONV, USOLVD
       CHARACTER*8 LABX1,LABX2,LAB1,LAB2,BLANK

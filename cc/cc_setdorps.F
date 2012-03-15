@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
        SUBROUTINE CC_SETDORPS(LABELOP,SYM1ONLY,IPRINTCC)
@@ -45,19 +45,19 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <chrnos.h>
-#include <exeinf.h>
-#include <ccorb.h>
-#include <cch2d.h>
-#include <abainf.h>
-#include <cbinuc.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "chrnos.h"
+#include "exeinf.h"
+#include "ccorb.h"
+#include "cch2d.h"
+#include "abainf.h"
+#include "cbinuc.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG

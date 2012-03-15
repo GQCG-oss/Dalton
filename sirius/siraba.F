@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef NOTES
 !===========================================================================
@@ -80,7 +80,7 @@ C
 C Symmetry and number of variational parameters are defined through
 C INFLIN.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), PV(*), FC(*), FV(*), CREF(*), CMO(*)
       DIMENSION FDC(N2ORBX,*),FDV(N2ORBX,*),FDQ(*)
       DIMENSION H2DAC(LH2DAC,*), DFTFD(N2ORBX,*)
@@ -101,12 +101,12 @@ C   INFORB : NNASHX,N2ASHX,N2ORBX,NASHT
 C   INFLIN : NVARPT,LSYMRF,LSYMPT,NCONRF,NCONST,NWOPPT
 C CBGETDIS : DISTYP,IADINT
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <cbgetdis.h>
-#include <dftcom.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "cbgetdis.h"
+#include "dftcom.h"
+#include "priunit.h"
 C
 C (0) Initialize
       CALL QENTER('ABARHS')
@@ -236,7 +236,7 @@ C
 C     Jan 90 hjaaj
 C     Apr 92 (revised to also handle London orbitals)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UDV(NASHDI,*)
       DIMENSION FDC(NORBT,*),FDV(NORBT,*),FDQ(NORBT,*), GDORB(*)
       LOGICAL   IMAGOP
@@ -249,14 +249,14 @@ C   INFORB : NORBT,NNASHX,NNORBT,?
 C   INFIND : IROW(:),ISMO(:),ISW(:),ISX(:),IOBTYP(:)
 C   INFDIM : NASHDI
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
 
-#include <inflin.h>
+#include "inflin.h"
 C
       IF (IMAGOP) THEN
 C     ... Ekl + Elk operator (e.g. B-field)
@@ -284,7 +284,7 @@ C **        first index active:
             ISYMK = ISMO(K)
             NKW   = ISW(K) - NISHT
             TEMP = D0
-#include <scalar.h>
+#include "scalar.h"
             DO 1100 NXW = IASH(ISYMK)+1,IASH(ISYMK)+NASH(ISYMK)
                IX   = ISX(NISHT + NXW)
                TEMP = TEMP + UDV(NKW,NXW)*FDC(L,IX)
@@ -297,7 +297,7 @@ C **        second index active:
             ISYML = ISMO(L)
             NLW   = ISW(L) - NISHT
             TEMP = D0
-#include <scalar.h>
+#include "scalar.h"
             DO 1200 NXW = IASH(ISYML)+1,IASH(ISYML)+NASH(ISYML)
                IX   = ISX(NISHT + NXW)
                TEMP = TEMP + UDV(NLW,NXW)*FDC(K,IX)
@@ -345,7 +345,7 @@ C
 C If (LONDON) then perform one-index transformation for
 C             London gauge-invariant orbitals
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UDV(*), PV(*), FC(*), FV(*), CMO(*)
       DIMENSION FXC(N2ORBX,*), FXV(N2ORBX,*), FXQ(NASHT*NORBT,*),
      &          TR1MAT(N2ORBX,*), H2XAC(LH2XAC,*)
@@ -365,15 +365,15 @@ C   INFLIN : NCONRF,IPRLIN
 C   INFTRA : USEDRC
 C   INFPRI : P6FLAG(*), ?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inflin.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inflin.h"
+#include "inftra.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('ABATR1')
@@ -498,22 +498,22 @@ C
 C Symmetry and number of variational parameters are defined through
 C INFLIN.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(*), BOVECS(*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
       DIMENSION FC(*), FV(*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(*)
 C
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C Used from common blocks:
 C  INFOPT : EACTIV
 C  INFLIN : LSYMPT,NCONST,NVARPT
 C
-#include <infopt.h>
-#include <inflin.h>
+#include "infopt.h"
+#include "inflin.h"
 C
-#include <sirbkd.h>
+#include "sirbkd.h"
 C
 C (0) Initialize
 C
@@ -563,7 +563,7 @@ C  inactive and active Fock matrices (FXC and FXV) by
 C  adding the one-index transformed FC and FV matrices to
 C  FXC and FXV, resp.
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LONDON
       DIMENSION FXC(N2ORBX,*),FXV(N2ORBX,*)
       DIMENSION TMAT(N2ORBX,*), FC(*),FV(*)
@@ -576,10 +576,10 @@ C   INFORB : N2ORBX,N2ORBT,NNBASX,NNASHX
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(*)
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       CALL QENTER('TR1LFD ')
       KFRSAV = 1
@@ -668,7 +668,7 @@ C
 C
 C Externals:
 C   DDOT, DZERO, MOLLAB, QTRACE
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION PV(LPV,*),TMAT(N2ORBX,*)
       DIMENSION H2XAC(NASHT,NASHT,NASHT,NASHT,*)
 C     HJMAERK: N2ASHX,NNASHX eller NNASHX,NNASHX half-transf. int. ?
@@ -687,18 +687,18 @@ C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(*),?
 C CBGETDIS : IADH2X
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
 C     Local variables
 C
@@ -933,7 +933,7 @@ C  /* Deck tr1smt */
 C
 C Symmetrize one-index transformation
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2XAC(N2ASHX,N2ASHX)
       DO 200 KL = 1,N2ASHX
          DO 100 IJ = 1,KL
@@ -953,7 +953,7 @@ C Based on ADFXQM from Jan 90 hjaaj
 C
 C Add (p~ v~ | x y) contributions to FXQ from Mulliken integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FXQ(NORBT,NASHT), H2XCD(NORBT,NORBT),
      &          PVF(N2ASHX,N2ASHX),WRK(LWRK)
 C
@@ -963,11 +963,11 @@ C  INFORB : NORBT, NASHT, N2ASHX, NNASHX, MULD2H(8,8)
 C  INFIND : IROW(:),ISMO(:),NSM(:),ICH(:),IOBTYP(:)
 C  INFVAR : JWOPSY
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
       KH2AC1 = 1
       KNEED  = KH2AC1 + N2ASHX
@@ -1023,8 +1023,8 @@ C Purpose:
 C   Calculate contributions from Dirac format integrals
 C   of London orbitals
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CALL QENTER('TR1L2D')
 C
       CALL QTRACE (LUPRI)
@@ -1064,7 +1064,7 @@ C Thus for derivative/London orbitals, i.e. real/imag. :
 C  H1X(a,b) = sum(c) H1(a,c) T(c,b)
 C  H1X(a,b) = H1X(a,b) +/- H1X(b,a)
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LONDON
       DIMENSION TMAT(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
 C
@@ -1072,9 +1072,9 @@ C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NORBT, ...
 C  INFVAR : JWOPSY
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
 C
 C
 C ONE INDEX TRANSFORM FIRST INTEGRAL INDEX
@@ -1137,16 +1137,16 @@ C
 C Purpose: Extract block with active-active orbital indices of symmetry
 C          NIJSYM out of full matrix and add to HHAC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION HH(NORBT,NORBT), HHAC(NASHT,NASHT)
 C
 C INFORB : NORBT, NASHT, N2ASHX
 C INFIND : IOBTYP(*), ICH(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('ADDAC1')
       IF (NASHT .EQ. 0) GO TO 9999
@@ -1194,9 +1194,9 @@ C               the fock matrices directly or by reading the integrals
 C               from disk.
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D2 = 2.0D0, DM1 = -1.0D0)
 C
       LOGICAL LONDON, DFTADX
@@ -1209,11 +1209,11 @@ C   INFINP : DIRFCK
 C   INFORB : N2ORBX,...
 C   INFVAR : JWOPSY
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "dftcom.h"
 C
       PARAMETER (MXTMAT = 50)
       DIMENSION ISYMDM(MXTMAT), IFCTYP(MXTMAT)
@@ -1382,7 +1382,7 @@ C
 C Scratch:
 C   WRK(LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL LONDON
       DIMENSION CMO(*),TMAT(NORBT,NORBT,NTMAT),UDV(NASHT,*),
      &          DXCAO(NBAST,NBAST,NTMAT),DXVAO(NBAST,NBAST,NTMAT),WRK(*)
@@ -1393,13 +1393,13 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFVAR : JWOPSY,??????
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
 C
 #if defined (VAR_DEBUG)
-#include <idbg.h>
+#include "idbg.h"
 #endif
 C
       CALL QENTER('LFKDEN')

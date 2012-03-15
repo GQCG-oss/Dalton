@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -34,22 +34,22 @@ C  /* Deck mkvrml */
 C     
 C     Punch out geometry to VRML-file
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <cbiwlk.h>
-#include <priunit.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "cbiwlk.h"
+#include "priunit.h"
+#include "symmet.h"
       LOGICAL LAST
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
       DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)
       CHARACTER*12 FILENM
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialize the ATMARR array. The first index runs over all
 C     atoms, the second marks the following properties:
@@ -154,10 +154,10 @@ C  /* Deck mkvrvb */
 C     
 C     Make VRML representation of normal modes.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
       KLAST = KATMAR + 8*MXCENT
@@ -173,22 +173,22 @@ C  /* Deck MKVRVB_1 */
 C     
 C     See MKVRVB.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <cbiwlk.h>
-#include <priunit.h>
-#include <symmet.h>
-#include <codata.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "cbiwlk.h"
+#include "priunit.h"
+#include "symmet.h"
+#include "codata.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     This factor is a humble attempt to give the vectors a nice length
 C
@@ -269,10 +269,10 @@ C  /* Deck mkvrsy */
 C     
 C     Make VRML representation of symmetry elements.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
       DIMENSION ATM(6,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION WORK(LWORK)
@@ -288,25 +288,25 @@ C  /* Deck MKVRSY_1 */
 C     
 C     See MKVRSY.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <cbiwlk.h>
-#include <priunit.h>
-#include <symmet.h>
-#include <codata.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "cbiwlk.h"
+#include "priunit.h"
+#include "symmet.h"
+#include "codata.h"
       DIMENSION ATM(6,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC(3)
       CHARACTER*12 FILENM
       LOGICAL TURN
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     We copy the contents of ATM to ATMARR
 C
@@ -416,8 +416,8 @@ C  /* Deck vrini */
 C     
 C     Open unit LUVRML for output
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*12 FILENM
       CHARACTER*8 CHDATE, CHTIME
       CALL GETDAT(CHDATE,CHTIME)
@@ -438,7 +438,7 @@ C  /* Deck vrend */
 C     
 C     End of output, close unit LUVRML
 C
-#include <implicit.h>
+#include "implicit.h"
       WRITE(LUVRML,'(A)') ' }'
       WRITE(LUVRML,'(A)') '}'
       CALL GPCLOSE(LUVRML,'KEEP')
@@ -450,17 +450,17 @@ C  /* Deck drwatm */
 C     
 C     Draws all the atoms as spheres with appropriate colour
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <priunit.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "priunit.h"
+#include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), RGBCOL(3)      
       DIMENSION COLOUR(60)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Array with colours for the first 20 elements
 C
@@ -521,17 +521,17 @@ C  /* Deck drwbnd */
 C
 C     Draws bonds between the atoms
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <pi.h>
-#include <nuclei.h>
-#include <priunit.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "pi.h"
+#include "nuclei.h"
+#include "priunit.h"
+#include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), VEC3(3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       RADIUS = 0.06D0
       IF (VIBRA) RADIUS = 0.015D0
@@ -618,15 +618,15 @@ C  /* Deck drwaxs */
 C
 C     Draws coordinate axes
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <priunit.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "priunit.h"
+#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCENT,8)
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL DZERO(TMPMAT,8*MXCENT)
 C
 C     We have to find the highest absolute value of any
@@ -678,18 +678,18 @@ C  /* Deck drweig */
 C
 C     Draws vectors to illustrate vibrational modes
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <priunit.h>
-#include <symmet.h>
-#include <trkoor.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "priunit.h"
+#include "symmet.h"
+#include "trkoor.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL DZERO(EVEC2,MXCOOR)
       CALL DAXPY(NCR,1.0D0,EVEC1,1,EVEC2,1)
@@ -768,12 +768,12 @@ C  /* Deck drwvec */
 C
 C     Draws vectors
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "priunit.h"
+#include "pi.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
 C
@@ -903,11 +903,11 @@ C  /* Deck drwpln */
 C
 C     Draws vectors
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "priunit.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
       LOGICAL TRANSP
@@ -989,21 +989,21 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <cbiwlk.h>
-#include <priunit.h>
-#include <codata.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "cbiwlk.h"
+#include "priunit.h"
+#include "codata.h"
+#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     We initialize the ATMARR array. The first index runs over all
 C     atoms, the second marks the following properties:

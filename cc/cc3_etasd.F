@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC3_ETASD(LISTL,IDLSTL,FOCKY,ISYFKY,
@@ -55,14 +55,14 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
 C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
@@ -1153,14 +1153,14 @@ C
       DOUBLE PRECISION HALF, ONE
 #endif
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ONE = 1.0D0)
 C
@@ -1265,14 +1265,14 @@ C
       DOUBLE PRECISION MHALF, ONE
 #endif
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER ( ONE = 1.0D0)
 C
@@ -1373,10 +1373,10 @@ C
       DOUBLE PRECISION T2TP(*), FOCKY(*), WMAT(*)
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('WBARBD_T2')
 C
@@ -1603,10 +1603,10 @@ C
       DOUBLE PRECISION ZERO, ONE, DDOT, XNORM
 #endif
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO= 0.0D0, ONE= 1.0D0)
 C
@@ -4064,9 +4064,9 @@ C
       DOUBLE PRECISION GVPOOO(*),GVOOO(*)
 #endif
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
 C
       CALL QENTER('CC3_SRTVOOO')
@@ -4186,10 +4186,10 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -4480,10 +4480,10 @@ C
       DOUBLE PRECISION TWO, ONE, ZERO, XTMAT, XRMAT, DDOT
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -4839,10 +4839,10 @@ C
       DOUBLE PRECISION ONE,XRMAT,DDOT
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       PARAMETER (ONE = 1.0D0)
 C
@@ -5145,9 +5145,9 @@ C
       DOUBLE PRECISION FOCKYCK(*),ETA1EFF(*),WRK(*),ONE
 #endif
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       PARAMETER (ONE = 1.0D0)
 C 

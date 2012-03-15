@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_CMAT */
@@ -1480,7 +1480,7 @@ c/* Deck CC_CTST */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
@@ -1701,9 +1701,9 @@ c/*  Deck CCC_OVOV */
 # include <implicit.h>
 #endif
  
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
  
 #if defined (SYS_CRAY)
       REAL ZERO, ONE

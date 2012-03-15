@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_omeg3 */
       SUBROUTINE CC3_OMEG3(ECURR,OMEGA1,OMEGA2P,OMEGA2M,T1AM,ISYMT1,
@@ -39,15 +39,15 @@ C
 C
       IMPLICIT NONE
 C
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <second.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "second.h"
 C
       INTEGER LWORK, ISYMTR, ISYMT1, ISYMT2, ISYRES, ISINT1, ISINT2
       INTEGER ISYMIM, KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2
@@ -863,10 +863,10 @@ C     K. Hald, Jan. 2001 : Adapted to triplet.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYINT, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMK, ISYMBC, ISYAIJ
@@ -1245,9 +1245,9 @@ C     K. Hald, Jan 2001 : Adapted to triplet.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMB, ISYRES, ISYAIJ, ISYMJ, ISYMAI, ISYMBJ
       INTEGER NBJ, NBJJ, NAI, KOFF1, KOFF2, KOFF5, KOFF6, IOPT
@@ -1391,10 +1391,10 @@ C     K. Hald, Jan 2001, Adapted to triplet.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYINT, LWORK, LENSQ, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMJ, ISYMBJ, ISYMC, ISYMBC, ISYCKL
@@ -1738,10 +1738,10 @@ C     K. Hald, Jan 2001, Adapted to triplet.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
       INTEGER KOFF1, KOFF2, KOFF3, LENGTH
@@ -1960,15 +1960,15 @@ C     but contains name correct integrals after virtint
 C
       IMPLICIT NONE
 C
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <second.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "second.h"
 C
       INTEGER ISYMT1, ISYMT2, ISYMC2, ISYMT12, LWORK, ISYMTR, ISYMTR2
       INTEGER KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2, KEND3, LWRK3
@@ -3464,10 +3464,10 @@ C                   and ISYMC2 is the symmetry of C2AMP and C2AMM.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMT2, ISYMC2, ISYINT, ISYINT2, LENSQ, INDSQ(LENSQ,6)
       INTEGER ISYMB, ISYMC, LENGTH, ISYMA, ISYMAJ, ISYAIK, ISYMBC
@@ -4205,10 +4205,10 @@ C     Sort virtual integrals for perturbative triples.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
 !
       INTEGER LWORK, ISYINT, MAXCK, ISYMCK, ISYMD, ISYCKB, LENMIN
       INTEGER NDISTR, NBATCH, KSCR1, KSCR2, KSCR3, KSCR4, KSCR5, KSCR6
@@ -4487,10 +4487,10 @@ C                       ISYRES = ISYMIM*ISYINT
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMIM, ISYINT, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMK, ISYMBC, ISYAIJ
@@ -5019,11 +5019,11 @@ C     Henrik Koch and Alfredo Sanchez.       28-May-1995
 C
 C     Sort virtual integrals for perturbative triples.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('CC3_SORT2')
@@ -5163,10 +5163,10 @@ C     Debugged for ISYINT .NE. 1 Ove Christiansen 11-1-1996
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       INTEGER LWORK, ISYINT, KOFF1, KOFF2, KOFF3, ISYMD, ISYMK
       INTEGER ISYAIJ, NTOIAJ, NBASD, ISYMJ, ISYMAI, ISYAIK, ISYMI
@@ -5340,10 +5340,10 @@ C     KH April 2001: Adapted to triplet.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       INTEGER ISYINT, LWORK, KOFF1, KOFF2, ISYMC, ISYKLJ, ISYMJ
       INTEGER ISYCKL, ISYCJL, ISYMKL
@@ -5418,9 +5418,9 @@ C     to a sorting of (ljcb) for a given b and c.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYAMP, LWORK, ISYMB, ISYMC
       INTEGER ISYCLJ, ISYMLJ, ISYML, ISYMJ, ISYMCL, ISYMBJ
@@ -5497,10 +5497,10 @@ C     Changed to triplet. Kasper Hald          April 2001
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER LWORK, ISYMIM, ISYINT, LENSQ, ISYMIB, IB, ISYMID, ID
       INTEGER IOPT, KOFF1, KOFF2, KOFF3, KOFF5, KOFF6, LENGTH
@@ -5950,9 +5950,9 @@ C     Sort the cc3 result vector ai,j to aj,i
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYAIJ, ISYMJ, ISYMAI, ISYMA, ISYMI, ISYMAJ, NAI
       INTEGER NAJ, KOFF1, KOFF2
@@ -6011,10 +6011,10 @@ C     Transform the integrals from (ai|del c) to (ai|bc)
 C     and store them on file.
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccinftap.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccinftap.h"
 C
       INTEGER LWRK, ISINT1, ISINT2, ISYMD, ISYCKB, ISCKB1
       INTEGER ISCKB2, KENDLO, LWRKLO, IOFF, KTRVI, KINTVI
@@ -6107,11 +6107,11 @@ C     Ove Christiansen 9-1-1996:
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "second.h"
 C
       INTEGER LWORK, ISYMIM, ISYINT, LENSQ, ISYMB1, B1
       INTEGER ISYMD1, D1, IOPT, ISYRES, ISYMBD, ISCKIJ, LENGTH, ISYMJ 
@@ -6708,9 +6708,9 @@ C     K. Hald, April 2001.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMA, ISYMB, ISYMAB, ISYMI, ISYMAI, ISYAIB, ISYMJ
       INTEGER ISYMBJ, ISYBIJ, NAI, NBJ, KOFF4, KOFF5, INDEX, ISYRES
@@ -6800,9 +6800,9 @@ C     K. Hald, April 2001.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMA, ISYMB, ISYMAB, ISYMI, ISYMAI, ISYAIB, ISYMJ
       INTEGER ISYMBJ, ISYBIJ, NAI, NBJ, KOFF4, KOFF5, INDEX, ISYRES

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *======================================================================
       SUBROUTINE CC_PQI(CTR2,ISYCTR,T2AM,ISYTAMP,
@@ -44,13 +44,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "second.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_3HYP */
 *=====================================================================*
@@ -41,10 +41,10 @@ c /* deck CC_3HYP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <cc4rinf.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "cc4rinf.h"
+#include "ccr1rsp.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -398,11 +398,11 @@ c /* deck CC4HYPPRT */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cc4rinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cc4rinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*10 BLANKS
@@ -578,11 +578,11 @@ c /* deck CC4R_SETUP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cc4rinf.h>
-#include <cc4perm.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cc4rinf.h"
+#include "cc4perm.h"
+#include "ccroper.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -1368,7 +1368,7 @@ c /* deck CC_SETH1112 */
       INTEGER ITAMP, I, IDX
 
 * statement  functions:
-#include <priunit.h>      
+#include "priunit.h"      
       LOGICAL LHTST, LHEND
       INTEGER IL, IA, IB,IC
       LHTST(ITRAN,IL,IA,IB,IC) = IHTRAN(1,ITRAN).EQ.IL .AND. (
@@ -1481,7 +1481,7 @@ c /* deck CC_SETG212 */
       INTEGER ITRAN, IVEC
       INTEGER ITAMP, I, IDX
 
-#include <priunit.h>
+#include "priunit.h"
 * statement  functions:
       LOGICAL LGTST, LGEND
       INTEGER IL, IA, IB

@@ -46,23 +46,23 @@ c              1       loop over auxiliary basis only
 c              2       loop over orbital basis AND auxiliary basis
 c-----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <dummy.h>     
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <r12int.h>
-#include <ccr12int.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"     
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "second.h"
       logical locdbg,lvijkl,lvabkl,lvajkl,temp_direct,lauxd,mkfock
       parameter(locdbg =.false.)
 #if defined (SYS_CRAY)
@@ -422,13 +422,13 @@ c
 c     H. Fliegl, C. Haettig, summer 2004 
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical locdbg,lauxd,lvajkl,lvijkl
       parameter(locdbg =.false.)
@@ -688,11 +688,11 @@ c
 c     H. Fliegl, C. Haettig
 c---------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
       logical locdbg,lauxd
       parameter(locdbg = .false.)
 #if defined (SYS_CRAY)

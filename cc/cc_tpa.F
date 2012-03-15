@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_TPA */
 *=====================================================================*
@@ -38,16 +38,16 @@ c /* deck CC_TPA */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <cctpainf.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <second.h>
-#include <ccr1rsp.h>
-#include <cclrmrsp.h>
-#include <ccexcinf.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "cctpainf.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "second.h"
+#include "ccr1rsp.h"
+#include "cclrmrsp.h"
+#include "ccexcinf.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -449,14 +449,14 @@ c /* deck cctpaprt */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <pgroup.h>
-#include <ccroper.h>
-#include <cctpainf.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-#include <codata.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "pgroup.h"
+#include "ccroper.h"
+#include "cctpainf.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
+#include "codata.h"
+#include "ccorb.h"
 
 
       LOGICAL XST
@@ -775,13 +775,13 @@ c /* deck cctpa_setup */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
-#include <cctpainf.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "cclists.h"
+#include "cctpainf.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER*(21) MSGDBG

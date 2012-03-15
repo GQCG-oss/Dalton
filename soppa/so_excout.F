@@ -15,19 +15,19 @@ C
 C     PURPOSE: Driver for printing final output for the RPA, RPA(D), 
 C              SOPPA, and SOPPA(CCSD) excitation calculations.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cbiexc.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cbiexc.h"
 CSPAS:15/03-2006: merge with Dalton-2.0  
 C#include <cbilrs.h>
 CKeinSPASmehr
-#include <soppinf.h>
-#include <maxorb.h>
-#include <secmom.h>
-#include <codata.h>
+#include "soppinf.h"
+#include "maxorb.h"
+#include "secmom.h"
+#include "codata.h"
 C
       DIMENSION TRLEN(3,NSYM,MXNEXI,4), TRVEL(3,NSYM,MXNEXI,4)
 CSPAS:23/5-11: second and third moment sum rules

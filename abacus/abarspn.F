@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck abarsp */
       SUBROUTINE ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,
@@ -58,14 +58,14 @@ C      FABRHS - true : transform integrals to MO basis;
 C               normally true first time routine is called
 C               at a new geometry.
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
 C
       DIMENSION WRK(LWRK),EXVAL(NEXVAL),NABATY(NABAOP)
 C
-#include <mxcent.h>
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER*8 LABEL
 C
@@ -74,24 +74,24 @@ C ABAINF : DODRCT
 C INFLIN : NCONRF
 C INFTRA : USEDRC
 C
-#include <abainf.h>
-#include <exeinf.h>
-#include <inflin.h>
-#include <infinp.h>
-#include <cbisol.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infhyp.h>
-#include <priunit.h>
-#include <infsop.h>
+#include "abainf.h"
+#include "exeinf.h"
+#include "inflin.h"
+#include "infinp.h"
+#include "cbisol.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infhyp.h"
+#include "priunit.h"
+#include "infsop.h"
 C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
 C
@@ -485,16 +485,16 @@ C  Purpose:
 C     CONTROL CALCULATION OF EXCITATION ENERGIES AND WRITE SOLUTION
 C     VECTORS ON DISK (LUSOVE)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       CHARACTER*8 BLANK
       DIMENSION EXVAL(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(LWRK)
 C
       PARAMETER ( D100 = 100.0D0, D0 = 0.0D0, BLANK = '        ' )
-#include <codata.h>
-#include <priunit.h>
+#include "codata.h"
+#include "priunit.h"
 C
 C
 C Used from common blocks:
@@ -502,13 +502,13 @@ C  /INFRSP/ : most items (/INFRSP/ gives control information for
 C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('RSPLEX')
 C     space allocation for reduced E(2) and reduced S(2)
@@ -618,10 +618,10 @@ C  /* Deck rsplle */
       SUBROUTINE RSPLLE(LUGDVE,LUSOVE,LUREVE,NABAOP,NABATY,LABEL,CMO,
      *                  UDV,PV,FC,FV,FCAC,H2AC,XINDX,FOCK,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
       CHARACTER*8 BLANK, LABEL
       PARAMETER (BLANK = '        ')
@@ -630,20 +630,20 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),FOCK(*),WRK(LWRK)
 C
-#include <priunit.h>
-#include <gdvec.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <abainf.h>
-#include <absorp.h>
-#include <infvar.h>
-#include <dftcom.h>
+#include "priunit.h"
+#include "gdvec.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "abainf.h"
+#include "absorp.h"
+#include "infvar.h"
+#include "dftcom.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
@@ -818,9 +818,9 @@ C
 C GET RIGHT HAND SIDE LONDON VECTOR in GPLON(1)
 C for RESPONSE module
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       CHARACTER*(*)WORD
       DIMENSION GPLON(LWRK)
@@ -829,17 +829,17 @@ C Used from common blocks:
 C   INFDIM : NVARMA
 C   INFLIN : NVARPT
 C
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
 C
-#include <infdim.h>
-#include <inflin.h>
+#include "infdim.h"
+#include "inflin.h"
 C
       LOGICAL OLDDX
 C

@@ -23,7 +23,7 @@
 !
 C FILE : herbas.F
 C
-#include <single.h>
+#include "single.h"
 C
 C*************************************************************
 C* This is the procedures that controls the reading from     *
@@ -1472,7 +1472,7 @@ C
 C     Joern Thyssen and Hans Joergen Aa. Jensen.
 C     Last revision Feb. 2005
 C
-#include <implicit.h>
+#include "implicit.h"
 #include "priunit.h"
 C*********************************************************
 C* Variable declarations:                                *

@@ -23,18 +23,18 @@
 !
       SUBROUTINE ESGLAG_AOMAT(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      $                        XINDX,WRK,LWRK)
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
 #include "rspprp.h"
-#include <esg.h>
+#include "esg.h"
 
       KD1MO   = 1
       KD2MO   = KD1MO   + N2ORBX
@@ -107,23 +107,23 @@ C
   
       SUBROUTINE ESGLAG_MOMAT(D1MO,D2MO,DXMO,DXSMO,FRMO,
      &        CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION D1MO(*),D2MO(*),DXMO(*),DXSMO(*),FRMO(*)
       DIMENSION XINDX(*),WRK(*)
       LOGICAL FOUND, CONV
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <esg.h>
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "esg.h"
 
 C   KXVECS - eigenvectors corresponding to eigenstates
 C            of the excited states
@@ -164,7 +164,7 @@ c     &             WRK(KKMATS),XINDX,WRK(KWRK1),LWRK1)
       SUBROUTINE ESG_XKMATS(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,NSIM,XMATS,
      &             KMATS,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XMATS(*),KMATS(*),XINDX(*),WRK(*)
       PARAMETER (MXDMAT = 50)
@@ -172,22 +172,22 @@ C
       CHARACTER*8 BLANK
       LOGICAL FOUND, CONV
       PARAMETER ( BLANK = '        ', D0=0.0D0, D1 = 1.0D0 )
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <wrkrsp.h>
-#include <esg.h>
+#include "inflr.h"
+#include "wrkrsp.h"
+#include "esg.h"
 
-#include <qrinf.h>
-#include <infvar.h>
+#include "qrinf.h"
+#include "infvar.h"
 C
 C     SUBROUTINE FOR CALCUATING THE T-VECTOR FOR 
 C     THE LAGRANGE MULTIPLIER IN EXCITED STATE 
@@ -429,8 +429,8 @@ C
       SUBROUTINE ESGXKMATS_NEW(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      $                          NSIM,XMATS,KMATS,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XMATS(*),KMATS(*),XINDX(*),WRK(*)
       PARAMETER (MXDMAT = 50)
@@ -438,23 +438,23 @@ C
       CHARACTER*8 BLANK
       LOGICAL FOUND, CONV
       PARAMETER ( BLANK = '        ', D0=0.0D0, D1 = 1.0D0 )
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infspi.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infspi.h"
+#include "inftap.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <wrkrsp.h>
-#include <esg.h>
+#include "inflr.h"
+#include "wrkrsp.h"
+#include "esg.h"
 
-#include <qrinf.h>
-#include <infvar.h>
+#include "qrinf.h"
+#include "infvar.h"
 
 C     Konstruct T = E[3] X X^T and solve K E[2] = T
 
@@ -549,23 +549,23 @@ C
      &             CMO,UDV,PV,FC,FV,FCAC,H2AC,XMATS,
      &             KMATS,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION D1MO(*),D2MO(*),DXMO(*),DXSMO(*),FRMO(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XMATS(*),KMATS(*),XINDX(*),WRK(*)
       INTEGER   IFCTYP(1), ISYMDM(1)
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infsop.h>
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
 
 C
 C   Calculate the excited state energy gradient
@@ -701,9 +701,9 @@ C     END OF ESG_DMOMAT
 C
 
       SUBROUTINE TRANSFORMED_DENSITY(NSIM,X,DX)
-#include <implicit.h>
-#include <priunit.h> 
-#include <inforb.h> 
+#include "implicit.h"
+#include "priunit.h" 
+#include "inforb.h" 
 C
 C     Construct the one index transformed (by X) one electron 
 C     density matrix DX (in MO basis)
@@ -741,15 +741,15 @@ C
       SUBROUTINE REORTH_FOCK(CMO,UDV,PV,FC,FV,FCAC,H2AC,NSIM,
      &            FGMO,DXMO,D2MO,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infrsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <esg.h>
+#include "esg.h"
 
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION FGMO(*),DXMO(*),D2MO(*),XINDX(*),WRK(*)

@@ -139,7 +139,6 @@ if(ENABLE_GEN1INT)
     # Gen1int library source code
     set(Gen1Int_SRCS ${LIB_GEN1INT_PATH}/src/error_stop.F90
                      ${LIB_GEN1INT_PATH}/src/xtimer.F90
-                     ${LIB_GEN1INT_PATH}/src/str_decode.F90
                      ${LIB_GEN1INT_PATH}/src/norm_contr_cgto.F90
                      ${LIB_GEN1INT_PATH}/src/norm_contr_sgto.F90
                      ${LIB_GEN1INT_PATH}/src/reorder_ints.F90
@@ -183,6 +182,7 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/prim_hgto_value.F90
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_value.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_value.F90
+                     ${LIB_GEN1INT_PATH}/tools/str_decode.F90
                      ${LIB_GEN1INT_PATH}/src/gen1int.F90)
     # Gen1Int interface source code
     set(FREE_FORTRAN_SOURCES

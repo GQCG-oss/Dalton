@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_HFR1DEN(R1DEN,IOPER,IORDER,ISYMOPR,WORK,LWORK)
@@ -38,13 +38,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccfro.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <dummy.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccfro.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "dummy.h"
+#include "inftap.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

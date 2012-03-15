@@ -5,15 +5,15 @@ C     Thomas Bondo Pedersen, May 2002.
 C
 C     Purpose: Drive Cholesky debug calculations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <chodbg.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "chodbg.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHODBG')
@@ -132,26 +132,26 @@ C        Calculate all distributions determined by the integral
 C        program, batching over distributions as well as Cholesky
 C        vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccdeco.h>
-#include <chodbg.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccdeco.h"
+#include "chodbg.h"
+#include "priunit.h"
 
       DIMENSION INDEXA(MXCORB)
       DIMENSION ERRNRM(MXCORB), ERRMAX(MXCORB), XINSTD(MXCORB)
@@ -496,11 +496,11 @@ C     Purpose:
 C        Find max. abs. value in XINT integral distribution and
 C        return its value and location.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER AB, ABG
 
@@ -546,13 +546,13 @@ C     asm, May 2002.
 C
 C     Calculate  Sum (ab>=gd) (ab|gd) with Cholesky and standard integrals.
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       DIMENSION XDIR(*),XCHO(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.00D0)
 C
@@ -628,18 +628,18 @@ C        The distribution file *must* be open on calling this
 C        routine. Furthermore, data present on that file will
 C        be overwritten, and the file will *not* be closed here.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
       INTEGER INDEXA(*)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccisao.h>
-#include <ccsdinp.h>
-#include <symsq.h>
-#include <chodbg2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccisao.h"
+#include "ccsdinp.h"
+#include "symsq.h"
+#include "chodbg2.h"
+#include "priunit.h"
 
       INTEGER IPOINT(MXCORB)
       INTEGER IADR1
@@ -1119,13 +1119,13 @@ C
 C     Purpose:
 C        Set up batch # 1 in CCCHAO.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER INDEXA(*)
-#include <maxorb.h>
-#include <ccisao.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisao.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       IDIS = IDIS1 - 1
       MEM  = 0
@@ -1170,13 +1170,13 @@ C     IOPT = 3 : Close file, keep it.
 C
 C     IOPT = 4 : Close file, delete it.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*)
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccisao.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccisao.h"
+#include "priunit.h"
 
       CHARACTER*7 FCHODIS
       PARAMETER (LUCHODIS = 98, FCHODIS = 'CHODIST')
@@ -1229,11 +1229,11 @@ C     Purpose:
 C        Find max. abs. value in XINT integral distribution and
 C        return its value and location.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CHOINT(*),DIRINT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER AB, ABG
 
