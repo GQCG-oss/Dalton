@@ -1954,11 +1954,9 @@ subroutine dipole_field(Fi, Ri, Rj, Q1j)
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(3), intent(in) :: Q1j
 
-    integer :: x, y, z
-    integer :: a, b, c
+    integer :: a, b, c, x, y, z
     integer, parameter :: k = 2
     real(dp), dimension(3) :: Rji
-    real(dp), dimension(6) :: Tji
 
     Rji = Ri - Rj
 
@@ -1995,29 +1993,37 @@ subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(6), intent(in) :: Q2j
 
-    integer :: a, b, g
+    integer :: a, b, c, x, y, z
     integer, parameter :: k = 3
     real(dp), dimension(3) :: Rji
-    real(dp), dimension(10) :: Tji
-    real(dp), dimension(3,3) :: Q2f
-    real(dp), dimension(3,3,3) :: Tf
+    real(dp), dimension(6) :: symfacs
 
     Rji = Ri - Rj
 
-    call Tk_tensor(Tji, k, Rji)
-
-    call unpack_tensor(Q2f, Q2j)
-    call unpack_tensor(Tf, Tji)
+    call symmetry_factors(symfacs, k-1)
 
     Fi = 0.0d0
 
-    do a = 1, 3
-        do b = 1, 3
-            do g = 1, 3
-                Fi(a) = Fi(a) - 0.5d0 * Tf(a,b,g) * Q2f(b,g)
+    a = 1; b = 1; c = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x /= 0) then
+                    Fi(1) = Fi(1) - 0.50d0 * symfacs(a) * T(Rji, x, y, z) * Q2j(a)
+                    a = a + 1
+                end if
+                if (y /= 0) then
+                    Fi(2) = Fi(2) - 0.50d0 * symfacs(b) * T(Rji, x, y, z) * Q2j(b)
+                    b = b + 1
+                end if
+                if (z /= 0) then
+                    Fi(3) = Fi(3) - 0.50d0 * symfacs(c) * T(Rji, x, y, z) * Q2j(c)
+                    c = c + 1
+                end if
             end do
         end do
-    end do
+     end do
 
 end subroutine quadrupole_field
 
@@ -2029,32 +2035,38 @@ subroutine octopole_field(Fi, Ri, Rj, Q3j)
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(10), intent(in) :: Q3j
 
-    integer :: a, b, g, d
+    integer :: a, b, c, x, y, z
     integer, parameter :: k = 4
     real(dp), dimension(3) :: Rji
-    real(dp), dimension(15) :: Tji
-    real(dp), dimension(3,3,3) :: Q3f
-    real(dp), dimension(3,3,3,3) :: Tf
+    real(dp), dimension(10) :: symfacs
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
 
     Rji = Ri - Rj
 
-    call Tk_tensor(Tji, k, Rji)
-
-    call unpack_tensor(Q3f, Q3j)
-    call unpack_tensor(Tf, Tji)
+    call symmetry_factors(symfacs, k-1)
 
     Fi = 0.0d0
 
-    do a = 1, 3
-        do b = 1, 3
-            do g = 1,3
-                do d = 1, 3
-                    Fi(a) = Fi(a) + Tf(a,b,g,d) * Q3f(b,g,d) * d6i
-                end do
+    a = 1; b = 1; c = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x /= 0) then
+                    Fi(1) = Fi(1) + d6i * symfacs(a) * T(Rji, x, y, z) * Q3j(a)
+                    a = a + 1
+                end if
+                if (y /= 0) then
+                    Fi(2) = Fi(2) + d6i * symfacs(b) * T(Rji, x, y, z) * Q3j(b)
+                    b = b + 1
+                end if
+                if (z /= 0) then
+                    Fi(3) = Fi(3) + d6i * symfacs(c) * T(Rji, x, y, z) * Q3j(c)
+                    c = c + 1
+                end if
             end do
         end do
-    end do
+     end do
 
 end subroutine octopole_field
 
@@ -2286,17 +2298,6 @@ subroutine Tk_tensor(Tk, k, Rij)
         do y = k, 0, -1
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
-!                do l = 0, x
-!                    Cx = Cnij(1,x,l)*(Rij(1)/R)**l
-!                    do m = 0, y
-!                        Cy = Cx * Cnij(l+x+1,y,m)*(Rij(2)/R)**m
-!                        do n = 0, z
-!                            Cz = Cy * Cnij(l+x+y+m+1,z,n)*(Rij(3)/R)**n
-!                            Tk(idx) = Tk(idx) + Cz
-!                        end do
-!                    end do
-!                end do
-!                Tk(idx) = Tk(idx) / R**(x+y+z+1)
                 Tk(idx) = T(Rij, x, y, z)
                 idx = idx + 1
             end do
@@ -2304,175 +2305,6 @@ subroutine Tk_tensor(Tk, k, Rij)
     end do
 
 end subroutine
-
-!------------------------------------------------------------------------------
-
-subroutine unpack_tensor(Tf, Ts)
-
-    real(dp), dimension(:), intent(in) :: Ts
-    real(dp), dimension(*), intent(out) :: Tf
-
-    if (size(Ts) == 1) then
-        stop 'Error in unpack_tensor: no unpacking necessary'
-    else if (size(Ts) == 3) then
-        stop 'Error in unpack_tensor: no unpacking necessary'
-    else if (size(Ts) == 6) then
-        call unpack_2nd_order(Tf, Ts)
-    else if (size(Ts) == 10) then
-        call unpack_3rd_order(Tf, Ts)
-    else if (size(Ts) == 15) then
-        call unpack_4th_order(Tf, Ts)
-    else if (size(Ts) > 15) then
-        stop 'Error in unpack_tensor: wrong size or not implemented'
-    else
-        stop 'Error in unpack_tensor: packed tensor is wrong size'
-    end if
-
-end subroutine unpack_tensor
-
-!------------------------------------------------------------------------------
-
-subroutine unpack_2nd_order(Tf, Ts)
-
-    real(dp), dimension(:), intent(in) :: Ts
-    real(dp), dimension(3,3), intent(out) :: Tf
-
-    integer :: i
-    integer :: a, b
-
-    i = 1
-    do b = 1, 3
-        do a = b, 3
-            if (a == b) then
-                Tf(a,b) = Ts(i)
-            else
-                Tf(a,b) = Ts(i)
-                Tf(b,a) = Ts(i)
-            end if
-            i = i + 1
-        end do
-    end do
-
-end subroutine unpack_2nd_order
-
-!------------------------------------------------------------------------------
-
-subroutine unpack_3rd_order(Tf, Ts)
-
-    real(dp), dimension(:), intent(in) :: Ts
-    real(dp), dimension(3,3,3), intent(out) :: Tf
-
-    integer :: i, a, b, g
-
-    i = 1
-    do g = 1, 3
-        do b = g, 3
-            do a = b, 3
-                if (a == b .and. b == g) then
-                    Tf(a,b,g) = Ts(i)
-                else if (a == b .and. b /= g) then
-                    Tf(a,b,g) = Ts(i)
-                    Tf(a,g,b) = Ts(i)
-                    Tf(g,a,b) = Ts(i)
-                else if (a /= b .and. b == g) then
-                    Tf(a,b,g) = Ts(i)
-                    Tf(b,a,g) = Ts(i)
-                    Tf(b,g,a) = Ts(i)
-                else if (a /= b .and. b /= g) then
-                    Tf(a,b,g) = Ts(i)
-                    Tf(a,g,b) = Ts(i)
-                    Tf(b,a,g) = Ts(i)
-                    Tf(b,g,a) = Ts(i)
-                    Tf(g,a,b) = Ts(i)
-                    Tf(g,b,a) = Ts(i)
-                end if
-                i = i + 1
-            end do
-       end do
-    end do
-
-end subroutine unpack_3rd_order
-
-!------------------------------------------------------------------------------
-
-subroutine unpack_4th_order(Tf, Ts)
-
-    real(dp), dimension(:), intent(in) :: Ts
-    real(dp), dimension(3,3,3,3), intent(out) :: Tf
-
-    integer :: i, a, b, g, d
-
-    i = 1
-    do d = 1, 3
-        do g = d, 3
-            do b = g, 3
-                do a = b, 3
-                    if (a == b .and. b == g .and. g == d) then
-                        Tf(a,b,g,d) = Ts(i)
-                    else if (a == b .and. b == g .and. g /= d) then
-                        Tf(a,b,g,d) = Ts(i)
-                        Tf(a,b,d,g) = Ts(i)
-                        Tf(a,d,b,g) = Ts(i)
-                        Tf(d,a,b,g) = Ts(i)
-                    else if (a == b .and. g == d .and. a /= g) then
-                        Tf(a,b,g,d) = Ts(i)
-                        Tf(a,g,b,d) = Ts(i)
-                        Tf(g,a,b,d) = Ts(i)
-                        Tf(g,a,d,b) = Ts(i)
-                        Tf(g,d,a,b) = Ts(i)
-                        Tf(a,g,d,b) = Ts(i)
-                    else if (a == b .and. b /= g .and. g /= d) then
-                        Tf(a,b,g,d) = Ts(i)
-                        Tf(a,g,b,d) = Ts(i)
-                        Tf(a,g,d,b) = Ts(i)
-                        Tf(g,d,a,b) = Ts(i)
-                        Tf(g,a,d,b) = Ts(i)
-                        Tf(g,a,b,d) = Ts(i)
-                        Tf(a,b,d,g) = Ts(i)
-                        Tf(a,d,b,g) = Ts(i)
-                        Tf(a,d,g,b) = Ts(i)
-                        Tf(d,g,a,b) = Ts(i)
-                        Tf(d,a,g,b) = Ts(i)
-                        Tf(d,a,b,g) = Ts(i)
-                    else if (a /= b .and. b == g .and. g == d) then
-                        Tf(a,b,g,d) = Ts(i)
-                        Tf(b,a,g,d) = Ts(i)
-                        Tf(b,g,a,d) = Ts(i)
-                        Tf(b,g,d,a) = Ts(i)
-                    else if (a /= b .and. b == g .and. g /= d) then
-                        Tf(a,b,g,d) = Ts(i)
-                        Tf(a,b,d,g) = Ts(i)
-                        Tf(a,d,b,g) = Ts(i)
-                        Tf(d,a,b,g) = Ts(i)
-                        Tf(d,b,a,g) = Ts(i)
-                        Tf(d,b,g,a) = Ts(i)
-                        Tf(b,a,g,d) = Ts(i)
-                        Tf(b,g,a,d) = Ts(i)
-                        Tf(b,g,d,a) = Ts(i)
-                        Tf(b,d,a,g) = Ts(i)
-                        Tf(b,d,g,a) = Ts(i)
-                        Tf(b,a,d,g) = Ts(i)
-                    else if (a /= b .and. b /= g .and. g == d) then
-                        Tf(a,b,g,d) = Ts(i)
-                        Tf(a,g,b,d) = Ts(i)
-                        Tf(a,g,d,b) = Ts(i)
-                        Tf(b,a,g,d) = Ts(i)
-                        Tf(b,g,a,d) = Ts(i)
-                        Tf(b,g,d,a) = Ts(i)
-                        Tf(g,a,b,d) = Ts(i)
-                        Tf(g,a,d,b) = Ts(i)
-                        Tf(g,d,a,b) = Ts(i)
-                        Tf(g,b,a,d) = Ts(i)
-                        Tf(g,b,d,a) = Ts(i)
-                        Tf(g,d,b,a) = Ts(i)
-                    end if
-                    i = i + 1
-                end do
-            end do
-        end do
-    end do
-
-end subroutine unpack_4th_order
 
 !------------------------------------------------------------------------------
 
@@ -2528,51 +2360,52 @@ subroutine symmetry_factors(factors, k)
     integer, intent(in) :: k
     real(dp), dimension(:), intent(out) :: factors
 
-    factors = 0.0d0
+    integer :: idx, x, y, z
 
-    if (k == 0) then
-        factors(1) = 1.0d0
-    else if (k == 1) then
-        factors(1) = 1.0d0
-        factors(2) = 1.0d0
-        factors(3) = 1.0d0
-    else if (k== 2) then
-        factors(1) = 1.0d0
-        factors(2) = 2.0d0
-        factors(3) = 2.0d0
-        factors(4) = 1.0d0
-        factors(5) = 2.0d0
-        factors(6) = 1.0d0
-    else if (k == 3) then
-        factors(1) = 1.0d0
-        factors(2) = 3.0d0
-        factors(3) = 3.0d0
-        factors(4) = 3.0d0
-        factors(5) = 6.0d0
-        factors(6) = 3.0d0
-        factors(7) = 1.0d0
-        factors(8) = 3.0d0
-        factors(9) = 3.0d0
-        factors(10) = 1.0d0
-    else if (k == 4) then
-        factors(1) = 1.0d0
-        factors(2) = 4.0d0
-        factors(3) = 4.0d0
-        factors(4) = 6.0d0
-        factors(5) = 12.0d0
-        factors(6) = 6.0d0
-        factors(7) = 4.0d0
-        factors(8) = 12.0d0
-        factors(9) = 12.0d0
-        factors(10) = 4.0d0
-        factors(11) = 1.0d0
-        factors(12) = 4.0d0
-        factors(13) = 6.0d0
-        factors(14) = 4.0d0
-        factors(15) = 1.0d0
-    end if
+    idx = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                factors(idx) = symfac(x, y, z)
+                idx = idx + 1
+            end do
+        end do
+     end do
 
 end subroutine symmetry_factors
+
+!------------------------------------------------------------------------------
+
+function symfac(i, j, k)
+
+    ! trinomial coefficient
+
+    integer, intent(in) :: i, j, k
+
+    integer :: symfac
+
+    symfac = factorial(i+j+k) / (factorial(i) * factorial(j) * factorial(k))
+
+end function symfac
+
+!------------------------------------------------------------------------------
+
+recursive function factorial(n) result(nfact)
+
+    ! Clive Page, http://www.star.le.ac.uk/~cgp/f90course/f90.html
+
+    integer, intent(in) :: n
+
+    integer :: nfact
+
+    if (n > 0) then
+        nfact = n * factorial(n-1)
+    else
+        nfact = 1
+    end if
+
+end function factorial
 
 !------------------------------------------------------------------------------
 
