@@ -40,9 +40,9 @@ c   different definitions for "nrhf", thus we cannot use the
 c   dimensions from the common block in general.        
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isymv,isymi,isymj,isymk,isyml,isymij
       integer kt,lt, it,jt,isymki,isymlj,idxki,idxlj,idxkj,idxli,klij
@@ -244,9 +244,9 @@ c
 c   modified by C. Neiss summer 2005
 c----------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       integer isymv,isymi,isymj,isymk,isyml,isymij
       integer kt,lt, it,jt,isymki,isymlj,idxki,idxlj,idxkj,idxli,klij
@@ -423,8 +423,8 @@ c
 c     H. Fliegl, C. Haettig spring 2003 
 c---------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       real*8 tampr12(*),fac
 
@@ -472,9 +472,9 @@ c     H. Fliegl, C. Haettig, winter 2004
 c     modified by C. Neiss, 2005/2006
 c----------------------------------------------------------------------
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       logical lidxtf1,locdbg
       parameter (locdbg = .false.)
@@ -581,9 +581,9 @@ C  C. Neiss autumn 2004
 C----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isymv,isymi,isymj,isymk,isyml
       integer isymij,isymkl
@@ -750,9 +750,9 @@ C  C. Neiss   04. Feb. 2005
 C----------------------------------------------------------------------
 
       implicit none
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       integer isymv,isymi,isymj,isymk,isyml
       integer isymij,isymkl
@@ -936,8 +936,8 @@ c
 c     C. Neiss spring 2005 
 c---------------------------------------------------------------------
       implicit none
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       real*8 tampr12(*),fac
 

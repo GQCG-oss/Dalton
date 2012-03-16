@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_excit1 */
 CSPAS:23/5-11: second and third moment sum rules
@@ -19,30 +19,30 @@ C     PURPOSE: Main driver routine for the calculation of excitation
 C              energies and transition moments with the atomic integral
 C              direct SOPPA program.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 CSPAS:15/03-2006: merge with Dalton-2.0  
 C#include <cbilrs.h>
 CKeinSPASmehr
-#include <cbiexc.h>
-#include <ccsdsym.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "cbiexc.h"
+#include "ccsdsym.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 CSPAS:10/11-2003: is merged with maxorb.h
 C#include <mxorb.h>
 CKeinSPASmehr
-#include <nuclei.h>
+#include "nuclei.h"
 CSPAS:10/11-2003: I cannot find the corresponding include file
 C#include <nuctap.h>
 CKeinSPASmehr
-#include <soppinf.h>
-#include <symmet.h>
-#include <wrkrsp.h>
+#include "soppinf.h"
+#include "symmet.h"
+#include "wrkrsp.h"
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C

@@ -506,7 +506,7 @@ c----------------------------------------------------------------------
       subroutine v0(luintd,norb,ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,
      * fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
      *               ntotdet,ntotconf,ntotcap,zro
@@ -514,7 +514,7 @@ c----------------------------------------------------------------------
       allocatable h2m(:,:),tint(:,:)
       dimension fmpb(*),zgel(*)
 cele
-#include <dummy.h>
+#include "dummy.h"
 cele
 
       
@@ -522,9 +522,7 @@ cele
       nvirt=norb-ncoat     
 
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 
 celec------ two-electron part with Mulliken distr (ir,ii|**)
@@ -656,7 +654,7 @@ c----------------------------------------------------------------
       subroutine v1k(luintd,da,gkp1a,norb,ncore,nact,in2d,id2n,itsym,
      *               its,wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
       dimension da(nact,nact),gkp1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -665,7 +663,7 @@ c----------------------------------------------------------------
       dimension fmpb(*),zgel(*)
       allocatable h2m(:,:),tintar(:,:),tintra(:,:)
       allocatable s(:,:),coef(:,:),w(:),work(:),caux(:,:),vct(:,:)
-#include <dummy.h>
+#include "dummy.h"
       
       ncoat=ncore+nact
       nvirt=norb-ncoat
@@ -745,9 +743,7 @@ c---costruzione matrice S
       enddo
 
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 c------ two-electron part with Dirac distr (ii,ij|**)
       KFREE=1
@@ -879,7 +875,7 @@ c-----------------------------------------------------------
       subroutine vm1k(da,gkm1a,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
       dimension da(nact,nact),gkm1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -952,9 +948,7 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
       deallocate(caux)
       deallocate(vct)
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 c------ two-electron part with mulliken distr (ir,ii|**)
       KFREE=1
@@ -1080,7 +1074,7 @@ c----Partially contracted NEV-PT---------------------------------
       end
 c-------------------------------------------------------------
       subroutine fill(a,b,n)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION a(*),b(*)
       do i=1,n
          a(i)=b(i)
@@ -1089,7 +1083,7 @@ c-------------------------------------------------------------
       end
 c----------------------------------------------
       subroutine halve(a,n)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION a(*)
       do i=1,n
          a(i)=0.5d0*a(i)
@@ -1432,7 +1426,7 @@ c------------------------------------------------------
       subroutine v2mod(gkp2aa,daat,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
 c      dimension da(nact,nact),gkm1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -1447,9 +1441,7 @@ c      dimension da(nact,nact),gkm1a(nact,nact)
       ncoat=ncore+nact
       nvirt=norb-ncoat
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 c------ two-electron part with mulliken distr (ia,ii|**)
       KFREE=1
@@ -1701,7 +1693,7 @@ cc----------------------------------------------------------------
       subroutine vm2mod(daa,gkm2aa,norb,ncore,nact,in2d,id2n,itsym,its,
      *          wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
 c      dimension da(nact,nact),gkm1a(nact,nact)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
@@ -1716,9 +1708,7 @@ c      dimension da(nact,nact),gkm1a(nact,nact)
       ncoat=ncore+nact
       nvirt=norb-ncoat
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 c------ two-electron part with mulliken distr (ir,ia|**)
       KFREE=1
@@ -1983,7 +1973,7 @@ c--   metto in coef i coefficienti trasformati (for clarity sake)
       end
 c----------------------------------------------------------------
       subroutine fillcm2(s,daa,nact)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact**2,nact**2),daa(nact,nact,nact,nact)
 c---caso r#s
       ij=0
@@ -2003,7 +1993,7 @@ c---caso r#s
       end
 c-------------------------------------------------------------
       subroutine fillcm2p(s,daa,nact)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact*(nact+1)/2,nact*(nact+1)/2),
      &          daa(nact,nact,nact,nact)
 c---caso r=s
@@ -2024,7 +2014,7 @@ c---caso r=s
       end
 c----------------------------------------------------------------
       subroutine fillc0p(s,coef,ga,gd,daa,da,nact)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(2*nact**2,2*nact**2),daa(nact,nact,nact,nact)
       DIMENSION coef(2*nact**2,2*nact**2),da(nact,nact)
       DIMENSION ga(nact,nact,nact,nact),gd(nact,nact,nact,nact)
@@ -2095,7 +2085,7 @@ c---parte sud-est
       end
 c----------------------------------------------------------------
       subroutine fillcm1p(s,coef,amat,ro3,daa,da,nact,nact3)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact3,nact3),daa(nact,nact,nact,nact)
       DIMENSION coef(nact3,nact3),da(nact,nact)
       DIMENSION ro3(nact,nact,nact,nact,nact,nact)
@@ -2123,7 +2113,7 @@ c----------------------------------------------------------------
       end
 c----------------------------------------------------------------
       subroutine fillcp1p(s,coef,amat,ro3,daa,da,nact,nact3)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION s(nact3,nact3),daa(nact,nact,nact,nact)
       DIMENSION coef(nact3,nact3),da(nact,nact)
       DIMENSION ro3(nact,nact,nact,nact,nact,nact)
@@ -2154,7 +2144,7 @@ c---------------------------------------------------------------
       subroutine v0pmod(da,daa,gk0pa,gk0pd,gk0pf,heffd,norb,ncore,
      *         nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
      *               ntotdet,ntotconf,ntotcap,zro
@@ -2173,9 +2163,7 @@ c---------------------------------------------------------------
       ncoat=ncore+nact
       nvirt=norb-ncoat
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
       tini=second()
 
 c------ two-electron part with mulliken distr (ir,ia|**)
@@ -2212,9 +2200,7 @@ c       write (lupri,*) 'stoa',irc,iac,ii,ib,h2m(iid,ibd)
       enddo
       goto 900
  1000 continue
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 c------ two-electron part with mulliken distr (ir,ii|**)
       KFREE=1
       LFREE=LWRK
@@ -2443,7 +2429,7 @@ c--inizio il calcolo perturbativo
       end
 c----------------------------------------------------------------
       subroutine caux0p(caux,s,w,nact2,nnew,thr)
-#include <implicit.h>
+#include "implicit.h"
       dimension caux(nact2,nnew),s(nact2,nact2),w(*)
       jnew=0
       do j=1,nact2
@@ -2459,7 +2445,7 @@ c----------------------------------------------------------------
       end
 c----------------------------------------------------------------
       subroutine copia(coef,s,nact2,nnew)
-#include <implicit.h>
+#include "implicit.h"
       dimension coef(nact2,nact2),s(nact2,nact2)
       do mu=1,nnew
          do i=1,nact2
@@ -2471,7 +2457,7 @@ c----------------------------------------------------------------
 c----------------------------------------------------------------
       subroutine e20pcont(e2,psi2,heffd,coef,s,sp,spp,w,daa,da,fmpb,nact
      $     ,ncore,norb,nnew,zro,zgel,tintc,tinta)
-#include <implicit.h>
+#include "implicit.h"
       logical*1 zro,zgel
 c      allocatable rhoir(:,:),vaux(:)
       dimension coef(2*nact**2,2*nact**2),s(nact**2,nnew),
@@ -2563,7 +2549,7 @@ cro      if(zro)deallocate(rhoir)
 c----------------------------------------------------------------
       subroutine e21pcont(e2,psi2,heffd,coef,s,sp,w,ro3,daa,da,fmpb,nact
      $     ,ncore,norb,nnew,zro,zgel,tint)
-#include <implicit.h>
+#include "implicit.h"
       logical*1 zro,zgel
       dimension coef(nact**3,nact**3),s(nnew,nact**3),
      $     sp(nnew,nact**3),w(*),fmpb(*),ro3(nact,nact,nact,nact,nact
@@ -2669,7 +2655,7 @@ c     if(zro)deallocate(rhoid)
 c------------------------------------------------------------------
       subroutine e2m1pcont(e2,psi2,heffd,coef,s,sp,w,ro3,daa,da,fmpb
      $     ,nact,ncore,norb,nnew,zro,zgel,tint)
-#include <implicit.h>
+#include "implicit.h"
       logical*1 zro,zgel
       dimension coef(nact**3,nact**3),s(nnew,nact**3),
      $     sp(nnew,nact**3),w(*),fmpb(*),ro3(nact,nact,nact,nact,nact
@@ -2780,7 +2766,7 @@ c----------------------------------------------------------------
       subroutine vpupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,
      * ncore,nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
      *               ntotdet,ntotconf,ntotcap,zro
@@ -2804,9 +2790,7 @@ c----------------------------------------------------------------
       ncoat=ncore+nact
       nvirt=norb-ncoat
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 c------ two-electron part with mulliken distr (ia,ii|**)
       KFREE=1
@@ -3015,7 +2999,7 @@ c----------------------------------------------------------------
       subroutine vmupE(ro3,amat,bmat,cmat,dmat,daa,da,heffd,norb,ncore,
      *          nact,in2d,id2n,itsym,its,wrk,lwrk,fmpb,zgel,lupri,nwall)
       IMPLICIT REAL*8 (A-H,O-Y), LOGICAL*1(Z)
-      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(6)
+      dimension in2d(*),id2n(*),itsym(*),its(8,8),needtp(-4:6)
       COMMON /NEVPT/ e(1),e2pc(1),e2sc(1),psisc(1),psipc(1),
      *               e2pcc(8),psipcc(8),e2scc(8),psiscc(8),
      *               ntotdet,ntotconf,ntotcap,zro
@@ -3039,9 +3023,7 @@ c----------------------------------------------------------------
       ncoat=ncore+nact
       nvirt=norb-ncoat
 
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 
 c------ two-electron part with mulliken distr (ir,ia|**)
       KFREE=1
@@ -3282,10 +3264,10 @@ c-------------------------------------------------------------------
 c----------------------------------------------------
       subroutine getorbeps(WRK,LWRK,onel,heffd,fmpb,da,norb,nact,ncore,
      *           id2n,in2d)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       dimension onel(*),fmpb(*),da(nact,*),id2n(*),in2d(*),heffd(*)
-      dimension wrk(lwrk),needtp(6)
+      dimension wrk(lwrk),needtp(-4:6)
       allocatable h2m(:,:)
       allocatable fock(:,:)
       indice(i,j)=max(i,j)*(max(i,j)-1)/2+min(i,j)
@@ -3298,9 +3280,7 @@ C
       allocate (fock(norb,norb))
 Cele-debug
        
-      do i=1,6
-       needtp(i)=0
-      enddo
+      needtp(-4:6)=0
 C
 C     One-electron contributions to heffd
 C

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_RHTR3 
       SUBROUTINE CC_RHTR3(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
@@ -60,25 +60,25 @@ c*DECK CC_RHTR3
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <blocks.h>
-#include <ccsdio.h>
-#include <second.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "blocks.h"
+#include "ccsdio.h"
+#include "second.h"
+#include "r12int.h"
 !
       INTEGER LWORK, LUC, LUD, LUCS, LUP, LUM, IERRC, IERRD, IERRCS
       INTEGER IERRP, IERRM, LUDTIM, LUCSIM, IERRDTIM, LUB3

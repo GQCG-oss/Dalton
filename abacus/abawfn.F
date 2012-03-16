@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 * ==================================================================== *
       SUBROUTINE WFNAO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -37,27 +37,27 @@ C     symmetry adapted AO basis
 C
 * -------------------------------------------------------------------- *
 
-#include <implicit.h>
-#include <molde.h>
+#include "implicit.h"
+#include "molde.h"
 
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <ccom.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <chrsgn.h>
-#include <sphtrm.h>
-#include <frame.h>
+#include "ccom.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "chrsgn.h"
+#include "sphtrm.h"
+#include "frame.h"
 
 
       CHARACTER*10 CHRSEG
@@ -297,15 +297,15 @@ C
 C     basis set information is read from an existing WFN.AO file
 C
 * -------------------------------------------------------------------- *
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <molde.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "molde.h"
+#include "inforb.h"
      
       INTEGER LUWFN
       PARAMETER( LUWFN = 65 )
@@ -450,13 +450,13 @@ C
 C     Purpose: write *.wfn interface file 
 C
 * -------------------------------------------------------------------- *
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "nuclei.h"
+#include "symmet.h"
 
       INTEGER LUWFN
       PARAMETER( LUWFN = 65 )
@@ -467,7 +467,7 @@ C
       DIMENSION POMO(NPRIM,*)
 
       INTEGER IOS, ICENT, MCENT, LCENT, I, N
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 C     ----------------------------------------------------
 C     open wfn file and write header:

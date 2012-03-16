@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 c /* deck ccmcd_setup */
@@ -55,12 +55,12 @@ c /* deck ccmcd_setup */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccmcdinf.h>
-#include <ccroper.h>
-#include <ccexci.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccmcdinf.h"
+#include "ccroper.h"
+#include "ccexci.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(23) MSGDBG

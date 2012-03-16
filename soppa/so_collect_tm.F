@@ -13,16 +13,16 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Collect transition moments in the right arrays.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 CSPAS:15/03-2006: merge with Dalton-2.0  
 C#include <cbilrs.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
 CKeinSPASmehr
-#include <ccorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "ccorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       CHARACTER*8 LABEL
 C

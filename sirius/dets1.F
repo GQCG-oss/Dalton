@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 /* Comdeck last_change */
@@ -35,7 +35,7 @@ C  /* Deck todsc */
       SUBROUTINE TODSC(A,NDIM,NBLOCK,IFIL)
 C TRANSFER ARRAY REAL*8 A(LENGTH NDIM) TO DISCFIL IFIL IN
 C RECORDS WITH LENGTH NBLOCK.
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NDIM)
       INTEGER START,STOP
       IF( NBLOCK .GT.0 ) THEN
@@ -77,8 +77,8 @@ C
 C CALCULATE DIAGONAL OF CIMATRIX IN DETERMINANT BASIS
 C RAS VERSION
 C TURBO VERSION
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION NSSOA(NOCTPA,MAXSYM),NSSOB(NOCTPB,MAXSYM)
       DIMENSION ISSOA(NOCTPA,MAXSYM),ISSOB(NOCTPB,MAXSYM)
@@ -234,8 +234,8 @@ C
 C   IWAY = 1 : FULL TO PACKED
 C   IWAY = 2 : PACKED TO FULL FORM
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AUTPAK(MATDIM,MATDIM),APAK(*)
 C
       IF( IWAY .EQ. 1 ) THEN
@@ -273,7 +273,7 @@ C  /* Deck frmdsc */
 C
 C     TRANSFER ARRAY FROM DISC FILE IFILE
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ARRAY(NDIM)
 C
 C

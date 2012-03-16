@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cclr_dia */
       SUBROUTINE CCLR_DIA(DIAA,ISYMTR,TRIPLET,WORK,LWORK)
@@ -35,15 +35,15 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 
       LOGICAL TRIPLET, LOCDBG
@@ -346,10 +346,10 @@ C     Purpose: Scale diagonal of omega2 with x
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OMEGA2(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -383,11 +383,11 @@ C     Purpose: Add Sum-k-Laikk-bar to rho1(ai)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, ZERO = 0.0D0)
       DIMENSION RHO1(*),FOCKC(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
 C----------------------
 C     Add contribution.
@@ -428,14 +428,14 @@ C     Calculates rho(ai) = Sum(c)C1AM(c,i)*E1(a,c) (If trans then E1(c,a)
 C                        - Sum(k)C1AM(a,k)*E2(k,i) (If trans then E2(i,k)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ONE = 1.0D0, XMONE=-1.0D0,TWO = 2.0D0)
       DIMENSION EMAT1(*), EMAT2(*),C1AM(*)
       DIMENSION WORK(LWORK),RHO1(*)
       CHARACTER*1 TRANS
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
 C----------------------------------------
 C     Calculate 1C1 contribution from E1.
@@ -522,23 +522,23 @@ C     construction with transformation from the right on the CC jacobian.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
 C
       LOGICAL   RSPIM2
       DIMENSION WORK(LWORK)
       CHARACTER*24 CBLOCK
       CHARACTER*(*) APROXR12
 C
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <priunit.h>
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "priunit.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_JAC ')
@@ -684,17 +684,17 @@ C     and nc2vec of the rows of the c2 blocks.
 C     Written by Ove Christiansen 26-5-1994
 C-------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "priunit.h"
 C
       DIMENSION WORK(LWORK)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-08)
@@ -829,10 +829,10 @@ C
 C     Put up the first NC1VEC and NC2VEC unit vectors in the single and double
 C     excitation space respectively.
 C
-#include <implicit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclr.h"
 C
       DIMENSION C1AM(NTAMP,NC1VEC),C2AM(NTAMP,NC2VEC)
       DIMENSION C12AM(NTAMP,*)
@@ -863,10 +863,10 @@ C
 c*DECK CCLR_NORMS
       SUBROUTINE CCLR_NORMS(X11,X21,XR1,X12,X22,XR2,X1R,X2R,XRR,
      &                      XJAC,NTAMP,NC1VEC,NC2VEC)
-#include <implicit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclr.h"
 C
       DIMENSION XJAC(NTAMP,*)
 C
@@ -921,7 +921,7 @@ c*DECK CCLR_DX
 C
 C     Written by Ove Christiansen 26-5-1994
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION VEC(*)
       DO 100 I = 1, N
@@ -942,16 +942,16 @@ C     Written by Ove Christiansen 26-5-1994
 C     Changes for R12 by Christof Haettig 21-5-2003
 C-----------------------------------------------------------------------
       IMPLICIT NONE
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <second.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "second.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "r12int.h"
+#include "ccr12int.h"
  
       INTEGER NC1VEC, NC2VEC, LWORK
    
@@ -1619,19 +1619,19 @@ C     by using a finite difference jacobian read in from disk.
 C
 C-------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdio.h>
-#include <aovec.h>
-#include <leinf.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdio.h"
+#include "aovec.h"
+#include "leinf.h"
+#include "r12int.h"
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )
       CHARACTER*1 TRANS
       DIMENSION CVEC1(*),WORK(LWORK)
@@ -1838,16 +1838,16 @@ C     Reads the I-th row of the jacobian stored in the file
 C     specified by unit number LU.
 C----------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdio.h>
-#include <aovec.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdio.h"
+#include "aovec.h"
 C
       DIMENSION XJACCR(*),WORK(LWORK)
 C
@@ -1892,13 +1892,13 @@ C             debugged 10-2-1995
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE= -1.0D00)
       DIMENSION C1AM(*),XLAMDP(*),XLAMDH(*),XLAMPC(*),XLAMHC(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       IF (IPRINT .GT.25) THEN
          CALL AROUND('IN CCLR_LAMTRA  ')
@@ -1965,11 +1965,11 @@ C     Ove Christiansen 24-1-1994
 C     PRint Total Symmetric Packed Vector (PRTSPV) (T1,T2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
       DIMENSION T1AM(NT1AMX),T2AM(NT2AMX)
 C
 C------------------------------------
@@ -2007,11 +2007,11 @@ C     Ove Christiansen 24-1-1994
 C     PRint Packed Vector - PRP (in general non. tot. sym.) (t1,t2).
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       DIMENSION T1AM(*),T2AM(*)
 C
@@ -2092,11 +2092,11 @@ C     Ove Christiansen 24-1-1994
 C     PRint Packed Vector - PRP (in general non. tot. sym.) (t1,t2).
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       DIMENSION T1AO(*),T2AO(*)
 C
@@ -2177,11 +2177,11 @@ C     Ove Christiansen 24-1-1994
 C     PRint SQuared vector. general non. tot. sym. (t1,t2).
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       DIMENSION T1AM(*),T2AM(*)
 
@@ -2258,24 +2258,24 @@ C     Written by Ove Christiansen November 1994
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <codata.h>
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "codata.h"
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
 c
-#include <r12int.h>
+#include "r12int.h"
 C
       LOGICAL OPNSTA, LOCDBG
       DIMENSION WORK(LWORK)
       PARAMETER (THRZER = 1.0D-99)
 C
-#include <leinf.h>
+#include "leinf.h"
 C
 C---------------------------------------------
 C     Header of Excitation Energy calculation.
@@ -2559,17 +2559,17 @@ C     Reads the jacobian from disk and put it into JAC.
 C
 C-------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdio.h>
-#include <aovec.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdio.h"
+#include "aovec.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
       DIMENSION FDJACO(MAXRED,MAXRED)
       DIMENSION SMATRIX(MAXRED,MAXRED)
@@ -2644,10 +2644,10 @@ C              CC vector.
 C              ISYMTR is symmetry of vector.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       PARAMETER ( ZERO= 0.0D0)
 C
@@ -2805,17 +2805,17 @@ C     Purpose: Writes out vector:
 C              %T1 and %T2 and ||T1||/||T2||
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (TWO = 2.0D0, THPRT = 1.0D-9, HUNDRED = 100.0D0)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 C
       LOGICAL CCSEFF
 Cholesky
@@ -3060,12 +3060,12 @@ C
 C  /* Deck cc_prtm */
       SUBROUTINE CC_PRTM(TM,ISYMD,ISYMTR)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       DIMENSION TM(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       DO 100 ISYMJ = 1,NSYM
 C
@@ -3104,11 +3104,11 @@ C             for c1 transformed ISYML = ISYMTR
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDH(*),XLAMDP(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       WRITE(LUPRI,*)
       WRITE(LUPRI,*) 'In cc_prlam, symmetry of lambda matrices is :'
@@ -3186,13 +3186,13 @@ C     Written by Ove Christiansen 24-7-1995
 C
 C     Purpose: Write out integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION XINT(*),DSRHF(*)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       KOFF1 = 1
       KOFF2 = 1
@@ -3224,12 +3224,12 @@ C
 C  /* Deck cc_prei */
       SUBROUTINE CC_PREI(EI1,EI2,ISYMEI,LEI1MO)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       DIMENSION EI1(*),EI2(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       CALL AROUND( 'EI1 -intermediate ')
 C
@@ -3283,11 +3283,11 @@ C              and from C1 transformed lambda hole matrix.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DENS(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 C
       CALL AROUND('Lamda density matrix')
       KOFF1 = 1
@@ -3310,12 +3310,12 @@ C     Ove Christiansen 14-7-1994
 C
 C     Purpose: Print AO Fock matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       CALL AROUND('The AO Fock matrix')
       KOFF1 = 1
@@ -3336,12 +3336,12 @@ C     Ove Christiansen 14-7-1994
 C
 C     Purpose: Print MO Fock matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       CALL AROUND('The MO Fock matrix ')
 C
@@ -3399,11 +3399,11 @@ C
 C     tbp: Use fortran I/O for Cholesky....
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
 Cholesky
       DIMENSION VEC(*)
       CHARACTER FIL*(*)
@@ -3449,11 +3449,11 @@ C             The position is calculated relative to
 C             LLEN which is the length of the vectors according to
 C             which the vectors was put there in the first place.
 C
-#include <implicit.h>
+#include "implicit.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
 Cholesky
       DIMENSION VEC(*)
       CHARACTER FIL*(*)
@@ -3505,18 +3505,18 @@ C       completly dummy and removed...
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
+#include "priunit.h"
 C
       DIMENSION WORK(LWORK)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-08)
@@ -3584,12 +3584,12 @@ C  /* Deck cc_pronelao */
 C
 C     Purpose: Print AO one-electron matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       KOFF1 = 1
       DO ISYMB = 1,NSYM
@@ -3611,11 +3611,11 @@ C     Christian Neiss, Feb. 2005
 C     PRint Packed R12-vector - PRPR12 (in general non. tot. sym.)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       LOGICAL   LHEAD
       DIMENSION TR12AM(*)
@@ -3677,11 +3677,11 @@ C     Christian Neiss  Feb. 2005
 C     PRint SQuared R12 vector. general non. tot. sym.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 C
       LOGICAL     LHEAD
       CHARACTER*1 TRANS
@@ -3746,7 +3746,7 @@ C     Transpose a square matrix 'in place'
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       implicit none
-#include <priunit.h>
+#include "priunit.h"
 C
       INTEGER IDXIJ,IDXJI,NROWS,I,J
 #if defined (SYS_CRAY)
@@ -3779,9 +3779,9 @@ C     X(kl,ij) --> X(ij,kl)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       implicit none
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER IDXKLIJ,IDXIJKL,IDXKL,IDXIJ,ISYM,ISYMKL,ISYMIJ
 #if defined (SYS_CRAY)

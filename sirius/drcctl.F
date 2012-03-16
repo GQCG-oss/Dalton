@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C FILE: sirius/drcctl.F
 C
@@ -55,13 +55,13 @@ C If (LVLDRC .eq. 0)      then C,D both active
 C else if (LVLDRC .eq. 1) then C,D both occupied
 C else                    C,D general
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION CMO(*), WRK(LWRK)
       LOGICAL FNDLAB, DRCOLD
 C
-#include <iratdef.h>
+#include "iratdef.h"
 #include "lbmxsq.h"
 C
 C Used from common blocks:
@@ -69,10 +69,10 @@ C   INFORB : N2ORBT, N2ORBX, ...
 C   INFTAP : LUINTD, LBINTD
 C   INFTRA : IPRTRA
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
 C
       CALL QENTER('DRCCTL')
 C
@@ -181,7 +181,7 @@ C
 C    MULLIKEN INTEGRALS (CD,AB) = (XP,YQ)
 C    TO DIRAC INTEGRALS <CA,DB> = <XY,PQ>
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACD(NORBT,NORBT,*),H2(NORBT,NORBT),WRK(LWRK)
 C
 C Used from common blocks:
@@ -189,27 +189,25 @@ C   INFORB : NSYM,NORB(*),IORB(*),?
 C   INFIND : ISMO(*),?
 C   INFTRA : IPRTRA, THRP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftra.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftra.h"
 C
-      DIMENSION NEEDMU(6)
-#include <ibtdef.h>
+      DIMENSION NEEDMU(-4:6)
+#include "ibtdef.h"
 C
       CALL QENTER('DRCACD')
       IF ( IPRTRA.GT.20 ) THEN
          WRITE(LUPRI,'(/4(A,I7))')'  ICLOW :',ICLOW, '  ICHGH :',ICHGH,
      *                            '  ILOWDI:',ILOWDI,'  IHGHDI:',IHGHDI
       ENDIF
-      NEEDMU(1) = 0
+      NEEDMU(-4:6) = 0
       NEEDMU(2) = 1
       NEEDMU(3) = 1
-      NEEDMU(4) = 0
       NEEDMU(5) = 1
-      NEEDMU(6) = 0
       IF (LVLDRC .GE. 1) THEN
          NEEDMU(1) = 1
          NEEDMU(4) = 1
@@ -355,26 +353,26 @@ C
 C
 C NOTE: EQUIVALENCE (OUTB,IOUTB) in call of DRCWRT
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*),CMO(NCMOT)
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER ( D0 = 0.0D0 )
 C
 C Used from common blocks:
 C   INFTRA : IPRTRA,THRP
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <inftra.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "inftra.h"
 C
       CHARACTER*8 LAB123(3), LABELD(2)
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       DATA LAB123/'********','********','********'/
       DATA LABELD/'DRCINFO ','DRCTWOEL'/
@@ -503,20 +501,20 @@ C  /* Deck drcctl */
       FUNCTION DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION CMO(*), WRK(LWRK)
       LOGICAL FNDLAB
 C
-#include <iratdef.h>
+#include "iratdef.h"
 #include "lbmxsq.h"
-#include <thrzer.h>
+#include "thrzer.h"
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
 C
       LOGICAL DRCOLD
 C
@@ -532,8 +530,8 @@ C        and subtract from input CMO matrix
          DRCOLD = ABS(WRK(I)) .LE. THRZER
       END IF
       IF (DRCOLD .AND. IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-     *' DRCCTL abandoned: the required MO integrals in Dirac format',
-     *' are already available on the MODRCINT file.'
+     &' DRCCTL abandoned: the required MO integrals in Dirac format',
+     &' are already available on the MODRCINT file.'
       RETURN
       END
 C --- end of drcctl.F ---

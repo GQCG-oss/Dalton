@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck rp_rsplex */
       SUBROUTINE RP_RSPLEX(ISYMTR,NEXCI,EXVAL,LEXVAL,FOCKD,LFOCKD,
@@ -12,8 +12,8 @@ C
 C     PURPOSE: Drive the calculation and analysis of RPA excitation 
 C              energies and vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION FOCKD(LFOCKD)
@@ -21,16 +21,16 @@ C
 C
       PARAMETER ( D100 = 100.0D0 )
 C
-#include <codata.h>
-#include <wrkrsp.h>
+#include "codata.h"
+#include "wrkrsp.h"
 CSPAS:15/03-2006: merge with Dalton-2.0      
 C#include <infpp.h>
 CKeinSPASmehr
-#include <inforb.h>
-#include <infpri.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
-#include <cbiexc.h>
+#include "inforb.h"
+#include "infpri.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
+#include "cbiexc.h"
 C
 C------------------
 C     Add to trace.

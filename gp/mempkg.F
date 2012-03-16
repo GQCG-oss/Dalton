@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 !===========================================================================
@@ -39,17 +39,18 @@ C
 C     Define output units for memory allocation routines
 C     Initialize mempkg warning count NWNMEM to zero
 C
-#include <implicit.h>
+#include "implicit.h"
 #include "memcb1.h"
 C
       LUWMEM = LUWME1
       LUEMEM = LUEME1
+      NWNMEM = 0
       IDENT8 = '** KFREE'
       READ (IDENT8,'(A8)') WIDENT_KFREE
       RETURN
       END
 C  /* Deck memget */
-      SUBROUTINE MEMGET(TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
+      SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
 C
 C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
@@ -60,14 +61,14 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
-#include <implicit.h>
-      CHARACTER*(*) TYPE
+#include "implicit.h"
+      CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
-      CALL MEMGET2(TYPE,'-??????-',KBASE,LENGTH,WORK,KFREE,LFREE)
+      CALL MEMGET2(DATA_TYPE,'-MEMGET-',KBASE,LENGTH,WORK,KFREE,LFREE)
       RETURN
       END
 C  /* Deck memget */
-      SUBROUTINE MEMGET2(TYPE,IDENT,KBASE,LENGTH,WORK,KFREE,LFREE)
+      SUBROUTINE MEMGET2(DATA_TYPE,IDENT,KBASE,LENGTH,WORK,KFREE,LFREE)
 C
 C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
@@ -78,43 +79,44 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
-#include <implicit.h>
-      CHARACTER*(*) TYPE, IDENT
+#include "implicit.h"
+      CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 #include "memcb1.h"
 C
 Chj1  CALL QENTER('MEMGET2 ')
-      IF (TYPE(1:4) .EQ. 'REAL' .OR. TYPE(1:4) .EQ. 'INT8') THEN
+      IF (DATA_TYPE(1:4) .EQ. 'REAL' .OR.
+     &    DATA_TYPE(1:4) .EQ. 'INT8') THEN
          LREAL = LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'COMP') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'COMP') THEN
          LREAL = 2*LENGTH
-      ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT4') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT4') THEN
          LREAL = (LENGTH-1)/2 + 1
-      ELSE IF (TYPE(1:4) .EQ. 'INT2') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'INT2') THEN
          LREAL = (LENGTH-1)/4 + 1
-      ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'LOGI') THEN
          LREAL = (LENGTH-1)/LRAT + 1
-      ELSE IF (TYPE(1:4) .EQ. 'WORK') THEN
+      ELSE IF (DATA_TYPE(1:4) .EQ. 'WORK') THEN
          LENGTH = LFREE - 2*LENID
 C                         ^- make sure OK for KFREE .eq. 1
          LREAL  = LENGTH
       ELSE
          CALL QENTER('MEMGET2 ')
          WRITE (LUWMEM,'(/2A/2A)')
-     *      ' MEMGET2 ERROR, illegal type : ',TYPE,
-     *      ' MEMGET2 ERROR, for ident    : ',IDENT
+     *      ' MEMGET2 ERROR, illegal data type : ',DATA_TYPE,
+     *      ' MEMGET2 ERROR, for ident         : ',IDENT
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,'(/2A/2A)')
-     *      ' MEMGET2 ERROR, illegal type : ',TYPE,
-     *      ' MEMGET2 ERROR, for ident    : ',IDENT
+     *      ' MEMGET2 ERROR, illegal data type : ',DATA_TYPE,
+     *      ' MEMGET2 ERROR, for ident         : ',IDENT
             CALL QTRACE(LUEMEM)
          END IF
-         CALL QUIT('MEMGET2: programming ERROR, illegal type')
+         CALL QUIT('MEMGET2: programming ERROR, illegal data type')
       END IF
 C
       IDENT8 = IDENT
@@ -137,7 +139,7 @@ C        ... comparing integers, to be sure no renormalization of float
 C        Warning check, is length of WORK(KFREE) .ne. 0 ? :
 
          WMEMCK = WORK(KFREE-LENID+1)
-         IF (MEMCK .NE. 0) GO TO 8003
+         IF (MEMCK .NE. LZERO) GO TO 8003
 C        ... go issue warning and continue at 7003
       ELSE
 C        KFREE = 1 case, initialize memory vector info:
@@ -166,7 +168,7 @@ C     save ident and length for new allocation
       WORK(KFREE-LENID+1) = WLZERO
 #ifdef DBG_LENID
       do i = 2,lenid-1
-         2ORK(KFREE-LENID+i) = WMEMID
+         WORK(KFREE-LENID+i) = WMEMID
       end do
 #else
       WORK(KFREE-1) = WMEMID
@@ -201,12 +203,12 @@ C        error branch for invalid MEMID for WORK(KFREE)
 C
  8002    CALL QENTER('MEMGET2 ')
          WRITE (LUWMEM,'(/A/A,I12,2(/A,I25))')
-     &      ' MEMGET2 ERROR, not a valid memget id in work(kfree)',
+     &      ' MEMGET2 ERROR',
      &      ' KFREE =',KFREE,
      &      ' found memory checks:',MEMCK,
      &      ' expected           :',MEMID
          WRITE (LUWMEM,'(/2A/2A/A,I10)')
-     &      ' MEMGET2 INFO, type  : ',TYPE,
+     &      ' MEMGET2 INFO, type  : ',DATA_TYPE,
      &      ' MEMGET2 INFO, ident : ',IDENT,
      &      ' MEMGET2 INFO, length: ',LENGTH
          CALL MEMCHK('MEMGET2 call of MEMCHK:',WORK,1)
@@ -243,7 +245,7 @@ C
 C Check memory allocation from WORK(KFIRST)
 C then free memory from WORK(KREL)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
 C
@@ -301,7 +303,7 @@ C
 C
 C     error branch IF (MEMCK .NE. MEMID) THEN
 C
- 8002    WRITE (LUWMEM,'(/A/2A/A,2I10,2(/A,2I25))')
+ 8002    WRITE (LUWMEM,'(/A/2A/A,2I10,2(/A,I25))')
      *      ' MEMREL ERROR, not a valid memget id in work(krel)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KREL =',KFIRST,KREL,
@@ -327,7 +329,7 @@ C
 C Check if memory allocation from WORK(KFIRST) is intact
 C (check if anything has been out of bounds).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
 C
@@ -351,11 +353,11 @@ C
          IF (MEMCK .NE. MEMID) GO TO 8001
 #endif
          WLREAL = WORK(KALLOC-LENID+1)
-         IF (LREAL .LT. 0) GO TO 8002
-         IF (LREAL .GT. 0) THEN
+         IF (LREAL .GE. 0) THEN
             KALLOC = KALLOC + LENID + LREAL
             GO TO 100
          END IF
+         IF (LREAL .NE. LZERO) GO TO 8002
 C
 Chj1  CALL QEXIT('MEMCHK  ')
       RETURN
@@ -381,9 +383,9 @@ C
          END DO
 #ifdef DBG_LENID
          do i = 2,lenid-1
-            WMEMCK(1) = WORK(KALLOC-LENID+i)
-            if (memck(1) .ne. memid(1)) write (luwmem,*)
-     &         'memchk error in debug element: ',i+1,memck(1)
+            WMEMCK = WORK(KALLOC-LENID+i)
+            if (memck .ne. memid) write (luwmem,*)
+     &         'memchk error in debug element: ',i+1,memck
          end do
 #endif
          CALL QENTER('MEMCHK  ')
@@ -417,3 +419,4 @@ C
 C     end of MEMCHK
 C
       END
+C --- end of mempgk.F ---

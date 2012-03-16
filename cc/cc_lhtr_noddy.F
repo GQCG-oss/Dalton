@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 C  /* Deck cc_lhtr_noddy */
@@ -47,23 +47,23 @@ C     IOPT = 1 Store T3 and L3 in 'T3AMPL' and 'L3AMPL'
 C
 C
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <inforb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccfield.h>
-#include <ccnoddy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "inforb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "inftap.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccfield.h"
+#include "ccnoddy.h"
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG = .FALSE.)
@@ -232,11 +232,11 @@ C
 C
 C
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION OMEGA1(NT1AMX), YIAJB(NT1AMX,NT1AMX)
       DIMENSION XIAJB(NT1AMX,NT1AMX)
       DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
@@ -285,11 +285,11 @@ C
 C
 C
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION OMEGA1(NT1AMX), YIAJB(NT1AMX,NT1AMX)
       DIMENSION XIAJB(NT1AMX,NT1AMX)
       DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
@@ -339,11 +339,11 @@ C     Note : XIAJB is L and not g.
 C
 C
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION OMEGA1(NT1AMX), XIAJB(NT1AMX,NT1AMX)
       DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
@@ -389,12 +389,12 @@ C  /* Deck ccsdt_l03am */
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <maxorb.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "maxorb.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL XINT1T(*), XINT2T(*), XIAJB(*), FOCK(*)
@@ -429,12 +429,12 @@ C  /* Deck ccsdt_l3am_r */
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
 C
 #if defined (SYS_CRAY) 
       REAL XINT1(NT1AMX,NVIRT,NVIRT)
@@ -583,12 +583,12 @@ C  /* Deck cc_lhpart_noddy */
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <dummy.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <maxorb.h>
-#include <ccorb.h>
+#include "dummy.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "maxorb.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL OMEGA1(*), OMEGA2(*), L3AM(*), FREQ, FOCKD(*)
@@ -696,11 +696,11 @@ C     Kasper Hald, Spring 2002.
 C
 C     Calculate the doubles of the L3 part of CC3 left hand side doubles
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       INTEGER INDEX, NAI, NBJ, NBK, NAK, NCK, NCJ, NCI, NDJ, NDK, NDI
       INTEGER NBL, NCL, NAL, NAJ, NBI, AI
@@ -802,11 +802,11 @@ C     Kasper Hald, Spring 2002.
 C
 C     Calculate the doubles of the L3 part of CC3 left hand side singles
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -976,11 +976,11 @@ C  /* Deck ccfop_tran1 */
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NRHFT,NVIRT,NVIRT,NRHFT)
       DIMENSION XINT2(NRHFT,NRHFT,NVIRT,NVIRT)
       DIMENSION XINT3(NRHFT,NRHFT,NRHFT,NRHFT)
@@ -1092,13 +1092,13 @@ C     IOPT = 0 No storage of T3, L3
 C     IOPT = 1 Store T3 and L3 in 'T3AMPL' and 'L3AMPL'
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION INDEXA(MXCORB)
@@ -1108,20 +1108,20 @@ C
       DIMENSION XLAMDP(*),XLAMDH(*), FOCK(*), WORK(LWORK)
       LOGICAL   L2INCL
 C
-#include <ccfield.h>
-#include <inforb.h>
+#include "ccfield.h"
+#include "inforb.h"
 CCN #include <infind.h> not compatible with R12!
-#include <ccisao.h>
-#include <r12int.h>
-#include <blocks.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
+#include "ccisao.h"
+#include "r12int.h"
+#include "blocks.h"
+#include "inftap.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
 COMMENT COMMENT
 COMMENT COMMENT
-#include <mxcent.h>
-#include <eribuf.h>
+#include "mxcent.h"
+#include "eribuf.h"
 COMMENT COMMENT
 COMMENT COMMENT
 C

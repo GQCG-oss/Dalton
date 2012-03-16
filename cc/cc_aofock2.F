@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_aofock2 */
       SUBROUTINE CC_AOFOCK2(XINT,DENSIT,DENSPK,FOCK,WORK,LWORK,IDEL,
@@ -48,15 +48,15 @@ C
 C     Obs: It can be done as F(g>=d) = G(a>=b) I(a>=b,g,d) where
 C          G(a>=b) = D(a,b) + D(b,a), the diagonal properly scaled
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
       DIMENSION XINT(*),DENSIT(*), DENSPK(*)
       DIMENSION FOCK(*),WORK(LWORK)
       LOGICAL SQRINT
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       ISYHOP = MULD2H(ISYMD,ISYDIS)
 C
@@ -155,11 +155,11 @@ C          a full square density matrix
 C
 C written by Christof Haettig, July 1998
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       DIMENSION DENSQ(*), DENSPK(*)
 C

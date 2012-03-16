@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C===========================================================================
 C
@@ -76,7 +76,7 @@ fall 1986 Minneapolis: original code
 900723: timing of SOLGRD (the following is removed from SIROPT)
       PARAMETER (IDTGRD = 1)
 C     ... note : IDTGRD = IDTIM in GRAD
-#include <inftim.h>
+#include "inftim.h"
 ...
          CALL GETTIM(T1,W1)
          ... call solgrd ...
@@ -123,21 +123,21 @@ C
 C Output:
 C   DIAG: diagonal part of Te(LM) Hessian matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RLM(*),RLMAC(*), DV(*), DIAG(*), WRK(*)
       DIMENSION INDXCI(*)
 C
       PARAMETER (D2=2.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFORB : NASHT
 C   INFLIN : LSYMST,NCONST,NWOPPT
 C   INFPRI : IPRSOL
 C
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       CALL QENTER('SOLDIA')
 C
@@ -170,7 +170,7 @@ C
 C   Copyright 30-Nov-1986 Hans Jorgen Aa. Jensen
 C   l.r. 6-May-1990 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLMAC(*), RLM(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -178,10 +178,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = D2*DDOT(NNASHX,DV,1,RLMAC,1)
@@ -211,7 +211,7 @@ C   Purpose: Calculate FLVEC, the f(l) factors in the solvent
 C            energy expression for a surrounding medium,
 C            cavity radius = Rsol and dielectric constant = EPSLON
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FLVEC(*),RSOL(3)
 C
 C     Parameters: FLFAC = - 1 / (8 pi epsilon_null)   (S.I.)
@@ -251,8 +251,8 @@ C Input : FLVEC with optical f(l) values
 C Output: FLINR with inertial f(l) values
 C         TLMSI with initial state T(lm) values for inertial contr.
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       PARAMETER (DM1 = -1.0D0)
 C
@@ -261,12 +261,12 @@ C   INFINP: NLMSOL, LSOLMX, EPSTAT, RSOL(3)
 C   INFORB: NSYM, NBAS(8)
 C   INFTAP: LUSIFC, FNSIFC
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       DIMENSION MBAS(8)
       LOGICAL FIRST
@@ -371,7 +371,7 @@ C
 C Scratch:
 C  WRK(LWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
 C
       PARAMETER ( D2 = 2.0D0 )
@@ -380,10 +380,10 @@ C Used from common blocks:
 C   INFORB : N2ASHX
 C   INFVAR : NCONF
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infinp.h"
 C
       CALL QENTER('SOLGC ')
       KURAC = 1
@@ -415,7 +415,7 @@ C
 C  Purpose: Add Te(l,m) orbital gradient contribution
 C           to GOLM.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLM(*), GOLM(*)
 C
 C  Used from common blocks:
@@ -423,11 +423,11 @@ C    INFORB: NISHT,NASHT
 C    INFVAR: NWOPH,JWOP(2,*)
 C    INFIND: IROW(*),IOBTYP(*),ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infind.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -510,13 +510,13 @@ C    ESOLT      total solvation energy
 C    ERLM(lm,1) contains Esol(l,m) contribution to ESOLT
 C    ERLM(lm,2) contains Tsol(l,m)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CREF(*), CMO(*), INDXCI(*)
       DIMENSION DV(*),   G(*),   ERLM(NLMSOL,2),  WRK(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0, DCVAL = D2 )
-#include <thrzer.h>
-#include <iratdef.h>
+#include "thrzer.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP: NLMSOL, LSOLMX, EPSOL, RSOL(3)
@@ -526,15 +526,15 @@ C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL     FIRST, FNDLAB
       PARAMETER  (MXLMAX = 50)
@@ -927,26 +927,26 @@ C
 C   Output:
 C    FSOL     MCSCF gradient with solvation contribution added
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FSOL(*),CMO(*),TLM(NLMSOL,2),DCAO(*),DVAO(*),WRK(LFREE)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0)
-#include <thrzer.h>
-#include <iratdef.h>
+#include "thrzer.h"
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP: NLMSOL, LSOLMX, EPSOL, RSOL(3)
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFTAP: LUSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <scbrhf.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "scbrhf.h"
 C
       LOGICAL     FIRST, MOBAS
       PARAMETER  (MXLMAX = 50)
@@ -1204,7 +1204,7 @@ C
 C Copyright 25-Apr-1990 Hans Joergen Aa. Jensen
 C Common driver for SOLLNC and SOLLNO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       LOGICAL   ORBLIN
@@ -1213,9 +1213,9 @@ C Used from common blocks:
 C   INFINP : LSOLMX,NLMSOL, EPSOL, INERSF, RSOL
 C   INFLIN : NWOPPT,NVARPT
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inflin.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inflin.h"
 C
       CALL QENTER('SOLLIN')
       KFRSAV = 1
@@ -1277,16 +1277,16 @@ C  Purpose:  Calculate MCSCF Hessian contribution from a
 C            surrounding medium to a csf trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*),  ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION INDXCI(*), DV(*),   DTV(NNASHX,*)
       DIMENSION SVEC(NVARPT,*),     WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C
 C  Used from common blocks:
@@ -1296,15 +1296,15 @@ C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
 C    INFTAP : LUSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C     Statement functions
 C
@@ -1514,17 +1514,17 @@ C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
 C  NSVEC          may be NVAR or NWOPT, dependent on LINTRN
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(NWOPPT,*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),        DV(*),   ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION SVEC(NSVEC,*),    WRK(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 )
-#include <thrzer.h>
-#include <dummy.h>
+#include "thrzer.h"
+#include "dummy.h"
 C
 C
 C  Used from common blocks:
@@ -1535,15 +1535,15 @@ C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFTAP : LUSOL
 C    INFPRI : IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FULHES
 C
@@ -1876,7 +1876,7 @@ C  Output:  New CI-part of sigma vector (SVECS)
 C
 C Scratch:  WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(NCONST,*),  SVECS(NVARPT,*)
       DIMENSION CREF(*),  RXAC(NNASHX,*),RYAC(NNASHX)
       DIMENSION TRXAC(*), XNDXCI(*), WRK(LWRK)
@@ -1889,12 +1889,12 @@ C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFLIN : LSYMRF,LSYMST,LSYMPT,NCONRF,NCONST
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
-#include <infinp.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
+#include "infinp.h"
 C
       CALL QENTER('SOLSC ')
 C

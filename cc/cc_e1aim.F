@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_E1AIM(E1AMAT,RAIM,RBIM,FOCK,
@@ -50,15 +50,15 @@ C
 *     Sonia Coriani 06/09-1999
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION E1AMAT(*),FOCK(*)
       DIMENSION RAIM(*),RBIM(*)
       DIMENSION XLAMDHA(*),XLAMDHB(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

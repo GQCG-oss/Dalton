@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_JMATRIX(IJTRAN, NJTRAN, LISTL, IOPTRES,
@@ -42,7 +42,7 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "maxorb.h"
 #include "ccsdio.h"
 

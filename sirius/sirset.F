@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C File: sirius/sirset.F
 C ===========================================================================
@@ -34,10 +34,10 @@ C  input/output unit numbers and buffer sizes
 C  .. unit numbers are now defined with GPOPEN
 C  initialize IROW
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
-#include <litinfo.h>
+#include "litinfo.h"
 C ... for calculating LBINFO
 C
 C Used from common blocks:
@@ -45,11 +45,11 @@ C   INFIND : IROW(*)
 C   INFDIM : LBUFMA
 C   INFTAP : LB*
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <inftap.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "inftap.h"
 C#include <infpri.h>
 C
       CALL QENTER('SIRINI')
@@ -126,14 +126,14 @@ C                      TRIANGULARIZED OR SQUARED.
 C  SUFFIX  Y           EXAMPLE: NASHY = NASHX*(NASHX + 1)/2
 C  SUFFIX  (K)         SYMMETRY NUMBER
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LFREE)
       LOGICAL   OLDWOP
-#include <iratdef.h>
-#include <litinfo.h>
+#include "iratdef.h"
+#include "litinfo.h"
 C -- local constants
       PARAMETER (D2=2.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : LSYM,ITRLVL,?
@@ -144,18 +144,18 @@ C   INFDIM : NWOPMA,MAXPHP,LPHPMX,...
 C   INFOPT : ?
 C   INFLIN : most of it (defined here)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inflin.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inflin.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FIRST, GETWOP
       CHARACTER*8 OPLBL(8)
@@ -305,19 +305,19 @@ C  Open input/output units required by this Sirius calculation,
 C  as specified in command input.
 C  Mo integral files are opened in SIR_INTOPEN
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*)
 C   INFTAP : LU*
 C   INFPRI : NINFO
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL FEXIST
 C
@@ -356,15 +356,15 @@ C           in common block /INFIND/
 C
 C           and max dimensions in /INFDIM/
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <r12int.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "r12int.h"
 C
 C
 C     (1) common /INFORB/
@@ -613,9 +613,9 @@ C   2-Jan-1989 Hans Joergen Aa. Jensen
 C
 C  Purpose: set orbital rotation index vectors
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       DIMENSION KLWOP(NOCCT,NORBT)
 C
@@ -626,16 +626,16 @@ C   INFORB : NISH(8),...
 C   INFIND : ICH(*),?
 C   INFDIM : NWOPMA,?
 C
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "gnrinf.h"
 C -- local variables
 C
       LOGICAL ACTALL, MAKABS, FIRST
@@ -966,7 +966,7 @@ C
 C     Set up RAS active to active orbital rotations
 C     from symmetry ISYM to JSYM.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER JWOP(2,*)
 C
 C Used from common blocks:
@@ -974,11 +974,11 @@ C  INFINP : MCTYPE,NELMN1,NELMX1,NELMN3,NELMX3,NACTEL
 C  INFORB : IORB(*),NISH(*),NAS1(*),NAS2(*),NAS3(*),NAS1T,NAS2T,NAS3T
 C  INFIND : ISSMO
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
 C
       LOGICAL CAS1, CAS2, CAS3
 C

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_4HYP */
 *=====================================================================*
@@ -41,11 +41,11 @@ c /* deck CC_4HYP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <cc5rinf.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "cc5rinf.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -372,11 +372,11 @@ c /* deck CC5HYPPRT */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cc5rinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cc5rinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*10 BLANKS
@@ -519,12 +519,12 @@ c /* deck CC5R_SETUP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cc5rinf.h>
-#include <cc5perm.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cc5rinf.h"
+#include "cc5perm.h"
+#include "ccroper.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -1220,8 +1220,8 @@ c /* deck CC_SETBA12 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "cclists.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IBATRAN(MXDIM_BATRAN,MXTRAN)
@@ -1322,7 +1322,7 @@ c /* deck CC_SETB11 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IBTRAN(3,MXTRAN)
       INTEGER IBDOTS(MXVEC,MXTRAN)
@@ -1419,7 +1419,7 @@ c /* deck CC_SETD1111 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IDTRAN(5,MXTRAN)
       INTEGER IDDOTS(MXVEC,MXTRAN)
@@ -1539,7 +1539,7 @@ c /* deck CC_SETH2112 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IHTRAN(5,MXTRAN)
       INTEGER IHDOTS(MXVEC,MXTRAN)
@@ -1644,7 +1644,7 @@ c /* deck CC_SETC211 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER ICTRAN(4,MXTRAN)
       INTEGER ICDOTS(MXVEC,MXTRAN)

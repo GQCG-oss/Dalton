@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C    /* Deck cc3_fbmatt3zu */ 
       SUBROUTINE CC3_FBMATT3ZU(IBTRAN,IDOTS,DOTPROD,NBTRAN,MXVEC,
@@ -43,12 +43,12 @@ C
 *
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
 C
       INTEGER NBTRAN, MXVEC, LWORK
       INTEGER IBTRAN(3,NBTRAN), IDOTS(MXVEC,NBTRAN)
@@ -235,7 +235,7 @@ C Deck /* cc3_abmatt3zu */
      *                                ISYRES,WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 C
       CHARACTER*3 LISTX,LISTZU
       INTEGER IDLSTX,IDLSTZU
@@ -274,10 +274,10 @@ C /* Deck cc3_amatt3zu */
      *                                ISYRES,WORK,LWORK)
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 C
       INTEGER LUCKJD, LUDELD, LU3VI, LUTOC,LU3VI2, LUDKBC, LU3FOP
 C
@@ -400,18 +400,18 @@ C
 
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <ccr2rsp.h>
-#include <ccer1rsp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "ccr2rsp.h"
+#include "ccer1rsp.h"
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FNDKBC,FN3VI2,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LUDKBC,LU3VI2,LU3VI
@@ -1827,16 +1827,16 @@ C  /* Deck cc3_amatt3zuocc */
 **************************************************************
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <ccsdinp.h>
-#include <ccr2rsp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "ccsdinp.h"
+#include "ccr2rsp.h"
 C
       CHARACTER*(*) FNCKJD,FNTOC,FNDELD,FN3FOP,FN3VI
       INTEGER LUCKJD,LUTOC,LUDELD,LU3FOP,LU3VI
@@ -2525,16 +2525,16 @@ C    /* Deck cc3_bmatt3zu */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <ccinftap.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccr2rsp.h>
-#include <ccer1rsp.h>
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "ccinftap.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccr2rsp.h"
+#include "ccer1rsp.h"
 C
       CHARACTER*6 FN3VI
       CHARACTER*8 FNTOC,FN3VI2

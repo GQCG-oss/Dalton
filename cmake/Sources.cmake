@@ -709,7 +709,7 @@ soppa/so_write.F
 soppa/so_writeset.F
 soppa/so_wrtve.F
 #csf stuff from jeppe
-lucita/lucia_nortci.F
+#lucita/lucia_nortci.F
     )
 set(FREE_FORTRAN_SOURCES
 gp/binary_info.F90

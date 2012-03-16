@@ -3,15 +3,18 @@
 Installation
 ============
 
+Dalton is configured using CMake, typically via the setup script,
+and subsequently compiled using make or gmake.
+
 
 Dependencies
 ------------
 
 The configuration/compilation step requires:
-CMake  >= 2.6.0
+CMake  >= 2.6.3
 
 The configuration/compilation step using setup script requires:
-CMake  >= 2.6.0
+CMake  >= 2.6.3
 python >= 2.4.0
 
 
@@ -49,9 +52,9 @@ CMake with appropriate environment variables and flags::
   $ cd build
   $ make
 
-Call setup without flags to see all available options::
+To see all available options::
 
-  $ ./setup
+  $ ./setup --help
 
 You can see the CMake command using::
 
@@ -94,15 +97,16 @@ Out of source compilation
 By default CMake builds out of source.  This means that all object files and
 the final binary are generated outside of the source root.  Typically the build
 directory is called "build", but you can modify this default behavior using the
---build flag. This strategy offers several advantages. One obvious advantage is
+--build flag.  The out of source compilation is in contrast to previous Dalton
+releases.  This strategy offers several advantages. One obvious advantage is
 that you can now build several binaries with the same source::
 
   $ cd /sourcepath
-  $ ./setup --fc=gfortran --cc=gcc --build=/gfortran-buildpath
+  $ ./setup --fc=gfortran --cc=gcc /gfortran-buildpath
   $ cd /gfortran-buildpath
   $ make
   $ cd /sourcepath
-  $ ./setup --fc=ifort --cc=icc --build=/ifort-buildpath
+  $ ./setup --fc=ifort --cc=icc /ifort-buildpath
   $ cd /ifort-buildpath
   $ make
 
@@ -133,7 +137,7 @@ Using CMake directly::
 
 Using setup::
 
-  $ ./setup --fc=mpif90 --cc=mpicc (--mpi)
+  $ ./setup --fc=mpif90 --cc=mpicc
   $ cd build
   $ make
 
@@ -183,14 +187,10 @@ Alternatively::
   $ [FC=gfortran CC=gcc] MATH_ROOT='/opt/intel/mkl' cmake ..
   $ make
 
-Exporting MATH_ROOT is equivalent to calling setup with --math-dir::
-
-  $ ./setup --math-dir=/opt/intel/mkl
-
 If automatic detection of math libraries fails for whatever reason, you can
 always call the libraries explicitly like here::
 
-  $ ./setup --math="-L/path -lfoo -lbar"
+  $ ./setup --explicit-libs="-L/path -lfoo -lbar"
 
 
 Running CMake using GUI
@@ -224,7 +224,7 @@ Make install
 Make install is very useful to make Dalton available to other users on the same
 machine::
 
-  $ ./setup [--flags] --install=/path
+  $ ./setup [--flags] --prefix=/path
   $ cd build
   $ make
   $ make install
@@ -235,7 +235,7 @@ Where should $PATH point to? Source directory or build directory?
 
 We recommend to let $PATH point to the install directory::
 
-  $ ./setup [--flags] --install=/install/path
+  $ ./setup [--flags] --prefix=/install/path
   $ cd build
   $ make
   $ make install

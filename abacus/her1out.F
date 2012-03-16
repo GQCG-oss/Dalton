@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -37,14 +37,14 @@ C
 C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <priunit.h>
-#include <drw2el.h>
-#include <codata.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "priunit.h"
+#include "drw2el.h"
+#include "codata.h"
+#include "inftap.h"
 C
-#include <ccom.h>
+#include "ccom.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION BUF(600), IBUF(600), STHMAT(NNBASX,*)
@@ -55,6 +55,7 @@ C
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
       IF (IPRINT .GE. 4) CALL TITLER('Output from WRTUND','*',103)
+      THRS_OUT = MAX(1.0D-15,THRS)
 C
       DO 100 ITYPE = 1, 3
          IF (ITYPE .EQ. 1) THEN
@@ -80,7 +81,7 @@ C
             AINT = STHMAT(IAB,ITYPE)
             IF (ITYPE .EQ. 1 .AND. FINDPT)
      *      AINT = AINT + DPTFAC * DP5 * ALPHAC**2 * STHMAT(IAB,3)
-            IF (ABS(AINT) .GT. THRS) THEN
+            IF (ABS(AINT) .GT. THRS_OUT) THEN
                ICOUNT = ICOUNT + 1
                BUF(ICOUNT) = AINT
                IBUF(ICOUNT) = IAB
@@ -155,27 +156,29 @@ C     The elements read in on LUITMP are not the final SO integrals, but
 C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
       PARAMETER (IBIT10 = 1023, IBUFMX = 600, NBUF = 1202)
       LOGICAL   OLDDX
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600)
 C
-#include <inftap.h>
-#include <symmet.h>
-#include <ccom.h>
-#include <oneadr.h>
+#include "inftap.h"
+#include "symmet.h"
+#include "ccom.h"
+#include "oneadr.h"
       DIMENSION BUFDA(NBUF), IBUFDA(IRAT*NBUF)
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     **************************
 C     ***** INITIALIZATION *****
 C     **************************
+C
+      THRS_OUT = MAX(1.0D-15,THRS)
 C
 C     Determine direct access buffer lengths
 C
@@ -217,7 +220,7 @@ C
          WRITE (LUPRI, '(2X,A,I5)')    'NPASS:      ', NPASS
          WRITE (LUPRI, '(2X,A,2I5)')   'LABUFD/I:   ', LABUFD, LABUFI
          WRITE (LUPRI, '(2X,A,I5)')    'MXABUF:     ', MXABUF
-         WRITE (LUPRI, '(2X,A,D12.4)') 'THRS:       ', THRS
+         WRITE (LUPRI, '(2X,A,D12.4)') 'THRS_OUT:   ', THRS_OUT
          WRITE (LUPRI, '(2X,A,I5)')    'INDMAX:     ', INDMAX
          WRITE (LUPRI, '(2X,A,I5)')    'NMATS:      ', NMATS
       END IF
@@ -308,7 +311,7 @@ C
             LDISK          = 0
             DO 700 I = 1, INDMAX
                DINT = SOINT(IOFF + I)
-               IF (ABS(DINT) .GE. THRS) THEN
+               IF (ABS(DINT) .GE. THRS_OUT) THEN
                   NOFF                  = NOFF + 1
                   BUFDA(NOFF)           = DINT
                   IBUFDA(MXABF2 + NOFF) = I
@@ -374,20 +377,20 @@ C
 C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "nuclei.h"
       PARAMETER (IBIT22 = 4194303, NBUF = 1202)
       CHARACTER ONEMAT*(*)
       DIMENSION BUF(NBUF), IBUF(IRAT*NBUF), WORK(NDIM)
-#include <oneadr.h>
-#include <inftap.h>
+#include "oneadr.h"
+#include "inftap.h"
       LOGICAL DNULL, NOTZER
       EQUIVALENCE (BUF(1),IBUF(1))
-#include <ibtfun.h>
+#include "ibtfun.h"
       IF (NDIM .EQ. 0) THEN
          WRITE(LUPRI,'(//A/)') ' >>>>> Error in GETONE: NDIM = 0 '
          CALL QUIT('NDIM zero in GETONE.')
@@ -433,16 +436,16 @@ C
 C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL HEADER('Output from SHDPRI',-1)
       DO 100 IREPO = 0, MAXREP
          DO 200 ICENT = 1, NUCIND
@@ -509,21 +512,21 @@ C     This subroutine compares reorthonormalization and one-electron
 C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       LOGICAL NODC, NODV, DNULL
-#include <abainf.h>
-#include <energy.h>
-#include <taysol.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <ccom.h>
-#include <rspprp.h>
-#include <esg.h>
+#include "abainf.h"
+#include "energy.h"
+#include "taysol.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "ccom.h"
+#include "rspprp.h"
+#include "esg.h"
       PARAMETER (D0 = 0.0D0, D1000 = 1000.0D0)
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)
@@ -544,7 +547,7 @@ C
 C
 C     (2) Loop over totally symmetric perturbations
 C
-      THRS10 = D1000*THRS
+      THRS10 = D1000*MAX(1.0D-15,THRS)
       DFMAX1 = D0
       DFMAX2 = D0
       DO 100 ICOOR = 1, 3*NUCDEP

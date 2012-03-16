@@ -46,7 +46,7 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -181,7 +181,7 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C
-#include <priunit.h>      
+#include "priunit.h"      
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -320,7 +320,7 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -472,7 +472,7 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       REAL*8    R8WORD, R8COPY
       INTEGER*8 K, J, I8COPY
@@ -506,7 +506,7 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C
-#include <priunit.h>      
+#include "priunit.h"      
 C
       INTEGER*4 I4WORD, I4COPY
       INTEGER J

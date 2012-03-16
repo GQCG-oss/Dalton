@@ -8,13 +8,13 @@ C              store them on disk.
 C
 C     IF (DELY): the Y intermediate files are deleted after use.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), T1AM(*), WORK(LWORK)
       LOGICAL DELY
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -129,16 +129,16 @@ C              is evaluated as a generalized CC Fock matrix.
 C
 C     IF (DELY): the Y intermediate files are deleted after use.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), T1AM(*), XLAMDP(*), XLAMDH(*)
       DIMENSION EIJ(*), EAB(*), WORK(LWORK)
       LOGICAL DELY
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       INTEGER AA
 
@@ -372,13 +372,13 @@ C
 C     Only occupied parts of the Lambda matrices should be transferred to
 C     this routine.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), FOCK(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER IOFF1(8), IOFF2(8)
 
@@ -640,12 +640,12 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Transform WMAT to MO basis, adding into EIJ and EAB.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), EIJ(*), EAB(*), WMAT(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOETRF')
@@ -738,13 +738,13 @@ C        EAB(ab) = EAB(ab) - sum(Jk) Y(ak,J) * L(kb,J)
 C
 C     IF (DELY): the Y intermediate files are deleted after use.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EIJ(*), EAB(*), WORK(LWORK)
       INTEGER NUMCHO(8)
       LOGICAL DELY
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_CHOEY')
@@ -969,11 +969,11 @@ C
 C     ISIDE = -1: Left-hand Jacobian transformations.
 C     ISIDE =  1: Right-hand Jacobian transformations.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), X1AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTG')
@@ -1048,13 +1048,13 @@ C         the arguments "as is" and ITYP=8.
 C       - right-hand Jacobian transformation: call this routine with
 C         XLAMDP and XLAMDH interchanged and ITYP=9.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XLAMD2(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTG1')
@@ -1287,13 +1287,13 @@ C           is written as a "right-hand" type transformation (Lbar), while
 C           cc_chotg1 is written as a "left-hand" type (Ltilde). It should
 C           be easily fixed by interchanging p/h matrices, though.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XLAMD2(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTG2')
@@ -1548,11 +1548,11 @@ C     explicit code for left and right perturbed Lambda matrices
 C     (ISIDE=-1 or +1). Moreover, this routines is slightly more general, as
 C     the unperturbed Lambda matrices need not be tot. sym. (perhaps useless).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*),  X1AM(*), GLAMDA(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_LAMPT')
@@ -1683,12 +1683,12 @@ C     and the orbital denominators [FOCKD] are never used. Otherwise, the
 C     amplitudes are decomposed at this stage, storing the resulting vectors
 C     for later use.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), X1AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "chocc2.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOCIM')
@@ -1754,16 +1754,16 @@ C        - The CIM array must be initialized on input.
 C        - Specifying NUMX <= 0 will produce the amplitude decomposition
 C          only!
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), X1AM(*), CIM(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chocc2.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chocc2.h"
+#include "iratdef.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOCIM1')
@@ -1878,12 +1878,12 @@ C     Formula:
 C
 C        CIM(ai) = sum(bj) [2*t(ai,bj)-t(aj,bi)] * X1AM(bj)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X1AM(*), CIM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOCIM2')
@@ -2105,10 +2105,10 @@ C
 C              for NUMX amplitude arrays of symmetry ISYMX. XLAMD2 is
 C              ordered according to IGLMRH(*,*) and stored consecutively.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDH(*), X1AM(*), XLAMD2(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 
@@ -2154,12 +2154,12 @@ C
 C     The L1 vectors must be available on disk as specified through ITYP1,
 C     and the L2 vectors will are written to disk as specified through ITYP2.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XIJ(*), XAB(*), WORK(LWORK)
       INTEGER NUMCHO(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTRPRP')
@@ -2314,12 +2314,12 @@ C
 C     Purpose: Transform AO one-electron integrals to MO blocks
 C              ij [occupied] and ab [virtual].
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XAO(*), XIJ(*), XAB(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTRFOV')
@@ -2414,12 +2414,12 @@ C
 C     Purpose: Transform AO one-electron integrals to MO blocks
 C              ai [excitation] and ia [de-excitation, stored as ai]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XAO(*), XAI(*), XIA(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTRFED')
@@ -2515,12 +2515,12 @@ C
 C     Purpose: Transform the AO property integrals in XAO to MO
 C              basis.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), XAO(*), XIJ(*), XAI(*), XIA(*)
       DIMENSION XAB(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOTRFMO')
@@ -2636,12 +2636,12 @@ C     Formula:
 C
 C        L2(ai,J) <-- ALPHA*L1(ai,J) + BETA*L2(ai,J)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER NUMCHO(8)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOADD')
@@ -2796,15 +2796,15 @@ C
 C     which is calculated through a backtransformation of the c-index
 C     of X1AM.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), FIA(*), X1AM(*), SIGMA(*)
       DIMENSION EIJ(*), EAB(*), WORK(LWORK)
       LOGICAL DELY, INCLRF, SVYCON
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOEBAR')

@@ -21,15 +21,15 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CRHYP(VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,
      *                 RESVEC,CMO,UDV,PV,FOCK,FC,FV,
      *                 XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C CALCULATION OF SECOND HYPERPOLARIZABILITIES
@@ -49,22 +49,22 @@ C
 C
       PARAMETER ( D0 = 0.0D0 , THRFRQ = 1.0D-14 )
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <rspprp.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <infinp.h>
+#include "rspprp.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "infinp.h"
 C
       CALL QENTER('CRHYP')
       WRITE(LUPRI,'(//A,A)')
@@ -451,8 +451,8 @@ C
 C
 C PURPOSE: Read in response vectors. Called from BCDCHK.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       LOGICAL FOUND, CONV
       CHARACTER*8 ALAB,BLAB,CLAB,DLAB,BLANK
@@ -460,23 +460,23 @@ C
       DIMENSION VECA(*),VECB(*),VECC(*),VECD(*)
       DIMENSION VECBC(*),VECCD(*),VECBD(*)
 C
-#include <infrsp.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <qrinf.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <inflr.h>
-#include <inftmo.h>
+#include "infrsp.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "qrinf.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "inflr.h"
+#include "inftmo.h"
 C
       IF (IPRRSP.GT.100) THEN
          WRITE(LUPRI,'(3(/A),4I3,/A,4A10,/A,4F12.8)')
@@ -685,23 +685,23 @@ C
       END
       SUBROUTINE GAMPRI(GAMMA,FREQB,FREQC,FREQD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <infrsp.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <rspprp.h>
-#include <infhso.h>
-#include <qrinf.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <inftmo.h>
+#include "maxorb.h"
+#include "infrsp.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "rspprp.h"
+#include "infhso.h"
+#include "qrinf.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "inftmo.h"
 C
       PARAMETER( D0=0.0D0 )
       CHARACTER*1 DIPOP

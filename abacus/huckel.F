@@ -21,20 +21,20 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C   /* Deck hucdrv */
       SUBROUTINE HUCDRV(CMO,WORK,LWORK)
 C
 C     K.Ruud, July-96
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
       DIMENSION WORK(LWORK), CMO(NCMOT)
-#include <infdim.h>
-#include <inforb.h>
-#include <huckel.h>
+#include "infdim.h"
+#include "inforb.h"
+#include "huckel.h"
 C
       CALL QENTER('HUCDRV')
       NROW = NBAST + NHUCBA
@@ -80,9 +80,9 @@ C     projecting the eigenvectors onto the complete basis set
 C     
 C     K.Ruud, July-96
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
       LOGICAL ANTSYM, FNDLB2
       CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
@@ -90,13 +90,13 @@ C
      &          EIGVEC(NHUCMX*NHUCMX), CMO(NCMOT),
      &          EIGVAL(NHUCBA), EIGVLS(NHUCBA), OVERLP(NBASMA*NBASMA)
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <huckel.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "huckel.h"
 C
       IF (P6FLAG(6) .OR. IPRI6.GE.0 .OR. IPRRHF.GE.0 .OR. EWMO)
      &   WRITE (LUPRI,'(/A/2(/5X,A,L10)/5X,A,8I5)')
@@ -474,10 +474,10 @@ C
 C     Output:
 C     HUCTER = orbital energy
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <huckel.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "huckel.h"
 C
 C
 C     Ionization energies for shells:
@@ -926,16 +926,16 @@ C     Version written on the basis of the ORTHO and NORM subroutines
 C     of hjj
 C     Revised by hjaaj May 2000 to handle round-off errors
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER (THNORM = 1.0D-6, D1 = 1.0D0, D0 = 0.0D0, THRRND=0.9D0)
       DIMENSION CMO(*), CMO1(*), S(*), WORK(LWORK)
 C
-#include <priunit.h>
-#include <huckel.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "huckel.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       CALL QENTER('HUCORT')
 C

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck oneinp */
       SUBROUTINE ONEINP(WORD)
@@ -132,11 +132,11 @@ C     Initialize /CBIONE/
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include <maxorb.h>
+#include "maxorb.h"
 
 #include "abainf.h"
 #include "cbione.h"
-#include <infinp.h>
+#include "infinp.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -208,8 +208,8 @@ C
       LOGICAL    FINDPT
       PARAMETER (FINDPT = .FALSE.)
 #else
-#include <drw2el.h>
-#include <inforb.h>
+#include "drw2el.h"
+#include "inforb.h"
 #endif
 
 C
@@ -318,18 +318,14 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
-#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "iratdef.h"
-#include <dummy.h>
-#include <drw2el.h>
-#include <codata.h>
+#include "dummy.h"
+#include "drw2el.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00D00)
 C
@@ -353,7 +349,7 @@ C
 #else
 #include "gnrinf.h"
 #include "energy.h"
-#include <inftap.h>
+#include "inftap.h"
 #endif
 #include "onecom.h"
 #include "lmns.h"
@@ -366,11 +362,11 @@ C
 #include "symind.h"
 #include "csym1.h"
 #include "cbisol.h"
-#include <difsec.h>
-#include <dftcom.h>
+#include "difsec.h"
+#include "dftcom.h"
 #include "expopt.h"
-#include <rspprp.h>
-#include <esg.h>
+#include "rspprp.h"
+#include "esg.h"
 C
 #include "ibtfun.h"
 C... added by Bin Gao, Feb. 16, 2011
@@ -382,8 +378,11 @@ C
       TIMINT = D0
       FRSDER = MAXDIF .GE. 1
       SECDER = MAXDIF .EQ. 2
-      IF(THRS.EQ.0D0) THRS = 1.D-15 ! to avoid log(0.0d0) below
-      TOLS   = THRS*THRS
+      IF (THRS.LE.0.0D0) THEN
+         TOLS   = 1.0D-30 ! to avoid log(0.0d0) below
+      ELSE
+         TOLS   = THRS*THRS
+      END IF
       TOLOG  = - LOG(TOLS)
       IF (PROPTY .AND. (SECDER .OR. DIFDIP .OR. DIFQDP)) THEN
          CALL GPOPEN(LUITMP,' ','NEW',' ','UNFORMATTED',IDUMMY,.FALSE.)
@@ -1022,10 +1021,10 @@ C
 C Used from common blocks:
 C  INFRSP : CCPPA
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infrsp.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infrsp.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -1276,13 +1275,13 @@ C
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
       DIMENSION CSTRA(*), SCTRA(*)
-#include <orgcom.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <dipole.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "dipole.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "ibtfun.h"
 C
 C     Dipole moment
 C
@@ -1339,20 +1338,20 @@ C     Calculates nuclear contributions to electric second moment gradient
 C
 C     2003 hs
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       DIMENSION CSTRA(*), SCTRA(*)
-#include <orgcom.h>
-#include <abainf.h>
-#include <nuclei.h>
-#include <difsec.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "abainf.h"
+#include "nuclei.h"
+#include "difsec.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "ibtfun.h"
 C
 C     Second moment gradient
 C
@@ -1559,20 +1558,20 @@ C /* Deck PCMNUC */
 C
 C     Purpose: calculate nuclear contributions to PCM
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
-#include <pi.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <taysol.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "pi.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "taysol.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "ibtfun.h"
 
       FACT = 4.0D0 * PI * EPS/(EPS - D1)
       ISPP = 1
@@ -1619,16 +1618,16 @@ C
 C/*DECK PCMNUC_OVER*/
       SUBROUTINE PCMNUC_OVER(NSJ,IC,SESE,SNSN,SESN)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DO ISYM = 0, MAXREP
          MTS = NTSIRR * ISYM

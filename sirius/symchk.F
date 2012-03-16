@@ -21,20 +21,20 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cichck */
       SUBROUTINE CICHCK (WRK,LFREE,CCHECK)
 C 890302-hjaaj -- interface to ci check routine
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WRK(LFREE)
       INTEGER   CCHECK
 C
 C Used from common blocks:
 C   INFINP: ISTATE,LROOTS,NROOTS
 C
-#include <maxorb.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "infinp.h"
       KTMAT = 1
       KVEC  = KTMAT + LROOTS*LROOTS
       LVEC  = LFREE - KVEC
@@ -71,9 +71,9 @@ C               (operator = CI diagonal)
 C        VEC   : used for CI vectors and CI diagonal from unit LUIT2
 C
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "infvar.h"
       DIMENSION VEC(NCONF,*),TMAT(LROOTS,*)
       INTEGER   CCHECK
 C
@@ -85,11 +85,11 @@ C   INFINP: ISTATE,LROOTS,NROOTS
 C   INFVAR: NCONF
 C   INFTAP: LUIT1, LUTEMP
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL WRTEMP
       CHARACTER*8 TABLE(3),LABIT1(2)

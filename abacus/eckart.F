@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C /* Deck ecktrn */
       SUBROUTINE ECKTRN(GRDCAR,HESCAR,DIP0,SUSTOT,GTRAN,QUADT,TMAT,
@@ -37,12 +37,12 @@ C last change 310398
 C
 C     Modified for use in Dalton by Kenneth Ruud, San Diego April 1999
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>      
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"      
+#include "nuclei.h"
 C
       PARAMETER (NUCMAX = 15,NSTMAX = 10,NTRIAL = 1500,
      &     TOLX = 1.0D-12,TOLF = 1.0D-12)
@@ -60,8 +60,8 @@ C
      &          DIANQC(3,3,MXCENT), SPNTOT(MXCOOR,MXCOOR), 
      &          FRVAL(NFRVAL), WORK(LWORK)
 C
-#include <orgcom.h>
-#include <cbiwlk.h>
+#include "orgcom.h"
+#include "cbiwlk.h"
 C
 C     Define instantaneous geometry
 C     
@@ -445,7 +445,7 @@ C
 C
 C calculates (AX,AY,AZ) x (BX,BY,BZ) = CZ,CY,CZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(3), B(3), C(3)
 C
       C(1) = A(2)*B(3) - A(3)*B(2)
@@ -623,7 +623,7 @@ C
       PARAMETER (TINY=1.0d-20) 
       INTEGER i,imax,j,k
       DOUBLE PRECISION aamax,dum,sum,vv(3)
-#include <priunit.h>
+#include "priunit.h"
       call output(a,1,3,1,3,3,3,1,LUPRI)
       do i=1,3
          aamax=0.0d0

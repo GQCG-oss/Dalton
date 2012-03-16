@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_soldrv */
 C--------------------------------------------------------------------
@@ -68,20 +68,20 @@ C  Sonia Coriani,    Mar 2000, added PL1 to ELn/ERn special batching
 C  Christof Haettig, Apr 2002, small modifications for CC3
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "leinf.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 
 C
@@ -859,14 +859,14 @@ C            FC12AM (LUC12) R12 doubles part
 C
       IMPLICIT NONE
 C#include <implicit.h>
-#include <priunit.h>
+#include "priunit.h"
 C#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 
 #if defined (SYS_CRAY)
@@ -918,14 +918,14 @@ C            R12 doubles file (name: FC12AM, nr: LUC12)
 C
       IMPLICIT NONE
 C#include <implicit.h>
-#include <priunit.h>
+#include "priunit.h"
 C#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 
 #if defined (SYS_CRAY)
@@ -978,13 +978,13 @@ C
       IMPLICIT NONE
 C#include <implicit.h>
 C#include <iratdef.h>
-#include <ccsdinp.h>
+#include "ccsdinp.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
       LOGICAL CCSEFF, OLDDX
       INTEGER MAXT1, ISYM, LRLEN
 C
@@ -1051,10 +1051,10 @@ C
       IMPLICIT NONE
 C#include <implicit.h>
 C#include <iratdef.h>
-#include <ccsdinp.h>
+#include "ccsdinp.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
       LOGICAL CCSEFF
 Cholesky
 C
@@ -1107,10 +1107,10 @@ C
 C     Purpose: Set the number of equations to be solved simultaneously
 C              for Cholesky CC2.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) LIST
-#include <cclrcho.h>
-#include <priunit.h>
+#include "cclrcho.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHONSIM')

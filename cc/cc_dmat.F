@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_DMAT */
@@ -758,7 +758,7 @@ c/* Deck CC_DTST */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "ccorb.h"

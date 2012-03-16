@@ -21,21 +21,21 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck aatinp */
 C***********************************************************************
       SUBROUTINE AATINP(WORD)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 10)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbiaat.h>
+#include "cbiaat.h"
 C
-#include <abainf.h>
+#include "abainf.h"
 C
       SAVE SET
       DATA TABLE /'.SKIP  ','.PRINT ','.STOP  ','.INTPRI',
@@ -144,10 +144,10 @@ C  /* Deck aatini */
 C
 C     Initialize CBIAAT
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbiaat.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbiaat.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -167,14 +167,14 @@ C***********************************************************************
 C
 C     Calculation of Atomic Axial Tensor (AAT) in cartesian coordinates
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
-#include <cbiaat.h>
-#include <abainf.h>
+#include "nuclei.h"
+#include "cbiaat.h"
+#include "abainf.h"
 C
       IF (SKIP .OR. .NOT.VCD) RETURN
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -204,14 +204,14 @@ C***********************************************************************
       SUBROUTINE AATDR1(CSTRA,SCTRA,WORK,LWORK)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION WORK(LWORK), CSTRA(*), SCTRA(*)
-#include <nuclei.h>
-#include <inforb.h>
-#include <aatens.h>
-#include <cbiaat.h>
+#include "nuclei.h"
+#include "inforb.h"
+#include "aatens.h"
+#include "cbiaat.h"
 C
       CALL DZERO(AATNUC,9*NUCDEP)
       CALL DZERO(AATORB,9*NUCDEP)
@@ -242,17 +242,17 @@ C***********************************************************************
       SUBROUTINE NUCAAT(CSTRA,SCTRA,IPRINT)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (DP25 = 0.25D0)
       INTEGER X, Y, Z
       DIMENSION CSTRA(*), SCTRA(*)
-#include <symmet.h>
-#include <nuclei.h>
-#include <aatens.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "aatens.h"
       NEXT(I) = MOD(I,3) + 1
 C
       DO 100 IATOM = 1, NUCIND
@@ -277,10 +277,10 @@ C  /* Deck aatelc */
 C***********************************************************************
       SUBROUTINE AATELC(CSTRA,SCTRA,WORK,LWORK)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CSTRA(*), SCTRA(*), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       KCMO  = 1
       KDTOT = KCMO  + NCMOT
@@ -295,18 +295,18 @@ C***********************************************************************
       SUBROUTINE AATEL1(CMO,DTOT,CSTRA,SCTRA,WORK,LWORK)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       LOGICAL OLDDX, FOUND
       CHARACTER*8 LABINT(3*MXCOOR)
       DIMENSION CMO(*), DTOT(*), CSTRA(*), SCTRA(*), WORK(LWORK)
-#include <nuclei.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <cbiaat.h>
-#include <abainf.h>
+#include "nuclei.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "cbiaat.h"
+#include "abainf.h"
 C
 C     Open direct access file
 C
@@ -353,14 +353,14 @@ C***********************************************************************
       SUBROUTINE DBDR(CMO,WORK,LWORK,LUAAT,LABINT,INTPRI,IPRINT)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       CHARACTER LABINT(*)*8
       DIMENSION CMO(*), WORK(LWORK)
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
 C
       KDBR   = 1
       KINTRP = KDBR + N2ORBX
@@ -380,18 +380,18 @@ C***********************************************************************
      &                 LWORK,INTPRI,IPRINT)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <abainf.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "abainf.h"
 C
       PARAMETER (D05 = 0.5D0)
       INTEGER X
@@ -455,9 +455,9 @@ C  /* Deck mkdens */
 C***********************************************************************
       SUBROUTINE MKDENS(DTOT,WORK,LWORK,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       DIMENSION DTOT(NORBT,NORBT), WORK(LWORK)
 C
       KDV   = 1
@@ -471,15 +471,15 @@ C***********************************************************************
       SUBROUTINE MKDEN1(DTOT,DV,IPRINT)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
-#include <inftap.h>
-#include <inforb.h>
-#include <infind.h>
-#include <iratdef.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "infind.h"
+#include "iratdef.h"
 C
       PARAMETER (D2 = 2.D0)
       INTEGER   U, U1, U2, V, V1, V2, UV
@@ -537,14 +537,14 @@ C***********************************************************************
       SUBROUTINE AATSEC(DTOT,CMO,LABINT,CSTRA,SCTRA,WORK,LWORK,
      &                  INTPRI,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
       CHARACTER*8 LABINT(*)
       DIMENSION DTOT(*), CMO(*), CSTRA(*), SCTRA(*), WORK(LWORK)
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
       KDBR   = 1
       KDS1   = KDBR   + N2ORBX
       KINTRP = KDS1   + 3*N2ORBX
@@ -563,18 +563,18 @@ C***********************************************************************
      &                  SCTRA,WORK,LWORK,INTPRI,IPRINT)
 C***********************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <aatens.h>
-#include <symmet.h>
-#include <abainf.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "aatens.h"
+#include "symmet.h"
+#include "abainf.h"
 C
       INTEGER X, XS
       CHARACTER*8 LABINT(*)
@@ -685,12 +685,12 @@ C***********************************************************************
 C
 C     Based on UPKWOP
 C
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL ANTI
-#include <inforb.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inflin.h>
+#include "inforb.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inflin.h"
       DIMENSION UNPACK(NORBT,NORBT),PACKED(NWOPT)
 C
       CALL DZERO(UNPACK,N2ORBX)
@@ -715,11 +715,11 @@ C  /* Deck addaat */
 C***********************************************************************
       SUBROUTINE ADDAAT(AMAT)
 C***********************************************************************
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(3,MXCOOR)
-#include <nuclei.h>
-#include <aatens.h>
+#include "nuclei.h"
+#include "aatens.h"
       DO 100 I = 1, 3
          DO 200 J = 1, 3*NUCDEP
             AATTOT(I,J) = AATTOT(I,J) + AMAT(I,J)
@@ -732,14 +732,14 @@ C***********************************************************************
       SUBROUTINE AATNOD(DTOT,CMO,LABINT,CSTRA,SCTRA,WORK,LWORK,
      &                  INTPRI,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
 
-#include <inforb.h>
-#include <inflin.h>
-#include <nuclei.h>
+#include "inforb.h"
+#include "inflin.h"
+#include "nuclei.h"
 
       DIMENSION DTOT(NORBT,NORBT),CMO(*),CSTRA(*),SCTRA(*),WORK(LWORK)
       CHARACTER*8 LABINT(*)
@@ -783,17 +783,17 @@ C***********************************************************************
      &                  AATOD,AATS1,AATS2,AATOT,AATALL,CSTRA,SCTRA,
      &                  NCART,INTPRI,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
 
-#include <inftap.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <abainf.h>
-#include <aatens.h>
+#include "inftap.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "abainf.h"
+#include "aatens.h"
 
       PARAMETER (D05 = 0.5D0)
       INTEGER B, R
@@ -950,11 +950,11 @@ C  /* Deck aatnpr */
 C***********************************************************************
       SUBROUTINE AATNPR(AVEC,LABINT,NTYPE,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*8 LABINT(*)
       DIMENSION AVEC(N2ORBX,NTYPE)
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (IPRINT .GT. 10) THEN
          DO 100 I = 1, NTYPE
@@ -969,12 +969,12 @@ C  /* Deck aatopc */
 C***********************************************************************
       SUBROUTINE AATOPC(DTOT,LUAAT,CSTRA,SCTRA,WORK,LWORK,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(LWORK), DTOT(*)
-#include <inforb.h>
-#include <infdim.h>
-#include <inflin.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "inflin.h"
 C
       KDB    = 1
       KDR    = KDB    + N2ORBX
@@ -1002,14 +1002,14 @@ C***********************************************************************
      &                  DTOTDK,XNDXCI,WORK,LWORK,LUAAT,CSTRA,
      &                  SCTRA,IPRINT)
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "dummy.h"
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 = 1.0D0, DP1 = 0.1D0,
      &           DP25 = 0.25D0)
       LOGICAL ANTI, USEPSM, NORHO2, TDM, CSFEXP
@@ -1018,14 +1018,14 @@ C***********************************************************************
       DIMENSION DENB(N2ASHX),DENR(N2ASHX),REFVEC(NCONRF),DK(N2ORBX)
       DIMENSION DTOTDK(N2ORBX),XNDXCI(LCINDX),CSTRA(*),SCTRA(*),
      &          WORK(LWORK)
-#include <nuclei.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <aatens.h>
-#include <infinp.h>
-#include <abainf.h>
+#include "nuclei.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "aatens.h"
+#include "infinp.h"
+#include "abainf.h"
 C
 C     Open response files
 C     ===================
@@ -1294,11 +1294,11 @@ C          DVT   ( ACTIVE PART OF TRANSION DENSITY )
 C
 C OUTPUT : ONEACT ( TRANSITION VALUE )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
 C
       DIMENSION PRPMO(NORBT,2),DVT(NASHDI,2)
 C

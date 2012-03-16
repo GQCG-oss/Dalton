@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_FBTST */
@@ -40,16 +40,16 @@ c/* Deck CC_FBTST */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <ccfro.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "ccfro.h"
 
 * local parameters:
       LOGICAL LOCDBG

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck ccexlr */
 *=====================================================================*
@@ -43,20 +43,20 @@ c /* deck ccexlr */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccexlrinf.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccer1rsp.h>
-#include <ccel1rsp.h>
-#include <ccn2rsp.h>
-#include <cco2rsp.h>
-#include <cclists.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccexlrinf.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccer1rsp.h"
+#include "ccel1rsp.h"
+#include "ccn2rsp.h"
+#include "cco2rsp.h"
+#include "cclists.h"
+#include "second.h"
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -374,12 +374,12 @@ c /* deck ccexlrprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccexlrinf.h>
-#include <ccexci.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccexlrinf.h"
+#include "ccexci.h"
+#include "ccroper.h"
 
 
       CHARACTER*5  BLANKS
@@ -658,12 +658,12 @@ c /* deck ccexlr_setup */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexlrinf.h>
-#include <ccexci.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexlrinf.h"
+#include "ccexci.h"
+#include "ccroper.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(22) MSGDBG

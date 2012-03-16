@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_F1INACT(FOCK1,ISYFCK,IREAL,LABEL,CMO,WORK,LWORK)
@@ -41,10 +41,10 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccexpfck.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccexpfck.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

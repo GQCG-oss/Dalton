@@ -21,25 +21,25 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <infhyp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "inflr.h"
+#include "infhyp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 ! gnrinf.h: QM3, THR_REDFAC
-#include <gnrinf.h>
+#include "gnrinf.h"
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
       PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -571,24 +571,24 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <infsmo.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inflin.h>
-#include <infhso.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "infsmo.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inflin.h"
+#include "infhso.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 ! gnrinf.h: QM3, THR_REDFAC
-#include <gnrinf.h>
+#include "gnrinf.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 27)
@@ -1033,13 +1033,13 @@ C
 C SET UP A LIST WITH THE NUMBER OF EIGENVECTORS THAT HAS
 C TO BE SOLVED
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <indqr.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infsmo.h>
+#include "indqr.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infsmo.h"
 C
       DIMENSION NEVAL(*)
 C
@@ -1078,13 +1078,13 @@ C
 C FIND THE NUMBER THAT HAS BEEN GIVEN TO THE INUM EXCITATION OF
 C SYMMETRY ISYM
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
+#include "indqr.h"
+#include "infpri.h"
 C
       DO 100 I=1,NEXLBL
          IF ( (ISYM .EQ. ISEXQR(I) ) .AND. ( IROOT.EQ.JEXQR(I))) THEN
@@ -1117,14 +1117,14 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infhyp.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DO 300 ICSYM = 1,NSYM
          DO 400 IBSYM = 1,NSYM
@@ -1215,15 +1215,15 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C LINEAR RESPONSE EQUATIONS THAT ARE USED IN A
 C A CALCULATION OF SECOND ORDER TRANSITION MOMENTS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infsmo.h>
-#include <indqr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infsmo.h"
+#include "indqr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
 C If two-photon calculation and .BFREQ is not specified
 C we only compute a restricted number of response vectors
@@ -1306,17 +1306,17 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT LINEAR
 C RESPONSE EQUATIONS THAT ARE USED IN A CALCULATION OF
 C TRANSITION MOMENTS BETWEEN EXCITED STATES
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <infrsp.h>
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <infsmo.h>
-#include <indqr.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <priunit.h>
+#include "infpp.h"
+#include "infsmo.h"
+#include "indqr.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "priunit.h"
 C
 C panor:
 C     DOESA=.TRUE.
@@ -1375,12 +1375,12 @@ C IF SO INDQR GIVES ITS NUMBER IN THE LIST
 C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INDQR GIVES THE ADDED NUMBER
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
+#include "indqr.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLBL
@@ -1417,16 +1417,16 @@ C SORT THE LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
 C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
 C STORED IN NLRQR WITH OFSET IN ILRQR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "indqr.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')
@@ -1494,14 +1494,14 @@ C SORT THE EXCITATION ENERGIES  AFTER SYMMETRY
 C THE NUMBER OF EXCITATION ENERGIES OF A GIVEN SYMMETRY ARE
 C STORED IN NEXQR WITH OFFSET IN IEXQR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
+#include "indqr.h"
+#include "infpri.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')
@@ -1565,13 +1565,13 @@ C HAS OCCURED IF SO INQRTR GIVES ITS NUMBER IN THE
 C LIST IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INQRTR GIVES THE ADDED NUMBER
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
+#include "indqr.h"
+#include "infpri.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLBL
@@ -1608,16 +1608,16 @@ C SORT THE TRIPLET LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
 C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
 C STORED IN NTRQR WITH OFSET IN ITRQR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "indqr.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')

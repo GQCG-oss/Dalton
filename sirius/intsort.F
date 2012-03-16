@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C     FILE : intsort.F
 C
@@ -134,10 +134,10 @@ C                     general version for IBM, Alliant, ...
 C                     Release May 89 -- hjaaj
 C
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <n_sort.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "n_sort.h"
+#include "inftra.h"
 C
       DIMENSION SCR(LSORT)
 C
@@ -156,12 +156,12 @@ C
       EQUIVALENCE (XLABEL, XI4LAB, XI2LAB)
       COMMON /UNITAR/ IUNTAB(1:99)
 C
-#include <cbisor.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <dacodes.h>
+#include "cbisor.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "dacodes.h"
 C
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       WRITE(LUPRI,1000)
  1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01',
@@ -696,9 +696,9 @@ C              SYMMETRY PAIRS INDEPENDENTLY.
 C
 C     IBM-3090 RELEASE 86 11 28
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(LWORK)
-#include <n_sort.h>
+#include "n_sort.h"
       PARAMETER (LBUFM=LRECAO, D0 = 0.0D0)
 C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
       REAL*8    XLABEL
@@ -706,7 +706,7 @@ C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
       INTEGER*2 XI2LAB(4)
       EQUIVALENCE (XLABEL, XI4LAB, XI2LAB)
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <priunit.h>
+#include "priunit.h"
 #if defined (VAR_RELADR3)
       PARAMETER ( LIADUT = 176)
 #else

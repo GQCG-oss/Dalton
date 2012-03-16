@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck eriher */
       SUBROUTINE ABEQ52(Q,R,W,A,PQX,PQY,PQZ,INDHER,JMAX,
@@ -30,8 +30,8 @@ C  /* Deck eriher */
 C
 C     Written by Wim Klopper (University of Karlsruhe, 14 November 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DM2 = -2.0D0)
       DIMENSION Q(*), R(*), W(*), A(*), EXP12(NUC12), EXP34(NUC34),
      &          IODDHR(*), INDHER(*), PQX(*), PQY(*), PQZ(*)
@@ -54,9 +54,9 @@ C  /* Deck r00G */
      &               NUC4,NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,
      &               SIGNT,FACINT,HEXPP,HEXPQ)
 C     Copy of R0001 for use with R12EIN (WK/UniKA/20-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <subdir.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "subdir.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP25 = 0.25D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),
@@ -131,28 +131,28 @@ C
       END
 C  /* Deck r12wrt */
       SUBROUTINE R12WRT(BUF,LBUF,ICOUNT,ITYPE,INDA,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
       DIMENSION BUF(LBUF,5)
-#include <twosta.h>
-#include <r12int.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "twosta.h"
+#include "r12int.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
       INTEGER JBUF(5), MBUF
       SAVE JBUF, MBUF
 #if defined (VAR_SPLITFILES)
-#include <2gbdef.h>
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 #endif
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
        IF (ITYPE .EQ. -1) THEN
          IDUM = 0
@@ -249,26 +249,26 @@ C  /* Deck rn2out */
 C
 C     Version of UN2OUT for R12 integrals (WK/26-11-2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
      &        GTTHRS
       DIMENSION SO(NSOINT,*), BUF(LBUF,5), IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-#include <nuclei.h>
-#include <twocom.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "symmet.h"
       SAVE BUF, XBUF, ICOUNT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine RN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -398,13 +398,13 @@ C  /* Deck us2out */
      &                  IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                  THRESH,NINDAB,NINDCD,IORBSH,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(N,*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*), IORBSH(*) 
-#include <disbuf.h>
+#include "disbuf.h"
 C
 C---------------------------------
 C     Call sort and write routine.
@@ -426,15 +426,15 @@ C  /* Deck us2ou1 */
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <eribuf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "eribuf.h"
+#include "nuclei.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(NSOINT,*), BUF(LBUF,NDIST), CUF(LBUF,NDIST), 
@@ -442,14 +442,14 @@ C
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
-#include <twocom.h>
-#include <symmet.h>
-#include <drw2el.h>
-#include <r12int.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "drw2el.h"
+#include "r12int.h"
 C
       INTEGER*8 NWRIT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (LBUF .NE. LDSBUF) THEN
         WRITE (LUPRI,*) 'LBUF .ne. LDSBUF :',LBUF,LDSBUF
@@ -697,22 +697,22 @@ C
       END
 C  /* Deck un2wru */
       SUBROUTINE UN2WRU(BUF,CUF,IBUF,ICOUNT,ITYPE,INDA,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
-#include <eribuf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
+#include "eribuf.h"
       DIMENSION BUF(LBUF), CUF(LBUF), IBUF(LBUF,NIBUF)
-#include <drw2el.h>
-#include <r12int.h>
-#include <twosta.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "drw2el.h"
+#include "r12int.h"
+#include "twosta.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       NBUFX(0) = NBUFX(0) + 1
 C

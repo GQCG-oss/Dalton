@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c/* Deck cc_rdrsp */
       SUBROUTINE CC_RDRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,VEC1,VEC2)
@@ -151,14 +151,14 @@ C  R12 double excitation part introduced Jun 2003 by Christof Haettig
 C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccexci.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C
       CHARACTER SUBRNAME*(8)
@@ -359,15 +359,15 @@ C  Christof Haettig, november 1998
 C 
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
 C
       CHARACTER SUBRNAME*(8)
       PARAMETER (SUBRNAME = 'CC_RWPRE')
@@ -527,40 +527,40 @@ c/* Deck cc_rcrsp */
 *=====================================================================*
        IMPLICIT NONE
 
-#include <priunit.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <cccl2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
+#include "priunit.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "cccl2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
   
       CHARACTER SUBRNAME*(8)
@@ -1418,11 +1418,11 @@ C
 C             in case of an error IOPT is set to -IOPT on output
 C
 C---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
 C
       INTEGER LUSAVE
 C
@@ -1583,15 +1583,15 @@ c /* deck CCPRPAO */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <ccisao.h>
-#include <dummy.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "ccisao.h"
+#include "dummy.h"
+#include "r12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -1857,11 +1857,11 @@ C     ENDIF
 *     Christof Haettig, spring 2001, Oslo
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccsdinp.h"
 
       INTEGER I
 
@@ -1898,11 +1898,11 @@ C     ENDIF
 *     Christof Haettig, spring 2005, Friedrichstal(Baden)
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccsdinp.h"
 
       LOGICAL DELFRO, LOCDBG
       INTEGER IDX, NORBEN, LWORK

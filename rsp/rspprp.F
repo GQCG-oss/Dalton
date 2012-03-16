@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVLOG
 C===========================================================================
@@ -47,20 +47,20 @@ C
 C   Used from common blocks:
 C     INFORB : ...,N2ORBX,N2ASHX,....
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION IBTYP(*),REDS(*),REDE(*),UDV(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "inforb.h"
 C
       LOGICAL FNDLAB
 C
@@ -304,17 +304,17 @@ C  OUTPUT: CONFIGURATION PART OF GP VECTOR
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,*),GP(KZYVAR,*),XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infdim.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infdim.h"
 C
       LOGICAL NOH2, IH8SM
 C
@@ -467,14 +467,14 @@ C
 C PURPOSE
 C  CALCULATE GP VECTOR AND RETURN AS FIRST ELEMENTS IN WRK
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(LWRK)
       CHARACTER*8 WORD
 C
-#include <infvar.h>
-#include <wrkrsp.h>
+#include "infvar.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('GETGPV')
       IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR. 
@@ -504,17 +504,17 @@ C  /* Deck prpctl */
 C
 C 18-Feb-1987
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GP(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C-- common blocks:
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infsop.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infsop.h"
 C
       CALL QENTER('PRPCTL')
       IF (IPRRSP .GT. 10) WRITE (LUPRI,7010) WORD
@@ -634,9 +634,9 @@ C KSYMP  : point group symmetry of PRPMO matrix
 C ANTSYM : matrix symmetry of PRPMO matrix
 C          (1: symmetric, -1: antisymmetric, 0: unknown)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       CHARACTER*8 WORD, RTNLBL(2)
       DIMENSION PRPMO(NORBT,*), CMO(*), WRK(*)
@@ -645,11 +645,11 @@ C -- common blocks:
 C inforb.h : N2BASX, ...
 C infind.h : ISAO(*)
 C inftap.h : LUPROP
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inftap.h"
 C -- local constants:
       PARAMETER (DM1 = -1.0D0, D0 = 0.0D0, D1 =1.0D0 )
 C
@@ -775,23 +775,23 @@ C
 C List of updates
 C 21-Jul-1992 Hinne Hettema Average orbital part if necessary.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,NORBT)
       DIMENSION UDV(NASHDI,NASHDI),GP(KZYVAR)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -894,15 +894,15 @@ C
 C Scratch
 C  WRK  dimension: NBAS(ISYM)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION U(NBASI,*), V(NBASJ,*)
       DIMENSION PRPAO(NBAST,*),PRPMO(NORBT,*),WRK(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 C
       PARAMETER (D0 = 0.0D0)
 C

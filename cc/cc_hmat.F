@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_HMAT */
@@ -98,11 +98,11 @@ c/* Deck CC_HMAT */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -463,9 +463,9 @@ c/* Deck CC_HCD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -630,11 +630,11 @@ C----------------------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccqrinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccqrinf.h"
 
       INTEGER MXHTRAN, MXVEC
       PARAMETER ( MXHTRAN = 5, MXVEC = 1)
@@ -780,18 +780,18 @@ C     C.Haettig and Ove Christiansen oktober 1996, februar 1997
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "leinf.h"
 C
       DIMENSION WORK(LWORK),ITADR(2)
       PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-07)
@@ -1211,13 +1211,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.false.)

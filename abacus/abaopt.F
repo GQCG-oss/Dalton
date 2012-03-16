@@ -2440,7 +2440,7 @@ C
 #endif
 Cef begin
 #ifndef VAR_LINSCA
-#include <incore.h>
+#include "incore.h"
 #endif
 Cef end
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sosdrv */
       SUBROUTINE SOSDRV(WORK,LWORK,PASS)
@@ -32,24 +32,24 @@ C      This routine is the driver for the calculation of contributions
 C      to the indirect nuclear spin-spin coupling constants from 
 C      individual molecular orbitals.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C MXCOOR used from include file mxcent.h
 C LUPRI used from include file priunit.h
-#include <mxcent.h>
-#include <priunit.h>
+#include "mxcent.h"
+#include "priunit.h"
 C
 C NUCDEP used from COMMON /NUCLEI/
 C NSYM, NORBT, NOCCT, NVIRT, NCMOT used from COMMON /INFORB/
 C ISPPRI used from COMMON /SPNOUT/
 C NVARPT used from COMMON /INFLIN/
-#include <nuclei.h>
-#include <inforb.h>
-#include <spnout.h>
-#include <inflin.h>
+#include "nuclei.h"
+#include "inforb.h"
+#include "spnout.h"
+#include "inflin.h"
 C
-#include <maxorb.h>
-#include <locinf.h>
+#include "maxorb.h"
+#include "locinf.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
       CALL QENTER('SOSDRV')
@@ -448,14 +448,14 @@ C      the routine which calculates contributions from individual occupied
 C      orbitals to the diamagnetic spin orbit part of the 
 C      spin-spin coupling constants.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C IRAT used from include file iratdef.h
 C MXCENT used from include file mxcent.h
 C LUPRI used from include file priunit.h
-#include <iratdef.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "priunit.h"
 C
       DIMENSION   CLOCO(NOCCT,NLOCC)
       DIMENSION   SPNDSO(NLOCC,NLOCC,3*NUCDEP,3*NUCDEP)
@@ -464,8 +464,8 @@ C
 C NOCCT used from COMMON /INFORB/
 C NUCDEP used from COMMON /NUCLEI/
 C
-#include <inforb.h>
-#include <nuclei.h>
+#include "inforb.h"
+#include "nuclei.h"
 C
       CALL QENTER('SOOSDO')
 C
@@ -502,16 +502,16 @@ C      This routine calculates contributions from individual occupied
 C      orbitals to the diamagnetic spin orbit part of the 
 C      spin-spin coupling constants.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C MAXORB is needed in COMMON /INFIND/
 C MAXASH is needed in COMMON /INFIND/
 C MXCENT used from include file mxcent.h
 C LUPRI used from include file priunit.h
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D+00, D1 = 1.0D+00, D2 = 2.0D+00)
       DIMENSION   CLOCO(NOCCT,NLOCC)
@@ -529,13 +529,13 @@ C MPQUAD used from COMMON /MAGONE/
 C NUCDEP used from COMMON /NUCLEI/
 C DODSO used from COMMON /SPNOUT/
 C
-#include <inforb.h>
-#include <infind.h>
-#include <magone.h>
-#include <nuclei.h>
-#include <spnout.h>
-#include <inflin.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "infind.h"
+#include "magone.h"
+#include "nuclei.h"
+#include "spnout.h"
+#include "inflin.h"
+#include "inftap.h"
 C
       CALL QENTER('SOODSO_1')
 C
@@ -815,7 +815,7 @@ C      at the RPA level and uses them to calculate contributions
 C      from individual orbitals to the singlet parts of the 
 C      spin-spin coupling constants as a sum over all excited states.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
 C IRAT used from include file iratdef.h
@@ -823,16 +823,16 @@ C MAXASH used from include file maxash.h
 C MAXORB, MAXOCC used from include file maxorb.h
 C MXCOOR used from include file mxcent.h
 C LUPRI used from include file priunit.h
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (ZERO = 0.0D+00, D05 = 0.5D+00, D1 = 1.0D+00)
 C
-#include <codata.h>
+#include "codata.h"
 C
       DIMENSION CLOCO(NOCCT,NLOCC),CLOCV(NVIRT,NLVIR)
       DIMENSION SNEXE(NEXCI)
@@ -856,16 +856,16 @@ C NUCDEP used from COMMON /NUCLEI/
 C LUGDT, ABAGDT, LRGDT, NBGDT used from COMMON /NUCTAP/
 C DOSD, DOSDFC, DOFC used from COMMON /SPNOUT/
 C
-#include <cbilrs.h>
-#include <gdvec.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <spnout.h>
-#include <inftap.h>
+#include "cbilrs.h"
+#include "gdvec.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "nuclei.h"
+#include "spnout.h"
+#include "inftap.h"
 C
       CALL QENTER('SOSJSN')
 C
@@ -1385,7 +1385,7 @@ C      at the RPA level and uses them to calculate contributions
 C      from individual orbitals to the triplet parts of the 
 C      spin-spin coupling constants as a sum over all excited states.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C
 C IRAT used from include file iratdef.h
@@ -1393,16 +1393,16 @@ C MAXASH used from include file maxash.h
 C MAXORB, MAXOCC used from include file maxorb.h
 C MXCOOR used from include file mxcent.h
 C LUPRI used from include file priunit.h
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (ZERO = 0.0D+00, D05 = 0.5D+00)
 C
-#include <codata.h>
+#include "codata.h"
 C
       DIMENSION CLOCO(NOCCT,NLOCC),CLOCV(NVIRT,NLVIR)
       DIMENSION TREXE(NEXCI)
@@ -1431,16 +1431,16 @@ C NUCDEP used from COMMON /NUCLEI/
 C LUGDT, ABAGDT, LRGDT, NBGDT used from COMMON /NUCTAP/
 C DOSD, DOSDFC, DOFC used from COMMON /SPNOUT/
 C
-#include <cbitrp.h>
-#include <gdvec.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <spnout.h>
-#include <inftap.h>
+#include "cbitrp.h"
+#include "gdvec.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "nuclei.h"
+#include "spnout.h"
+#include "inftap.h"
 C
       CALL QENTER('SOSJTR')
 C
@@ -2001,13 +2001,13 @@ C      This routine collects the different contributions to the elements
 C      of the spin-dipolar, Fermi contact and Fermi contact spin-dipolar
 C      cross term tensors
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 CPFP
 C#include <mxorb.h>
-#include <maxorb.h>
+#include "maxorb.h"
 Cend-PFP
       PARAMETER (ZERO = 0.0D+00, D1 = 1.0D+00)
 C
@@ -2019,11 +2019,11 @@ C
       DIMENSION SPSDFC(NLOCCS*NLOCCS*NLVIRS*NLVIRS,3*NUCDEP,3*NUCDEP)
 C      DIMENSION TJ(3,3)
 C
-#include <nuclei.h>
-#include <cbitrp.h>
-#include <spnout.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "cbitrp.h"
+#include "spnout.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       CALL QENTER('LTRPMV')
 C
@@ -2232,16 +2232,16 @@ C
 C      This routine removes the symmetry adaptation 
 C      of the nuclear magnetic moments.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
-#include <priunit.h>
+#include "priunit.h"
 C
 C MXCENT, MXCOOR used from include file mxcent.h
-#include <mxcent.h>
+#include "mxcent.h"
 C
 C NUCDEP used from COMMON /NUCLEI/
-#include <nuclei.h>
+#include "nuclei.h"
 C
       PARAMETER (D1 = 1.0D+00)
 C
@@ -2410,15 +2410,15 @@ C      after the symmetry adaptation was removed and the proper
 C      g-factors were included.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C ALPHAC used from include file codata.h
 C LUPRI used from include file priunit.h
 C XFAMU used from include file codata.h
 C PMASS used from include file pmass.h
 C
-#include <priunit.h>
-#include <codata.h>
+#include "priunit.h"
+#include "codata.h"
 C#include <pmass.h>
 C
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D1O3 = 1.0D0/D3, D0 = 0.0D0)
@@ -2429,11 +2429,11 @@ C
 C MXQN, MXAQN used from include file maxaqn.h
 C MXCENT, MXCOOR used from include file mxcent.h
 C MXCORB used from include file mxorb.h
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxcent.h"
 CPFP
 C#include <mxorb.h>
-#include <maxorb.h>
+#include "maxorb.h"
 Cend-PFP
 C
 C SOLVNT used from COMMON /CBISOL/
@@ -2441,11 +2441,11 @@ C DOPERT used from COMMON /DORPS/
 C CHARGE, ISTBNU, NUCDEP, NUCIND used from COMMON /NUCLEI/
 C MAXOPR used from COMMON /SYMMET/
 C ABUND used from COMMON /SPNOUT/
-#include <cbisol.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <spnout.h>
-#include <symmet.h>
+#include "cbisol.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "spnout.h"
+#include "symmet.h"
 C
       DIMENSION SPNDSO(NLOCCS*NLOCCS,3*NUCDEP,3*NUCDEP)
       DIMENSION SPNPSO(NLOCCS*NLOCCS*NLVIRS*NLVIRS,3*NUCDEP,3*NUCDEP)
@@ -2457,7 +2457,7 @@ C
 C
       LOGICAL TEST
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('LSPRES')
 C
@@ -2744,12 +2744,12 @@ C      This routine prints the contributions from pairs of orbitals to
 C      a property.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C TABOCL(i), TABVIL(i) used from locif.h 
-#include <priunit.h>
-#include <locinf.h>
+#include "priunit.h"
+#include "locinf.h"
 C
       PARAMETER (D0 = 0.0D+00, THRPR = 1.0D-06)
 C
@@ -2804,12 +2804,12 @@ C      This routine prints the contributions from pairs of orbitals to
 C      the isotropic part of a property and scales it with a factor.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C TABOCL(i), TABVIL(i) used from locif.h 
-#include <priunit.h>
-#include <locinf.h>
+#include "priunit.h"
+#include "locinf.h"
 C
       PARAMETER (D0 = 0.0D+00, D3 = 3.0D0, D1O3 = 1.0D0/D3)
       PARAMETER (THRPR = 1.0D-02)
@@ -2876,12 +2876,12 @@ C      orbitals to the isotropic part of a property
 C      and scales it with a factor.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C TABOCL(i), TABVIL(i) used from locif.h 
-#include <priunit.h>
-#include <locinf.h>
+#include "priunit.h"
+#include "locinf.h"
 C
       PARAMETER (D0 = 0.0D+00, D3 = 3.0D0, D1O3 = 1.0D0/D3)
       PARAMETER (THRPR = 1.0D-02)
@@ -2937,12 +2937,12 @@ C      This routine prints the contributions from pairs of orbitals to
 C      a property tensor
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C TABOCL(i), TABVIL(i) used from locif.h 
-#include <priunit.h>
-#include <locinf.h>
+#include "priunit.h"
+#include "locinf.h"
 C
       PARAMETER (D0 = 0.0D+00)
       PARAMETER (THRPR = 1.0D-02)
@@ -3014,12 +3014,12 @@ C      This routine prints the contributions from pairs of occupied
 C      orbitals to a property tensor
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C LUPRI used from include file priunit.h
 C TABOCL(i), TABVIL(i) used from locif.h 
-#include <priunit.h>
-#include <locinf.h>
+#include "priunit.h"
+#include "locinf.h"
 C
       PARAMETER (D0 = 0.0D+00)
       PARAMETER (THRPR = 1.0D-02)

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cccr_aa */
 *=====================================================================*
@@ -60,13 +60,13 @@ c /* deck cccr_aa */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C#include <ccr1rsp.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       LOGICAL LOCDBG

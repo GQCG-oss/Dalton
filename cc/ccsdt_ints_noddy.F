@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccsdt_tran1_r */
       SUBROUTINE CCSDT_TRAN1_R(XINT1,XINT2,XLAMDP0,XLAMDH0,
@@ -31,11 +31,11 @@ C     XINT1 = XINT1 + (K^p0 C^h0|B^p1 D^h0)
 C     XINT2 = XINT2 + (K^p0 C^h0|L^p0 J^h1)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
       DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
@@ -95,11 +95,11 @@ C
 C     XINT1 = XINT1 + (C^p1 K^h1|B^p2 D^h0)
 C     XINT2 = XINT2 + (C^p1 K^h1|L^p0 J^h2)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
       DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
@@ -164,11 +164,11 @@ C     XINT2 = (K^p0 L^h1|C^p2 D^h0)    "(O-0 O-1|V-2 V-0)"
 C     XINT3 = (K^p0 L^h1|M^p0 N^h2)    "(O-0 O-1|O-0 O-2)"
 C     XINT4 = (C^p1 D^h0|E^p2 F^h0)    "(V-1 V-0|V-2 V-0)"
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
       DIMENSION XINT1(NRHFT,NVIRT,NVIRT,NRHFT)
       DIMENSION XINT2(NRHFT,NRHFT,NVIRT,NVIRT)
       DIMENSION XINT3(NRHFT,NRHFT,NRHFT,NRHFT)
@@ -298,13 +298,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -412,14 +412,14 @@ C           ----------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <ccnoddy.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "ccnoddy.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -741,11 +741,11 @@ C           ---------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccfield.h>
-#include <ccnoddy.h>
-#include <ccsdinp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccfield.h"
+#include "ccnoddy.h"
+#include "ccsdinp.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)

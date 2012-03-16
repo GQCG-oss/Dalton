@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 c /* deck ccfbtaao1 */
@@ -69,12 +69,12 @@ c /* deck ccfbtaao1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)

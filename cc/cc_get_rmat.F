@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_GET_RMAT(RMAT, IOPER, ORDER, ISYHOP, WORK, LWORK )
@@ -45,11 +45,11 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <ccropr2.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "ccropr2.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

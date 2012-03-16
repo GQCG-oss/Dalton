@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_XETST */
@@ -43,7 +43,7 @@ c/* Deck CC_XETST */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
@@ -665,21 +665,21 @@ C to the CC Xi vector by finite difference on the vector function.
 C Ch. Haettig, januar 1999
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <leinf.h>
-#include <ccfield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "leinf.h"
+#include "ccfield.h"
 C
       DIMENSION WORK(LWORK), OMEGADIF(*), CMO1(*)
       PARAMETER (DELTA = 1.0D-07, DELINV = 1.0D+7)
@@ -976,21 +976,21 @@ C to the CC ETA{O} vector by finite difference on the jacob. left tran.
 C Ch. Haettig, januar 1999
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <aovec.h>
-#include <ccsdinp.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <leinf.h>
-#include <ccfield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "aovec.h"
+#include "ccsdinp.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "leinf.h"
+#include "ccfield.h"
 C
 C------------------------------------------------------------
 C     the displacement for the finite difference calculation:

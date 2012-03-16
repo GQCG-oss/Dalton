@@ -26,7 +26,7 @@ C            (zero block of matrix; find next element .gt. a)
 C 5) DSPSOL, DSPSLI, DGESOL, DGEINV : driver routines calling LINPACK
 C
 C
-#include <single.h>
+#include "single.h"
 C
 C Block 1:
 C DNORM2 (emulate ESSL DNORM2: do not use extended precision for intermediates)
@@ -46,7 +46,7 @@ C
 C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
 C     DNRM2: JACK DONGARRA, LINPACK, 3/11/78.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DX(*)
       PARAMETER ( ZERO = 0.0D0 )
@@ -105,13 +105,13 @@ C Purpose: Transform from AP format to GE format, that is:
 C          unpack antisymmetric,   packed (lower triangle) matrix AAP
 C              to antisymmetric, unpacked matrix AGE.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AAP(*), AGE(N,*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include <nosync.h>
+#include "nosync.h"
          DO 100 I = 1,J-1
             AGE(I,J) = - AAP(JOFF+I)
             AGE(J,I) =   AAP(JOFF+I)
@@ -132,16 +132,16 @@ C Purpose: Transform from SP format to SI format, that is:
 C          unpack symmetric,   packed matrix ASP
 C              to symmetric, unpacked matrix ASI.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASP(*), ASI(N,*)
 C
       ENTRY      DSPTGE(N,ASP,ASI)
 C     ... equivalent subroutine name
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include <nosync.h>
+#include "nosync.h"
          DO 100 I = 1,J-1
             ASI(I,J) = ASP(JOFF+I)
             ASI(J,I) = ASP(JOFF+I)
@@ -161,11 +161,11 @@ C          extract antisymmetric part of general matrix AGE
 C          to antisymmetric, packed matrix AAP (lower
 C          triangle saved).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), AAP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -184,18 +184,14 @@ C Purpose: Transform from GE format to SP format, that is:
 C          extract symmetric part of general matrix AGE
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 #ifdef LUCI_DEBUG
 #include <priunit.h>
 #endif
 C
-#include <nosync.h>
-
-#ifdef LUCI_DEBUG
-      write(lupri,*) 'start of DGETSP'
-#endif
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -220,10 +216,10 @@ C
 C Purpose: Fold from GE format to SP format, that is:
 C          ASP(ij) = AGE(I,J) + (1 - DELTAij) AGE(J,I)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -243,11 +239,11 @@ C Purpose: Transform from GE format to SP format, that is:
 C          extract symmetric part of general matrix AGE
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -265,11 +261,11 @@ C
 C Purpose: Unfold from SP format to GE format, that is:
 C          AGE(I,J) = AGE(J,I) = ASP(ij)/(2.D0 - Delta(I,J))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -291,10 +287,10 @@ C Purpose: Transform from SI format to SP format, that is:
 C          copy upper triangle of symmetric matrix ASI
 C          to symmetric, packed matrix ASP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -313,11 +309,11 @@ C Purpose: Fold from SI format to SP format, that is:
 C          ASP(ij) = ASI(I,J) + (1 - DELTAij) ASI(J,I)
 C                  = (2 - DELTAij) * ASI(I,J)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
       PARAMETER (D2 = 2.0D0)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -337,11 +333,11 @@ C Purpose: extract symmetric part of general matrix AGE
 C          to symmetric matrix ASI.
 C          Can be used in-place ( CALL DGETSI(N,A,A) )
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(N,*), ASI(N,*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 200 J = 1,N
          ASI(J,J) = AGE(J,J)
          DO 100 I = 1,J-1
@@ -365,7 +361,7 @@ C   a routine in LAPACK for solving linear equations;
 C   when linking with complib on SGI/IRIX the LAPACK routine
 C   was loaded instead of this one).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AGE(NRDIMA,*)
       PARAMETER (NBLK = 128)
       DO 400 JBLK = 1,NROWA,NBLK
@@ -397,7 +393,7 @@ C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
 C 30-Apr-1984 -- hjaaj -- based on DDOT from LINPACK
 C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DA(*)
       PARAMETER ( D0 = 0.0D0 )
@@ -448,7 +444,7 @@ C     890927-Hans Joergen Aa. Jensen
 C     Based on IDAMAX by
 C     JACK DONGARRA, LINPACK, 3/11/78.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DX(*)
 C
@@ -489,7 +485,7 @@ C
 C     FINDS THE INDEX OF ELEMENT HAVING MAX. VALUE.
 C     890105 hjaaj, based on IDAMAX by JACK DONGARRA, LINPACK, 3/11/78.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DX(*)
 C
@@ -530,7 +526,7 @@ C
 C     FINDS THE INDEX OF ELEMENT HAVING MIN. VALUE.
 C     890105 hjaaj, based on IDAMAX by JACK DONGARRA, LINPACK, 3/11/78.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DX(*)
 C
@@ -799,7 +795,7 @@ C 900319-hjaaj
 C
 C Return number of elements with absolute value .gt. A
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DX(N)
       IF (A .LT. 0.0D0) THEN
          NUM = N
@@ -973,7 +969,7 @@ C
 C  A    is the matrix (general, non-singular)
 C  KPVT is a scratch array of length N.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(LDA,*),B(LDB,*),KPVT(*)
 C
       CALL DGEFA (A,LDA,N,KPVT,INFO)
@@ -999,7 +995,7 @@ C
 C  AP is A in packed format.
 C  KPVT is a scratch array of length N.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),B(N,*),KPVT(*)
 C
       CALL DSPFA (AP,N,KPVT,INFO)
@@ -1025,7 +1021,7 @@ C
 C  AP is A in packed format.
 C  KPVT is a scratch array of length N.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AP(*),B(N,*),KPVT(*),DET(2),INERT(3)
 C
       CALL DSPFA (AP,N,KPVT,INFO)

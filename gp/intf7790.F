@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -35,9 +35,9 @@ C  /* Deck gtunit */
 C
 C     Subroutine to read unit numbers and the general print level
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "gnrinf.h"
       ILPRI = LUPRI
       ILCMD = LUCMD
       ILERR = LUERR
@@ -50,8 +50,8 @@ C  /* Deck stunit */
 C
 C     Subroutine to set unit numbers
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LUPRI = ILPRI
       LUCMD = ILCMD
       LUERR = ILERR
@@ -63,11 +63,11 @@ C  /* Deck gterg */
 C
 C     Returns the energy
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <infopt.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "infopt.h"
       IF ((DOMP2 .AND. .NOT. DOMC) .OR. DOCCSD .OR. ((DOCI .OR. DOCINO)
      &     .AND. .NOT. DOMC)) THEN
          ENERGY = ECORR
@@ -83,10 +83,10 @@ C
 C     (Re)sets a number of ABACUS variables, intended to be used between
 C     iterations (optimization or dynamics)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <gnrinf.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "gnrinf.h"
+#include "abainf.h"
       LOGICAL LWRI, LGRAD, LHESS, LHLFEY
       WRINDX = LWRI
       MOLGRD = LGRAD
@@ -101,8 +101,8 @@ C
 C     (Re)sets a number of READIN variables, intended to be used between
 C     iterations (optimization or dynamics)
 C
-#include <implicit.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "gnrinf.h"
       LOGICAL RDIN, RMOL, HRIN
       RDINPC = RDIN
       RDMLIN = RMOL
@@ -115,8 +115,8 @@ C  /* Deck gtconv */
 C
 C     Returns conversion factors from the common block codata.h
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       TOJOUL = XTJ
       TOKAYS = XTKAYS
       DIRCON = HBAR
@@ -131,11 +131,11 @@ C
 C     Update the molecular geometry (molecule input), intended to be
 C     used between iterations (optimization or dynamics)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbirea.h>
-#include <molinp.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbirea.h"
+#include "molinp.h"
+#include "nuclei.h"
       DIMENSION CRDGEO(NCOORD)
       CHARACTER*80 TMPLIN
       I = 5
@@ -159,14 +159,14 @@ C
 C     Removes (resets) the symmetry of the molecule, intended to be
 C     used between iterations (optimization or dynamics)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <gnrinf.h>
-#include <maxorb.h>
-#include <huckel.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "huckel.h"
+#include "nuclei.h"
+#include "symmet.h"
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
       HRINPC = .FALSE.

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C File: herpar.F
 C
@@ -36,13 +36,13 @@ C  /* Deck her_pardrv */
      &                      DINTSKP,RELCAL)
 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 C
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL
@@ -62,11 +62,11 @@ C BLOCKS: MAXSHL
 C NUCLEI: NUCDEG
 C INFORB: NNBASX,N2BASX
 C
-#include <infpar.h>
-#include <blocks.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <memint.h>
+#include "infpar.h"
+#include "blocks.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "memint.h"
 C
       CALL QENTER('HER_PARDRV')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDRV','*',103)
@@ -203,8 +203,8 @@ C           MAXREP -
 C           ISYMDM - Symmetries of density matrices
 C           IFCTYP - Fock matrix types (see twoint).
 C           IATOM  -
-C           NODV   - Density matrix neglected in TWOEXP
-C           NOPV   -           -   "   -
+C           NODV   - 1-el. Density matrix neglected in TWOEXP
+C           NOPV   - 2-el.           -   "   -
 C           NOCONT -           -   "   -
 C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT
@@ -454,7 +454,7 @@ CTROND
 CKR      DIMENSION GABRAO(*), DMRAO(*), DMRSO(*), DINTSKP(*)
       DIMENSION GABRAO(*), DMRAO(*), DMRSO(*)
 CTROND
-#include <infpar.h>
+#include "infpar.h"
 C
 C Used from common blocks:
 C
@@ -488,10 +488,10 @@ C
 #include "blocks.h"
 #include "r12int.h"
 C
-#include <cbisol.h>
+#include "cbisol.h"
 C
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
       CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDINIT','*',103)
@@ -1344,14 +1344,14 @@ Cef begin
 C     
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h> 
-#include <dummy.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h" 
+#include "dummy.h"
+#include "mtags.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
@@ -1362,19 +1362,19 @@ C
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
      &          TSKCPU(MTOTTK), IWHICH(MTOTTK), IJS(NTASK),
      &          GABRAO(*), DMRAO(*),DMRSO(*),DINTSKP(2,4), HESSEE(*)
-#include <cbisol.h>
-#include <twocom.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <taymol.h>
-#include <taysol.h>
-#include <suscpt.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <infpar.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <incore.h>
+#include "cbisol.h"
+#include "twocom.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "taymol.h"
+#include "taysol.h"
+#include "suscpt.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "infpar.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "incore.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
@@ -1875,10 +1875,10 @@ C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
      &                     ICOUNT,ITYPE,IPRINT)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
       DIMENSION FMAT(NFMAT*N2BASX), TSKCPU(ICOUNT), IWHICH(ICOUNT),
      &          DINTSKP(8), HESSEE(*)
 C
@@ -1891,10 +1891,10 @@ C SUSCPT: SUS2EL
 C INFORB: N2BASX
 C INFPAR: MTOTTK, MASTER, TIMING
 C
-#include <energy.h>
-#include <suscpt.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "energy.h"
+#include "suscpt.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDRES','*',103)
 C
@@ -1964,8 +1964,8 @@ C
 C  /* Deck recompi */
       SUBROUTINE RECOMPI
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       WRITE(LUPRI,'(//4(/5X,A))')
      &  'FOR RECOMPILATION:',
@@ -1977,18 +1977,18 @@ C
       END
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "mtags.h"
 #if defined (VAR_PVM)
       INCLUDE 'fpvm3.h'
 #endif
       PARAMETER (NTABLE = 5)
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <infpar.h>
+#include "infpar.h"
       SAVE FIRST
       DATA TABLE /'.NODES ', '.DEGREE', '.PRINT ', '.ENCODE', '.DEBUG '/
       DATA FIRST /.TRUE./

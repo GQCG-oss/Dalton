@@ -21,18 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck hfcinp */
       SUBROUTINE HFCINP(WORD)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL NEWDEF
       PARAMETER (NTABLE = 6)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <esrhfc.h>
+#include "esrhfc.h"
       DATA TABLE /'.HFC-FC', '.HFC-SD', '.HFC-SO', '.BRT-SO',
      &            '.EFF-SO', '.PRINT '/
       LOGICAL HFCOLD
@@ -125,36 +125,36 @@ C  /* Deck hfcdrv */
 C
 C     Driver for evaluation of hyperfine coupling constants 
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CMO(*), UDV(*), PVX(*), FOCK(*),FC(*), FV(*), 
      *          FCAC(*), H2AC(*), XINDX(*), WORK(*)
-#include <iratdef.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infmp2.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <inflr.h>
-#include <mxcent.h>
-#include <esrhfc.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <ibtfun.h>
-#include <codata.h>
-#include <gfac.h>
-#include <cbiher.h>
+#include "iratdef.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infmp2.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inflr.h"
+#include "mxcent.h"
+#include "esrhfc.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+#include "codata.h"
+#include "gfac.h"
+#include "cbiher.h"
 C 
       LOGICAL TRPSAVE, OLDDX, FNDLB2
       EXTERNAL FNDLB2                                                                                                                                                                                           
@@ -301,23 +301,23 @@ C
       END
 C  /* Deck afcave */                                                                                                       
       SUBROUTINE AFCAVE(CMO, XINDX, WORK, LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), XINDX(*), WORK(*)
-#include <dummy.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <esrhfc.h>
+#include "dummy.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "esrhfc.h"
       LOGICAL OLDDX, FNDLB2, TRPSAVE
       EXTERNAL FNDLB2
       CHARACTER*7 RTNLBL(2) 
@@ -371,25 +371,25 @@ C
       END 
 C  /* Deck asdave */                                                                                                                                                                                            
       SUBROUTINE ASDAVE(CMO, XINDX, WORK, LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), XINDX(*), WORK(*)
-#include <dummy.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
-#include <esrhfc.h>
-#include <ibtfun.h>
+#include "dummy.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "esrhfc.h"
+#include "ibtfun.h"
       LOGICAL OLDDX, FNDLB2, TRPSAVE
       EXTERNAL FNDLB2
       CHARACTER*7 RTNLBL(2)
@@ -459,23 +459,23 @@ C
       END
 C Deck /* asocomp */
       SUBROUTINE ASOCOMP(CMO,UDV,PV,XINDX,WORK,LWORK)
-#include<implicit.h>
+#include"implicit.h"
       DOUBLE PRECISION CMO(*), UDV(*), PV(*), XINDX(*), WORK(*)
       INTEGER LWORK
-#include <qrinf.h>
-#include <inforb.h>
-#include <rspprp.h>
-#include <inflr.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <wrkrsp.h>
-#include <nuclei.h>
-#include <chrnos.h>
-#include <esrhfc.h>
-#include <priunit.h>
+#include "qrinf.h"
+#include "inforb.h"
+#include "rspprp.h"
+#include "inflr.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "wrkrsp.h"
+#include "nuclei.h"
+#include "chrnos.h"
+#include "esrhfc.h"
+#include "priunit.h"
 C
       INTEGER KFREE, LFREE
       LOGICAL LDUMMY, FOUND, CONV, OPENED
@@ -552,17 +552,17 @@ C
       END
 C  /* Deck hfccon */       
       SUBROUTINE HFCCON(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <mxcent.h>
-#include <esrhfc.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <codata.h>
-#include <gfac.h>
+#include "iratdef.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "mxcent.h"
+#include "esrhfc.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "gfac.h"
       PARAMETER ( D1M = -1.0D0, HFCTHR = 1.0D-8)
 C
       REFSPIN = DBLE(ISPIN-1)
@@ -612,12 +612,12 @@ C
       END 
 C  /* Deck hfcres */
       SUBROUTINE HFCRES(WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiwlk.h>
-#include <esrhfc.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiwlk.h"
+#include "esrhfc.h"
 C
       CALL TITLER('RESPONSE - HYPERFINE COUPLING CONSTANTS','*',116)
 C     contributions  printing
@@ -661,12 +661,12 @@ C
       END
 C  /* Deck afcprt */   
       SUBROUTINE AFCPRT(XEXP,XPOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(GNTHR = 1.0D-5)
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
 C
       DIMENSION XEXP(*), XPOL(*)
 C
@@ -691,12 +691,12 @@ C
       RETURN
       END
       SUBROUTINE ASDPRT(XEXP,XPOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(GNTHR = 1.0D-5)
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
       DIMENSION XEXP(MXCENT,3,3), XPOL(MXCENT,3,3)
 C  
         WRITE (LUPRI,'(/,2X,A,/,2X,A,/,2X,A)')
@@ -741,12 +741,12 @@ C
       END
 C  /* Deck asoprt */ 
       SUBROUTINE ASOPRT(XVAL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(GNTHR = 1.0D-5)
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
       DIMENSION  XVAL(MXCENT,3,3)
 C
       DO IDX = 1,NUCIND
@@ -782,13 +782,13 @@ C
       END
 C  /* Deck atotprt */
       SUBROUTINE ATOTPRT(XFCEXP,XFCPOL,XSDEXP,XSDPOL,XSOVAL,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION  WORK(*)
       PARAMETER(GNTHR = 1.0D-5, DP5 = 0.5D0, D3 = 3.0D0)
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
       DIMENSION XFCEXP(MXCENT), XFCPOL(MXCENT), XSDPEXP(MXCENT,3,3)
       DIMENSION XSDPOL(MXCENT,3,3), XSOVAL(MXCENT,3,3) 
 C
@@ -865,15 +865,15 @@ C
       END
 C  /* Deck ahfcsum */
       SUBROUTINE AHFCSUM(ATOT,AEXP,APOL,BEXP,BPOL,CVAL)
-#include <implicit.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <esrhfc.h>
+#include "implicit.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "esrhfc.h"
       DIMENSION ATOT(MXCENT,3,3), AEXP(MXCENT), APOL(MXCENT)
       DIMENSION BEXP(MXCENT,3,3), BPOL(MXCENT,3,3), CVAL(MXCENT,3,3)           
 C
@@ -905,11 +905,11 @@ C
        END
 C  /* Deck hfcpval */ 
       SUBROUTINE HFCPVAL(ATEN,APVAL,PAXIS,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
        PARAMETER(DP5 = 0.5D0, GNTHR = 1.0D-5)
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
 C    
        DOUBLE PRECISION ATEN, APVAL, PAXIS
        DIMENSION ATEN(MXCENT,3,3), APVAL(MXCENT,3) 

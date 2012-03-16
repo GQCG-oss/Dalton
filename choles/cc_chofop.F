@@ -8,18 +8,18 @@ C              properties with Cholesky decomposed two-electron integrals.
 C
 C     Overall structure is shamelessly copied from CC_FOP by A. Halkier.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccfop.h>
-#include <chocc2.h>
-#include <dummy.h>
-#include <cclr.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccfop.h"
+#include "chocc2.h"
+#include "dummy.h"
+#include "cclr.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFOP')
@@ -181,25 +181,25 @@ C
 C     Purpose: Calculate first order properties from the AO density
 C              matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DENAO(*), WORK(LWORK)
       CHARACTER*10 MODEL
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
-#include <cclr.h>
-#include <ccrspprp.h>
-#include <ccsections.h>
-#include <ccroper.h>
-#include <ccfield.h>
-#include <dipole.h>
-#include <quadru.h>
-#include <nqcc.h>
-#include <ccfdgeo.h>
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
+#include "cclr.h"
+#include "ccrspprp.h"
+#include "ccsections.h"
+#include "ccroper.h"
+#include "ccfield.h"
+#include "dipole.h"
+#include "quadru.h"
+#include "nqcc.h"
+#include "ccfdgeo.h"
 
       DIMENSION ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
 
@@ -552,14 +552,14 @@ C              The density matrix is returned backtransformed to AO
 C              basis in DENAO, including frozen core contributions.
 C              The AO density is stored on disk (list 'd00')
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TBAR(*), DENAO(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chocc2.h>
-#include <ccfop.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chocc2.h"
+#include "ccfop.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CHODEN')
@@ -658,12 +658,12 @@ C
 C     Purpose: Calculate natural occupations. Skipped for calculations
 C              with frozen orbitals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DENIJ(*), DENAI(*), DENIA(*), DENAB(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHODENO')
@@ -814,12 +814,12 @@ C     The excitation block is simply equal to TBAR(ai).
 C
 C     The calculation is based on a decomposition of the t2-amplitudes.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TBAR(*), DENIJ(*), DENIA(*), DENAB(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <chocc2.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "chocc2.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHODEN1')
@@ -957,16 +957,16 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Calculate Y intermediates for ground state density matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), TBAR(*), FIA(*), WORK(LWORK)
       LOGICAL DELP1, DELP2
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "dummy.h"
 
 C     Make sure that ground state amplitudes have been decomposed.
 C     ------------------------------------------------------------
@@ -1029,11 +1029,11 @@ C     Purpose: Transpose indices of virtual array E1INT,
 C
 C              E1INT(b,a) <--- E1INT(a,b)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION E1INT(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_EITRV')
@@ -1069,11 +1069,11 @@ C
 C     Purpose: Calculate the residual vector for ground state multiplier
 C              effective equation (for debugging purposes).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TBAR(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHORSDTST')
@@ -1161,15 +1161,15 @@ C
 C     Warning: requires that a file 'AM_FOR_CHOTST' has been written by the
 C              conventional code.....
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
       LOGICAL SAFTST
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <chocc2.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "chocc2.h"
+#include "priunit.h"
 
       CHARACTER*12 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFOPDBG')
@@ -1283,13 +1283,13 @@ C              part of the angular momentum operator.
 C
 C     The ground state AO density matrix must be available on disk.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION COM(3), WORK(LWORK)
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "dummy.h"
 
       CHARACTER*8 SECNAM, LABEL1(3), LABEL2(3)
       PARAMETER (SECNAM = 'CC_COMRL')
@@ -1424,13 +1424,13 @@ C     Else the program will continue with COM=0.0D0.
 C
 C     On exit, IFAIL = 0 means "all OK" and IFAIL = 1 means "failure".
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINTA(*), XINTB(*), DENPH(*), DENAO(*), WORK(LWORK)
       CHARACTER*8 LABELA, LABELB
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_COMEXP')
@@ -1654,13 +1654,13 @@ C
 C     NB! IFR = 1 will be ignored for non-tot. symmetric Lambda matrices
 C         and IFR=0 is returned. (=> don't pass an integer constant for IFR).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*), XLAMDH(*), DENPH(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "dummy.h"
 
       CHARACTER*8 SECNAM
       PARAMETER (SECNAM = 'CC_PHDEN')
@@ -1821,15 +1821,15 @@ C
 C     Purpose: Calculate and print electronic expectation values of
 C              one-electron operators.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DENAO(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
-#include <ccrspprp.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
+#include "ccrspprp.h"
+#include "priunit.h"
+#include "dummy.h"
 
       CHARACTER*9 SECNAM 
       PARAMETER (SECNAM = 'CC_FOPVAL')
@@ -2022,16 +2022,16 @@ C
 C     Purpose: Calculate and print electronic expectation values of
 C              commutators of one-electron operators.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DENAO(*), WORK(LWORK)
       CHARACTER*10 MODEL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
-#include <ccrspprp.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
+#include "ccrspprp.h"
+#include "priunit.h"
+#include "dummy.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_FOPCOM')

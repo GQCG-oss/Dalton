@@ -26,19 +26,19 @@
 C
 C     T. Helgaker feb 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL DOLND, DOGGA
       DIMENSION GSO(NBAST*NTYPSO), WORK(LWORK), NCNT(NBAST),COR(3)
 C
-#include <dftinf.h>
-#include <symmet.h>
+#include "dftinf.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (MAXREP.EQ.0) THEN
          CALL DFTAOS(GSO(KSO0),GSO(KSO1),GSO(KSO2),GSO(KSOB),GSO(KSOB1),
@@ -62,12 +62,12 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0, DTHRS = 20.0D0)
 C   
@@ -75,17 +75,17 @@ C
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), GAB2(NBAST,3,3), NCNT(NBAST)
 C
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
-#include <dftinf.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
+#include "dftinf.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL DZERO(GAO,NTYPSO*NBAST)
 C
@@ -173,19 +173,19 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       DIMENSION GAO(KCKTA)
       DIMENSION CSP(KHKTA,KCKTA)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
 C     loop over primitives
 C
@@ -259,11 +259,11 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -271,9 +271,9 @@ C
      &          CAO(MXAQN), CAOX(MXAQN), CAOY(MXAQN), CAOZ(MXAQN)
       DIMENSION CSP(KHKTA,KCKTA)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
 C     loop over primitives
 C
@@ -406,11 +406,11 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
       DIMENSION GAOXX(KCKTA), GAOXY(KCKTA), GAOXZ(KCKTA),
@@ -419,9 +419,9 @@ C
      &          CAOYY(MXAQN), CAOYZ(MXAQN), CAOZZ(MXAQN)
       DIMENSION CSP(KHKTA,KCKTA)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       IF (SPHRA) THEN
          DO I=1,KCKTA
@@ -525,18 +525,18 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KHKTA), GAOY(KHKTA), GAOZ(KHKTA), GAO(KHKTA)
 C
-#include <onecom.h>
-#include <primit.h>
-#include <orgcom.h>
+#include "onecom.h"
+#include "primit.h"
+#include "orgcom.h"
 C
       FCX = DP5*PAX
       FCY = DP5*PAY
@@ -551,8 +551,8 @@ C
       END
 C /* Deck dftsph */
       SUBROUTINE DFTSPH(CARINT,SPHINT,CSP,KHKTA,KCKTA)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CARINT(KCKTA), SPHINT(KHKTA)
       DIMENSION CSP(KHKTA,KCKTA)
@@ -570,16 +570,16 @@ C
 C  /* Deck dftsos */
       SUBROUTINE DFTSOS(GAO,GSO,NBAST,NVEC,NCNT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION GSO(NBAST,NVEC), GAO(NBAST,NVEC), NCNT(NBAST)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 100) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
@@ -632,21 +632,21 @@ C  /* Deck blgetsos */
 C
 C     T. Helgaker feb 01, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL DOLND, DOGGA
       DIMENSION GSO(NVCLEN*NBAST*NTYPSO), WORK(LWORK)
       DIMENSION COOR(3,NVCLEN)
       DIMENSION IBLCKS(2,NBLCNT)
 C
-#include <symmet.h>
-#include <dftinf.h>
+#include "symmet.h"
+#include "dftinf.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (MAXREP.EQ.0) THEN
          CALL BLDFTAOS(NVCLEN,GSO,COOR,NBLCNT,IBLCKS,
@@ -670,12 +670,12 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0, DTHRS = 20.0D0)
 C   
@@ -686,17 +686,17 @@ C
 C     PA2 contains distance from the basis function center to respective
 c     grid point.
       DIMENSION PA(3,NVCLEN), PA2(NVCLEN)
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
-#include <dftinf.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
+#include "dftinf.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 
 
 C
@@ -798,12 +798,12 @@ C  /* Deck blgetgao */
 C
 C     T. Helgaker Sep 99, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <dftinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "dftinf.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       DIMENSION GAO(NVCLEN,KCKTA)
@@ -812,9 +812,9 @@ C
 c
       DIMENSION GA(NVCLEN),CINT(NVCLEN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       CALL DZERO(GA,NVCLEN)
 C
@@ -915,11 +915,11 @@ C  /* Deck blgetga1 */
 C
 C     T. Helgaker Sep 99, P. Salek 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
       PARAMETER (I0=1,IX=2,IY=3,IZ=4)
@@ -935,9 +935,9 @@ c     GAO(1..NVCLEN, 1..KCKTA,1..4) is set
      &          FX(NVCLEN), FY(NVCLEN), FZ(NVCLEN),
      &          SPH0(NVCLEN), SPHX(NVCLEN), SPHY(NVCLEN), SPHZ(NVCLEN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
 C     loop over primitives
 C
@@ -1129,11 +1129,11 @@ C     P. Salek    Oct 03 - vector version.
 C
 c     routine sets GAO__(1:NVCLEN, 1:KCKTA)
 c
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
       DIMENSION GAOXX(NVCLEN,KCKTA), GAOXY(NVCLEN,KCKTA),
@@ -1145,9 +1145,9 @@ C
      &          CAOXZ(MXAQN), CAOYY(MXAQN),
      &          CAOYZ(MXAQN), CAOZZ(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       DO IV = 1, NVCLEN
          IF (SPHRA) THEN
@@ -1286,11 +1286,11 @@ C
 C     O. Lutnaes, D. Wilson Feb 04
 C
 c     routine sets GAO___(1:NVCLEN, 1:KCKTA)
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
 C
       DIMENSION GAOXXX(NVCLEN,KCKTA), GAOXXY(NVCLEN,KCKTA),
@@ -1305,9 +1305,9 @@ C
      &          CAOYYY(MXAQN), CAOYYZ(MXAQN),
      &          CAOYZZ(MXAQN), CAOZZZ(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
 C
       DO IV = 1, NVCLEN
          IF (SPHRA) THEN
@@ -1516,12 +1516,12 @@ C
 C     T. Helgaker Oct 99
 c     vectorized by Pawel Salek, Apr 03
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <dftinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "dftinf.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAO (NVCLEN,NBAST), GABX(NVCLEN,NBAST),
@@ -1529,9 +1529,9 @@ C
      &          PA(3,NVCLEN)
       
 C
-#include <onecom.h>
-#include <primit.h>
-#include <orgcom.h>
+#include "onecom.h"
+#include "primit.h"
+#include "orgcom.h"
 C
       DO ICOMPA = 1,KHKTA
          DO K = 1, NVCLEN
@@ -1546,16 +1546,16 @@ C
 C  /* Deck bldftsos */
       SUBROUTINE BLDFTSOS(NVCLEN,GAO,GSO,NBAST,NVEC,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION GAO(NVCLEN,NBAST,NVEC), GSO(NVCLEN,NBAST,NVEC)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DFTSOS',-1)
 C
 C     Loop over all irreps in molecule
@@ -1597,7 +1597,7 @@ C
 C     Set DFTINF common block up so it is ready for subsequent
 C     execution of GETSOS.
 C
-#include <implicit.h>
+#include "implicit.h"
 c     Pawel Salek, feb 2001
 c     GEODRV - 0 for just orbital values, 1 for first order orbital
 c     derivatives, 2 for laplacian.
@@ -1611,8 +1611,8 @@ c     the computed orbitals are ordered as follows:
 c     (orbital values=O, [dO/dx,dO/dy,dO/dz, [d0/dxx, ..]],
 c      [dO/dBx, dO/dBy, dO/dBz])
 C
-#include <dftinf.h>
-#include <inforb.h>
+#include "dftinf.h"
+#include "inforb.h"
 C
       CALL QENTER('SETUPSOS')
       NDER = GEODRV
@@ -1658,8 +1658,8 @@ C
       END
 C
       SUBROUTINE zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION TMP(NVCLEN,NBAST),NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
       DO ISYM = 1, NSYM
          DO IBL = 1, NBLOCKS(ISYM)

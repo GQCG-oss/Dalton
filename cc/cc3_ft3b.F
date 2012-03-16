@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C    /* Deck cc3_ft3b */ 
       SUBROUTINE CC3_FT3B(LISTL,IDLSTL,LISTB,IDLSTB,IOPTRES,
@@ -94,16 +94,16 @@ C
       CHARACTER CDUMMY*1
 C
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
 C
       PARAMETER(HALF = 0.5D0, TWO = 2.0D0)
       PARAMETER(FN3SRTR  = 'CCSDT_FBMAT1', FNCKJDR  = 'CCSDT_FBMAT2', 
@@ -775,9 +775,9 @@ C     XIAJB contains g and YIAJB contains L
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, ISYINT, ISYMC2, LENSQ, LWORK, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6), INDEX
@@ -1246,9 +1246,9 @@ C     XIAJB contains g and YIAJB contains L
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, ISYINT, ISYMC2, LENSQ, LWORK, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6), INDEX
@@ -1742,9 +1742,9 @@ C     Note : XIAJB is coming in as L and not g.
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 C
       INTEGER ISYMIM, ISYINT, ISYMC2, LENSQ, LWORK, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6), INDEX

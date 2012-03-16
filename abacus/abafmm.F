@@ -21,18 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck fmminp */
       SUBROUTINE FMMINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbifmm.h>
-#include <abainf.h>
+#include "cbifmm.h"
+#include "abainf.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  ','.LMAX  '/
 C
       NEWDEF = (WORD .EQ. '*FMM   ')
@@ -110,10 +110,10 @@ C  /* Deck fmmini */
       SUBROUTINE FMMINI
 C     Initialize /CBIFMM/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbifmm.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbifmm.h"
 C     CHARACTER OUTCEN*60                          !maw
 C     PARAMETER (OUTCEN =                         !maw
 C    &     "/people/mark/desktop/code/data/FMM_g-data.out")
@@ -136,16 +136,16 @@ C  /* Deck fmmdrv */
 C
 C     M. Watson & T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <iratdef.h>
-#include <inforb.h>
-#include <cbifmm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "iratdef.h"
+#include "inforb.h"
+#include "cbifmm.h"
       DIMENSION WORK(LWORK)
 C
       IF (SKIP) RETURN
@@ -181,26 +181,26 @@ C  /* Deck fmmdr1 */
 C
 C     M. Watson & T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
       DIMENSION SPHINT(NNBASX,NCOMP), DENMAT(NNBASX),
      &          AOCOOR(NBAST,3), AOEXP(NBAST),
      &          WORK(LWORK)
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <cbieri.h>
-#include <clsfmm.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "cbieri.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMDR1','*',103)
 C
@@ -239,25 +239,25 @@ C  /* Deck fmmncl */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0, D100 = 1.0D2)
       DIMENSION WORK(LWORK)
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <cbieri.h>
-#include <clsfmm.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "cbieri.h"
+#include "clsfmm.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMNCL','*',103)
 C
@@ -374,13 +374,13 @@ C  /* Deck fmmdns */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
       LOGICAL NODC, NODV
       DIMENSION DENMAT(NNBASX), WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMDNS','*',103)
 C
@@ -405,19 +405,19 @@ C  /* Deck fmmint */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
       LOGICAL      TOFILE, TRIMAT, DOINT(2,2)
       DIMENSION    SPHINT(NNBASX,*), WORK(LWORK)
       CHARACTER*10 LABINT(2*LMAX+1)
-#include <inforb.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <orgcom.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "orgcom.h"
 C
       IF (IPRINT .GT. 2) CALL TITLER('Output from FMMINT','*',103)
 C
@@ -459,12 +459,12 @@ C  /* Deck fmmspr */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
       CHARACTER LABINT(*)*8
       DIMENSION SPHINT(NNBASX,*), INTREP(*)
-#include <inforb.h>
+#include "inforb.h"
 C
       DO ICOMP = 1, NCOMPS
          CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
@@ -477,23 +477,23 @@ C
 C  /* Deck sphave */
       SUBROUTINE SPHAVE(SPHINT,DENMAT,LMAX,DIS,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       DIMENSION SPHINT(NNBASX,*), DENMAT(NNBASX), DIS(*)
-#include <ccom.h>
-#include <primit.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inforb.h>
-#include <clsfmm.h>
+#include "ccom.h"
+#include "primit.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "clsfmm.h"
 C
       CALL HEADER('Output from SPHAVE',-1)
 C
@@ -570,24 +570,24 @@ C
       END
 C  /* Deck fmmorb */
       SUBROUTINE FMMORB(AOCOOR,AOEXP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
       DIMENSION AOCOOR(NBAST,3), AOEXP(NBAST)
 C
-#include <ccom.h>
-#include <primit.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "ccom.h"
+#include "primit.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inforb.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IORBA = 0
       DO ISHELA = 1,KMAX
@@ -617,18 +617,18 @@ C  /* Deck geterg */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0)
       DIMENSION DMAT(N2BASX), WORK(LWORK), MBAS(8)
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       ERGTOT = D0
       ERGCOU = D0
@@ -668,13 +668,13 @@ C    &    ' Two-electron total and Coulomb energies: ',ERGTOT,ERGCOU
 C  /* Deck adderg */
       SUBROUTINE ADDERG(ERGTOT,ERGCOU,DMAT,BUF,IBUF,LENGTH)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.50D00, DP25 = 0.25D0)
       INTEGER P, Q, R, S
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION DMAT(NBAST,NBAST), BUF(LENGTH), IBUF(4,LENGTH)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 INT = 1, LENGTH
          DINT = BUF(INT)
@@ -696,11 +696,11 @@ C
 C  /* Deck get1el */
       SUBROUTINE GET1EL(ERGONE,DMAT,HMAT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.D0, D2 = 2.0D0)
       DIMENSION DMAT(NBAST,NBAST), HMAT(NNBAST)
-#include <inforb.h>
+#include "inforb.h"
       ERGONE = D0
       IJ = 0
       DO I = 1, NBAST
@@ -715,9 +715,9 @@ C
       END
 C  /* Deck fmmzer */
       SUBROUTINE FMMZER(DIS,NDIM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION DIS(NDIM,8)
@@ -809,7 +809,7 @@ C
       END
 C  /* Deck erfciv */
       FUNCTION ERFCIV(THR)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
       DIMENSION ERFCI(0:15)
       DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0,

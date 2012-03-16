@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck odcvec */
       SUBROUTINE ODCVEC(COOR12,EXP12,FAC12,CONT1,CONT2,JMAX1,JMAX2,
@@ -33,16 +33,16 @@ C  /* Deck odcvec */
 C
 C     TUH Apr 11 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
      &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), IXP12(*),
      &          WORK(LWORK)
-#include <twosta.h>
+#include "twosta.h"
       IF (TKTIME) TIMSTR = SECOND()
       IF (GEN12) THEN
          KPOINT = 1
@@ -96,18 +96,18 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
-#include <primit.h>
-#include <symmet.h>
+#include "primit.h"
+#include "symmet.h"
       COMMON /MAXOLD/ SRFMAX,OLDMAX
       DIMENSION NPCO1(NSET1,2,0:NODC12), NPCO2(NSET2,2,0:NODC12),
      &          JSTR1(*), JSTR2(*),
@@ -128,7 +128,7 @@ C
      &          NFTOR1(NUC1), NFTOR2(NUC2)
 C
 
-#include <ibtfun.h>
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -542,18 +542,18 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
-#include <primit.h>
-#include <symmet.h>
-#include <expopt.h>
+#include "primit.h"
+#include "symmet.h"
+#include "expopt.h"
       COMMON /MAXOLD/ SRFMAX,OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -563,7 +563,7 @@ C
      &          NIND12(NORB1*NORB2,2), NORT12(8),
      &          IXP12(NUC1*NUC2,2,NODC12)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -575,7 +575,9 @@ C
       IF (ITYPE .EQ. 12) THEN
          IELCTR = 1
          SRFMAX = D0
-         THRSH  = THRESH
+         THRSH  = 0.01D0*THRESH
+         ! some tests indicate that a factor 1/100 is needed in the ODC test
+         ! to get integrals of accuracy THRESH
       ELSE
          IELCTR = 2
 C
@@ -583,7 +585,7 @@ C     This adjustment of screening thresholds seems to lead to stalling and
 C     odd convergence behaviour. Disabled. kr-230106
 C     hjaaj-071017: reenabled; I think the problem was SRFMAX was not saved
 C
-         THRSH  = THRESH/OLDMAX
+         THRSH  = 0.01D0*THRESH/OLDMAX
 Chj      THRSH  = THRESH
       END IF
 Chj aug99: find max relevant isymop
@@ -822,15 +824,15 @@ C  /* Deck odcoef */
 C
 C     TUH Apr 11 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
      &        SPNORB, DIA2SO, LONDON, DIA2UP, EL2CD, ZFS2EL
       DIMENSION COEF12(*), NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*),
      &          COOR12(*), EXP12(*), NUCS12(*), ORIGO(3), WORK(LWORK)
-#include <orgcom.h>
-#include <twosta.h>
+#include "orgcom.h"
+#include "twosta.h"
 C
       DIA2UP = DIA2SO .AND. ITYPE.EQ.12
       EL2CD  = DIA2SO .AND. ITYPE.EQ.34
@@ -905,10 +907,10 @@ C  /* Deck excoef */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL YEQX, ZEQX, ZEQY, ONECEN, DER1, DER2, DER12,
      &        DERECC, DERECD, BIGVEC, UNDIFF, SPNORB, DIA2UP, EL2CD,
@@ -916,10 +918,10 @@ C
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), HEXPPI(*), EXP12(NUC1*NUC2,3),
      &          COOR1(MXUC12),  ORIGO(3), WORK(LWORK)
-#include <twosta.h>
-#include <expopt.h>
-#include <drw2el.h>
-#include <r12int.h>
+#include "twosta.h"
+#include "expopt.h"
+#include "drw2el.h"
+#include "r12int.h"
 C
       LA = NHKT1 - 1
       LB = NHKT2 - 1
@@ -1231,14 +1233,14 @@ C  /* Deck twoodc */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 =0.00 D00, D1 =1.00 D00, D2 =2.00 D00)
       INTEGER T, A, B, AB
       CHARACTER WORD*4
       DIMENSION DIFPA(*), DIFPB(*), HEXPPI(*)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -1495,8 +1497,8 @@ C
 C     TUH 84
 C     Rewritten Oct 91, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORDA*4, WORDB*4
       LOGICAL DER1, DER2
       INTEGER A, B, AB, T
@@ -1504,7 +1506,7 @@ C
      &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 A = 0, MAX1
          DO 200 B = 0, MAX2
@@ -1579,8 +1581,8 @@ C  /* Deck dertwo */
 C
 C     Oct 91 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, AB, T
       CHARACTER WORD*1
       LOGICAL DER1, DER2, DER12, AGT0, BGT0
@@ -1589,7 +1591,7 @@ C
      &          XCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 A = 0, MAX1
          AGT0 = A .GT. 0
@@ -1720,16 +1722,16 @@ C  /* Deck derlon */
 C
 C     tuh Sep 4 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12), ORIGO(3)
-#include <abainf.h>
-#include <chrxyz.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "chrxyz.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
       IODD(1) = I120X
       IODD(2) = I120Y
@@ -1828,14 +1830,14 @@ C
 C     TUH 84
 C     Rewritten Oct 91, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORD*4
       INTEGER A, B, AB, T
       DIMENSION UCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          ABCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO 100 A = 0, MAX1
          DO 200 B = 0, MAX2
@@ -1896,8 +1898,8 @@ C  /* Deck derexp */
 C
 C     TUH 92
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP25 =0.25 D00, DP5 = 0.50 D0, D2 = 2.0 D0)
       CHARACTER WORD*4
       INTEGER A, B, AB, T
@@ -1905,7 +1907,7 @@ C
      &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO A = 0, MAX1
       DO B = 0, MAX2
@@ -1952,23 +1954,23 @@ C  /* Deck excsgn */
 C
 C     tuh March 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P
       LOGICAL DOCOMP(3), SPNORB, DIA2SO, LONDON, EXPGRA
       DIMENSION COEFCD(MXUCCD,0:JMAXC+JMAXD,0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
-#include <symmet.h>
-#include <drw2el.h>
-#include <r12int.h>
-#include <chrnos.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "drw2el.h"
+#include "r12int.h"
+#include "chrnos.h"
+#include "chrxyz.h"
       SAVE SGNOLD, DOCOMP, MAXDIF
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))

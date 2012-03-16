@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck opgctl */
       SUBROUTINE OPGCTL(ORTOPG,RHSOPG,CMO,DV,SOINT,PRPACT,PRPICT,WORK,
@@ -35,14 +35,14 @@ C     the molecular gradient of an arbitrary one-electron property.
 C     Input are SO integrals SOINT of symmetry IREP and molecular
 C     orbitals (CMO) and one-electron active density (DV).
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION ORTOPG(3*NUCDEP), RHSOPG(NVARPT), CMO(NCMOT),
      *          DV(NASHT,NASHT), SOINT(NBAST,NBAST), WORK(LWORK)
       LOGICAL NODC, NODV
-#include <inforb.h>
-#include <inflin.h>
+#include "inforb.h"
+#include "inflin.h"
 C
       CALL QENTER('OPGCTL')
       KMOINT = 1
@@ -62,10 +62,10 @@ C  /* Deck opgct1 */
 C
 C     December 1989, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       LOGICAL NODC, NODV
       DIMENSION CMO(NCMOT), DV(NASHT,NASHT),
@@ -73,9 +73,9 @@ C
      *          ORTOPG(3*NUCDEP), RHSOPG(NVARPT),
      *          FOCKMO(NORBT,NORBT), WORK(LWORK)
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <inflin.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "inflin.h"
 C
 C     ***********************************
 C     ***** Fock matrix in MO basis *****
@@ -109,16 +109,16 @@ C     Purpose: Construction of property Fock matrix in MO basis
 C
 C     tuh 131289
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER(D2=2.0D0)
 C
       INTEGER Q, U, U1, U2
       LOGICAL NODC, NODV
       DIMENSION DMOINT(NORBT,NORBT), FOCK(NORBT,NORBT), DV(NASHT,NASHT)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       ISYMPT = IREP + 1
       IF (IPRINT .GE. 5) THEN
@@ -195,13 +195,13 @@ C           SO basis
 C      (2)  contracting these matrices with the differentiated overlap
 C           matrices (SO basis)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION CMO(NCMOT), FOCKMO(NORBT,NORBT), WORK(LWORK),
      &          ORTOPG(3*NUCDEP)
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL QENTER('OPGORT')
       IF (IPRINT .GT. 5) CALL TITLER('Output from OPGORT','*',103)
@@ -220,21 +220,21 @@ C
 C  /* Deck opgor1 */
       SUBROUTINE OPGOR1(CMO,FOCKMO,ORTOPG,SDSP,SDSQ,WORK,LWORK,
      &                  SDSQT,IREP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
       PARAMETER (D2 = 2.0D0)
       LOGICAL DERIV(3), DOTD
       DIMENSION CMO(NCMOT), FOCKMO(NORBT,NORBT), ORTOPG(3*NUCDEP),
      *          SDSP(N2BASX,3),
      *          SDSQ(NORBT,NORBT), SDSQT(NORBT,NORBT), WORK(LWORK)
       CHARACTER*4 KEY
-#include <abainf.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "symmet.h"
+#include "inforb.h"
 C
       DATA DERIV /3*.TRUE./
 C
@@ -283,21 +283,21 @@ C
 C     Calculate right-hand side for response equations for
 C     one-electron properties
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 C
       DIMENSION RHSOPG(NVARPT), FOCKMO(NORBT,NORBT),
      &          DMOINT(NORBT,NORBT), WORK(LWORK)
 C
-#include <inftap.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inflin.h>
+#include "inftap.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inflin.h"
 C
 C
       CALL QENTER('OPGRHS')
@@ -431,10 +431,10 @@ C
 C Output:
 C   Property orbital gradients in ORBGRD
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infvar.h"
       PARAMETER (D2 = 2.0D0)
       DIMENSION FOCKMO(NORBT,NORBT), ORBGRD(NWOPT)
 C
@@ -442,7 +442,7 @@ C Used from common blocks:
 C   INFVAR : NWOPT,JWOP(2,*)
 C   INFORB : NORBT
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       DO 100 IG = 1, NWOPT
          K = JWOP(1,IG)
@@ -458,10 +458,10 @@ C     This routine transforms derivative SO matrices to MO basis.
 C
 C     tuh 010190
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "inforb.h"
       DIMENSION CMO(NCMOT), WORK(LWORK), SQMO(NORBT,NORBT), SQSO(N2BASX)
       PARAMETER (D1 =1.0D0)
 C

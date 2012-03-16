@@ -21,23 +21,23 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck lrsinp */
       SUBROUTINE LRSINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 15)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbilrs.h"
 C
-#include <gnrinf.h>
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <nuclei.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "nuclei.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.XXXXXX','.XXXXXX',
@@ -164,9 +164,9 @@ C  /* Deck lrsini */
 C
 C     Initialize /LRSRES/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
 #include "cbilrs.h"
 C
       IPRCLC = IPRDEF
@@ -186,24 +186,24 @@ C
       END
 C  /* Deck lrsdrv */
       SUBROUTINE LRSDRV(WORK,LWORK,PASS)
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
       LOGICAL PASS
       LOGICAL INTTRS, CICLC, HFCLC, TRPCLC
       DIMENSION WORK(LWORK)
 C
 #include "cbilrs.h"
-#include <abainf.h>
-#include <gnrinf.h>
-#include <spnout.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "gnrinf.h"
+#include "spnout.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
 C
       IF (SKIP.OR..NOT.
      &   (MAGSUS .OR.  VCD .OR. SHIELD .OR. SPINRO .OR. MOLGFA
@@ -238,23 +238,23 @@ C
       END
 C  /* Deck lrsdr1 */
       SUBROUTINE LRSDR1(NABATY,ZERNRM,WORK,LWORK)
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
       LOGICAL PASS
       LOGICAL INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM(*)
       DIMENSION WORK(LWORK), NABATY(*)
 C
 #include "cbilrs.h"
-#include <abainf.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
 C
       HFCLC  = NASHT .LE. 1
       IF (HFCLC) NCONF = 1
@@ -299,26 +299,26 @@ C  /* Deck getmrh */
       SUBROUTINE GETMRH(HFCLC,OOTV,NABATY,NABAOP,LUGDVE,LUSOVE,LUREVE,
      &                  THRCLC,MAXCLC,IPRCLC,MXRM,MXPHP,ZERNRM,WORK,
      &                  LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (D10 = 10.D0, DP5 = 0.5D0)
 C
       LOGICAL EXCLC, TRPCLC, CICLC, HFCLC, OOTV, ZERNRM(*), OLDDX
       DIMENSION NABATY(*), WORK(LWORK)
-#include <inftap.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inflin.h>
-#include <abainf.h>
-#include <spnout.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <gdvec.h>
-#include <abares.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inflin.h"
+#include "abainf.h"
+#include "spnout.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "gdvec.h"
+#include "abares.h"
+#include "chrnos.h"
 C
 C     Open direct access files
 C
@@ -436,21 +436,21 @@ ckr                  IDORCI(IREC,2) = 2
 #ifdef use_getrhs
 C  /* Deck getrhs */
       SUBROUTINE GETRHS(IOPSYM,NEXVAL,LUGDVE,IPRINT,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
       LOGICAL TRIPLE, OLDDX
       DIMENSION WORK(LWORK)
-#include <inftap.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inflin.h>
-#include <gdvec.h>
-#include <abainf.h>
-#include <nuclei.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inflin.h"
+#include "gdvec.h"
+#include "abainf.h"
+#include "nuclei.h"
 C
       TRIPLE = .FALSE.
       CALL ABAVAR(IOPSYM,TRIPLE,IPRINT,WORK,LWORK)

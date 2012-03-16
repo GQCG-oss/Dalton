@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_cauchy */
 *=====================================================================*
@@ -42,15 +42,15 @@ c /* deck cc_cauchy */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cclists.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -580,12 +580,12 @@ c /* deck cccm_setup */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <ccrc1rsp.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "ccrc1rsp.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -818,15 +818,15 @@ c /* deck CCCM_VEC */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <cclrinf.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "cclrinf.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "dummy.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG

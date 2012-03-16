@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_EXGR
        SUBROUTINE CC_EXGR(WORK,LWORK)
@@ -43,32 +43,32 @@ C     Written by Ove Christiansen April 1997.
 C
 C---------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, IZERO = 0 , TWO = 2.0D0)
-#include <codata.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccfop.h>
-#include <ccexgr.h>
-#include <ccexci.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccrspprp.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <ccroper.h>
-#include <ccfro.h>
-#include <exeinf.h>
-#include <infvar.h>
-#include <dipole.h>
-#include <quadru.h>
-#include <nqcc.h>
+#include "codata.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccfop.h"
+#include "ccexgr.h"
+#include "ccexci.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccrspprp.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "ccroper.h"
+#include "ccfro.h"
+#include "exeinf.h"
+#include "infvar.h"
+#include "dipole.h"
+#include "quadru.h"
+#include "nqcc.h"
 C
       LOGICAL LINQCC, LPROJECT, TRIPLET, LREDS,B0SKIP
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
@@ -87,7 +87,7 @@ C
       PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
      *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       CALL QENTER('CC_EXGR')
 C
@@ -1047,27 +1047,27 @@ C
 C     Current models: CCS, CC2 and CCSD    
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK)
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccexci.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccexci.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
 C
       CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
@@ -1303,12 +1303,12 @@ C     Purpose: To add contributions from the L1 and R1 -amplitudes to
 C              the excited state CC one electron density in MO-basis.
 C              <L1|[Eij,R1]|HF>  
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIJ(*), XL1AM(*), XR1AM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_DXIJ')
 C
@@ -1350,12 +1350,12 @@ C     Purpose: To add contributions from the L1 and R1 -amplitudes to
 C              the excited state CC one electron density in MO-basis.
 C              <L1|[Eab,R1]|HF>
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DAB(*), XL1AM(*), XR1AM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_DXAB')
 C
@@ -1400,10 +1400,10 @@ C              NB - 2c-E XR2AM assumed
 C              and the Dia block is stored transposed, i.e. like a t1-amplitude!
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL1AM(*), XR2AM(*)
 C
@@ -1460,12 +1460,12 @@ C     KS, Aug 10:
 C     Modified to calculate general <L2|[[Eia,R1],R2]|HF>
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL2AM(*), XR1AM(*), T2AM(*),WORK(LWORK)
       CHARACTER*10 MODEL
@@ -1562,12 +1562,12 @@ C
 C     Purpose: Contract DAB and DIJ with R1AM into DIA
 C              The Dia block is stored transposed, i.e. like a t1-amplitude!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
       DIMENSION DIA(*),DAB(*),DIJ(*),XR1AM(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_IA21')
 C
@@ -1628,26 +1628,26 @@ C           <L1|Emn|HF>
 C
 C     Current models: CCS, CC2 and CCSD
 C
-#include <implicit.h>      
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
+#include "implicit.h"      
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION AODEN(*), WORK(LWORK)
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccexci.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccexci.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
 C
       CHARACTER MODEL*5,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
@@ -1758,12 +1758,12 @@ C     Call TNSRAN and write out selected info.
 C
 C------------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
 C
       PARAMETER (THR = 1.0D-08)
       DIMENSION TNSR(3,3),PVAL(3),PAXIS(3,3)
@@ -1799,12 +1799,12 @@ C     calculated in the CC_DXIJ routine.
 C             
 C     KS, Aug 2010       
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), DIJ(*), XR1AM(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCMM_DIA')
 C

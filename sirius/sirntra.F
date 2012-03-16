@@ -142,7 +142,7 @@ C
       JTRSIR = ABS(ITRSIR)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
 C     ... USEDRC must be true for second order transformation
-C         can be true by input for higher order (e.g. for MP2 and RESPONS)
+C         can be true by input for higher order (e.g. for RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
 C     to the convention used in this program.
@@ -374,7 +374,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -455,7 +455,7 @@ C    Read next Mulliken two-electron integral distribution (**|cd)
 C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Input:
-C       NEEDTP(6); positive for needed (cd) distribution types
+C       NEEDTP(i); positive for needed (cd) distribution types
 C                  negative if not all distributions needed
 C                  zero if no distributions needed for this type
 C       IDIST; .eq. 0 first read
@@ -475,7 +475,7 @@ C ****************************************************************
 C
 #include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(*)
-      INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
+      INTEGER   IADRM(3,36,36), NEEDTP(-4:6), ICDTRA(NNORBX)
 C
 #include "iratdef.h"
 c#include "dacodes.h"
@@ -647,7 +647,7 @@ C
       END IF
 C
       IF (ITYPCD .GT. 0 .AND. ICDTRA(ICDNEW) .EQ. 0) THEN
-         WRITE(LUPRI,'(//A/)') 'NX2H2M ERROR: '//
+         WRITE(LUPRI,'(//A/)') 'N_NX2H2M ERROR: '//
      &     'needed integral distribution has not been calculated'
          WRITE(LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
          WRITE(LUPRI,*) 'IYPC  ,ITYPD  : ',COBTYP(ITYPC),
@@ -655,7 +655,11 @@ C
          WRITE (LUPRI,'(/A)') 'ICDTRA matrix:'
          DO I = 1,NORBT
             IR = IROW(I)
-            WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+            IF (ISUM(I,ICDTRA(IR+1),1) .EQ. 0) THEN
+               WRITE (LUPRI,'(I5,A)') I,'   All entries are zero.'
+            ELSE
+               WRITE (LUPRI,'(I5,(T8,10I7))') I,(ICDTRA(IR+J),J=1,I)
+            END IF
          END DO
          CALL QUIT('N_NX2H2M error: needed integrals not calculated')
       END IF
@@ -755,7 +759,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
+      DIMENSION H2CD(*),NEEDTP(-4:6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -855,7 +859,7 @@ C ****************************************************************
 C
 #include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(*)
-      INTEGER   IADRM(3,36,36), NEEDTP(6), ICDTRA(NNORBX)
+      INTEGER   IADRM(3,36,36), NEEDTP(-4:6), ICDTRA(NNORBX)
 C
 #include "iratdef.h"
 c#include "dacodes.h"
@@ -946,7 +950,7 @@ C *** Initialize H2CD
 C
       CALL DZERO(H2CD,N2ORBX)
 C
-C *** Read next distribution which is needed according to NEEDTP(6)
+C *** Read next distribution which is needed according to NEEDTP(*)
 C     into H2CD
 C
 C  ITYPCD values:  1=i*i :  2=t*i : 3=t*t : 4=a*i : 5=a*t : 6=a*a
@@ -3015,7 +3019,7 @@ C
 C Define KEEP and IDATA for AO->MO transformation from AOTWOINT
 C (instead of from AOORDINT)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFDIM : N2BASM
@@ -3024,12 +3028,12 @@ C  TRINP  : MSYM, MBAS(), INTSYM
 C  TRHSO  : KSYMSO
 C  TRUNIT : KEEP,IDATA
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <trinp.h>
-#include <trhso.h>
-#include <trunit.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "trinp.h"
+#include "trhso.h"
+#include "trunit.h"
 C
       CALL QENTER('TRASET_3')
 C
@@ -3079,10 +3083,10 @@ C IBUF  : Points to start element in label buffer.
 C H2_RSPQ : H2RSPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION H2_RSPQ(*), BUF(*), IBUF(4,600)
 C
 C Used from common blocsk:
@@ -3090,18 +3094,18 @@ C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   TRINFO : ISP,ISQ,ISR,ISS,NBQ,NPQ,NBRS
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infind.h>
-#include <trinfo.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infind.h"
+#include "trinfo.h"
 
-#include <inftra.h>
+#include "inftra.h"
 C
       INTEGER NBAS_x(8)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)

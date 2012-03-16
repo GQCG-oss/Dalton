@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccpt_grad0 */
       SUBROUTINE CCPT_GRAD0(GRADH1,GRADFS,GRADH2,WORK,LWORK,LPTTOO)
@@ -47,19 +47,19 @@ C           CCSD(T) is treated as an addition to CCSD,
 C           when LPTTOO = true. This is because many subroutines
 C           require MODEL = CCSD and not CCSD(T) (like CC_RDRSP etc)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
-#include <eridst.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "eridst.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
       LOGICAL LOCDBG
@@ -74,20 +74,20 @@ C
       LOGICAL OLDDX, DIRSAV, LPTTOO
       integer LUPTIA
       character*5 FNDPTIA
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <eribuf.h>
-#include <cclr.h>
-#include <ccfro.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "eribuf.h"
+#include "cclr.h"
+#include "ccfro.h"
 C
       CALL QENTER('CCPT_GRAD0')
 C

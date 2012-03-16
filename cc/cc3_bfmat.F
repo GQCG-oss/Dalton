@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc3_bfmat */
       SUBROUTINE CC3_BFMAT(LISTL,IDLSTL,LISTR,IDLSTR,
@@ -61,18 +61,18 @@ C  /* Deck cc3_bfmat */
 *
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccl1rsp.h>
-#include <ccsdsym.h>
-#include <ccr1rsp.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccinftap.h>
-#include <cclrmrsp.h>
-#include <ccexci.h>
-#include <ccn2rsp.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccl1rsp.h"
+#include "ccsdsym.h"
+#include "ccr1rsp.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccinftap.h"
+#include "cclrmrsp.h"
+#include "ccexci.h"
+#include "ccn2rsp.h"
+#include "ccsdinp.h"
 C
       LOGICAL LSKIPL1R,SKIPGEI
 C

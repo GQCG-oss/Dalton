@@ -21,23 +21,23 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck setaob */
       SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7),
      &          WORK(LWORK)
-#include <shells.h>
-#include <symmet.h>
-#include <aobtch.h>
-#include <veclen.h> 
-#include <ibtfun.h>
+#include "shells.h"
+#include "symmet.h"
+#include "aobtch.h"
+#include "veclen.h" 
+#include "ibtfun.h"
 C
 C     Number of basis functions
 C
@@ -161,11 +161,11 @@ C
       END
 C  /* Deck aobch */
       SUBROUTINE AOBCH(NB,ISHELL,CCFBT,INDXBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
-#include <shells.h>
+#include "shells.h"
 C
       NUCA  = NUCO(ISHELL)
       NRCA  = NRCO(ISHELL)
@@ -189,23 +189,23 @@ C
 C  /* Deck aobch1 */
       SUBROUTINE AOBCH1(NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,NDIMC,
      &                  IPNTC,IPNTP,ISHELL,CCFBT,INDXBT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (THR = 1.0D-17)
 C
       DIMENSION MAT(NUCA,NRCA), IDONE(NUCA), NDIMP(NUCA), NDIMC(NUCA),
      &          IPNTC(NUCA,NRCA),IPNTP(NUCA,NUCA)
       DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7)
 C
-#include <symmet.h>
-#include <aobtch.h>
-#include <shells.h>
-#include <primit.h>
-#include <erisel.h>
+#include "symmet.h"
+#include "aobtch.h"
+#include "shells.h"
+#include "primit.h"
+#include "erisel.h"
 C
       SAVE IADRP, IADRC, IADRO, NBTCH
 C
@@ -362,7 +362,7 @@ C
       END
 C  /* Deck inprd */
       FUNCTION INPRD(IVEC1,IVEC2,NDIM)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IVEC1(NDIM), IVEC2(NDIM)
       INNER = 0
       DO 100 I = 1, NDIM
@@ -373,14 +373,14 @@ C  /* Deck inprd */
       END
 C  /* Deck aobsrt */
       SUBROUTINE AOBSRT(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL AOBTGT
-#include <aobtch.h>
+#include "aobtch.h"
 C
       DO 100 I = 1, NAOBCH
          KAOSRT(I) = I
@@ -411,13 +411,13 @@ C
       END
 C  /* Deck aobtgt */
       LOGICAL FUNCTION AOBTGT(IAO,JAO)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aobtch.h"
 C
 C     Sorts by...
 C
@@ -456,12 +456,12 @@ C
       END
 C  /* Deck mltcmp */
       FUNCTION MLTCMP(NHKTA,KHKTA,MULA,IREPA)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       MLTCMP = 0
       DO ICMPA = 1, KHKTA
@@ -476,15 +476,15 @@ C  /* Deck cnttyp */
 C
 C     T. Helgaker Jan 2001
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (THR = 1.0D-17)
       LOGICAL SAMCOF
       DIMENSION CCFBT(*)
-#include <aobtch.h>
+#include "aobtch.h"
 C
       ITYPE = 0
       CALL IZERO(KCMTBT,NAOBCH)

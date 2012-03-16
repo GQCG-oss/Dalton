@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_open */
       SUBROUTINE SO_OPEN(LUFILE,FILENM,LARRAY)
@@ -10,8 +10,8 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Open and rewind the file LUFILE.
 C             
-#include <implicit.h>
-#include <soppinf.h>
+#include "implicit.h"
+#include "soppinf.h"
 C
       CHARACTER*7 FILENM
 C

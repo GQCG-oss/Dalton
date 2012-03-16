@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_ETA_CONT(LISTL,LISTR,NODDY,
@@ -40,12 +40,12 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <dummy.h>
-#include <cclists.h>
-#include <ccroper.h>
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "dummy.h"
+#include "cclists.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -341,13 +341,13 @@ C         --------------------
 *            
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <ccrc1rsp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "ccrc1rsp.h"
 C
       LOGICAL LOCDBG
       LOGICAL LCAUCHY
@@ -681,15 +681,15 @@ C
 *=====================================================================*
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "ccexci.h"
 C
       LOGICAL LOCDBG, TOT_T3Y
       LOGICAL LCAUCHY
@@ -2273,8 +2273,8 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL T2AMP(*), XAIBJ, XBJAI, FAC
@@ -2353,9 +2353,9 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL DIA(*), XMMAT(*), T2TP(*), WORK(*)
@@ -2457,8 +2457,8 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL FIA(*), FIJ(*), FAI(*), FAB(*), FOCK(*)
@@ -2540,10 +2540,10 @@ C
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclists.h"
 
 * input:
       CHARACTER*3 LISTL, LISTDPE, LISTDPX
@@ -2724,10 +2724,10 @@ C     -------------------------------------------------------
 *             
 *=====================================================================*
       IMPLICIT NONE
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "priunit.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

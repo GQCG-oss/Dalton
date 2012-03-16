@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE TM1IND
 C
@@ -29,17 +29,17 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT ONE-INDEX
 C LINEAR RESPONSE EQUATIONS THAT ARE USED IN A
 C A CALCULATION OF THIRD ORDER TRANSITION MOMENTS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <rspprp.h>
-#include <infsmo.h>
-#include <indcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infspi.h>
-#include <inftmo.h>
-#include <infcr.h>
+#include "priunit.h"
+#include "rspprp.h"
+#include "infsmo.h"
+#include "indcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infspi.h"
+#include "inftmo.h"
+#include "infcr.h"
 C
 C     Keep the accumulated number of ROOTS for three-photon calcs
 C
@@ -129,18 +129,18 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C TWO-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( ZEROTHR = 1.0D-10 )
 C
-#include <rspprp.h>
-#include <infcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <inftmo.h>
-#include <indcr.h>
+#include "rspprp.h"
+#include "infcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "inftmo.h"
+#include "indcr.h"
 C
       CHARACTER*8 DTMLB
 C

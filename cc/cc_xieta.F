@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
        SUBROUTINE CC_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
@@ -43,13 +43,13 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #include "maxorb.h"
 #include "cclists.h"
-#include <ccsdinp.h>
-#include <ccnoddy.h>
+#include "ccsdinp.h"
+#include "ccnoddy.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 
       LOGICAL LOCDBG
@@ -435,39 +435,39 @@ c /* deck cc_xieta1 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <blocks.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <iratdef.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <ccisao.h>
-#include <ccroper.h>
-#include <ccfro.h>
-#include <cco1rsp.h>
-#include <ccx1rsp.h>
-#include <ccr1rsp.h>
-#include <cclists.h>
-#include <chrxyz.h>
-#include <dummy.h>
-#include <ccsections.h>
-#include <qm3.h>
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "blocks.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "iratdef.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "ccisao.h"
+#include "ccroper.h"
+#include "ccfro.h"
+#include "cco1rsp.h"
+#include "ccx1rsp.h"
+#include "ccr1rsp.h"
+#include "cclists.h"
+#include "chrxyz.h"
+#include "dummy.h"
+#include "ccsections.h"
+#include "qm3.h"
 !#include <qmmm.h>
-#include <ccnoddy.h>
-#include <cch2d.h>
-#include <ccrc1rsp.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccnoddy.h"
+#include "cch2d.h"
+#include "ccrc1rsp.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3357,12 +3357,12 @@ C          END IF
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccfield.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccfield.h"
+#include "ccsdinp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3525,11 +3525,11 @@ C          END IF
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3823,12 +3823,12 @@ CCH
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccisao.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -4178,12 +4178,12 @@ c /* deck ccxiintao */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccisao.h"
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -4614,12 +4614,12 @@ C     --------------------------------------------
 *
 *---------------------------------------------------------------------*
        IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
 
 
       LOGICAL LOCDBG
@@ -5426,14 +5426,14 @@ c /* deck cceta2 */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccisao.h>
-#include <ccfield.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccisao.h"
+#include "ccfield.h"
+#include "dummy.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -6404,9 +6404,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       INTEGER ISYMTR, ISYDEL, ISYLDM, IDEL
 
@@ -6491,15 +6491,15 @@ C
 *
 *---------------------------------------------------------------------*
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO=0.0D0,ONE=1.0D0,TWO=2.0D0)
       DIMENSION OMEGA1(*),ONEHAM(*)
       DIMENSION RAIM(*),RBIM(*),GAIM(*),GBIM(*)
       DIMENSION XLAMDHA(*),XLAMDHB(*),XLAMDPA(*),XLAMDPB(*)
       LOGICAL ONHCON, LRCON, LGCON, LRELAX, TRSPOH
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER IOPT
 C
@@ -6668,10 +6668,10 @@ C     ISYLAM : symmetry of XLAMDH
 C
 C     Christof Haettig, October 1998
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDH(*),YPS(*),YI(*)
@@ -6750,9 +6750,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -6879,9 +6879,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

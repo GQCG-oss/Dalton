@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_hyppol */
 *=====================================================================*
@@ -43,19 +43,19 @@ c /* deck cc_hyppol */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccqrinf.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <second.h>
-#include <dummy.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccqrinf.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "second.h"
+#include "dummy.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -1058,9 +1058,9 @@ c /* deck ccqrdisp */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1696,11 +1696,11 @@ c /* deck ccqhypprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*15  BLANKS
@@ -2297,11 +2297,11 @@ c /* deck ccqexpprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
 
       LOGICAL TSTISA
@@ -2412,11 +2412,11 @@ c /* deck ccqdisprt */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
 
       INTEGER KA, KB, KC, KCP, KD, KDP, KE, KEP
       PARAMETER (KA=1,KB=2,KC=3,KCP=4,KD=5,KDP=6,KE=7,KEP=8)
@@ -2725,7 +2725,7 @@ C
 C  /* Deck around120 */
       SUBROUTINE AROUND120(HEAD)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
       LNG = LEN(HEAD) + 2
       IND = (120 - LNG)/2 + 1
       WRITE (LUPRI, '(//,120A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'

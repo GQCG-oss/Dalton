@@ -26,39 +26,39 @@ C...
 C...  This subroutine was written by Andrea Ligabue using
 C...  the subroutine LNRABA as a model (1999)
 C...
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <trkoor.h>
-#include <sigma.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbilnr.h>
-#include <suscpt.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "trkoor.h"
+#include "sigma.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbilnr.h"
+#include "suscpt.h"
+#include "infpri.h"
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL1, LABEL2, LABINT(4*MXCOOR+9)
       PARAMETER (D05=0.5D0,D025=0.25)
       LOGICAL TODOINT
 C
-#include <cbiexc.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <infsop.h>
-#include <ibtfun.h>
+#include "cbiexc.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "infsop.h"
+#include "ibtfun.h"
 C
       CALL QENTER('CTOABA')
       CALL TIMER('START ',TIMEIN,TIMOUT)
@@ -540,16 +540,16 @@ C     to have the result of the proprerty with the origin
 C     on the atom under examinations and store it in
 C     SFTP
 C   
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "orgcom.h"
       DIMENSION SFTP(3,3,MXCENT),SFTM(3,3,MXCENT),
      &          SSFT(3,MXCENT)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C     ... compute the (R_cm - R_I) for each atom ...
       JATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -597,13 +597,13 @@ C
 C     At present it look always in the AOPROPER files but it will be 
 C     easy to generalize this subroutine.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <trkoor.h>
-#include <chrxyz.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "trkoor.h"
+#include "chrxyz.h"
+#include "chrnos.h"
 cLig DEBUG <>
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*8 LABEL,LABEL1
       CHARACTER LABINT(*)*8
       DIMENSION INTREP(*)
@@ -656,12 +656,12 @@ C
 C     It could be necessary to correct the PSO part for molecules with 
 C     more then 33 atoms
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <trkoor.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "trkoor.h"
+#include "chrnos.h"
 cLig DEBUG <>
-#include <priunit.h>
+#include "priunit.h"
       CHARACTER*8 LABEL,LABEL1
       LOGICAL FNDLAB
 C

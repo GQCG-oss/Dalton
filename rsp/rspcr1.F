@@ -21,22 +21,22 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CRINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <gnrinf.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <infhyp.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
-#include <inftap.h>
+#include "inflr.h"
+#include "infhyp.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
+#include "inftap.h"
 C
       LOGICAL NEWDEF, BCDFRQ, STATIC
       PARAMETER ( NTABLE = 24 , ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
@@ -393,14 +393,14 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C ONE-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       PARAMETER ( ZERO = 0.0D0 )
 C
@@ -495,14 +495,14 @@ C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
 C TWO-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #include "rspprp.h"
-#include <infcr.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infcr.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       PARAMETER ( ZERO = 0.0D0 )
 C
@@ -608,12 +608,12 @@ C
       END
       SUBROUTINE AN2SYM(NAOPNU,NBOPNU,NCOPNU,NDOPNU,IWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "infpri.h"
 C
 C THIS ROUTINE ANALYZE IF OPERATORS THAT ARE SPECIFIED IN CUBIC
 C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
@@ -720,14 +720,14 @@ C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INCRLR GIVES THE ADDED NUMBER
 C
 C BASED ON INQRLR
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indcr.h>
-#include <indqr.h>
-#include <infpri.h>
+#include "indcr.h"
+#include "indqr.h"
+#include "infpri.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLBL
@@ -804,15 +804,15 @@ C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
 C LIST AND INCR2 GIVES THE ADDED NUMBER
 C
 C BASED ON INCRLR
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <indcr.h>
-#include <indqr.h>
-#include <infpri.h>
-#include <inforb.h>
+#include "indcr.h"
+#include "indqr.h"
+#include "infpri.h"
+#include "inforb.h"
 C
       PARAMETER ( DIFFR = 1.0D-8 )
       CHARACTER*8 NEWLB1,NEWLB2
@@ -879,8 +879,8 @@ C
       SUBROUTINE CRCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                  XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
 C PURPOSE:
 C DRIVER ROUTINE FOR CUBIC RESPONSE
@@ -888,23 +888,23 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <dummy.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
+#include "dummy.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
 #include "rspprp.h"
-#include <qrinf.h>
-#include <infpp.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infsmo.h>
-#include <infrsp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <indcr.h>
-#include <infdim.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "qrinf.h"
+#include "infpp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infsmo.h"
+#include "infrsp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "indcr.h"
+#include "infdim.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
       CALL QENTER('CRCALC')
       IF (SOPPA) THEN
@@ -991,8 +991,8 @@ C  CREATE THE SOLUTION VECTORS THAT ARE REQUIRED TO DO
 C  CUBIC RESPONSE
 C  SOLUTION OF LINEAR EQUATIONS ARE DETERMINED IN CRLRV1.
 C
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
 C
       CHARACTER*8 BLANK
       PARAMETER (BLANK = '        ', D1 = 1.0D0, D0 = 0.0D0)
@@ -1000,27 +1000,27 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <qrinf.h>
+#include "indqr.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <infsmo.h>
-#include <infhyp.h>
-#include <infpp.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "infsmo.h"
+#include "infhyp.h"
+#include "infpp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
 C INITIALIZE VARIABLES
 C
@@ -1154,17 +1154,17 @@ C SORT THE LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
 C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
 C STORED IN NLRCR WITH OFSET IN ILRCR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
+#include "priunit.h"
+#include "inforb.h"
 #include "rspprp.h"
-#include <indqr.h>
-#include <indcr.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "indqr.h"
+#include "indcr.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')

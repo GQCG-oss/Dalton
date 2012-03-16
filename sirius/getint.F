@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck getin2 */
       SUBROUTINE GETIN2( RIJKL, K1, L1, FIJKL, ILTSOB, WIJKL )
@@ -203,12 +203,12 @@ C                  RETURN SYMMETRIC COMBINATION
 C                  W(I,J) = (J~~~I|LK) + (J~~I|L~K) + (J~~I|L~K) + (J~~I|L~K) 
 C                         + (L~~~K|JI) + (L~~K|J~I)  +(L~~K|J~I) + (L~~K|J~I)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RIJKL(NASHT,NASHT), FIJKL(*), ILTSOB(*)
       DIMENSION WIJKL(NASHT,NASHT)
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0, D3 = 3.0D0 )
-#include <priunit.h>
+#include "priunit.h"
 C
 C Used from common blocks:
 C
@@ -218,12 +218,12 @@ C  CBGETDIS : DISTYP, IADINT
 C  CBREOR   : SLREOR
 C  INFSPI   : ISGN1,ISGN2
 C
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
-#include <cbreor.h>
-#include <infspi.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
+#include "cbreor.h"
+#include "infspi.h"
 C
 C
 C     Get SIRIUS orbital numbers:

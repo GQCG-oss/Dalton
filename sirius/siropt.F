@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -53,7 +53,7 @@ C Revisions
 C   6-Aug-1984/16-May-1984 - hjaaj
 C  14-May-1985 - hjaaj (update     -- sirupd)
 C  10-Nov-1985 - hjaaj (absorption -- sirorb)
-C  14-May-1986 - hjaaj (nr eq's    -- sirnr)
+C  14-May-1986 - hjaaj (nr eqs     -- sirnr)
 C  Last revision 15-Mar-1991 - hjaaj
 C
 C Purpose: Control MCSCF optimization.
@@ -68,18 +68,21 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
-#include <implicit.h>
+#ifdef VAR_MPI
+      use par_mcci_io
+#endif
+#include "implicit.h"
 
 C
       DIMENSION WRK(LFREE)
 C
-#include <thrldp.h>
+#include "thrldp.h"
       PARAMETER (MAXBCK = 5)
       PARAMETER (FAKABS = 0.40D0, STPABS = 0.20D0)
       PARAMETER (STPLCL = 0.15D0, SHFLCL = 1.D-3)
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.0D0)
-#include <iratdef.h>
-#include <dummy.h>
+#include "iratdef.h"
+#include "dummy.h"
 C
 C used from common blocks:
 C  INFINP: LSYM,FLAG(*),...,ITRLVL,ITRFIN,THRPWF,THRCGR,MAXUIT,
@@ -93,24 +96,24 @@ C  CBIHR2: IFTHRS,USRSCR
 C  CBIREA: LMULBS
 C  R12INT: R12CAL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <itinfo.h>
-#include <gnrinf.h>
-#include <cbihr2.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "itinfo.h"
+#include "gnrinf.h"
+#include "cbihr2.h"
+#include "cbirea.h"
+#include "r12int.h"
 C------------------------
-#include <dfterg.h>
-#include <dftcom.h>
+#include "dfterg.h"
+#include "dftcom.h"
 C ---
 C
 C *** local:
@@ -1187,13 +1190,13 @@ C
 C Scratch:
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FD(*),SCRA(*)
 C
 C
       PARAMETER (D0 = 0.0D0,    EMYCNV = 1.D-4,
      &           DBIG = 1.D+12, GAPMIN = 0.1D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C  Used from common blocks:
 C     INFORB : NISH(*), NISHT, ...
@@ -1202,13 +1205,13 @@ C          correct in DIIS if AUTOCC and occupations have changed.
 C     SCBRHF : IOPRHF,NFRRHF(*)
 C     INFIND : IROW(*),ISW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <molde.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "molde.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
 C
       CALL QENTER('RHFENR')
 C
@@ -1426,12 +1429,12 @@ C     =7 : Start using MC update information ('UPDSAVE' in SIRSAV)
 C end if
 C
       use lucita_mcscf_ci_cfg
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION INDXCI(*),WRK(LFREE)
 C
       PARAMETER ( D0=0.0D0, DP5=0.5D0, D1=1.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP: ISTATE,LROOTS,FLAG(*),MAXCIT,THRGRD,ITRLVL,?
@@ -1442,17 +1445,17 @@ C   INFDIM: IVEX4,INTOT
 C   INFTAP: LUIT1,?
 C   INFPRI: ?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "dftcom.h"
 C
 C *** Externals:
 C
@@ -2019,12 +2022,12 @@ C
 C Scratch:
 C  WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), IBNDX(*), INDXCI(*), WRK(LFREE)
       PARAMETER ( DP1 = 0.1D0, DP5 = 0.5D0,
      *            D0  = 0.0D0, D1  = 1.0D0, D2  = 2.0D0 )
       PARAMETER ( THDE = 1.D-10 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C  INFINP: ISTATE,FLAG(*),?
@@ -2037,16 +2040,16 @@ C  ITINFO: DINFO(*)
 C  INFTAP: LUIT1
 C  INFPRI: P4FLAG(*),P6FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <itinfo.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <gnrinf.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "itinfo.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "gnrinf.h"
 C
 C -- local:
 C
@@ -2281,7 +2284,7 @@ C Purpose:
 C  Write timing statistics to LUPRI for central (time-consuming)
 C  routines used in MC optimization, that is from SIROPT.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) KEY
 C
       PARAMETER ( NTYP = 7 )
@@ -2293,7 +2296,7 @@ C
 C Used from common blocks:
 C   INFTIM : NCALLS,TIMCPU,TIMWAL
 C
-#include <inftim.h>
+#include "inftim.h"
 C
 C Local variables:
 C
@@ -2452,12 +2455,12 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
 C
       PARAMETER ( D0=0.0D0, D2=2.0D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ABAIPH,ISTATE,ISPIN,NACTEL,FLAG(*),INERSI
@@ -2472,27 +2475,27 @@ C CBGETDIS : IADH2
 C   CBIREA : LMULBS
 C   R12INT : R12CAL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <priunit.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <infinp.h>
-#include <infopt.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <cbgetdis.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "priunit.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "infinp.h"
+#include "infopt.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "cbgetdis.h"
+#include "cbirea.h"
+#include "r12int.h"
 C----------------
 C CBN+JK 03.01.06 gnrinf.h included
-#include <gnrinf.h>
+#include "gnrinf.h"
 C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE

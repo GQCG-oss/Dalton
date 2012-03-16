@@ -26,36 +26,36 @@ C
 C  Purpose:
 C     CONTROL CALCULATION OF EXCITED STATE GRADIENT
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 
       LOGICAL PROPTY
 C
 C
-#include <codata.h>
+#include "codata.h"
 C
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <past.h>
-#include <gnrinf.h>
-#include <esg.h>
-#include <taymol.h>
-#include <abainf.h>
-#include <pcmlog.h>
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "past.h"
+#include "gnrinf.h"
+#include "esg.h"
+#include "taymol.h"
+#include "abainf.h"
+#include "pcmlog.h"
 
       CALL HEADER('Excited state gradient calculation',-1)
       CALL GETTIM(ESGTIM_0,DUMTIM)        

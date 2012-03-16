@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c /* deck cc_smcal */
@@ -39,15 +39,15 @@ c /* deck cc_smcal */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccsm.h>
-#include <ccsminf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccsm.h"
+#include "ccsminf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -402,14 +402,14 @@ C
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsm.h>
-#include <ccsminf.h>
-#include <ccexci.h>
-#include <cclr.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsm.h"
+#include "ccsminf.h"
+#include "ccexci.h"
+#include "cclr.h"
 
 
 * local parameters:

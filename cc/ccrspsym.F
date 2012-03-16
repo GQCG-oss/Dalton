@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck ccrspsym */
 *=====================================================================*
@@ -41,55 +41,55 @@ c /* deck ccrspsym */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccorb.h>
-#include <ccrspprp.h>
-#include <cclrinf.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccx1rsp.h>  
-#include <ccx2rsp.h>  
-#include <ccx3rsp.h>  
-#include <ccx4rsp.h>  
-#include <cco1rsp.h>  
-#include <cco2rsp.h>  
-#include <cco3rsp.h>  
-#include <cco4rsp.h>  
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexgr.h>  
-#include <ccn2rsp.h>  
-#include <cclres.h>  
-#include <ccpl1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccorb.h"
+#include "ccrspprp.h"
+#include "cclrinf.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccx1rsp.h"  
+#include "ccx2rsp.h"  
+#include "ccx3rsp.h"  
+#include "ccx4rsp.h"  
+#include "cco1rsp.h"  
+#include "cco2rsp.h"  
+#include "cco3rsp.h"  
+#include "cco4rsp.h"  
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexgr.h"  
+#include "ccn2rsp.h"  
+#include "cclres.h"  
+#include "ccpl1rsp.h"
+#include "ccexci.h"
 Cholesky
-#include <cclrcho.h>
+#include "cclrcho.h"
 Cholesky
 
 * local parameters:
@@ -1379,17 +1379,17 @@ c /* deck cc_exgrind */
 *    OC April 1997
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>  
-#include <ccexgr.h>  
-#include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
-#include <ccroper.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"  
+#include "ccexgr.h"  
+#include "ccsdinp.h"  
+#include "ccsdsym.h"  
+#include "cclr.h"  
+#include "ccroper.h"  
       CHARACTER*8 LABEL,LABELA
       INTEGER ISYMA, INUM, IOP, ISYME
 
@@ -1507,14 +1507,14 @@ C#include <implicit.h>
 C#include <cclrinf.h>
 C#include <cclr.h>  
 C#include <ccsdsym.h>  
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexci.h>  
-#include <ccexcinf.h>  
-#include <ccrspprp.h>
-#include <ccopainf.h>  
-#include <ccsdinp.h>  
-#include <ccroper.h>  
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexci.h"  
+#include "ccexcinf.h"  
+#include "ccrspprp.h"
+#include "ccopainf.h"  
+#include "ccsdinp.h"  
+#include "ccroper.h"  
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1632,14 +1632,14 @@ c /* deck cc_xopaind */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexci.h>  
-#include <ccexcinf.h>  
-#include <ccrspprp.h>
-#include <ccxopainf.h>  
-#include <ccsdinp.h>  
-#include <ccroper.h>  
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexci.h"  
+#include "ccexcinf.h"  
+#include "ccrspprp.h"
+#include "ccxopainf.h"  
+#include "ccsdinp.h"  
+#include "ccroper.h"  
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1789,17 +1789,17 @@ c /* deck cc_lrsind */
 *    OC 8-11-1996/Modified April 1997
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>  
-#include <cclres.h>  
-#include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
-#include <ccroper.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"  
+#include "cclres.h"  
+#include "ccsdinp.h"  
+#include "ccsdsym.h"  
+#include "cclr.h"  
+#include "ccroper.h"  
       CHARACTER*8 LABEL,LABELA,LABELB
       INTEGER ISYMB, ISYMA, IFRB, IFRA, INUM, IOP, ISYME
 
@@ -1939,19 +1939,19 @@ c /* deck cc_qr2ind */
 *    Ove Christiansen April 1997
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>  
-#include <cclres.h>  
-#include <ccqr2r.h>  
-#include <ccn2rsp.h>
-#include <ccsdinp.h>  
-#include <ccsdsym.h>  
-#include <cclr.h>  
-#include <ccroper.h>  
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"  
+#include "cclres.h"  
+#include "ccqr2r.h"  
+#include "ccn2rsp.h"
+#include "ccsdinp.h"  
+#include "ccsdsym.h"  
+#include "cclr.h"  
+#include "ccroper.h"  
       CHARACTER*8 LABEL,LABELA,LABELB
       INTEGER ISYMB, ISYMA, IFRB, IFRA, INUM, IOP, ISYMI, ISYMF
 
@@ -2123,16 +2123,16 @@ c /* deck cc_lrind */
 *    CH  apr. 2002: changes for CC3 freq.-dep. polarizabilities
 *
 *=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <cclrinf.h>
-#include <ccrspprp.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccroper.h>
-#include <mxcent.h>
-#include <cclr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "cclrinf.h"
+#include "ccrspprp.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccroper.h"
+#include "mxcent.h"
+#include "cclr.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2394,12 +2394,12 @@ c /* deck cc_qrind */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccqrinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccqrinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "ccsdinp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -2734,13 +2734,13 @@ c /* deck cc_crind */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cccrinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <cccperm.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cccrinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "cccperm.h"
+#include "ccsdinp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3299,12 +3299,12 @@ c /* deck CC_4RIND */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cc4rinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <ccl2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cc4rinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "ccl2rsp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3595,12 +3595,12 @@ c /* deck CC_5RIND */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cc5rinf.h>
-#include <cc5perm.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cc5rinf.h"
+#include "cc5perm.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3747,16 +3747,16 @@ c /* deck cc_tpaind */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cctpainf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccexcinf.h>
-#include <ccroper.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cctpainf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccexcinf.h"
+#include "ccroper.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3955,13 +3955,13 @@ c /* deck cc_tmind */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cctm.h>
-#include <cctminf.h>
-#include <ccrspprp.h>
-#include <ccexci.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cctm.h"
+#include "cctminf.h"
+#include "ccrspprp.h"
+#include "ccexci.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4152,13 +4152,13 @@ c /* deck cc_mcdind */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccmcdinf.h>
-#include <ccrspprp.h>
-#include <ccexcinf.h>
-#include <ccexci.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccmcdinf.h"
+#include "ccrspprp.h"
+#include "ccexcinf.h"
+#include "ccexci.h"
+#include "ccroper.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4459,14 +4459,14 @@ c /* deck cc_exlrind */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccexlrinf.h>
-#include <ccrspprp.h>
-#include <ccroper.h>
-#include <cclr.h>
-#include <ccexci.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccexlrinf.h"
+#include "ccrspprp.h"
+#include "ccroper.h"
+#include "cclr.h"
+#include "ccexci.h"
+#include "ccsdinp.h"
 
 * local parameters:
       LOGICAL LOCDBG
@@ -4714,8 +4714,8 @@ C  /* Deck iroper */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <ccroper.h>
-#include <priunit.h>
+#include "ccroper.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4787,8 +4787,8 @@ C Christof Haettig, Februar 97
 C LORXA, LORXB flags introduced in July 1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr2rsp.h>
-#include <priunit.h>
+#include "ccr2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LORXA, LORXB
       INTEGER ISYMA, ISYMB
@@ -4877,8 +4877,8 @@ C LORX flag introduced and some clean up in Juni 1998
 C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr1rsp.h>
-#include <priunit.h>
+#include "ccr1rsp.h"
+#include "priunit.h"
  
       LOGICAL LORX, LORXI
       INTEGER ISYM
@@ -4956,8 +4956,8 @@ C Christof Haettig, July 2003
 C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr1rsp.h>
-#include <priunit.h>
+#include "ccr1rsp.h"
+#include "priunit.h"
  
       INTEGER ISYM
       REAL*8  FRQNEW,TOL
@@ -5021,8 +5021,8 @@ C
 C Christof Haettig, october 1997 
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccrc1rsp.h>
-#include <priunit.h>
+#include "ccrc1rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYM,ICAUCH
 
@@ -5077,8 +5077,8 @@ C
 C Christof Haettig, october 1997 
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cclc1rsp.h>
-#include <priunit.h>
+#include "cclc1rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYM,ICAUCH
 
@@ -5139,8 +5139,8 @@ C LORX flag introduced and some clean up in Juni 1998
 C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl1rsp.h>
-#include <priunit.h>
+#include "ccl1rsp.h"
+#include "priunit.h"
 C
 
       LOGICAL LORX
@@ -5195,8 +5195,8 @@ C
 C Ove Christiansen April 1997
 C
       IMPLICIT NONE
-#include <cclrmrsp.h>
-#include <priunit.h>
+#include "cclrmrsp.h"
+#include "priunit.h"
 C
       INTEGER ISYM,IEXCI,I
       REAL*8  FRQNEW,TOL
@@ -5291,7 +5291,7 @@ Cholesky
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 
@@ -5442,10 +5442,10 @@ C  /* Deck cclstcmp */
 * PL1 vectors, LORX in EL1 ... Sonia Coriani  2000
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5721,8 +5721,8 @@ C  /* Deck cclstswap */
 * Sonia Coriani: PL1 and LORX for EL1
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccroper.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5867,39 +5867,39 @@ C  /* Deck ilstsym */
 * PL1 introduced Sonia
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <cccl2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "cccl2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6071,9 +6071,9 @@ C  /* Deck ilstsymrlx */
 * PL1 introduced Sonia
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6126,39 +6126,39 @@ C  /* Deck freqlst */
 * Christof Haettig, April 2002
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclrmrsp.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccx2rsp.h>
-#include <cccl2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclrmrsp.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccx2rsp.h"
+#include "cccl2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
 
       CHARACTER*(3) LIST
       INTEGER INDEX
@@ -6314,39 +6314,39 @@ C  /* Deck idxsym */
 * Cholesky CC2 vectors, tbp 2003
 *=====================================================================*
       IMPLICIT NONE
-#include <ccorb.h>
-#include <ccroper.h>
-#include <ccer1rsp.h>
-#include <ccer2rsp.h>
-#include <ccel1rsp.h>
-#include <ccel2rsp.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <ccr3rsp.h>
-#include <ccr4rsp.h>
-#include <ccx1rsp.h>
-#include <ccx2rsp.h>
-#include <ccx3rsp.h>
-#include <ccx4rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccl4rsp.h>
-#include <cco1rsp.h>
-#include <cco2rsp.h>
-#include <cco3rsp.h>
-#include <cco4rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <ccco2rsp.h>
-#include <cccl2rsp.h>
-#include <cccx2rsp.h>
-#include <ccexci.h>
-#include <ccpl1rsp.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccroper.h"
+#include "ccer1rsp.h"
+#include "ccer2rsp.h"
+#include "ccel1rsp.h"
+#include "ccel2rsp.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "ccr3rsp.h"
+#include "ccr4rsp.h"
+#include "ccx1rsp.h"
+#include "ccx2rsp.h"
+#include "ccx3rsp.h"
+#include "ccx4rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccl4rsp.h"
+#include "cco1rsp.h"
+#include "cco2rsp.h"
+#include "cco3rsp.h"
+#include "cco4rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "ccco2rsp.h"
+#include "cccl2rsp.h"
+#include "cccx2rsp.h"
+#include "ccexci.h"
+#include "ccpl1rsp.h"
+#include "priunit.h"
 
       CHARACTER*(*) LIST
       INTEGER INDEX,ISYM
@@ -6499,8 +6499,8 @@ C Christof Haettig, April 97
 C LORXA, LORXB flags introduced in July 1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco2rsp.h>
-#include <priunit.h>
+#include "cco2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMA, ISYMB
       REAL*8  FRQANEW,FRQBNEW,TOL
@@ -6584,8 +6584,8 @@ C
 C Christof Haettig, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx2rsp.h>
-#include <priunit.h>
+#include "ccx2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMA, ISYMB
       LOGICAL LORXA, LORXB
@@ -6669,8 +6669,8 @@ C
 C Christof Haettig, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl2rsp.h>
-#include <priunit.h>
+#include "ccl2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMA, ISYMB
       REAL*8  FRQANEW,FRQBNEW,TOL
@@ -6749,7 +6749,7 @@ C
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 C
       LOGICAL LOPEN, CHANGES, SWAP, NOSWAP, LFOUND
       CHARACTER*(*) TYPE
@@ -6871,7 +6871,7 @@ C maintain the list of fourth-order lagrangian multiplier vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl4rsp.h>
+#include "ccl4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='L4', ORDER=4)
@@ -6916,7 +6916,7 @@ C maintain the list of fourth-order amplitude response vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr4rsp.h>
+#include "ccr4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='R4',ORDER=4)
@@ -6961,7 +6961,7 @@ C maintain the list of fourth-order amplitude right hand side vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco4rsp.h>
+#include "cco4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='O4',ORDER=4)
@@ -7006,7 +7006,7 @@ C maintain the list of fourth-order chi vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx4rsp.h>
+#include "ccx4rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='X4',ORDER=4)
@@ -7051,7 +7051,7 @@ C maintain the list of third-order lagrangian multiplier vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccl3rsp.h>
+#include "ccl3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='L3', ORDER=3)
@@ -7093,7 +7093,7 @@ C maintain the list of fourth-order amplitude response vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccr3rsp.h>
+#include "ccr3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='R3',ORDER=3)
@@ -7135,7 +7135,7 @@ C maintain the list of third-order amplitude right hand side vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco3rsp.h>
+#include "cco3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='O3',ORDER=3)
@@ -7177,7 +7177,7 @@ C maintain the list of fourth-order chi vectors
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx3rsp.h>
+#include "ccx3rsp.h"
       CHARACTER*2 TYPE
       INTEGER ORDER
       PARAMETER (TYPE='X3',ORDER=3)
@@ -7226,8 +7226,8 @@ C
 C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccer1rsp.h>
-#include <priunit.h>
+#include "ccer1rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMS, IEXCI
@@ -7303,8 +7303,8 @@ C
 C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccer2rsp.h>
-#include <priunit.h>
+#include "ccer2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMB, ISYMS, IEXCI
@@ -7401,8 +7401,8 @@ C Christof Haettig, july 97
 C LORXA flag introduced, Sonia Coriani april 2000
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccel1rsp.h>
-#include <priunit.h>
+#include "ccel1rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1, LORXA
       INTEGER ISYMA, ISYMS, IEXCI
@@ -7480,8 +7480,8 @@ C
 C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccel2rsp.h>
-#include <priunit.h>
+#include "ccel2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LPROJ, LPROJ1
       INTEGER ISYMA, ISYMB, ISYMS, IEXCI
@@ -7577,8 +7577,8 @@ C
 C Ove Christiansen, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccn2rsp.h>
-#include <priunit.h>
+#include "ccn2rsp.h"
+#include "priunit.h"
 C
       INTEGER ISYMI, ISYMF
       REAL*8  FRQINEW,FRQFNEW,TOL
@@ -7651,8 +7651,8 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cccl2rsp.h>
-#include <priunit.h>
+#include "cccl2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -7748,8 +7748,8 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cccr2rsp.h>
-#include <priunit.h>
+#include "cccr2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -7845,8 +7845,8 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cccx2rsp.h>
-#include <priunit.h>
+#include "cccx2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -7943,8 +7943,8 @@ C
 C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccco2rsp.h>
-#include <priunit.h>
+#include "ccco2rsp.h"
+#include "priunit.h"
 C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -8045,9 +8045,9 @@ C
 C Christof Haettig, Juni 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <cco1rsp.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "cco1rsp.h"
+#include "priunit.h"
+#include "ccsdinp.h"
  
       LOGICAL LORX
       INTEGER ISYM
@@ -8122,9 +8122,9 @@ C
 C Christof Haettig, Juni 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccx1rsp.h>
-#include <priunit.h>
-#include <ccsdinp.h>
+#include "ccx1rsp.h"
+#include "priunit.h"
+#include "ccsdinp.h"
  
       LOGICAL LORX, LORX1
       INTEGER ISYM
@@ -8213,8 +8213,8 @@ C Sonia Coriani, March 2000
 C based of IL1ZETA and IEL1AMP
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccpl1rsp.h>
-#include <priunit.h>
+#include "ccpl1rsp.h"
+#include "priunit.h"
 
       LOGICAL LORXA, LPROJ, LPROJ1
       INTEGER ISYMA, ISYMS, IEXCI, I

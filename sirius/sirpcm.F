@@ -23,18 +23,18 @@
 !
 C FILE: sirius/sirpcm.F
 C
-#include <single.h>
+#include "single.h"
 C
 C/* Deck pcminp */
       SUBROUTINE PCMINP(WORD,INPERR,ALLOPT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 C
       PARAMETER (D0=0.0D+00)
 C
@@ -45,11 +45,11 @@ C
       CHARACTER*6 SOLWD
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <inftap.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inftap.h"
       DATA SOLWD/'PCM   '/
       DATA TABLE/'.SOLVNT','.EPS   ','.EPSINF','.RSOLV ',
      *           '.RET   ','.NESFP ','.ICESPH','.ICOMPC',
@@ -273,23 +273,23 @@ C
 C/* Deck pcmsolvnt */
       SUBROUTINE PCMSOLVNT(WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
 ckr
-#include <aovec.h>
-#include <primit.h>
+#include "aovec.h"
+#include "primit.h"
 ckr
-#include <pcmdef.h>
+#include "pcmdef.h"
 C
       LOGICAL SOME,FNDLAB
 C
-#include <pcm.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infvar.h>
+#include "pcm.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infvar.h"
 C
       DIMENSION WORK(*)
 C
@@ -415,20 +415,20 @@ C
 C/* Deck makcav */
       SUBROUTINE MAKCAV(WORD,INPERR,ALLOPT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <infpri.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "infpri.h"
+#include "inftap.h"
 ckr
-#include <aovec.h>
-#include <maxorb.h>
-#include <primit.h>
+#include "aovec.h"
+#include "maxorb.h"
+#include "primit.h"
 ckr
 C
 C LASTAR: LAST ATOMIC RADIUS DEFINED
@@ -625,18 +625,18 @@ C9000 FORMAT(' **** ERROR IN $',A8,' INPUT')
 C/* Deck pcmvnn */
       SUBROUTINE PCMVNN
 C
-#include <implicit.h>
-#include <pcmdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "pcmdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <symmet.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <priunit.h>
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "symmet.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
@@ -662,19 +662,19 @@ C
 C/* Deck pcmjmat */
       SUBROUTINE PCMJMAT(VEC2,NUM2,WORK,LWORK)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "inftap.h"
 C
       CHARACTER*8 RTNLBL(2)
       LOGICAL FNDLAB
       DIMENSION VEC(NUM2),VEC2(NUM2)
 C
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
 C     This routine computes J matrix  (interaction between induced
 C     nuclear charges and electronic potential due to the solute):
@@ -706,9 +706,9 @@ C
 C     /* Deck datsol */
       SUBROUTINE DATSOL(ZSOL,EPS,EPSINF,RSOLV,VMOL,TCE,STEN,DSTEN,CMF)
 C     
-#include <implicit.h>
-#include <priunit.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infpri.h"
 C
 C To add a new solvent:
 C 1) Update the NSOL parameter
@@ -1002,19 +1002,19 @@ C/* Deck v2q */
 C
 C     Transform electronic potential to electronic charges
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0)
 Clf      DIMENSION CINVMT(NTS*NTS), TJ2(NTS)
       DIMENSION CINVMT(NTSIRR*NTS), TJ2(*), QCREAT(*)
       LOGICAL QCHECK, FNDLAB, NONEQQ
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
       LPCMBK = LUPCMD
       NTNIRR = NTS * NTSIRR
@@ -1070,16 +1070,16 @@ C
 C C-INVMAT: Matrix to compute q = MV for equilibrium calculations
 C C-INVDIN: Matrix to compute q = MV for non-equilibrium response calculations
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
       DIMENSION WORK(*)
 Clf      LUPCMBK = LUPCMD
       LUPCMD = -10009
@@ -1171,11 +1171,11 @@ C 1/10/2002 L. Frediani
 C Calculation and inversion of the matrix FOR local field calculations
 C with PCM
 C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D0=0.0D0,DP5=0.50D0,FPI=4.0D0*PI)
-#include <priunit.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "inftap.h"
       DIMENSION DPAK(NTSIRR,*),SPAK(NTSIRR,*),WORK(NTSIRR),IPVT(*)
       DIMENSION AS(*)
       NTS = (MAXREP + 1)*NTSIRR
@@ -1233,22 +1233,22 @@ C
 C
 C     DENMAT : if (EXP1VL) then input density matrix; else output matrix
 C     
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <codata.h>
-#include <infpri.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <pcmnuclei.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <orgcom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "codata.h"
+#include "infpri.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "pcmnuclei.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "orgcom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
 #include "infpar.h"
 #include "inftap.h"
 #include "krcom.h"
@@ -1260,7 +1260,7 @@ C
       LOGICAL TOFILE, TRIMAT, VCHECK, EXP1VL
 C
 Clf Do not insert other definitions below the following include
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NBASTOLD  = NBAST
       NNBASXOLD = NNBASX
@@ -1387,21 +1387,21 @@ C
 C Generation of the initial set of spheres if not defined in input
 C Luca Frediani 15 11 2004
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <codata.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "codata.h"
+#include "symmet.h"
       PARAMETER (LASTAR=99)
       PARAMETER (D0=0.0D0)
       DIMENSION RVDW(LASTAR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C       van der Waals radii taken from "The Elements", 2nd edition,
 C       John Emsley, Clarendon Press, Oxford, 1991.  Unknown values

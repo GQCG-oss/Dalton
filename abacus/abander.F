@@ -21,24 +21,24 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  FILE: abacus/abander.F
 C
 C  /* Deck nmdinp */
       SUBROUTINE NMDINP(WORD,IDRPRI)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NDIR=3,NTABLE = 21)
       CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7,
      &          TABDIR(NDIR)*7, WORD1*7
-#include <numder.h>
-#include <fcsym.h>
-#include <cbinum.h>
-#include <abainf.h>
-#include <cbiwlk.h>
-#include <cbivib.h>
+#include "numder.h"
+#include "fcsym.h"
+#include "cbinum.h"
+#include "abainf.h"
+#include "cbiwlk.h"
+#include "cbivib.h"
       LOGICAL NEWDEF
 C
       DATA TABDIR/'*PROPAV','*XXXXXX','*VIBANA'/
@@ -298,16 +298,16 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0)
-#include <gnrinf.h>
-#include <inforb.h>
-#include <dftcom.h>
-#include <ecpinf.h>
-#include <ccsdinp.h>
+#include "gnrinf.h"
+#include "inforb.h"
+#include "dftcom.h"
+#include "ecpinf.h"
+#include "ccsdinp.h"
       LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROHF, DOCISRDFT, DOMCSRDFT, 
      &        WAVTP, DPCM
 C
@@ -359,11 +359,11 @@ C     *** Workaround to many common variables with the same name ***
 C     *** MCSCF is set to DOMC (in infinp.h) through the logical ***
 C     *** function WAVTP.                                        ***
 C     **************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 #include "pcmlog.h"
-#include <infinp.h>
+#include "infinp.h"
       CHARACTER*(*) STRING
 C
       IF (STRING.EQ.'MCSCF') THEN
@@ -399,13 +399,13 @@ C     /* Deck nmdini */
 C
 C     Initialize /NUMDER/, /FCSYM/ and some /ABAINF/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <cbinum.h>
-#include <abainf.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "cbinum.h"
+#include "abainf.h"
+#include "cbiwlk.h"
 C
 C     Print variable.
       IPRINT = 0
@@ -470,28 +470,28 @@ C
 C     Driver routine for numerical differentiation
 C
 
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
 c#if defined (VAR_MPI)
 c      INCLUDE 'mpif.h'
 c      LOGICAL FINISH
 c#endif
-#include <cbirea.h>
-#include <cbiwlk.h>
-#include <cbinum.h>
-#include <trkoor.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <numder.h>
-#include <molinp.h>
-#include <fcsym.h>
-#include <gnrinf.h>
-#include <huckel.h>
+#include "cbirea.h"
+#include "cbiwlk.h"
+#include "cbinum.h"
+#include "trkoor.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "numder.h"
+#include "molinp.h"
+#include "fcsym.h"
+#include "gnrinf.h"
+#include "huckel.h"
       DIMENSION WORK(LWORK)
       LOGICAL MOLECU
       CHARACTER WORD*7
@@ -705,29 +705,29 @@ C  /* Deck numdr1 */
      &                  FREQ,RNNORM,WORK,KDPMTX,NMIDPC,ICRIRP,ISOTMP,
      &                  MBKLIN,LWORK,NDERIV,NDIME,NINTIN,MAXADR,
      &                  LTHTST,LDPMTX,IFRSTD,IPRINT,WRKDLM)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "infpar.h"
       PARAMETER (D0 = 0.0D0)
-#include <cbiwlk.h>
-#include <cbinum.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <exeinf.h>
-#include <abainf.h>
-#include <taymol.h>
-#include <trkoor.h>
-#include <numder.h>
-#include <prpndr.h>
-#include <past.h>
-#include <gnrinf.h>
-#include <inftap.h>
-#include <molinp.h>
-#include <fcsym.h>
+#include "cbiwlk.h"
+#include "cbinum.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "exeinf.h"
+#include "abainf.h"
+#include "taymol.h"
+#include "trkoor.h"
+#include "numder.h"
+#include "prpndr.h"
+#include "past.h"
+#include "gnrinf.h"
+#include "inftap.h"
+#include "molinp.h"
+#include "fcsym.h"
       LOGICAL EXHER, EXSIR, EXABA, GTCOMP, RSTDON, SYMDET, NPRBKP,
      &        NSPNBK
       CHARACTER*80 MBKLIN, PRTEXT
@@ -743,7 +743,7 @@ C  /* Deck numdr1 */
      &          ISOTMP(NATOMS), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2), KDPMTX(LDPMTX,NSTRDR,IFRSTD),
      &          NMIDPC(LDPMTX)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     ******************************
 C     *** Restart initialization ***
@@ -1259,10 +1259,10 @@ c     &                 FTVAL,SYMDET,RSTDON)
 c#else
      &                 SYMDET,RSTDON)
 c#endif
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0, DMAX=1.0D-15)
 c#if defined (VAR_MPI)
 c      INCLUDE 'mpif.h'
@@ -1277,22 +1277,22 @@ cC
 c#include <dummy.h>
 c#include <pario.h>
 c#endif
-#include <infpar.h>
-#include <inforb.h>
-#include <cbiexc.h>
+#include "infpar.h"
+#include "inforb.h"
+#include "cbiexc.h"
 C
-#include <trkoor.h>
-#include <nuclei.h>
-#include <numder.h>
-#include <molinp.h>
-#include <cbiwlk.h>
-#include <cbinum.h>
-#include <fcsym.h>
-#include <abainf.h>
-#include <taymol.h>
-#include <pvibav.h>
-#include <prpc.h>
-#include <gnrinf.h>
+#include "trkoor.h"
+#include "nuclei.h"
+#include "numder.h"
+#include "molinp.h"
+#include "cbiwlk.h"
+#include "cbinum.h"
+#include "fcsym.h"
+#include "abainf.h"
+#include "taymol.h"
+#include "pvibav.h"
+#include "prpc.h"
+#include "gnrinf.h"
 C
       LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSM, SYMDET, RSTDON,
      &        ALRCAL, PRTNR, CPRPBK
@@ -1735,10 +1735,10 @@ c     &                  FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
      &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (D0=0.0D0)
 c#if defined (VAR_MPI)
 c      INCLUDE 'mpif.h'
@@ -1752,21 +1752,21 @@ cC
 c#include <dummy.h>
 c#include <pario.h>
 c#endif
-#include <abainf.h>
-#include <cbinum.h>
-#include <cbiwlk.h>
-#include <optinf.h>
-#include <trkoor.h>
-#include <infpar.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <taymol.h>
-#include <past.h>
-#include <pvibav.h>
-#include <gnrinf.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "cbinum.h"
+#include "cbiwlk.h"
+#include "optinf.h"
+#include "trkoor.h"
+#include "infpar.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "taymol.h"
+#include "past.h"
+#include "pvibav.h"
+#include "gnrinf.h"
+#include "nuclei.h"
 c
-#include <huckel.h>
+#include "huckel.h"
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
      &        ALRCAL, PRPCAL, FNDKEY
       CHARACTER*80 MBKLIN
@@ -2053,20 +2053,20 @@ C
 C
 C  /* Deck upcomb */
       SUBROUTINE UPCOMB(COOR,NATOM,NLINE,NATIND,MBKLIN,NMBKLN,LASTE)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (D100 = 100.0D0, THRSH = 1.0D-12)
-#include <cbirea.h>
-#include <molinp.h>
-#include <nuclei.h>
-#include <trkoor.h>
-#include <symmet.h>
-#include <numder.h>
-#include <inftap.h>
+#include "cbirea.h"
+#include "molinp.h"
+#include "nuclei.h"
+#include "trkoor.h"
+#include "symmet.h"
+#include "numder.h"
+#include "inftap.h"
       LOGICAL BIG, USED, LASTE, DOCART, DOOWN, AUTOSY, NOSYM, ADDSYM,
      &        NEWINP, NEWATO
       CHARACTER*6 CHR
@@ -2077,7 +2077,7 @@ C
       DIMENSION MBKLIN(NMBKLN), JCO1(MXAQN)
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND),
      &          NATIND(NUCIND)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Updates geometry in common block
 C
@@ -2243,8 +2243,8 @@ C
 C  /*Deck stpcor*/
       SUBROUTINE STPCOR(COOR,CSTART,SYMCOR,DISPLC,NCOOR,KPM,KSCOOR,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION COOR(NCOOR), CSTART(NCOOR), SYMCOR(NCOOR,NCOOR)
 C
@@ -2273,24 +2273,24 @@ C
 C
 C  /* Deck numres */
       SUBROUTINE NDER_RESET(EXHER,EXSIR,EXABA)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <ccorb.h>
-#include <optinf.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <gnrinf.h>
-#include <huckel.h>
-#include <trkoor.h>
-#include <cbiwlk.h>
-#include <past.h>
-#include <abainf.h>
-#include <cbinum.h>
-#include <numder.h>
+#include "ccorb.h"
+#include "optinf.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "gnrinf.h"
+#include "huckel.h"
+#include "trkoor.h"
+#include "cbiwlk.h"
+#include "past.h"
+#include "abainf.h"
+#include "cbinum.h"
+#include "numder.h"
       LOGICAL EXHER,EXSIR,EXABA,EX
 C
 C     This routine resets a few variables, to be able to calculate
@@ -2430,8 +2430,8 @@ C
 C
 C     Prints out headers to the different steps in finite field.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER SIGNS*4
 C
       SIGNS = '    '
@@ -2501,8 +2501,8 @@ c      RETURN
 c      END
 C /* Deck GTCOMP */
       LOGICAL FUNCTION GTCOMP()
-#include <implicit.h>
-#include <cbitro.h>
+#include "implicit.h"
+#include "cbitro.h"
       GTCOMP = COMPAR
       RETURN
       END
@@ -2510,8 +2510,8 @@ C
 C
 C /* Deck NMCOEF */
       SUBROUTINE NMCOEF(COEFF,TCOEFF,WORK,MXCOEF,NMNMDR,LWORK)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D05 = 0.5D0)
 C
       DIMENSION COEFF (-MXCOEF:MXCOEF,0:NMNMDR),
@@ -2580,17 +2580,17 @@ C /* Deck NMNDER */
      &                  ICRIRP,INDSTP,INDTMP,IDCOMP,IMAX,IMIN,ICNT,
      &                  NCVAL,IDDCMP,MXCOEF,NORDR,NDIME,NTYPE,NDERIV,
      &                  NFINNR,LDPMTX,IFRSTD,NLDPMX,LWORK,FCCAL)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (DMIN = 1.0D-12, D1=1.0D0, D0=0.0D0)
-#include <taymol.h>
-#include <trkoor.h>
-#include <cbiwlk.h>
-#include <cbinum.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <dummy.h>
+#include "taymol.h"
+#include "trkoor.h"
+#include "cbiwlk.h"
+#include "cbinum.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "dummy.h"
       LOGICAL CLFVAL, FCCAL, DIAGON
       DIMENSION COEFF(-MXCOEF:MXCOEF,0:NORDR), DERIV(NDERIV),
      &          FUNVAL(NFINNR,NDIME), GRIREP(NGORDR,NGVERT), WORK(LWORK)
@@ -3096,12 +3096,12 @@ C     *** NSTP   -> Number of function-component within the order           ***
 C     *** NDISP  -> Number value within the component.                      ***
 C     *************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
+#include "trkoor.h"
+#include "numder.h"
       DIMENSION IADRSS(NMTYPE), INDCMP(NCOOR), ITCMP(NORDR),
      &          NCVAL(NCOOR)
 C
@@ -3205,17 +3205,17 @@ C
 C    /*Deck pritdr*/
       SUBROUTINE PRITDR(TMPTDR,SYMCOR,TDER,SYMTDR,NTMPDM,NUMCOR,LTXT,
      &                  IPRINT,PRWHLE,TEXT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (KCOL=6)
-#include <trkoor.h>
-#include <symmet.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <cbinum.h>
+#include "trkoor.h"
+#include "symmet.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "cbinum.h"
       CHARACTER*80 TEXT
       LOGICAL PRWHLE
       DIMENSION TDER(NCOOR,NCOOR,NCOOR), TMPTDR(NTMPDM),
@@ -3300,8 +3300,8 @@ C     ***********************************************************
 C     *** Transforming a third derivative into another set of ***
 C     *** coordinates. Tracor is the transformation matrix.   ***
 C     ***********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*80 TEXT
       DIMENSION CR1TDR(NCOOR,NCOOR,NCOOR), CR2TDR(NCOOR,NCOOR,NCOOR),
      &          TRCOOR(NCOOR,NCOOR)
@@ -3346,17 +3346,17 @@ C
 C    /*Deck prifdr*/
       SUBROUTINE PRIFDR(TMPFDR,SYMCOR,FDER,SYMFDR,NTMPDM,NUMCOR,LTXT,
      &                  IPRINT,TEXT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
-#include <trkoor.h>
-#include <symmet.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <cbinum.h>
+#include "trkoor.h"
+#include "symmet.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "cbinum.h"
       CHARACTER*80 TEXT
       DIMENSION FDER(NCOOR,NCOOR,NCOOR,NCOOR), TMPFDR(NTMPDM),
      &          SYMFDR(NCOOR,NCOOR,NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR)
@@ -3444,8 +3444,8 @@ C     **********************************************************
 C     *** Transforming quartic force field to another set of ***
 C     *** coordinates                                        ***
 C     **********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*80 TEXT
       DIMENSION CR1FDR(NCOOR,NCOOR,NCOOR,NCOOR),
      &          CR2FDR(NCOOR,NCOOR,NCOOR,NCOOR), TRCOOR(NCOOR,NCOOR)
@@ -3509,11 +3509,11 @@ C
 C
       SUBROUTINE HARMAN(SYMCOR,BKPHES,TRAMAT,TMPHES,WORK,NCOOR,LWORK,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <taymol.h>
+#include "taymol.h"
       DIMENSION BKPHES(MXCOOR,MXCOOR), SYMCOR(NCOOR,NCOOR),
      &          TMPHES(NCOOR ,NCOOR ), TRAMAT(NCOOR,NCOOR),
      &          WORK(LWORK)
@@ -3568,18 +3568,18 @@ C     /* Deck mknrmc */
 *** and writes out the  harmonic frequensies according   ***
 ***             general symmetry species.                ***
 ************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "codata.h"
       PARAMETER (DMTHR = 2.0D-8, D0 = 0.0D0, D1 = 1.0D0)
-#include <taymol.h>
-#include <trkoor.h>
-#include <nuclei.h>
-#include <cbinum.h>
-#include <numder.h>
-#include <abainf.h>
-#include <dummy.h>
+#include "taymol.h"
+#include "trkoor.h"
+#include "nuclei.h"
+#include "cbinum.h"
+#include "numder.h"
+#include "abainf.h"
+#include "dummy.h"
       CHARACTER*6 TXT
       DIMENSION SYMCOR(NCOOR,NCOOR), EIGNVL(NCOOR), EGNVCT(NCOOR,NCOOR),
      &          HESMWT(NCOOR*(NCOOR+1)/2), AMASS(NATOMS), CSTART(NCOOR),
@@ -3933,15 +3933,15 @@ C
 C     /*Deck trafrc*/
       SUBROUTINE TRAFRC(TDER,FDER,HESNRM,CORNRM,CRTNRM,SYCART,TNRMDR,
      &                  FNRMDR,WORK,NCOOR,NDIMF,NDIMT,LWORK,IPRINT)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
-#include <infpar.h>
-#include <taymol.h>
-#include <numder.h>
-#include <cbinum.h>
+#include "infpar.h"
+#include "taymol.h"
+#include "numder.h"
+#include "cbinum.h"
       CHARACTER*80 TEXT
       LOGICAL PRWHLE
       DIMENSION FDER(NDIMF), TDER(NDIMT), HESNRM(NCOOR,NCOOR),
@@ -4051,8 +4051,8 @@ C     /* Deck prderv*/
 C     **********************************************************
 C     *** Printing of third derivatives in TEXT coordinates. ***
 C     **********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*80 TEXT
       DIMENSION TDER(NDIM,NDIM,NDIM)
 
@@ -4094,8 +4094,8 @@ C     /* Deck prfder*/
 C     **********************************************************
 C     *** Printing of fourth derivative in TEXT coordinates. ***
 C     **********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*80 TEXT
       DIMENSION FDER(NDIM,NDIM,NDIM,NDIM)
 C
@@ -4142,21 +4142,21 @@ C     ***************************************************************
 C     **** This routine prints out the derivatives of the energy ****
 C     **** to NPRRDR order. These are done in 'TEXT' coordinates ****
 C     ***************************************************************
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "dummy.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <trkoor.h>
-#include <taymol.h>
-#include <cbiwlk.h>
-#include <cbinum.h>
-#include <numder.h>
-#include <pvibav.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "trkoor.h"
+#include "taymol.h"
+#include "cbiwlk.h"
+#include "cbinum.h"
+#include "numder.h"
+#include "pvibav.h"
       LOGICAL CPRPBK, PRWHLE
       CHARACTER*80 TEXT
       DIMENSION TDER(NDIMT), FDER(NDIMF), TSTGDR(NCOOR), CSTART(NCOOR),
@@ -4315,18 +4315,18 @@ C
 C
 C     /*Deck gspgrd*/
       SUBROUTINE GSPGRD(SYMCOR,CGRAD,WORK,LWORK,ICRIRP,LTXT,IPRINT,TEXT)
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "priunit.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <trkoor.h>
-#include <taymol.h>
-#include <cbiwlk.h>
-#include <numder.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "trkoor.h"
+#include "taymol.h"
+#include "cbiwlk.h"
+#include "numder.h"
       CHARACTER TEXT*80
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
@@ -4397,15 +4397,15 @@ C
 C     /*Deck gsphes*/
       SUBROUTINE GSPHES(SYMCOR,SMCINV,CHESS1,CHESS2,WORK,ICRIRP,
      &                  NDCOOR,LWORK,LTXT,IPRINT,TEXT)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (KCOL=6)
-#include <nuclei.h>
-#include <trkoor.h>
-#include <taymol.h>
-#include <cbiwlk.h>
-#include <cbinum.h>
+#include "nuclei.h"
+#include "trkoor.h"
+#include "taymol.h"
+#include "cbiwlk.h"
+#include "cbinum.h"
       INTEGER BEGIN, LAST
       LOGICAL HESEXS
       CHARACTER TEXT*80
@@ -4564,15 +4564,15 @@ C     /* Deck tsths1*/
 *** hessian, diagonalizing the mass-weighted hessian and ***
 *** prints the eigenvalues, and harmonic frequancies     ***
 ************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "codata.h"
       PARAMETER (DMTHR = 1.0D-9, D1 = 1.0D0)
-#include <taymol.h>
-#include <trkoor.h>
-#include <nuclei.h>
-#include <cbinum.h>
+#include "taymol.h"
+#include "trkoor.h"
+#include "nuclei.h"
+#include "cbinum.h"
       DIMENSION SYMCOR(NCOOR,NCOOR), EGNVCT(NCOOR,NCOOR),
      &          HESMWT(NCOOR*(NCOOR+1)/2), DKIN(NCOOR,NCOOR),
      &          TM1TMP(NCOOR,NCOOR),TM2TMP(NCOOR,NCOOR),
@@ -4652,21 +4652,21 @@ C     *** This routine tests the numerical derivatives with available ***
 C     ***                   analytical derivatives.                   ***
 C     *** NOTE: TMPGRD has dimension MXCOOR due to old code.          ***
 C     *******************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
-#include <numder.h>
-#include <trkoor.h>
-#include <taymol.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <exeinf.h>
-#include <gnrinf.h>
-#include <past.h>
-#include <inftap.h>
+#include "numder.h"
+#include "trkoor.h"
+#include "taymol.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "exeinf.h"
+#include "gnrinf.h"
+#include "past.h"
+#include "inftap.h"
       DIMENSION TSTSDR(NCOOR,NCOOR), TSTGDR(NCOOR ),
      &          TMPHES(NCOOR,NCOOR), TMPGRD(MXCOOR),
      &          BKPHES(NCOOR,NCOOR), BKPGRD(NCOOR ),
@@ -4776,13 +4776,13 @@ C
 C
 C     /* Deck drnrmc*/
       SUBROUTINE DRNRMC(SYMCOR,ICRIRP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
       LOGICAL FOUND
       DIMENSION SYMCOR(NCOOR,NCOOR), ICRIRP(NCOOR,2)
 C
@@ -4835,12 +4835,12 @@ C     *************************************************
 C     *** This is a routine that writes out normal  ***
 C     *** coordinates to file, in case of a restart.***
 C     *************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
+#include "trkoor.h"
+#include "numder.h"
       DIMENSION SYMCOR(NCOOR,NCOOR), RNNORM(NCOOR), FREQ(NCOOR)
       DIMENSION ICRIRP(NCOOR,2)
 C
@@ -4877,12 +4877,12 @@ C
 C     /*Deck rerstr*/
       SUBROUTINE RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
      &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
+#include "trkoor.h"
+#include "numder.h"
       LOGICAL RSTDON
       DIMENSION SYMCOR(NCOOR,NCOOR), FUVAL(NINTIN,NDIME), RNNORM(NCOOR),
      &          FREQ(NCOOR)
@@ -4924,14 +4924,14 @@ C     /*Deck prprer*/
 C     *************************************************
 C     *** Restart routine for property derivatives. ***
 C     *************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       CHARACTER*9 PRPTXT
       DIMENSION WORK(LWORK)
-#include <numder.h>
-#include <trkoor.h>
-#include <dummy.h>
+#include "numder.h"
+#include "trkoor.h"
+#include "dummy.h"
 C
       KNMPRP = 0
       INMTCL = 0
@@ -5032,8 +5032,8 @@ C     *********************************************************
 C     *** Subroutine that reads in header of force constant ***
 C     *** restart routine.                                  ***
 C     *********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION SYMCOR(NCOOR,NCOOR), RNNORM(NCOOR), FREQ(NCOOR)
       DIMENSION ICRIRP(NCOOR,2)
@@ -5078,13 +5078,13 @@ C     *** This routine takes the force constants (with respect to ***
 C     *** the most normal masses) and finds the force constants   ***
 C     *** with respect to other isotopes).                        ***
 C     ***************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
-#include <numder.h>
-#include <taymol.h>
+#include "trkoor.h"
+#include "numder.h"
+#include "taymol.h"
       LOGICAL HESEXS
       INTEGER BEGIN
       DIMENSION TDER(NDIMT), SYMCOR(NCOOR,NCOOR), TRNCCR(NCOOR,NCOOR),
@@ -5331,13 +5331,13 @@ C     ***********************************************************
 C     *** Routine that reduces the symmetry in the DALTON.INP ***
 C     *** file, according to the distortions.                 ***
 C     ***********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <molinp.h>
-#include <fcsym.h>
-#include <ccorb.h>
+#include "molinp.h"
+#include "fcsym.h"
+#include "ccorb.h"
       LOGICAL FIRST
       CHARACTER*80 WORD(KMLINE)
       DIMENSION ICRIRP(NCOOR,2), INDSTP(NTORDR)
@@ -5389,13 +5389,13 @@ C     **********************************************************
 C     **** Subroutine that reads in a precalculated hessian ****
 C     **** uses this for further work in normal coordinates.****
 C     **********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <fcsym.h>
-#include <trkoor.h>
-#include <taymol.h>
+#include "fcsym.h"
+#include "trkoor.h"
+#include "taymol.h"
       LOGICAL SYMDET, SYMADA
       DIMENSION SYMCOR(NCOOR ,NCOOR ), CSTART(NCOOR        ),
      &          GRIREP(NGORDR,NGVERT), CHRCTR(NGORDR,NCVERT),
@@ -5463,13 +5463,13 @@ C
 C
 C     /* Deck rdfhes */
       SUBROUTINE RDFHES(WORK,LWORK,IPRINT,SYMADA)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <taymol.h>
-#include <nuclei.h>
-#include <trkoor.h>
+#include "taymol.h"
+#include "nuclei.h"
+#include "trkoor.h"
       LOGICAL SYMADA, HESEXS
       CHARACTER*5 HSMINF
       DIMENSION WORK(LWORK)
@@ -5541,11 +5541,11 @@ C     **********************************************************
 C     *** Transforming hessian in cartesian coordinates, to ****
 C     *** symmetry coordinate basis in SYMCOR.              ****
 C     **********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <taymol.h>
+#include "taymol.h"
       CHARACTER*9 TYPE
       DIMENSION HESSIN(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR),
      &          TMPHES(NCOOR,NCOOR), WORK(LWORK)
@@ -5604,10 +5604,10 @@ C     ****************************************
 C     *** Print routine for analyzing part ***
 C     *** of the numerical derivatives.    ***
 C     ****************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <cbinum.h>
-#include <prpndr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cbinum.h"
+#include "prpndr.h"
 C
       CALL HEADER('Analysis using the numerical derivatives',0)
       WRITE (LUPRI,'(/A/)') ' Properties that are analyzed: '
@@ -5623,18 +5623,18 @@ C
 C
 C     /*Deck stppvr*/
       SUBROUTINE STPPVR
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
 C
-#include <inforb.h>
-#include <cbiexc.h>
-#include <pvibav.h>
-#include <symmet.h>
-#include <ccexcinf.h>
-#include <gnrinf.h>
+#include "inforb.h"
+#include "cbiexc.h"
+#include "pvibav.h"
+#include "symmet.h"
+#include "ccexcinf.h"
+#include "gnrinf.h"
 C
       DODIPS = DIPSTR
 C
@@ -5660,17 +5660,17 @@ C     /*Deck prpder*/
      &           CCPRFV,CCPRDR,GRIREP,WORK,IADRSS,KDPMTX,ICRIRP,INDSTP,
      &           IDCOMP,IMAX,IMIN,ICNT,NCVAL,IDDCMP,MXCOEF,NTYPE,NPPDER,
      &           LDPMTX,IFRSTD,NLDPMX,MXNEXI,NSYM,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (DMIN = 1.0D-12, D1=1.0D0, D0=0.0D0)
-#include <abainf.h>
-#include <trkoor.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <cbinum.h>
-#include <pvibav.h>
-#include <prpc.h>
+#include "abainf.h"
+#include "trkoor.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "cbinum.h"
+#include "pvibav.h"
+#include "prpc.h"
       LOGICAL PRIVAL,CCPRP
       DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR),
      &          SPSPDR(NCOOR ,NCOOR,6,NPPDER), GRIREP(NGORDR,NGVERT),
@@ -5961,7 +5961,7 @@ C
 C
 C     /* Deck prspsp */
       SUBROUTINE PRSPSP(SPSPFV,NDIM1,NDIM2,LPRIUN)
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*26 CNTRIB(6)
       DIMENSION SPSPFV(NDIM1,NDIM2,6)
@@ -6004,7 +6004,7 @@ C     /* Deck prtrma */
 C     *****************************************************************
 C     *** Subroutine that prints a two dimensional matrix (TRAMAT). ***
 C     *****************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION TRAMAT(NDIMT1,NDIMT2)
 C
@@ -6034,9 +6034,9 @@ C     ***************************************************
 C     *** Subroutine that prints the dipole transition***
 C     *** moments.                                    ***
 C     ***************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <cbiexc.h>
+#include "cbiexc.h"
       DIMENSION TRLEN(3,NSYM,MXNEXI), EXENG(NSYM,MXNEXI)
 C
       CALL HEADER('Electric transition dipole moments (in a.u.)',15)
@@ -6074,9 +6074,9 @@ C     **** atoms used by the numerical differentiation, to the****
 C     **** symmetry adapted coordinates used by the numerical ****
 C     **** differentiation scheme.                            ****
 C     ************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION SYMCOR(NCOOR1,NCOOR1), EGRAD(MXCOOR), SEGRAD(NCOOR1),
      &          COOR(NCOOR1), WORK(LWORK)
 C
@@ -6103,9 +6103,9 @@ C     **** Subroutine that transforms the gradient in the set****
 C     **** of cartesian coordinates, to another set of       ****
 C     **** cartesian coordinates (stored in coor).           ****
 C     ***********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 C
       DIMENSION EGRAD (MXCOOR), COOR  (NCOOR      ), CRTPRG(NCOOR),
@@ -6142,9 +6142,9 @@ C     **** coordinates used by the numerical differentiation, to ****
 C     **** the symmetry adapted coordinates used by the numerical****
 C     **** differentiation scheme.                               ****
 C     ***************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 C
       DIMENSION SYMCOR(NCOOR1,NCOOR1), EGRAD(MXCOOR), SEGRAD(NCOOR1)
@@ -6175,9 +6175,9 @@ C     **** atoms used by the numerical differentiation, to the****
 C     **** symmetry adapted coordinates used by the numerical ****
 C     **** differentiation scheme.                            ****
 C     ************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
 C
       DIMENSION SYMCOR(NCOOR1,NCOOR1), EHESS(MXCOOR,MXCOOR),
@@ -6206,9 +6206,9 @@ C     **** Subroutine that transforms the hessian in the set ****
 C     **** of cartesian coordinates, to another set of       ****
 C     **** cartesian coordinates (stored in coor).           ****
 C     ***********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
 C
       INTEGER BEGIN
@@ -6258,8 +6258,8 @@ C     **** cartesian coordinates used by the numerical          ****
 C     **** differentiation, to the symmetry adapted coordinates ****
 C     **** used by the numerical differentiation scheme.        ****
 C     **************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, KCOL = 6)
 C
       INTEGER BEGIN, LAST
@@ -6311,21 +6311,21 @@ C     **** Subroutine that constructs the transformation matrix ****
 C     **** to transform gradient/hessian back to original       ****
 C     **** set of coordinates, defined in COOR.                 ****
 C     **************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, DMTHR=1.0D-4)
-#include <symmet.h>
-#include <nuclei.h>
-#include <pvibav.h>
-#include <numder.h>
-#include <cbinum.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "pvibav.h"
+#include "numder.h"
+#include "cbinum.h"
        LOGICAL FOUND
        CHARACTER*9 PRPTXT
        DIMENSION TRAMAT(NCOOR,NCOOR), COOR(NCOOR), CRTPRG(NCOOR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     *** Finding the cartesian coordinates used by the ***
 C     *** program at the moment.                        ***
@@ -6407,17 +6407,17 @@ C     *** This routine takes care of symmetry odds and ***
 C     *** ends connected to frozen core orbitals in    ***
 C     *** distorted symmetry.                          ***
 C     ****************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <nmbksym.h>
-#include <ccorb.h>
-#include <numder.h>
-#include <cbinum.h>
+#include "symmet.h"
+#include "nmbksym.h"
+#include "ccorb.h"
+#include "numder.h"
+#include "cbinum.h"
       CHARACTER*8 WORD
 C
 C     *** Backing up symmetry. ***
@@ -6470,17 +6470,17 @@ C     *** Subroutine that sorts out the symmetry of the  ***
 C     *** excited states, and assign them to a new irrep ***
 C     *** in the distorted geometry.                     ***
 C     ******************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <molinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "molinp.h"
 C
-#include <symmet.h>
-#include <nmbksym.h>
-#include <ccorb.h>
-#include <pgroup.h>
+#include "symmet.h"
+#include "nmbksym.h"
+#include "ccorb.h"
+#include "pgroup.h"
       LOGICAL SAMIRP
       CHARACTER*80 WORD(KMLINE)
 C
@@ -6509,16 +6509,16 @@ C     *** Subroutine that subduces properties in input file    ***
 C     *** from original symmetry into broken symmetry.         ***
 C     *** Original symmetry needs to be backed up in nmbksym.h.***
 C     ************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <molinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "molinp.h"
 C
-#include <symmet.h>
-#include <nmbksym.h>
-#include <pgroup.h>
+#include "symmet.h"
+#include "nmbksym.h"
+#include "pgroup.h"
       LOGICAL SAMIRP
       DIMENSION NCURNT(8), NBCKUP(8)
       CHARACTER*7 SWORD
@@ -6585,10 +6585,10 @@ C
 C
 C     /* Deck stccsm */
       SUBROUTINE STCCSM(NSYMCC)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       NSYMCC = NSYM
 C
@@ -6603,8 +6603,8 @@ C     /* Deck wrispc */
 *** Writes necessary information to DALTON.SPC in order to ***
 *** run the dal2spectro.pl script.                         ***
 **************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*6 TXT
       DIMENSION FREQ(NCOOR), RNNORM(NCOOR), QUBIC(NCOOR,NCOOR,NCOOR),
      &          QUARTC(NCOOR,NCOOR,NCOOR,NCOOR)
@@ -6700,11 +6700,11 @@ C     ***                     the diagonal cubic force and  ***
 C     ***                     this point contributes to     ***
 C     ***                     F(I,J,K), I ne J ne K.        ***
 C     *********************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL RNPNT1, CLNRGY
-#include <numder.h>
-#include <cbinum.h>
+#include "numder.h"
+#include "cbinum.h"
 C
 C     *** Original geometry is always calculated. ***
 C
@@ -6744,8 +6744,8 @@ C     *** Subroutine that sorts three indices, where two indices    ***
 C     *** are equal, so that the one index not equal the two others ***
 C     *** are put first. The indices are returned in INDSTP.        ***
 C     *****************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL EQUAL, FOUND
       DIMENSION INDSTP(NORDR), INDTMP(NORDR), ITMP(N ORDR)
 C
@@ -6791,9 +6791,9 @@ C     /* Deck prexce */
 C     **************************************************
 C     *** Subroutine that prints excitation energies ***
 C     **************************************************
-#include <implicit.h>
-#include <codata.h>
-#include <cbiexc.h>
+#include "implicit.h"
+#include "codata.h"
+#include "cbiexc.h"
       DIMENSION EXENG(NSYM,MXNEXI)
 C
       IF (EXCTRP) THEN
@@ -6826,17 +6826,17 @@ C     *************************************************************
 C     *** Subroutine that checks if the phase of the components ***
 C     *** of the transition dipole moment is correct.           ***
 C     *************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (THRSH=1.0D-8)
-#include <inforb.h>
-#include <cbiexc.h>
-#include <pvibav.h>
-#include <symmet.h>
-#include <numder.h>
+#include "inforb.h"
+#include "cbiexc.h"
+#include "pvibav.h"
+#include "symmet.h"
+#include "numder.h"
       DIMENSION TRLNFV(3,NSYM,MXNEXI,NMPCAL)
 C
       DO 100 IMPCAL = 1, NMPCAL
@@ -6876,11 +6876,11 @@ C     *************************************************************
 C     *** Subroutine that checks if the phase of the components ***
 C     *** of the cc transition dipole moment is correct.        ***
 C     *************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (THRESH=1.0D-10)
-#include <numder.h>
-#include <prpc.h>
+#include "numder.h"
+#include "prpc.h"
       DIMENSION TRLNFV(NPRPC,NMPCAL)
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
 C
@@ -6938,11 +6938,11 @@ C     ***********************************************************
 C     *** Subroutine that recognizes the first function value ***
 C     *** of a derivative and returns this in NFIRST.         ***
 C     ***********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <trkoor.h>
+#include "trkoor.h"
       LOGICAL DONE
 C
 C     *** Init. ***
@@ -6997,14 +6997,14 @@ C     *** derivatives for the first derivative of transition ***
 C     *** dipole moment. This is to check if there is a sign ***
 C     *** problem in the molecular system.                   ***
 C     **********************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <prpc.h>
-#include <numder.h>
-#include <fcsym.h>
-#include <trkoor.h>
+#include "prpc.h"
+#include "numder.h"
+#include "fcsym.h"
+#include "trkoor.h"
       DIMENSION CCPRFV(NPRPC,NMPCAL), CCPRDR(NPRPC,NPPDER  ),
      &          TMPCCF(NPRPC,NMPCAL), TMPCCD(NPRPC,NPPDER,2),
      &          COEFF(-MXCOEF:MXCOEF,0:NMRDRP),GRIREP(NGORDR,NGVERT),
@@ -7102,11 +7102,11 @@ C
 C
 C     /* Deck trprsc*/
       SUBROUTINE T1PRSC(DVAL,CDVAL,SYMCOR,NDIM1,NDERV,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1=1.0D0, D0=0.0D0)
-#include <trkoor.h>
+#include "trkoor.h"
       DIMENSION  DVAL(NDIM1,NDERV), SYMCOR(NCOOR,NCOOR),
      &          CDVAL(NDIM1,NCOOR)
 C
@@ -7134,9 +7134,9 @@ C     /* Deck wrimop */
 *** Ove Christiansen based on Torgeirs WRISPC
 *** At this stage it makes only sense with norm. coord.
 **************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <cbinum.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "cbinum.h"
       CHARACTER*6 TXT
       DIMENSION FREQ(NCOOR), RNNORM(NCOOR), QUBIC(NCOOR,NCOOR,NCOOR),
      &          QUARTC(NCOOR,NCOOR,NCOOR,NCOOR)

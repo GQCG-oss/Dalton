@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -49,7 +49,7 @@ C  /* Deck rspave */
 C
 C 23-Jul-1992 Hinne Hettema
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECS(NVDIM,NVSIM)
 C
 C Used from common blocks:
@@ -59,14 +59,14 @@ C  INFRSP : RSPSUP
 C  WRKRSP : KSYMOP, KZWOPT
 C  INFPRI : IPRAVE
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infpri.h"
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('RSPAVE')
 C
@@ -144,22 +144,22 @@ C
 C Subroutine to obtain antisymmetric part of the
 C MCSCF gradient from total MCSCF Fock matrix
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION EVECS(*),ZYMAT(NORBT,NORBT,NSIM),WRK(LWRK)
 C
 C Used from common blocks
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( DHALF = 0.50D0 )
 C
@@ -260,7 +260,7 @@ C  /* Deck rspant */
 C
 C Subroutine to compute antisymmetric part of Fock matrix
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCK(NORB,NORB), GMAT(NORBT,NORBT)
 C
       CALL QENTER('RSPANT')
@@ -278,19 +278,19 @@ C
       END
 C  /* Deck rspcfa */
       SUBROUTINE RSPCFA(NSIM,GRA,EVECS)
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION GRA(NORBT,NORBT,*), EVECS(KZYVAR,*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('RSPCFA')
 C

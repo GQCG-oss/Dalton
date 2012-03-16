@@ -21,9 +21,15 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
-C  Principal author of this file: Hans Jørgen Aa. Jensen
+C  FILE: sirius/sirsav.F
+C
+C  Purpose:
+C
+C     Save MCSCF/CI information on SIRIUS.RST
+C     For some KEYWRDs: update CI vector and rotate orbitals before saving.
+C     See comments in SIRSAV on ICTL for more information.
 C
 C  /* Deck sirsav */
       SUBROUTINE SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,
@@ -60,15 +66,15 @@ C        =5 save CI information, after CICTL
 C        =6 save MC optimization information, when N-R used.
 C
       use lucita_mcscf_ci_cfg
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*(*) KEYWRD
       DIMENSION CMO(*),IBNDX(*),EVEC(*),REDL(*),XKAP(*),INDXCI(*)
       DIMENSION WRK(LFREE)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       PARAMETER (THRTT = 1.0D-4, D0 = 0.0D0, D1 = 1.0D0)
-#include <dummy.h>
+#include "dummy.h"
 C
 C Used from common blocks:
 C   INFINP : ISTATE,FLAG(*),?
@@ -78,15 +84,15 @@ C   INFOPT : EMCOLD,DEPRED,BETA,GAMMA,RTRUST,ITMAC,NREDL,?
 C   INFDIM : NORBMA,NBASMA,IVEX4,INTOT, MAXRL
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL DOCNO, DOXKAP, FNDLAB
       CHARACTER*6 CNOLBL
@@ -737,7 +743,7 @@ C Output: CMO new orbitals
 C
 C Scratch:WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XKAP(*),CMO(*), WRK(*)
 C
 C local parameters:
@@ -748,18 +754,18 @@ C
 C Used from common blocks:
 C   INFINP : ??
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
-C   INFORB : NSYM,N2ORBT,NCMOT,...
+C   INFORB : NSYM,NCMOT,...
 C   INFDIM : NORBMA
 C   INFPRI : P6FLAG()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('MO_ROTATE')
@@ -923,3 +929,4 @@ C
 C ** End of subroutine MO_ROTATE
 C
       END
+C --- end of sirius/sirsav.F ---

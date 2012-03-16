@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck eriave */
       SUBROUTINE ERIAVE(SO,PMAT,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
@@ -29,14 +29,14 @@ C  /* Deck eriave */
 C
 C     tuh march 99 - april 01
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION SO(*), PMAT(*), DMAT(*), D2MAT(*), ID2MAT(*),
      &          IPNTCR(*), IPNTUV(*), IODDCC(*),
      &          INDXBT(*), WORK(*)
-#include <ericom.h>
+#include "ericom.h"
 C
 C     Allocations
 C
@@ -50,13 +50,13 @@ C
 C  /* Deck eriav1 */
       SUBROUTINE ERIAV1(SO,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
      &                  INDXBT,IPOINT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D1=1.0D0, DP5=0.5D0)
       INTEGER A, B, C, D, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DAB, DCD
@@ -69,17 +69,17 @@ C  /* Deck eriav1 */
      &          DMAT(NBASE,NBASE),
      &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA),
      &          ID2MAT(MXCORB,2)
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <energy.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "energy.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIAV1',-1)
@@ -191,25 +191,25 @@ C
 C  /* Deck erifrc */
       SUBROUTINE ERIFRC(IA,IB,IC,ID,SO,IPOINT,DMAT,D2MAT,ID2MAT,
      &                  DFAC,IODDCD,IODXYZ,DAB,DCD)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       PARAMETER (D4=4.0D0, D2=2.0D0, D1=1.0D0, DP5=0.5D0, DP25=0.25D0)
       LOGICAL DAB, DCD, NOTRAS
       DIMENSION SO(NAOINT,3,4), IPOINT(NCCS,5), DMAT(NBASE,NBASE), 
      &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA), ID2MAT(MXCORB,2),
      &          IODXYZ(3)
-#include <cbieri.h>
-#include <ericom.h>
-#include <eribuf.h>
-#include <aobtch.h>
-#include <hertop.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <energy.h>
+#include "cbieri.h"
+#include "ericom.h"
+#include "eribuf.h"
+#include "aobtch.h"
+#include "hertop.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "energy.h"
 C    
       NOTRAS = .TRUE.
       DO I = 1, NCCS

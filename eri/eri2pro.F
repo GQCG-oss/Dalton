@@ -21,32 +21,32 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck eripro */
       SUBROUTINE ERIPRO(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,DOGDER,DOBDER,
      &                  IPRFCK,CCFBT,INDXBT,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       LOGICAL DOBDER, DOGDER
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK), IFCTYP(NDMT),
      &          ISYMDM(NDMT), CCFBT(*), INDXBT(*)
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
 C
       IF (SLAVE) THEN
          IPRINT = 0

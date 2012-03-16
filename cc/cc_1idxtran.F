@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_1IDXTRAN(AMAT,ISYMA,BMAT,ISYMB,CMAT,ISYMC)
@@ -35,9 +35,9 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

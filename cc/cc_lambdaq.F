@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_LAMBDAQ(XLAMDPQ,XLAMDHQ,CMOPQ,CMOHQ,ISYMQ,T1AMP0, 
@@ -61,12 +61,12 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <dummy.h>      
-#include <ccorb.h>
-#include <ccfro.h>
-#include <ccsdsym.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "dummy.h"      
+#include "ccorb.h"
+#include "ccfro.h"
+#include "ccsdsym.h"
+#include "inftap.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

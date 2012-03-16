@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cino */
 #if defined (VAR_CINO)
@@ -36,20 +36,20 @@ C          ARE USED TO DETERMINE THE ACTIVE ORBITAL
 C          SPACE OF A MCSCF AND THE NATURAL ORBITALS ARE USED
 C          AS STARTING ORBITALS OF THE MCSCF CALCULATION.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION INDXCI(*),WRK(*)
 C
-#include <dummy.h>
+#include "dummy.h"
       PARAMETER ( D2 = 2.0D0 )
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "infpri.h"
 C
       CHARACTER*8 TABLE(2)
 C

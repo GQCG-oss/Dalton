@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck herctl */
 #ifndef PRG_DIRAC
@@ -70,32 +70,28 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
-#endif
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <qm3.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "maxorb.h"
 C
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbihrs.h>
-#include <cbieri.h>
-#include <gnrinf.h>
-#include <exeinf.h>
-#include <inftap.h>
-#include <huckel.h>
-#include <r12int.h>
-#include <nuclei.h>
-#include <pcmlog.h>
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbihrs.h"
+#include "cbieri.h"
+#include "gnrinf.h"
+#include "exeinf.h"
+#include "inftap.h"
+#include "huckel.h"
+#include "r12int.h"
+#include "nuclei.h"
+#include "pcmlog.h"
 C
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 C
 C inftra : USE_INTSORT
@@ -231,7 +227,7 @@ C
 
 #ifdef BUILD_GEN1INT
 C     test suite of Gen1Int interface, added by Bin Gao, Oct. 7, 2011
-      if (test_gen1int_interface)
+      if (TEST_GEN1INT)
      &  call gen1int_ifc_test(LWORK, WORK, LUPRI, IPRDEF)
 #endif
 
@@ -304,10 +300,6 @@ C
 C     950602-vebjorn:
 C     Added flag HRINPC to ensure that HERMIT input processing is done only once.
 C
-#ifdef BUILD_GEN1INT
-C...  Gen1Int interface, added by Bin Gao, Jan. 16, 2012
-      use gen1int_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -332,10 +324,10 @@ C inftra : USE_INTSORT
 C
 #include "dummy.h"
 #include "gnrinf.h"
-#include <cbihrs.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <inftra.h>
+#include "cbihrs.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "inftra.h"
 #endif
 C
 #include "cbiher.h"
@@ -344,16 +336,16 @@ C
 #include "ccom.h"
 #include "orgcom.h"
 
-#include <efield.h>
-#include <cbisol.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <huckel.h>
-#include <drw2el.h>
-#include <elweak.h>
-#include <r12int.h>
-#include <codata.h>
-#include <denfit.h>
+#include "efield.h"
+#include "cbisol.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "huckel.h"
+#include "drw2el.h"
+#include "elweak.h"
+#include "r12int.h"
+#include "codata.h"
+#include "denfit.h"
 C     Keywords for R12 have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
@@ -1230,7 +1222,7 @@ C           R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/U
             GOTO 100
   239    CONTINUE
 #ifdef BUILD_GEN1INT
-            test_gen1int_interface = .true.
+            TEST_GEN1INT = .true.
 #endif
             goto 100
   240    CONTINUE
@@ -1689,17 +1681,17 @@ C
       END
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <orgcom.h>
-#include <cbiher.h>
-#include <cbihr1.h>
+#include "orgcom.h"
+#include "cbiher.h"
+#include "cbihr1.h"
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.NOT AL', '.CAVORG',
@@ -2079,9 +2071,9 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <gnrinf.h>
-#include <cbiher.h>
-#include <cbihrs.h>
+#include "gnrinf.h"
+#include "cbiher.h"
+#include "cbihrs.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', 'xxxxxxx', '.THRESH',
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
@@ -2192,37 +2184,37 @@ C
       END
 C  /* Deck herint */
       SUBROUTINE HERINT(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <gnrinf.h>
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbihrs.h>
-#include <cbieri.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <huckel.h>
+#include "gnrinf.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbihrs.h"
+#include "cbieri.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "huckel.h"
 #include "inftap.h"
-#include <efield.h>
-#include <r12int.h>
-#include <drw2el.h>
+#include "efield.h"
+#include "r12int.h"
+#include "drw2el.h"
 #include "qm3.h"
-#include <pcmlog.h>
+#include "pcmlog.h"
 C
       DIMENSION   RLMORI(3)
       CHARACTER*8 LABELT(3), LABELS(6)
 C
       DIMENSION WORK(LWORK)
-#include <memint.h>
+#include "memint.h"
 C
 C     Control routine for calculation of undifferentiated one- and
 C     two-electron Hamiltonian integrals and transformation of
@@ -3686,13 +3678,13 @@ C
       END
 C  /* Deck srtinp */
       SUBROUTINE SRTINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C inftra : USE_INTSORT
 C
-#include <cbisor.h>
-#include <inftra.h>
+#include "cbisor.h"
+#include "inftra.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -3812,25 +3804,25 @@ C
       END
 C/* Deck herini */
       SUBROUTINE HERINI
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "gnrinf.h"
 #include "inftra.h"
 #include "cbirea.h"
-#include <cbisol.h>
-#include <cbiher.h>      
-#include <drw2el.h>
-#include <orgcom.h>
-#include <elweak.h>
-#include <r12int.h>
-#include <infinp.h>
-#include <qm3.h>
+#include "cbisol.h"
+#include "cbiher.h"      
+#include "drw2el.h"
+#include "orgcom.h"
+#include "elweak.h"
+#include "r12int.h"
+#include "infinp.h"
+#include "qm3.h"
 C
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
       LOGICAL FIRST_CALL
       SAVE    FIRST_CALL
@@ -4064,16 +4056,16 @@ C
 C     Interface to B.Schimmelpfennig's atomic mean-field integral code
 C     Written by K.Ruud in northern Norway in January 2001.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
       LOGICAL BREIT, PROPRI
       DIMENSION WORK(LWORK)
-#include <gnrinf.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <cbirea.h>
+#include "gnrinf.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "cbirea.h"
 C
 C     Open Mean-field input file generate in READIN
 C
@@ -4112,7 +4104,7 @@ C/* Deck rstgft */
 C
 C R12 calculation requested with fitted "r12-times-Slater" geminal (WK/UniKA/03-24-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /
@@ -4193,7 +4185,7 @@ C/* Deck stgfit */
 C
 C R12 calculation requested with fitted Slater-type geminal (WK/UniKA/03-24-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /
@@ -4257,7 +4249,7 @@ C/* Deck erffit */
 C
 C R12 calculation requested with fitted ERFC-type geminal (WK/UniKA/03-29-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /
@@ -4321,7 +4313,7 @@ C/* Deck rrffit */
 C
 C  R12 calculation requested with fitted "r12-times-ERFC" geminal (WK/UniKA/03-29-2005).
 C
-#include <implicit.h>
+#include "implicit.h"
       dimension ggax(6,6),ggac(6,6),ggas(6),ggan(6)
       character*5 fn
       data ggax /

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cccr_setup */
 *=====================================================================*
@@ -61,12 +61,12 @@ c /* deck cccr_setup */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cccrinf.h>
-#include <ccroper.h>
-#include <cccperm.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cccrinf.h"
+#include "ccroper.h"
+#include "cccperm.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -723,11 +723,11 @@ c /* deck CCCR_DISP_SETUP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <cccrinf.h>
-#include <ccroper.h>
-#include <cccperm.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "cccrinf.h"
+#include "ccroper.h"
+#include "cccperm.h"
 
 * local parameters:
       CHARACTER*(25) MSGDBG
@@ -1531,7 +1531,7 @@ c /* deck CC_SETH1111 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IHTRAN(5,MXTRAN)
       INTEGER IHDOTS(MXVEC,MXTRAN)
@@ -1652,7 +1652,7 @@ c /* deck CC_SETG112 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit.h>
+#include "priunit.h"
       INTEGER MXVEC, MXTRAN
       INTEGER IGTRAN(4,MXTRAN)
       INTEGER IGDOTS(MXVEC,MXTRAN)
@@ -1747,7 +1747,7 @@ c /* deck CC_SETF12 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IFTRAN(3,MXTRAN)
@@ -1841,8 +1841,8 @@ c /* deck CC_SETAA */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "cclists.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IAATRAN(MXDIM_AATRAN,MXTRAN)
@@ -1934,7 +1934,7 @@ c /* deck CC_SETFA12 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IFTRAN(5,MXTRAN)
@@ -2033,7 +2033,7 @@ c /* deck CC_SETDOT */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IDTRAN(MXTRAN)

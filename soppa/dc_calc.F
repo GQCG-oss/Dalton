@@ -12,11 +12,11 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Determine "double corrected RPA" excitation energies.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
-#include <ccsdsym.h>
+#include "soppinf.h"
+#include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C

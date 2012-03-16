@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CCRHSVEC */
 *=====================================================================*
@@ -50,17 +50,17 @@ c /* deck CCRHSVEC */
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
 #else
-#include <implicit.h>
+#include "implicit.h"
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cclists.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cclists.h"
+#include "dummy.h"
 Cholesky
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 
 * local parameters:
@@ -712,9 +712,9 @@ c /* deck CC_RHS_SETUP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccroper.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(22) MSGDBG

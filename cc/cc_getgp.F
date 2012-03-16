@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_gethfgd */
 *=====================================================================*
@@ -43,13 +43,13 @@ c /* deck cc_gethfgd */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <ccexpfck.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "ccexpfck.h"
+#include "dummy.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG

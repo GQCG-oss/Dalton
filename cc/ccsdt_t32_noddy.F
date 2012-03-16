@@ -39,17 +39,17 @@
 *    Written by Christof Haettig, Mai 2003, based on ccsdt_t31_noddy.
 *---------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <cco2rsp.h>
-#include <ccr2rsp.h>
-#include <ccer1rsp.h>
-#include <ccexci.h>
-#include <ccfield.h> 
-#include <dummy.h> 
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "cco2rsp.h"
+#include "ccr2rsp.h"
+#include "ccer1rsp.h"
+#include "ccexci.h"
+#include "ccfield.h" 
+#include "dummy.h" 
 
 
       logical locdbg, print_t3

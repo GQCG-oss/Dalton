@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c900115: TODO goer noget ved PRINRM
 c        CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
@@ -56,7 +56,7 @@ C   endif
 C   scratch: WRK(KFRSAV:LFRSAV)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*)
       DIMENSION BCVECS(NCONDI,*), CREF(*), INDXCI(*),
      &          DTV(NNASHX,*), FTV(N2ORBX,*), FTQ(NASHT*NORBT,*)
@@ -81,15 +81,15 @@ C   INFDIM : NCONDI
 C   INFTRA : USEDRC
 C   INFPRI : P6FLAG(*), ?
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('SIRTR1')
@@ -305,7 +305,7 @@ C *** Calculate EMYX(IOSIM), the inactive energy based on the one-
 C     index transformed Hamiltonian.
 C     Multiply with EMYX(IOSIM) with two, the value of DC(ii)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FXC(NORBT,NORBT,NOSIM), EMYX(NOSIM)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -316,14 +316,14 @@ C   INFVAR : JWOPSY
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(11)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       DO 300 IOSIM = 1,NOSIM
          EMYX(IOSIM) = D0
@@ -384,7 +384,7 @@ C
 C Scratch:
 C   WRK(LFRSAV)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),UBO(NORBT,*),DV(*)
       DIMENSION DXCAO(NBAST,*),DXVAO(NBAST,*), WRK(*)
 C
@@ -394,13 +394,13 @@ C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
 C  INFVAR : JWOPSY
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
 C
 #if defined (VAR_DEBUG)
-#include <idbg.h>
+#include "idbg.h"
 #endif
 C
       CALL QENTER('TR1DEN')
@@ -526,7 +526,7 @@ C            described in Chapter 8 Appendix 8B of MOTECC-90
 C            "Calculation of Generalized Fock Matrices from
 C            Regular and One-Index Transformed Integrals"
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FXC(N2ORBX,*),FXV(N2ORBX,*)
       DIMENSION FTV(N2ORBX,*),UBO(N2ORBX,*),CMO(*)
       DIMENSION DV(*),DTV(*), WRK(LFRSAV)
@@ -538,12 +538,12 @@ C   INFORB : NNORBX, N2ORBX, N2BASX, NISHT,NASHT, ...
 C   INFVAR : JWOPSY
 C   DFTCOM : DFT_SPINDNS
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
-#include <dftcom.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
+#include "dftcom.h"
 C
 C
       CALL QENTER('TR1FCK')
@@ -730,7 +730,7 @@ C         effective one-electron matrix for transition DTV )
 C
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FXC(N2ORBX,*),FXV(N2ORBX,*)
       DIMENSION FTV(N2ORBX,*),UBO(N2ORBX,*),CMO(*)
       DIMENSION DV(*),DTV(*),ISYMDM(*),IFCTYP(*)
@@ -739,7 +739,7 @@ C
       DIMENSION WRK(*)
       LOGICAL   AODRCT, P6SAVE, DFTADX
 C
-#include <dummy.h>
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1=1.0D0, D2 = 2.0D0)
 C
 C Used from common blocks:
@@ -751,25 +751,25 @@ C   INFDIM : NBASMA,?
 C   INFTAP : LUSUPM
 C   DFTCOM : DFT_SPINDNS, ?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <abainf.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "abainf.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 C
 #if defined (VAR_DEBUG)
-#include <idbg.h>
+#include "idbg.h"
 #endif
 #ifndef FOR_THE_FUTURE
 c  this is a hack, to transfer KSYMOP to DEQ27 inside DFTATR
@@ -1081,7 +1081,7 @@ C  inactive and active Fock matrices (FXC and FXV) by
 C  adding the one-index transformed FC and FV matrices to
 C  FXC and FXV, resp.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FXC(N2ORBX,*),FXV(N2ORBX,*)
       DIMENSION UBO(N2ORBX,*), FC(*),FV(*)
       DIMENSION WRK(LFRSAV)
@@ -1093,10 +1093,10 @@ C   INFORB : N2ORBX,N2BASX,NNASHX
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(*)
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infpri.h"
 C
       CALL QENTER('TR1FD ')
       KFRSAV = 1
@@ -1168,7 +1168,7 @@ C
 C  H1 is symmetric and lower triangle packed, no assumptions
 C  on UKAP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H1(*), H1X(NNORBT,*), UKAP(N2ORBX,*), WRK(*)
       PARAMETER ( D2 = 2.0D0 )
 C
@@ -1176,7 +1176,7 @@ C Used from common blocks:
 C   INFORB : NSYM,NISH,NORB,NBAS,IIORB,I2ORB,NNORBT,N2ORBT,...
 C
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL QENTER('TR1H1 ')
 C
@@ -1233,16 +1233,16 @@ C                  = H1X(a,b)
 C                  + sum(c) [ UBOVEC(a,c) H1(c,b)
 C                           + UBOVEC(b,c) H1(a,c) ]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UBOVEC(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NORBT, ...
 C  INFVAR : JWOPSY
 C
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
 C
 C
 C ONE INDEX TRANSFORM FIRST INTEGRAL INDEX
@@ -1299,7 +1299,7 @@ C Jan 90 hjaaj
 C
 C Add (p~ v~ | x y) contributions to FXQ from Mulliken integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FXQ(NORBT,NASHT), H2XCD(NORBT,NORBT),
      &          PV(NNASHX,NNASHX),WRK(LWRK)
 C
@@ -1308,11 +1308,11 @@ C  INFORB : NORBT, NASHT, N2ASHX, NNASHX, MULD2H(8,8)
 C  INFIND : IROW(:),ISMO(:),NSM(:),ICH(:),IOBTYP(:)
 C  INFVAR : JWOPSY
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
       KH2AC1 = 1
       KH2ACF = KH2AC1 + N2ASHX
@@ -1386,7 +1386,7 @@ C
 C Scratch
 C  WRK  dimension: NBAS(ISYM)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION U(*), V(*), NBAS(8), NORB(8)
       DIMENSION PRPAO(NBAST,*),PRPMO(NORBT,*),WRK(*)
 C
@@ -1438,20 +1438,20 @@ C 4)
 C SUM UP ONE INDEX TRANSFORMED DENSITY CONTRIBUTIONS TO FOCK
 C MATRICES ( FCOEX  = FCOCO  + FCOEX )
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FCOCO(NORBT,NORBT,*),FVOCO(NORBT,NORBT,*)
       DIMENSION FCOEX(NORBT,NORBT,*),FVOEX(NORBT,NORBT,*)
 C
       PARAMETER ( D4 = 4.0D0 , DM2 = -2.0D0 , DP5 = 0.5D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
       IF(NISHT.GT.0) CALL DSCAL(NORBT*NORBT*NSIM,D4,FCOCO,1)
       IF(NASHT.GT.0) CALL DSCAL(NORBT*NORBT*NSIM,DM2,FVOCO,1)
@@ -1541,7 +1541,7 @@ C  FCOEX(P,Q) = FCOEX(P,Q) + SUM(R) (JQ/PR)*UBOVEC(R,J)  (Q OCC)
 C
 C  FVOEX(P,Q) = FVOEX(P,Q) + SUM(R) (XQ/PR)*UDXV(R,X)   (Q OCC)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2(NORBT,*)
       DIMENSION FCOEX(NORBT,NORBT,*),FVOEX(NORBT,NORBT,*)
@@ -1552,13 +1552,13 @@ C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "orbtypdef.h"
 C
 C     Order (C,D) index such that C .ge. D
 C     in inactive-active-secondary order (using ISW)
@@ -1670,7 +1670,7 @@ C  FCOCO(P,Q) = FCOCO(P,Q) + SUM(R) <QJ/PR>*UBOVEC(J,R)
 C
 C  FVOCO(P,Q) = FVOCO(P,Q) + SUM(R) <QY/PR>*UDXV(R,Y)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION H2D(NORBT,*)
       DIMENSION FCOCO(NORBT,NORBT,*),FVOCO(NORBT,NORBT,*)
@@ -1684,13 +1684,13 @@ C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "orbtypdef.h"
 C
 C     Order (C,D) index such that C .ge. D
 C     in inactive-active-secondary order (using ISW)
@@ -1889,7 +1889,7 @@ C
 C  FV(P,Q) = FV(P,Q) -0.5*SUM(X,Y)*<XY/QP>*DVT(X,Y)
 C THE SUM X,Y ARE TAKEN BY READING IN ALL DIRAC DISTRIBUTIONS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FVTD(NORBT,NORBT,*),UDVT(NASHT,NASHT,*)
       DIMENSION H2D(NORBT,*)
@@ -1899,13 +1899,13 @@ C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "orbtypdef.h"
 C
 C     Order (C,D) index such that C .ge. D
 C     in inactive-active-secondary order (using ISW)
@@ -1962,7 +1962,7 @@ C
 C  FV(P,Q) = FV(P,Q) + SUM(X,Y)*(PQ/XY)*DVT(X,Y)
 C THE SUM X,Y ARE TAKEN BY READING IN ALL MULLIKEN DISTRIBUTIONS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FVTD(NORBT,NORBT,*),DVT(NASHT,NASHT,*)
       DIMENSION H2(NORBT,*)
@@ -1971,13 +1971,13 @@ C Used from common blocks:
 C   INFORB :
 C   INFIND : ISMO,IOBTYP
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <orbtypdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "orbtypdef.h"
 C
 C     Order (C,D) index such that C .ge. D
 C     in inactive-active-secondary order (using ISW)
@@ -2030,7 +2030,7 @@ C  ARE DETERMINED FROM ACTIVE-ACTIVE DIRAC INTEGRAL DISTRIBUTION
 C  <AB,XY> X.ge.Y (DIRAC NOTATION).
 C  CONTRIBUTIONS FROM MULLIKEN DISTRIBUTION ARE CALCULATED IN ABAQMU
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FXQ(NORBT,NASHT,*)
       DIMENSION UBOVEC(NORBT,NORBT,*),H2(NORBT,*),H2X(NORBT,*)
@@ -2041,12 +2041,12 @@ C   INFORB : NORBT, NASHT, ...
 C   INFVAR : JWOPSY
 C   INFIND : ISW, NSM
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infind.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infind.h"
 C
       IXYSYM = MULD2H ( NSM(NXW) , NSM(NYW) )
 C
@@ -2191,7 +2191,7 @@ C
 C
 C Externals:
 C   DDOT, DZERO, MOLLAB, QTRACE
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION PV(NNASHX,*),PTV(NNASHX,NNASHX,*),UBO(N2ORBX,*)
       DIMENSION H2XAC(NNASHX,NNASHX,*)
       DIMENSION FXQ(NASHT*NORBT,*),FTQ(NASHT*NORBT,*)
@@ -2214,22 +2214,22 @@ C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG(*),?
 C CBGETDIS : IADH2X
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
 C     Local variables
 C
-      DIMENSION NEEDMU(6)
+      DIMENSION NEEDMU(-4:6)
 
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 
       CALL QENTER('TR1H2M')
       KFRSAV = 1
@@ -2250,11 +2250,8 @@ C
 C
 C     Set NEEDMU array
 C
-      DO 10 I = 1,6
-         NEEDMU(I) = 0
-   10 CONTINUE
-      NEEDMU(3) = 1
-C     ... active-active distributions always needed
+      NEEDMU(-4:6) = 0
+      NEEDMU(3) = 1 ! ... active-active distributions always needed
       IF (NOSIM .GT. 0) THEN
          IF (NODRC) THEN
 C           ... all distributions involving active orbitals needed
@@ -2300,7 +2297,7 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over Mulliken distributions allowed in NEEDMU(6)
+C     Loop over Mulliken distributions allowed in NEEDMU(*)
 C
       IDIST = 0
   100 CALL NXTH2M(IC,ID,WRK(KH2CD),NEEDMU,WRK,KFREE,LFREE,IDIST)
@@ -2510,8 +2507,8 @@ C   Calculate FXQ(:,1:NOSIM)
 C   If (DOFCFV) calculate FTV(:,1:NCSIM), FXC(:,1:NOSIM),
 C      and FXV(:,1:NOSIM)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION DTV(NNASHX,*), DV(*),PV(NNASHX,*)
       DIMENSION UBO(N2ORBX,*), FXQ(NASHT*NORBT,*)
       DIMENSION FTV(N2ORBX,*), FXC(N2ORBX,*), FXV(N2ORBX,*)
@@ -2524,19 +2521,19 @@ C  INFIND : IOBTYP(*),?
 C  INFLIN : IPRLIN
 C  INFPRI : P6FLAG(*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inflin.h>
-#include <inftra.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inflin.h"
+#include "inftra.h"
+#include "infpri.h"
 C
 C     Local variables
 C
       LOGICAL   DOFXQ
-      DIMENSION NEEDDI(6)
+      DIMENSION NEEDDI(-4:6)
 C
       CALL QENTER('TR1H2D')
 C
@@ -2549,18 +2546,13 @@ C
 C
 C     Set NEEDDI array
 C
+      NEEDDI(-4:6) = 0
+      NEEDDI(3) = 1
       IF (DOFCFV) THEN
-C     ..OCCUPIED-OCCUPIED distributions needed
+C     .. all OCCUPIED-OCCUPIED distributions needed
          NEEDDI(1) = 1
          NEEDDI(2) = 1
-      ELSE
-         NEEDDI(1) = 0
-         NEEDDI(2) = 0
       END IF
-      NEEDDI(3) = 1
-      NEEDDI(4) = 0
-      NEEDDI(5) = 0
-      NEEDDI(6) = 0
 C
 C     Allocate work memory
 C
@@ -2598,13 +2590,14 @@ C
       END IF
 C
 C ****************************************************************
-C     Loop over DIRAC distributions allowed in NEEDDI(6)
+C     Loop over DIRAC distributions allowed in NEEDDI(-4:6)
 C
       IDIST = 0
       LUINTD = -1
-      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'MODRCINT','OLD',' ',
+      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'DRCINT','OLD',' ',
      &                              'UNFORMATTED',IDUMMY,.FALSE.)
-  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI,LUINTD,WRK,KFREE,LFREE,IDIST)
+  100 CALL NXTH2D(IC,ID,WRK(KH2CD),NEEDDI,LUINTD,
+     &            WRK,KFREE,LFREE,IDIST)
       IF (IDIST .LT. 0) GO TO 800
 C     ... if idist .lt. 0 then no more distributions
 C
@@ -2681,18 +2674,18 @@ C   UDXV(P,Y) = SUM(U) UBOVEC(P,U) * UDV(U,Y)
 C
 C   THE MATRIX UDXV IS STORED WITHOUT USING SYMMETRY
 C
-#include <implicit.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
       DIMENSION UDV(NASHT,*),UBOVEC(NORBT,NORBT,*)
       DIMENSION UDXV(NORBT,NASHT,*)
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inflin.h>
-#include <infvar.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inflin.h"
+#include "infvar.h"
 C
       CALL DZERO(UDXV,NORBT*NASHT*NOSIM)
       DO 100 IOSIM=1,NOSIM
@@ -2724,3 +2717,4 @@ C
       END IF
       RETURN
       END
+C --- end of sirius/sirtr1.F ---

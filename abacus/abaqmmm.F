@@ -35,18 +35,18 @@ c
 c VEC2 (OUTPUT)  : contribution to be added to perturbed Fock matrix
 c NCOMP (INPUT)  : number of independent perturbation (3)
 
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL,LOCDEB
@@ -525,18 +525,18 @@ c Lund, Nov. 2008, J. Kongsted, based on QM3B3 by K. Ruud.
 c
 c EXPVAL (OUTPUT): contribution to be added to diamagnetic magnetizability
 c
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <mmtimes.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "mmtimes.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL
@@ -892,24 +892,24 @@ C****************************************************************************
 C/* deck qmmmfirst_m1 */
       SUBROUTINE QMMMFIRST_M1(VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(*),VEC2(*)
 
@@ -989,24 +989,24 @@ C****************************************************************************
 C/* deck qmmmfirst_s1 */
       SUBROUTINE QMMMFIRST_S1(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1114,24 +1114,24 @@ C
 C/* deck qmmmfirst_m2 */
       SUBROUTINE QMMMFIRST_M2(VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(*),VEC2(*)
 
@@ -1211,24 +1211,24 @@ C****************************************************************************
 C/* deck qmmmfirst_S2 */
       SUBROUTINE QMMMFIRST_S2(WORK,LWORK,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1367,24 +1367,24 @@ C
 C/* deck qmmmfirst_m3 */
       SUBROUTINE QMMMFIRST_M3(AINDMOM,VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(*),VEC2(*),AINDMOM(3*NNZAL)
 
@@ -1472,24 +1472,24 @@ C****************************************************************************
 C/* deck qmmmfirst_s3 */
       SUBROUTINE QMMMFIRST_S3(WORK,LWORK,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1629,24 +1629,24 @@ C
 C/* deck qmmmfirst_m4 */
       SUBROUTINE QMMMFIRST_M4(TOTMOM,VEC2,IPRINT,INTPRI,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK),VEC2(3*N2BASX),TOTMOM(3*MMCENT)
 
@@ -1728,30 +1728,30 @@ C****************************************************************************
 C/* deck qmmmfirst_s4 */
       SUBROUTINE QMMMFIRST_S4(WORK,LWORK,INTPRI)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 C nuclei.h: NCTOT, CORD, CHARGE, NUCIND, NUCDEP, 
-#include <nuclei.h>
+#include "nuclei.h"
 C qm3.h: QMCOM, FORQM3, ISYTP
-#include <qm3.h>
+#include "qm3.h"
 C qmmm.h: MMCENT,IPOLTP,MXMMIT,MXMMDI,IPQMMM,MMCORD, MMMAT
-#include <qmmm.h>
+#include "qmmm.h"
 C inforb.h: N2BASX, NNBASX, ICMO, NBAST
-#include <inforb.h>
+#include "inforb.h"
 C inftap.h: LUPROP
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 C cbiher.h: NPATOM, IPATOM
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1897,24 +1897,24 @@ C****************************************************************************
 C/* deck qmmmb2_m1 */
       SUBROUTINE QMMMB2_M1(EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK),EXPVAL(6), DENMAT(NNBASX)
 
@@ -1996,24 +1996,24 @@ C****************************************************************************
 C/* deck qmmmb2_s1 */
       SUBROUTINE QMMMB2_S1(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2112,24 +2112,24 @@ C****************************************************************************
 C/* deck qmmmb2_m2 */
       SUBROUTINE QMMMB2_M2(EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(*),EXPVAL(6), DENMAT(NNBASX)
 
@@ -2210,24 +2210,24 @@ C****************************************************************************
 C/* deck qmmmb2_S2 */
       SUBROUTINE QMMMB2_S2(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2338,24 +2338,24 @@ C****************************************************************************
 C/* deck qmmmb2_m3 */
       SUBROUTINE QMMMB2_M3(AINDMOM,EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(*),EXPVAL(6),AINDMOM(3*NNZAL), DENMAT(NNBASX)
 
@@ -2443,24 +2443,24 @@ C****************************************************************************
 C/* deck qmmmb2_s3 */
       SUBROUTINE QMMMB2_S3(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)
@@ -2570,24 +2570,24 @@ C****************************************************************************
 C/* deck qmmmb2_m4 */
       SUBROUTINE QMMMB2_M4(TOTMOM,EXPVAL,IPRINT,DENMAT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <qm3.h>
-#include <qmmm.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <magone.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "qm3.h"
+#include "qmmm.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "magone.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK),EXPVAL(6),TOTMOM(3*MMCENT), DENMAT(NNBASX)
 
@@ -2669,30 +2669,30 @@ C****************************************************************************
 C/* deck qmmmb2_s4 */
       SUBROUTINE QMMMB2_S4(WORK,LWORK,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "orgcom.h"
 C nuclei.h: NCTOT, CORD, CHARGE, NUCIND, NUCDEP, 
-#include <nuclei.h>
+#include "nuclei.h"
 C qm3.h: QMCOM, FORQM3, ISYTP
-#include <qm3.h>
+#include "qm3.h"
 C qmmm.h: MMCENT,IPOLTP,MXMMIT,MXMMDI,IPQMMM,MMCORD, MMMAT
-#include <qmmm.h>
+#include "qmmm.h"
 C inforb.h: N2BASX, NNBASX, ICMO, NBAST
-#include <inforb.h>
+#include "inforb.h"
 C inftap.h: LUPROP
-#include <inftap.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "inftap.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 C cbiher.h: NPATOM, IPATOM
-#include <cbiher.h>
+#include "cbiher.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABINT(9*MXCENT)

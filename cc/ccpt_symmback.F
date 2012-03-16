@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_symmback */
       SUBROUTINE SYMMBACK(MODEL,
@@ -41,14 +41,14 @@ C     S. Coriani, December 2001/January 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER LUPTIAJB, LUAIJK, LUIAJK, LUABI1, LUABI3, LWORK
       INTEGER LUIJKAS, LUIAJKS, LUAIJKS, LUABICS, LUAIBCS, LUIABCS
@@ -617,16 +617,16 @@ C     Special Modified version for Orbit-Orbit corrections. TO be merged back!!!
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 Csonia
-#include <ccfop.h>
+#include "ccfop.h"
 
       INTEGER LUPTIAJB, LUAIJK, LUIAJK, LUABI1, LUABI3, LWORK
       INTEGER LUIJKAS, LUIAJKS, LUAIJKS, LUABICS, LUAIBCS, LUIABCS

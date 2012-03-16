@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 c /* deck ccfbtaf */
@@ -65,12 +65,12 @@ c /* deck ccfbtaf */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccisao.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccisao.h"
 
 * local parameters:
       LOGICAL LOCDBG

@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_aodens */
       SUBROUTINE SO_AODENS(DENS,LDENS,CMO,LCMO,TR1E,LTR1E,
@@ -12,8 +12,8 @@ C
 C     PURPOSE: Calculate RPA AO-density matrix DENS to be used for
 C              SOPPA.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -21,9 +21,9 @@ C
       DIMENSION CMO(LCMO),   TR1E(LTR1E),    TR1D(LTR1D)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

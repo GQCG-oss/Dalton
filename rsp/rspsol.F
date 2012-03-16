@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -39,13 +39,13 @@ RSPSOL.u module written by Poul Joergensen and Kurt Mikkelsen, summer 1993
 C  /* Deck slvinp */
       SUBROUTINE SLVINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infslv.h>
-#include <rspprp.h>
-#include <infpri.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "infslv.h"
+#include "rspprp.h"
+#include "infpri.h"
+#include "infrsp.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 2 )
@@ -113,22 +113,22 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inforb.h>
-#include <infslv.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inforb.h"
+#include "infslv.h"
 C---------------------
-#include <gnrinf.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <qmmm.h>
+#include "gnrinf.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "qmmm.h"
 C---------------------
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -359,8 +359,8 @@ C KM + PJ 6dec92 based on SOLLIN
 C
 C Common driver for SLVLNC and SLVLNO
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
       DIMENSION UDV(*),DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
       DIMENSION UDVTR(*),DVTR(*),DTVTR(*)
@@ -368,13 +368,13 @@ C
 C Used from common blocks:
 C   INFINP : LSOLMX,NLMSOL, EPSOL, INERSF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infpri.h>
-#include <infinp.h>
-#include <infrsp.h>
-#include <inftap.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infinp.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
 C     logical inersf
       inersf = .false.
 
@@ -451,14 +451,14 @@ C  Purpose:  Calculate MCSCF E2  contribution from a
 C            surrounding medium to a csf trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVEC(*),  CREF(*), CMO(*),  ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION INDXCI(*), UDV(*), DV(*),   DTV(N2ASHX,*)
       DIMENSION SVEC(KZYVAR,*),     WRK(*)
       DIMENSION UDVTR(*),DVTR(*),DTVTR(N2ASHX,*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
 C
@@ -468,15 +468,15 @@ C    INFINP : NLMSOL, LSOLMX, INERSI
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFTAP : LUSOL, LBSYMB
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 
 C
 C     Statement functions
@@ -682,17 +682,17 @@ C            surrounding medium to an orbital trial vector.
 C            Cavity radius = Rsol and dielectric constant = EPsol.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(*), CREF(*), CMO(*)
       DIMENSION INDXCI(*),   UDV(*),   DV(*),   ISYRLM(*)
       DIMENSION FLVEC(NLMSOL), FLINR(NLMSOL), TLMSI(NLMSOL)
       DIMENSION SVEC(KZYVAR,*),    WRK(*)
       DIMENSION UDVTR(*),DVTR(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0 , THRZER = 1.0D-14 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C
 C  Used from common blocks:
@@ -704,16 +704,16 @@ C    WRKRSP :
 C    INFTAP : LUSOL,  LBSYMB
 C    INFPRI : IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
 C     Statement functions
@@ -1088,7 +1088,7 @@ C  Output:  New CI-part of sigma vector (SVECS)
 C
 C Scratch:  WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(KZCONF,*),  SVECS(KZYVAR,*)
       DIMENSION CREF(*),  RXAC(NXASHX,*),RYAC(NNASHX)
       DIMENSION TRXAC(*), XNDXCI(*), WRK(LWRK)
@@ -1101,11 +1101,11 @@ C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFRSP : IREFSY,KSYMST,KSYMOP,NCREF,KZCONF
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       CALL QENTER('SLVSC ')
 C
@@ -1427,7 +1427,7 @@ C   l.r. 6-May-1990 hjaaj
 C
 C QUADRATIC PACKED DENSITY MATRIX AND ACTIVE INTEGRALS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLMAC(*), RLM(NORBT,*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1435,10 +1435,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = DDOT(N2ASHX,DV,1,RLMAC,1)
@@ -1462,7 +1462,7 @@ C   30-Nov-1986 Hans Jorgen Aa. Jensen
 C   l.r. 6-May-1990 hjaaj
 C   6DEC92 KM + PJ SOLELM MODIFIED TO QUADRATIC DTV
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DTV(NASHT,*), RLMAC(*), RLM(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1470,10 +1470,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       TELM =  D0
       IF (NASHT .GT. 0) THEN
@@ -1503,7 +1503,7 @@ C   l.r. 6-May-1990 hjaaj
 C
 C QUADRATIC PACKED DENSITY MATRIX AND ACTIVE INTEGRALS
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*), RLMAC(*), RLM(NORBT,*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1511,10 +1511,10 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = DDOT(N2ASHX,DV,1,RLMAC,1)
@@ -1537,16 +1537,16 @@ C
 C Purpose: Extract NNASHX block with active-active orbital indices out
 C          of NNORBX matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION HH(NORBT,NORBT), HHAC(NASHT,NASHT)
 C
 C INFORB : NORBT, NASHT, NNORBX,NNASHX
 C INFIND : IOBTYP(*), ICH(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       CALL QENTER('GETACQ')
       IF (NASHT .EQ. 0) GO TO 9999
@@ -1584,13 +1584,13 @@ C                  = H1X(a,b)
 C                  + sum(c) [ OITMAT(a,c) H1(c,b)
 C                           - H1(a,c) OITMAT(c,b) ]
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OITMAT(NORBT,NORBT), H1(NORBT,NORBT), H1X(NORBT,NORBT)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NORBT, NORB(*), IORB(*)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
 C
 C One-index transform both indices and add to previous content.
@@ -1674,7 +1674,7 @@ C           K,L
 C
 C ZYM IS ONE ELECTRON OPERATOR WITH ZYMAT AS ELEMENTS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL ONEIND,SNGDN
 C
@@ -1683,16 +1683,16 @@ C
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
