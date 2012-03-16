@@ -1896,7 +1896,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       character (len=25)   :: file_name
-      logical              :: update_ijkl
+      logical              :: update_ijkl, integral_available
+      integral_available = .false.
 
 !     pointers for symmetry blocks of integrals
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
@@ -1921,6 +1922,15 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
             if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
           end do
           LUINT_LUCITA = -1
+!
+!         check for existing file with reordered integrals -
+!         if available read from it...
+          if(citask_id.eq.'perform Davi')then
+            if(luci_myproc .eq. luci_master)then
+              inquire(file=file_name,exist=integral_available)
+            end if
+          end if
+!
           CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)
           is_2e_int_active = 2
@@ -1932,35 +1942,44 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
           if(update_ijkl)then
 
             if(luci_myproc .eq. luci_master)then
-              CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
-              LSCR = current_free_mem - 1000
-              idum = 0
-!             set local marker + allocate space for lucita-dalton integral interface
-              call memman(idum,idum,'MARK  ',idum,'dalint')
-              call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+              if(.not.integral_available)then
+                CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
+                LSCR = current_free_mem - 1000
+                idum = 0
+!               set local marker + allocate space for lucita-dalton integral interface
+                call memman(idum,idum,'MARK  ',idum,'dalint')
+                call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
 
-              CALL LUCITA_GETINT_DALTON(einact_mc2lu,WORK(KINT1),
-     &                                  WORK(KINT2),
-     &                                  WORK(kintdal_interface),LSCR,
-     &                                  int1_mcscf,int2_mcscf,
-     &                                  mcscf_provides_integrals,1)
-              ecore = ecore_orig + einact_mc2lu
-!             release memory
-              CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
+                CALL LUCITA_GETINT_DALTON(einact_mc2lu,WORK(KINT1),
+     &                                    WORK(KINT2),
+     &                                    WORK(kintdal_interface),LSCR,
+     &                                    int1_mcscf,int2_mcscf,
+     &                                    mcscf_provides_integrals,1)
+                ecore = ecore_orig + einact_mc2lu
+!               release memory
+                CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
+              else
+!               read 1e- and 2e-integrals from file
+!               -----------------------------------
+                CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+                READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                              einact_mc2lu
+                CALL READT(LUINT_LUCITA, nint1, work(kint1))
+                if(is_2e_int_active .gt. 1)
+     &          CALL READT(LUINT_LUCITA, nint2, work(kint2))
+              end if
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-              if(luci_myproc .eq. luci_master)then
-                write(lupri,*) 
-     &          '*** co-worker',luci_myproc,'reports 1-ints:',
-     &                          nint1
-                call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
-                write(lupri,*) 
-     &          '*** co-worker',luci_myproc,'reports 2-ints:',
-     &                          nint2
-                call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
-              end if ! debug print for co-worker-id luci_master+1
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports 1-ints:',
+     &                        nint1
+              call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports 2-ints:',
+     &                        nint2
+              call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
 #endif
-            end if
+            end if ! luci_master only
 #ifdef VAR_MPI
             if(luci_nmproc .gt. 1)then
 !             set sync_ctrl option
@@ -1986,7 +2005,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !             put 1e- and 2e-integrals to file
 !             --------------------------------
               WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIIJKL'
-              WRITE(LUINT_LUCITA) nint1, nint2
+              WRITE(LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                            einact_mc2lu
               CALL WRITT(LUINT_LUCITA, nint1, work(kint1))
               if(is_2e_int_active .gt. 1)
      &        CALL WRITT(LUINT_LUCITA, nint2, work(kint2))
@@ -1996,7 +2016,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !           1e-integrals from MCSCF environment, 2e-integrals from file
             if(ci_trial_vector)then
               CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
-              READ (LUINT_LUCITA) nint1, nint2
+              READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                            einact_mc2lu
               CALL READT(LUINT_LUCITA, nint1, work(kint2))
               CALL READT(LUINT_LUCITA, nint2, work(kint2))
             end if
@@ -2004,7 +2025,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !           read 1e- and 2e-integrals from file
 !           -----------------------------------
             CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
-            READ (LUINT_LUCITA) nint1, nint2
+            READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                          einact_mc2lu
             CALL READT(LUINT_LUCITA, nint1, work(kint1))
             if(is_2e_int_active .gt. 1)
      &      CALL READT(LUINT_LUCITA, nint2, work(kint2))
