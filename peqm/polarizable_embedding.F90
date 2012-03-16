@@ -1194,9 +1194,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(1)) then
             if (fock) then
-                call es_dipoles(denmats, Eel, Enuc, fckmats)
+                call es_multipoles(Q1s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_dipoles(denmats, Eel, Enuc)
+                call es_multipoles(Q1s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(1,i) = Ees(1,i) + Eel(i) + Enuc
@@ -1205,9 +1205,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(2)) then
             if (fock) then
-                call es_quadrupoles(denmats, Eel, Enuc, fckmats)
+                call es_multipoles(Q2s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_quadrupoles(denmats, Eel, Enuc)
+                call es_multipoles(Q2s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(2,i) = Ees(2,i) + Eel(i) + Enuc
@@ -1216,9 +1216,9 @@ subroutine pe_electrostatic(denmats, fckmats)
         end if
         if (lmul(3)) then
             if (fock) then
-                call es_octopoles(denmats, Eel, Enuc, fckmats)
+                call es_multipoles(Q3s, denmats, Eel, Enuc, fckmats)
             else if (energy) then
-                call es_octopoles(denmats, Eel, Enuc)
+                call es_multipoles(Q3s, denmats, Eel, Enuc)
             end if
             do i = 1, ndens
                 Ees(3,i) = Ees(3,i) + Eel(i) + Enuc
@@ -1378,9 +1378,9 @@ subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps,dp)) - 1.0d0)) - 1
 
     if (mod(k,2) == 0) then
-        taylor = 1.0d0 / real(factorial(k-1),dp)
+        taylor = 1.0d0 / real(factorial(k),dp)
     else if (mod(k,2) /= 0) then
-        taylor = - 1.0d0 / real(factorial(k-1),dp)
+        taylor = - 1.0d0 / real(factorial(k),dp)
     end if
 
     allocate(Tsm(ncomps))
@@ -1415,171 +1415,6 @@ subroutine es_multipoles(Qks, denmats, Eel, Enuc, fckmats)
     end do
 
 end subroutine es_multipoles
-
-!------------------------------------------------------------------------------
-
-subroutine es_monopoles(denmats, Eel, Enuc, fckmats)
-
-    real(dp), dimension(:), intent(in) :: denmats
-    real(dp), dimension(:), intent(out) :: Eel
-    real(dp), intent(out) :: Enuc
-    real(dp), dimension(:), intent(inout), optional :: fckmats
-
-    integer :: i, j, l, m
-    real(dp), dimension(3) :: Rsm
-    real(dp), dimension(1) :: Tsm
-    real(dp), dimension(nnbas,1) :: Q0_ints
-
-    Eel = 0.0d0; Enuc = 0.0d0
-
-    do i = 1, nloop
-        if (abs(Q0s(1,i)) < zero) cycle
-
-        ! nuclei - monopole interaction
-        do j = 1, qmnucs
-            Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, Rsm)
-            Enuc = Enuc + Q0s(1,i) * Zm(1,j) * Tsm(1)
-        end do
-
-        ! electron - monopole interaction
-        call Qk_integrals(Q0_ints, Rs(:,i), Q0s(:,i))
-        do j = 1, ndens
-            l = (j - 1) * nnbas + 1
-            m = j * nnbas
-            Eel(j) = Eel(j) + dot(denmats(l:m), Q0_ints(:,1))
-            if (fock) fckmats(l:m) = fckmats(l:m) + Q0_ints(:,1)
-        end do
-    end do
-
-end subroutine es_monopoles
-
-!------------------------------------------------------------------------------
-
-subroutine es_dipoles(denmats, Eel, Enuc, fckmats)
-
-    real(dp), dimension(:), intent(in) :: denmats
-    real(dp), dimension(:), intent(out) :: Eel
-    real(dp), intent(out) :: Enuc
-    real(dp), dimension(:), intent(inout), optional :: fckmats
-
-    integer :: i, j, l, m, n
-    real(dp), dimension(3) :: Rsm, Tsm
-    real(dp), dimension(nnbas,3) :: Q1_ints
-
-    Eel = 0.0d0; Enuc = 0.0d0
-
-    do i = 1, nloop
-        if (abs(maxval(Q1s(:,i))) < zero) cycle
-
-        ! nuclei - dipole interaction energy
-        do j = 1, qmnucs
-            Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, Rsm)
-            do l = 1, 3
-                Enuc = Enuc - Zm(1,j) * Q1s(l,i) * Tsm(l)
-            end do
-        end do
-
-        ! electron - dipole interaction
-        call Qk_integrals(Q1_ints, Rs(:,i), Q1s(:,i))
-        do j = 1, 3
-            do l = 1, ndens
-                m = (l - 1) * nnbas + 1
-                n = l * nnbas
-                Eel(l) = Eel(l) + dot(denmats(m:n), Q1_ints(:,j))
-                if (fock) fckmats(m:n) = fckmats(m:n) + Q1_ints(:,j)
-            end do
-        end do
-    end do
-
-end subroutine es_dipoles
-
-!------------------------------------------------------------------------------
-
-subroutine es_quadrupoles(denmats, Eel, Enuc, fckmats)
-
-    real(dp), dimension(:), intent(in) :: denmats
-    real(dp), dimension(:), intent(out) :: Eel
-    real(dp), intent(out) :: Enuc
-    real(dp), dimension(:), intent(inout), optional :: fckmats
-
-    integer :: i, j, l, m, n
-    real(dp), dimension(3) :: Rsm
-    real(dp), dimension(6) :: Tsm, factors
-    real(dp), dimension(nnbas,6) :: Q2_ints
-
-    Eel = 0.0d0; Enuc = 0.0d0
-
-    do i = 1, nloop
-        if (abs(maxval(Q2s(:,i))) < zero) cycle
-
-        ! nuclei - quadrupole interaction energy
-        do j = 1, qmnucs
-            Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, Rsm)
-            call symmetry_factors(factors)
-            do l = 1, 6
-                Enuc = Enuc + 0.5d0 * factors(l) * Zm(1,j) * Q2s(l,i) * Tsm(l)
-            end do
-        end do
-
-        ! electron - quadrupole interaction energy
-        call Qk_integrals(Q2_ints, Rs(:,i), Q2s(:,i))
-        do j = 1, 6
-            do l = 1, ndens
-                m = (l - 1) * nnbas + 1
-                n = l * nnbas
-                Eel(l) = Eel(l) + dot(denmats(m:n), Q2_ints(:,j))
-                if (fock) fckmats(m:n) = fckmats(m:n) + Q2_ints(:,j)
-            end do
-        end do
-    end do
-
-end subroutine es_quadrupoles
-
-!------------------------------------------------------------------------------
-
-subroutine es_octopoles(denmats, Eel, Enuc, fckmats)
-
-    real(dp), dimension(:), intent(in) :: denmats
-    real(dp), dimension(:), intent(out) :: Eel
-    real(dp), intent(out) :: Enuc
-    real(dp), dimension(:), intent(inout), optional :: fckmats
-
-    integer :: i, j, l, m, n
-    real(dp), dimension(3) :: Rsm
-    real(dp), dimension(10) :: Tsm, factors
-    real(dp), dimension(nnbas,10) :: Q3_ints
-
-    Eel = 0.0d0; Enuc = 0.0d0
-
-    do i = 1, nloop
-        if (abs(maxval(Q3s(:,i))) < zero) cycle
-
-        ! nuclei - octopole interaction energy
-        do j = 1, qmnucs
-            Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, Rsm)
-            call symmetry_factors(factors)
-            do l = 1, 10
-                Enuc = Enuc - factors(l) * Zm(1,j) * Q3s(l,i) * Tsm(l) / 6.0d0
-            end do
-        end do
-
-        ! electron - octopole interaction energy
-        call Qk_integrals(Q3_ints, Rs(:,i), Q3s(:,i))
-        do j = 1, 10
-            do l = 1, ndens
-                m = (l - 1) * nnbas + 1
-                n = l * nnbas
-                Eel(l) = Eel(l) + dot(denmats(m:n), Q3_ints(:,j))
-                if (fock) fckmats(m:n) = fckmats(m:n) + Q3_ints(:,j)
-            end do
-        end do
-    end do
-
-end subroutine es_octopoles
 
 !------------------------------------------------------------------------------
 
