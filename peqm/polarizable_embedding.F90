@@ -1838,9 +1838,9 @@ end subroutine frozen_density_field
 
 !------------------------------------------------------------------------------
 
-subroutine multipole_fields(Fmul)
+subroutine multipole_fields(F)
 
-    real(dp), dimension(:), intent(out) :: Fmul
+    real(dp), dimension(:), intent(out) :: F
 
     logical :: exclude, lexist
     integer :: lutemp
@@ -1848,14 +1848,14 @@ subroutine multipole_fields(Fmul)
     real(dp) :: Rij
     real(dp), dimension(3) :: Fs
 
-    Fmul = 0.0d0
+    F = 0.0d0
 
      inquire(file='pe_multipole_field.bin', exist=lexist)
 
      if (lexist) then
          call openfile('pe_multipole_field.bin', lutemp, 'old', 'unformatted')
          rewind(lutemp)
-         read(lutemp) Fmul
+         read(lutemp) F
          close(lutemp)
      else
         l = 1
@@ -1877,38 +1877,34 @@ subroutine multipole_fields(Fmul)
                 ! get electric field at i due to monopole at j
                 if (lmul(0)) then
                     if (abs(maxval(Q0s(:,j))) >= zero) then
-                        call monopole_field(Fs, Rs(:,i), Rs(:,j), Q0s(:,j))
-                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                        call monopole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q0s(:,j))
                     end if
                 end if
                 ! get electric field at i due to dipole at j
                 if (lmul(1)) then
                     if (abs(maxval(Q1s(:,j))) >= zero) then
-                        call dipole_field(Fs, Rs(:,i), Rs(:,j), Q1s(:,j))
-                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                        call dipole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q1s(:,j))
                     end if
                 end if
                 ! get electric field at i due to quadrupole at j
                 if (lmul(2)) then
                     if (abs(maxval(Q2s(:,j))) >= zero) then
-                        call quadrupole_field(Fs, Rs(:,i), Rs(:,j), Q2s(:,j))
-                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                        call quadrupole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q2s(:,j))
                     end if
                 end if
                 ! get electric field at i due to octopole at j
                 if (lmul(3)) then
                     if (abs(maxval(Q3s(:,j))) >= zero) then
-                        call octopole_field(Fs, Rs(:,i), Rs(:,j), Q3s(:,j))
-                        Fmul(l:l+2) = Fmul(l:l+2) + Fs
+                        call octopole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q3s(:,j))
                     end if
                 end if
             end do
             l = l + 3
         end do
-         call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')
-         rewind(lutemp)
-         write(lutemp) Fmul
-         close(lutemp)
+        call openfile('pe_multipole_field.bin', lutemp, 'new', 'unformatted')
+        rewind(lutemp)
+        write(lutemp) F
+        close(lutemp)
      end if
 
 end subroutine multipole_fields
@@ -1917,7 +1913,7 @@ end subroutine multipole_fields
 
 subroutine monopole_field(Fi, Ri, Rj, Q0j)
 
-    real(dp), dimension(3), intent(out) :: Fi
+    real(dp), dimension(3), intent(inout) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(1), intent(in) :: Q0j
 
@@ -1927,18 +1923,16 @@ subroutine monopole_field(Fi, Ri, Rj, Q0j)
 
     Rji = Ri - Rj
 
-    Fi = 0.0d0
-
     do x = k, 0, -1
         do y = k, 0, -1
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
                 if (x /= 0) then
-                    Fi(1) = Fi(1) - T(Rji, x, y, z) * Q0j(1)
+                    Fi(1) = Fi(1) - T(Rji,x,y,z) * Q0j(1)
                 else if (y /= 0) then
-                    Fi(2) = Fi(2) - T(Rji, x, y, z) * Q0j(1)
+                    Fi(2) = Fi(2) - T(Rji,x,y,z) * Q0j(1)
                 else if (z /= 0) then
-                    Fi(3) = Fi(3) - T(Rji, x, y, z) * Q0j(1)
+                    Fi(3) = Fi(3) - T(Rji,x,y,z) * Q0j(1)
                 end if
             end do
         end do
@@ -1950,7 +1944,7 @@ end subroutine monopole_field
 
 subroutine dipole_field(Fi, Ri, Rj, Q1j)
 
-    real(dp), dimension(3), intent(out) :: Fi
+    real(dp), dimension(3), intent(inout) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(3), intent(in) :: Q1j
 
@@ -1960,23 +1954,21 @@ subroutine dipole_field(Fi, Ri, Rj, Q1j)
 
     Rji = Ri - Rj
 
-    Fi = 0.0d0
-
     a = 1; b = 1; c = 1
     do x = k, 0, -1
         do y = k, 0, -1
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
                 if (x /= 0) then
-                    Fi(1) = Fi(1) + T(Rji, x, y, z) * Q1j(a)
+                    Fi(1) = Fi(1) + T(Rji,x,y,z) * Q1j(a)
                     a = a + 1
                 end if
                 if (y /= 0) then
-                    Fi(2) = Fi(2) + T(Rji, x, y, z) * Q1j(b)
+                    Fi(2) = Fi(2) + T(Rji,x,y,z) * Q1j(b)
                     b = b + 1
                 end if 
                 if (z /= 0) then
-                    Fi(3) = Fi(3) + T(Rji, x, y, z) * Q1j(c)
+                    Fi(3) = Fi(3) + T(Rji,x,y,z) * Q1j(c)
                     c = c + 1
                 end if
             end do
@@ -1989,20 +1981,15 @@ end subroutine dipole_field
 
 subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
 
-    real(dp), dimension(3), intent(out) :: Fi
+    real(dp), dimension(3), intent(inout) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(6), intent(in) :: Q2j
 
     integer :: a, b, c, x, y, z
     integer, parameter :: k = 3
     real(dp), dimension(3) :: Rji
-    real(dp), dimension(6) :: symfacs
 
     Rji = Ri - Rj
-
-    call symmetry_factors(symfacs, k-1)
-
-    Fi = 0.0d0
 
     a = 1; b = 1; c = 1
     do x = k, 0, -1
@@ -2010,15 +1997,15 @@ subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
                 if (x /= 0) then
-                    Fi(1) = Fi(1) - 0.50d0 * symfacs(a) * T(Rji, x, y, z) * Q2j(a)
+                    Fi(1) = Fi(1) - 0.5d0 * symfac(x-1,y,z) * T(Rji,x,y,z) * Q2j(a)
                     a = a + 1
                 end if
                 if (y /= 0) then
-                    Fi(2) = Fi(2) - 0.50d0 * symfacs(b) * T(Rji, x, y, z) * Q2j(b)
+                    Fi(2) = Fi(2) - 0.5d0 * symfac(x,y-1,z) * T(Rji,x,y,z) * Q2j(b)
                     b = b + 1
                 end if
                 if (z /= 0) then
-                    Fi(3) = Fi(3) - 0.50d0 * symfacs(c) * T(Rji, x, y, z) * Q2j(c)
+                    Fi(3) = Fi(3) - 0.5d0 * symfac(x,y,z-1) * T(Rji,x,y,z) * Q2j(c)
                     c = c + 1
                 end if
             end do
@@ -2031,21 +2018,16 @@ end subroutine quadrupole_field
 
 subroutine octopole_field(Fi, Ri, Rj, Q3j)
 
-    real(dp), dimension(3), intent(out) :: Fi
+    real(dp), dimension(3), intent(inout) :: Fi
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(10), intent(in) :: Q3j
 
     integer :: a, b, c, x, y, z
     integer, parameter :: k = 4
     real(dp), dimension(3) :: Rji
-    real(dp), dimension(10) :: symfacs
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
 
     Rji = Ri - Rj
-
-    call symmetry_factors(symfacs, k-1)
-
-    Fi = 0.0d0
 
     a = 1; b = 1; c = 1
     do x = k, 0, -1
@@ -2053,15 +2035,15 @@ subroutine octopole_field(Fi, Ri, Rj, Q3j)
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
                 if (x /= 0) then
-                    Fi(1) = Fi(1) + d6i * symfacs(a) * T(Rji, x, y, z) * Q3j(a)
+                    Fi(1) = Fi(1) + d6i * symfac(x-1,y,z) * T(Rji,x,y,z) * Q3j(a)
                     a = a + 1
                 end if
                 if (y /= 0) then
-                    Fi(2) = Fi(2) + d6i * symfacs(b) * T(Rji, x, y, z) * Q3j(b)
+                    Fi(2) = Fi(2) + d6i * symfac(x,y-1,z) * T(Rji,x,y,z) * Q3j(b)
                     b = b + 1
                 end if
                 if (z /= 0) then
-                    Fi(3) = Fi(3) + d6i * symfacs(c) * T(Rji, x, y, z) * Q3j(c)
+                    Fi(3) = Fi(3) + d6i * symfac(x,y,z-1) * T(Rji,x,y,z) * Q3j(c)
                     c = c + 1
                 end if
             end do
