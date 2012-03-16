@@ -719,12 +719,12 @@ C
      &                      denmats=(daosav(:,1) + daosav(:,2)),
      &                      fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
      &                      nmats=1, Epe=wrk(kepe:kepe),
-     &                      work=wrk(kfree:lfree))
+     &                      dalwrk=wrk(kfree:lfree))
            else
              call pe_master(runtype='fock', denmats=daosav(:,1),
      &                      fckmats=wrk(kfcpe:kfcpe+nnbasx-1),
      &                      nmats=1, Epe=wrk(kepe:kepe),
-     &                      work=wrk(kfree:lfree))
+     &                      dalwrk=wrk(kfree:lfree))
            end if
            esolt = wrk(kepe)
            call daxpy(nnbasx, d1, wrk(kfcpe), 1, faosav(1,indevc,1), 1)
@@ -1346,11 +1346,11 @@ C
          if (hsrohf .or. (dodft .and. nasht .ge. 1)) then
            call pe_master(runtype='energy',
      &                    denmats=(daosav(:,1) + daosav(:,2)),
-     &                    nmats=1, work=wrk(kfree:lfree))
+     &                    nmats=1, dalwrk=wrk(kfree:lfree))
          else
            call pe_master(runtype='energy',
-     &                    denmats=daosav(:,1), nmats= 1,
-     &                    work=wrk(kfree:lfree))
+     &                    denmats=daosav(:,1), nmats=1,
+     &                    dalwrk=wrk(kfree:lfree))
          end if
        end if
        ! save density matrix 
@@ -1360,7 +1360,7 @@ C
         end if
         lucmo = nbast*norbt
         call pe_save_density(daosav(:,1), nbast, cord(:,1:natoms),
-     &                       charge(1:natoms), wrk(kfree:lfree))
+     &                       charge(1:natoms))
        end if
        ! save intermolecular part of Fock matrix
 !       if (pe_repuls) then

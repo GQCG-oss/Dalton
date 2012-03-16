@@ -356,7 +356,7 @@ C
         call pe_master(runtype='response',
      &                 denmats=wrk(kdao:kdao+nosim*nnbasx-1),
      &                 fckmats=wrk(kevao:kevao+nosim*nnbasx-1),
-     &                 nmats=nosim, work=wrk(kfree:lfree))
+     &                 nmats=nosim, dalwrk=wrk(kfree:lfree))
 
         call memrel('RSPSLV.pe_master', wrk, 1, kdao, kfree, lfree)
 

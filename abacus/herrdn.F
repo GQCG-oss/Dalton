@@ -4452,9 +4452,9 @@ C
       END IF
 
       if (peqm) then
-        call pe_read_potential(work, cord(:,1:natoms), charge(1:natoms))
+        call pe_read_potential(cord(:,1:natoms), charge(1:natoms))
       else if (pe_savden) then
-        call pe_read_potential(work)
+        call pe_read_potential()
       end if
 
       RETURN
