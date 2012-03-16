@@ -1335,7 +1335,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
         end do
 
         do j = 1, fdnucs
-            call Qk_integrals(Zfd_ints, k, Rfd(:,j), Zfd(:,j), work)
+            call Qk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j), work)
             do m = 1, ndens
                 n = (m - 1) * nnbas + 1
                 o = m * nnbas
@@ -1344,7 +1344,7 @@ subroutine es_frozen_densities(denmats, Eel, Enuc, fckmats, work)
             end do
             do l = 1, qmnucs
                 Rfm = Rm(:,l) - Rfd(:,j)
-                call Tk_tensor(Tfm, k, Rfm)
+                call Tk_tensor(Tfm, Rfm)
                 Enn = Enn + Zm(1,l) * Zfd(1,j) * Tfm(1)
             end do
         end do
@@ -1370,7 +1370,6 @@ subroutine es_monopoles(denmats, Eel, Enuc, fckmats, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, l, m
-    integer, parameter :: k = 0
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(1) :: Tsm
     real(dp), dimension(nnbas,1) :: Q0_ints
@@ -1383,12 +1382,12 @@ subroutine es_monopoles(denmats, Eel, Enuc, fckmats, work)
         ! nuclei - monopole interaction
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, k, Rsm)
+            call Tk_tensor(Tsm, Rsm)
             Enuc = Enuc + Q0s(1,i) * Zm(1,j) * Tsm(1)
         end do
 
         ! electron - monopole interaction
-        call Qk_integrals(Q0_ints, k, Rs(:,i), Q0s(:,i), work)
+        call Qk_integrals(Q0_ints, Rs(:,i), Q0s(:,i), work)
         do j = 1, ndens
             l = (j - 1) * nnbas + 1
             m = j * nnbas
@@ -1410,7 +1409,6 @@ subroutine es_dipoles(denmats, Eel, Enuc, fckmats, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, l, m, n
-    integer, parameter :: k = 1
     real(dp), dimension(3) :: Rsm, Tsm
     real(dp), dimension(nnbas,3) :: Q1_ints
 
@@ -1422,14 +1420,14 @@ subroutine es_dipoles(denmats, Eel, Enuc, fckmats, work)
         ! nuclei - dipole interaction energy
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, k, Rsm)
+            call Tk_tensor(Tsm, Rsm)
             do l = 1, 3
                 Enuc = Enuc - Zm(1,j) * Q1s(l,i) * Tsm(l)
             end do
         end do
 
         ! electron - dipole interaction
-        call Qk_integrals(Q1_ints, k, Rs(:,i), Q1s(:,i), work)
+        call Qk_integrals(Q1_ints, Rs(:,i), Q1s(:,i), work)
         do j = 1, 3
             do l = 1, ndens
                 m = (l - 1) * nnbas + 1
@@ -1453,7 +1451,6 @@ subroutine es_quadrupoles(denmats, Eel, Enuc, fckmats, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, l, m, n
-    integer, parameter :: k = 2
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(6) :: Tsm, factors
     real(dp), dimension(nnbas,6) :: Q2_ints
@@ -1466,15 +1463,15 @@ subroutine es_quadrupoles(denmats, Eel, Enuc, fckmats, work)
         ! nuclei - quadrupole interaction energy
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, k, Rsm)
-            call symmetry_factors(factors, k)
+            call Tk_tensor(Tsm, Rsm)
+            call symmetry_factors(factors)
             do l = 1, 6
                 Enuc = Enuc + 0.5d0 * factors(l) * Zm(1,j) * Q2s(l,i) * Tsm(l)
             end do
         end do
 
         ! electron - quadrupole interaction energy
-        call Qk_integrals(Q2_ints, k, Rs(:,i), Q2s(:,i), work)
+        call Qk_integrals(Q2_ints, Rs(:,i), Q2s(:,i), work)
         do j = 1, 6
             do l = 1, ndens
                 m = (l - 1) * nnbas + 1
@@ -1498,7 +1495,6 @@ subroutine es_octopoles(denmats, Eel, Enuc, fckmats, work)
     real(dp), dimension(:), intent(inout) :: work
 
     integer :: i, j, l, m, n
-    integer, parameter :: k = 3
     real(dp), dimension(3) :: Rsm
     real(dp), dimension(10) :: Tsm, factors
     real(dp), dimension(nnbas,10) :: Q3_ints
@@ -1511,15 +1507,15 @@ subroutine es_octopoles(denmats, Eel, Enuc, fckmats, work)
         ! nuclei - octopole interaction energy
         do j = 1, qmnucs
             Rsm = Rm(:,j) - Rs(:,i)
-            call Tk_tensor(Tsm, k, Rsm)
-            call symmetry_factors(factors, k)
+            call Tk_tensor(Tsm, Rsm)
+            call symmetry_factors(factors)
             do l = 1, 10
                 Enuc = Enuc - factors(l) * Zm(1,j) * Q3s(l,i) * Tsm(l) / 6.0d0
             end do
         end do
 
         ! electron - octopole interaction energy
-        call Qk_integrals(Q3_ints, k, Rs(:,i), Q3s(:,i), work)
+        call Qk_integrals(Q3_ints, Rs(:,i), Q3s(:,i), work)
         do j = 1, 10
             do l = 1, ndens
                 m = (l - 1) * nnbas + 1
@@ -1767,7 +1763,6 @@ subroutine nuclear_fields(Fnuc)
     logical :: exclude, lexist, skip
     integer :: lutemp
     integer :: i, j, l, m
-    integer, parameter :: k = 1
     real(dp), dimension(3) :: Rms, Tms
 
     Fnuc = 0.0d0
@@ -1793,7 +1788,7 @@ subroutine nuclear_fields(Fnuc)
             end if
             do j = 1, qmnucs
                 Rms = Rs(:,i) - Rm(:,j)
-                call Tk_tensor(Tms, k, Rms)
+                call Tk_tensor(Tms, Rms)
                 do m = 1, 3
                     Fnuc(l+m) = Fnuc(l+m) - Zm(1,j) * Tms(m)
                 end do
@@ -1845,8 +1840,7 @@ subroutine multipole_fields(F)
     logical :: exclude, lexist
     integer :: lutemp
     integer :: i, j, k, l
-    real(dp) :: Rij
-    real(dp), dimension(3) :: Fs
+    real(dp), dimension(3) :: Rji
 
     F = 0.0d0
 
@@ -1872,30 +1866,29 @@ subroutine multipole_fields(F)
                 end do
                 if (exclude) cycle
 ! TODO: cutoff???
-!                Rij = Rs(:,j) - Rs(:,j)
-!
+                Rji = Rs(:,i) - Rs(:,j)
                 ! get electric field at i due to monopole at j
                 if (lmul(0)) then
                     if (abs(maxval(Q0s(:,j))) >= zero) then
-                        call monopole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q0s(:,j))
+                        call multipole_field(F(l:l+2), Rji, Q0s(:,j))
                     end if
                 end if
                 ! get electric field at i due to dipole at j
                 if (lmul(1)) then
                     if (abs(maxval(Q1s(:,j))) >= zero) then
-                        call dipole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q1s(:,j))
+                        call multipole_field(F(l:l+2), Rji, Q1s(:,j))
                     end if
                 end if
                 ! get electric field at i due to quadrupole at j
                 if (lmul(2)) then
                     if (abs(maxval(Q2s(:,j))) >= zero) then
-                        call quadrupole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q2s(:,j))
+                        call multipole_field(F(l:l+2), Rji, Q2s(:,j))
                     end if
                 end if
                 ! get electric field at i due to octopole at j
                 if (lmul(3)) then
                     if (abs(maxval(Q3s(:,j))) >= zero) then
-                        call octopole_field(F(l:l+2), Rs(:,i), Rs(:,j), Q3s(:,j))
+                        call multipole_field(F(l:l+2), Rji, Q3s(:,j))
                     end if
                 end if
             end do
@@ -1911,48 +1904,23 @@ end subroutine multipole_fields
 
 !------------------------------------------------------------------------------
 
-subroutine monopole_field(Fi, Ri, Rj, Q0j)
+subroutine multipole_field(Fi, Rji, Qkj)
 
     real(dp), dimension(3), intent(inout) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj
-    real(dp), dimension(1), intent(in) :: Q0j
+    real(dp), dimension(3), intent(in) :: Rji
+    real(dp), dimension(:), intent(in) :: Qkj
 
-    integer :: x, y, z
-    integer, parameter :: k = 1
-    real(dp), dimension(3) :: Rji
-
-    Rji = Ri - Rj
-
-    do x = k, 0, -1
-        do y = k, 0, -1
-            do z = k, 0, -1
-                if (x+y+z > k .or. x+y+z < k) cycle
-                if (x /= 0) then
-                    Fi(1) = Fi(1) - T(Rji,x,y,z) * Q0j(1)
-                else if (y /= 0) then
-                    Fi(2) = Fi(2) - T(Rji,x,y,z) * Q0j(1)
-                else if (z /= 0) then
-                    Fi(3) = Fi(3) - T(Rji,x,y,z) * Q0j(1)
-                end if
-            end do
-        end do
-     end do
-
-end subroutine monopole_field
-
-!------------------------------------------------------------------------------
-
-subroutine dipole_field(Fi, Ri, Rj, Q1j)
-
-    real(dp), dimension(3), intent(inout) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj
-    real(dp), dimension(3), intent(in) :: Q1j
-
+    integer :: k
     integer :: a, b, c, x, y, z
-    integer, parameter :: k = 2
-    real(dp), dimension(3) :: Rji
+    real(dp) :: taylor
 
-    Rji = Ri - Rj
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Qkj), dp)) - 1.0d0))
+
+    if (mod(k,2) == 0) then
+        taylor = 1.0d0 / real(factorial(k-1),dp)
+    else if (mod(k,2) /= 0) then
+        taylor = - 1.0d0 / real(factorial(k-1),dp)
+    end if
 
     a = 1; b = 1; c = 1
     do x = k, 0, -1
@@ -1960,97 +1928,22 @@ subroutine dipole_field(Fi, Ri, Rj, Q1j)
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
                 if (x /= 0) then
-                    Fi(1) = Fi(1) + T(Rji,x,y,z) * Q1j(a)
+                    Fi(1) = Fi(1) + taylor * symfac(x-1,y,z) * T(Rji,x,y,z) * Qkj(a)
                     a = a + 1
                 end if
                 if (y /= 0) then
-                    Fi(2) = Fi(2) + T(Rji,x,y,z) * Q1j(b)
+                    Fi(2) = Fi(2) + taylor * symfac(x,y-1,z) * T(Rji,x,y,z) * Qkj(b)
                     b = b + 1
-                end if 
+                end if
                 if (z /= 0) then
-                    Fi(3) = Fi(3) + T(Rji,x,y,z) * Q1j(c)
+                    Fi(3) = Fi(3) + taylor * symfac(x,y,z-1) * T(Rji,x,y,z) * Qkj(c)
                     c = c + 1
                 end if
             end do
         end do
      end do
 
-end subroutine dipole_field
-
-!------------------------------------------------------------------------------
-
-subroutine quadrupole_field(Fi, Ri, Rj, Q2j)
-
-    real(dp), dimension(3), intent(inout) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj
-    real(dp), dimension(6), intent(in) :: Q2j
-
-    integer :: a, b, c, x, y, z
-    integer, parameter :: k = 3
-    real(dp), dimension(3) :: Rji
-
-    Rji = Ri - Rj
-
-    a = 1; b = 1; c = 1
-    do x = k, 0, -1
-        do y = k, 0, -1
-            do z = k, 0, -1
-                if (x+y+z > k .or. x+y+z < k) cycle
-                if (x /= 0) then
-                    Fi(1) = Fi(1) - 0.5d0 * symfac(x-1,y,z) * T(Rji,x,y,z) * Q2j(a)
-                    a = a + 1
-                end if
-                if (y /= 0) then
-                    Fi(2) = Fi(2) - 0.5d0 * symfac(x,y-1,z) * T(Rji,x,y,z) * Q2j(b)
-                    b = b + 1
-                end if
-                if (z /= 0) then
-                    Fi(3) = Fi(3) - 0.5d0 * symfac(x,y,z-1) * T(Rji,x,y,z) * Q2j(c)
-                    c = c + 1
-                end if
-            end do
-        end do
-     end do
-
-end subroutine quadrupole_field
-
-!------------------------------------------------------------------------------
-
-subroutine octopole_field(Fi, Ri, Rj, Q3j)
-
-    real(dp), dimension(3), intent(inout) :: Fi
-    real(dp), dimension(3), intent(in) :: Ri, Rj
-    real(dp), dimension(10), intent(in) :: Q3j
-
-    integer :: a, b, c, x, y, z
-    integer, parameter :: k = 4
-    real(dp), dimension(3) :: Rji
-    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
-
-    Rji = Ri - Rj
-
-    a = 1; b = 1; c = 1
-    do x = k, 0, -1
-        do y = k, 0, -1
-            do z = k, 0, -1
-                if (x+y+z > k .or. x+y+z < k) cycle
-                if (x /= 0) then
-                    Fi(1) = Fi(1) + d6i * symfac(x-1,y,z) * T(Rji,x,y,z) * Q3j(a)
-                    a = a + 1
-                end if
-                if (y /= 0) then
-                    Fi(2) = Fi(2) + d6i * symfac(x,y-1,z) * T(Rji,x,y,z) * Q3j(b)
-                    b = b + 1
-                end if
-                if (z /= 0) then
-                    Fi(3) = Fi(3) + d6i * symfac(x,y,z-1) * T(Rji,x,y,z) * Q3j(c)
-                    c = c + 1
-                end if
-            end do
-        end do
-     end do
-
-end subroutine octopole_field
+end subroutine multipole_field
 
 !------------------------------------------------------------------------------
 
@@ -2259,21 +2152,20 @@ end function T
 
 !------------------------------------------------------------------------------
 
-subroutine Tk_tensor(Tk, k, Rij)
-
-    integer, intent(in) :: k
-    real(dp), dimension(:), intent(out) :: Tk
-    real(dp), dimension(3), intent(in) :: Rij
-
-    integer :: idx
-    integer :: l, m, n, x, y, z
-    real(dp) :: R, Cx, Cy, Cz
+subroutine Tk_tensor(Tk, Rij)
 
     ! C. E. Dykstra, J. Comp. Chem., 9 (1988), 476
 
-    R = nrm2(Rij)
+    real(dp), dimension(:), intent(out) :: Tk
+    real(dp), dimension(3), intent(in) :: Rij
 
-    Tk = 0.0d0
+    integer :: k, idx
+    integer :: l, m, n, x, y, z
+    real(dp) :: R, Cx, Cy, Cz
+
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Tk),dp)) - 1.0d0)) - 1
+
+    R = nrm2(Rij)
 
     idx = 1
     do x = k, 0, -1
@@ -2290,31 +2182,26 @@ end subroutine
 
 !------------------------------------------------------------------------------
 
-subroutine Qk_integrals(Qk_ints, k, Rij, Qk, work)
+subroutine Qk_integrals(Qk_ints, Rij, Qk, work)
 
     external :: Tk_integrals
 
-    integer, intent(in) :: k
     real(dp), dimension(:,:), intent(out) :: Qk_ints
     real(dp), dimension(:), intent(in) :: Qk
     real(dp), dimension(3), intent(in) :: Rij
     real(dp), dimension(:), intent(inout) :: work
 
-    integer :: i
+    integer :: i, k
     integer :: ncomps
     real(dp) :: taylor
     real(dp), dimension(:), allocatable :: factors
 
-    if (k == 0) then
-        taylor = 1.0d0
-    else if (k == 1) then
-        taylor = - 1.0d0
-    else if (k == 2) then
-        taylor = 0.5d0
-    else if (k == 3) then
-        taylor = - 1.0d0 / 6.0d0
-    else if (k == 4) then
-        taylor = 1.0d0 / 24.0d0
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Qk),dp)) - 1.0d0)) - 1
+
+    if (mod(k,2) == 0) then
+        taylor = 1.0d0 / real(factorial(k), dp)
+    else if (mod(k,2) /= 0) then
+        taylor = - 1.0d0 / real(factorial(k), dp)
     end if
 
     ncomps = size(Qk_ints, 2)
@@ -2324,7 +2211,7 @@ subroutine Qk_integrals(Qk_ints, k, Rij, Qk, work)
 
     ! get symmetry factors
     allocate(factors(ncomps)); factors = 0.0d0
-    call symmetry_factors(factors, k)
+    call symmetry_factors(factors)
 
     ! dot T^(k) integrals with multipole to get Q^(k) integrals
     do i = 1, ncomps
@@ -2337,12 +2224,13 @@ end subroutine Qk_integrals
 
 !------------------------------------------------------------------------------
 
-subroutine symmetry_factors(factors, k)
+subroutine symmetry_factors(factors)
 
-    integer, intent(in) :: k
     real(dp), dimension(:), intent(out) :: factors
 
-    integer :: idx, x, y, z
+    integer :: idx, x, y, z, k
+
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(factors),dp)) - 1.0d0)) - 1
 
     idx = 1
     do x = k, 0, -1
