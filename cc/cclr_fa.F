@@ -60,17 +60,17 @@ c /* deck cclr_fa */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <iratdef.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <maxorb.h>
-#include <distcl.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "maxorb.h"
+#include "distcl.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 
 * local parameters:
       CHARACTER MSGDBG*(17)

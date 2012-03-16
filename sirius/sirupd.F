@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck broydn */
       SUBROUTINE BROYDN(LUIT7,KIT,NTVAR,VECK,VECG,VECT,VECQ,
@@ -96,15 +96,15 @@ C   VECK   unchanged
 C   VECG   if not BCKSTP then unchanged (i.e. g(k)),
 C          else reset ot g(k-1).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION VECK(*),VECG(*),VECT(*),VECQ(*),WRK1(*),WRK2(*)
       LOGICAL BROYIT,BCKSTP
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
-#include <infpri.h>
-#include <inftap.h>
+#include "infpri.h"
+#include "inftap.h"
 C
       IF (IPRSTAT .GE. 5)
      *   WRITE(LUSTAT,'(/A,I4)')' ******** BROYDN BEGIN, KIT =',KIT
@@ -230,7 +230,7 @@ C
 C GSCAL = gradient scale factor to give correct first order
 C         energy prediction in PC representation.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER( D1=1.0D0 , DM1=-1.0D0 )
       DIMENSION CREF(*),C(*),GRD(*)
 C
@@ -251,7 +251,7 @@ C  /* Deck pctoc */
 C
 C TRANSFORM FROM X REPRESENTATION TO C REPRESENTATION
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),C(*)
       PARAMETER ( D1=1.0D0 )
 C
@@ -268,14 +268,14 @@ C
 C PURPOSE:
 C  Do a Broyden inverse update optimization.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION REF1(*),GRD(*),CMO1(*),INDXCI(*),WRK(*)
 C
       PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0, DP5=0.5D0 )
       PARAMETER ( XRNEG=1.D-3, XRED=0.8D0, XRBCK=0.5D0 )
       PARAMETER ( XLIM=1.D-7, DP1LIM=1.D-10, XRSTP=10.0D0 )
 C     PARAMETER ( XCFROZ=12.D0 )
-#include <dummy.h>
+#include "dummy.h"
 C
 C used from common blocks:
 C    INFINP : ISTATE,POTNUC,FLAG(*),?
@@ -283,16 +283,16 @@ C    INFOPT : EMCOLD,EMCSCF,GNORM(3)
 C    INFDIM : MAXRL
 C    INFPRI : P4FLAG(*),P6FLAG(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <inftra.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "inftra.h"
 C
       LOGICAL BCKSTP, BROYIT, DOTRA, HESFIX, LSAVE
 C
@@ -680,8 +680,8 @@ C   2)PUT T AND Q VECTORS ON LUIT3 AND LUIT5
 C   3)RETURN STEP VECTOR IN VECT .GIVES ITERATION POINT TWO WHEN
 C     ADDED TO PC PARAMETERS AT ITERATION POINT 2
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION REDINV(*),IBNDX(*),REF0(*),CMO(*)
       DIMENSION VECK(*),VECG(*),VECT(*),VECQ(*),VECX(*),G0(*)
@@ -690,12 +690,12 @@ C
 C  INFINP : FLAG(*)
 C  INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
 C
 C
       LOGICAL HESFIX
@@ -821,18 +821,18 @@ C PURPOSE:
 C   MULTIPLY ZEROTH ORDER APPROXIMATION TO THE INVERSE HESSIAN
 C   ONTO VECG (RETURNED IN VECT) AND ONTO VECK (RETURNED IN VECQ)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION IBNDX(*),REDINV(NREDL,*),VECK(*),VECG(*),VECT(*),VECQ(*)
       DIMENSION WRKX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <ibndxdef.h>
-#include <infpri.h>
-#include <infopt.h>
-#include <infvar.h>
-#include <inftap.h>
+#include "maxorb.h"
+#include "ibndxdef.h"
+#include "infpri.h"
+#include "infopt.h"
+#include "infvar.h"
+#include "inftap.h"
 C
 C     DEFINE WORK SPACE
 C
@@ -933,12 +933,12 @@ C     VECTORS ON LUIT3  ON LUIT5
 C  3) ADD TO INVERSE REDUCED HESSIAN THE INVERSE DIAGONAL
 C     HESSIAN
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION REDINV(*),IBNDX(*),G0(*),WRK(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       PARAMETER ( D0=0.0D0 , D1=1.0D0 ,D2=2.0D0 )
       PARAMETER ( DTEST=1.0D-3 )
@@ -946,12 +946,12 @@ C
 C   INFINP : FLAG(*)
 C   INFTAP : LUIT1,?
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
 C
 C
       LOGICAL HESIVD

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck setdis */
       SUBROUTINE SETDIS(SYMPRO,DISSYM,ORBSYM,NORB,MAXSYM,
@@ -67,7 +67,7 @@ c
       DIMENSION NEXFST(NSTRIN)
       PARAMETER (MXEXCI = 5000)
       DIMENSION I1(MXEXCI),I2(MXEXCI)
-#include <priunit.h>
+#include "priunit.h"
 c
       DO 1000 ISTRIN = 1, NSTRIN
         IBASE = 1
@@ -140,7 +140,7 @@ C
 C FIND LARGEST SYMMETRY OCCURING IN ORBSYM OR PRODUCTS OF ORBSYM
 C
       INTEGER ORBSYM(NORB)
-#include <priunit.h>
+#include "priunit.h"
 C
       MAXSYM = 1
       DO 100 IORB = 1,NORB
@@ -174,9 +174,9 @@ C
       DIMENSION NEWORD(NSTRIN),NSTASM(MAXSYM),ISTBAS(MAXSYM)
       DIMENSION NEWORH(MAXSTR)
       DIMENSION NSTASO(NOCCTP,MAXSYM),ISTASO(NOCCTP,MAXSYM)
-#include <priunit.h>
+#include "priunit.h"
 C
-#include <ciinfo.h>
+#include "ciinfo.h"
 C
 C OUTPUT : NSTASO(IOCC,ISYM) : NUMBER OF STRINGS OF SYMMETRY ISYM
 C                              AND OCCUPATION IOCC
@@ -276,7 +276,7 @@ C ADRESS OF STRING IOCC
 C
       INTEGER   IOCC(NEL),NEWORD(*)
       INTEGER   Z(MXCORB,MAXEL)
-#include <priunit.h>
+#include "priunit.h"
 C
       IZ = 1
       DO 100 I = 1,NEL
@@ -303,19 +303,19 @@ C CALCULATE AND STORE INFORMATION ABOUT SINGLE EXCITATIONS OBTAINED FROM
 C STRINGS
 C
 c October 90 : Excitations packed in a onedimensional array
-#include <implicit.h>
+#include "implicit.h"
 c. Input
       INTEGER   STRING(NEL,NSTRIN),Z(MXCORB,MAXEL)
 c. Output
       INTEGER   TIJ(MAXTL),TTO(MAXTL),NEWORD(NSTRIN),NEXFST(*)
 C
-#include <priunit.h>
+#include "priunit.h"
 C
 #if defined (VAR_STACKMEM)
       INTEGER   OCC(NORB),UNOCC(NORB),ISIGN(NORB)
       INTEGER   IEXP(NORB),STRIN2(NORB)
 #else
-#include <maxash.h>
+#include "maxash.h"
       INTEGER   OCC(MAXASH),UNOCC(MAXASH),ISIGN(MAXASH)
       INTEGER   IEXP(MAXASH),STRIN2(MAXASH)
 #endif
@@ -498,7 +498,7 @@ C
       INTEGER   SYMPRO(8,8),ORBSYM(NORB)
       INTEGER   NEWORD(NSTRIN),NSTASM(MAXSYM),ISTBAS(MAXSYM)
       INTEGER   NEWORH(MAXSTR)
-#include <priunit.h>
+#include "priunit.h"
 C
 C OUTPUT : NSTASM(J) : NUMBER OF STRINGS OF SYMMETRY J
 C          ISTBAS(J) : OFFSET FOR STRING OF SYMMETRY J
@@ -618,7 +618,7 @@ C
       DIMENSION IOFF(NOCTPA,MAXSYM)
       DIMENSION IOOS(NOCTPB,NOCTPA,MAXSYM), NDTAS(MAXSYM)
       INTEGER   SYMPRO(8,8)
-#include <priunit.h>
+#include "priunit.h"
 C
       IOFF(1,1) = 1
       DO 100 IASYM = 1,MAXSYM
@@ -671,7 +671,7 @@ C
       PARAMETER (MXEXCI = 5000)
       DIMENSION I1(MXEXCI),I2(MXEXCI)
       DIMENSION NXFST(NSTRIN)
-#include <priunit.h>
+#include "priunit.h"
 C
       CALL ISETVC(TSYM,0,(NSTRIN*(MAXSYM+1)))
       IOFF = 1
@@ -750,22 +750,22 @@ C            described in Chapter 8 Setions D.1 and D.2 of MOTECC-90
 C            "RAS-CI Expansions in a CSF basis" and "Slater
 C            Determinants and Strings"
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER   SYMPRO
       DIMENSION SYMPRO(8,8), NRAS1(8), NRAS2(8), NRAS3(8)
       DIMENSION XNDXCI(*), WORK(LFREE)
       LOGICAL   REFSPC
-#include <priunit.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "iratdef.h"
 C
-#include <mxpdim.h>
-#include <maxash.h>
-#include <detbas.h>
-#include <ciinfo.h>
-#include <strnum.h>
-#include <mxblk.h>
-#include <spinfo.h>
-#include <csfbas.h>
+#include "mxpdim.h"
+#include "maxash.h"
+#include "detbas.h"
+#include "ciinfo.h"
+#include "strnum.h"
+#include "mxblk.h"
+#include "spinfo.h"
+#include "csfbas.h"
 C
 C
       IF ( NTEST .GT. 0 ) THEN

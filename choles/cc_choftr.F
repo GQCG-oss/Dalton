@@ -10,16 +10,16 @@ C              CC_FMATRIX routine by Christof Haettig, although this
 C              routine is *far* less flexible. See CC_FMATRIX/CC_FMATNEW
 C              for a detailed description of the input.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IFTRAN(3,NFTRAN), IFDOTS(MXVEC,NFTRAN)
       CHARACTER*(*) LISTL, LISTR, FILFMA
       DIMENSION FCONS(MXVEC,NFTRAN), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFMAT')
@@ -80,19 +80,19 @@ C              result *must* be available on disk for this option.
 C
 C     TODO/FIXME: dot products should also be available "on-the-fly"....
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IFTRAN(3,NFTRAN), IFDOTS(MXVEC,NFTRAN)
       CHARACTER*(*) LISTR, FILFMA
       DIMENSION FCONS(MXVEC,NFTRAN), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <chocc2.h>
-#include <ccr1rsp.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "chocc2.h"
+#include "ccr1rsp.h"
 
       CHARACTER*11 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFTR0R')
@@ -697,18 +697,18 @@ C
 C     NOTE: all Cholesky vectors needed must be available on disk.
 C           No checking is done here.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) LISTR
       DIMENSION FOCKD(*), X1AM(*), CIM(*), WORK(LWORK)
       LOGICAL INICIM
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chocc2.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chocc2.h"
+#include "dummy.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CYIFTRR')
@@ -878,17 +878,17 @@ C
 C     NOTE: all Cholesky vectors needed must be available on disk.
 C           No checking is done here.
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) LISTX
       DIMENSION FOCKD(*), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <chocc2.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "chocc2.h"
+#include "dummy.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CYIFTRL')
@@ -1044,12 +1044,12 @@ C
 C              The symmetry and type of the Cholesky vectors are ISYVEC and
 C              ITYVEC, respectively, and the number of vectors is NUMVEC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SIGMA1(*), CIM(*), WORK(LWORK)
       INTEGER   NUMVEC(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFTRI')
@@ -1226,14 +1226,14 @@ C           the perturbed Lambda matrix (Lambda-bar) constructed from the
 C           "right-hand" vector (singles part). Thus, ISYML2 is interpreted
 C           as the symmetry of the "right-hand" vector, ISYMTR.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XLAMDP(*),XLAMDH(*),XLAMD2(*),SIGMA1(*),X1AM(*)
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER IOFFL(8), IOFFZ(8), IOFY1(8), IOFY2(8)
 
@@ -1853,19 +1853,19 @@ C     where primed vectors are specified through FILFMA and unprimed ones
 C     through LISTR with indices stored in IFDOTS(*) and IFTRAN(3,*),
 C     respectively.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IFTRAN(3,NFTRAN), IFDOTS(MXVEC,NFTRAN)
       CHARACTER*(*) LISTR, FILFMA
       DIMENSION FCONS(MXVEC,NFTRAN), WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <chocc2.h>
-#include <ccr1rsp.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "chocc2.h"
+#include "ccr1rsp.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CHOFTR5')

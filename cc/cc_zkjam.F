@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_zkjai */
@@ -39,9 +39,9 @@ C  /* Deck cc_zkjai */
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       INTEGER ISYCTR,ISYTAM
 

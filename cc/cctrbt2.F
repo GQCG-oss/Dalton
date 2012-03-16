@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C /* Deck cctrbt2 */
@@ -45,14 +45,14 @@ C /* Deck cctrbt2 */
 *   Written by Sonia Coriani 19-11-99, based on CCTRBT
 *
 *=====================================================================*
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
 *
       DIMENSION XINT(*),DSRHF(*),XLAMDP(*),WORK(LWORK)
       LOGICAL LSQRUP,LSQRINT
 *
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 *
       IF (IOPT.EQ.0) THEN
          FAC = ZERO

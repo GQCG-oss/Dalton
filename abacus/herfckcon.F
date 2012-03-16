@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck fckcon */
       SUBROUTINE FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
@@ -47,12 +47,12 @@ C We keep to outer loop over NDMAT(in calling routine), but we vectorize with
 C IVECLN / NDMAT temoprary matrices. This will use the same 
 C amount of scratch memory we use in fokdi1 in eri. 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <veclen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "veclen.h"
       PARAMETER (D0=0.0D0,DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
 CNECgh990830
@@ -97,7 +97,7 @@ C
 #if defined (VAR_VECTOR)
             J=0
             DO INT = 1,(NBUF/ICHUNK)
-#include <ivdep.h>
+#include "ivdep.h"
               DO K=1,ICHUNK
                 J = J + 1
 #else
@@ -118,7 +118,7 @@ C
               END DO
 #if defined (VAR_VECTOR)
             END DO
-#include <ivdep.h>
+#include "ivdep.h"
               DO K=1,MOD(NBUF,ICHUNK)
                 J = J + 1
                 A = IND(J,1)
@@ -146,7 +146,7 @@ C
 #if defined (VAR_VECTOR)
             J=0
             DO INT = 1,(NBUF/ICHUNK)
-#include <ivdep.h>
+#include "ivdep.h"
               DO K=1,ICHUNK
                 J = J + 1
 #else
@@ -165,7 +165,7 @@ C
               END DO
 #if defined (VAR_VECTOR)
             END DO
-#include <ivdep.h>
+#include "ivdep.h"
               DO K=1,MOD(NBUF,ICHUNK)
                 J = J + 1
                 A = IND(J,1)
@@ -188,7 +188,7 @@ C
 #if defined (VAR_VECTOR)
             J=0
             DO INT = 1,(NBUF/ICHUNK)
-#include <ivdep.h>
+#include "ivdep.h"
               DO K=1,ICHUNK
                 J = J + 1
 #else
@@ -204,7 +204,7 @@ C
               END DO
 #if defined (VAR_VECTOR)
             END DO
-#include <ivdep.h>
+#include "ivdep.h"
             DO K=1,MOD(NBUF,ICHUNK)
                 J = J + 1
                 A = IND(J,1)
@@ -234,7 +234,7 @@ C
 #if defined (VAR_VECTOR)
             J = 0
             DO INT = 1,(NBUF/ICHUNK)
-#include <ivdep.h>
+#include "ivdep.h"
               DO K=1,ICHUNK
                 J = J + 1
 #else
@@ -263,7 +263,7 @@ C
              ENDDO
 #if defined (VAR_VECTOR)
             ENDDO
-#include <ivdep.h>
+#include "ivdep.h"
              DO K=1,MOD(NBUF,ICHUNK)
               J = J + 1
               A = IND(J,1)
@@ -297,7 +297,7 @@ C
 #if defined (VAR_VECTOR)
             J = 0
             DO INT = 1,(NBUF/ICHUNK)
-#include <ivdep.h>
+#include "ivdep.h"
               DO K = 1,ICHUNK
                 J = J + 1
 #else
@@ -320,7 +320,7 @@ C
             END DO
 #if defined (VAR_VECTOR)
             END DO
-#include <ivdep.h>
+#include "ivdep.h"
             DO K = 1,MOD(NBUF,ICHUNK)
               J = J + 1
               A = IND(J,1)
@@ -348,7 +348,7 @@ C
 #if defined (VAR_VECTOR)
             J = 0
             DO INT = 1,(NBUF/ICHUNK)
-#include <ivdep.h>
+#include "ivdep.h"
               DO K = 1,ICHUNK
                 J = J + 1
 #else
@@ -368,7 +368,7 @@ C
             END DO
 #if defined (VAR_VECTOR)
             END DO
-#include <ivdep.h>
+#include "ivdep.h"
              DO K=1,MOD(NBUF,ICHUNK)
               J = J + 1
               A = IND(J,1)
@@ -433,12 +433,12 @@ C We keep to outer loop over NDMAT(in calling routine), but we vectorize with
 C IVECLN / NDMAT temoprary matrices. This will use the same 
 C amount of scratch memory we use in fokdi1 in eri. 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <dftcom.h>
-#include <veclen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dftcom.h"
+#include "veclen.h"
       PARAMETER (D0=0.0D0,DP25=0.25D0,DP5=0.5D0)
       INTEGER A,B,C,D
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT)

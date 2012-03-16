@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
@@ -44,15 +44,15 @@ C
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccnoddy.h"
 
       LOGICAL LOCDBG, FD_TEST, XI_ONLY
       PARAMETER (LOCDBG=.FALSE., FD_TEST=.FALSE., XI_ONLY=.FALSE.)
@@ -748,12 +748,12 @@ c       -------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL AIBJCK
@@ -863,11 +863,11 @@ C------------------------------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
 #if defined (SYS_CRAY)
       REAL DELTA, ZERO
@@ -1051,17 +1051,17 @@ C------------------------------------------------------
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccl1rsp.h>
-#include <ccn2rsp.h>
-#include <cclrmrsp.h>
-#include <ccexgr.h>
-#include <ccexci.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccl1rsp.h"
+#include "ccn2rsp.h"
+#include "cclrmrsp.h"
+#include "ccexgr.h"
+#include "ccexci.h"
+#include "ccfield.h"
 
       LOGICAL LOCDBG, PRINT_T3
       PARAMETER (LOCDBG=.false.,PRINT_T3=.false.)
@@ -1523,16 +1523,16 @@ c       -------------------------------
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccorb.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
-#include <dummy.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccorb.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
+#include "dummy.h"
+#include "inftap.h"
 
       LOGICAL LOCDBG, XI_ONLY
       PARAMETER (LOCDBG=.FALSE., XI_ONLY=.FALSE.)

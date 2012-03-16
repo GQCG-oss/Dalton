@@ -99,7 +99,7 @@ C       done alone (yet). The problem is the structure of the memory split.
 C     - There are several simplified interfaces to this routine, e.g.
 C       CC_CYIV0 used for setting up the ground state vector function.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UVEC(*), VVEC(*), WVEC(*), SVEC(*), FOCKD(*)
       DIMENSION SCD(NUMP12), WORK(LWORK)
       INTEGER JTYP1(NUMP12), ISYMP1(NUMP12)
@@ -109,18 +109,18 @@ C
       INTEGER JTYPZ(NUMZ), ISYMZ(NUMZ), NCHOZ(8,NUMZ), JTYPY(NUMZ)
       INTEGER ISYMW(NUMW)
       LOGICAL DELP1(NUMP12), DELP2(NUMP12)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <ciarc.h>
-#include <chocc2.h>
-#include <priunit.h>
-#include <cyit.h>     
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "ciarc.h"
+#include "chocc2.h"
+#include "priunit.h"
+#include "cyit.h"     
+#include "dummy.h"
 
       INTEGER ABEG, AEND, BBEG, BEND
       INTEGER LIBJ(8)
@@ -863,7 +863,7 @@ C     Purpose: Check input to CC_CYI1.
 C              For practical purpose (allocation),
 C              NUMP12 <= 0 is considered an error.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UVEC(*), VVEC(*), WVEC(*), SVEC(*), FOCKD(*)
       DIMENSION SCD(NUMP12), WORK(LWORK)
       INTEGER JTYP1(NUMP12), ISYMP1(NUMP12)
@@ -874,9 +874,9 @@ C
       INTEGER ISYMW(NUMW)
       LOGICAL DELP1(NUMP12), DELP2(NUMP12)
       LOGICAL PRNT
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYINP1')
@@ -1024,12 +1024,12 @@ C
 C     Information about the batches of virtual orbitals is assumed available
 C     in the configuration file ciarc.h (see CC_CIA for details).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), XAM(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ciarc.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ciarc.h"
+#include "priunit.h"
 
 c      write(lupri,*) 'CC_DNOM: freq,isymx: ',freq,isymx
 c      write(lupri,*) 'CC_DNOM: nx2sq     : ',nx2sq
@@ -1142,14 +1142,14 @@ C
 C     Note that this routine makes assumptions about the memory
 C     allocations in CC_CIA.
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <priunit.h>
-#include <ciarc.h>
-#include <chocc2.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "priunit.h"
+#include "ciarc.h"
+#include "chocc2.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIMSP')
@@ -1560,14 +1560,14 @@ C              of a's along the way.
 C
 C     Generalized version of GET_BTCHB in MP2 module.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIRB(8)
       INTEGER BBEG
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       INTEGER LVIRA(8)
 
@@ -1680,9 +1680,9 @@ C              LVIRA and LVIRB.
 C
 C     Generalized version of MEMAB in the MP2 module.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LVIRA(8), LVIRB(8)
-#include <ccorb.h>
+#include "ccorb.h"
 
       MEMABG = 0
       DO ISYMBJ = 1,NSYM
@@ -1707,14 +1707,14 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Set up a-batch for CC_CYI.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LIBJ(8), NX1AMB(8), LVIRA(8)
       INTEGER ABEG
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIBTA')
@@ -1783,13 +1783,13 @@ C     Purpose: Add extra terms needed in CC_CYI for left-hand trf.
 C
 C              X(#ai,#bj) = X(#ai,#bj) + P(ai,bj) FAC * X1AM(ai) * FIA(jb)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X1AM(*), XINT(*), FIA(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ciarc.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ciarc.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYILHX')
@@ -1890,12 +1890,12 @@ C
 C     The overall structure is taken from the standard "exchange"
 C     CCSD_T2TP routine by A. Sanchez and H. Koch.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X2AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
-#include <ciarc.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+#include "ciarc.h"
 
       CHARACTER*10 SECNAM
       PARAMETER (SECNAM = 'CC_CYITCME')
@@ -1993,12 +1993,12 @@ C
 C     Purpose: Calculate contribution to packed norm of
 C              the amplitude batch X2AM(#ai,#bj).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X2AM(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ciarc.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ciarc.h"
+#include "priunit.h"
 
       INTEGER AI, BJ, AI1, AI2, BJ1, BJ2
 
@@ -2138,11 +2138,11 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Find global index of first ai (sym. ISYMAI) in #ai batch.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IOFA1(8), LVIRA(8)
       INTEGER AI1
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       AI1 = 0
 
@@ -2163,11 +2163,11 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Find global index of last ai (sym. ISYMAI) in #ai batch.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER IOFA1(8), LVIRA(8)
       INTEGER AI2
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       AI2 = 0
 
@@ -2193,13 +2193,13 @@ C              OMEGA1(#bj) = OMEGA1(#bj) + sum(#ai) X2AM(#ai,#bj) * FOCK(i#a)
 C
 C     Information about the virtual batches is taken from ciarc.h.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION OMEGA1(*), FOCK(*), X2AM(*), WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ciarc.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ciarc.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYICNI')
@@ -2279,11 +2279,11 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Add sub-matrix ALPHA*S1AM(#ai) into full matrix X1AM(ai).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X1AM(*), S1AM(*)
       INTEGER   IOFA1(8), LVIRA(8), NX1AMA(8), IX1AMA(8,8)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       DO ISYMI = 1,NSYM
          ISYMA = MULD2H(ISYMI,ISYMAI)
@@ -2335,15 +2335,15 @@ C              and *not* taken from ccdeco.h !!!!!!!!!!
 C
 C     TODO: The I/O of the Y-intermediates is probably crappy....
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X2AM(*), WORK(LWORK)
       INTEGER NUMCHO(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ciarc.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ciarc.h"
+#include "priunit.h"
+#include "cyit.h"
 
       CHARACTER*7 SECNAM
       PARAMETER (SECNAM = 'CC_CYIM')
@@ -2550,13 +2550,13 @@ C              to CC2 energy,
 C
 C              ECC2 = ECC2 + sum(aiJ) Y(ai,J) * L(ia,J)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIENR')
@@ -2643,10 +2643,10 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Check symmetry of doubles array.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X2AM(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 
       INTEGER AI, BJ, AIBJ, BJAI
 
@@ -2699,17 +2699,17 @@ C     Thomas Bondo Pedersen, February 2003.
 C
 C     Purpose: Set up basic configuration (ciarc.h) for CC_CYI.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), WORK(LWORK)
       INTEGER NUMYVC(8), NUMYV2(8)
       CHARACTER*(*) SECNAM
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <chocc2.h>
-#include <ciarc.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "chocc2.h"
+#include "ciarc.h"
 
       PARAMETER (XMONE = -1.0D0, ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 
@@ -2971,12 +2971,12 @@ C              unchanged, of course, in this routine). The result
 C              is placed in XINT if XINI = .TRUE., else the result
 C              is added to XINT.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
       LOGICAL XINI
-#include <ciarc.h>
-#include <cyit.h>
-#include <priunit.h>
+#include "ciarc.h"
+#include "cyit.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CYIAJB')
@@ -3181,21 +3181,21 @@ C
 C        - The relevant MO Cholesky vectors must be available on disk.
 C          Routine CHO_MOP is used for opening the relevant files.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FOCKD(*), OM1(*), X1AM(*), FIA(*)
       DIMENSION WORK(LWORK)
       LOGICAL DELCH2
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <ciarc.h>
-#include <chocc2.h>
-#include <priunit.h>
-#include <cyit.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "ciarc.h"
+#include "chocc2.h"
+#include "priunit.h"
+#include "cyit.h"
 
       INTEGER ABEG, AEND, BBEG, BEND
       INTEGER LIBJ(8), NUMYVC(8), NUMYV2(8)

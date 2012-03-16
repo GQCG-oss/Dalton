@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CREXSR
 C
@@ -29,15 +29,15 @@ C SORT THE EXCITATION ENERGIES  AFTER SYMMETRY
 C THE NUMBER OF EXCITATION ENERGIES OF A GIVEN SYMMETRY ARE
 C STORED IN NEXCR WITH OFFSET IN IEXCR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <rspprp.h>
-#include <indqr.h>
-#include <indcr.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "rspprp.h"
+#include "indqr.h"
+#include "indcr.h"
+#include "infpri.h"
 C
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,2X,A)')
@@ -99,9 +99,9 @@ C  Purpose:
 C     CALCULATION OF EXCITATION ENERGIES AND EIGENVECTORS
 C     FOR CUBIC RESPONSE
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
@@ -116,19 +116,19 @@ C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
 C  /INFORB/ : MULD2H
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <indcr.h>
-#include <indqr.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "indcr.h"
+#include "indqr.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "inftap.h"
 C
 C     space allocation for reduced E(2) and reduced S(2)
       KREDE  = 1

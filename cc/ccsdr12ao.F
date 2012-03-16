@@ -36,23 +36,23 @@
 * C. Haettig, C. Neiss, spring 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <dummy.h>     
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <r12int.h>
-#include <ccsdio.h>
-#include <second.h>
+#include "priunit.h"
+#include "dummy.h"     
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "r12int.h"
+#include "ccsdio.h"
+#include "second.h"
       logical locdbg
       parameter (locdbg = .false.)
 

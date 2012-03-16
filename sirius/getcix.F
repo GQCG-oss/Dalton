@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 c ===========================================================================
@@ -53,7 +53,7 @@ C
 C Output:
 C  in INDXCI(*) : string information
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION INDXCI(*), WRK(LFRSAV)
 C
 C Used from common blocks:
@@ -61,11 +61,11 @@ C   INFINP : NACTEL, ISPIN, FLAG(26), FLAG(27), LSYM
 C   INFORB : MULD2H(8,8), NASHT,  NAS1(8), NAS2(8), NAS3(8)
 C   INFPRI : IPRCIX
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       LOGICAL     REFSPC
       CHARACTER*8 LAB123(3),LABSTR
@@ -143,9 +143,9 @@ C
 C   extract FIJ and FJI (Coulumb and exchange integrals)
 C   for CI diagonal routine
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FIJ(NASHT,NASHT),FJI(NASHT,NASHT),H2AC(NNASHX,NNASHX)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C
 C Used from common blocks:
@@ -154,12 +154,12 @@ C   INFIND : IROW(*)
 C   INFTAP : LUH2AC
 C   CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "cbgetdis.h"
 C
 C
 C ***
@@ -204,10 +204,10 @@ C
 C for westa compatibility NOSYM has been added . if
 C NOSYM is nonvanishing symmetry is neglected
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LFREE)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : NACTEL,ISPIN, NELMN1, NELMX1, NELMN3, NELMX3
@@ -219,17 +219,17 @@ C   CIINFO : ICOMBI,IPSIGN, MXNDT, MXNCS
 C   CBESPN : ISPIN1,ISPIN2
 C   SPINFO : MULTS,MS2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <ciinfo.h>
-#include <spinfo.h>
-#include <cbespn.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "ciinfo.h"
+#include "spinfo.h"
+#include "cbespn.h"
 C
 C
       LOGICAL  REFSPC, NEWCI, NOCSF, CHCKCI
@@ -388,11 +388,11 @@ C
 C for westa compatibility NOSYM has been added . if
 C NOSYM is nonvanishing symmetry is neglected
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL TRIPLET
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : NACTEL,ISPIN, NELMN1, NELMX1, NELMN3, NELMX3
@@ -403,17 +403,17 @@ C   CIINFO : MXNDT, MXNCS
 C   CBESPN : ISPIN1,ISPIN2
 C   SPINFO : MULTS,MS2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <scbrhf.h>
-#include <ciinfo.h>
-#include <spinfo.h>
-#include <cbespn.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "scbrhf.h"
+#include "ciinfo.h"
+#include "spinfo.h"
+#include "cbespn.h"
+#include "infpri.h"
 C
 C     local variables:
 C
@@ -498,7 +498,7 @@ C
 C Check if the CI specification has changed since last call
 C to SETCI/SETCI2.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFINP : NACTEL,ISPIN, MCTYPE, NELMN1, NELMX1, NELMN3, NELMX3
@@ -506,12 +506,12 @@ C   INFORB : NASHT,NAS1(*),NAS2(*),NAS3(*)
 C   CIINFO : ICOMBI,IPSIGN, MXNDT, MXNCS
 C   SPINFO : MULTS,MS2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <ciinfo.h>
-#include <spinfo.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "ciinfo.h"
+#include "spinfo.h"
 C
 C
       LOGICAL  REFSPC, NEWCI, NOCSF
@@ -673,16 +673,16 @@ C  /* Deck getdets */
 C
 C May 2000 Hans Joergen Aa. Jensen
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION XNDXCI(*), WRK(LWRK)
 C
 C   INFPRI : IPRCIX
 C
-#include <csfbas.h>
-#include <ciinfo.h>
-#include <infpri.h>
+#include "csfbas.h"
+#include "ciinfo.h"
+#include "infpri.h"
 C
       IF (NCSF .NE. NCSASM(ICSYM) .OR. NDET .NE. NDTASM(ICSYM)) THEN
          WRITE (LUPRI,'(/A/A,I4,2(/A,2I12))')

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -88,7 +88,7 @@ C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C  THE NEXT  (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN SVECS
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER ABSADR, ABTADR
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -97,11 +97,11 @@ C
 C
 C  INFDIM : NASHDI
 C
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
 C
 C ALLOCATE WORK SPACE FOR RSPLIN
 C
@@ -141,22 +141,22 @@ C      SVEC(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN SVECS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
       DIMENSION UDV(*),SVEC(*),XINDX(*),WRK(*)
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <infpri.h>
-#include <infdim.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infind.h"
+#include "infpri.h"
+#include "infdim.h"
 C
       LOGICAL NOH2
 C
@@ -411,7 +411,7 @@ C           K,L
 C
 C ZYM IS ONE ELECTRON OPERATOR WITH ZYMAT AS ELEMENTS
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       LOGICAL ONEIND
 C
@@ -421,16 +421,16 @@ C
 C
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -568,7 +568,7 @@ C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
       use polarizable_embedding, only: peqm, lpol, pe_gspol
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
       DIMENSION CMO(*),UDV(NASHDI,*),PVX(*),FC(*),FV(*),FCAC(*)
@@ -576,16 +576,16 @@ C
 C
 C  INFDIM : NASHDI
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <gnrinf.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "gnrinf.h"
 C
 C
 C ALLOCATE WORK SPACE
@@ -733,8 +733,8 @@ C    -2*FCX(J,A)-2*FVX(J,A)
 C           K,L        K,L
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAL ONEIND
 C
@@ -745,16 +745,16 @@ C
 C  INFINP : DOMCSRDFT
 C  INFDIM : NASHDI
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C -- local constants
 C
@@ -993,16 +993,16 @@ C
 C PJ NOV-1984
 C LAST REV 12 NOV 1984, 22 APR 1988, 28 Oct 93 hjaaj
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "dummy.h"
       PARAMETER ( MAXVEC = 120 )
       DIMENSION THCORP(MAXVEC),EOVAL(MAXVEC)
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
       DIMENSION GD(*),BVECS(*)
       DIMENSION CMO(*),UDV(*),PVX(*),FC(*),FV(*),FCAC(*)
       DIMENSION XINDX(*),H2AC(*)
-#include <ibndxdef.h>
+#include "ibndxdef.h"
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1=-1.0D0 )
       PARAMETER ( REDFAC = 0.3D0 , DTEST=1.0D-4  )
 C
@@ -1012,14 +1012,14 @@ C  WRKRSP: KZVAR,KZYVAR,KEXSIM,KEXCNV,
 C          LURSP5
 C  INFOPT: EACTIV
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <infdim.h>
-#include <abares.h>
-#include <thrldp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "infdim.h"
+#include "abares.h"
+#include "thrldp.h"
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       DIMENSION KEX(MAXVEC), TEST(*)
@@ -1663,7 +1663,7 @@ C Analyze and order eigenvectors from RSPRED
 C
 C      JO 1984-11-8
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SRED(KZYRED,KZYRED), EIVEC(KZYRED,KZYRED)
       DIMENSION WRK1(KZYRED,KZYRED), WRK2(KZYRED,KZYRED)
       DIMENSION ALFAR(*),ALFAI(*),BETA(*), ISNDX(3)
@@ -1673,9 +1673,9 @@ C
 C Used from common blocks:
 C  /WRKRSP/: KZYRED
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER (ZEROT=1.0D-9)
       PARAMETER (COMPLX = 1.0D7 )
@@ -1904,11 +1904,11 @@ C
 C Scratch:
 C  OLDVEC(KZYVAR), scratch array for old b-vectors on LU3
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BVECS(*), IBTYP(*), OLDVEC(*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
 C    Change value of ZEQLY for problem with linear equation
 C    95-02-08
@@ -1921,9 +1921,9 @@ C Used from common blocks:
 C  INFRSP: RSPSUP
 C  WRKRSP: KZCONF,KZWOPT,KSYMOP
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C     Local arrays:
 C
@@ -2282,15 +2282,15 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RSPVEC(*)
       PARAMETER (PRFAC = 1.D-1)
 C
 C Used from common blocks:
 C   INFVAR : JWOPSY
 C
-#include <maxorb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "infvar.h"
 C
       IUNIT = IABS(IUNITX)
 C
@@ -2362,7 +2362,7 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RSPVEC(*),XNDXCI(*),SYMPRO(*)
       PARAMETER (PRFAC = 1.D-1, PRSOP1 = 0.3D0, PRSOP2 = 0.25D0)
 C
@@ -2372,11 +2372,11 @@ C   INFVAR : JWOPSY
 C   INFRSP : SOPPA
 C   INFSOP : KABSAD,KABTAD,......
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infsop.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infsop.h"
 C
       CHARACTER*1 STTYP
 C
@@ -2496,7 +2496,7 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WOP(*)
       PARAMETER (PRFAC = 1.D-1)
 C
@@ -2504,10 +2504,10 @@ C Used from common blocks:
 C   INFIND : ISMO(*)
 C   INFVAR : NWOPT,JWOPSY,JWOP(2,*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "infvar.h"
 C
       IUNIT = IABS(IUNITX)
 C
@@ -2581,11 +2581,11 @@ C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
 C                    .ge. PRFAC * (max. absolut value)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infind.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "infvar.h"
       DIMENSION WOP(*), MJWOP(2,MAXWOP,8)
       PARAMETER (PRFAC = 1.D-1)
 C
@@ -2687,14 +2687,14 @@ C
 C Scratch:
 C  WRK, real scratch array dimension kzyvar
 C  bcvec ( in second part) dimension 3*kzyred**2+2*kzyred
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION IBTYP(*),GD(*),REDGD(*),REDE(*),REDS(*),
      *          UDV(*),BOVEC(*),BCVEC(*),EVECS(KZYVAR,*)
       DIMENSION EIVEC(KZYRED,*),EIVAL(*),XINDX(*),WRK(*)
 C
-#include <infrsp.h>
-#include <ibndxdef.h>
+#include "infrsp.h"
+#include "ibndxdef.h"
 C
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0 , DRTEST = 1.0D-5)
       PARAMETER (MAXNVE = 200 )
@@ -2704,14 +2704,14 @@ C  /WRKRSP/: KZVAR,KZYRED,KZRED,KZYVAR,?
 C  /INFIND/: IROW(*). ?
 C  /INFPRI/: ??
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <wrkrsp.h>
-#include <infind.h>
-#include <infpri.h>
-#include <absorp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "infind.h"
+#include "infpri.h"
+#include "absorp.h"
       DIMENSION IVENU(MAXNVE)
 C
       LOGICAL LINEQ
@@ -3143,8 +3143,8 @@ C
 C PURPOSE: CREATE START VECTORS FOR SOLUTION OF GENERALIZED
 C          RSP EIGENVALUE PROBLEM
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION IBTYP(*),WRK(*)
       LOGICAL BINMEM
@@ -3153,20 +3153,20 @@ C
       PARAMETER (MAXST=400)
       DIMENSION STVAL(MAXST),ISTART(MAXST),IEQUAL(MAXST)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
       PARAMETER ( TOLEQL=1.0D-6 )
       PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1 = -1.0D0 )
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infopt.h>
-#include <phpinf.h>
-#include <thrldp.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infopt.h"
+#include "phpinf.h"
+#include "thrldp.h"
       LOGICAL DOEVEC
 C
 C WORK SPACE ALLOCATION
@@ -3558,18 +3558,18 @@ C   DENA(R,Y) = SUM(X)  UDV(Y,X) * ZYMAT(R,X)
 C
 C   THE MATRIX DENB IS STORED WITHOUT USING SYMMETRI
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION UDV(NASHT,*),ZYMAT(NORBT,NORBT,*)
       DIMENSION DENA(NORBT,NASHT,*),DENB(NORBT,NASHT,*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       CALL DZERO(DENB,NORBT*NASHT*NSIM)
       CALL DZERO(DENA,NORBT*NASHT*NSIM)
@@ -3629,17 +3629,17 @@ C This subroutine packs the ( NON TOTAL SYMMETRIC )
 C orbital part of a trial vector into matrix form.
 C The matrix is stored without use of symmetry.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ZYVEC(KZYWOP,*), ZYMAT(NORBT,NORBT,*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
       CALL DZERO(ZYMAT,NORBT*NORBT*NSIM)
@@ -3678,18 +3678,18 @@ C PURPOSE:
 C   CALCULATION OF Z OR Y COMPONENT OF CONFIGUTATION PART OF AN
 C   EIGENVECTOR FROM REDUCED SPACE
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION BVECS(*),WRK(*)
       DIMENSION IBTYP(*),EIVAL(*),EIVEC(KZYRED,*)
 C
-#include <ibndxdef.h>
+#include "ibndxdef.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       CALL DZERO(BVECS,KZCONF)
       CALL REWSPL(LURSP3)
@@ -3741,14 +3741,14 @@ C E(2) DIAGONAL + PHP INFORMATION AS LAST RECORD ON LURSP4
 C  PHPWRT = .TRUE.  write information
 C         = .false. read information
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION A(*)
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <inftap.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "inftap.h"
       LOGICAL PHPWRT
 C
       CALL REWSPL(LURSP4)

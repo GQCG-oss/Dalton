@@ -23,7 +23,7 @@
 !
 #define DFTQRC dft_qr_respons
 c#define DFTQRC dftqrcf
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVLOG
 C=========================================================================
@@ -46,20 +46,20 @@ C
 C     OUTPUT is put in WRK:
 C     First  NSIM * KZYVA elements are result vector
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0 , DM1 = -1.0D0 , DEM10 = 1.0D-10 )
 C
-#include <priunit.h>
-#include <thrzer.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "thrzer.h"
+#include "infvar.h"
+#include "qrinf.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       LOGICAL ATEST, TEST
       DATA TEST /.FALSE./
@@ -212,12 +212,12 @@ C  /* Deck dft3drv */
      &                   ISYMA,ISYMB,ISYMC,
      &                   ISPINA,ISPINB,ISPINC,
      &                   CMO,MJWOP,WRK,LFREE,ADDFOCK)
-#include <implicit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <dftcom.h>
+#include "implicit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "dftcom.h"
       DIMENSION VECB(*),VECC(*),ZYMB(*),ZYMC(*),WRK(*),CMO(*)
       DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
       LOGICAL ADDFOCK
@@ -237,30 +237,30 @@ C  /* Deck e3init */
      *                  FV,MJWOP)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D1 = 1.0D0 )
 C
-#include <infdim.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
+#include "infdim.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
 #include "rspprp.h"
-#include <infcr.h>
-#include <inftpa.h>
-#include <inftmo.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <priunit.h>
-#include <infpp.h>
-#include <infsmo.h>
-#include <infhyp.h>
-#include <esg.h>
-#include <absorp.h>
-#include <gnrinf.h>
-#include <infpar.h>
+#include "infcr.h"
+#include "inftpa.h"
+#include "inftmo.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "priunit.h"
+#include "infpp.h"
+#include "infsmo.h"
+#include "infhyp.h"
+#include "esg.h"
+#include "absorp.h"
+#include "gnrinf.h"
+#include "infpar.h"
 C
       LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
@@ -471,21 +471,21 @@ C      Outer driver routine for E[3] times two vectors. This subroutine
 C      calls the setup of the integral transformation, constructs a den-
 C      sity matrix if necessary  and calls RSP2GR to compute the gradient.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.5D0 , D1 = 1.0D0 , D2 = 2.0D0 )
       PARAMETER ( DM1=-1.0D0 )
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infspi.h>
-#include <infden.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infspi.h"
+#include "infden.h"
 C
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*)
@@ -1049,16 +1049,16 @@ C  /* Deck rsp2cr */
 C
 C     Layout the core for RSP2GR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       DIMENSION WRK(*)
       DIMENSION ETRS(KZYVA)
@@ -1143,26 +1143,26 @@ C         not need the active fock matrix and the Q matrices here,
 C         some space can be released. Organisation should be
 C         done by the calling routine. (See E3NBNC for example)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.50D0 )
 C
 C INFINP : DIRFCK
 C
-#include <dftcom.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <infinp.h>
+#include "dftcom.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "infinp.h"
 C
       DIMENSION ETRS(KZYVA), MJWOP(2,MAXWOP,8)
       DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT)
@@ -1316,20 +1316,20 @@ C     type matrices FI, FA, QA, and QB with transformed ("X")
 C     integrals.  In addition, If LCON true then the H2AX matrix
 C     with transformed integrals is extracted for the CI routines.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.50D0 )
 C
 C Used from common blocks:
 C  ?
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
 C
 C
       DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT)
@@ -1508,17 +1508,17 @@ C     ta     (jj|ta)    (tj|ja)
 C     tu     (jj|tu)    (tj|ju)
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D2= 2.0D0, DM1 = -1.0D0 )
 C
-#include <priunit.h>
-#include <wrkrsp.h>
+#include "priunit.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "infhyp.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       DIMENSION FI(NORBT,NORBT),H2X (NORBT,NORBT)
 C
@@ -1598,20 +1598,20 @@ C     ti     (xy|ti)    (ty|xi)
 C     it     (xy|it)    (iy|xt)
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D2= 2.0D0 )
 C
-#include <wrkrsp.h>
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "infhyp.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       DIMENSION FA(NORBT,NORBT),H2X (NORBT,NORBT)
       DIMENSION DEN1(NASHDI,NASHDI)
@@ -1691,15 +1691,15 @@ C
 C     The sum over x and v is taken by reading in all active contribu-
 C     tions.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infind.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
       DIMENSION DEN2(N2ASHX,N2ASHX), PVDEN(NASHDI,NASHDI)
@@ -1780,22 +1780,22 @@ C
 C    7) F(u,t) = sum(x) iF(u,x) D(t,x) + bQ(u,t)
 C              - sum(x) iF(x,t) D(x,u) - aQ(t,u)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0, DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infspi.h"
 C
       DIMENSION ETRS(KZYVA)
       DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT)
@@ -1963,20 +1963,20 @@ C H2AC(uv,xy) from H2XY(uv); (uv) distribution has symmetry IUVSYM
 C
 C Subroutine can also be used for contributions to H2XAC.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C   INFORB : NSYM, MULD2H, NORBT, NASHT, IASH, NASH
 C   INFIND : ISX, NSM, IROW
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
 C
       DIMENSION H2AX(NASHT,NASHT),H2X(NORBT,NORBT)
 C
@@ -2021,26 +2021,26 @@ C     <CSF1 | K | CSF2 > = E(inactive) +
 C
 C        sum(xy) iF(x,y) D(x,y) + 0.5 sum(xyvw) (xy|vw) d(xy;vw)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <cbgetdis.h>
-#include <infspi.h>
-#include <infdis.h>
+#include "infhyp.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "cbgetdis.h"
+#include "infspi.h"
+#include "infdis.h"
 C
       DIMENSION FI(NORBT,NORBT)
       DIMENSION VEC(NZYVEC)
@@ -2258,17 +2258,17 @@ C  /* Deck s3init */
 C
 C     Layout the core for the calculation of S3 times two vectors
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
 C
       LOGICAL   ATEST
       DIMENSION WRK(*)
@@ -2307,21 +2307,21 @@ C  /* Deck s3drv */
 C
 C     Drive the computation of S[3] times two vectors
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       PARAMETER(DM1=-1.0D0, DMH=-0.5D0, D0=0.0D0, D1=1.0D0, D2=2.0D0 )
 C
@@ -2712,17 +2712,17 @@ C
 C     This subroutine unpacks the ZY matrix from the vector. It uses
 C     the Z and the Y part of the vector.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infpri.h"
 C
       DIMENSION VEC(KZYV)
       DIMENSION ZYMAT(NORBT,NORBT), MJWOP(2,MAXWOP,8)
@@ -2765,17 +2765,17 @@ C
 C     This subroutine unpacks the ZY matrices from the two vectors and
 C     does the transformation
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infpri.h"
 C
       DIMENSION VEC1(KZYV1), VEC2(KZYV2)
       DIMENSION ZYMAT(NORBT,NORBT), MJWOP(2,MAXWOP,8)
@@ -2825,19 +2825,19 @@ C  /* Deck x2init */
 C
 C     Layout the core for the calculation of X2 times one vector
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -2915,24 +2915,24 @@ C  /* Deck x2drv */
 C
 C     Drive the computation of X[2] times one vector
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -3191,16 +3191,16 @@ C  /* Deck a2init */
 C
 C     Layout the core for the calculation of A[2] times one vector
 C
-#include <implicit.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
+#include "infpri.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -3272,22 +3272,22 @@ C  /* Deck a2drv */
 C
 C     Drive the computation of A[2] times one vector
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER( D0 = 0.0D0, D1 = 1.0D0, DH = 0.5D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <qrinf.h>
-#include <infpri.h>
-#include <infspi.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "qrinf.h"
+#include "infpri.h"
+#include "infspi.h"
 C
       CHARACTER*8 OPLBL
 C
@@ -3557,17 +3557,17 @@ C
 C     Compute the gradient resulting from multiplying the S matrix
 C     with one ore more vectors.
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infpri.h>
+#include "infhyp.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infpri.h"
 C
       LOGICAL LORB, LCON, LREFST
 C
@@ -3634,18 +3634,18 @@ C    6) k(a,t) = sum(x) zymat(a,x) D(t,x)
 C
 C    7) k(u,t) = sum(x) zymat(u,x) D(t,x) - zymat(x,t) D(x,u)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "qrinf.h"
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0, DM1 = -1.0D0 )
 C
@@ -3794,24 +3794,24 @@ C     CSF's, in terms of zymat, is:
 C
 C     <CSF1 | K | CSF2 > = sum(xy)  zymat(x,y) D(x,y)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2 = 2.0D0 )
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infopt.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
 #include "rspprp.h"
-#include <infhyp.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <cbgetdis.h>
+#include "infhyp.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "cbgetdis.h"
 C
       DIMENSION OPMAT(NORBT,NORBT), VEC(NZYVEC)
       DIMENSION WRK(*), OTRS(KZYVR), XINDX(*)
@@ -3994,16 +3994,16 @@ C
 C     Get the one-index transformed one electron integrals and put
 C     them in H1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H1(NORBT,NORBT), CMO(NCMOT), WRK(LWRK)
 C
 C Used from common blocks:
 C  INFORB : NORBT,NBAST,...
 C  INFRSP : IPRRSP
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
       LNEED = N2BASX + NNBAST
       IF (LNEED .GT. LWRK) THEN
@@ -4035,18 +4035,18 @@ C
       RETURN
       END
       SUBROUTINE QRGP(WORD,GP,CMO,XINDX,ANTSYM_GP,WORK,LWORK)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*8 WORD
       DIMENSION GP(*), CMO(*), XINDX(*), WORK(LWORK)
-#include <inforb.h>
-#include <infrsp.h>
-#include <infvar.h>
+#include "inforb.h"
+#include "infrsp.h"
+#include "infvar.h"
 #include "rspprp.h"
-#include <inflr.h>
-#include <wrkrsp.h>
-#include <priunit.h>
-#include <qrinf.h>
-#include <inflin.h>
+#include "inflr.h"
+#include "wrkrsp.h"
+#include "priunit.h"
+#include "qrinf.h"
+#include "inflin.h"
       LOGICAL LREFST, LORB, LCON, TRPSAVE
       PARAMETER (D1     = 1.0D0)
 C

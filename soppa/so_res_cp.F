@@ -30,17 +30,17 @@ C              identity matrix is not carried out.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] and S[2] are not constructed explicitly.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
 CSPAS:10/11-2003: is merged with maxorb.h
 C#include <mxorb.h>
 CKeinSPASmehr
-#include <aovec.h>
-#include <iratdef.h>
-#include <eribuf.h>
+#include "aovec.h"
+#include "iratdef.h"
+#include "eribuf.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -54,15 +54,15 @@ C
       dimension rint(10,10,10,10)
       logical   sonod
 C
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

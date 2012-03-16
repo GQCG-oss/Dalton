@@ -20,7 +20,7 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include <single.h>
+#include "single.h"
 C
 C=========================================================================
 C old log:
@@ -32,18 +32,18 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mtags.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <inftap.h>
-#include <prpc.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mtags.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "inftap.h"
+#include "prpc.h"
 Cef begin
-#include <incore.h>
+#include "incore.h"
 Cef end
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -607,12 +607,12 @@ C...  frees space used in Gen1Int interface
       END
 
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) BASDIR
       CHARACTER*20  WRKMEM, NODE_WRKMEM
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
 
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
@@ -719,12 +719,12 @@ C 10-Apr-2000 HJAaJ: changed initialization to -9xxx from 0,
 C                    because unit 0 is stderr on many systems.
 C                    The number -9xxx is used for easier debugging.
 C
-#include <mxcent.h>
-#include <eribuf.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <r12int.h>
+#include "mxcent.h"
+#include "eribuf.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "r12int.h"
 C
 C     priunit.h:
 C

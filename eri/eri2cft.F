@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck expcft */
       SUBROUTINE EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,
@@ -31,9 +31,9 @@ C  /* Deck expcft */
 C
 C     T. Helgaker
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
@@ -160,9 +160,9 @@ C  /* Deck EXPVEC */
       SUBROUTINE EXPVEC(HPI,PA,PB,COOR12,EXP12,SIGN,
      &                  NPP12,MAX1,MAX2,IDL,IPRINT,TEXPA,TEXPB)
 C     Compute TEXPA and TEXPB (WK/UniKA/04-11-2002).
-#include <implicit.h>
-#include <priunit.h>
-#include <r12int.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "r12int.h"
       PARAMETER (DP5 = 0.5D0, D2 = 2.0D0)
       DIMENSION HPI(NPP12), 
      &          PA(NPP12,3), PB(NPP12,3),
@@ -254,8 +254,8 @@ C     A. Halkier & T. Helgaker Jan. 1999: Generalised Version
 C     that handles derivative coefficients, where IDL gives the order
 C     of differentiation.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.00 D00, D2 = 2.00 D00)
       INTEGER T, X
       CHARACTER WORD*4
@@ -263,7 +263,7 @@ C
       DIMENSION ETIJ(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM1(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
       DIMENSION ETIJM2(NPP12,0:JMAXI+JMAXJ,0:JMAXI,0:JMAXJ)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DLEVEL = IDL
 C
@@ -845,13 +845,13 @@ C
 C  /* Deck eriscl */
       SUBROUTINE ERISCL(ETIJ,EXP12,SCALE,ISCAL1,ISCAL2,NPP12,
      &                  JMAX1,JMAX2,MAX1,MAX2,IAB0,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORD*4
       INTEGER T, X, IAB0(3)
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3),
      &          SCALE(NPP12), EXP12(NPP12,3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO K = 1, NPP12
          SCALE(K) = ((EXP12(K,1)/EXP12(K,3))**ISCAL1)

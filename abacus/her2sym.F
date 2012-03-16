@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sym2 */
       SUBROUTINE SYM2(SO,AO,IPNTAO,IPNTOP,ISYMR,ISYMT,ISYMTS,FACTOR,
@@ -35,17 +35,17 @@ C
 C     Modified for triangular looping in components tuh
 C     Loop over operator irreps outside loop over components 880928 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
-#include <twocom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -109,22 +109,22 @@ C
 C     This superb piece of software is a joint effort by
 C     TUH and PRT, 880429
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include <twocom.h>
-#include <twosta.h>
-#include <dirprt.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <doxyz.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "twosta.h"
+#include "dirprt.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "doxyz.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -196,20 +196,20 @@ C
 C     Driver routine for symmetrization of spin-orbit integrals
 C     TUH and OV, 891111
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include <twocom.h>
-#include <dirprt.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "dirprt.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -237,21 +237,21 @@ C  /* Deck mgsym2 */
 C
 C     tuh Sep 7 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z
       LOGICAL SOP000
       DIMENSION AOINT(NCCINT,3,*), SOINT(*), WORK(NCCINT,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
       DIMENSION DIFAB(3), DIFCD(3)
-#include <twocom.h>
-#include <twosta.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "twosta.h"
+#include "symmet.h"
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))

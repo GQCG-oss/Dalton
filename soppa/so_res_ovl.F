@@ -12,8 +12,8 @@ C
 C     PURPOSE: Calculate the overlap result vector, as expressed
 C              in eq. (67).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -21,10 +21,10 @@ C
       DIMENSION TR1E(LTR1E),     TR1D(LTR1D)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

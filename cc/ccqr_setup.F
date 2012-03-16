@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck ccqr_setup */
 *=====================================================================*
@@ -58,13 +58,13 @@ c /* deck ccqr_setup */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <ccsections.h>
-#include <ccslvinf.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "ccsections.h"
+#include "ccslvinf.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -652,11 +652,11 @@ c /* deck CCQR_DISP_SETUP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccqrinf.h>
-#include <ccroper.h>
-#include <cclists.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccqrinf.h"
+#include "ccroper.h"
+#include "cclists.h"
 
 * local parameters:
       CHARACTER*(25) MSGDBG
@@ -1149,7 +1149,7 @@ c /* deck ccqr_setg */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IGTRAN(4,MXTRAN)
@@ -1249,7 +1249,7 @@ c /* deck ccqr_setf */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IFTRAN(3,MXTRAN)
@@ -1346,7 +1346,7 @@ c /* deck ccqr_setfa */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IFTRAN(5,MXTRAN)
@@ -1446,7 +1446,7 @@ c /* deck ccqr_setea */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IETRAN(3,MXTRAN)
@@ -1525,16 +1525,16 @@ c /* deck ccqr_fadrv */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <cclists.h>
-#include <ccnoddy.h>
-#include <ccfield.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "cclists.h"
+#include "ccnoddy.h"
+#include "ccfield.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -1875,12 +1875,12 @@ c /* deck ccqr_eadrv */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <dummy.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "dummy.h"
+#include "ccroper.h"
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -2098,15 +2098,15 @@ c /* deck CC_DOTDRV */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <ccl1rsp.h>
-#include <cclc1rsp.h>
-#include <dummy.h>
-#include <ccnoddy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "ccl1rsp.h"
+#include "cclc1rsp.h"
+#include "dummy.h"
+#include "ccnoddy.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG

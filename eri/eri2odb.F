@@ -21,29 +21,29 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
      &                  KFREE,LFREE,CCFBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL SAMEOD, ODALL1, ODALL2
       DIMENSION CCFBT(*), WORK(LWORK)
-#include <cbieri.h>
-#include <aobtch.h>
-#include <symmet.h>
-#include <iratdef.h>
-#include <odbtch.h>
-#include <odclss.h>
-#include <cbirea.h>
-#include <r12int.h>
+#include "cbieri.h"
+#include "aobtch.h"
+#include "symmet.h"
+#include "iratdef.h"
+#include "odbtch.h"
+#include "odclss.h"
+#include "cbirea.h"
+#include "r12int.h"
 C
       CALL QENTER('ODBCHS')
 C
@@ -281,7 +281,7 @@ C
       END
 C  /* Deck rtrmat */
       SUBROUTINE RTRMAT(NA,NB,AMAT,BMAT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(NA,NB), BMAT(NB,NA)
       DO 100 I = 1, NA
       DO 100 J = 1, NB
@@ -291,7 +291,7 @@ C  /* Deck rtrmat */
       END
 C  /* Deck itrmat */
       SUBROUTINE ITRMAT(NA,NB,IAMAT,IBMAT)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IAMAT(NA,NB), IBMAT(NB,NA)
       DO 100 I = 1, NA
       DO 100 J = 1, NB
@@ -302,20 +302,20 @@ C  /* Deck itrmat */
 C  /* Deck godbch */
       SUBROUTINE GODBCH(IODBCH,IODTRA,RODBCH,NAOBC2,IODPPR,RODPPR,
      &                  NPRIM2,CCFBT,WORK,LWORK,ODTRI,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       LOGICAL ODTRI
       DIMENSION IODBCH(NITBC,NAOBC2), IODTRA(NITTR,NAOBC2),
      &          RODBCH(NRTBC,NAOBC2),
      &          IODPPR(NITPP,NPRIM2), RODPPR(NRTPP,NPRIM2),
      &          CCFBT(*), WORK(LWORK)
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
 C
       IBATCH = 1
       ICLASS = 0
@@ -352,20 +352,20 @@ C  /* Deck odsort */
       SUBROUTINE ODSORT(NHKTA,NHKTB,ODTRI,NBCHAB,IODBCH,IODTRA,RODBCH,
      &                  ICLASS,IODPPR,RODPPR,IPRADR,CCFBT,WORK,LWORK,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       LOGICAL ODTRI, TRIBCH
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          WORK(LWORK), IODPPR(NITPP,*), RODPPR(NRTPP,*),
      &          CCFBT(*)
-#include <odclss.h>
-#include <aobtch.h>
-#include <odbtch.h>
+#include "odclss.h"
+#include "aobtch.h"
+#include "odbtch.h"
 C
       NQNBTA = NQNBT(NHKTA)
       NQNBTB = NQNBT(NHKTB)
@@ -391,17 +391,17 @@ C  /* Deck odsor1 */
       SUBROUTINE ODSOR1(NHKTA,NHKTB,TRIBCH,NBCH,NBCHAB,IODBCH,IODTRA,
      &                  RODBCH,ICLASS,IODPPR,RODPPR,IPRADR,ISORT,DSORT,
      &                  NSORT,KODSRT,KCLASS,CCFBT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
       LOGICAL TRIBCH, ODBTGT
       INTEGER A, B
-#include <aobtch.h>
-#include <odbtch.h>
-#include <odclss.h>
+#include "aobtch.h"
+#include "odbtch.h"
+#include "odclss.h"
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          ISORT(3,NBCH), DSORT(1,NBCH), NSORT(NPSORT,NBCH),
      &          IODPPR(*), RODPPR(NRTPP,*),
@@ -536,25 +536,25 @@ C
 C  /* Deck noddim */
       SUBROUTINE NODDIM(A,B,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
      &                  ICMATA,ICMATB,PRXFAB,IODPPR,RODPPR,CCFBT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "pi.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL GCNT
       INTEGER A, B, R, R1
       DIMENSION IODPPR(NITPP,*), RODPPR(NRTPP,*), PFAC(8)
       DIMENSION CCFBT(MXPRIM*MXCONT)
-#include <cbieri.h>
-#include <erithr.h>
-#include <odclss.h>
-#include <aobtch.h>
-#include <symmet.h>
+#include "cbieri.h"
+#include "erithr.h"
+#include "odclss.h"
+#include "aobtch.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XPAR(I) = PT(IBTAND(ISYMAX(1,1),I))
       YPAR(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZPAR(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -621,14 +621,14 @@ C
       END
 C  /* Deck odbtgt */
       LOGICAL FUNCTION ODBTGT(IOD1,IOD2,NSORT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <aobtch.h>
-#include <odbtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "aobtch.h"
+#include "odbtch.h"
       DIMENSION NSORT(NPSORT,*)
 C
 C     This routine sorts according to NPSORT criteria
@@ -644,14 +644,14 @@ C
       END
 C  /* Deck odcls */
       SUBROUTINE ODCLS(KCLASS,KODSRT,NSORT,NBCHAB,ICLASS,NCLASS,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <aobtch.h>
-#include <odbtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "aobtch.h"
+#include "odbtch.h"
       LOGICAL NEWCLS
       DIMENSION KCLASS(*), KODSRT(*), NSORT(NPSORT,*)
 C
@@ -676,18 +676,18 @@ C
       END
 C  /* Deck clsinf */
       SUBROUTINE CLSINF(IODBCH,IODTRA,IODCLS,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <shells.h>
-#include <odbtch.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "odbtch.h"
+#include "aobtch.h"
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), IODCLS(NITCL,NODCLS),
      &          WORK(LWORK)
-#include <odclss.h>
+#include "odclss.h"
 C
       CALL IZERO(IODCLS,NITCL*NODCLS)
 C
@@ -751,11 +751,11 @@ C
       END
 C  /* Deck odstat */
       SUBROUTINE ODSTAT(IODCLS,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <odbtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "odbtch.h"
       DIMENSION IODCLS(NITCL,NODCLS), WORK(LWORK)
-#include <odclss.h>
+#include "odclss.h"
 C
 C     IODCLS(1,*): # ods
 C     IODCLS(2,*): pointer to first od
@@ -852,12 +852,12 @@ C
 C  /* Deck MBIDAB */
       INTEGER FUNCTION MBIDAB(I,J)
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <shells.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "shells.h"
       MBIDAB = MBIDBT(I) + MBIDBT(J) * 2
       RETURN
       END

@@ -71,9 +71,9 @@ module gen1int_cube
     ! uses NUCDEP, CHARGE, CORD
 #include "nuclei.h"
     ! uses NCMOT, NNASHX, N2BASX
-#include <inforb.h>
+#include "inforb.h"
     ! uses LUSIFC
-#include <inftap.h>
+#include "inftap.h"
     integer ipoint                                    !incremental recorder over points
     integer ix, iy, iz                                !incremental recorders along XYZ directions
     integer num_ao                                    !number of atomic orbitals from Gen1Int interface

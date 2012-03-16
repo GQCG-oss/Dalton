@@ -74,7 +74,7 @@ C***********************************************************************
       CHARACTER*(*) PARM1
       DIMENSION IBUF(*),LIST(*)
 C
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER ( LDISK = 8 / IRAT )
 C
       PARAMETER (MXAUX=230*1024)
@@ -94,7 +94,7 @@ C
       DIMENSION ADDR(MAXLU),OPEN(MAXLU),ASYNC(MAXLU)
       DIMENSION IFWC(MAXLU),LRECL(MAXLU)
       DIMENSION MXADDR(MAXLU)
-#include <priunit.h>
+#include "priunit.h"
 C
       DATA NERR,MXERR/0,10/
       DATA ERRFIX,TRACE/'HARD','OFF'/
@@ -894,13 +894,13 @@ C
       END
 C  /* Deck fabort */
       SUBROUTINE FABORT
-#include <priunit.h>
+#include "priunit.h"
       WRITE(LUPRI,*) 'FASTIO.FABORT: abort'
       CALL QUIT(' ')
       END
 C  /* Deck ftnwb */
       SUBROUTINE FTNWB
-#include <priunit.h>
+#include "priunit.h"
       WRITE(LUPRI,*) 'FASTIO.FTNWB: WALKBACK NOT PERFORMED'
       RETURN
       END

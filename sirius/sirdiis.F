@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REV_LOG
 !===========================================================================
@@ -91,7 +91,7 @@ C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen
 C
 C Driver for DIIS iterations in SIRIUS.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*), WRK(*)
 C
 C
@@ -102,17 +102,17 @@ C  INFORB : N2BAST,NNBAST,N2BASX,NCMOT,NSYM, ...,MXDGSS
 C  INFVAR : NWOPT
 C  INFPRI : IPRRHF
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <scbrhf.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "scbrhf.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <choscf.h>
+#include "ccdeco.h"
+#include "choscf.h"
 C
       PARAMETER (NBLOC = 1)
       INTEGER LUBLOC(NBLOC)
@@ -280,8 +280,8 @@ C
       use polarizable_embedding, only: peqm, pe_master,
      &                                 pe_repuls, pe_savden,
      &                                 pe_repulsion, pe_save_density
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
       DIMENSION FAOSAV(NNBAST,MXERRV,2), EVCSAV(NNORBT,MXERRV)
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
@@ -298,37 +298,37 @@ C  SCBRHF : IOPRHF,AUTOCC
 C  CBIREA : LMULBS
 C  R12INT : R12CAL
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "mxcent.h"
 
-#include <molde.h>
-#include <infinp.h>
-#include <pcmlog.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infopt.h>
-#include <scbrhf.h>
-#include <cbihr2.h>
-#include <infpri.h>
-#include <gnrinf.h>
-#include <dfterg.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <qm3.h>
+#include "molde.h"
+#include "infinp.h"
+#include "pcmlog.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infopt.h"
+#include "scbrhf.h"
+#include "cbihr2.h"
+#include "infpri.h"
+#include "gnrinf.h"
+#include "dfterg.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "qm3.h"
 #include "incore.h"
-#include <qmmm.h>
-#include <infloc.h>
-#include <mmtimes.h>
-#include <infpar.h>
+#include "qmmm.h"
+#include "infloc.h"
+#include "mmtimes.h"
+#include "infpar.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <sirftim.h>
-#include <choscf.h>
+#include "ccdeco.h"
+#include "sirftim.h"
+#include "choscf.h"
 C
-#include <center.h>
-#include <nuclei.h>
+#include "center.h"
+#include "nuclei.h"
 C
       LOGICAL DIFDNO
 Cholesky
@@ -1495,7 +1495,7 @@ C  /* Deck DIIS_EVC */
      &                  ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DCAO(NNBAST), DVAO(NNBAST), FDAO(NNBAST), FVAO(NNBAST)
       DIMENSION H1AO(NNBAST)
       DIMENSION SMOAO(N2BAST), CMO1(NCMOT), ERRVEC(NNORBT), WRK(*)
@@ -1505,12 +1505,12 @@ C  INFINP : LNOROT,NOROT()
 C  INFORB : N2BAST, NNBAST, NCMOT, NSYM, ..., NFROT, ...
 C  INFDIM : N2BASM
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 C
@@ -1668,7 +1668,7 @@ C  BMAT,  the new, extended reduced orbital Hessian-matrix
 C  CVEC  :.not.C2DIIS - SOLUTION TO LINEAR SET OF EQUATIONS
 C        :     C2DIIS - LOWEST acceptable EIGENVECTOR
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BMAT(*),CVEC(*), ERRVEC(NNORBT,*), WRK(*)
       LOGICAL C2DIIS
 C
@@ -1677,9 +1677,9 @@ C
 C Used from common blocks:
 C   INFORB : NNORBT
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
       IROW(I) = I*(I-1)/2
 C
@@ -1822,11 +1822,11 @@ c /* DFT_ADD_KS */
 c     TMP1 is of NNBASX size, TMP2 is of N2BASX size.  They are passed
 c     because they are available but they could as well be allocated
 c     here.
-#include <implicit.h>
+#include "implicit.h"
 c
-#include <inforb.h>
-#include <dfterg.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "dfterg.h"
+#include "priunit.h"
 c
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
 c
@@ -1938,7 +1938,7 @@ C
 C Scratch:
 C  SCRA; general scratch area
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),FC(*),SCRA(*)
 C
 C Used from common blocks:
@@ -1946,16 +1946,16 @@ C  INFINP : SUPSYM, LNOROT, NOROT()
 C  SCBRHF : NFRRHF(*), AUTOCC
 C  INFIND : IROW(*),...,ISSMO(*),?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <scbrhf.h>
-#include <infind.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "scbrhf.h"
+#include "infind.h"
+#include "infpri.h"
 #ifdef MOD_DFTASC
-#include <dftacb.h>
+#include "dftacb.h"
 #endif
 C
       LOGICAL LSAVE4,LSAVE6
@@ -2109,15 +2109,15 @@ C
 C  /* Deck gethom */
       SUBROUTINE DFTASC_GETHOMO(FD)
 C find homo energy. tuh 16.05.03
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FD(*)
       PARAMETER (DBIG = 1.D+12)
-#include <maxash.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <inforb.h>
-#include <infind.h>
-#include <dftacb.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "infind.h"
+#include "dftacb.h"
 C
       EHOMO  = -DBIG
       DO ISYM = 1,NSYM
@@ -2144,8 +2144,8 @@ C
 C
       INTEGER NVEC, MXERRV, KFREE, LFREE
       REAL*8 W(NVEC)
-#include <inforb.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "priunit.h"
 C     REAL*8 DAO(NNBAST,MXERRV,2), FAO(NNBAST,MXERRV,2), F(NNBAST)
       REAL*8 DAO(NNBAST,1,2),      FAO(NNBAST,MXERRV,2), F(NNBAST)
       REAL*8 WRK(*)

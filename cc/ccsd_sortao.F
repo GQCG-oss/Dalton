@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccsd_sortao */
       SUBROUTINE CCSD_SORTAO(WORK,LWORK)
@@ -31,9 +31,9 @@ C
 C     Purpose: Read destribution of AO integrals.
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
 C
       PARAMETER (LBUF = 600)
 C
@@ -49,13 +49,13 @@ C
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
       COMMON/SORTIO/LUAOIN(8)
-#include <inftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccpack.h>
-#include <r12int.h>
+#include "inftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccpack.h"
+#include "r12int.h"
 C
 C--------------------
 C     Only sort once.
@@ -278,15 +278,15 @@ C  /* Deck ccrda1 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ibtpar.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibtpar.h"
+#include "ccorb.h"
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
 C     INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -382,8 +382,8 @@ C  /* Deck ccsd_sort2 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION XINT(*)
 C
       CHARACTER*8 NAME(8)
@@ -392,9 +392,9 @@ C
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
 
       COMMON/SORTIO/LUAOIN(8)
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccpack.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccpack.h"
 C
       NFILE = LUAOIN(ISYM)
       KOFF  = 1
@@ -437,11 +437,11 @@ C     Henrik Koch and Alfredo Sanchez.       29-Jun-1994
 C
 C     Set up indexing arrays
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
-#include <ccsdsym.h>
+#include "ccsdsym.h"
 C
 C
       DO 100 ISYMAB = 1,NSYM

@@ -30,10 +30,10 @@ C       and a diagnostic test
 C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
 C       J.  Chem. Phys. 128, 044118 (2008), DOI:10.1063/1.2831900
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
       EXTERNAL DFTMO2
       DIMENSION WORK(LFREE), CMO2(NORBT,NORBT,2)
@@ -80,19 +80,19 @@ C /* Deck dftgmo */
 C
 C     T. Helgaker 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "inforb.h"
 C 
       DIMENSION CMO(NBAST,NORBT)
 C
-#include <inftap.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <dftcom.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "nuclei.h"
+#include "dftcom.h"
 C
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
@@ -108,8 +108,8 @@ C
 C /* Deck dftmo2 */
       SUBROUTINE DFTMO2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
      &                  RHOA,GRADA,COORD,WGHT,WORK)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       DIMENSION WORK(*)
       K1 = 1
       K2 = K1 + NBAST*NORBT
@@ -118,8 +118,8 @@ C /* Deck dftmo2 */
       END
 C /* Deck dftmoX */
       SUBROUTINE DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,CMO,CMO2)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       INTEGER P, Q
       DIMENSION GAO(NBLEN,NBAST), WGHT(NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),

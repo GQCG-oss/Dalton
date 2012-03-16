@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC3_FMATSD(LISTL,IDLSTL,LISTY,IDLSTY,
@@ -51,16 +51,16 @@ C
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <ccr1rsp.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "ccr1rsp.h"
+#include "ccexci.h"
 C
 
       INTEGER ISYM0
@@ -968,10 +968,10 @@ C
 C
       PARAMETER(ONE = 1.0D0)
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('WBARBD_TMAT')
 C
@@ -1671,9 +1671,9 @@ C----------------------------------------------------------------------
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INTEGER ISYMA, ISYINT, ISYMK, ISYMJIK, ISYMJI, ISYMJ, ISYMKIJ
       INTEGER ISYMKI, ISYMKJI, ISYMKJ, ISYMJIKA, ISYMI

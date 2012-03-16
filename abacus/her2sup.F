@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 c===========================================================================
@@ -85,9 +85,9 @@ C        (VAX gives integer overflow on e.g. LABEL = NS*2**24, when NS .gt. 127)
 C        9-Jan-1990 tuh+hjaaj: NOSYM parameter;
 C          Dec 1991 - work space in call, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL NOSYM
       DIMENSION WORK(LWORK)
 C
@@ -128,10 +128,10 @@ C and allocate memory for IBIT vector in IWORK
 C  /* Deck supdrv */
       SUBROUTINE SUPDRV(NOSYM,WORK,LWORK,IWORK,LIWORK,THRESH,
      &                  IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION WORK(LWORK), IWORK(LIWORK)
       LOGICAL   NOSYM, OPTST
@@ -141,7 +141,7 @@ C  /* Deck supdrv */
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
 C
 C*** DEFAULTS
 C
@@ -350,15 +350,15 @@ C
       END
 C  /* Deck suprdi */
       SUBROUTINE SUPRDI(NOSYM)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL NOSYM
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-#include <inftap.h>
+#include "inftap.h"
       CHARACTER*8 LAB123(3), OLDLBL, NEWLBL
       DATA LAB123 /'********','        ','        '/
       DATA OLDLBL, NEWLBL /'TWOELSUP','PSUPMAT '/
@@ -390,9 +390,9 @@ C
       END
 C  /* Deck supsrt */
       SUBROUTINE SUP_SORT(NOSYM,RINT,INT,SCR,ISCR,LSORT,IT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
@@ -403,9 +403,9 @@ C  /* Deck supsrt */
       LOGICAL NOSYM, OLDDX 
       DIMENSION NSOINT(255), NAOS(8)
 C
-#include <iratdef.h>
-#include <inftap.h>
-#include <ibtfun.h>
+#include "iratdef.h"
+#include "inftap.h"
+#include "ibtfun.h"
 C
       CALL QENTER('SUP_SORT')
 C
@@ -690,9 +690,9 @@ C
 C  /* Deck sup1 */
       SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT,
      &                JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
@@ -700,12 +700,12 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*),IT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -937,12 +937,12 @@ C
 C  /* Deck sup */
       SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
      &               IBEF,NP,IPRINT,JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IT(*),IBIT(*)
 C
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
@@ -952,7 +952,7 @@ C
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -1245,9 +1245,9 @@ C
 C  /* Deck sup1d */
       SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,
      &                 IT,IBIT,JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C***  TRANSFORMATION OF FIRST SYMMETRY
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
@@ -1255,12 +1255,12 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*),IT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -1539,21 +1539,21 @@ C
 C  /* Deck supd */
       SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
      &               IBEF,NP,JBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-#include <inftap.h>
+#include "inftap.h"
       DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IT(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 #if defined (VAR_DUPLCHCK)
       JO(L) = IBTAND(IBTSHR(IBIT((L+31)/32),((L+31)/32*32-L)),1)
@@ -1908,13 +1908,13 @@ C
 C     note: IBEF=IT(NPQF),       NPQF = IT(NPF) + NQF
 C           NPQRS=IT(NPQL)-IOFF, NPQL = IT(NPL) + NQL
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION P(1), INDP(1), IT(1)
 C
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER ( ITYP1 = 1, ITYP2 = 2)
 C
-#include <inftap.h>
+#include "inftap.h"
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
@@ -2010,15 +2010,15 @@ C
 C  /* Deck wrsup1 */
       SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,ITYP1,NPF,NQF,NPL,NQL,IOFF,
      &                  NPQL,JBUF)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION P(NPQRS)
 #if defined (VAR_SPLITFILES)
-#include <dummy.h>
-#include <iratdef.h>
-#include <2gbdef.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IPASS = 1
  5    CONTINUE
@@ -2075,15 +2075,15 @@ C  /* Deck wrsup2 */
 C
 C 900319-hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION P(NRSOUT), INDP(NRSOUT)
 #if defined (VAR_SPLITFILES)
-#include <dummy.h>
-#include <iratdef.h>
-#include <2gbdef.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IPASS = 1
  5    CONTINUE

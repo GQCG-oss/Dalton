@@ -25,15 +25,15 @@
 C
 C     T. Helgaker and P. Salek, October 2003
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "inforb.h"
+#include "priunit.h"
 #include "dftmolgrad.h"
       DIMENSION WORK(LWORK)
-#include <energy.h>
+#include "energy.h"
       EXTERNAL DFTMOLGRD
       EXTERNAL DFTMOLGRDAB 
       LOGICAL DFT_ISGGA
@@ -75,30 +75,30 @@ C
 C
 C     T. Helgaker oct 2003
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 #include "dftmolgrad.h"
-#include <inforb.h>
+#include "inforb.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &          DMAT(NBAST,NBAST)
 C
-#include <dftinf.h>
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
+#include "dftinf.h"
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
 c
       LOGICAL ACTIVE(0:NBAST)
       DIMENSION VXC(NBLEN), VXB(NBLEN), VX(5)
       DIMENSION TMP(NBLEN), KVALS(3,3)
       DATA ((KVALS(I,J), I = 1,3), J = 1,3) /1, 2, 3, 2, 4, 5, 3, 5, 6/
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C 
       DO I = 0, NBAST
          ACTIVE(I) = .FALSE.
@@ -195,13 +195,13 @@ C
 C                           
 C     Open-shell adaptation of DFTMOLGRD 
 C                                        
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 #include "dftmolgrad.h"
-#include <inforb.h>
+#include "inforb.h"
 C                                                                                                                                                                                                                
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
@@ -209,10 +209,10 @@ C
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &          DMAT(NBAST,NBAST,2)
 C                                                                                                                                                                                                                
-#include <dftinf.h>
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
+#include "dftinf.h"
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
 c                                                                                                                                                                                                                
       LOGICAL ACTIVE(0:NBAST)
       DIMENSION VXA(NBLEN), VXB(NBLEN), VXGA(NBLEN), VXGB(NBLEN), 
@@ -220,7 +220,7 @@ c
       DIMENSION TMPA(NBLEN), TMPB(NBLEN), KVALS(3,3)
       DATA ((KVALS(I,J), I = 1,3), J = 1,3) /1, 2, 3, 2, 4, 5, 3, 5, 6/
 C                                                                          
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
        DO I = 0, NBAST
          ACTIVE(I) = .FALSE.

@@ -21,21 +21,21 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck maginp */
       SUBROUTINE MAGINP(WORD)
 C
 C     K.Ruud, April 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       LOGICAL NEWDEF
       PARAMETER (NTABLE = 14)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <magone.h>
+#include "abainf.h"
+#include "magone.h"
       DATA TABLE /'.SHIELD', '.SPIN-S', '.DIASUS', '.SKIP  ',
      &            '.PRINT ', '.NODC  ', '.NODV  ', '.STOP  ',
      &            '.POINTS', '.NEFIEL', '.QUADRU', '.ALL CO',
@@ -186,13 +186,13 @@ C  /* Deck magini */
 C
 C     Initialize MAGONE
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <magone.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "magone.h"
 COBL/AMT CAM magnetizabilities fix
-#include <suscpt.h>
+#include "suscpt.h"
 C
 
       MPRINT = IPRDEF
@@ -222,26 +222,26 @@ C  /* Deck magint */
 C
 C     K. Ruud, March 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxmom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxmom.h"
 #include "maxorb.h"
-#include <maxaqn.h>
+#include "maxaqn.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL PASS
       CHARACTER*7 WORD
       DIMENSION SPNDSO(*), WORK(LWORK)
-#include <magone.h>
-#include <nuclei.h>
-#include <abainf.h>
-#include <inforb.h>
+#include "magone.h"
+#include "nuclei.h"
+#include "abainf.h"
+#include "inforb.h"
 #include "symmet.h"
-#include <dorps.h>
-#include <spnout.h>
-#include <relcor.h>
-#include <dipole.h>
-#include <pcmlog.h>
+#include "dorps.h"
+#include "spnout.h"
+#include "relcor.h"
+#include "dipole.h"
+#include "pcmlog.h"
       IF (MSKIP) RETURN
       IF (.NOT.DODSO .AND. (SST .AND. .NOT.(NST .OR. MDIASU))) RETURN
       CALL QENTER('MAGINT')
@@ -434,22 +434,22 @@ C  /* Deck magdrv */
 C
 C     K. Ruud, March 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "iratdef.h"
       LOGICAL NODC, NODV
       CHARACTER*7 WORD
       DIMENSION SPNDSO(*), WORK(LWORK), DENMAT(*), FOCMAT(*)
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "inforb.h"
 C
-#include <ibtfun.h>       
+#include "ibtfun.h"       
 C
       CALL QENTER('MAGDRV')
 C
@@ -480,14 +480,14 @@ C     This routine controls the calculation of the different magnetic
 C     properties integrals. It also constructs the density matrix and
 C     calculates the corresponding expectation values.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <maxmom.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "maxmom.h"
+#include "iratdef.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TMAT
       LOGICAL NODC, NODV, EXP1VL
@@ -495,20 +495,20 @@ C
       DIMENSION SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
      &          FOCMAT(NNBASX), EXPVAL(NCOMP), FMOVL(6),WORK(LWORK)
-#include <gnrinf.h>
-#include <abainf.h>
-#include <efield.h>
-#include <cbisol.h>
-#include <magone.h>
-#include <infinp.h>
-#include <onecom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <qmmm.h>
+#include "gnrinf.h"
+#include "abainf.h"
+#include "efield.h"
+#include "cbisol.h"
+#include "magone.h"
+#include "infinp.h"
+#include "onecom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "qmmm.h"
 cDM added to pass vectors to MAGPCMSEC
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 cDM
 C
       SIGN = 1.0D0
@@ -673,27 +673,27 @@ C  /* Deck magave */
 C
 C     Distribute calculated expectation values into proper arrays
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxmom.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "inforb.h"
       PARAMETER (DP5 = 0.5D0)
       CHARACTER WORD*7, LABINT(9*MXCENT)*8
       DIMENSION DENMAT(NNBASX),
      &          EXPVAL(NCOMP), SPNDSO(*), WORK(LWORK)
-#include <symmet.h>
-#include <nuclei.h>
-#include <suscpt.h>
-#include <quadru.h>
-#include <secmom.h>
-#include <thimom.h>
-#include <molgfa.h>
-#include <relcor.h>
-#include <dipole.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "suscpt.h"
+#include "quadru.h"
+#include "secmom.h"
+#include "thimom.h"
+#include "molgfa.h"
+#include "relcor.h"
+#include "dipole.h"
+#include "chrxyz.h"
 C
       CALL QENTER('MAGAVE')
 C
@@ -882,15 +882,15 @@ C
 C     K.Ruud, March 1992. This routine generates the nescessary input
 C     for getting first-order magnetic derivatives from HERMIT
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <cbiher.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "cbiher.h"
+#include "nuclei.h"
 C
       LOGICAL TOFILE, TRIMAT, DOINT(2,2)
       CHARACTER WORD*7, MTFORM*6, LABINT(3*MXCOOR)*8
@@ -943,19 +943,19 @@ C     MPQUAD: For spin-spin couplings: Number of quadrature points
 C     MPQUAD: For shieldings and KPATOM=2: which nuclei for which shieldings
 C             are to be calculated
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxmom.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <dorps.h>
-#include <spnout.h>
-#include <inftap.h>
-#include <maxorb.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxmom.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "dorps.h"
+#include "spnout.h"
+#include "inftap.h"
+#include "maxorb.h"
+#include "infpar.h"
 C
       LOGICAL TOFILE, TRIMAT, DOINT(2,2), EXP1VL
       CHARACTER WORD*7, LABINT(*)*8
@@ -1028,9 +1028,9 @@ C
 C  /* Deck spntra */
       SUBROUTINE SPNTRA(SPNDSO,EXPVAL,CSTRA,SCTRA,
      &                  NCOMP,LABINT,IPRINT)
-#include <implicit.h>
-#include <maxmom.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "mxcent.h"
       LOGICAL SAME
       DIMENSION EXPVAL(NCOMP), CSTRA(*), SCTRA(*), SPNDSO(MXCOOR,MXCOOR)
       CHARACTER DSONUM*4, LABINT(9*MXCENT)*8, WORD*8
@@ -1050,15 +1050,15 @@ C  /* Deck spntra */
       END
 C  /* Deck efntra */
       SUBROUTINE EFNTRA(STAVEC,EXPVAL,CSTRA,SCTRA,NCOMP,LABINT,IPRINT)
-#include <implicit.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION STAVEC(NCOMP), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
       CHARACTER NSTNUM*2, LABINT(9*MXCENT)*8, WORD*8
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
          NSTNUM = WORD(6:7)
@@ -1072,17 +1072,17 @@ C  /* Deck efntra */
 C  /* Deck shitra */
       SUBROUTINE SHITRA(STAVEC,EXPVAL,CSTRA,SCTRA,NCOMP,NROW,LABINT,
      &                  INWORD,IPRINT)
-#include <implicit.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION STAVEC(NROW,3), EXPVAL(NCOMP), CSTRA(*), SCTRA(*)
       CHARACTER NSTNUM*3, NSTDIR*1, LABINT(9*MXCENT)*8, WORD*8, INWORD*7
-#include <sigma.h>
-#include <spinro.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "sigma.h"
+#include "spinro.h"
+#include "nuclei.h"
+#include "symmet.h"
       DO 10 ICOMP = 1, NCOMP
          WORD = LABINT(ICOMP)
          NSTNUM = WORD(:3)
@@ -1110,7 +1110,7 @@ C  /* Deck shitra */
       END
 C  /* Deck scomtr */
       SUBROUTINE SCOMTR(DSONUM,IROW,ICOL)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER DSONUM*4, NUMCAR*1
       DIMENSION NUMBER(4)
 C
@@ -1125,7 +1125,7 @@ C
       END
 C  /* Deck ncomtr */
       SUBROUTINE NCOMTR(NSTNUM,NSTDIR,IROW,MCOMP)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER NSTNUM*3, NSTDIR*1
 C
       NUMBER = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*100
@@ -1138,11 +1138,11 @@ C
       END
 C  /* Deck sigadd */
       SUBROUTINE SIGADD(AMAT)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(3,MXCOOR)
-#include <nuclei.h>
-#include <sigma.h>
+#include "nuclei.h"
+#include "sigma.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, 3
          DO 200 J = 1, NCOORD
@@ -1153,11 +1153,11 @@ C  /* Deck sigadd */
       END
 C  /* Deck addsus */
       SUBROUTINE ADDSUS(AMAT)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION AMAT(MXCOOR,MXCOOR)
-#include <suscpt.h>
-#include <nuclei.h>
+#include "suscpt.h"
+#include "nuclei.h"
 C
       DO 100 I = 1, 3*NUCDEP
          DO 200 J = 1, 3*NUCDEP
@@ -1168,17 +1168,17 @@ C
       END
 C  /* Deck spninp */
       SUBROUTINE SPNINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "abainf.h"
       PARAMETER (NTABLE = 16, D0 = 0.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
-#include <dorps.h>
-#include <spnout.h>
+#include "dorps.h"
+#include "spnout.h"
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
      &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDXFC ','.ISOTOP',
@@ -1354,10 +1354,10 @@ C  /* Deck spnini */
 C
 C     Initialize SPNOUT
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <spnout.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "spnout.h"
 C
       ABUND  = 1.0D0
       ISPPRI = IPRDEF
@@ -1387,19 +1387,19 @@ Cend-PFP
       END
 C  /* Deck trpinp */
       SUBROUTINE TRPINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 12)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbitrp.h>
+#include "cbitrp.h"
 C
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <spnout.h>
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "spnout.h"
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.NORHS ','.NORSP ',
      *            '.OPTORB', '.INTPRI','.XXXXXX','.STOP  '/
@@ -1523,10 +1523,10 @@ C  /* Deck trpini */
 C
 C     Initialize /CBITRP/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbitrp.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbitrp.h"
 C
       IPRTRP = IPRDEF
       INTPRI = IPRDEF
@@ -1548,29 +1548,29 @@ C     contributions (FC and SD) to spin-spin-relaxation terms
 C
 C     K.Ruud, Sept. 1992
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxmom.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
       LOGICAL PASS
       CHARACTER*8 SDLAB(9*MXCENT), FCLAB(MXCENT)
       DIMENSION WORK(LWORK)
-#include <gnrinf.h>
-#include <cbitrp.h>
-#include <spnout.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <wrkrsp.h>
-#include <abainf.h>
-#include <infsop.h>
+#include "gnrinf.h"
+#include "cbitrp.h"
+#include "spnout.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "wrkrsp.h"
+#include "abainf.h"
+#include "infsop.h"
 C
       IF (SKIP) RETURN
       IF (IPRTRP .GT. 0) CALL TIMER('START ',TIMEIN,TIMOUT)
@@ -1633,13 +1633,13 @@ C
 C  /* Deck trprh1 */
       SUBROUTINE TRPRH1(SDLAB,ISDREP,FCLAB,IFCREP,INTADR,XINDX,
      &                  CMO,UDV,PV,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
 C
       PARAMETER (DM1 = -1.0D0)
       CHARACTER OPLBL(8)*8, SDLAB(9*MXCENT)*8, FCLAB(MXCENT)*8,
@@ -1648,21 +1648,21 @@ C
       DIMENSION ISDREP(*), IFCREP(*), WORK(LWORK), INTADR(*),
      &          XINDX(*), CMO(*), UDV(*), PV(*)
 C
-#include <abainf.h>
-#include <cbitrp.h>
-#include <spnout.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <symmet.h>
-#include <wrkrsp.h>
-#include <gdvec.h>
-#include <abares.h>
-#include <infsop.h>
+#include "abainf.h"
+#include "cbitrp.h"
+#include "spnout.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "symmet.h"
+#include "wrkrsp.h"
+#include "gdvec.h"
+#include "abares.h"
+#include "infsop.h"
 C
       DATA OPLBL /'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
      &            'EXOPSYM5','EXOPSYM6','EXOPSYM7','EXOPSYM8'/
@@ -1893,28 +1893,28 @@ C
       END
 C  /* Deck trprs1 */
       SUBROUTINE TRPRS1(ZERNRM,NABATY,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
       LOGICAL   INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM, EXCLC, OLDDX
       PARAMETER (D10 = 10.0D0, DPM5 = -0.50D0)
       DIMENSION WORK(LWORK), NABATY(*), ZERNRM(*)
 C
-#include <cbitrp.h>
-#include <spnout.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <gdvec.h>
-#include <abares.h>
-#include <chrnos.h>
+#include "cbitrp.h"
+#include "spnout.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "gdvec.h"
+#include "abares.h"
+#include "chrnos.h"
 C
       HFCLC  = NASHT .LE. 1
       IF (HFCLC) NCONF = 1
@@ -2048,14 +2048,14 @@ ckr               IDORCT(IREC) = 1
       END
 C  /* Deck shires */
       SUBROUTINE SHIRES(WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 cLig <> added include abainf.h
-#include <abainf.h>
+#include "abainf.h"
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
-#include <ctocdcc.h>
+#include "nuclei.h"
+#include "ctocdcc.h"
 cLig >> changed the values of the memory for CTOCD 
       KSPMAT = 1
       IF(CTOCD .OR. CTOMAG)  THEN
@@ -2098,12 +2098,12 @@ cLig <> added sftpmat and sftmmat
      &                  TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SPAR,APAR,ANIS2,ASYM2,SKEW,SPAN,CSTRA,SCTRA,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER DIAPAR*12
 cLig <> added the dimensions of sftpmat and sftmmat
@@ -2114,23 +2114,23 @@ cLig <> added the dimensions of sftpmat and sftmmat
      &          SPAN(NUCDEP), CSTRA(*), SCTRA(*),
      &          SFTPMAT(3,3,MXCENT), SFTMMAT(3,3,MXCENT)
 cLig >> added abainf.h and trkoor.h
-#include <abainf.h>
-#include <trkoor.h>
+#include "abainf.h"
+#include "trkoor.h"
 cLig <<
-#include <symmet.h>
-#include <sigma.h>
-#include <cbisol.h>
+#include "symmet.h"
+#include "sigma.h"
+#include "cbisol.h"
 C GAGORG:
-#include <orgcom.h>
+#include "orgcom.h"
 C CTOCD
-#include <ctocdcc.h>
+#include "ctocdcc.h"
 
       LOGICAL PRTSHI(NUCIND)
       LOGICAL ALLATM
       DIMENSION IPATOM(MXCENT)
 CTOCD
 
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 
 C     Get ipatom stuff (if CC some only atoms can be selected)
@@ -2313,15 +2313,15 @@ C  /* Deck shiana */
       SUBROUTINE SHIANA(TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SPAR,APAR,ANIS2,ASYM2,SKEW,SPAN,NAME,NAMEX,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <thrzer.h>
-#include <inftap.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "thrzer.h"
+#include "inftap.h"
+#include "codata.h"
 cLig >> added include mxcent abainf and sigma
-#include <mxcent.h>
-#include <abainf.h>
-#include <sigma.h>
+#include "mxcent.h"
+#include "abainf.h"
+#include "sigma.h"
 cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
@@ -2332,10 +2332,10 @@ cmbh end
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
-#include <chrxyz.h>
+#include "chrxyz.h"
 C
 CTOCD
-#include <ctocdcc.h>
+#include "ctocdcc.h"
       CHARACTER*10 LABMET
 CTOCD
 C
@@ -2583,10 +2583,10 @@ C
 C  /* Deck spires */
       SUBROUTINE SPIRES(SPNDSO,SPNPSO,SPNSD,SPNFC,SPSDFC,
      &                  WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
@@ -2612,23 +2612,23 @@ C
 C  /* Deck spire1 */
       SUBROUTINE SPIRE1(SPNDSO,SPNPSO,SPNSD,SPNFC,SPSDFC,CHESS,
      &                  AVEISO,ANISO,ASYM,SPAR,APAR,CSTRA,SCTRA)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "codata.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
       LOGICAL TEST
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <cbisol.h>
-#include <spnout.h>
-#include <cbinum.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "cbisol.h"
+#include "spnout.h"
+#include "cbinum.h"
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
      &          SPNSD (MXCOOR,MXCOOR), SPNFC (MXCOOR,MXCOOR),
      &          SPSDFC(MXCOOR,MXCOOR)
@@ -2639,7 +2639,7 @@ C  /* Deck spire1 */
      &          SPAR (NUCDEP*(NUCDEP + 1)/2),
      &          APAR (NUCDEP*(NUCDEP + 1)/2),
      &          COUPLM(3,3), CSTRA(*), SCTRA(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C Ordering of the properties in the isotropic matrix:
 C 1: Total spin-spin coupling matrix
@@ -2719,22 +2719,22 @@ C
 C
 C  /* Deck isospn */
       SUBROUTINE ISOSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <cbisol.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "cbisol.h"
+#include "maxaqn.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
       CHARACTER LAPRPC*8, LANAM1*8, LANAM2*8
-#include <dorps.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <spnout.h>
-#include <abainf.h>
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "spnout.h"
+#include "abainf.h"
       LOGICAL TEST
       DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
      &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
@@ -2743,7 +2743,7 @@ C  /* Deck isospn */
      &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                COUPLM(3,3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     *** Calculate the various spin parameters. ***
 C
@@ -2938,20 +2938,20 @@ C
 C
 C  /* Deck fnlspn */
       SUBROUTINE FNLSPN(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
-#include <cbisol.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "cbisol.h"
+#include "maxaqn.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *XTHZ)
-#include <dorps.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <spnout.h>
+#include "dorps.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "spnout.h"
       LOGICAL TEST
       DIMENSION CHESS(3*NUCDEP,3*NUCDEP,6),
      &                AVEISO(NUCDEP*(NUCDEP + 1)/2,5),
@@ -2960,7 +2960,7 @@ C  /* Deck fnlspn */
      &                SPAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                APAR  (NUCDEP*(NUCDEP + 1)/2  ),
      &                COUPLM(3,3)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     *** Calculate the various spin parameters. ***
 C
@@ -3145,11 +3145,11 @@ C
       END
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,AVEISO,ANISO,ASYM,SPAR,APAR)
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
-#include <mxcent.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),
      &          AVEISO(NUCDEP*(NUCDEP + 1)/2),
      &          ANISO(NUCDEP*(NUCDEP + 1)/2),
@@ -3226,18 +3226,18 @@ C  /* Deck nucnqc */
 C
 C     Nuclear contribution to electric field gradients
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "nuclei.h"
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
-#include <symmet.h>
-#include <qm3.h>
-#include <nqcc.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "qm3.h"
+#include "nqcc.h"
+#include "ibtfun.h"
 C
       CALL DZERO(UCNNQC,9*MXCENT)
 C
@@ -3302,16 +3302,16 @@ C
 C     Nuclear contribution to quadrupole moments
 C     K.Ruud, nov.-94
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <symmet.h>
-#include <quadru.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "quadru.h"
+#include "ibtfun.h"
 C
       CALL DZERO(QDRNUC,9)
 C
@@ -3359,16 +3359,16 @@ C
 C     Nuclear contribution to second moments
 C     H.Solheim, May -03
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <symmet.h>
-#include <secmom.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "secmom.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SCMNUC,9)
       KK = 1
@@ -3407,16 +3407,16 @@ C
 C     Nuclear contribution to third moments
 C     H.Solheim, May -03
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <symmet.h>
-#include <thimom.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "thimom.h"
+#include "ibtfun.h"
 C
       CALL DZERO(THDNUC,27)
       KK = 1
@@ -3482,15 +3482,15 @@ C
 C     Calculate nuclear contribution to molecular rotational g-factors
 C     K.Ruud, June-94
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
-#include <symmet.h>
-#include <molgfa.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "molgfa.h"
+#include "ibtfun.h"
 C
       CALL DZERO(GFANUC,9)
       KK = 1
@@ -3534,18 +3534,18 @@ C
 C     Calculate nuclear contribution to spin-rotation constants
 C     K.Ruud, October-94
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.D0)
       DIMENSION GEOM(3*NATOMS), ORIGIN(3)
-#include <abainf.h>
-#include <symmet.h>
-#include <spinro.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SPRNUC,3*MXCOOR)
       KK = 1
@@ -3605,12 +3605,12 @@ C
       END
 C  /* Deck mgfres */
       SUBROUTINE MGFRES(GEOM,AMASS,WORK,LWORK,KATOM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
       LOGICAL PLANAR, LINEAR, D12, D23
@@ -3618,14 +3618,14 @@ C  /* Deck mgfres */
      &          EIGVAL(3), EIGVEC(3,3),
      &          GTRAN1(3,3), GTRAN2(3,3), GTRAN3(3,3), GEOM(KATOM,3),
      &          AMASS(KATOM)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <suscpt.h>
-#include <molgfa.h>
-#include <orgcom.h>
-#include <dftcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "suscpt.h"
+#include "molgfa.h"
+#include "orgcom.h"
+#include "dftcom.h"
+#include "ibtfun.h"
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -3874,12 +3874,12 @@ C
 C  /* Deck sprres */
       SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DIAMAT,PARMAT,WORK,LWORK,
      &                  KATOM,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
@@ -3889,13 +3889,13 @@ C  /* Deck sprres */
      &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
      &          GVAL(KATOM), GTRANP(3,3), PARMAT(3,3,KATOM),
      &          DIAMAT(3,3,KATOM)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <sigma.h>
-#include <spinro.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "sigma.h"
+#include "spinro.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
       D12 = .FALSE.
       D23 = .FALSE.
@@ -4069,15 +4069,15 @@ C  /* Deck nqcel */
 C
 C     Collect and arrange electronic contribution to electric field gradients
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nqcc.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nqcc.h"
+#include "nuclei.h"
       DIMENSION TEMP(3,3,NUCDEP), EXPVAL(NCOMP)
-#include <symmet.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ibtfun.h"
 C
       ITYP = 0
 C
@@ -4130,20 +4130,20 @@ C
 C     Routine for calculating the diamagnetic contribution to the
 C     spin-rotation constant, K.Ruud - Oct.-95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
       DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
-#include <abainf.h>
-#include <symmet.h>
-#include <spinro.h>
-#include <orgcom.h>
-#include <helfey.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "orgcom.h"
+#include "helfey.h"
+#include "ibtfun.h"
 C
       CALL DZERO(SPRDNL,3*MXCOOR)
       CALL DZERO(HFGEL,MXCOOR)
@@ -4198,10 +4198,10 @@ C  /* Deck selinf */
       SUBROUTINE SELINF(MPATOM,JPATOM,ATMALL)
 C        
 C 
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <cbiher.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "cbiher.h"
 C    
       DIMENSION JPATOM(MXCENT)
       LOGICAL ATMALL

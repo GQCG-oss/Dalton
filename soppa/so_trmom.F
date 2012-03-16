@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_trmom */
       SUBROUTINE SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,T2AM,LT2AM,DENSIJ,
@@ -18,18 +18,18 @@ C
 C     PURPOSE: Calculate RPA(D), SOPPA and SOPPA(CCSD) transition 
 C              moments.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <cbiexc.h>
+#include "cbiexc.h"
 CSPAS:15/03-2006: merge with Dalton-2.0  
 C#include <cbilrs.h>
 CKeinSPASmehr
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <soppinf.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "soppinf.h"
+#include "mxcent.h"
+#include "nuclei.h"
 C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)

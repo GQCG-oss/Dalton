@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCX_GRAD(WORK,LWORK)
@@ -41,9 +41,9 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccexgr.h>
-#include <ccgr.h>
+#include "priunit.h"
+#include "ccexgr.h"
+#include "ccgr.h"
 #include "maxorb.h"
 #include "cclists.h"
 #include "mxcent.h"

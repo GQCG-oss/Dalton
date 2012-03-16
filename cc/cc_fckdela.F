@@ -29,8 +29,8 @@
 *  C. Haettig, spring 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       real*8  one, two
       parameter ( one=1.0d0, two=2.0d0 )

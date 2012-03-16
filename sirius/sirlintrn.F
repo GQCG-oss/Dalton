@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck orblin */
       SUBROUTINE ORBLIN(NOSIM,BOVECS,CMO,GORB,DV,PV,FC,FV,
@@ -30,10 +30,10 @@ C
 C December 1989 Hans Joergen Aa. Jensen
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BOVECS(*),CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*),
      &          WRK(*)
-#include <dummy.h>
+#include "dummy.h"
 C
       CALL QENTER('ORBLIN')
       NCSIM = -1
@@ -89,12 +89,12 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
       DIMENSION FC(*), FV(*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(*)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C *** local constants
 C
@@ -110,27 +110,27 @@ C   INFPRI : P6FLAG(*), ?
 C CBGETDIS : DISTYP,IADINT,IADH2,IADH2X
 C   INFTIM : NCALLS,TIMCPU,TIMWAL  ! IDTIM is index for these
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <inflin.h>
-#include <infdim.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <cbgetdis.h>
-#include <dftcom.h> 
+#include "maxorb.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "infdim.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "cbgetdis.h"
+#include "dftcom.h" 
 ! gnrinf.h: QM3 /CBN+JK 03.01.06
-#include <gnrinf.h>
-#include <wrkrsp.h>
+#include "gnrinf.h"
+#include "wrkrsp.h"
 C ---
       PARAMETER (IDTIM1 = 6, IDTIM2 = 8, D4 = 4.0D0)
-#include <inftim.h>
+#include "inftim.h"
 C
       LOGICAL SOLVNT, ORBLIN, MEMLIN, DFTADX
 C
@@ -509,7 +509,7 @@ C            "Calculation of the Orbital Part of the Gradient
 C            Vectors and Sigma Vectors"
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION SCVECS(*), SOVECS(*)
       DIMENSION DTV(*), FC(*), FTV(*), FTQ(*)
       DIMENSION BOVECS(NWOPDI,*), DV(*), FXC(*), FXV(*), FXQ(*)
@@ -522,14 +522,14 @@ C   INFDIM : NWOPDI
 C   INFLIN : IPRLIN
 C   INFPRI : P6FLAG()
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inflin.h>
-#include <infpri.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inflin.h"
+#include "infpri.h"
+#include "infinp.h"
 C
       LOGICAL ORBLIN
 C
@@ -644,8 +644,8 @@ C
 C Scratch:
 C   UDV; dimension: NASHT*NASHT
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION SCVECS(NVAR,*), SOVECS(*)
       DIMENSION DTV(*), FC(*), FTV(NORBT,NORBT,*),
      &          FTQ(NORBT,NASHDI,*)
@@ -662,12 +662,12 @@ C   INFORB : NORBT,NNASHX,NNORBT,?
 C   INFIND : IROW(*),ISMO(*)
 C   INFDIM : NASHDI
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
 
 C
 C ***** Step 1: calculate sigma vectors of configuration trial vectors

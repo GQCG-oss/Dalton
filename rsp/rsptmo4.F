@@ -21,15 +21,15 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CRTMO(VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,
      *                 RESVEC,CMO,UDV,PV,FOCK,FC,FV,
      *                 XINDX,MJWOP,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
 C PURPOSE:
 C CALCULATION OF THIRD ORDER TRANSITION MOMENTS
@@ -48,23 +48,23 @@ C
       DIMENSION RESTOM(3,3,3,IMXEXC,8), RESFRE(IMXEXC,8)
       DIMENSION IEQTO(5)
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infspi.h>
-#include <wrkrsp.h>
-#include <tstjep.h>
-#include <infhso.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infspi.h"
+#include "wrkrsp.h"
+#include "tstjep.h"
+#include "infhso.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <rspprp.h>
-#include <indcr.h>
-#include <infcr.h>
-#include <inftmo.h>
-#include <codata.h>
+#include "rspprp.h"
+#include "indcr.h"
+#include "infcr.h"
+#include "inftmo.h"
+#include "codata.h"
 C
       CALL QENTER('CRTMO')
       ATEST = .FALSE.
@@ -382,12 +382,12 @@ C
       END
       SUBROUTINE PRINT_THREEPHOTON(RESTOM,RESFRE)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <rspprp.h>
-#include <inftmo.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "rspprp.h"
+#include "inftmo.h"
+#include "codata.h"
 C
       PARAMETER ( D0 = 0.0D0, ZERO = 1.0D-10, IMXEXC = 20 )
       DIMENSION RESTOM(3,3,3,IMXEXC,8), RESFRE(IMXEXC,8)
@@ -491,7 +491,7 @@ C
       END
       SUBROUTINE LABDIP(LAB,I)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*1 LAB
 C

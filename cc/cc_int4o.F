@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
 C  /* Deck cc_int4o */
@@ -44,9 +44,9 @@ C  /* Deck cc_int4o */
 #else
 #  include <implicit.h>
 #endif
-#include <ccorb.h>
-#include <maxorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "maxorb.h"
+#include "ccsdsym.h"
 
       INTEGER ISYIJK0,ISYIJK1,ISYLAM0,ISYLAM1,IOPT, ISYMD,LWORK
       LOGICAL LRELAX

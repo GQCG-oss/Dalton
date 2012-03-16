@@ -50,7 +50,7 @@ C*****************************************************************************
       LOGICAL FIRST_CALL
       SAVE FIRST_CALL
       DATA FIRST_CALL /.TRUE./
-#include <memint.h> 
+#include "memint.h" 
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
 C
@@ -227,20 +227,20 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <veclen.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "veclen.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
       DIMENSION  WORK(*), CCFBT(*), INDXBT(*)
       DIMENSION KOD(12)
-#include <memint.h> 
+#include "memint.h" 
 C
 C     Initialization of ERI (if we are the master)
 C
@@ -328,16 +328,16 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include <ccom.h>
-#include <cbieri.h>
-#include <ericom.h>
-#include <erithr.h>
-#include <erimem.h>
-#include <aobtch.h>
-#include <veclen.h>
-#include <odbtch.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "ccom.h"
+#include "cbieri.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "erimem.h"
+#include "aobtch.h"
+#include "veclen.h"
+#include "odbtch.h"
+#include "symmet.h"
+#include "infpar.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK), WKOD(*),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*),
@@ -494,7 +494,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
-#include <denfit.h> 
+#include "denfit.h" 
       DIMENSION FMAT(*),DMAT(*), WMAT(*), WVEC(*), WORK(LWORK), WKOD(*),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*),
      &          FCKTMP(*), CFIT(*)
@@ -502,7 +502,7 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include <memint.h> 
+#include "memint.h" 
 C
 C     Read the 2-index integrals from file
 C
@@ -568,7 +568,7 @@ C*****************************************************************************
 C
       DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
-#include <memint.h> 
+#include "memint.h" 
 C
 C     We take as first index the fit set functions on either center A or B,
 C     and as second index the null function. The remaining two are ordinary
@@ -709,15 +709,15 @@ C     - NCENTS :   the number of active centers for a given index (maximally 2)
 C     - ICENTS :   the corresponding center indices 
 C     - ICLASSES : the active class (can only be one at a time).
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <shells.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "shells.h"
+#include "erisel.h"
+#include "aobtch.h"
       DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
 C
       DO I = 1, NAOBCH
@@ -776,15 +776,15 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <shells.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "shells.h"
+#include "erisel.h"
+#include "aobtch.h"
 C
       DIMENSION INDEX(*)
 C
@@ -815,8 +815,8 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION FULL_MAT(N_FULL,*),RED_MAT(N_RED,*)
       DIMENSION INDA(*),INDB(*)
 C
@@ -855,10 +855,10 @@ C  /* Deck read_fit2int */
 C
 C     Wrapper routine for read of the full set of 2-index fit integrals
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <inforb.h>
-#include <cbieri.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "inforb.h"
+#include "cbieri.h"
       DIMENSION WMAT(*),WORK(LWORK)
       LBUF = LBFINP
       KIBUF = 1
@@ -874,18 +874,18 @@ C
 C     Read the full set of 2-index fit integrals to memory.
 C     The indices are shifted so that the first fit function is placed at position 1
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
 #include "mxcent.h"
-#include <nuclei.h>
-#include <inforb.h>
+#include "nuclei.h"
+#include "inforb.h"
       INTEGER A, B, C, D
       DIMENSION WMAT(NBASISAUX,NBASISAUX),
      &          IBUF(4,LBUF), MBAS(8), WRK(LWORK)
       DIMENSION ICLASSES(4)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       KFREE = 1
       LFREE = LWORK
@@ -964,16 +964,16 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <shells.h>
-#include <nuclei.h>
-#include <erisel.h>
-#include <aobtch.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "erisel.h"
+#include "aobtch.h"
 C
       DIMENSION IBIN(LBIN,NIND),IBUF(NIND,LBUF),IND_SHIFT(NIND)
       DIMENSION ICLASSES(NIND)
@@ -1026,7 +1026,7 @@ C
 C     Written by Luuk Visscher, october 2004
 C     
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION IBIN(LBIN,2)
 C
@@ -1041,9 +1041,9 @@ C
       END
 C  /* Deck densfit_inp */
       SUBROUTINE DENSFIT_INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <denfit.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "denfit.h"
       PARAMETER ( NTABLE = 5 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DATA TABLE /'.DIATOM','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
@@ -1111,8 +1111,8 @@ C
       END
 C  /* Deck densfit_ini */
       SUBROUTINE DENSFIT_INI
-#include <implicit.h>
-#include <denfit.h>
+#include "implicit.h"
+#include "denfit.h"
 
       !.DIATOM - fit density for pairs of atoms (default is the global fit)
       DIATOM  = .FALSE.

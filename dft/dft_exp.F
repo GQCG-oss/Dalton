@@ -22,10 +22,10 @@
 !
 !
       SUBROUTINE DFTEXPGRAD(WORK,LFREE,IPRINT)
-#include <implicit.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "priunit.h"
       EXTERNAL DEXPGC
       DIMENSION WORK(LFREE)
       KDMAT = 1
@@ -42,9 +42,9 @@
 C /* Deck dftexp */
       SUBROUTINE DEXPGC(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
      &                  RHOA,GRADA,COORD,WGHT,DMAT)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -84,16 +84,16 @@ C     Exchange-correlation contribution to orbital-exponent gradient
 C
 C     T. Helgaker dec 02 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "aovec.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0, D3=3.D0, D4=4.D0, D7=7.D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       LOGICAL DOGGA 
       DIMENSION DMAT(NBAST,NBAST), 
@@ -102,20 +102,20 @@ C
       DIMENSION GA10(MXAQN), GB00VC(MXAQN), 
      &          GA11(MXAQN), GB00VB(MXAQN), GB01VB(MXAQN)
 C
-#include <energy.h>
-#include <symmet.h>
-#include <shells.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <sphtrm.h>
-#include <orgcom.h>
-#include <dftinf.h>
-#include <dftcom.h>
-#include <expopt.h>
+#include "energy.h"
+#include "symmet.h"
+#include "shells.h"
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "orgcom.h"
+#include "dftinf.h"
+#include "dftcom.h"
+#include "expopt.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DO IREPA = 0, MAXREP
       DO IBL = 1, NBLCNT(IREPA+1)

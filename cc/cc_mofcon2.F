@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
       SUBROUTINE CC_MOFCON2(XINT,OMEGA2,
      *                      XLAMPA,XLAMHA,XLAMPB,XLAMHB,XLAMPC,XLAMHD,
@@ -66,17 +66,17 @@ C
 C  N.B. This routine assumes AO-symmetric integrals, and can therefor
 C       not be used directly for calculations with London-orbitals!!!
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER(ZERO = 0.0D0,ONE = 1.0D0,XMONE=-1.0D0,TWO = 2.0D0)
       DIMENSION XINT(*),OMEGA2(*)
       DIMENSION XLAMPA(*),XLAMHA(*),XLAMPB(*),XLAMHB(*),
      *          XLAMPC(*),XLAMHD(*)
       DIMENSION WORK(LWORK)
-#include <ccorb.h>
-#include <symsq.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "symsq.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C

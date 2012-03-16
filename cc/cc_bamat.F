@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_BAMAT */
@@ -87,14 +87,14 @@ c/* Deck CC_BAMAT */
 #else
 #  include <implicit.h>
 #endif
-#include <ccsdinp.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccroper.h>
-#include <cclists.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccsdinp.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ccroper.h"
+#include "cclists.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 * local parameters:
       CHARACTER MSGDBG*(18)

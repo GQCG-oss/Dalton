@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)
@@ -56,12 +56,12 @@ C
       use polarizable_embedding, only: pe_twoint, pe_repuls,
      &                                 pe_intmol_twoints
 
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION WORK(LWORK)
-#include <iratdef.h>
-#include <dummy.h>
-#include <thrldp.h>
+#include "iratdef.h"
+#include "dummy.h"
+#include "thrldp.h"
 C
 C Used from common blocks:
 C   INFINP : DO*, MAXMAC
@@ -72,29 +72,29 @@ C   PRIUNIT : IPRSTAT, NWARN
 C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF, MAXFCK, MXDIIS, THRRHF
 C   GNRINF : WRINDX
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <inftap.h>
-#include <inftra.h>
-#include <infpri.h>
-#include <scbrhf.h>
-#include <gnrinf.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "inftra.h"
+#include "infpri.h"
+#include "scbrhf.h"
+#include "gnrinf.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
-#include <dftcom.h>
+#include "dftcom.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
  
-#include <sirbkd.h>
+#include "sirbkd.h"
 C
 C *** Call setup to define limits and I/O units
 C     and maybe open some files (depending on host)
@@ -837,8 +837,8 @@ C
 C  /* Deck sbdorb */
       BLOCK DATA SBDORB
 C     Initialize MULD2H in common block /INFORB/
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
 C
 C     MULTIPLICATION TABLE FOR SYMMETRIES (MULD2H is in /INFORB/)
 C
@@ -856,8 +856,8 @@ C  /* Deck sbdgetd */
 C 900302-hjaaj
 C Define default values for CBGETD
 C To be safe, include EXTERNAL SBDGETD in main program.
-#include <implicit.h>
-#include <cbgetdis.h>
+#include "implicit.h"
+#include "cbgetdis.h"
       DATA DISTYP,IADINT,IADH2,IADH2X,IADH2D /1,4*-1/
       END
 C  /* Deck sbdtra */
@@ -868,8 +868,8 @@ C Initialization moved to here because NEWTRA may be set
 C both in dalton and sirius input modules.
 C To be safe, include EXTERNAL SBDTRA in sirctl
 C
-#include <implicit.h>
-#include <inftra.h>
+#include "implicit.h"
+#include "inftra.h"
       DATA NEWTRA /.FALSE./
       END
 C  /* Deck sbddim */
@@ -877,8 +877,8 @@ C  /* Deck sbddim */
 C 010321 hjaaj
 C Initialize variables in /INFDIM/
 C
-#include <implicit.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "infdim.h"
       DATA MWORK /8 000 000/
 C
 C     Re MWORK:

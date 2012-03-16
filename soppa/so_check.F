@@ -11,15 +11,15 @@ C     Test routine that calculates the E[2] and S[2] matrices
 C     explicitly by carrying out linear transformations on unit trial
 C     vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), T2MP(LT2MP)
       DIMENSION FOCKD(LFOCKD),   WORK(LWORK)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck lnrinp */
       SUBROUTINE LNRINP(WORD)
@@ -35,22 +35,22 @@ C
 C     Oct - Dev. 99: Extended by K.L.Bak for calculation of
 C     vibrational g-factors.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <cbiexc.h>
-#include <gnrinf.h>
-#include <cbilnr.h>
-#include <abainf.h>
-#include <anrinf.h>
-#include <dorps.h>
-#include <nuclei.h>
-#include <absorp.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <codata.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "cbiexc.h"
+#include "gnrinf.h"
+#include "cbilnr.h"
+#include "abainf.h"
+#include "anrinf.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "absorp.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "codata.h"
+#include "pcmlog.h"
 C
       PARAMETER (NTABLE = 16)
       LOGICAL NEWDEF, LOCFIN
@@ -389,11 +389,11 @@ C  /* Deck lnrini */
 C
 C     Initialize /LNREXC/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbiexc.h>
-#include <cbilnr.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbiexc.h"
+#include "cbilnr.h"
+#include "abainf.h"
 C
       IPR1IN   = IPRDEF
       IPRLNR   = IPRDEF
@@ -416,13 +416,13 @@ CKeinSPASmehr
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                  WORK,LWORK,PASS)
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbilnr.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbilnr.h"
       LOGICAL PASS
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND, CONV
       DIMENSION WORK(LWORK),SNDPRP(2)
@@ -438,24 +438,24 @@ CKeinSPASmehr
       PARAMETER (DP5=0.5D0)
       PARAMETER (LOCDBG = 3)
 C
-#include <orgcom.h>
-#include <cbiexc.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <infsop.h>
-#include <absorp.h>
-#include <pcmlog.h>
+#include "orgcom.h"
+#include "cbiexc.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "infsop.h"
+#include "absorp.h"
+#include "pcmlog.h"
 C
       IF (SKIP) RETURN
       CALL QENTER('LNRABA')
@@ -1649,13 +1649,13 @@ C  /* Deck lnrast */
 C
 C     _ST_atic approximation to optical rotation G tensors.
 C      
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cbilnr.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cbilnr.h"
       LOGICAL FOUND, CONV
       DIMENSION WORK(LWORK), SNDPRP(2), CMO(*)
       DIMENSION POLDLS(3,3), POLDAS(3,3)
@@ -1663,22 +1663,22 @@ C
       DIMENSION DIPSLV(N2ORBX), ANGSLV(N2ORBX)
       CHARACTER*8 LABEL1, LABEL2, BLANK
       PARAMETER (DP5=0.5D0)
-#include <cbiexc.h>
-#include <inflin.h>
-#include <infvar.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <maxmom.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <infsop.h>
-#include <absorp.h>
+#include "cbiexc.h"
+#include "inflin.h"
+#include "infvar.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "maxmom.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "infsop.h"
+#include "absorp.h"
       BLANK  = '        '
 C
 C     Construct one-electron density matrix
@@ -1831,16 +1831,16 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
       DIMENSION WORK(LWORK)
-#include <inflin.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <abainf.h>
+#include "inflin.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "abainf.h"
 C
       LOGICAL TRIPLE
 C
@@ -1874,7 +1874,7 @@ C
 C Calculate Beta(G')**2 =
 C BETAGM = 0.5*(3*ALFA(I,J)*GM(I,J) - ALFA(I,I)*GM(J,J))
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0  , DP5 = 0.5D0 , D3 = 3.0D0 )
       DIMENSION ALFA(3,3),GM(3,3)
 C
@@ -1894,7 +1894,7 @@ C
 C Calculate Beta(alfa)**2 =
 C BETAAL =  0.5 * (3*ALFA(I,J)*ALFA(I,J) - ALFA(I,I)*ALFA(J,J))
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0  , DP5 = 0.5D0 , D3 = 3.0D0 )
       DIMENSION ALFA(3,3)
 C
@@ -1914,7 +1914,7 @@ C
 C Calculate Beta(A)**2 =
 C BETAA =  0.5*OMEGA*ALFA(I,J)*EPSILON(I,K,L)*A(K,L,J)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 , D1 = 1.0D0 , DM1 = -1.0D0)
       DIMENSION ALFA(3,3), A(3,3,3)
       DIMENSION EPSILO(3,3,3)
@@ -1941,7 +1941,7 @@ C  /* Deck alfmn */
 C
 C Calculate AlfaMean =  ALFMN = ( (1/3) * ALFA(I,I) )
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D3 = 3.0D0 )
       DIMENSION ALFA(3,3)
 C
@@ -1959,7 +1959,7 @@ C  /* Deck gmmn */
 C
 C Calculate G' =  GMMN = ( (1/3) * GM(I,I) )
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D3 = 3.0D0 )
       DIMENSION GM(3,3)
 C
@@ -1978,7 +1978,7 @@ C
 C Calculate RamanIntensity =  RAMIN = (45 * ALFMN**2) + (4 * BETA**2)
 C for linear pol. incident radiation perpendicular to scattering plane
 C 
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D4 = 4.0D0, D45 = 45.0D0 )
 C
       RAMINL = (D45 * ALFMN**2) + (D4 * BETAAL)
@@ -1992,7 +1992,7 @@ C Calculate the Depolarization Ratio for rightangle scattering,
 C linear polarized incident light, perpendicular (=parall/perpend)
 C plane = DEPOLR = (3 * BETA**2) / (45 * ALFMN**2 + 4 * BETA**2)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D3 = 3.0D0, D4 = 4.0D0, D45 = 45.0D0 )
 C
       A      = D3 * BETAAL
@@ -2012,7 +2012,7 @@ C
 C Calculate RamanIntensity =  RAMIN = (45 * ALFMN**2) + (7 * BETA**2)
 C for natural & circular pol. incident radiation 
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D7 = 7.0D0, D45 = 45.0D0 )
 C
       RAMINN = (D45 * ALFMN**2) + (D7 * BETAAL)
@@ -2026,7 +2026,7 @@ C Calculate the Depolarization Ratio for rightangle scattering,
 C naturel or circ. pol. incident light (=parall/perpend).
 C plane = DEPOLR = (6 * BETA**2) / (45 * ALFMN**2 + 7 * BETA**2)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D6 = 6.0D0, D7 = 7.0D0, D45 = 45.0D0 )
 C
       A      = D6 * BETAAL
@@ -2047,8 +2047,8 @@ C Calculate the difference differential scattering cross section
 C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER ( D2 = 2.0D0, D4 = 4.0D0, D6 = 6.0D0 )
 C
       DELTAZ = D4 / CVEL * (D6 * BETAGM - D2 * BETAA)
@@ -2062,8 +2062,8 @@ C Calculate the difference differential scattering cross section
 C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER ( D4 = 4.0D0, D7 = 7.0D0, D45 = 45.0D0)
 C
       DELTAX = D4 / CVEL * (D45*ALFAMN*GMMN+D7*BETAGM+BETAA)
@@ -2077,8 +2077,8 @@ C Calculate the difference differential scattering cross section
 C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER ( D4 = 4.0D0, D180 = 18.0D1 )
 C
       DELTA0 = D4 / CVEL * (D180*ALFAMN*GMMN+D4*BETAGM-D4*BETAA)
@@ -2092,8 +2092,8 @@ C Calculate the difference differential scattering cross section
 C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER ( D4 = 4.0D0, D8 = 8.0D0, D24 = 24.0D0 )
 C
       DELTAB = D4 / CVEL * (D24*BETAGM + D8*BETAA)
@@ -2107,7 +2107,7 @@ C Calculate the Circular Intensity Difference (CID) for all
 C arragements. CID = - DELTA  / (2*RMINN)
 C RMIN(0) and (180) with no analyzer = 2*RMIN.
 C Rmin (depolarized) = DEPLN * RMINN
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0 )
 C
@@ -2125,8 +2125,8 @@ C
 C Calculate the Boltzmannfactor for Spectra simulation 
 C BOLTZK = 1/(1-EXP(-h*freq/k/T)), FREQ is in Hartree = 2Pi*freq
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER ( TSTAND = 298.15D0 )
 C
       BOLTZK = 1-EXP(-(FREQ*AUTK)/TSTAND)
@@ -2142,8 +2142,8 @@ C B = SQRT(1/(4Pi*freq))
 C CROSSK = K*B**2
 C ****************** FREQ is in Hartree = 2Pi*freq
 C
-#include <implicit.h>
-#include <codata.h>
+#include "implicit.h"
+#include "codata.h"
       PARAMETER ( D180 = 180.D0)
 C
       CROSSK = (FRVAL-FREQ)**3*FRVAL/FREQ/D180/CVEL**3
@@ -2153,20 +2153,20 @@ C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,IPRINT,
      &                  WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <absorp.h>
-#include <inforb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "inforb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
       PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
      &           D3 = 3.0D0)
-#include <nuclei.h>
-#include <symmet.h>
-#include <abainf.h>
-#include <cbilnr.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "abainf.h"
+#include "cbilnr.h"
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
      &          POLVL(2,3,3,MXFR), POLVV(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2),
@@ -2180,7 +2180,7 @@ C     DIMENSION FOVIBG(3*NATOMS,3*NATOMS,NSYM,MXFR)
       DIMENSION FOVIBG(3*NATOMS+3,3*NATOMS+3,NSYM,MXFR)
 CKeinSPASmehr
       DIMENSION WORK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
          CALL TITLER('Frequency dependent polarizabilities','+',118)

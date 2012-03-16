@@ -2110,7 +2110,7 @@ CMI     IF(INCLUDE.EQ.1) THEN
 * Input
 * =====
 *  NSMOB  : Number of orbital symmetries
-*  MXPOBS : Max number of orbitals per symmetry allowed by program
+*  MXPOBS : Max number of orbital symmetries allowed by program
 *  MXPNGAS: Max number of GAS spaces allowed by program
 *  NGAS   : Number of GAS spaces
 *  NGSOB  : Number of GAS orbitals per symmetry and space

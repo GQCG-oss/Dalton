@@ -21,18 +21,18 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbinuc.h>
-#include <abainf.h>
+#include "cbinuc.h"
+#include "abainf.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*NUCREP')
@@ -100,10 +100,10 @@ C  /* Deck nucini */
 C
 C     Initialize /CBINUC/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbinuc.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbinuc.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -124,22 +124,22 @@ C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
       LOGICAL SECOND
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
-#include <cbinuc.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <energy.h>
-#include <past.h>
-#include <ibtfun.h>
+#include "cbinuc.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "energy.h"
+#include "past.h"
+#include "ibtfun.h"
 C
 C     This subroutine calculates the nuclear repulsion contributions
 C     to the molecular gradient and Hessian.

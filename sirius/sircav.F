@@ -5,17 +5,17 @@ C
 C/* Deck pedram */
       SUBROUTINE PEDRAM(WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <pcmdef.h>
-#include <mxcent.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "pcmdef.h"
+#include "mxcent.h"
+#include "infpri.h"
 C
       LOGICAL SOME
       DIMENSION WORK(LWORK)
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
       CALL QENTER('PEDRA')
 C
@@ -63,22 +63,22 @@ c/* Deck pedra*/
       SUBROUTINE PEDRA(INTSPH,VERT,CENTR,NEWSPH,ICAV1,ICAV2, XVAL,YVAL,
      $      ZVAL,JTR,CV,NUMTS,NUMSPH,NUMVER,NATM,SOME,WORK,LWORK,NPERM)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <priunit.h>
-#include <pcmdef.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <infpri.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "priunit.h"
+#include "pcmdef.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "infpri.h"
+#include "symmet.h"
 C
       LOGICAL SOME
 C
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
 C
       PARAMETER (ANTOAU=1.0D+00/XTANG)
 C
@@ -664,19 +664,19 @@ C
 C/* Deck SphPer */
       SUBROUTINE SPHPER(NESF,NESF0,NUMSPH,NPERM,NEWSPH,XE,YE,ZE,RE)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h> 
-#include <priunit.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h" 
+#include "priunit.h"
+#include "symmet.h"
 C
 Clf#include <trans.h>
 C
       DIMENSION XE(*),YE(*),ZE(*),RE(*),V1(3),V2(3)
       DIMENSION NPERM(NUMSPH,*),NEWSPH(NUMSPH,2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 c  crea la tabella di permutazione delle sfere
 c  e completa per simmetria le sfere aggiunte
@@ -793,16 +793,16 @@ C/* Deck Polygen */
       SUBROUTINE POLYGEN(IPFLAG,TSARE,ITSNUM,XEN,YEN,ZEN,REN,
      $  ITSEFF,CV,JTR,NPERM,NSFE,NUMTS,NUMSPH,NUMVER,ROTCAV)
 C
-#include <implicit.h>
+#include "implicit.h"
       integer ITRVO(60,3),ITREO(60,3),IEDO(90,2)
       integer oldtr(100,100),ednew(90,100),trnew(60,100,100)
-#include <priunit.h>
-#include <pcmdef.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "pcmdef.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
 C
 C Polygen: a program to generate spherical polyhedra with triangular
 C faces. An equilater division algorithm is used.
@@ -816,7 +816,7 @@ C
 C
 c  Se la sfera non deve essere tassellata ritorna a pedra con 0 tessere
 c
-#include <ibtfun.h>
+#include "ibtfun.h"
 Clf      IF (NPerm(NSFE,1).EQ.0.or.nsfe.ne.2) THEN      
       IF (NPerm(NSFE,1).EQ.0) THEN
          ITsEff=0
@@ -1114,17 +1114,17 @@ C
 c/* Deck Repcav */
       SUBROUTINE REPCAV(VERT,CENTR,NPERM,NUMTS,NUMSPH)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pcmdef.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pcmdef.h"
+#include "mxcent.h"
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "symmet.h"
 Clf#include <trans.h>
 c
 c  reproduce the irreducibile part of the cavity
@@ -1133,7 +1133,7 @@ c
       DIMENSION NPERM(NUMSPH,*)
       DATA D0/0.0D0/
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 c  replication of the cavity
 c
@@ -1202,11 +1202,11 @@ Clf
 C/* Deck tessera */
       SUBROUTINE TESSERA(NS,NV,PTS,CCC,PP,PP1,AREA,INTSPH,NUMTS)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pcmdef.h>
-#include <mxcent.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pcmdef.h"
+#include "mxcent.h"
+#include "infpri.h"
 C
       DIMENSION PTS(3,10),CCC(3,10),PP(3),PP1(3),INTSPH(NUMTS,10)
       DIMENSION P1(3),P2(3),P3(3),P4(3),P4BIS(3),POINT(3),P5(3),P6(3),
@@ -1215,8 +1215,8 @@ C
       LOGICAL LAN
       DIMENSION DISTCK(10,10)
       CHARACTER*16 TYPLAB
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
 C     Coord. del centro che sottende l`arco tra i vertici
 C     n e n+1 (per i primi tre vertici e' sicuramente il centro della
@@ -1733,17 +1733,17 @@ C
 C/* Deck inter */
       SUBROUTINE INTER(P1,P2,P3,P4,NS,I)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "infpri.h"
 C
       DIMENSION P1(3),P2(3),P3(3),P4(3)
       LOGICAL LALOW,LBLOW
 C
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
       IPRCAV = 0
 C
 C     Trova il punto P4, sull`arco P1-P2 sotteso dal centro P3, che
@@ -1870,20 +1870,20 @@ C
 C/* Deck gaubon */
       SUBROUTINE GAUBON(NV,NS,PTS,CCC,PP,PP1,AREA,INTSPH,NUMTS)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0)
-#include <priunit.h>
-#include <pcmdef.h>      
-#include <mxcent.h>
-#include <pi.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "pcmdef.h"      
+#include "mxcent.h"
+#include "pi.h"
+#include "infpri.h"
 C
       DIMENSION PTS(3,10),CCC(3,10),PP(3),PP1(3),INTSPH(NUMTS,10),
      $     NTRHSO(10),BETA(10)
       DIMENSION P1(3),P2(3),P3(3),U1(3),U2(3),PHIN(10),WEIGHT(0:10)
 C
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
 C     Sfrutta il teorema di Gauss-Bonnet per calcolare l'area
 C     della tessera con vertici PTS(3,NV). Consideriamo sempre
@@ -2090,7 +2090,7 @@ C     tessere puo' risultare negativa, e viene in questo caso trascurata
 C/* Deck vecp */
       SUBROUTINE VECP(P1,P2,P3,DNORM3)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION P1(3),P2(3),P3(3)
 C
@@ -2105,18 +2105,18 @@ C
 C/* Deck cavspl */
       SUBROUTINE CAVSPL(ICAV1,ICAV2,NCAV1,NCAV2,NATM,SOME)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <infpri.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "infpri.h"
 C
       LOGICAL SOME
 C
       DIMENSION ICAV1(MXCENT),ICAV2(MXCENT)
 C
-#include <pcm.h>
-#include <pcmlog.h>
+#include "pcm.h"
+#include "pcmlog.h"
 C
 C  QUESTA ROUTINE CONTROLLA SE IL SOLUTO E' CONTENUTO IN UNA
 C  UNICA CAVITA' O IN CAVITA' DISTINTE: IN TAL CASO I NUMERI
@@ -2187,14 +2187,14 @@ C
 C/* Deck plotcav */
       SUBROUTINE PLOTCAV(Vert,NUMTS)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <pcmdef.h>
-#include <mxcent.h>
-#include <infpri.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "pcmdef.h"
+#include "mxcent.h"
+#include "infpri.h"
+#include "pcm.h"
+#include "pcmlog.h"
       DIMENSION VERT(NUMTS,10,*),IVTS(MXTS,10)
 C
 C     Prepare the input file for GeomView (coloured polyhedra)
@@ -2241,15 +2241,15 @@ C
       END
 C/* Deck Colour */
       SUBROUTINE COLOUR(N,C1,C2,C3)
-#include <implicit.h>
-#include <priunit.h>
-#include <pcmdef.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pcmdef.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "codata.h"
       Character*20 Col
       Data Col /'                    '/
 C
@@ -2352,17 +2352,17 @@ C
       END
 C/*DECK PREREP*/
       SUBROUTINE PREREP(NV,NT,ITS,CV,JTR,NVERT,NUMTS)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
 C
-#include <symmet.h>
-#include <pgroup.h>
+#include "symmet.h"
+#include "pgroup.h"
       LOGICAL LSYMOP(0:7)
       DIMENSION JTR(NUMTS,*),CV(NVERT,*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C      SYMOP(0) = ' E '
 C      SYMOP(1) = 'Oyz'
@@ -2435,20 +2435,20 @@ Clf            WRITE(LUPRI,*) I,JTR(I,J),(CV(JTR(I,J),K),K=1,3)
       END
 C  /* Deck pcmtns */ 
       SUBROUTINE PCMTNS(VMAT,GEOM,AMASS,KATOM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <orgcom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "orgcom.h"
       DIMENSION EIGVAL(3),EIGVEC(3,3),GEOM(KATOM,*),AMASS(*),TINERT(3,3)
       DIMENSION ANGMOM(3),OMEGA(3),EIGINV(3,3),VMAT(3,3),SCAL(3)
       DIMENSION IAX(6),NORDER(3)
       LOGICAL PLANAR, LINEAR
       DATA IAX/1,2,3,3,2,1/
-#include <ibtfun.h>      
+#include "ibtfun.h"      
       JATOM = 1
 C
 C As correctly pointed out by Kenneth, we want two molecules
@@ -2776,18 +2776,18 @@ Clf      END
 
 C/* Deck UPDCAV*/
       SUBROUTINE UPDCAV(COORD)
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
-#include <nuclei.h>
-#include <pcmnuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+#include "pcmnuclei.h"
+#include "symmet.h"
       DIMENSION COORD(3,*)
-#include <ibtfun.h>
+#include "ibtfun.h"
       IF (ICESPH .EQ. 0 .OR. ICESPH .EQ. 2) THEN
          JATOM = 0
          DO I = 1, NUCIND
@@ -2809,7 +2809,7 @@ C/* Deck UPDCAV*/
 C/* Deck ordpcm*/
       SUBROUTINE ORDPCM(lupri,nts,xtscor,ytscor,ztscor,as,privec,idxpri,
      $     work,lwork)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION PRIVEC(4,*), XTSCOR(*), YTSCOR(*), ZTSCOR(*),
      &          WORK(*), AS(*)
       DIMENSION IDXPRI(*)
@@ -2863,7 +2863,7 @@ C/* Deck ordpcm*/
 
 C/* Deck chktss*/
       LOGICAL FUNCTION CHKTSS(X1,Y1,Z1,A1,X2,Y2,Z2,A2)
-#include <implicit.h>
+#include "implicit.h"
       IF(DABS(X1).LT.DABS(X2)) THEN
          CHKTSS = .TRUE.
          RETURN
@@ -2893,7 +2893,7 @@ C/* Deck chktss*/
       
 C/* Deck SECGRA*/
       SUBROUTINE SECGRA(COST,RP,Q1,Q2,X1,Y1,X2,Y2,NSOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 =0.0D0)
       THRESH = 1.0D-20
       A = Q1 ** 2 + Q2 ** 2

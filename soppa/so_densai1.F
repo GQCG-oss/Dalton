@@ -14,15 +14,15 @@ C              with T2 amplitudes.
 C              Multiplication with MO-energies and factors is
 C              done in SO_DENSAI2
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION DENSAI(LDENSAI), DSRHF(LDSRHF), CMO(LCMO), T2M1(LT2M1)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
 C------------------
 C     Add to trace.

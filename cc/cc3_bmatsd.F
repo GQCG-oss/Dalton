@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C    /* Deck cc3_bmatsd */ 
       SUBROUTINE CC3_BMATSD(OMEGA1,OMEGA2,OMEGA1EFF,OMEGA2EFF,ISYRES,
@@ -55,15 +55,15 @@ C    /* Deck cc3_bmatsd */
 C
       IMPLICIT NONE
 C
-#include <priunit.h>
-#include <ccr1rsp.h>
-#include <ccinftap.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <dummy.h>
-#include <ccorb.h>
-#include <ccexci.h>
+#include "priunit.h"
+#include "ccr1rsp.h"
+#include "ccinftap.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "dummy.h"
+#include "ccorb.h"
+#include "ccexci.h"
 C
       CHARACTER*6 FN3VI
       CHARACTER*8 FNTOC,FN3VI2

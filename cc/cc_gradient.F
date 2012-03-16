@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C /* deck cc_gradient */
 C=====================================================================*
@@ -42,17 +42,17 @@ C=====================================================================*
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <taymol.h>
-#include <cch2d.h>
-#include <second.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "taymol.h"
+#include "cch2d.h"
+#include "second.h"
 
 * local parameters:
 
@@ -248,16 +248,16 @@ c /* deck ccdorpsini */
 *  Purpose: initialize ABACUS common blocks /DOPRS/, /CBINUC/:
 *
 *---------------------------------------------------------------------*
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cbinuc.h>
-#include <dorps.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbinuc.h"
+#include "dorps.h"
+#include "abainf.h"
 
        CHARACTER KEY*(*)
        INTEGER MAXDIFCC, IPRINTCC
@@ -333,9 +333,9 @@ C              geometry optimization.
 C              set RSPIM to enforce calculation of response 
 C              intermediates together with the energy
 C
-#include <implicit.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       KEEPAOTWO = MAX(KEEPAOTWO,1)
       RSPIM     = .TRUE.

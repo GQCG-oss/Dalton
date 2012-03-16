@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -34,18 +34,18 @@ new getref calls with appropriate NDREF instead of NCREF
 C
 C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*(*)PRPLBL
 C
       DIMENSION PRPMO(NORBT,*),DEN1(NASHDI,*)
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       PARAMETER ( D2 = 2.0D0 , D0 = 0.0D0 )
       PARAMETER ( BIGLIM = 100000.0D0, SMLLIM = 0.01D0 )
@@ -103,17 +103,17 @@ C Calculation of the two-electron matrix element <L|K|R>.
 C The generalized hamiltonian K can be one-index transformed 0, 1 or 2
 C times according to IKLVL. (0 gives the ordinary untransformed hamiltonian.)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
 C
       PARAMETER (D1=1.0D0, D2=2.0D0)
       DIMENSION WRK(*)
@@ -229,17 +229,17 @@ C
 C RES = OVLAP * sum(i) [FI(i,i) + H1(i,i)] + sum(x,y) FI(x,y) DEN1(x,y)
 C         + 1/2 * sum(x,y,u,v) H2A(x,y,u,v) DEN2(x,y,u,v)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <infind.h>
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "infind.h"
 C
       PARAMETER ( D0 = 0.0D0, DH = 0.5D0 )
 C
@@ -310,19 +310,19 @@ C
 C
 C     Drive the computation of S[4] times three vectors
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( D1= 1.0D0, D6=6.0D0, DH=0.5D0 )
 C
@@ -515,19 +515,19 @@ C     |  <01L| qj+|0> + <0| qj+|01R>  |
 C     \               0               /
 C      
 C      
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( D2=2.0D0, D3=3.0D0 )
 C
@@ -607,19 +607,19 @@ C
      *                 UDV,ZYMAT,DEN1,XINDX,MJWOP,WRK,LWRK)
 C
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( DH=0.5D0, D0=0.0D0, D1=1.0D0, D6=6.0D0 )
 C
@@ -754,19 +754,19 @@ C     |   <j| K(k1,k3) |02R>                                  |*1/2
 C     |   <0| [qj+,K(k1,k3)] |02R> + <02L| [qj+,K(k1,k3)] |0> |
 C     \  -<02L| K(k1,k3) |j>                                  /
 C
-#include <implicit.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <rspprp.h>
-#include <infhyp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <infpri.h>
-#include <qrinf.h>
+#include "implicit.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "rspprp.h"
+#include "infhyp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "infpri.h"
+#include "qrinf.h"
 C
       PARAMETER( DH=0.5D0 )
 C

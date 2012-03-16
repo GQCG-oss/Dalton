@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *----------------------------------------------------------------*
       SUBROUTINE CC_INT3O2(X3OINT,DSRHF,ISYDRHF,
@@ -53,16 +53,16 @@ C    of deltas and transformation to occupied using DGEM
 C    Generalized to handle a full (al bet| space of DSRHF (LSQRAB = true)
 C    Sonia Coriani, 10-03-1999
 C     
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION X3OINT(*),DSRHF(*),WORK(LWORK)
       DIMENSION XLAMDH(*),XLAMDP(*)
       CHARACTER FILO3*(*)
       LOGICAL LSQRAB,LWRDSK
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cclr.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cclr.h"
 C
 C-------------------------------------------
 C     Work space allocation 1 * outer loops.

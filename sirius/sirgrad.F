@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C FILE: sirius/sirgrad.F
 C
@@ -62,7 +62,7 @@ C Externals:
 C   CISIGC
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),FCAC(*),H2AC(*), INDXCI(*),GCI(*),WRK(*)
       PARAMETER ( D2 = 2.0D0 )
 C
@@ -70,12 +70,12 @@ C Used from common blocks:
 C   INFVAR : NCONF
 C CBGETDIS : DISTYP,IADINT,IADH2
 C
-#include <maxorb.h>
-#include <infvar.h>
-#include <cbgetdis.h>
+#include "maxorb.h"
+#include "infvar.h"
+#include "cbgetdis.h"
 
 #ifdef SIRGRAD_DEBUG
-#include <priunit.h>
+#include "priunit.h"
 #endif
 C
       CALL QENTER('CIGRAD')
@@ -123,7 +123,7 @@ C           (over MOs)
 C Scratch:
 C   WRK(LFRSAV)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),DV(NNASHX,*),DCAO(NBAST,*),DVAO(NBAST,NBAST,*), 
      &          WRK(*)
       LOGICAL   GETDC, GETDV
@@ -135,13 +135,13 @@ C  INFORB : NSYM,MULD2H(8,8),NASHT,NNBASX,N2BASX,...
 C  INFVAR : JWOPSY
 C  INFPRI : P6FLAG()
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
 C dftcom.h : DFT_SPINDNS
-#include <dftcom.h>
+#include "dftcom.h"
 C
 C
       CALL QENTER('FCKDEN')
@@ -284,9 +284,9 @@ C     from molecular orbitals given in CMO matrix and the occupation
 C     data as contained in NISH array (the closed shells) and the open
 C     shell occupation data in _quadratic_ UDV matrix.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-#include <inforb.h>
+#include "inforb.h"
       DIMENSION UDV(NASHT,NASHT)
       DIMENSION CMO(*)
       DIMENSION DCAO(NBAST,NBAST)
@@ -356,8 +356,8 @@ C            described in Chapter 8 Appendix 8B of MOTECC-90
 C            "Calculation of Generalized Fock Matrices from
 C            Regular and One-Index Transformed Integrals"
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DV(*), CMO(*), FC(*), FV(NNORBT,*), WRK(*)
 C     ... FV(*,1) is the real FV, FV(*,2) is FS for DFT_SPINDNS
 C         or FV(*,2) is the Kohn-Sham matrix for LSRHYBR
@@ -368,13 +368,13 @@ C Used from common blocks:
 C   INFORB : NASHT, NNBASX, NSYM, ...
 C   INFPRI : P6FLAG()
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infpri.h"
       PARAMETER( D1 = 1.0D0 )
-#include <dftcom.h>
-#include <dfterg.h>
+#include "dftcom.h"
+#include "dfterg.h"
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
@@ -532,7 +532,7 @@ C
 C  If (onlyfc) only inactive Fock matrix FCAO is calculated.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FCAO(*),DCAO(*), FVAO(*),DVAO(*),DV(*),CMO(*)
       DIMENSION WRK(LFRSAV)
       LOGICAL   ONLYFC
@@ -542,16 +542,16 @@ C
 C Used from common blocks:
 C   INFINP : DIRFCK
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <r12int.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <dfterg.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "r12int.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "dfterg.h"
 C
       LOGICAL NOFV
 C
@@ -672,7 +672,7 @@ C
 C  If (onlyfc) only inactive Fock matrix FCAO is calculated.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FCAO(*),DCAO(*), WRK(*)
       LOGICAL   ONLYFC
 C
@@ -681,17 +681,17 @@ C   INFINP : DIRFCK
 C   INFORB : NISHT
 C   INFTAP : LUSUPM
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <dftcom.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "dftcom.h"
+#include "gnrinf.h"
+#include "priunit.h"
 C
       DIMENSION ISYMDM(3), IFCTYP(3)    !JT Aug 09
 C
@@ -818,7 +818,7 @@ C
 C Scratch: WRK
 C
 C ****************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2AC(NNASHX,NNASHX), FQ(NORBT,NASHT), ORDIAG(*)
       DIMENSION DV(NNASHX), PV(NNASHX,NNASHX), WRK(LFRSAV)
       LOGICAL   FULODG
@@ -832,14 +832,14 @@ C   INFVAR : JWOPSY
 C   INFPRI : IPRSIR
 C CBGETDIS : IADH2
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
-#include <infpri.h>
-#include <cbgetdis.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
+#include "infpri.h"
+#include "cbgetdis.h"
 C
 C     Local variables
 C
@@ -847,7 +847,7 @@ C
 C
 C     Definition of orbital types
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 
       CALL QENTER('GETH2 ')
       IF (NASHT.LE.1) THEN
@@ -1057,7 +1057,7 @@ C
 C
 C ****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION KLWOP(NOCCT,NORBT)
       DIMENSION DV(*),PV(NNASHX,*),H2CD(NORBT,*), ORDIAG(*)
 C
@@ -1068,13 +1068,13 @@ C   INFORB : NNASHX,NORBT,...
 C   INFIND : JTACT,JTSEC,ISW(*),IOBTYP(*),...
 C   INFVAR : NWOPT,JWOP(2,*),JWOPSY
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
 C
 C ****************************************************************
@@ -1412,17 +1412,17 @@ C
 C Scratch:
 C   WRK
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CREF(*),CMO(*),DV(NNASHX,*),PV(*),FC(*),FV(*),FQ(*)
       DIMENSION FCAC(*),H2AC(*)
       DIMENSION INDXCI(*), G(*), WRK(LFREE)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C -- local constants
 C
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
       PARAMETER (THRSML = 1.D-8)
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C Used from common blocks:
 C   INFINP : LSYM,SUPSYM,?
@@ -1433,21 +1433,21 @@ C   -- GNORM, norm of the CI, the orbital, and the total gradient.
 C   INFTAP : LUIT2,?
 C   INFTIM : NCALLS,TIMCPU,TIMWAL;   IDTIM above is index for these
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infind.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <dftcom.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "dftcom.h"
 C ---
       PARAMETER (IDTIM = 1)
-#include <inftim.h>
+#include "inftim.h"
 C
 C -- local variables
 C
@@ -1824,8 +1824,8 @@ C
 C ******************************************************************
 C Calculate norm of the gradient
 C
-#include <implicit.h>
-#include <infvar.h>
+#include "implicit.h"
+#include "infvar.h"
       DIMENSION GNORM(3), GTOT(NVAR)
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -1833,8 +1833,8 @@ C Used from common blocks:
 C   INFVAR : NCONF, NWOPT, NVAR
 C   ITINFO : DINFO(*), IINFO(*)
 C
-#include <maxorb.h>
-#include <itinfo.h>
+#include "maxorb.h"
+#include "itinfo.h"
 C
       CALL QENTER('GRDINF')
       IF (NCONF .GT. 1) THEN
@@ -1899,7 +1899,7 @@ C Output:
 C   Orbital gradient in GORB
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GORB(*), UDV(NASHDI,*)
       DIMENSION FC(*), FV(*), FQ(NORBT,*)
 C
@@ -1907,14 +1907,14 @@ C Used from common blocks:
 C   INFVAR : NWOPT,NWOPH,JWOP(2,*)
 C   INFIND : IROW(*),?
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infdim.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infdim.h"
+#include "infpri.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
 C
@@ -2042,17 +2042,17 @@ C  NU,NV;
 C  PV; 2-el. active density matrix
 C  H2AC; 2-el. active integrals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION PV(NNASHX,*), H2AC(NNASHX,*)
 C
 C Used from common blocks:
 C   INFORB : NNASHX,MULD2H,...
 C   INFIND : IROW(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       PARAMETER (D0=0.0D0, D2=2.0D0, D4 = 4.0D0, D8=8.0D0)
 C
@@ -2181,7 +2181,7 @@ C   DIAG , the diagonal of the orbital Hessian.
 C
 C   This version is directed by the gradient index.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),H2AC(*),
      &          DIAG(*)
       LOGICAL   AVEODG
@@ -2193,11 +2193,11 @@ C   INFORB : NISH(8),NASH(8),...
 C   INFIND : ISW(*),ICH(*),?
 C   INFVAR : NWOPT,JWOP(2,*),
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
       CALL QENTER('ORDIAG')
 C
@@ -2354,7 +2354,7 @@ C
 C Output:
 C   DIAG , the diagonal of the orbital Hessian.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DV(*),FP(*), DIAG(*)
 C
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0 )
@@ -2364,11 +2364,11 @@ C   INFORB : NISH(8),NASH(8),...
 C   INFIND : ISW(*),ICH(*),?
 C   INFVAR : NWOPT,JWOP(2,*),
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infvar.h"
 C
       CALL QENTER('OR1DIA')
 C
@@ -2526,18 +2526,18 @@ C
 C Scratch:
 C   WRK
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CREF(*),CMO(*),DV(*),PV(*), G(*),
      *          FC(*),FV(*),FQ(*), DIAOR(*), INDXCI(*), WRK(LFREE)
-#include <iratdef.h>
+#include "iratdef.h"
 C
 C -- local variables and constants
 C
       LOGICAL DODVPV, DOCIGR, FULODG, AVEODG
       PARAMETER (D0 = 0.0D0 , D1 = 1.0D0)
       PARAMETER (THRSML = 1.D-8)
-#include <thrzer.h>
+#include "thrzer.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*),LSYM,?
@@ -2548,19 +2548,19 @@ C   -- GNORM, norm of the CI, the orbital, and the total gradient.
 C   INFDIM : ?
 C   INFTAP : LUIT2,?
 C
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <itinfo.h>
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "itinfo.h"
 C ---
       PARAMETER (IDTIM = 3)
 C     ... GRAD has IDTIM = 1
-#include <inftim.h>
+#include "inftim.h"
 C
 C
       CALL QENTER('UPDGRD')
@@ -2842,7 +2842,7 @@ C  EACTIV = SUM(U,V) DV(U,V)*FI(U,V) + SUM(UVXY) P(UV,XY)*(UV/XY)
 C
 C         = SUM(U,V) DV(U,V)*FI(U,V) + 1/2 SUM(U) FQ(U,U)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,*)
       PARAMETER ( DP5 = 0.5D0,  D2=2.0D0 )
@@ -2851,10 +2851,10 @@ C Used from common blocks:
 C  INFORB : NORBT,NNASHX,NASHT,NISHT
 C  INFIND : IROW(),ISX()
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
 C     diagonal elements counted twice now.
@@ -2876,17 +2876,17 @@ C H2AC(uv,xy) from H2XY(uv); (uv) distribution has symmetry IUVSYM
 C
 C Subroutine can also be used for contributions to H2XAC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2ACXY(*),H2XY(NORBT,NORBT)
 C
 C Used from common blocks:
 C   INFORB : NSYM, MULD2H, NORBT, NASHT, IASH, NASH
 C   INFIND : ISX, NSM, IROW
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
 C
       DO 200 NVW = 1,NASHT
          IVSYM = NSM(NVW)
@@ -2916,7 +2916,7 @@ C  from integral distribution  (**,XY) (Mulliken notation)
 C
 C  FQ(p,u) = FQ(p,u) + PV(uv,xy) (pv,xy)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FQ(NORBT,NASHT), PVXY(NASHT,NASHT), H2XY(NORBT,NORBT)
 C
 C Used from common blocks:
@@ -2924,11 +2924,11 @@ C   INFORB : NORBT, NASHT, ...
 C   INFVAR : JWOPSY
 C   INFIND : NSM
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infind.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infind.h"
 C
 C     Fock q matrix has symmetry jwopsy
 C     Integrals from H2 : (pv|xy), symmetry jh2sym
@@ -2977,7 +2977,7 @@ C                  P  Q            Q P
 C                 NOTE ORDERING OF Q AND P IN PVKL
 C                 TRIANGULAR PACKED DISTRIBUTIONS IN PV
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION PVKL(NASHT,*),PV(NNASHX,NNASHX)
 C
       PARAMETER ( D2 = 2.0D0 )
@@ -2986,9 +2986,9 @@ C Used from common blocks:
 C   INFORB : NNASHX, NASHT, N2ASHX
 C   INFPRI : IPRSIR
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
 C
 C
       IPRLIN = IPRSIR
@@ -3066,7 +3066,7 @@ C
 C Scratch:
 C   WRK(LFRSAV)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),DV(*),DCAO(NBAST,*),DVAO(NBAST,*), WRK(*)
       LOGICAL   GETDC, GETDV
 C
@@ -3077,11 +3077,11 @@ C  INFORB : NSYM,MULD2H(8,8),NASHT,NNBASX,N2BASX,...
 C  INFVAR : JWOPSY
 C  INFPRI : P6FLAG()
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infpri.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infpri.h"
 C
 C
       CALL QENTER('FCKDEN2')

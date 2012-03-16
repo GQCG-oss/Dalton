@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck hsoal2 */
       SUBROUTINE HSOAL2 (WORD,CMO,UDV,PV,XINDX,MJWOP,WRK,LWRK)
@@ -29,7 +29,7 @@ C
 C Alternative routine for constructing spin-orbit gradient
 C by way of X2HSO Case 2
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C
@@ -47,18 +47,18 @@ C INFRSP: NCREF,IREFSY,DIROIT,SOPPA
 C INFHSO: DOSO1
 C INFTAP: LUINDX, LUMHSO
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infvar.h>
-#include <qrinf.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infvar.h"
+#include "qrinf.h"
       DIMENSION MJWOP(2,MAXWOP,8)
-#include <infhso.h>
-#include <trhso.h>
-#include <inftap.h>
+#include "infhso.h"
+#include "trhso.h"
+#include "inftap.h"
 C
       CALL QENTER('HSOAL2')
       CALL HEADER('HSOAL2: TEST OF SPIN-ORBIT GRADIENT',1)

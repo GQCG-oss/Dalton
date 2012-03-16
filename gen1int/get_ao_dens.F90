@@ -42,9 +42,9 @@
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
     ! uses NCMOT, NNASHX, N2BASX
-#include <inforb.h>
+#include "inforb.h"
     ! uses LUSIFC
-#include <inftap.h>
+#include "inftap.h"
     integer start_dv_mo     !start of active part of one-electron density matrix (MO) in the workspace
     integer start_dv_ao     !start of active part of one-electron density matrix (AO) in the workspace
     integer start_left_wrk  !start of left workspace

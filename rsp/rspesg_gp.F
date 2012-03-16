@@ -22,10 +22,10 @@
 !
 !
       SUBROUTINE D0FCDIAG(D0DIAG,FCDIAG,FC)
-#include <implicit.h>
-#include <priunit.h> 
-#include <infrsp.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "infrsp.h"
+#include "inforb.h"
 
       DIMENSION D0DIAG(*),FCDIAG(*),FC(*)
 
@@ -55,10 +55,10 @@ C END OF D0FCDIAG
 C
 
       SUBROUTINE GETH1MO(H1MO,CMO,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h> 
-#include <infrsp.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "infrsp.h"
+#include "inforb.h"
 
       DIMENSION H1MO(NORBT,NORBT),CMO(*),WRK(*)
 
@@ -102,11 +102,11 @@ C     Transform the integrals to MO basis
       END
 
       SUBROUTINE GETESG_DENMAT_FOCMAT(D,F,NBAST,NNBAST)
-#include <implicit.h>
+#include "implicit.h"
 #include "rspprp.h"
-#include <esg.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "esg.h"
+#include "dummy.h"
+#include "priunit.h"
 
       DIMENSION D(NNBAST), F(NNBAST)
 
@@ -124,14 +124,14 @@ C     Transform the integrals to MO basis
       END
 
       SUBROUTINE GETESG_DENMAT(DMAT,NDMAT,WRK,LWRK)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
 #include "rspprp.h"
-#include <esg.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <abainf.h>
-#include <priunit.h>
+#include "esg.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "abainf.h"
+#include "priunit.h"
 
       DIMENSION DMAT(NBAST,NBAST,NDMAT),WRK(*)
       PARAMETER (MXDMAT=50)
@@ -176,21 +176,21 @@ C     Transform the integrals to MO basis
 C
 C CALCULATES INV( E2 ) * VECTOR 
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <codata.h>
-#include <priunit.h>
-#include <infopt.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "codata.h"
+#include "priunit.h"
+#include "infopt.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 #include "rspprp.h"
-#include <infpp.h>
-#include <inflr.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infsop.h>
+#include "infpp.h"
+#include "inflr.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infpri.h"
+#include "inftap.h"
+#include "infsop.h"
 
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -273,8 +273,8 @@ C
 C  This subroutine folds the square matrix AIN into the triangular 
 C   matrix AOUT 
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AIN(N,N), AOUT(*)
 
       IJ = 0
@@ -291,17 +291,17 @@ C
       END 
 
       SUBROUTINE FMAT2VEC(NSIM,ZYVEC,ZYMAT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ZYVEC(KZYWOP,*), ZYMAT(NORBT,NORBT,*)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
       CALL DZERO(ZYVEC,NSIM*KZYVAR)
@@ -318,8 +318,8 @@ C
       END
 
       SUBROUTINE SYMMETRIZE(MINP,MOUT,NSIM,NORBT)
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
       DIMENSION MINP(NORBT,NORBT,*),MOUT(NORBT,NORBT,*)
       DOUBLE PRECISION MINP, MOUT
@@ -370,9 +370,9 @@ C     End of AO2MO_OLD
 C
 
       SUBROUTINE AO2MO(AAO,BMO,CMO,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h> 
-#include <inforb.h> 
+#include "implicit.h"
+#include "priunit.h" 
+#include "inforb.h" 
 
 C
 C     Purpose: transforms a two-index matrix from 
@@ -430,9 +430,9 @@ C
 C     End of AO2MO
 C
       SUBROUTINE MO2AO(AMO,AAO,CMO,WRK,LWRK)
-#include <implicit.h>
-#include <priunit.h> 
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h" 
+#include "inforb.h"
 
 C
 C     Purpose: transforms a two-index matrix from 
@@ -508,8 +508,8 @@ C     End of MO2AO
 C
 
       SUBROUTINE ESG_PVAL(DODFT,HFXFAC,PVAL,DMAT,A,B,C,D,F)
-#include <implicit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "inforb.h"
       INTEGER A, B, C, D
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -533,8 +533,8 @@ C----------------------------------------
 C     TEMPORARY SUBROUTINES FOR DEBUGING: 
 C----------------------------------------
       SUBROUTINE PRINTVEC( TEXT, NSIM, KZYVAR, V )   
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
       DIMENSION V(*)
       CHARACTER*15 TEXT
@@ -557,8 +557,8 @@ C
 C *** END OF PRINTVEC
 C
       SUBROUTINE PRINTVEC2( TEXT, NSIM, KZVAR, V )   
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
       DIMENSION V(*)
       CHARACTER*15 TEXT
@@ -588,8 +588,8 @@ C
 
 
       SUBROUTINE PRINTMAT( TEXT, NSIM, NORBT, A )   
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
 
 
       DIMENSION A(NORBT,NORBT,*)

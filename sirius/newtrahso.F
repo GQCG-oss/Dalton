@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 #ifdef OLD_REVISION_OLG
 c===========================================================================
@@ -40,18 +40,18 @@ C
       DIMENSION CMO(*),WRK(KWORK)
 C
 #include "dummy.h"
-#include <maxorb.h>
+#include "maxorb.h"
 C
 C Used from common blocks:
 C   INFTRA : IPRTRA
 C   INFTAP : LUAHSO, LUMHSO
 C   TRUNIT : LUORDA, LUMINT
 C
-#include <priunit.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <trhso.h>
-#include <trunit.h>
+#include "priunit.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "trhso.h"
+#include "trunit.h"
 C
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT, FOPEN
@@ -134,7 +134,7 @@ C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
 C Define KEEP and IDATA for spin-orbit transformation
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFDIM : N2BASM
@@ -143,12 +143,12 @@ C  TRINP  : MSYM, MBAS(), INTSYM
 C  TRHSO  : KSYMSO
 C  TRUNIT : KEEP,IDATA
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <trinp.h>
-#include <trhso.h>
-#include <trunit.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "trinp.h"
+#include "trhso.h"
+#include "trunit.h"
 C
       CALL QENTER('TRASET_2')
 C
@@ -197,10 +197,10 @@ C IBUF  : Points to start element in label buffer.
 C HSOPQ : HSOPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION HSOPQ(*), BUF(*), IBUF(4,600)
 C
 C Used from common blocsk:
@@ -209,20 +209,20 @@ C   INFIND : IROW(*),ISAO(*)
 C   TRHSO  : ILXYZ
 C   TRINFO : ISP,ISQ,ISR,ISS,NBQ,NPQ,NBRS
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infind.h>
-#include <trhso.h>
-#include <trinfo.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infind.h"
+#include "trhso.h"
+#include "trinfo.h"
 C
 C     Local variables:
 C
       CHARACTER*8 KEY
       LOGICAL DOCOOR
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)
@@ -339,8 +339,8 @@ C        GO TO 100
 C     END IF
 C
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION H2CD(*),NEEDTP(-4:6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
@@ -351,8 +351,8 @@ C Used from common blocks:
 C   INFORB : NNORBX
 C   INFDIM : NORBMA
 C
-#include <inforb.h>
-#include <infdim.h>
+#include "inforb.h"
+#include "infdim.h"
 C
       SAVE KFRSAV, KNEXT, KIADRM, KICDTR
       DATA KNEXT /-1/
@@ -440,30 +440,30 @@ C       BUF(NORBMA,NORBMA,2)
 C
 C ****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION H2CD(NORBT,NORBT),BUF(*)
       INTEGER   IADRM(3,36,37), NEEDTP(-4:6), ICDTRA(NNORBX)
 C     ... actual dimension: IARDM(3, (36,36) + 1)
 C
-#include <iratdef.h>
+#include "iratdef.h"
 c#include <dacodes.h>
-#include <dalistgs.h>
+#include "dalistgs.h"
 C
 C Used from common blocks:
 C   INFORB : NORBX,NORBT,NSYM
 C   INFIND : IROW(*)
 C   INFPRI : IPRSIR
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <trhso.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "trhso.h"
 C
-#include <orbtypdef.h>
+#include "orbtypdef.h"
 C
       DIMENSION IADCD(8)
       SAVE      IADCD,INTSY1, JSUM, ICFRST,ICLAST,IDFRST,IDLAST

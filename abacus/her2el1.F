@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck c1driv */
       SUBROUTINE C1DRIV(HERINT,INDHER,HCINT,COEF12,CONT1,CONT2,
@@ -30,13 +30,13 @@ C  /* Deck c1driv */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <iratdef.h>
-#include <twoao.h>
-#include <twosta.h>
-#include <drw2el.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "iratdef.h"
+#include "twoao.h"
+#include "twosta.h"
+#include "drw2el.h"
       INTEGER TUV
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*),
@@ -45,7 +45,7 @@ C
      &          COEF12(*), CONT1(*),  CONT2(*), INDHSQ(*), IODDHR(*),
      &          LMNV12(*), IODD12(KCKT12,2),
      &          NPNT12(*), NRED12(*), WORK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C1DRIV','*',103)
 C
@@ -303,16 +303,16 @@ C  /* Deck c10int */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
-#include <maxaqn.h>
+#include "maxaqn.h"
       INTEGER T, U, V, TUV
-#include <twoao.h>
-#include <hertop.h>
-#include <sphtrm.h>
-#include <drw2el.h>
-#include <codata.h>
+#include "twoao.h"
+#include "hertop.h"
+#include "sphtrm.h"
+#include "drw2el.h"
+#include "codata.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
@@ -327,7 +327,7 @@ C
       DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
       DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C10INT','*',103)
       IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
@@ -523,14 +523,14 @@ C  /* Deck c1eint */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       INTEGER T, U, V, TUV
-#include <twoao.h>
-#include <hertop.h>
-#include <sphtrm.h>
-#include <crsdir.h>
+#include "twoao.h"
+#include "hertop.h"
+#include "sphtrm.h"
+#include "crsdir.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION JOFFEX(7), JOFFEY(7), JOFFEZ(7),
      &          INCMXT(3), INCMXU(3), INCMXV(3),
@@ -546,7 +546,7 @@ C
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2), KODD12(KCKT12,2),
      &          SCR1(*), SCR2(*), CONT1(*), CONT2(*),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C1EINT','*',103)
 C
@@ -793,16 +793,16 @@ C  /* Deck cooint */
 C
 C     TUH & WK 07.04.03
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5=0.5D0)
-#include <maxaqn.h>
+#include "maxaqn.h"
       INTEGER T, U, V, TUV
-#include <twoao.h>
-#include <hertop.h>
-#include <sphtrm.h>
-#include <drw2el.h>
-#include <codata.h>
+#include "twoao.h"
+#include "hertop.h"
+#include "sphtrm.h"
+#include "drw2el.h"
+#include "codata.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
@@ -814,7 +814,7 @@ C
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2),KODD12(KCKT12,2),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from COOINT','*',103)
       ECOFAC = DP5*ALPHAC**2
@@ -1058,15 +1058,15 @@ C
 C     Scratch: SCR1(NUC34,NUCR1*NORR2)
 C              SCR2(NUCR1*NUCR2*NUC34)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
       INTEGER TUV
       DIMENSION HCPRIM(NUC34,NUC12,NTUV), HCCNT(NUC34,NORB12,NTUV),
      &          CONT1(*), CONT2(*), NPCO1(NSET1,2), NPCO2(NSET2,2),
      &          NUCS12(*), IODDHR(*), NPNT12(NUC1*NUC2,2), NRED12(*),
      &          SCR1(NUC34,NUCR1*NORR2), SCR2(NUC34,NUCR1*NUCR2)
-#include <twoao.h>
+#include "twoao.h"
 C
 C     Case (i): No contraction
 C     ========================
@@ -1241,12 +1241,12 @@ C
 C  /* Deck c1sphr */
       SUBROUTINE C1SPHR(HCCONT,HCINT,HCSINT,CSP1,CSP2,IODDHR,IODD12,
      &                  MTUV34,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER TUV
-#include <twoao.h>
+#include "twoao.h"
       DIMENSION HCCONT(NCCPP,MTUV34,KCKT12),
      &          HCSINT(NCCPP,MTUV34,KHKT2),
      &          HCINT(NCCPP,NTUV34,KHKT12),

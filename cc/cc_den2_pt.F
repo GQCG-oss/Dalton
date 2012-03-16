@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck cc_den2_pt */
       SUBROUTINE CC_DEN2_PT(D2IJG,D2AIG,D2IAG,D2ABG,
@@ -36,15 +36,15 @@ C     Purpose: Directs the calculation of the 2 electron CC-(T) density
 C              d(pq,gam;del) for a given del (IDEL). The 4 blocks pq
 C              of the result are returned in D2IJG through D2ABG!
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       INTEGER ISYCMO
       DIMENSION D2IJG(*), D2AIG(*), D2IAG(*), D2ABG(*)
       DIMENSION XCMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
 C Locally define density file names for easier debug
 C
@@ -284,15 +284,15 @@ C              of the result are returned in D2IJG through D2ABG!
 C
 C     Special antisymmetrizing version for orbital-orbital Breit-Pauli
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       INTEGER ISYCMO
       DIMENSION D2IJG(*), D2AIG(*), D2IAG(*), D2ABG(*)
       DIMENSION XCMO(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
 C Locally define density file names
 C

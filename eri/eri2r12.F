@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C FILE: eri/eri2r12.F
 C
@@ -30,9 +30,9 @@ C  /* Deck eriifc */
 C
 C     Written by Wim Klopper (University of Karlsruhe, 19 November 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ericom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ericom.h"
       NPPX = NNPPX
       NTUV = NNTUV
       IPQ0(1) = NIPQ0X
@@ -49,8 +49,8 @@ C  /* Deck eriher */
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION HARGE(*), HARGF(*), HALPH(*), HBETA(*), HPRE1(*),
      &          HPRE2(*), HPRE3(*), RO000(*), HRIN1(*),
@@ -58,8 +58,8 @@ C
       DIMENSION WORK(LWORK), HRINT1(NPPX,NTUV), HRINT2(NPPX,NTUV), 
      &          RJ000(*), COORPQ(NPPX,3), ALPHA(NPPX),
      &          INDHER(*), IODDHR(*), FACINT(NPPX)
-#include <ericom.h>
-#include <r12int.h>
+#include "ericom.h"
+#include "r12int.h"
       IF (R12EIN) THEN
         IF (SLATER) THEN
 C
@@ -205,15 +205,15 @@ C     r12 on output. The array A is used as scratch.
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
       PARAMETER (DM1 = -1.0D0, D2 = 2.0D0)
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
       DIMENSION Q(NUABCD,NTUV), R(NUABCD,NTUV), A(NUABCD), 
      &          W(NUABCD), IODDHR(NTUV), INDHER(0:JTOP,0:JTOP,0:JTOP), 
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD)
-#include <hertop.h>
+#include "hertop.h"
 C
       IPQX = IPQ0X + 1
       IPQY = IPQ0Y + 1
@@ -402,8 +402,8 @@ C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 c
 c     Modified by Cristian Villani (Karlsruhe, Feb 2005) for n>1
 C
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
       INTEGER T             
       CHARACTER WORD*4
       DIMENSION DIFPA(NUCAB), DIFPB(NUCAB), HEXPPI(NUCAB)
@@ -419,7 +419,7 @@ c     normalized to Kab
 c
 c     C. Villani Uni-Ka, Feb 2005
 c
-#include <ibtfun.h>
+#include "ibtfun.h"
 
       DO 100 K = 1, NUCAB
          AOVERP(K) =   SIGN * TEXPA(K) * HEXPPI(K)
@@ -675,8 +675,8 @@ c              introduced n, C. Villani Uni-Ka, Feb 2005
 C  /* Deck aminbp */
       SUBROUTINE AMINBP(ABP,NUCAB,TEXPA,TEXPB,HEXPPI,SIGN,IPRINT)
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
-#include <implicit.h>
-#include <priunit.h> 
+#include "implicit.h"
+#include "priunit.h" 
       DIMENSION HEXPPI(NUCAB), TEXPA(NUCAB), TEXPB(NUCAB),ABP(NUCAB)
       DO 100 I = 1, NUCAB
          ABP(I) = SIGN * (TEXPA(I) - TEXPB(I)) * HEXPPI(I)
@@ -691,12 +691,12 @@ C  /* Deck wker12 */
       SUBROUTINE WKER12(RES,A,B,C,P1,P2,P3,GAMFX,II,JJ,IPRINT)
 C     Written by Claire C.M. Samson and Wim Klopper 
 C     (University of Oslo, 29 October 2001).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION RES(NPPX,NTUV), A(NPPX,NTUV), B(NPPX,NTUV),
      &          C(NPPX,NTUV), P1(NPPX), P2(NPPX), P3(NPPX)
-#include <r12int.h>
-#include <ericom.h>
+#include "r12int.h"
+#include "ericom.h"
       IF (II .EQ. 1 .AND. JJ .EQ. 1) THEN
          DO J = 1, NTUV
             DO I = 1, NPPX
@@ -738,9 +738,9 @@ C
 C     This subroutine is a variant of CR1TWO for integrals over [T1,r12].
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       INTEGER T, U, V, TUV
@@ -753,11 +753,11 @@ C
      &          ETUV(NPP12), EUV(NPP12),
      &          HCPRIM(NPP12,NPRF34,NTUV34),AOVERP(NPP12)
 C
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "ericom.h"
+#include "eriao.h"
+#include "hertop.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1U12','*',103)
 C
@@ -1021,16 +1021,16 @@ C  /* Deck coeff */
       SUBROUTINE COEFF(ARGE,ARGF,ALPHA,BETA,PRE1,PRE2,
      &                 PRE3,FACINT,PP,PQ,IPRINT)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D2 = 2.D0, D20 = 20.0D0,
      &            D3 = 3.0D0, D5 = 5.0D0, DP05 = 0.5D0, DP15 = 1.5D0, 
      &            DP25 = 2.5D0, DP375 = 3.75D0, D1M = -1.0D0, 
      &            D2M = -2.0D0, DP05M = -0.5D0, D15 = 15.0D0,
      &            D4 = 4.0D0 )
-#include <pi.h>
-#include <priunit.h>
-#include <r12int.h>
-#include <ericom.h>
+#include "pi.h"
+#include "priunit.h"
+#include "r12int.h"
+#include "ericom.h"
 C
       DIMENSION ARGE(NPPX), ARGF(NPPX),PP(NPPX),PQ(NPPX),
      &          ALPHA(NPPX), BETA(NPPX), PRE1(NPPX),PRE2(NPPX),
@@ -1176,11 +1176,11 @@ C  /* Deck tester */
       SUBROUTINE TESTER(RES,RO000,PRE1,PRE2,PRE3,
      &                  ALPHA,BETA,PQX,PQY,PQZ)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D1=1.0D0, D2=2.0D0, D2M= -2.0D0 ) 
-#include <pi.h>
-#include <r12int.h>
-#include <ericom.h>
+#include "pi.h"
+#include "r12int.h"
+#include "ericom.h"
 C
       DIMENSION RES(NPPX),RO000(NPPX,0:JMAX), 
      &          PRE1(NPPX),PRE2(NPPX),PRE3(NPPX),ALPHA(NPPX),
@@ -1210,12 +1210,12 @@ C  /* Deck erigom */
       SUBROUTINE ERIGOM(RO000,RM000,ARGEXP,ARGF,PQXYZ,WORK,
      &                  LWORK,IPRINT)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION RO000(NPPX,0:JMAX), RM000(NPPX,0:JMAX),
      &          ARGEXP(NPPX), ARGF(NPPX),PQXYZ(NPPX,3), WORK(LWORK)
 C
-#include <ericom.h>
+#include "ericom.h"
 C
 C     Allocate ERIGOM
 C
@@ -1233,15 +1233,15 @@ C  /* Deck erigo */
       SUBROUTINE ERIGO(RO000,RM000,PQXYZ,ARGEXP,ARGF,INDADR,
      &                 WORK,LWORK,IPRINT)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
-#include <implicit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "iratdef.h"
       PARAMETER ( D2 = 2.D0 )
 C
       DIMENSION RO000(NPPX,0:JMAX), RM000(NPPX,0:JMAX),
      &          PQXYZ(NPPX,3), ARGEXP(NPPX),ARGF(NPPX),
      &          INDADR(NPPX),WORK(LWORK)
 C
-#include <ericom.h>
+#include "ericom.h"
 C
       CALL DZERO(RO000(1,0),(JMAX+1)*NPPX)
       CALL DZERO(RM000(1,0),(JMAX+1)*NPPX)
@@ -1286,16 +1286,16 @@ C  /* Deck eriomtuv */
       SUBROUTINE ERIOMTUV(HERINTO,HERINTM,RO000,RM000,ARGEXP,ARGF,
      &                    PQXYZ,INDHER,WORK,LWORK,IPRINT)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       DIMENSION HERINTO(NPPX,NTUV), HERINTM(NPPX,NTUV),
      &          RO000(NPPX,0:JMAX), RM000(NPPX,0:JMAX),
      &          ARGEXP(NPPX), ARGF(NPPX),
      &          PQXYZ(NPPX,3),INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          WORK(LWORK)
-#include <ericom.h>
-#include <hertop.h>
+#include "ericom.h"
+#include "hertop.h"
 C
 C     The final O(T,U,V) and M(T,U,V) integrals are arranged as follows:
 C
@@ -1380,7 +1380,7 @@ C  /* Deck erihrcom */
      &                   ARGE,ARGF,IPQX,IPQY,IPQZ)
 C     Written by Claire C.M. Samson, W. Klopper and Trygve Helgaker
 C     (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
@@ -1390,8 +1390,8 @@ C     (University of Oslo, 29 October 2001).
      &          PQX(NPPX), PQY(NPPX), PQZ(NPPX),
      &          RO000(NPPX,0:JMAX), RM000(NPPX,0:JMAX),
      &          ARGE(NPPX), ARGF(NPPX)
-#include <hertop.h>
-#include <ibtfun.h>
+#include "hertop.h"
+#include "ibtfun.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -1491,7 +1491,7 @@ C
 C  /* Deck erimko */
       SUBROUTINE ERIMKO(R,A,B,T,PQX,PQXGT0,X1,X2,X3,X4)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.D0, D2M = -D2)
       LOGICAL PQXGT0
       DIMENSION R(*),A(*),B(*),X1(*),X2(*),X3(*),X4(*),PQX(*)
@@ -1502,7 +1502,7 @@ C     Written by Wim Klopper (University of Oslo, 29 October 2001).
 C  /* Deck erimkm */
       SUBROUTINE ERIMKM(R,A,B,T,PQX,PQXGT0,X1,X2,X3,X4,X5,X6)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.D0, D2M = -D2)
       LOGICAL PQXGT0
       DIMENSION R(*),A(*),B(*),PQX(*),
@@ -1515,7 +1515,7 @@ C     Written by Wim Klopper (University of Oslo, 29 October 2001).
 C  /* Deck erimkf */
       SUBROUTINE ERIMKF(R,A,T,PQX,PQXGT0,X1,X2)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.D0, D2M = -D2)
       LOGICAL PQXGT0
       DIMENSION R(*),A(*),X1(*),X2(*),PQX(*)
@@ -1525,7 +1525,7 @@ C     Written by Wim Klopper (University of Oslo, 29 October 2001).
 C  /* Deck erimkg */
       SUBROUTINE ERIMKG(R,A,T,PQX,PQXGT0,X1,X2,X3,X4)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.D0, D2M = -D2)
       LOGICAL PQXGT0
       DIMENSION R(*),A(*),X1(*),X2(*),X3(*),X4(*),PQX(*)
@@ -1536,7 +1536,7 @@ C     Written by Wim Klopper (University of Oslo, 29 October 2001).
 C  /* Deck erimkh */
       SUBROUTINE ERIMKH(R,A,T,PQX,PQXGT0,X1,X2,X3,X4)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D2 = 2.D0, D2M = -D2, D4 = 4D0)
       LOGICAL PQXGT0
       DIMENSION R(*),A(*),X1(*),X2(*),X3(*),X4(*),PQX(*)
@@ -1548,18 +1548,18 @@ C  /* Deck erifghtuv */
       SUBROUTINE ERIFGHTUV(CURF,CURG,CURH,PQX,PQY,PQZ,INDHER,
      &                     ARGE,IPRINT)
 C     Written by Claire C.M. Samson (University of Oslo, 29 October 2001).
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0, DOG, DOH
       DIMENSION CURF(NPPX,NTUV), CURG(NPPX,NTUV), CURH(NPPX,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NPPX), PQY(NPPX), PQZ(NPPX),
      &          ARGE(NPPX)
-#include <hertop.h>
-#include <ericom.h>
-#include <r12int.h>
-#include <ibtfun.h>
+#include "hertop.h"
+#include "ericom.h"
+#include "r12int.h"
+#include "ibtfun.h"
 C
       CALL DZERO(CURF,NPPX*NTUV)
       CALL DZERO(CURG,NPPX*NTUV)
@@ -1679,9 +1679,9 @@ C
 C  /* Deck ericrx */
       SUBROUTINE ERICRX(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
-#include <ericom.h>
+#include "ericom.h"
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C
@@ -1711,9 +1711,9 @@ C
 C  /* Deck ericri */
       SUBROUTINE ERICRI(R,S,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
-#include <ericom.h>
+#include "ericom.h"
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX)
 C
@@ -1743,9 +1743,9 @@ C
 C  /* Deck ericrp */
       SUBROUTINE ERICRP(R,S,X,T,A,B,C,PQGT0)
 C     Written by Wim Klopper (University of Oslo, 29 October 2001).
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0D0)
-#include <ericom.h>
+#include "ericom.h"
       LOGICAL PQGT0
       DIMENSION A(NPPX), B(NPPX), C(NPPX), R(NPPX), X(NPPX)
 C

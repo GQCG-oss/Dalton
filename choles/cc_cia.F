@@ -82,13 +82,13 @@ C           Potentially, as the integral assembly is the most expensive step,
 C           a relatively large amount of CPU time (as well as I/O) may be
 C           saved by fixing this.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*6 SECNAM, STRAST
       PARAMETER (SECNAM = 'CC_CIA')
@@ -372,13 +372,13 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Scale diagonal of XINT(#ai,#bj).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*)
       LOGICAL FULLIN
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
-#include <priunit.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
+#include "priunit.h"
 
       INTEGER A1, B1, AI, BJ
 
@@ -476,11 +476,11 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Print input information for cc_cia.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       PARAMETER (ONE = 1.0D0)
 
@@ -583,12 +583,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*7 SECNAM
       PARAMETER (SECNAM = 'CC_CIA1')
@@ -766,12 +766,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*7 SECNAM
       PARAMETER (SECNAM = 'CC_CIA2')
@@ -993,12 +993,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*7 SECNAM
       PARAMETER (SECNAM = 'CC_CIA3')
@@ -1199,12 +1199,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*7 SECNAM
       PARAMETER (SECNAM = 'CC_CIA4')
@@ -1250,12 +1250,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CIA4_1')
@@ -1502,12 +1502,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CIA4_2')
@@ -1546,12 +1546,12 @@ C     Specific information about which integrals are calculated is contained
 C     in the configuration file ciarc.h. See documentation in cc_cia for more
 C     detailed info.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), WORK(LWORK)
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CIA4_3')
@@ -1775,10 +1775,10 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Symmetrize XINT(ai,bj) stored as full square.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*)
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       INTEGER AI, BJ, AIBJ, BJAI
 
@@ -1845,11 +1845,11 @@ C
 C     Purpose: Copy out subblocks of the Cholesky vectors for batches
 C              of virtuals.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CHOL(*), CHAI(*)
       INTEGER   IOFA1(8), LVIRA(8), NX1AMA(8), IX1AMA(8,8)
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       IF (NX1AMA(ISYMAI) .EQ. NT1AM(ISYMAI)) THEN
 
@@ -1905,9 +1905,9 @@ C     Thomas Bondo Pedersen, January 2003.
 C
 C     Purpose: Swap L1 and L2 information in ciarc.h
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ciarc.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ciarc.h"
 
 C     Swap symmetry info.
 C     -------------------
@@ -1938,10 +1938,10 @@ C
 C     NOTICE: THIS ROUTINE MUST BE CHANGED WHENEVER CHANGES ARE
 C             MADE IN ALLOCATIONS IN CC_CIA ROUTINES.
 C
-#include <implicit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ciarc.h>
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ciarc.h"
 
 C     Initialize.
 C     -----------

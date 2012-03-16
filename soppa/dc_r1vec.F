@@ -10,16 +10,16 @@ C
 C     PURPOSE: Calculate the first order part, R(1), of the eigenvector
 C              in RPA(D) theory. See eq. (16) in RPA(D) paper.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (ONE    = 1.0D0, TWO = 2.0D0 )
       DIMENSION R1VEC(LR1VEC),WORK(LWORK)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <inftap.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "inftap.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C

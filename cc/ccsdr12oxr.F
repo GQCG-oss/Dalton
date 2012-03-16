@@ -32,12 +32,12 @@
 * C. Haettig, spring 2006
 *----------------------------------------------------------------------*
       implicit none
-#include <priunit.h>
-#include <dummy.h>     
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "priunit.h"
+#include "dummy.h"     
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
       logical test, locdbg
       parameter ( test = .false. )

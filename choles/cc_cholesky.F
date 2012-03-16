@@ -8,16 +8,16 @@ C     integral-direct two-index approach.
 C
 C     NB! a non-direct approach has not been implemented.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (ONTM10 = 1.0D-10, ONTM18 = 1.0D-18)
       PARAMETER (MXCHRD = 200)
       PARAMETER (MAXQUA = 75)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL SETUP, LAST, DECO
       LOGICAL NEWSYM
       DIMENSION DIAG(*),DIAOLD(*) 
@@ -28,26 +28,26 @@ C
       DIMENSION IDNTC1(MAXQUA)
       DIMENSION IQUVAB(MAXQUA,8), IQUVEA(MAXQUA,8), IQUVEB(MAXQUA,8)
       DIMENSION NQUAL(8), ITMP(8)
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccfro.h>
-#include <ccfop.h>
-#include <ccsections.h>
-#include <ccdeco.h>
-#include <choles.h>
-#include <choskp.h>
-#include <chodbg2.h>
-#include <symsq.h>
-#include <chotim.h>
-#include <ccdeco2.h>
-#include <choio.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccfro.h"
+#include "ccfop.h"
+#include "ccsections.h"
+#include "ccdeco.h"
+#include "choles.h"
+#include "choskp.h"
+#include "chodbg2.h"
+#include "symsq.h"
+#include "chotim.h"
+#include "ccdeco2.h"
+#include "choio.h"
 C
       CHARACTER*10 NAME
       CHARACTER*7  ROOT
@@ -954,22 +954,22 @@ C     Written by Henrik Koch 25-Sep-1993
 C
 C     Purpose: Read destribution of AO integrals.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION XINT(*),WORK(LWORK)
       DIMENSION IRECNR(*)
 C
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccpack.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccpack.h"
 C
       ISYMD  = ISAO(IDELTA)
       ISYMG  = ISAO(IGAM)
@@ -1026,8 +1026,8 @@ C  /* Deck cc_rda1 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "ibtpar.h"
       DIMENSION XINT(*)
       DIMENSION KADR2(NBAST,NBAST)
       DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
@@ -1040,14 +1040,14 @@ Casm
       LOGICAL MULFIL
       PARAMETER (MULFIL = .FALSE.)
 Casm
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1146,12 +1146,12 @@ C     asm 22-aug-1994
 C
 C     Purpose: Construct index arrays for CC_RDAO
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION KADR2(NBAST,NBAST)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
          ICOUN2 = 0
          DO 210 ISYMB = 1,NSYM
@@ -1205,32 +1205,32 @@ C
 C     Calculate diagonal elements. 
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL   SETUP
       DIMENSION DIAG(*), WORK(LWORK)
       DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
       DIMENSION JNDEXA(MXCORB), JNDEXB(MXCORB)
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccfro.h>
-#include <ccfop.h>
-#include <ccsections.h>
-#include <symsq.h>
-#include <ccdeco.h>
-#include <choles.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccfro.h"
+#include "ccfop.h"
+#include "ccsections.h"
+#include "symsq.h"
+#include "ccdeco.h"
+#include "choles.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1308,12 +1308,12 @@ C     Written by Alfredo Sanchez   20 july 2000
 C
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "maxorb.h"
+#include "iratdef.h"
 C
       PARAMETER (ONTM10 = 1.0D-10)
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -1325,14 +1325,14 @@ C
       DIMENSION MMBST(8)
       LOGICAL   LDUM, FEXIST
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <choio.h>
-#include <chorst.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "choio.h"
+#include "chorst.h"
 C
-#include <mxcent.h>
-#include <eribuf.h>
+#include "mxcent.h"
+#include "eribuf.h"
 C
 C
 C------------------------------------------
@@ -1570,19 +1570,19 @@ C
 C  /* Deck cc_choinp */
       SUBROUTINE CC_CHOINP
 C
-#include <implicit.h>
-#include <gnrinf.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <ccdeco.h>
-#include <ccorb.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <choscf.h>
-#include <chorst.h>
-#include <choio.h>
+#include "implicit.h"
+#include "gnrinf.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "ccdeco.h"
+#include "ccorb.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "choscf.h"
+#include "chorst.h"
+#include "choio.h"
 C
       PARAMETER (NTABLE = 15)
 C
@@ -1875,20 +1875,20 @@ C     Alfredo Sanchez.       21-Jul-2000
 C
 C     Construct part of commons required for Cholesky stuff.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       EXTERNAL INIDAT
 C
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
-#include <ccisao.h>
-#include <ccdeco.h>
-#include <choio.h>
-#include <inftap.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
+#include "ccisao.h"
+#include "ccdeco.h"
+#include "choio.h"
+#include "inftap.h"
+#include "priunit.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2105,17 +2105,17 @@ C
 C     Find largest diagonal element in a shell. 
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       DIMENSION DIAG(*)
-#include <ccisao.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <symsq.h>
-#include <blocks.h>
-#include <ccdeco2.h>
-#include <priunit.h>
+#include "ccisao.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "symsq.h"
+#include "blocks.h"
+#include "ccdeco2.h"
+#include "priunit.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2180,15 +2180,15 @@ C
 C     Zero out elements in Cholesky vector screened.
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccisao.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <symsq.h>
-#include <blocks.h>
-#include <choskp.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccisao.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "symsq.h"
+#include "blocks.h"
+#include "choskp.h"
 C
       PARAMETER (ZERO = 0.0D0)
 C
@@ -2256,21 +2256,21 @@ C/* Deck cho_restart */
 C
       SUBROUTINE CHO_RESTART(DIAG,INDRED,WORK,LWORK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccdeco.h>
-#include <ccsdsym.h>
-#include <chorst.h>
-#include <chodbg2.h>
-#include <choio.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccdeco.h"
+#include "ccsdsym.h"
+#include "chorst.h"
+#include "chodbg2.h"
+#include "choio.h"
 C
       DIMENSION DIAG(*), WORK(LWORK)
       DIMENSION INDRED(*)
@@ -2499,13 +2499,13 @@ C
 C     Update Cholesky vector with previous ones
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <chodbg2.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "chodbg2.h"
 C
       DIMENSION DIAG(NDIM),SCR(LSCR)
 C
@@ -2531,14 +2531,14 @@ C
 C     Select the relevant Cholesky elements
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <chodbg2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "chodbg2.h"
 C
       DIMENSION DIAG(NDIM),CHOSEL(NUMEL),ISELEC(NUMEL)
 C
@@ -2560,15 +2560,15 @@ C
 C/* Deck cho_name */
       SUBROUTINE CHO_NAME(ISYMAB,IFILE,LUCHO,NAME,TASK)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccdeco.h>
-#include <choio.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccdeco.h"
+#include "choio.h"
 
 C
       CHARACTER*10 NAME
@@ -2687,15 +2687,15 @@ C
 C     IOPT = 3:  CHOVEC     packed  (with zeros), a.le.b
 C                IND1,IND2  dummy
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <chodbg2.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "chodbg2.h"
 C
       CHARACTER*10 NAME
       LOGICAL LOG,test
@@ -2858,12 +2858,12 @@ C
 C
       SUBROUTINE CHO_READ1(CHOVEC,NDIM,SCR,LSCR,VECNRM)
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION CHOVEC(NDIM),SCR(LSCR)
 C
@@ -2883,14 +2883,14 @@ C
 C     Written by Alfredo Sanchez   13 de julio del 2001
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <chodbg2.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "chodbg2.h"
 C
       DIMENSION CHOVEC(NDIM),CHOSEL(NUMEL),ISELEC(NUMEL)
       SAVE NCALL
@@ -2917,23 +2917,23 @@ C     Written by Henrik Koch 25-Sep-1993
 C
 C     Purpose: Read destribution of AO integrals.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION XINT(*),WORK(LWORK)
       DIMENSION IRECNR(*)
       DIMENSION IDELTA(*),IGAM(*)
 C
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccpack.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccpack.h"
 C
 C----------------------------
 C     Construct index arrays.
@@ -2983,8 +2983,8 @@ C  /* Deck cc_rda1n */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "ibtpar.h"
       LOGICAL   OPT1, OPT2
       DIMENSION XINT(*)
       DIMENSION KADR2(NBAST,NBAST)
@@ -2996,15 +2996,15 @@ C
       LOGICAL OLDDX
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <chrnos.h>
-#include <eribuf.h>
-#include <inftap.h>
-#include <ibtfun.h>
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "chrnos.h"
+#include "eribuf.h"
+#include "inftap.h"
+#include "ibtfun.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -3139,12 +3139,12 @@ C     asm 22-aug-1994
 C
 C     Purpose: Construct index arrays for CC_RDAO
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION KADR2(NBAST,NBAST)
 C
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
          ICOUN2 = 0
          DO 210 ISYMB = 1,NSYM
@@ -3201,17 +3201,17 @@ C
 C     The compressed set is without zeros but with labels
 C     The reduced set has zeros deleted according to indred
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccdeco.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <choio.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccdeco.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
+#include "choio.h"
 C
       DIMENSION CHOVEC(*),WORK(LWORK)
       DIMENSION INDRED(*)
@@ -3489,12 +3489,12 @@ C
 C     Select the relevant Cholesky elements
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION CHOVEC(NDIM),WORK(LWORK)
 C
@@ -3540,13 +3540,13 @@ C
 C     Select the relevant Cholesky elements
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION CHOVEC(NDIM),CHOSEL(NDIM),ISELEC(NDIM)
 C
       SAVE NTOT,NSAV
@@ -3587,15 +3587,15 @@ C     Written by Alfredo Sanchez   julio 2002
 C
 C     Read NREAD vectors.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <ccdeco.h>
-#include <ccsdsym.h>
-#include <choio.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "ccdeco.h"
+#include "ccsdsym.h"
+#include "choio.h"
 C
       DIMENSION CHOVEC(*),WORK(LWORK)
       DIMENSION INDRED(*)
@@ -3804,12 +3804,12 @@ C
 C     Alfredo Sanchez.  Julio 2002
 C
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION CHOVEC(NDIM),SCR(LSCR)
 C
@@ -3830,7 +3830,7 @@ C
 C     Written by Alfredo Sanchez   julio 2002
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION CHOVEC(NDIM),CHOSEL(NUMEL),ISELEC(NUMEL)
 C
@@ -3850,15 +3850,15 @@ C     Alfredo Sanchez   Julio 2002
 C
 C     Histogram on diagonal.
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION DIAG(*)
       LOGICAL ALL
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "priunit.h"
 C
 C
       NUMH = 0
@@ -3950,16 +3950,16 @@ C     Alfredo Sanchez   Julio 2002
 C
 C     Check diagonal after updating.
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION DIAG(*),DIAOLD(*)
       DIMENSION INDRED(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <choio.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "choio.h"
+#include "priunit.h"
 C
 C
       ICHOV = ICHOV + 1
@@ -4043,18 +4043,18 @@ C     Alfredo Sanchez   Julio 2002
 C
 C     Final analysis after overall convergence.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION DIAG(*)
       DIMENSION XSEL0(8),YSEL0(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccdeco.h>
-#include <chotim.h>
-#include <blocks.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccdeco.h"
+#include "chotim.h"
+#include "blocks.h"
+#include "priunit.h"
 C
 C
       WRITE(LUPRI,'(/)')
@@ -4122,14 +4122,14 @@ C
 C     Find largest diagonal element. 
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <maxorb.h>
-#include <maxash.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <blocks.h>
-#include <ccdeco.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "blocks.h"
+#include "ccdeco.h"
 C
       XC = -1.0d0
       DO ISHLA = 1,MAXSHL
@@ -4158,17 +4158,17 @@ C     Write restar files at end of decomposition
 C
 C     Alfredo Sanchez de Meras    Julo 2002
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDRED(*)
-#include <maxorb.h>
-#include <maxash.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <blocks.h>
-#include <ccdeco.h>
-#include <choio.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "blocks.h"
+#include "ccdeco.h"
+#include "choio.h"
+#include "priunit.h"
 C
 C
       REWIND(LUSEC)
@@ -4230,23 +4230,23 @@ C     Written by Henrik Koch 25-Sep-1993
 C
 C     Purpose: Read destribution of AO integrals.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       DIMENSION XINT(*),WORK(LWORK)
       DIMENSION JNDEXA(*), JNDEXB(*)
       DIMENSION IRECNR(*)
 C
-#include <ccorb.h>
-#include <ccisao.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccpack.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccpack.h"
 C
 C--------------------
 C     Construct XINT.
@@ -4281,9 +4281,9 @@ C  /* Deck cc_rdaox1 */
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
-#include <implicit.h>
-#include <ibtpar.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "ibtpar.h"
+#include "priunit.h"
       DIMENSION XINT(*)
       DIMENSION JNDEXA(*), JNDEXB(*)
       DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
@@ -4292,14 +4292,14 @@ C
       LOGICAL OLDDX
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <nuclei.h>
-#include <inftap.h>
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "nuclei.h"
+#include "inftap.h"
+#include "chrnos.h"
+#include "ibtfun.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -4404,31 +4404,31 @@ C
 C     Calculate diagonal elements. 
 C
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "aovec.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL   SETUP
       DIMENSION DIAG(*), WORK(LWORK)
       DIMENSION INDEXA(MXCORB), INDEXB(MXCORB)
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccfro.h>
-#include <ccfop.h>
-#include <ccsections.h>
-#include <symsq.h>
-#include <ccdeco.h>
-#include <choles.h>
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "mxcent.h"
+#include "eribuf.h"
+#include "ccfro.h"
+#include "ccfop.h"
+#include "ccsections.h"
+#include "symsq.h"
+#include "ccdeco.h"
+#include "choles.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C

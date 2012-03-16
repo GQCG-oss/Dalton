@@ -70,7 +70,7 @@ C     ------
 C
 C     - The Cholesky vectors must be available on disk, through CHO_MOP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UVEC(*), VVEC(*), FOCKD(*)
       DIMENSION SCD(NUMP12), X2AM(*), WORK(LWORK)
       INTEGER JTYP1(NUMP12), ISYMP1(NUMP12)
@@ -78,17 +78,17 @@ C
       INTEGER NCHP12(8,NUMP12)
       INTEGER ISYMU(NUMUV), ISYMV(NUMUV)
       LOGICAL DELP1(NUMP12), DELP2(NUMP12)
-#include <maxorb.h>
-#include <ccisvi.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <dccsdsym.h>
-#include <ccsdinp.h>
-#include <ccdeco.h>
-#include <ciarc.h>
-#include <chocc2.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "maxorb.h"
+#include "ccisvi.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "dccsdsym.h"
+#include "ccsdinp.h"
+#include "ccdeco.h"
+#include "ciarc.h"
+#include "chocc2.h"
+#include "priunit.h"
+#include "dummy.h"
 
       CHARACTER*6 SECNAM
       PARAMETER (SECNAM = 'CC_CAA')
@@ -348,7 +348,7 @@ C     Thomas Bondo Pedersen, April 2003.
 C
 C     Purpose: Check input to CC_CAA.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UVEC(*), VVEC(*), FOCKD(*)
       DIMENSION SCD(NUMP12), X2AM(*), WORK(LWORK)
       INTEGER JTYP1(NUMP12), ISYMP1(NUMP12)
@@ -357,9 +357,9 @@ C
       INTEGER ISYMU(NUMUV), ISYMV(NUMUV)
       LOGICAL DELP1(NUMP12), DELP2(NUMP12)
       LOGICAL PRNT
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <priunit.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_CAAIN1')

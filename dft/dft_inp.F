@@ -22,11 +22,11 @@
 !
 !
       SUBROUTINE dftINP(WORD,INPERR,ALLOPT)
-#include <implicit.h>
-#include <gnrinf.h>
-#include <dftinf.h>
-#include <dftcom.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "gnrinf.h"
+#include "dftinf.h"
+#include "dftcom.h"
+#include "priunit.h"
       PARAMETER ( NTABLE = 19 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT

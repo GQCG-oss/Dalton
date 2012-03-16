@@ -21,26 +21,26 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C /* Deck dftdns */
       SUBROUTINE DFTDNS(DMAT,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker Feb 01 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "inforb.h"
 C 
       DIMENSION DMAT(NBAST,NBAST), WORK(LWORK)
 C
-#include <inftap.h>
-#include <infvar.h>
-#include <nuclei.h>
-#include <dftcom.h>
+#include "inftap.h"
+#include "infvar.h"
+#include "nuclei.h"
+#include "dftcom.h"
 C
       IF (NCMOT .GT. LWORK) CALL STOPIT('DFTDNS',' ',NCMOT,LWORK)
       REWIND LUSIFC
@@ -63,12 +63,12 @@ C  /* Deck getden */
 C
 C     T. Helgaker Sep 1999
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (DP5 = 0.50D0, D1 = 1.0D0)
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       LOGICAL NODC, NODV
       DIMENSION DMAT(NBAST,NBAST), WORK(LWORK)
@@ -101,9 +101,9 @@ C
 C
 C  /* Deck qdrdso */
       SUBROUTINE QDRDSO(DSO,WORK,LWORK,IPRINT,NODC,NODV)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), WORK(LWORK)
 C
@@ -117,18 +117,18 @@ C
 C  /* Deck qdrds1 */
       SUBROUTINE QDRDS1(CMO,DV,DSO,IPRINT,NODC,NODV)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
-#include <maxorb.h>
-#include <inforb.h>
+#include "maxorb.h"
+#include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION CMO(*), DV(*), DSO(NNBAST)
-#include <iratdef.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "priunit.h"
 C
-#include <abainf.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "inftap.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -259,16 +259,16 @@ C
 C  /* Deck qdrdao */
       SUBROUTINE QDRDAO(DENMAT,DSO,NBAST,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
       DIMENSION DSO(*), DENMAT(*)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine QDRDAO',-1)
 C
@@ -328,19 +328,19 @@ C /* Deck dftdnsab */
 C
 C     DFTDNS adaptation for open shell case ZR
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DMATA(*), DMATB(*)
       DIMENSION WORK(LWORK)
       INTEGER IPRINT
-#include <inforb.h>
-#include <inftap.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "inforb.h"
+#include "inftap.h"
+#include "dummy.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.0D0, DP5 =0.5D0)
       LOGICAL CLOSED
 C
 C used from infvar.h: JWOPSY
-#include <infvar.h>
+#include "infvar.h"
 C
       CALL QENTER('DFTDNSAB')
 C

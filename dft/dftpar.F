@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C     Parallel-routines, by Alf Christian Hennum 
 C 
@@ -33,28 +33,28 @@ C
 C     
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <priunit.h>
-#include <maxorb.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-9) 
 C
-#include <inforb.h>
-#include <nuclei.h>
-#include <dftinf.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "inforb.h"
+#include "nuclei.h"
+#include "dftinf.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, DOKT, 
@@ -148,24 +148,24 @@ C
 C     ACH 
 C     Takes info from master and allocate memory. 
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h>
-#include <infpar.h>
-#include <priunit.h>
-#include <inforb.h>      
-#include <mxcent.h>
+#include "maxorb.h"
+#include "infpar.h"
+#include "priunit.h"
+#include "inforb.h"      
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <dfterg.h>
-#include <dftinf.h>
-#include <energy.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dftcom.h>
-#include <orgcom.h>
+#include "nuclei.h"
+#include "dfterg.h"
+#include "dftinf.h"
+#include "energy.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dftcom.h"
+#include "orgcom.h"
 
       PARAMETER (FACTHR = 1.0D-8)
 C
@@ -319,30 +319,30 @@ C
 C     Moves everything that is needed. Something that is not needed is also 
 C     moved, but what ? 
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
-#include <priunit.h>
-#include <aovec.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <infpar.h>
-#include <mxcent.h>
-#include <pi.h>
-#include <dummy.h>
-#include <inforb.h>
-#include <nuclei.h>
-#include <dfterg.h>
-#include <energy.h>
-#include <dftcom.h>
-#include <orgcom.h>
-#include <onecom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
-#include <pincom.h>
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "infpar.h"
+#include "mxcent.h"
+#include "pi.h"
+#include "dummy.h"
+#include "inforb.h"
+#include "nuclei.h"
+#include "dfterg.h"
+#include "energy.h"
+#include "dftcom.h"
+#include "orgcom.h"
+#include "onecom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "maxmom.h"
+#include "xyzpow.h"
+#include "pincom.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-9) 
@@ -354,9 +354,9 @@ C
      &          C0(NORBT), C1(NORBT,3), C2(NORBT),
      &          HES(NOCCT,NVIRT,NOCCT,NVIRT)
 C
-#include <wrkrsp.h>
-#include <lmns.h>
-#include <sphtrm.h>
+#include "wrkrsp.h"
+#include "lmns.h"
+#include "sphtrm.h"
 C
 C     Things needed by dftgrd: 
 C
@@ -568,12 +568,12 @@ C
 C     Ach 
 C     Updates the different energies and the exchange mat: 
 C     
-#include <implicit.h>       
+#include "implicit.h"       
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h>
-#include <infpar.h>
+#include "maxorb.h"
+#include "infpar.h"
 Ca
       DIMENSION EXCMAT(NBAST*NBAST*NXCMAT),WORK(LWORK)
 C
@@ -615,15 +615,15 @@ C
 C     Update gradient 
 C     Ach 
 C
-#include <implicit.h>       
+#include "implicit.h"       
 #if defined (VAR_MPI)
       INCLUDE "mpif.h"
 #endif
-#include <maxorb.h> 
-#include <mxcent.h>
-#include <nuclei.h>
-#include <energy.h>
-#include <infpar.h>
+#include "maxorb.h" 
+#include "mxcent.h"
+#include "nuclei.h"
+#include "energy.h"
+#include "infpar.h"
       DIMENSION WORK(LWORK)
 C     
 #if defined (VAR_MPI)      

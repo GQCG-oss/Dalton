@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_GATHEROO */
@@ -38,9 +38,9 @@ c/* Deck CC_GATHEROO */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -81,9 +81,9 @@ c/* Deck CC_GATHEROV */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -124,9 +124,9 @@ c/* Deck CC_GATHERVV */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -173,9 +173,9 @@ c/* Deck CC_XBAR */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -243,9 +243,9 @@ c/* Deck CC_YBAR */
 #else
 # include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -299,7 +299,7 @@ c /* deck iccset1 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit.h>
+#include "priunit.h"
 #include "cciccset.h"
 
       LOGICAL LOCDBG
@@ -397,7 +397,7 @@ c /* deck iccset2 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
 #include "cciccset.h"
 

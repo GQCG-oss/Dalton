@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c*DECK CC_GETGD
       SUBROUTINE CC_GETGD(GD,ILSTNR,ISIDE,LIST,WORK,LWORK)
@@ -42,38 +42,38 @@ C     changes for CCr12 response, Christof Haettig, Summer 2003
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
       PARAMETER( ONE = 1.0D00 ,XMONE = -1.0D0 )
       DIMENSION GD(*),WORK(LWORK)
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-#include <dummy.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccexgr.h>
-#include <cclrmrsp.h>
-#include <ccr1rsp.h>
-#include <ccr3rsp.h>
-#include <ccr2rsp.h>
-#include <ccl1rsp.h>
-#include <ccl2rsp.h>
-#include <ccl3rsp.h>
-#include <ccn2rsp.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <cccr2rsp.h>
-#include <cccl2rsp.h>
-#include <leinf.h>
-#include <ccpl1rsp.h>
+#include "dummy.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccexgr.h"
+#include "cclrmrsp.h"
+#include "ccr1rsp.h"
+#include "ccr3rsp.h"
+#include "ccr2rsp.h"
+#include "ccl1rsp.h"
+#include "ccl2rsp.h"
+#include "ccl3rsp.h"
+#include "ccn2rsp.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "cccr2rsp.h"
+#include "cccl2rsp.h"
+#include "leinf.h"
+#include "ccpl1rsp.h"
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 C
       CHARACTER MODEL*(10), LIST*(*)
@@ -610,19 +610,19 @@ C     Adapted for CC-R12 response, Christian Neiss April 2005
 C
 C----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-#include <ccl1rsp.h>
-#include <ccr1rsp.h>
-#include <ccroper.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "ccsdinp.h"
+#include "ccl1rsp.h"
+#include "ccr1rsp.h"
+#include "ccroper.h"
+#include "dummy.h"
 C
       PARAMETER( ONE = 1.0D00 )
       DIMENSION GD(*),WORK(LWORK)
@@ -757,15 +757,15 @@ C     Written by Ove Christiansen 8-dec.-1996
 C
 C-----------------------------------------------------------------------
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccrc1rsp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccrc1rsp.h"
 C
       PARAMETER( ONE = 1.0D00 )
       DIMENSION GD(*),WORK(LWORK)
@@ -824,14 +824,14 @@ c /* deck cc_r2gd */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccr2rsp.h>
-#include <cco2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccr2rsp.h"
+#include "cco2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -951,14 +951,14 @@ c /* deck CC_L2GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccr2rsp.h>
-#include <ccl2rsp.h>
-#include <ccx2rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccr2rsp.h"
+#include "ccl2rsp.h"
+#include "ccx2rsp.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1100,13 +1100,13 @@ c /* deck CC_L3GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccr3rsp.h>
-#include <ccl3rsp.h>
-#include <ccx3rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccr3rsp.h"
+#include "ccl3rsp.h"
+#include "ccx3rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1228,13 +1228,13 @@ c /* deck CC_LCGD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccrc1rsp.h>
-#include <cclc1rsp.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccrc1rsp.h"
+#include "cclc1rsp.h"
+#include "dummy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1369,18 +1369,18 @@ C     Transform eigen-vectors with F-matrix and write to file.
 C
 C     ISYMV is symmetry of vector and transformed vector.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccexci.h>
-#include <ccexgr.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "dummy.h"
+#include "iratdef.h"
+#include "cclr.h"
+#include "ccexci.h"
+#include "ccexgr.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
 C
       PARAMETER( TOLFRQ=1.0D-08 )
       PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
@@ -1389,7 +1389,7 @@ C
       CHARACTER MODEL*10,RSLIST*2
       LOGICAL INCORE
 C
-#include <leinf.h>
+#include "leinf.h"
 C
       INCORE = .TRUE.
       MODEL           = '----------'
@@ -1452,12 +1452,12 @@ c /* deck CC_CR2GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccrc1rsp.h>
-#include <cccr2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccrc1rsp.h"
+#include "cccr2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1650,11 +1650,11 @@ c /* deck CC_CL2GD */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cccl2rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cccl2rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1860,17 +1860,17 @@ C             t-bar*P
 c    Ove Christiansen, 13-5-1998.
 c
 c=====================================================================*
-#include <implicit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccn2rsp.h>
-#include <ccslvinf.h>
-#include <qm3.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "cclr.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccn2rsp.h"
+#include "ccslvinf.h"
+#include "qm3.h"
 !#include <qmmm.h>
 
       PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)

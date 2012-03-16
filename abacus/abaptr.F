@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c===========================================================================
 c/* Comdeck comments */
@@ -63,15 +63,15 @@ C
 C        ******      VERSION 1.0      RELEASE 820423      ******
 C        (Peter Taylor)
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "priunit.h"
       LOGICAL NODPTR, ANTI, PANTI, DIA2SO, ZFS2EL
       DIMENSION WORK(LWORK)
 C
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <ptrbuf.h>
+#include "ptrbuf.h"
       COMMON /PTRORB/ NISH(8), NASH(8), NORB(8), NAC, NORBT, NAPRE(8),
      1                NORPRE(8), IASYM(MXCORB), IOSYM(MXCORB), LSMAX,
      2                MOFF(MXCORB), NORBM, NORBL1, NORBL2
@@ -290,15 +290,15 @@ C
 C
 C....    ******      VERSION 1.0      RELEASE 820423      ******
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <ptrbuf.h>
+#include "ptrbuf.h"
       COMMON /PTRORB/ NISH(8), NASH(8), NORB(8), NAC, NORBT, NAPRE(8),
      1                NORPRE(8), IASYM(MXCORB), IOSYM(MXCORB), LSMAX,
      2                MOFF(MXCORB), NORBM, NORBL1, NORBL2
@@ -306,9 +306,9 @@ C
       CHARACTER*6 TITLE, RUNTP
       COMMON /PTRCHR/ TITLE(12), RUNTP
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
-#include <abainf.h>
-#include <inftap.h>
-#include <ccom.h>
+#include "abainf.h"
+#include "inftap.h"
+#include "ccom.h"
       CALL QENTER('PTRMOS')
       THR1 = THRS
       THR2 = THRS
@@ -381,14 +381,14 @@ C
 C
 C....    ******      VERSION 1.0      RELEASE 820423      ******
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "priunit.h"
 C
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <inftap.h>
-#include <ptrbuf.h>
+#include "inftap.h"
+#include "ptrbuf.h"
       COMMON /PTRORB/ NISH(8), NASH(8), NORB(8), NAC, NORBT, NAPRE(8),
      1                NORPRE(8), IASYM(MXCORB), IOSYM(MXCORB), LSMAX,
      2                MOFF(MXCORB), NORBM, NORBL1, NORBL2
@@ -488,11 +488,11 @@ C....    USED.
 C
 C....    ******      VERSION 1.0      RELEASE 820423      ******
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxorb.h"
       PARAMETER (IFIELD = 8)
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0)
       PARAMETER (D2 = 2.D0)
@@ -503,11 +503,11 @@ C
       DIMENSION JDUM(10)
       DIMENSION PV(1), CMO(1), BUF(1), P2(1), P4V(1)
 C
-#include <priunit.h>
-#include <inftap.h>
-#include <abainf.h>
+#include "priunit.h"
+#include "inftap.h"
+#include "abainf.h"
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <ptrbuf.h>
+#include "ptrbuf.h"
       COMMON /PTRORB/ NISH(8), NASH(8), NORB(8), NAC, NORBT, NAPRE(8),
      1                NORPRE(8), IASYM(MXCORB), IOSYM(MXCORB), LSMAX,
      2                MOFF(MXCORB), NORBM, NORBL1, NORBL2
@@ -749,17 +749,17 @@ C
 C
 C....    ******      VERSION 1.0      RELEASE 820423      ******
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "maxorb.h"
       LOGICAL OLDDX
 C
       INTEGER ISORT(1), IBUF(1), IT(1), ALPHA, BETA, GAMMA,
      *        SIGMA
       DIMENSION SORT(1), BUF(1)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <ptrbuf.h>
+#include "ptrbuf.h"
       COMMON /PTRORB/ NISH(8), NASH(8), NORB(8), NAC, NORBT, NAPRE(8),
      1                NORPRE(8), IASYM(MXCORB), IOSYM(MXCORB), LSMAX,
      2                MOFF(MXCORB), NORBM, NORBL1, NORBL2
@@ -769,7 +769,7 @@ C
       COMMON /PTRSYM/ NSYM, MUL(8,8), NENT(8,8), ISYOFF(8,8)
 
       PARAMETER (IBIT08 = 255, IFIELD = 8)
-#include <ibtfun.h>
+#include "ibtfun.h"
       LBYTE(LABV,LOCV) = IBTAND(IBTSHR(LABV,IFIELD*LOCV),IBIT08)
 
       CALL QENTER('PT1SOR')
@@ -916,24 +916,24 @@ C
 C
 C....    ******      VERSION 1.0      RELEASE 820423      ******
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
 C
       PARAMETER (D0 = 0.0D0)
-#include <maxorb.h>
-#include <mxcent.h>
+#include "maxorb.h"
+#include "mxcent.h"
 C
       INTEGER SIGMA, T, U, TA, UA, TM, UM, ALPHA, BETA, GAMMA,
      *        ALPHAP, SIGMB, TUA, IBUF(*), IBIN(*), IT(*)
       LOGICAL LTRIAN, LALBE, ANTI, PANTI, FOUND
       DIMENSION CMO(*), PHALF(*), P4T(*), P2(*), BUF(*), BIN(*)
 C
-#include <priunit.h>
-#include <abainf.h>
+#include "priunit.h"
+#include "abainf.h"
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <inftap.h>
-#include <ptrbuf.h>
+#include "inftap.h"
+#include "ptrbuf.h"
       COMMON /PTRORB/ NISH(8), NASH(8), NORB(8), NAC, NORBT, NAPRE(8),
      *                NORPRE(8), IASYM(MXCORB), IOSYM(MXCORB), LSMAX,
      *                MOFF(MXCORB), NORBM, NORBL1, NORBL2
@@ -944,7 +944,7 @@ C
       COMMON /PTRTOT/ NPTOT
 
       PARAMETER (IBIT08 = 255, IFIELD = 8)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       LBYTE(LABV,LOCV) = IBTAND(IBTSHR(LABV,IFIELD*LOCV),IBIT08)
 
@@ -1297,14 +1297,14 @@ C     integral derivatives
 C
 C     ******      VERSION 1.0   RELEASE 880925      ******
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "aovec.h"
 C
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
+#include "priunit.h"
 C
 C     If MAXBUF is changed be sure to make the corresponding change
 C     of MX2BUF in PTRAN (used in PT2TRA) and in DISINT.  Also, for
@@ -1324,10 +1324,10 @@ C
      *        PAKK
       DIMENSION WORK(LWORK), IWORK(IRAT*LWORK), NCONTS(MXSHEL,MXAOVC,2)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <ccom.h>
-#include <blocks.h>
-#include <pincom.h>
-#include <symmet.h>
+#include "ccom.h"
+#include "blocks.h"
+#include "pincom.h"
+#include "symmet.h"
       COMMON /PTRTOT/ NPTOTR
 C
 C     Statement functions
@@ -1481,7 +1481,7 @@ C 960515-hjaaj: also delete LUPSO after use (may be quite big)
 C  /* Deck psize */
       SUBROUTINE PSIZE(MEMMAX,NBLOCK,NSLICE,NUMP,NPASS,MXBUF,MXMAX,
      1                 LSQBUF,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     ************************************************
 C     **  COMPUTE BUFFER SIZE AND NUMBER OF PASSES  **
@@ -1489,8 +1489,8 @@ C     ************************************************
 C
       DIMENSION IXBUF(10), IOOPS(10)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <priunit.h>
-#include <ioweight.h>
+#include "priunit.h"
+#include "ioweight.h"
       CALL QENTER('PSIZE')
       SQBUF = LSQBUF
       DO 10 I = 1,10
@@ -1525,35 +1525,35 @@ C  /* Deck PSORT */
       SUBROUTINE PSORT(IBUF,BUF,LBUF,IBIN,BIN,LDABUF,IPOINT,LASTAD,
      1                ITAB,NTOP,SORT,MAXBIN,NPOINT,NPS1,
      2                MEMS,NPTOT,IPRINT,LSORT,ANTI,PANTI)
-#include <implicit.h>
-#include <iratdef.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "aovec.h"
 C
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
 #if defined (VAR_SPLITFILES)
-#include <2gbdef.h>
+#include "2gbdef.h"
       CHARACTER*80 FNNAME, FNNM2
 #endif
-#include <blocks.h>
-#include <pincom.h>
-#include <symmet.h>
+#include "blocks.h"
+#include "pincom.h"
+#include "symmet.h"
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
       DIMENSION IBUF(*), BUF(*), IBIN(*), BIN(*), SORT(LSORT)
       DIMENSION LASTAD(*), ITAB(*), NTOP(*), IPOINT(NPS1,2)
       INTEGER P, Q, R, S, PQ, RS, PQRS
       LOGICAL PEQQ, REQS, PQEQRS, ANTI, PANTI
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
 C     *****************************************************************
 C     **  STATEMENT FUNCTIONS FOR PACKING, UNPACKING AND ADDRESSING  **
 C     *****************************************************************
 C
       PARAMETER (IBIT08 = 255, IFIELD = 8)
-#include <ibtfun.h>
+#include "ibtfun.h"
       IPART(I,J) = IBTAND(IBTSHR(I,IFIELD*(J-1)),IBIT08)
       ISHLL(I)   = IBTAND(       I,          IBIT08)
       ICONTR(I)  = IBTAND(IBTSHR(I,  IFIELD),IBIT08)
@@ -1975,18 +1975,18 @@ C
       END
 C  /* Deck PSORT_SET */
       SUBROUTINE PSORT_SET(IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       DIMENSION IRREP(MXCORB)
-#include <shells.h>
-#include <symmet.h>
-#include <pincom.h>
+#include "shells.h"
+#include "symmet.h"
+#include "pincom.h"
 
       PARAMETER (IFIELD = 8)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('PSORT_SET')
       NORB = 0
@@ -2013,14 +2013,14 @@ C
 C  /* Deck ptrtst */
       SUBROUTINE PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (MAXBUF = 682)
 C
       LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL
       DIMENSION WORK(LWORK)
-#include <inforb.h>
+#include "inforb.h"
 C
       CALL QENTER('PTRTST')
       LBUF  = MAXBUF + IRAT*MAXBUF + 1
@@ -2048,14 +2048,14 @@ C
       END
 C  /* Deck ptrnod */
       SUBROUTINE PTRNOD(PVAO,WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL, FOUND
       DIMENSION PVAO(N2BASX,N2BASX), WORK(LWORK)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <inftap.h>
-#include <inforb.h>
+#include "inftap.h"
+#include "inforb.h"
 C
       CALL QENTER('PTRNOD')
       REWIND LUSIFC
@@ -2089,15 +2089,15 @@ C
 C  /* Deck ptrno1 */
       SUBROUTINE PTRNO1(PV,PVMO,PVAO,CMO,TRA,ANTI,PANTI,DIA2SO,ZFS2EL,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL
       INTEGER T, U, V, X, TU, VX
       DIMENSION PV(NNASHX,NNASHX), CMO(NCMOT),
      &          PVMO(NASHT,NASHT,NASHT,NASHT),
      &          PVAO(NBAST,NBAST,NBAST,NBAST),
      &          TRA(NBAST,NASHT)
-#include <inforb.h>
+#include "inforb.h"
       CALL QENTER('PTRNO1')
 C
 C     Matrix in MO basis
@@ -2172,20 +2172,20 @@ C
       END
 C  /* Deck pvcmp */
       SUBROUTINE PVCMP(PVAO,PVTRA,IBUF,BUF,LBUF,ANTI,PANTI,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D1 = 1.0D0)
       LOGICAL ANTI, PANTI
       INTEGER P,Q,R,S
       DIMENSION PVAO(NBAST,NBAST,NBAST,NBAST), IBUF(*), BUF(*),
      &          PVTRA(NBAST,NBAST,NBAST,NBAST)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <ccom.h>
-#include <inforb.h>
+#include "ccom.h"
+#include "inforb.h"
 
       PARAMETER (IBIT08 = 255, IFIELD = 8)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('PVCMP')
 C
@@ -2241,13 +2241,13 @@ C
       END
 C  /* Deck makpvm */
       SUBROUTINE MAKPVM(PV,WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL
       DIMENSION PV(*), WORK(LWORK)
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
       CALL QENTER('MAKPVM')
       KCINDX = 1
       KCREF  = KCINDX + LCINDX
@@ -2271,19 +2271,19 @@ C  /* Deck makpvm */
       END
 C  /* Deck makpv1 */
       SUBROUTINE MAKPV1(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,ANTI,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL ANTI
       INTEGER T,U,V,X, TU, VX, XINDX(*)
       DIMENSION PV(NNASHX,NNASHX), PVSQ(NASHT,NASHT,NASHT,NASHT),
      &          CREF(NCONRF), DV(N2ASHX), WORK(LWORK)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inftap.h"
 C
       CALL QENTER('MAKPV1')
 C
@@ -2329,19 +2329,19 @@ C
       END
 C  /* Deck makpv2 */
       SUBROUTINE MAKPV2(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,PANTI,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       PARAMETER (DP5 = 0.5D0, D1=1.0D0, D2 = 2.0D0, DP25 = 0.25D0)
       LOGICAL PANTI
       INTEGER T,U,V,X, TU, VX, XINDX(*)
       DIMENSION PV(NNASHX,NNASHX), PVSQ(NASHT,NASHT,NASHT,NASHT),
      &          CREF(NCONRF), DV(N2ASHX), WORK(LWORK)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inftap.h"
 C
       CALL QENTER('MAKPV2')
 C
@@ -2409,15 +2409,15 @@ C
 C     Determine minimum amount of memory needed for the sorting program
 C     K.Ruud, July-00
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
       DIMENSION NCONTS(MXSHEL,MXAOVC,2)
       INTEGER P, Q, R, S
-#include <symmet.h>
-#include <blocks.h>
+#include "symmet.h"
+#include "blocks.h"
 C
       MEMMIN = 0
 C
@@ -2474,21 +2474,21 @@ C
       END
 C  /* Deck makpvq */
       SUBROUTINE MAKPVQ(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "iratdef.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       PARAMETER (DM1=-1.0D0, DP25=0.25D0)
       INTEGER T,U,V,X, TU, VX, XINDX(*)
       DIMENSION PV(NNASHX,NNASHX), PVSQ(NASHT,NASHT,NASHT,NASHT),
      &          CREF(NCONRF), DV(N2ASHX), WORK(LWORK)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
-#include <inflin.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infinp.h>
+#include "inflin.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infinp.h"
 C
       CALL QENTER('MAKPVQ')
 C
@@ -2572,7 +2572,7 @@ C
       RETURN
       END
       SUBROUTINE PERM24(N,P,Q)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION P(N,N,N,N), Q(N,N,N,N)
       INTEGER IP(4)
       DO I=1,N

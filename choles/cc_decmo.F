@@ -89,15 +89,15 @@ C
 C        The Cholesky vectors are returned on disk on direct-access files
 C        as set in routine CHO_MOP.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XDIANL(3,NSYM), FOCKD(*), WORK(LWORK)
       INTEGER   NTOVEC(NSYM), NCOLUM(NSYM), INDIA(NSYM), NDIM(NSYM)
       LOGICAL   SKPDCM
       CHARACTER*(*) FILSAV
-#include <priunit.h>
-#include <iratdef.h>
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "priunit.h"
+#include "iratdef.h"
+#include "maxorb.h"
+#include "ccdeco.h"
 
       LOGICAL LAST, ZEROUT
 
@@ -923,7 +923,7 @@ C        Find NUM largest elements in DIAG and leave pointers
 C        to these elements in INDIA. NDIM is the linear dimension
 C        of array DIAG.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(NDIM)
       INTEGER INDIA(NUM),ISCR(NDIM)
 
@@ -968,9 +968,9 @@ C
 C     INCORE = 1: CHIA contains the Cholesky vectors for constructing
 C                 the diagonal.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), FOCKD(*), CHIA(*), WORK(LWORK)
-#include <priunit.h>
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_DCMDIA')
@@ -1022,10 +1022,10 @@ C     INCORE = 1: CHIA contains the full set of Cholesky vectors, and
 C                 CHJB must be allocated to store the MDECOM rows of
 C                 CHIA as specified in INDIA.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XINT(*), FOCKD(*), CHIA(*), CHJB(*), WORK(LWORK)
       INTEGER INDIA(*)
-#include <priunit.h>
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_DCMMAT')
@@ -1075,9 +1075,9 @@ C     Thomas Bondo Pedersen, September 2002.
 C
 C     Purpose: Print analysis of diagonal (histogram).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DIAG(*), XLIST(*)
-#include <priunit.h>
+#include "priunit.h"
 
       PARAMETER (MXLIST = 20)
       INTEGER ICOUNT(MXLIST)
@@ -1160,7 +1160,7 @@ C     ------
       END
 C  /* Deck cc_decmo_e */
       SUBROUTINE CC_DECMO_E(LUNIT)
-#include <implicit.h>
+#include "implicit.h"
       WRITE(LUNIT,'(5X,A,/)')
      & 'NOTICE: Original vectors held in core!'
       RETURN
@@ -1172,13 +1172,13 @@ C     Thomas Bondo Pedersen, September 2002.
 C
 C     Purpose: Copy sub-block CHBJ: L(J,bj) for bj in LISTBJ.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CHAI(*), CHBJ(*)
       INTEGER LISTBJ(*)
-#include <maxorb.h>
-#include <ccdeco.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "maxorb.h"
+#include "ccdeco.h"
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       INTEGER BJ
 
@@ -1218,9 +1218,9 @@ C              XDIANL(3) = RMS error
 C
 C     If INCORE = 1: CHOL must contain the Cholesky vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XDIANL(3), DIAG(NDIM), CHOL(*), WORK(LWORK)
-#include <priunit.h>
+#include "priunit.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_DCMXDI')

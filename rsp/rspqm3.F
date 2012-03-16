@@ -31,24 +31,24 @@ C
 C  Purpose:  Calculate SCF/DFT E^2 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector.
 C  
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
 
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
@@ -385,24 +385,24 @@ C
 C  Purpose:  Calculate SCF/DFT E^2 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector.
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
 C#include <infpar.h>
 
       DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(*), EVECS(KZYVAR,*)
@@ -604,30 +604,30 @@ C---------------------------------------------------------------------
 C
 C  Arnfinn, Aug.-08: The master routine for QM3LNO_P
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
-#include <cbiher.h>
+#include "cbiher.h"
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, EXP1VL, TRIMAT
@@ -714,32 +714,32 @@ C---------------------------------------------------------------
 C
 C  Arnfinn, Aug.-08: The slave routine for QM3LNO_P
 C
-#include <implicit.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <inflin.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <maxash.h>
-#include <infind.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <infinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <mtags.h>
+#include "implicit.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "inflin.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "maxash.h"
+#include "infind.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "inftap.h"
+#include "ccinftap.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
-#include <cbiher.h>
+#include "cbiher.h"
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, EXP1VL, TRIMAT
@@ -878,25 +878,25 @@ C
 C  Purpose:  Calculate SCF/DFT E^3 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "ccinftap.h"
 #include "nuclei.h"
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
@@ -1263,25 +1263,25 @@ C
 C  Purpose:  Calculate SCF/DFT E^3 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "ccinftap.h"
 #include "nuclei.h"
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
@@ -1478,30 +1478,30 @@ C
 C  Arnfinn Aug. -08
 C  The master routine for QM3QRO_P
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "ccinftap.h"
 #include "nuclei.h"
-#include <infpar.h>
-#include <mtags.h>
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
@@ -1599,32 +1599,32 @@ C
 C  Arnfinn Aug. -08
 C  The slave routine for QM3QRO
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <gnrinf.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <infrsp.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infcr.h>
-#include <inftap.h>
-#include <qrinf.h>
-#include <qm3.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <orgcom.h>
-#include <ccinftap.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "gnrinf.h"
+#include "inforb.h"
+#include "infdim.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infcr.h"
+#include "inftap.h"
+#include "qrinf.h"
+#include "qm3.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "wrkrsp.h"
+#include "orgcom.h"
+#include "ccinftap.h"
 #include "nuclei.h"
 
-#include <infpar.h>
-#include <mtags.h>
+#include "infpar.h"
+#include "mtags.h"
 #if defined(VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
 #endif
 
       PARAMETER ( D0=0.0D0, D1=1.0D0 )
@@ -1839,7 +1839,7 @@ C-----------------------------------------------------------------------
 C  /* Deck qm3qlm */
       FUNCTION QM3QLM(RLM)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RLM(NORBT,*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
 C
@@ -1847,11 +1847,11 @@ C Used from common blocks:
 C  INFORB: NISHT,NASHT
 C  INFIND: IROW(*), ISX(*)
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <inforb.h>
-#include <infind.h>
-#include <priunit.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "inforb.h"
+#include "infind.h"
+#include "priunit.h"
 
       TELM  = D0
 

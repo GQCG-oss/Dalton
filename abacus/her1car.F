@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck oneprm */
       SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,
@@ -30,9 +30,9 @@ C  /* Deck oneprm */
      &                  TOLS,SECDER,DIFDIP,DIFQDP,FACINT,COORC,
      &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER,PCM)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
 C
       LOGICAL   PROPTY, SECDER, DIFDIP, NCLONE, DIFQDP, PCM
       DIMENSION WORK(LWORK)
@@ -41,11 +41,11 @@ C
      &          DINT1(KCKTAB,3,3), QINT1(KCKTAB,3,6),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
-#include <onecom.h>
-#include <mxcent.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <expopt.h>
+#include "onecom.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "expopt.h"
 C
       JMAXD = 2
       IF (PROPTY .AND. .NOT.ONECEN .AND. .NOT.EXPGRA) JMAXD = 4
@@ -90,13 +90,13 @@ C  /* Deck onepr1 */
      &                  DIFQDP,FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
      &                  NCLONE,PCM,TSHGTF,EXPDER,WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, THIRD = D1/D3,
      &           GNUTHR = 1.D-4)
 C
@@ -110,18 +110,18 @@ C
      &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include <cbisol.h>
-#include <onecom.h>
-#include <ader.h>
-#include <clsfmm.h>
-#include <primit.h>
-#include <pcmdef.h>
-#include <pcm.h>
+#include "cbisol.h"
+#include "onecom.h"
+#include "ader.h"
+#include "clsfmm.h"
+#include "primit.h"
+#include "pcmdef.h"
+#include "pcm.h"
 Clf#include <pcmlog.h>
-#include <symmet.h>
-#include <ecpinf.h>
-#include <expopt.h>
-#include <ibtfun.h>
+#include "symmet.h"
+#include "ecpinf.h"
+#include "expopt.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -415,7 +415,7 @@ C
 C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
 C     McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
@@ -432,14 +432,14 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
-#include <priunit.h>
-#include <pi.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "pi.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
-#include <gamcom.h>
-#include <ibtfun.h>
+#include "gamcom.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -609,15 +609,15 @@ C  /* Deck cint0 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       SFAC = SHGTF**3
       TFAC = -DP5*SFAC
       INT = 0
@@ -688,15 +688,15 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -789,18 +789,18 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
       LOGICAL SECDER
       DIMENSION STDER0(KCKTAB,2),
      &          STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2),
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
       MAXADD = 1
       IF (SECDER) MAXADD = 2
       INT = 0
@@ -1016,18 +1016,18 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D2 = 2.0D0, DP5 = 0.50D0)
       LOGICAL DIFDIP, DIFQDP
       DIMENSION SINT0(KCKTAB), SINT1(KCKTAB,3), DINT1(KCKTAB,3,3),
      &          QINT1(KCKTAB,3,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <orgcom.h>
-#include <onecom.h>
-#include <lmns.h>
+#include "orgcom.h"
+#include "onecom.h"
+#include "lmns.h"
       INT1 = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -1114,15 +1114,15 @@ C  /* Deck cintab */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00, D1 = 1.0D00, DP75 = 0.75 D00)
       DIMENSION EXPDER(KCKTAB,2,2), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
 C
       AINV = D1/EXPA
       BINV = D1/EXPB
@@ -1245,17 +1245,17 @@ C/*DECK Pcmgri*/
      &                     PCMINT,CORPX,CORPY,CORPZ,
      &                     EXPPI,TSHGTF,WORK,LWORK,IPRINT)
 
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       DIMENSION TSHGTF(*),PCMINT(KCKTAB,7,NTS)
-#include <onecom.h>
-#include <lmns.h>
-#include <pcmdef.h>
-#include <pcm.h>
-#include <pcmlog.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
 C
       INT = 1
       MAXADD = 0

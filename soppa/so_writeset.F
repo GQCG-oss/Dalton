@@ -9,8 +9,8 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Write a set of arrays to a file.
 C
-#include <implicit.h>
-#include <soppinf.h>
+#include "implicit.h"
+#include "soppinf.h"
 C
       DIMENSION   ARRAY(LVEC,NVEC)
       CHARACTER*7 FILENM

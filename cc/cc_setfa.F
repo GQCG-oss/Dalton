@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck cc_setfa */
 *=====================================================================*
@@ -51,7 +51,7 @@ c /* deck cc_setfa */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit.h>
+#include "priunit.h"
 
       INTEGER MXVEC, MXTRAN
       INTEGER IFTRAN(5,MXTRAN)

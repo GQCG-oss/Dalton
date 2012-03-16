@@ -1294,10 +1294,10 @@ C      PARAMETER (LBUF = 600)
 #include "drw2el.h"
 C
 Cholesky
-#include <ccdeco.h>
-#include <choles.h>
-#include <choskp.h>
-#include <ccdeco2.h>
+#include "ccdeco.h"
+#include "choles.h"
+#include "choskp.h"
+#include "ccdeco2.h"
 Cholesky
 C
       CALL QENTER('TWODSA')
@@ -2201,7 +2201,7 @@ C  /* Deck twood1 */
 #include "twosta.h"
 C
 Cholesky
-#include <ccdeco.h>
+#include "ccdeco.h"
 Cholesky
 C
 #include "ibtfun.h"
@@ -4541,7 +4541,7 @@ C
 #include "shells.h"
 #include "blocks.h"
 #include "primit.h"
-#include <priunit.h>
+#include "priunit.h"
 C
 C     Parameters for sets of primitives
 C     =================================

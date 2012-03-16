@@ -3019,7 +3019,7 @@ C
 C Define KEEP and IDATA for AO->MO transformation from AOTWOINT
 C (instead of from AOORDINT)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C Used from common blocks:
 C  INFDIM : N2BASM
@@ -3028,12 +3028,12 @@ C  TRINP  : MSYM, MBAS(), INTSYM
 C  TRHSO  : KSYMSO
 C  TRUNIT : KEEP,IDATA
 C
-#include <priunit.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <trinp.h>
-#include <trhso.h>
-#include <trunit.h>
+#include "priunit.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "trinp.h"
+#include "trhso.h"
+#include "trunit.h"
 C
       CALL QENTER('TRASET_3')
 C
@@ -3083,10 +3083,10 @@ C IBUF  : Points to start element in label buffer.
 C H2_RSPQ : H2RSPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION H2_RSPQ(*), BUF(*), IBUF(4,600)
 C
 C Used from common blocsk:
@@ -3094,18 +3094,18 @@ C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   TRINFO : ISP,ISQ,ISR,ISS,NBQ,NPQ,NBRS
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <nuclei.h>
-#include <inforb.h>
-#include <infind.h>
-#include <trinfo.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "infind.h"
+#include "trinfo.h"
 
-#include <inftra.h>
+#include "inftra.h"
 C
       INTEGER NBAS_x(8)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IBASP = IBAS(ISP)
       IBASQ = IBAS(ISQ)

@@ -21,21 +21,21 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck twoinp */
       SUBROUTINE TWOINP(WORD)
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 20)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbitwo.h>
+#include "abainf.h"
+#include "cbitwo.h"
       DATA TABLE /'.SKIP  ', '.PRINT ', '.DIRTST', '.FIRST ', '.SECOND',
      *            '.PTRSKI', '.SORSKI', '.INTSKI',
      *            '.PTRPRI', '.SORPRI', '.INTPRI',
@@ -206,10 +206,10 @@ C  /* Deck twoini */
 C
 C     Initialize /CBITWO/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbitwo.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbitwo.h"
 C
       CALL QENTER('TWOINI')
       SKIP   = .FALSE.
@@ -250,35 +250,35 @@ C  /* Deck twoexp */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
       LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO, DOERI
       DIMENSION WORK(LWORK)
-#include <abainf.h>
-#include <exeinf.h>
-#include <cbieri.h>
-#include <cbitwo.h>
-#include <cbisol.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <gnrinf.h>
-#include <infpar.h>
-#include <infinp.h>
-#include <taymol.h>
-#include <taysol.h>
-#include <energy.h>
-#include <expopt.h>
-#include <dftcom.h>
-#include <rspprp.h>
-#include <esg.h>
+#include "abainf.h"
+#include "exeinf.h"
+#include "cbieri.h"
+#include "cbitwo.h"
+#include "cbisol.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "gnrinf.h"
+#include "infpar.h"
+#include "infinp.h"
+#include "taymol.h"
+#include "taysol.h"
+#include "energy.h"
+#include "expopt.h"
+#include "dftcom.h"
+#include "rspprp.h"
+#include "esg.h"
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
@@ -655,12 +655,12 @@ C
       END
 C  /* Deck getdmt */
       SUBROUTINE GETDMT(DMAT,NDMAT,WORK,LWORK,NODC,NODV,SYMUNQ,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 
-#include <abainf.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "inforb.h"
 
       LOGICAL NODC, NODV, SYMUNQ
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK)
@@ -698,19 +698,19 @@ C     density matrices in SO basis (contravariant).  Input is
 C     one-electron active density matrix.
 C                                         880420  PRT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER R, S, U, V, UV, UR, US, VR, VS
       LOGICAL NODC, NODV, FOUND
       DIMENSION CMO(*), DV(*), DTSO(NBAST,NBAST), DASO(NBAST,NBAST)
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <inftap.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "inftap.h"
 C
 C     Read CMO and DV from SIRIFC
 C

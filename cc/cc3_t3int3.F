@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 !  /* Deck cc3_t3int3 */
       SUBROUTINE CC3_T3INT3(XINT,XLAMDP,XLAMDH,C1AM,ISYMTR,
@@ -57,11 +57,11 @@ C
 !
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
 !
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 !
       CHARACTER*(*) FN3SRT, FN3SRT2, FN3SRT3, FNCKJD, FNCKJD2, FNCKJD3
 !
@@ -302,8 +302,8 @@ C
       DOUBLE PRECISION XCKJ(*), WORK(LWORK)
 #endif
 !
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
 !
       CALL QENTER('CC3_CKJSOR')
 !

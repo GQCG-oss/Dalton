@@ -21,20 +21,20 @@ C              RES1D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxorb.h>
-#include <maxash.h>
+#include "maxorb.h"
+#include "maxash.h"
 CSPAS:12/11-2003: we need MXCOOR for eribuf.h
-#include <mxcent.h>
+#include "mxcent.h"
 CKeinSPASmehr
 CSPAS:10/11-2003: is merged with maxorb.h
 C#include <mxorb.h>
 CKeinSPASmehr
-#include <aovec.h>
-#include <iratdef.h>
-#include <eribuf.h>
+#include "aovec.h"
+#include "iratdef.h"
+#include "eribuf.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -42,15 +42,15 @@ C
       DIMENSION FOCKD(LFOCKD)
       DIMENSION WORK(LWORK)
 C
-#include <ccorb.h>
-#include <infind.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <distcl.h>
-#include <cbieri.h>
-#include <soppinf.h>
+#include "ccorb.h"
+#include "infind.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "ccsdio.h"
+#include "distcl.h"
+#include "cbieri.h"
+#include "soppinf.h"
 C
 C------------------
 C     Add to trace.

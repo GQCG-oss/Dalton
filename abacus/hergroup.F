@@ -26,7 +26,7 @@ C FILE : hergroup.F
 C
 C Purpose: set up point group symmetry information
 C
-#include <single.h>
+#include "single.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck syminp */
@@ -199,7 +199,7 @@ C
 #ifdef PRG_DIRAC
       PARAMETER (LUCME = -1)
 #else
-#include <inftap.h>
+#include "inftap.h"
 #endif
       LOGICAL LSYMOP(0:7)
       DIMENSION IGEN(3),IROTS(3),IREFL(3),JPAR(0:7)

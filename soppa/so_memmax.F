@@ -1,4 +1,4 @@
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck so_memmax */
       SUBROUTINE SO_MEMMAX(SUBNM,MEMOFREE)
@@ -10,10 +10,10 @@ C
 C     PURPOSE: Collect and print information about memory usage in SOPPA
 C              calculation.
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <soppinf.h>
+#include "soppinf.h"
 C
 C
       CHARACTER*(*) SUBNM

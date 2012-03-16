@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCEFFFOCK1(I1DXORD,AODENCC,AODENHF,WORK,LWORK)
@@ -42,16 +42,16 @@ C
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfield.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -444,15 +444,15 @@ c            CALL CC_PRONELAO(WORK(K1INT),ISYFCK)
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccr1rsp.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccr1rsp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -986,17 +986,17 @@ C  /* Deck cc_expfck_init */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccexpfck.h>
-#include <ccroper.h>
-#include <ccorb.h>
-#include <ccsections.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <chrnos.h>
+#include "priunit.h"
+#include "ccexpfck.h"
+#include "ccroper.h"
+#include "ccorb.h"
+#include "ccsections.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
  
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1137,9 +1137,9 @@ C  /* Deck iefffock */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
+#include "priunit.h"
 
-#include <ccexpfck.h>
+#include "ccexpfck.h"
  
       INTEGER ISYM, IORD
       CHARACTER NEWLBL*(8)
@@ -1222,8 +1222,8 @@ C  /* Deck iexpect */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccexpfck.h>
+#include "priunit.h"
+#include "ccexpfck.h"
  
       INTEGER ISYM, IORD
       CHARACTER NEWLBL*(8)
@@ -1301,8 +1301,8 @@ C  /* Deck i1dxfck */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <cc1dxfck.h>
+#include "priunit.h"
+#include "cc1dxfck.h"
  
       INTEGER ISYMX
       CHARACTER NEWLBL*(8), LSTRLX*(3), LABELX*(8)
@@ -1386,11 +1386,11 @@ C  /* Deck ccefffockhlp1 */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <cc1dxfck.h>
-#include <ccexpfck.h>
-#include <ccroper.h>
-#include <ccropr2.h>
+#include "priunit.h"
+#include "cc1dxfck.h"
+#include "ccexpfck.h"
+#include "ccroper.h"
+#include "ccropr2.h"
  
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1505,18 +1505,18 @@ C  /* Deck ccefffockhlp2 */
 *
 *======================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <cc1dxfck.h>
-#include <ccroper.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccr1rsp.h>
-#include <ccorb.h>
-#include <chrxyz.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "cc1dxfck.h"
+#include "ccroper.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccr1rsp.h"
+#include "ccorb.h"
+#include "chrxyz.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1717,19 +1717,19 @@ C  /* Deck ccefffockhlp3 */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit.h>
-#include <ccexpfck.h>
-#include <cc1dxfck.h>
-#include <ccroper.h>
-#include <ccropr2.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccr1rsp.h>
-#include <chrxyz.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "priunit.h"
+#include "ccexpfck.h"
+#include "cc1dxfck.h"
+#include "ccroper.h"
+#include "ccropr2.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccr1rsp.h"
+#include "chrxyz.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

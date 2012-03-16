@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c /* deck CC_2HYP */
 *=====================================================================*
@@ -42,17 +42,17 @@ c /* deck CC_2HYP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <cccrinf.h>
-#include <ccroper.h>
-#include <ccr1rsp.h>
-#include <ccrc1rsp.h>
-#include <cccperm.h>
-#include <second.h>
-#include <cclists.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "cccrinf.h"
+#include "ccroper.h"
+#include "ccr1rsp.h"
+#include "ccrc1rsp.h"
+#include "cccperm.h"
+#include "second.h"
+#include "cclists.h"
+#include "dummy.h"
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -1284,11 +1284,11 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cccrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cccrinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*10 BLANKS
@@ -1620,11 +1620,11 @@ cmbh end
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cccrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cccrinf.h"
+#include "ccroper.h"
 
 
       CHARACTER*10 BLANKS
@@ -1878,8 +1878,8 @@ c /* deck CCCRDISP */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <cccrinf.h>
+#include "priunit.h"
+#include "cccrinf.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -2924,11 +2924,11 @@ c /* deck CCCDISPRT */
 #else
 #  include <implicit.h>
 #endif
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <cccrinf.h>
-#include <ccroper.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "cccrinf.h"
+#include "ccroper.h"
 
       INTEGER KA, 
      &        KB, KBP, 

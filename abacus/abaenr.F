@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 c===========================================================================
 c/* old abaenr_log */
@@ -56,12 +56,12 @@ C JNRSIM: is KNRSIM where linear dependence is removed
 C         from the new trial vectors
 C MAXNR:  maximum number of microiterations
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ibndxdef.h>
-#include <iratdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibndxdef.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION REDH(*),REDGD(*),SOLEQ(*),CMO(*),CREF(*),GORB(*)
@@ -75,15 +75,15 @@ C   INFDIM : LACIMX, LBCIMX,?
 C   INFLIN : NCONST,...
 C   INFPRI : NWARN, IPRKAP
 C
-#include <infvar.h>
-#include <anrinf.h>
-#include <inftap.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infind.h>
-#include <infpri.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "infvar.h"
+#include "anrinf.h"
+#include "inftap.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infind.h"
+#include "infpri.h"
+#include "inflin.h"
+#include "linaba.h"
 C
       LOGICAL DOXKAP
       LOGICAL BINMEM
@@ -484,21 +484,21 @@ C PURPOSE:
 C  CALCULATE CONVERGED SOLUTIONS TO THE NRD SETS OF LINEAR
 C  EQUATIONS IN RD
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ibndxdef.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibndxdef.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
       DIMENSION SOLEQ(NREDH,*),RD(NVARPT,*),IBNDX(*),WRK(*)
 C
-#include <inftap.h>
-#include <anrinf.h>
-#include <infind.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <linaba.h>
-#include <infpri.h>
+#include "inftap.h"
+#include "anrinf.h"
+#include "infind.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "linaba.h"
+#include "infpri.h"
 C
       REWIND LUNR3
       IF (LOFFRD.EQ.1) READ (LUNR3)
@@ -550,12 +550,12 @@ C MAXSIM is maximum simultaneous bnrvec in nrctl.
 C
 C PJ JAN 1985
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ibndxdef.h>
-#include <dummy.h>
-#include <maxash.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibndxdef.h"
+#include "dummy.h"
+#include "maxash.h"
+#include "maxorb.h"
       PARAMETER ( FKAPC = 0.4D0, FKAPO = 0.01D0, FKAPNR = 0.25D0)
       PARAMETER ( MAXTST=30, THRLDP = 1.D-20, DTEST=1.0D-4  )
       PARAMETER ( MAXGDM=15 ,D10=1.0D1 ,D1000=1.0D3 )
@@ -572,13 +572,13 @@ C
 C Used from common blocks:
 C   ANRINF : THRNR
 C
-#include <infvar.h>
-#include <anrinf.h>
-#include <inftap.h>
-#include <infind.h>
-#include <inflin.h>
-#include <linaba.h>
-#include <infpri.h>
+#include "infvar.h"
+#include "anrinf.h"
+#include "inftap.h"
+#include "infind.h"
+#include "inflin.h"
+#include "linaba.h"
+#include "infpri.h"
 C
 C
 C Space for ANRNEX:
@@ -962,25 +962,25 @@ C  BCNRVE are used for B vectors from unit LUNR3 (section 1)
 C  SNRVEC is used for reduced PROJECTED HESSIAN matrix (section 2)
 C  IWRK, integer scratch array(dimension nredh)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxash.h>
-#include <maxorb.h>
-#include <ibndxdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "ibndxdef.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION REDH(*),REDGD(*),SOLEQ(NREDH,*),GD(NVARPT,*)
       DIMENSION IBNDX(*),BCNRVE(*),BONRVE(*),SNRVEC(NVARPT,*)
       DIMENSION IWRK(*)
 C
-#include <anrinf.h>
-#include <inftap.h>
-#include <infinp.h>
-#include <infind.h>
-#include <infvar.h>
-#include <inflin.h>
-#include <linaba.h>
-#include <ibtdef.h>
+#include "anrinf.h"
+#include "inftap.h"
+#include "infinp.h"
+#include "infind.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "linaba.h"
+#include "ibtdef.h"
 C
 C Section 1: extend reduced PROJECTED HESSIAN matrix
 C            with N new b-vectors
@@ -1105,20 +1105,20 @@ C 13-Aug-1985 hjaaj
 C
 C Purpose: recover restart information in for ANRCTL module.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "maxorb.h"
       DIMENSION IBNDX(*), REDH(*)
 C
 C Used from common blocks:
 C  INFVAR: NCONST
 C  INFTAP: LUNR1, LUNR3, LUNR5
 C
-#include <infvar.h>
-#include <inftap.h>
-#include <inflin.h>
-#include <linaba.h>
+#include "infvar.h"
+#include "inftap.h"
+#include "inflin.h"
+#include "linaba.h"
 C
       LOGICAL LTEST, FNDLAB, AROUND
 C
@@ -1191,17 +1191,17 @@ C 13-Aug-1985 hjaaj
 C
 C Purpose: save restart information in for ANRCTL module.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
       DIMENSION IBNDX(*), REDH(*)
 C
 C Used from common blocks:
 C   INFTAP : LUNR1
 C
-#include <inflin.h>
-#include <linaba.h>
-#include <inftap.h>
+#include "inflin.h"
+#include "linaba.h"
+#include "inftap.h"
 C
       CHARACTER*8 TABLE(3)
       DATA TABLE /'********', 'ANRRESTR', 'EODATA  '/
@@ -1222,16 +1222,16 @@ C  /* Deck abalmt */
      *                  CREF,GORB,DV,PV,FC,FV,FCAC,H2AC,
      *                  INDXCI,GD,WRK,LWRK)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     This is a test routine that calculates the MC electronic Hessian
 C     matrix explicitly by carrying out linear transformations of unit
 C     vectors
 C
-#include <inflin.h>
-#include <linaba.h>
-#include <infpri.h>
+#include "inflin.h"
+#include "linaba.h"
+#include "infpri.h"
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , DTOL = 1.0D-8 )
       DIMENSION REDH(*),REDGD(*),SOLEQ(*),CMO(*),CREF(*),GORB(*)

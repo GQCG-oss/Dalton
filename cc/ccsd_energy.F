@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include <single.h>
+#include "single.h"
 C
 C  /* Deck ccsd_energy */
       SUBROUTINE CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
@@ -33,39 +33,39 @@ C     Ove juli-sept. 1995: RSP intermediates
 C                          noccit
 C     Ove februar    1997: CCS, FD gradient hacks and restart.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
       PARAMETER (XMONE = -1.0D0, IZERO = 0, TWO = 2.0D0, ZERO = 0.0D00)
       LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, LCCEQ
       LOGICAL   MP2R12TST,LRES
       DIMENSION WORK(LWORK)
       COMMON /LUDIIS/ LUTDIS, LUSDIS
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
-#include <ccsdio.h>
-#include <ccinftap.h>
-#include <inftap.h>
-#include <cclr.h>
-#include <ccslvinf.h>
-#include <gnrinf.h>
-#include <ccfdgeo.h>
-#include <cbirea.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccorb.h"
+#include "iratdef.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
+#include "ccsdsym.h"
+#include "ccfro.h"
+#include "ccsdio.h"
+#include "ccinftap.h"
+#include "inftap.h"
+#include "cclr.h"
+#include "ccslvinf.h"
+#include "gnrinf.h"
+#include "ccfdgeo.h"
+#include "cbirea.h"
+#include "r12int.h"
+#include "ccr12int.h"
 !Sonia
-#include <ccfop.h>
-#include <ccnoddy.h>
+#include "ccfop.h"
+#include "ccnoddy.h"
 Cholesky
-#include <ccdeco.h>
-#include <chodbg.h>
-#include <cc_cho.h>
-#include <chocc2.h>
+#include "ccdeco.h"
+#include "chodbg.h"
+#include "cc_cho.h"
+#include "chocc2.h"
 C
       LOGICAL CPTDBG
 Cholesky
@@ -1396,13 +1396,13 @@ C  /* Deck ccsd_guess */
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, THREE = 3.0D0)
       DIMENSION T1AM(*),T2AM(*)
       DIMENSION FCDIAG(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1481,18 +1481,18 @@ C
 C     Written by Henrik Koch 27-Mar-1990.
 C     Brueckner bit by Rika Kobayashi 1992.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, THREE = 3.0D0)
       DIMENSION T1AM(*),T2AM(*), T2AM2(*)
       DIMENSION OMEGA1(*),OMEGA2(*), OMEGA22(*)
       DIMENSION FCDIAG(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 Cholesky
-#include <ccsdinp.h>
-#include <maxorb.h>
-#include <ccdeco.h>
+#include "ccsdinp.h"
+#include "maxorb.h"
+#include "ccdeco.h"
 Cholesky
 C
       LOGICAL TRIPLET
@@ -1639,11 +1639,11 @@ C
 C  Bug fix for frozen core in finite field calculations, 
 C  C.Haettig, 23.3.05
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <iratdef.h>
+#include "iratdef.h"
       DIMENSION FCDIAG(*)
       DIMENSION T1AM(*),T2AM(*),TAMR12(*),WORK(*)
       CHARACTER ETY*5, ETYPE*24, MODEL*10
@@ -1651,13 +1651,13 @@ C
       LOGICAL LEXIST, LR12, LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
       INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), IGLMVIS(8,8), NGLMDS(8)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <ccinftap.h>
-#include <r12int.h>
-#include <ccr12int.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "ccinftap.h"
+#include "r12int.h"
+#include "ccr12int.h"
 
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -1897,8 +1897,8 @@ C
       END
       SUBROUTINE CCSD_MODEL(MODELR12,LENMR12,LMAX,MODEL,LENM,APROXR12)
       IMPLICIT NONE
-#include <r12int.h>
-#include <ccsdinp.h>
+#include "r12int.h"
+#include "ccsdinp.h"
      
       INTEGER LENM,LENMR12,LMAX,I
       CHARACTER*(*) MODELR12, MODEL, APROXR12
@@ -1955,29 +1955,29 @@ C     integrals needed for R12 response (e.g. r12 integrals with
 C     two auxiliary basis functions): CCR12RSP
 C     C. Neiss, 10.12.2004
 C     
-#include <implicit.h>
-#include <ccr12int.h>
+#include "implicit.h"
+#include "ccr12int.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <priunit.h>
-#include <dummy.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <iratdef.h>
-#include <ccorb.h>
-#include <ccisao.h>
-#include <blocks.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <cbieri.h>
-#include <distcl.h>
-#include <eribuf.h>
-#include <ccfro.h>
-#include <ccfop.h>
-#include <ccsections.h>
-#include <ccfield.h>
-#include <r12int.h>
+#include "priunit.h"
+#include "dummy.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "iratdef.h"
+#include "ccorb.h"
+#include "ccisao.h"
+#include "blocks.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "cbieri.h"
+#include "distcl.h"
+#include "eribuf.h"
+#include "ccfro.h"
+#include "ccfop.h"
+#include "ccsections.h"
+#include "ccfield.h"
+#include "r12int.h"
       DIMENSION XAIBJ(*),T1AM(*),WORK(*),INDEXA(MXCORB)
       INTEGER IDUM,LUNITR12,LUNITR12_2
       LOGICAL LDUM,LHTF,MKVAJKL,CCR12RSP
@@ -2922,18 +2922,18 @@ C  /* Deck ccsd_aibj2 */
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER LU43,LUNITR12,LUNITR12_2
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XAIBJ(*), SCR1(*),SCR2(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <r12int.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "r12int.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfop.h"
 C
       LOGICAL ANTISYM,LHTF,CCR12RSP
       CHARACTER*(*) FNFILE,FILER12,FILER12_2
@@ -3100,15 +3100,15 @@ C
 C     Written by Henrik Koch 27-Mar-1990.
 C     Modified asm
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION XINT(*),XINT3(*),XINT4(*),SCR1(*),SCR2(*),SCR3(*)
       DIMENSION XLAMDP(*),XLAMDH(*)
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "priunit.h"
+#include "ccinftap.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       CHARACTER*(*) FNFILE
 C
@@ -3216,7 +3216,7 @@ C  /* Deck inidat */
 C
 C     Initialize MULD2H in common block /CCORB/
 C
-#include <ccorb.h>
+#include "ccorb.h"
 C
       DATA MULD2H/1,2,3,4,5,6,7,8,
      *            2,1,4,3,6,5,8,7,
@@ -3238,26 +3238,26 @@ C
 C     FREEZE OC230899
 C     Frozen orbital bug-fix, tbp July 2003.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       DIMENSION WORK(LWORK)
 C
       EXTERNAL INIDAT
 C
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <symsq.h>
-#include <ccisao.h>
-#include <r12int.h>
-#include <cc3t3d.h>
+#include "maxorb.h"
+#include "ccsdinp.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "inftap.h"
+#include "symsq.h"
+#include "ccisao.h"
+#include "r12int.h"
+#include "cc3t3d.h"
 Cholesky
-#include <dccorb.h>
-#include <dccsdsym.h>
-#include <ccisvi.h>
+#include "dccorb.h"
+#include "dccsdsym.h"
+#include "ccisvi.h"
 Cholesky
 C
       INTEGER NMATAK(8)
@@ -4643,12 +4643,12 @@ C     Reorder the symmetry ordering of the fock matrix.
 C     First occupied orbitals in different symmetries and then
 C     the virtuals in different symmetries.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
       DIMENSION FOCK(NORBT),WORK(LWORK)
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('FOCK_REORDER')
 C
@@ -4703,12 +4703,12 @@ C     Reorder the symmetry ordering of the MO coefficient matrix.
 C     First occupied orbitals in different symmetries and then
 C     the virtuals in different symmetries.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION CMO(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
 C
       LOGICAL FRORHF, FROVIR
 C
@@ -4864,11 +4864,11 @@ C     Henrik Koch and Alfredo Sanchez.       1-July-1994
 C
 C     Squareup the integral distribution.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CCSD_SYMSQO')
 C
@@ -4922,13 +4922,13 @@ C     Henrik Koch and Alfredo Sanchez.       1-July-1994
 C
 C     Squareup the integral distribution.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB(*), SCR(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       CALL QENTER('CCSD_SYMSQ')
 C
@@ -4956,13 +4956,13 @@ C
       END
       SUBROUTINE CCSD_SYMSQT(DISTAB1,ISYMAB,SCR)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION DISTAB1(*), SCR(*)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <symsq.h>
+#include "priunit.h"
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "symsq.h"
 C
       CALL QENTER('CCSD_SYMSQT')
 C
@@ -4995,15 +4995,15 @@ C     FN3VI can be FN3VI or FNDELD
 C
 C     Sort virtual integrals for perturbative triples.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
-#include <ccfop.h>
-#include <ccsdinp.h>
-#include <ccsections.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccinftap.h"
+#include "ccsdsym.h"
+#include "ccfop.h"
+#include "ccsdinp.h"
+#include "ccsections.h"
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -5351,12 +5351,12 @@ C
 C  /* Deck ccsd_delfro */
       SUBROUTINE CCSD_DELFRO(FOCDIA,WORK,LWORK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION FOCDIA(*),WORK(LWORK)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       LOGICAL FRORHF, FROVIR
 C
@@ -5402,15 +5402,15 @@ C
 C     Ove Christiansen 230899, Find and freeze NFC lowest-lying/NFV highest lying
 C     canonical orbitals in CC calculation.
 C
-#include <implicit.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxorb.h"
 C
       DIMENSION FOCDIA(NF),WORK(LWORK),NFCS(8),NFVS(8),IPLACE(MXCORB)
       CHARACTER*8 LABEL
-#include <ccorb.h>
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "ccorb.h"
+#include "priunit.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 C
       CALL QENTER('CC_FREEZER')
 C
@@ -5538,11 +5538,11 @@ C  /* Deck CC_SYMHFO*/
 C
 C     OC 230899, find symmetry ISYMHFO of HF orbital nr. IHFO
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
 C
       CALL QENTER('CC_SYMHFO(IHFO,ISYMHFO')
 C
@@ -5567,13 +5567,13 @@ C     Written by Wim Klopper (University of Karlsruhe, 21 November 2002).
 C
 C     MP2 pair energies and CBS scaling factors
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
       PARAMETER (DP25 = 0.25D0, DP75 = 0.75D0)
-#include <priunit.h>
+#include "priunit.h"
       DIMENSION T2AM(*),FCDIAG(*),ES(*),ET(*),QS(*),QT(*)
-#include <ccorb.h>
-#include <ccsdsym.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       N12 = NRHFT * (NRHFT + 1)/2
       CALL DZERO(ES,N12)
@@ -5656,20 +5656,20 @@ C     Written by Wim Klopper (University of Karlsruhe, 21 November 2002).
 C
 C     Coupled-cluster pair energies and CBS scaling factors
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (DP5 = 0.5D0, D1P5 = 1.5D0)
-#include <priunit.h>
-#include <iratdef.h>
+#include "priunit.h"
+#include "iratdef.h"
       DIMENSION T1AM(*),T2AM(*),WORK(*),
      *          ET1S(*),ET1T(*),ET2S(*),ET2T(*)
       CHARACTER*5 ETY
       LOGICAL LEXIST
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccfield.h>
-#include <ccinftap.h>
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "ccinftap.h"
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       N12 = NRHFT * (NRHFT + 1)/2 
       CALL DZERO(ET1S,N12)
@@ -5766,10 +5766,10 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Returns .TRUE. if occupied orbital I of symmetry ISYM is frozen.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5811,10 +5811,10 @@ C     Thomas Bondo Pedersen, July 2003.
 C
 C     Returns .TRUE. if virtual orbital A of symmetry ISYM is frozen.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ccorb.h"
+#include "ccsdinp.h"
 
       INTEGER A
       INTEGER AA

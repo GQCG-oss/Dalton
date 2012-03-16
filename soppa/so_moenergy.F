@@ -9,17 +9,17 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Get MO-energies
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION FOCKD(NORBTS)
       DIMENSION WORK(LWORK)
 C     LOGICAL   OPENY
 C
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <inftap.h>
+#include "ccorb.h"
+#include "ccsdinp.h"
+#include "ccsdsym.h"
+#include "inftap.h"
 C
 C------------------
 C     Add to trace.
