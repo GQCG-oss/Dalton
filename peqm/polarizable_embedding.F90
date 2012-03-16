@@ -1921,19 +1921,28 @@ subroutine monopole_field(Fi, Ri, Rj, Q0j)
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(1), intent(in) :: Q0j
 
-    integer :: a
+    integer :: x, y, z
     integer, parameter :: k = 1
-    real(dp), dimension(3) :: Rji, Tji
+    real(dp), dimension(3) :: Rji
 
     Rji = Ri - Rj
 
-    call Tk_tensor(Tji, k, Rji)
-
     Fi = 0.0d0
 
-    do a = 1, 3
-        Fi(a) = Fi(a) - Tji(a) *  Q0j(1)
-    end do
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x /= 0) then
+                    Fi(1) = Fi(1) - T(Rji, x, y, z) * Q0j(1)
+                else if (y /= 0) then
+                    Fi(2) = Fi(2) - T(Rji, x, y, z) * Q0j(1)
+                else if (z /= 0) then
+                    Fi(3) = Fi(3) - T(Rji, x, y, z) * Q0j(1)
+                end if
+            end do
+        end do
+     end do
 
 end subroutine monopole_field
 
@@ -1945,25 +1954,36 @@ subroutine dipole_field(Fi, Ri, Rj, Q1j)
     real(dp), dimension(3), intent(in) :: Ri, Rj
     real(dp), dimension(3), intent(in) :: Q1j
 
-    integer :: a, b
+    integer :: x, y, z
+    integer :: a, b, c
     integer, parameter :: k = 2
     real(dp), dimension(3) :: Rji
     real(dp), dimension(6) :: Tji
-    real(dp), dimension(3,3) :: Tf
 
     Rji = Ri - Rj
 
-    call Tk_tensor(Tji, k, Rji)
-
-    call unpack_tensor(Tf, Tji)
-
     Fi = 0.0d0
 
-    do a = 1, 3
-        do b = 1, 3
-            Fi(a) = Fi(a) + Tf(a,b) * Q1j(b)
+    a = 1; b = 1; c = 1
+    do x = k, 0, -1
+        do y = k, 0, -1
+            do z = k, 0, -1
+                if (x+y+z > k .or. x+y+z < k) cycle
+                if (x /= 0) then
+                    Fi(1) = Fi(1) + T(Rji, x, y, z) * Q1j(a)
+                    a = a + 1
+                end if
+                if (y /= 0) then
+                    Fi(2) = Fi(2) + T(Rji, x, y, z) * Q1j(b)
+                    b = b + 1
+                end if 
+                if (z /= 0) then
+                    Fi(3) = Fi(3) + T(Rji, x, y, z) * Q1j(c)
+                    c = c + 1
+                end if
+            end do
         end do
-    end do
+     end do
 
 end subroutine dipole_field
 
@@ -2218,6 +2238,33 @@ end subroutine Tk_coefficients
 
 !------------------------------------------------------------------------------
 
+function T(Rij, x, y, z)
+
+    integer, intent(in) :: x, y, z
+    real(dp), dimension(3), intent(in) :: Rij
+
+    integer :: l, m, n
+    real(dp) :: T
+    real(dp) :: R, Cx, Cy, Cz
+
+    R = nrm2(Rij)
+
+    do l = 0, x
+        Cx = Cnij(1,x,l)*(Rij(1)/R)**l
+        do m = 0, y
+            Cy = Cx * Cnij(l+x+1,y,m)*(Rij(2)/R)**m
+            do n = 0, z
+                Cz = Cy * Cnij(l+x+y+m+1,z,n)*(Rij(3)/R)**n
+                T = T + Cz
+            end do
+        end do
+    end do
+    T = T / R**(x+y+z+1)
+
+end function T
+
+!------------------------------------------------------------------------------
+
 subroutine Tk_tensor(Tk, k, Rij)
 
     integer, intent(in) :: k
@@ -2239,17 +2286,18 @@ subroutine Tk_tensor(Tk, k, Rij)
         do y = k, 0, -1
             do z = k, 0, -1
                 if (x+y+z > k .or. x+y+z < k) cycle
-                do l = 0, x
-                    Cx = Cnij(1,x,l)*(Rij(1)/R)**l
-                    do m = 0, y
-                        Cy = Cx * Cnij(l+x+1,y,m)*(Rij(2)/R)**m
-                        do n = 0, z
-                            Cz = Cy * Cnij(l+x+y+m+1,z,n)*(Rij(3)/R)**n
-                            Tk(idx) = Tk(idx) + Cz
-                        end do
-                    end do
-                end do
-                Tk(idx) = Tk(idx) / R**(x+y+z+1)
+!                do l = 0, x
+!                    Cx = Cnij(1,x,l)*(Rij(1)/R)**l
+!                    do m = 0, y
+!                        Cy = Cx * Cnij(l+x+1,y,m)*(Rij(2)/R)**m
+!                        do n = 0, z
+!                            Cz = Cy * Cnij(l+x+y+m+1,z,n)*(Rij(3)/R)**n
+!                            Tk(idx) = Tk(idx) + Cz
+!                        end do
+!                    end do
+!                end do
+!                Tk(idx) = Tk(idx) / R**(x+y+z+1)
+                Tk(idx) = T(Rij, x, y, z)
                 idx = idx + 1
             end do
         end do
