@@ -1871,6 +1871,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #ifdef VAR_MPI
       use sync_coworkers
 #endif
+      use lucita_cfg
       use lucita_energy_types
       use lucita_mcscf_ci_cfg
 #include "implicit.h"
@@ -1897,6 +1898,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       character (len=25)   :: file_name
       logical              :: update_ijkl, integral_available
+      integer              :: ngsh_lucita_tmp(max_number_of_gas_spaces,
+     &                                        max_number_of_ptg_irreps)
       integral_available = .false.
 
 !     pointers for symmetry blocks of integrals
@@ -1964,9 +1967,24 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
                 CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
                 READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
      &                              einact_mc2lu
+                read(LUINT_LUCITA) 
+     &          ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                                 j=1,max_number_of_ptg_irreps)
                 CALL READT(LUINT_LUCITA, nint1, work(kint1))
                 if(is_2e_int_active .gt. 1)
      &          CALL READT(LUINT_LUCITA, nint2, work(kint2))
+!               check consistency in active spaces for integral run 
+!               and actual run
+                do i = 1, max_number_of_gas_spaces
+                  do j = 1, max_number_of_ptg_irreps
+                    if(ngsh_lucita_tmp(i,j) /= ngsh_lucita(i,j))then
+                    write(lupri,*) '*** error in intim: active spaces'//
+     &              ' in integral CI and present CI run do not match.'
+                    call quit('inconsistency in active spaces for the'//
+     &              ' integral CI-run and the present CI-run.')
+                    end if
+                  end do
+                end do
               end if
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
@@ -2007,6 +2025,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
               WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIIJKL'
               WRITE(LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
      &                            einact_mc2lu
+              write(LUINT_LUCITA) 
+     &        ((ngsh_lucita(i,j),i=1,max_number_of_gas_spaces),
+     &                           j=1,max_number_of_ptg_irreps)
               CALL WRITT(LUINT_LUCITA, nint1, work(kint1))
               if(is_2e_int_active .gt. 1)
      &        CALL WRITT(LUINT_LUCITA, nint2, work(kint2))
@@ -2018,6 +2039,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
               CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
               READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
      &                            einact_mc2lu
+              read(LUINT_LUCITA) 
+     &        ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                               j=1,max_number_of_ptg_irreps)
               CALL READT(LUINT_LUCITA, nint1, work(kint2))
               CALL READT(LUINT_LUCITA, nint2, work(kint2))
             end if
@@ -2027,6 +2051,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
             CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
             READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
      &                          einact_mc2lu
+            read(LUINT_LUCITA) 
+     &      ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                             j=1,max_number_of_ptg_irreps)
             CALL READT(LUINT_LUCITA, nint1, work(kint1))
             if(is_2e_int_active .gt. 1)
      &      CALL READT(LUINT_LUCITA, nint2, work(kint2))
