@@ -2747,9 +2747,7 @@ C *** Option 2 >INACTI<  Inactive orbitals
          READ(LUCMD,*) (NISH(I),I=1,NSYM)
          NRHFT = ISUM(NSYM,NRHF,1)
          IF (NRHFT .EQ. 0) THEN
-            DO 402 I = 1, NSYM
-               NRHF(I) = NISH(I)
-  402       CONTINUE
+            NRHF(1:NSYM) = NISH(1:NSYM)
          END IF
       GO TO 100
 C
@@ -5130,11 +5128,13 @@ C
       END IF
 #ifdef VAR_AUTHORS
          WRITE(IWUNIT,400)
- 400     FORMAT(/' Main authors of the SIRIUS module:'
+  400    FORMAT(/' Main authors of the SIRIUS module:'
      *   /T5,'Hans Joergen Aa. Jensen, Univ. Southern Denmark, Denmark',
      *       ' (principal author)',
      *   /T5,'Hans Agren,              Royal Inst. Technology, Sweden')
-         CALL CIAUTH(IWUNIT)
+         WRITE(IWUNIT,402)
+  402    FORMAT(/' Direct CI and density matrix routines:'
+     *   /T5,'Jeppe Olsen,             University of Aarhus,   Denmark')
          CALL TRAUTH(IWUNIT)
 c        WRITE(IWUNIT,410)
 c410     FORMAT(/,' Questions and correspondence should be directed',
