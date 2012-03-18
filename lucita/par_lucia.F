@@ -629,7 +629,7 @@ C
 !     real(8), parameter :: THR_CVEC  = -1.0d-03
       LOGICAL STORE_F
 
-!     write(luwrt,*) 'THR_CVEC ==>', THR_CVEC
+!     print *, 'THR_CVEC ==>', THR_CVEC
 
       IROUND    = 0
  10   CONTINUE
@@ -1108,11 +1108,13 @@ C
          CAll redvec_rel(I_ZERO,I_ZERO_total,1,1,
      &                MPI_SUM,MPI_COMM_WORLD,-1)
          IF(I_REMOVED_total .GT. 0) THEN
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
             WRITE(luwrt,'(/A,I12,A,I4,A,1P,D10.2,I14)')
      &       'info: Removed',I_REMOVED_total,
      &       ' elements in new CI trial vector no.',IADD,
      &       '; threshold & zeroes',THR_CVEC, I_ZERO_total
+#undef LUCI_DEBUG
 #endif
             GO TO 10
          END IF

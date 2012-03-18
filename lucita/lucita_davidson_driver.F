@@ -72,12 +72,17 @@
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
 
-      WRITE(LUWRT,'(a,i14)') 
-     &     '  @@ Number of determinants/combinations: ',
-     &           l_combi
+      if(maxit <= 0)then
+        write(luwrt,'(/a/)') '  @@ no CI iterations asked for'//
+     &                       ' - return! :)'
+        return
+      end if
 
-      LBLK = - 1
-      IF(ICISTR.EQ.1) LBLK = l_combi
+      write(luwrt,'(a,i14)') 
+     &'  @@ Number of determinants/combinations: ',l_combi
+
+      lblk                 = -1
+      if(icistr == 1) lblk = l_combi
 
 !     restart cross check (experimental; should work with ifort/gfortran >= 4.5)
       if(irestr .eq. 0 .and.  LUCI_MYPROC .eq. LUCI_MASTER )then
@@ -397,7 +402,7 @@ C
 
       CALL QENTER('CIEIG')
 ! Inverse iteration modified Davidson with 2 vectors in core
-      write(luwrt,*) ' THRES_E is ',THRES_E
+!     write(luwrt,*) ' THRES_E is ',THRES_E
 !     THRES_E = 1.0d-12
 !     write(luwrt,*) ' bla bla THRES_E reset...'
       IF(IPRT .GE. 5 ) THEN
