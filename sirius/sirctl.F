@@ -788,9 +788,13 @@ C
 !        ---------------------------------------------------
 
          CALL GETTIM(TSTART,WSTART)
-!        a. calculate dimensions of vector and resolution matrices
+!        a1. calculate dimensions of vector and resolution matrices
          call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
      &                               'return CIdim',work,lfree,iprsir)
+!        a2. calculate dimensions of vector and resolution matrices
+         call setup_lucita_mcci_wrkspc_dimensions('ijkl resort ',0)
+         call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+     &                               'ijkl resort ',work,lfree,iprsir)
 
 !        b. set vector, resolution matrices and integral array length in common MC/CI module
          call setup_lucita_mcci_wrkspc_dimensions('standard ci ',0)

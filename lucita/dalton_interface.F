@@ -1913,6 +1913,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !     load one-electron integrals and two-electron integrals
       if(citask_id.eq.'return CIdia' .or. 
      &   citask_id.eq.'perform Davi' .or. 
+     &   citask_id.eq.'ijkl resort ' .or. 
      &   citask_id.eq.'return sigma' )then
 
         IF(INCORE.EQ.1)THEN
@@ -1928,7 +1929,8 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 !
 !         check for existing file with reordered integrals -
 !         if available read from it...
-          if(citask_id.eq.'perform Davi')then
+          if(citask_id.eq.'perform Davi' .or. 
+     &       citask_id.eq.'ijkl resort ')then
             if(luci_myproc .eq. luci_master)then
               inquire(file=file_name,exist=integral_available)
             end if
@@ -1941,6 +1943,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
           update_ijkl =
      &    update_ijkl_from_env.or.ci_trial_vector.or.
      &    orbital_trial_vector
+
+!         default for reordering task
+          if(citask_id.eq.'ijkl resort ') update_ijkl = .true.
 
           if(update_ijkl)then
 

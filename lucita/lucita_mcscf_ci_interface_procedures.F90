@@ -125,7 +125,7 @@ contains
 
 !     c. select pre-process task
       select case(run_type)
-        case('return CIdia')
+        case('return CIdia', 'ijkl resort ')
 !         do nothing
         case('return CIdim')
           call mcscf_pre_lucita_setci(print_lvl)
@@ -179,7 +179,7 @@ contains
 
 !     b. choose post-process task
       select case(run_type)
-        case('Xp-density m', 'analyze Cvec')
+        case('Xp-density m', 'analyze Cvec', 'ijkl resort ')
 !         do nothing
         case('return CIdim')
           call mcscf_post_lucita_setci(print_lvl)
