@@ -1974,7 +1974,7 @@ C     Number of two-electron densities elements
 C
 C
       IF ((EXPECT .OR. SUSCEP .OR. DIA2SO .OR. ZFS2EL) 
-     &     .AND..NOT .NOPV) THEN
+     &     .AND. .NOT.NOPV) THEN
 #if defined (VAR_SPLITFILES)
          READ (LUPAO,END=414) NPMAT
          GOTO 415

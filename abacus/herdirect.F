@@ -190,6 +190,7 @@ C
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
       DIMENSION WORK(LWORK)
+#include "infinp.h"
 #include "inforb.h"
 #include "cbitwo.h"
 #include "dorps.h"
@@ -205,8 +206,8 @@ C
       IF (.NOT.ABA) THEN
          NODV = .FALSE.
          NOPV = .FALSE.
-         IF (NASHT .EQ. 0) NODV = .TRUE.
-         IF (NASHT .LT. 2) NOPV = .TRUE.
+         IF (NACTEL .EQ. 0) NODV = .TRUE.
+         IF (NACTEL .LE. 1 .OR. HSROHF) NOPV = .TRUE.
          IPRALL =  0
          DO 100 I = 0,7
             DOREPS(I) = .TRUE.
@@ -582,6 +583,7 @@ C  INFPAR: NODTOT
 C
 #include "abainf.h"
 #include "dftcom.h"
+#include "infinp.h"
 #include "inforb.h"
 #include "cbitwo.h"
 #include "dorps.h"
@@ -605,8 +607,8 @@ C     Setup information for the two-electron integral routines.
 C----------------------------------------------------------------
 C
       IF (.NOT.ABA) THEN
-         NODV = (NASHT .EQ. 0)
-         NOPV = (NASHT .LT. 2)
+         NODV = (NACTEL .EQ. 0)
+         NOPV = (NACTEL .LE. 1 .OR. HSROHF)
 C
 C        Remember to change this!!!!!!!
 C
