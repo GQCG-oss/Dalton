@@ -1,4 +1,4 @@
-      subroutine Tk_integrals(Tk_ints, nints, k, coord, work, nwrk)
+      subroutine dal_Tk_integrals(Tk_ints, nints, k, coord, work, nwrk)
 
 #include <implicit.h>
 #include <dummy.h>
@@ -85,4 +85,4 @@
         runqm3 = .false.
         diporg = backup
 
-      end subroutine Tk_integrals
+      end subroutine dal_Tk_integrals
