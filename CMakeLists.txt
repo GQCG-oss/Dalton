@@ -165,6 +165,12 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_carmom.F90
                      ${LIB_GEN1INT_PATH}/src/contr_csgto_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/delta_geom.F90
+                     ${LIB_GEN1INT_PATH}/src/delta_hket.F90
+                     ${LIB_GEN1INT_PATH}/src/delta_moment.F90
+                     ${LIB_GEN1INT_PATH}/src/prim_hgto_delta.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_cgto_delta.F90
+                     ${LIB_GEN1INT_PATH}/src/contr_sgto_delta.F90
                      ${LIB_GEN1INT_PATH}/src/aux_boys_vec.F90
                      ${LIB_GEN1INT_PATH}/src/nucpot_geom.F90
                      ${LIB_GEN1INT_PATH}/src/nucpot_hket.F90
@@ -183,6 +189,12 @@ if(ENABLE_GEN1INT)
                      ${LIB_GEN1INT_PATH}/src/contr_cgto_value.F90
                      ${LIB_GEN1INT_PATH}/src/contr_sgto_value.F90
                      ${LIB_GEN1INT_PATH}/tools/str_decode.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_geom.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_carmom.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_nucpot.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_onehamil.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_gaupot.F90
+                     ${LIB_GEN1INT_PATH}/src/gen1int_odist.F90
                      ${LIB_GEN1INT_PATH}/src/gen1int.F90)
     # Gen1Int interface source code
     set(FREE_FORTRAN_SOURCES
