@@ -1360,7 +1360,7 @@ C
         end if
         lucmo = nbast*norbt
         call pe_save_density(daosav(:,1), nbast, cord(:,1:natoms),
-     &                       charge(1:natoms))
+     &                       charge(1:natoms), wrk(kfree:lfree))
        end if
        ! save intermolecular part of Fock matrix
 !       if (pe_repuls) then

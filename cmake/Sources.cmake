@@ -708,7 +708,6 @@ soppa/so_twofock.F
 soppa/so_write.F
 soppa/so_writeset.F
 soppa/so_wrtve.F
-peqm/dalton_wrappers.F
     )
 set(FREE_FORTRAN_SOURCES
 gp/binary_info.F90
@@ -724,6 +723,7 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+peqm/dalton_wrappers.F90
 peqm/polarizable_embedding.F90
     )
 set(OWN_BLAS_SOURCES

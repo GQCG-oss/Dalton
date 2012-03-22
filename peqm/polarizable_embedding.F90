@@ -151,6 +151,7 @@ module polarizable_embedding
     real(dp), dimension(:,:), allocatable, save :: Rfd
 
 ! TODO:
+! use pointers in save density and twoint routines
 ! use allocate/deallocate where possible?
 ! insert quit if symmetry
 ! insert quits inside dalton if QM3, QMMM etc.
@@ -424,7 +425,9 @@ subroutine pe_read_potential(coords, charges)
 
 101 write(luout,'(//2x,a)') 'Polarizable Embedding potential'
     write(luout,'(2x,a)')   '-------------------------------'
-    write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites
+    if (nsites > 0) then
+        write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites
+    end if
     if (lmul(3)) then
         write(luout,'(4x,a)') 'Multipole moments upto 3rd order.'
     else if (lmul(2)) then
@@ -713,6 +716,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, Epe, dalwrk)
         response = .false.
     else if (runtype == 'response') then
         if (pe_gspol) return
+        if (npols < 1) return
         if (.not. lpol(0) .and. .not. lpol(1)) return
         response = .true.
         fock = .false.
@@ -1022,9 +1026,7 @@ end subroutine pe_fock
 
 subroutine pe_response(denmats, fckmats)
 
-#ifndef BUILD_GEN1INT
     external :: Tk_integrals
-#endif
 
     real(dp), dimension(:), intent(in) :: denmats
     real(dp), dimension(:), intent(out) :: fckmats
@@ -1051,7 +1053,7 @@ subroutine pe_response(denmats, fckmats)
 #ifdef BUILD_GEN1INT
         call Tk_integrals(Fel_ints, Rs(:,i))
 #else
-        call dal_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 #endif
         do j = 1, 3
             do m = 1, ndens
@@ -1131,7 +1133,7 @@ subroutine pe_response(denmats, fckmats)
 #ifdef BUILD_GEN1INT
         call Tk_integrals(Fel_ints, Rs(:,i))
 #else
-        call dal_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 #endif
         do j = 1, 3
             do m = 1, ndens
@@ -1433,9 +1435,7 @@ end subroutine es_multipoles
 
 subroutine pe_polarization(denmats, fckmats)
 
-#ifndef BUILD_GEN1INT
     external :: Tk_integrals
-#endif
 
     real(dp), dimension(:), intent(in) :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
@@ -1471,7 +1471,7 @@ subroutine pe_polarization(denmats, fckmats)
 #ifdef BUILD_GEN1INT
         call Tk_integrals(Fel_ints, Rs(:,i))
 #else
-        call dal_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 #endif
         do j = 1, 3
             do m = 1, ndens
@@ -1572,7 +1572,7 @@ subroutine pe_polarization(denmats, fckmats)
 #ifdef BUILD_GEN1INT
             call Tk_integrals(Fel_ints, Rs(:,i))
 #else
-            call dal_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+            call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 #endif
             do j = 1, 3
                 do m = 1, ndens
@@ -1627,9 +1627,7 @@ end subroutine induced_dipoles
 
 subroutine electron_fields(Fel, denmats)
 
-#ifndef BUILD_GEN1INT
     external :: Tk_integrals
-#endif
 
     real(dp), dimension(:,:), intent(out) :: Fel
     real(dp), dimension(:), intent(in) :: denmats
@@ -1655,7 +1653,7 @@ subroutine electron_fields(Fel, denmats)
 #ifdef BUILD_GEN1INT
         call Tk_integrals(Fel_ints, Rs(:,i))
 #else
-        call dal_Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
+        call Tk_integrals(Fel_ints, 3*nnbas, k, Rs(:,i), work, size(work))
 #endif
         do j = 1, 3
             do m = 1, ndens
@@ -2099,9 +2097,7 @@ end subroutine
 
 subroutine Qk_integrals(Qk_ints, Rij, Qk)
 
-#ifndef BUILD_GEN1INT
     external :: Tk_integrals
-#endif
 
     real(dp), dimension(:,:), intent(out) :: Qk_ints
     real(dp), dimension(:), intent(in) :: Qk
@@ -2126,7 +2122,7 @@ subroutine Qk_integrals(Qk_ints, Rij, Qk)
 #ifdef BUILD_GEN1INT
     call Tk_integrals(Qk_ints, Rij)
 #else
-    call dal_Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij, work, size(work))
+    call Tk_integrals(Qk_ints, ncomps*nnbas, k, Rij, work, size(work))
 #endif
 
     ! get symmetry factors
@@ -2199,16 +2195,15 @@ end function factorial
 
 !------------------------------------------------------------------------------
 
-subroutine pe_save_density(density, nbas, coords, charges)
+subroutine pe_save_density(density, nbas, coords, charges, dalwrk)
 
-#ifndef BUILD_GEN1INT
     external :: Tk_integrals
-#endif
 
     integer, intent(in) :: nbas
     real(dp), dimension(:), intent(in) :: density
     real(dp), dimension(:), intent(in) :: charges
     real(dp), dimension(:,:), intent(in) :: coords
+    real(dp), dimension(:), intent(inout) :: dalwrk
 
     integer :: i, j, l
     integer :: corenucs
@@ -2274,7 +2269,7 @@ subroutine pe_save_density(density, nbas, coords, charges)
 #ifdef BUILD_GEN1INT
         call Tk_integrals(T0_ints, Rc(:,i))
 #else
-        call dal_Tk_integrals(T0_ints, nnbas, k, Rc(:,i), work, size(work))
+        call Tk_integrals(T0_ints, nnbas, k, Rc(:,i), dalwrk, size(dalwrk))
 #endif
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(density, T0_ints(:,1))
@@ -2332,8 +2327,7 @@ subroutine pe_intmol_twoints(nbas, dalwrk)
 
     cbas = nbas - fbas
 
-    ! resize density matrix to full size and fill with frozen density in first
-    ! block
+    ! density matrix with frozen density in first block
     allocate(full_density(nbas,nbas)); full_density = 0.0d0
     full_density(1:fbas,1:fbas) = frozen_density
 
@@ -2389,6 +2383,33 @@ end subroutine pe_intmol_twoints
 !------------------------------------------------------------------------------
 
 subroutine pe_repulsion()
+
+!    external :: rdonel
+!
+!    real(dp), dimension(:), intent(in) :: fckmat
+!    real(dp), dimension(:), intent(inout) :: dalwrk
+!
+!    integer :: i, j, k, l
+!    integer :: nbas, fbas, cbas, nnbas
+!    real(dp), dimension(:), allocatable :: overlap
+!
+!    nnbas = size(fckmat)
+!    nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(nnbas, dp)) - 1.0d0))
+!
+!    call openfile('pe_density.bin', luden, 'old', 'unformatted')
+!    rewind(luden)
+!    read(luden) dalwrk
+!    read(luden) dalwrk
+!    read(luden) dalwrk
+!    read(luden) dalwrk
+!    read(luden) dalwrk
+!    read(luden) fbas
+!    close(luden)
+!
+!    cbas = nbas - fbas
+!
+!    call rdonel('OVERLAP', .true., overlap, nnbas)
+
 
 end subroutine pe_repulsion
 
@@ -2689,124 +2710,5 @@ function elem2charge(elem)
     end do
 
 end function elem2charge
-
-!------------------------------------------------------------------------------
-
-#ifdef BUILD_GEN1INT
-subroutine Tk_integrals(Tk_ints, R)
-
-    use dalton_shell
-
-    real(dp), dimension(3,1), intent(in) :: R
-    real(dp), dimension(:,:), intent(out) :: Tk_ints
-
-    type(one_prop_t) :: prop_operator
-    integer :: num_prop
-    integer :: kind_prop
-    logical :: triangular
-    logical :: symmetric
-    type(matrix), dimension(:), allocatable :: Int_Matrix(:)
-    integer :: io_viewer
-    integer :: level_print = 0
-    integer :: imat
-    integer :: ierr
-
-    integer :: i, j, k, nbas
-    real(dp), dimension(1) :: charge
-
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(size(Tk_ints,2),dp)) - 1.0d0)) - 1
-
-    if (mod(k,2) == 0) then
-        charge = -1.0d0
-    else if (mod(k,2) /= 0) then
-        charge = 1.0d0
-    end if
-
-    call OnePropCreate(prop_name=INT_POT_ENERGY,&
-                       one_prop=prop_operator,  &
-                       info_prop=ierr,          &
-                       num_prop=num_prop,       &
-                       kind_prop=kind_prop,     &
-                       idx_nuclei=(/-1/),       &
-                       coord_nuclei=R,          &
-                       charge_nuclei=charge,    &
-                       order_geo_pot=k)
-
-    call DaltonShellGetNumAO(num_ao=nbas)
-
-    select case(kind_prop)
-        case(SYMM_INT_MAT, ANTI_INT_MAT)
-            triangular = .true.
-            symmetric = (kind_prop == SYMM_INT_MAT)
-        case default
-            triangular = .false.
-            symmetric = .false.
-    end select
-
-    allocate(Int_Matrix(num_prop), stat=ierr)
-
-    if (k == 0) then
-        call MatAssociate(Tk_ints(:,1), nbas, Int_Matrix(1), ierr,&
-                          triangular, symmetric)
-    else if (k == 1) then
-        do i = 1, 3
-            call MatAssociate(Tk_ints(:,i), nbas, Int_Matrix(i), ierr,&
-                              triangular, symmetric)
-        end do
-    else if (k == 2) then
-        call MatAssociate(Tk_ints(:,1), nbas, Int_Matrix(1), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,2), nbas, Int_Matrix(2), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,4), nbas, Int_Matrix(3), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,3), nbas, Int_Matrix(4), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,5), nbas, Int_Matrix(5), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,6), nbas, Int_Matrix(6), ierr,&
-                          triangular, symmetric)
-    else if (k == 3) then
-        call MatAssociate(Tk_ints(:,1), nbas, Int_Matrix(1), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,2), nbas, Int_Matrix(2), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,4), nbas, Int_Matrix(3), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,7), nbas, Int_Matrix(4), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,3), nbas, Int_Matrix(5), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,5), nbas, Int_Matrix(6), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,8), nbas, Int_Matrix(7), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,6), nbas, Int_Matrix(8), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,9), nbas, Int_Matrix(9), ierr,&
-                          triangular, symmetric)
-        call MatAssociate(Tk_ints(:,10), nbas, Int_Matrix(10), ierr,&
-                          triangular, symmetric)
-    end if
-
-    call DaltonShellIntegral(one_prop=prop_operator,&
-                             num_ints=num_prop,     &
-                             val_ints=Int_Matrix,     &
-                             num_dens=1,            &
-                             io_viewer=io_viewer,   &
-                             level_print=level_print)
-
-    call OnePropDestroy(one_prop=prop_operator)
-
-    do i = 1, num_prop
-        call MatNullify(A=Int_Matrix(i))
-    end do
-
-    deallocate(Int_Matrix)
-
-end subroutine Tk_integrals
-#endif
-
-!------------------------------------------------------------------------------
 
 end module polarizable_embedding
