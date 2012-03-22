@@ -1,5 +1,5 @@
 #ifdef BUILD_GEN1INT
-subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R)
+subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R, work, nwrk)
 
     use dalton_shell
 
@@ -7,9 +7,10 @@ subroutine Tk_integrals(Tk_ints, nnbas, ncomps, R)
 
     intrinsic :: real
 
-    integer, intent(in) :: nnbas, ncomps
+    integer, intent(in) :: nnbas, ncomps, nwrk
     real(8), dimension(3,1), intent(in) :: R
     real(8), dimension(nnbas,ncomps), intent(out) :: Tk_ints
+    real(8), dimension(nwrk), intent(inout) :: work
 
     type(one_prop_t) :: prop_operator
     integer :: num_ao
