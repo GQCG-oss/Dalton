@@ -218,7 +218,7 @@ CRIT9=`$GREP "C * (0| )\.00000000 * (0| )\.00000000 * (0| )\.645939.." $log | wc
 TEST[15]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 CTRL[15]=9
-ERROR[15]="ROT G-TENSORS NOT CORRECT"
+ERROR[15]="ROTATIONAL G-TENSOR NOT CORRECT"
 
 # Chemical shielding:
 CRIT1=`$GREP "Shielding constant\: * 334\.25[3-4][0-9] ppm" $log | wc -l`

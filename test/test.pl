@@ -1562,7 +1562,7 @@ exit $exit_status;
 
 __END__
 
-=head1 Dalton 2.0 test suite
+=head1 Dalton 2011 test suite
 
 =head1 SYNOPSIS
 
