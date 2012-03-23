@@ -145,11 +145,11 @@ end subroutine Tk_integrals
 #else
 subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
 
-#include 'implicit.h'
-#include 'dummy.h'
-#include 'mxcent.h'
-#include 'qm3.h'
-#include 'orgcom.h'
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "qm3.h"
+#include "orgcom.h"
 
     character(len=8), dimension(9*mxcent) :: labint
     integer, dimension(9*mxcent) :: intrep, intadr
@@ -160,56 +160,51 @@ subroutine Tk_integrals(Tk_ints, nints, ncomps, coord, work, nwrk)
     real(8), dimension(nwrk), intent(inout) :: work
 
     logical :: trimat
-    integer :: i, j, k, m
+    integer :: i, j, k, l, m, n
     character(len=7) :: inttype
     real(8), dimension(3) :: backup
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps,8)) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps)) - 1.0d0)) - 1
 
     backup = diporg
     diporg = coord
     runqm3 = .true.
 
-    trimat = .false.
+    trimat = .true.
 
     if (k == 0) then
-        ncomp = 1
         inttype = 'NPETES '
     else if (k == 1) then
-        ncomp = 3
         inttype = 'NEFIELD'
     else if (k == 2) then
-        ncomp = 6
         inttype = 'ELFGRDC'
     else if (k == 3) then
-        if (nwrk < (24 * nints / 10)) then
+        if (nwrk < 24 * nints) then
             print *, 'Not enough work space for T^(3) integrals!'
         end if
-        ncomp = 6
         inttype = 'ELFGRDC'
     end if
 
     Tk_ints = 0.0d0
 
     if (k <= 2) then
-        call get1in(Tk_ints(1), inttype, ncomp, work(1), nwrk,      &
-                    labint, intrep, intadr, 0, .false., 0, trimat,  &
+        call get1in(Tk_ints(1), inttype, ncomps, work(1), nwrk,         &
+                    labint, intrep, intadr, 0, .false., 0, trimat,      &
                     dummy, .false., dummy, 1)
     else if (k == 3) then
-        m = nints / 10
-        i = 6 * nints / 10
+        n = 6
+        m = nints
+        i = n * nints
         l = 0
         do j = 1, 3
             diporg(j) = diporg(j) + 0.01d0
-            call get1in(work(l*i+1), inttype, ncomp,            &
-                        work(j*i+1), nwrk, labint, intrep,      &
-                        intadr, 0, .false., 0, trimat, dummy,   &
-                        .false., dummy, 1)
+            call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,     &
+                        labint, intrep, intadr, 0, .false., 0, trimat,  &
+                        dummy, .false., dummy, 1)
             diporg(j) = diporg(j) - 2.0d0 * 0.01d0
-            call get1in(work(j*i+1), inttype, ncomp,            &
-                        work((j+1)*i+1), nwrk, labint, intrep,  &
-                        intadr, 0, .false., 0, trimat, dummy,   &
-                        .false., dummy, 1)
+            call get1in(work(j*i+1), inttype, n, work((j+1)*i+1), nwrk, &
+                        labint, intrep, intadr, 0, .false., 0, trimat,  &
+                        dummy, .false., dummy, 1)
             diporg(j) = coord(j)
             work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i)) &
                               / (2.0d0 * 0.01d0)
