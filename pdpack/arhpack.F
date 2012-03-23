@@ -4,7 +4,7 @@ C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
 C...
-C...   Written 1985-93 by Hans Jørgen Aa. Jensen
+C...   Written 1985-93 by Hans Jorgen Aa. Jensen
 C...   (originally written in Aarhus, Denmark, thus: "arhpack")
 C...
 C...   See comments on usage in the individual subroutines.
@@ -53,13 +53,12 @@ C  where VOUT and VIN are N vectors
 C  and AP is a packed, symmetric N by N matrix.
 C
 #include "implicit.h"
-      DIMENSION AP(*),VIN(*),VOUT(*)
-      PARAMETER (D0 = 0.0D0)
+      DIMENSION AP(*),VIN(N),VOUT(N)
 C
       KI = 0
       DO 300 I = 1,N
          VINI = VIN(I)
-         SUM = D0
+         SUM = 0.0D0
          DO 100 J = 1,I-1
             SUM = SUM + AP(KI+J) * VIN(J)
             VOUT(J) = VOUT(J) + AP(KI+J) * VINI
@@ -173,9 +172,10 @@ C
 C  /* Deck uthu */
       SUBROUTINE UTHU(H,HT,U,WRK,NAO,NMO)
 C
-C /VER 2/ 28-Apr-1985 Hans Jorgen Aa. Jensen
+C /VER 2/  28-Apr-1985 Hans Jorgen Aa. Jensen
+C /VER 3-OMP/ Sep-2011 Hans Jorgen Aa. Jensen
 C
-C CALLS: MPAPV, DDOT
+C CALLS: MPAPV, DGEMV
 C
 C This subroutine transforms the symmetric, packed matrix H of
 C dimension NAO to the symmetric, packed HT of dimension NMO.
@@ -188,28 +188,48 @@ C This routine is optimized with respect to vector operations.
 C
 #include "implicit.h"
       DIMENSION H(*),HT(*),U(NAO,*),WRK(*)
-C
-      J1 = 1
-      DO 400 J = 1,NMO
+
+#ifdef VAR_OMP
+      real(kind=8), allocatable :: WRK_alloc(:)
+
+!$OMP PARALLEL PRIVATE(J,J1,K,L,WRK_alloc)
+      allocate (WRK_alloc(1:NAO))
+!$OMP DO
+      DO, J = 1,NMO
+         CALL MPAPV(NAO,H,U(1,J),WRK_alloc)
+         J1 = (J*(J-1))/2
+         DO, K = 1,J
+            SUM = 0.0D0
+            DO, L = 1,NAO
+               SUM = SUM + U(L,K) * WRK_alloc(L)
+            END DO
+            HT(J1+K) = SUM
+         END DO
+      END DO
+!$OMP END DO
+      deallocate (WRK_alloc)
+!$OMP END PARALLEL
+#else
+      DO, J = 1,NMO
          CALL MPAPV(NAO,H,U(1,J),WRK)
-         CALL DGEMM('T','N',J,1,NAO,1.D0,
-     &              U,NAO,
-     &              WRK,NAO,0.D0,
-     &              HT(J1),J)
-C        DO 200 K = 1,J
+         J1 = (J*(J-1))/2 + 1
+         CALL DGEMV('T',NAO,J,1.0D0,U,NAO,WRK,1,0.0D0,HT(J1),1)
+C        J1 = (J*(J-1))/2
+C        DO, K = 1,J
 C           HT(J1-1+K) = DDOT(NAO,WRK(1),1,U(1,K),1)
-C 200    CONTINUE
-         J1 = J1 + J
-  400 CONTINUE
+C        END DO
+      END DO
+#endif
 C
       RETURN
       END
 C  /* Deck authu */
       SUBROUTINE AUTHU(H,HT,U,WRK,NAO,NMO)
 C
-C /VER 2/ 28-Apr-1985 Hans Jorgen Aa. Jensen
+C /VER 2/  28-Apr-1985 Hans Jorgen Aa. Jensen
+C /VER 3-OMP/ Sep-2011 Hans Jorgen Aa. Jensen
 C
-C CALLS: MPAPV, DDOT
+C CALLS: MPAPV, DGEMV
 C
 C "Add UT H U" to HT.
 C This subroutine transforms the symmetric, packed matrix H of
@@ -224,19 +244,34 @@ C This routine is optimized with respect to vector operations.
 C
 #include "implicit.h"
       DIMENSION H(*),HT(*),U(NAO,*),WRK(*)
-C
-      J1 = 1
-      DO 400 J = 1,NMO
-         CALL MPAPV (NAO,H,U(1,J),WRK)
-         CALL DGEMM('T','N',J,1,NAO,1.D0,
-     &              U,NAO,
-     &              WRK,NAO,1.D0,
-     &              HT(J1),J)
-C        DO 200 K = 1,J
-C           HT(J1-1+K) = HT(J1-1+K) + DDOT(NAO,WRK(1),1,U(1,K),1)
-C 200    CONTINUE
-         J1 = J1 + J
-  400 CONTINUE
+
+#ifdef VAR_OMP
+      real(kind=8), allocatable :: WRK_alloc(:)
+
+!$OMP PARALLEL PRIVATE(J,J1,K,L,WRK_alloc)
+      allocate (WRK_alloc(1:NAO))
+!$OMP DO
+      DO, J = 1,NMO
+         CALL MPAPV(NAO,H,U(1,J),WRK_alloc)
+         J1 = (J*(J-1))/2
+         DO, K = 1,J
+            SUM = 0.0D0
+            DO, L = 1,NAO
+               SUM = SUM + U(L,K) * WRK_alloc(L)
+            END DO
+            HT(J1+K) = HT(J1+K) + SUM
+         END DO
+      END DO
+!$OMP END DO
+      deallocate (WRK_alloc)
+!$OMP END PARALLEL
+#else
+      DO, J = 1,NMO
+         CALL MPAPV(NAO,H,U(1,J),WRK)
+         J1 = (J*(J-1))/2 + 1
+         CALL DGEMV('T',NAO,J,1.0D0,U,NAO,WRK,1,1.0D0,HT(J1),1)
+      END DO
+#endif
 C
       RETURN
       END
@@ -396,8 +431,10 @@ C  /* Deck uthub */
       SUBROUTINE UTHUB(HAO,HMO,U,WRK,NSYM,NAO,NMO)
 C
 C 20-May-1993 Hans Jorgen Aa. Jensen (based on UTHU)
+C    Sep-2011 Hans Jorgen Aa. Jensen (call UTHU for each block,
+C             no reason to duplicate openMP optimization inside UTHU)
 C
-C CALLS: MPAPV, DDOT
+C CALLS: UTHU
 C
 C This subroutine transforms the NSYM symmetric, packed matrix HAO
 C of dimension NAO(isym) to the symmetric, packed HMO of dimension
@@ -407,35 +444,22 @@ C
 C                                      T
 C  HMO( ij ) =  SUM (k,l = 1,...,NAO)  U (i,k) HAO(kl) U(l,j)
 C
-C This routine is optimized with respect to vector operations.
-C
 #include "implicit.h"
       DIMENSION HAO(*),HMO(*),U(*),WRK(*), NAO(NSYM), NMO(NSYM)
 C
       IUOFF  = 1
       IHAOFF = 1
       IHMOFF = 1
-      DO 600 ISYM = 1,NSYM
+      DO, ISYM = 1,NSYM
          NMOI = NMO(ISYM)
          NAOI = NAO(ISYM)
 C
-         J1 = IHMOFF
-         DO 400 J = 1,NMOI
-            CALL MPAPV(NAOI,HAO(IHAOFF),U(IUOFF+(J-1)*NAOI),WRK)
-            CALL DGEMM('T','N',J,1,NAOI,1.D0,
-     &                 U(IUOFF),NAOI,
-     &                 WRK,NAOI,0.D0,
-     &                 HMO(J1),J)
-C           DO 200 K = 1,J
-C              HMO(J1-1+K) = DDOT(NAOI,WRK(1),1,U(IUOFF+(K-1)*NAOI),1)
-C 200       CONTINUE
-            J1 = J1 + J
-  400    CONTINUE
+         CALL UTHU(HAO(IHAOFF),HMO(IHMOFF),U(IUOFF),WRK,NAOI,NMOI)
 C
-         IUOFF  = IUOFF + NAOI*NMOI
+         IUOFF  = IUOFF  + NAOI*NMOI
          IHAOFF = IHAOFF + (NAOI*(NAOI+1))/2
          IHMOFF = IHMOFF + (NMOI*(NMOI+1))/2
-  600 CONTINUE
+      END DO
 C
       RETURN
       END
