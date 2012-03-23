@@ -731,7 +731,7 @@ C/* Deck pri2cn */
       SUBROUTINE PRI2CN(AOINT,CONTC,WORK,LWORK,ANTI,
      &                  NOPTYP,NBAST,NPRIM,LABINT,INTREP,PROPRI,IPRINT)
 C
-C     Subroutine to transform primitive AO's to contracted SO basis
+C     Subroutine to transform primitive AOs to contracted SO basis
 C
 #include "implicit.h"
 #include "dummy.h"

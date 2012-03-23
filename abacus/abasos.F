@@ -563,8 +563,8 @@ C
       LWORK1 = LWORK  - KWORK1
 C
       IF (LWORK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'SOODSO_1.1: Need :',KWORK1,'  Available :',LWORK
-         CALL QUIT('Insufficient memory in SOODSO.1')
+         WRITE(LUPRI,*)'SOODSO_1.1: Need :',KWORK1,'  Available :',LWORK
+         CALL QUIT('Insufficient work memory in SOODSO.1')
       ENDIF
 C
       IPRINT = IPRSOS - 20

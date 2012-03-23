@@ -387,35 +387,42 @@ C
 C  /* Deck lnrini */
       SUBROUTINE LNRINI
 C
-C     Initialize /LNREXC/
+C     Initialize with default values for LNRABA module.
+C     Values can be changed by user in input in LNRINP.
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "cbiexc.h"
 #include "cbilnr.h"
+#include "cbiexc.h"
 #include "abainf.h"
 C
-      IPR1IN   = IPRDEF
-      IPRLNR   = IPRDEF
-      SKIP     = .FALSE.
-      CUT      = .FALSE.
-      OOTV     = .FALSE.
-      STATIC   = .FALSE.
-      ALFA     = ABA_ALPHA
-      NFRVAL   = 1
-      FRVAL(1) = 0.0D0
+!     in cbilnr.h :
       THCLNR   = 5.D-05
+      FRVAL(1) = 0.0D0
+      NFRVAL   = 1
+      IPRLNR   = IPRDEF    ! IPRDEF from abainf.h
+      ALFA     = ABA_ALPHA ! ABA_ALPHA from abainf.h
+      STATIC   = .FALSE.
+!     in cbiexc.h :
       MAXITE   = 60
       MXRM     = 400
       MXPHP    = 0
-CSPAS:20/3-2011: allowing for perturbations in only one irrep
-      VIBGIR = .FALSE.
-CKeinSPASmehr
+      IPR1IN   = IPRDEF    ! IPRDEF from abainf.h
+      SKIP     = .FALSE.
+      CUT      = .FALSE.
+      OOTV     = .FALSE.
+!     in abainf.h :
+      VIBGIR   = .FALSE. ! SPAS:20/3-2011: allowing for perturbations in only one irrep
       RETURN
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,POLVL,POLVV,FOVIBG,
      &                  WORK,LWORK,PASS)
+C
+C     Frequency-dependent Linear Response module in ABACUS
+C
+C     Uses the general linear response solver in the RESPONS program unit
+C
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -423,8 +430,8 @@ C  /* Deck lnraba */
 #include "iratdef.h"
 #include "priunit.h"
 #include "cbilnr.h"
-      LOGICAL PASS
-      LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND, CONV
+      LOGICAL   PASS
+      LOGICAL   CICLC, HFCLC, TRIPLE, EXECLC, FOUND, CONV
       DIMENSION WORK(LWORK),SNDPRP(2)
       DIMENSION POLDD(2,3,3,MXFR), POLDQ(2,3,3,3,MXFR)
       DIMENSION POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR)
@@ -736,7 +743,7 @@ C
 C
          DO ISYM=1,NSYM
 CSPAS:20/3-2011: allowing for VIB_G perturbations in only one irrep
-            IF (.NOT.(VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG))) THEN
+            IF (VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG)) CYCLE
 CKeinSPASmehr
             KSYMOP = ISYM
             DO IOPER=1,NOPER(KSYMOP)
@@ -1051,9 +1058,6 @@ C
 C     
 C     End loop over symmetries
 C     
-CSPAS:20/3-2011: allowing for VIB_G perturbations in only one irrep
-            END IF  ! (.NOT.(VIB_G .AND. VIBGIR .AND. (ISYM .NE. IRVIBG)))
-CKeinSPASmehr
          END DO
 C
 C     Close and delete files.
@@ -1185,9 +1189,7 @@ C
          NBR = 0
 C
          DO ISYM = 1,NSYM
-CSPAS:20/3-2011: allowing for VIB_G perturbations in only one irrep
-            IF (.NOT.VIBGIR .OR. (ISYM .EQ. IRVIBG)) THEN
-CKeinSPASmehr
+            IF (VIBGIR .AND. (ISYM .NE. IRVIBG)) CYCLE
 C
             CALL LNRVAR(ISYM,IPRLNR,WORK(KWORK1),LWORK1)
 C
@@ -1620,9 +1622,6 @@ C
 C
 CKeinSPASmehr
 C
-CSPAS:20/3-2011: allowing for perturbations in only one irrep
-            END IF
-CKeinSPASmehr
          END DO
 C
          CALL GPCLOSE(LUSOVE,'DELETE')

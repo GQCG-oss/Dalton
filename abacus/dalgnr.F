@@ -478,13 +478,17 @@ C
 C
       CALL TITLER('Starting in Wave Function Section (SIRIUS)',' ',200)
 C
-C     SIRINI defines buffer lengths for I/O and IROW()
+C     SIRINI defines buffer lengths for I/O and the IROW() array
 C
-      CALL SIRINI
+      CALL SIRINI ! SIRius INItialization
+      WRINDX = .TRUE. ! new sirius call, make sure orbital rotation info is written to file in SETWOP
 C
-      WRINDX = .TRUE.
       CALL SIRCTL(ICONV,WORK(1),LMWORK)
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS')
+      ! ICONV > 0: converged
+      !       = 0: not converged
+      !       < 0: convergence not requested (e.g. restart from old MCSCF)
+
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SIRIUS') ! boundary checks on WORK
 C
 C     If not numerical differentiation:
 C     We should now have MO's on file, no need for DOHUCKEL anymore
@@ -503,15 +507,14 @@ C
       IF (LUSUPM.LE.0) CALL GPOPEN(LUSUPM,
      &   FNSUPM,'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPCLOSE(LUSUPM,'DELETE')
-      CALL GPCLOSE(LUIT2,'DELETE')
-      CALL GPCLOSE(LUIT3,'DELETE')
-      CALL GPCLOSE(LUIT5,'DELETE')
+      IF (LUIT2  .GT. 0) CALL GPCLOSE(LUIT2,'DELETE')
+      IF (LUIT3  .GT. 0) CALL GPCLOSE(LUIT3,'DELETE')
+      IF (LUIT5  .GT. 0) CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
-      IF (.NOT. USRSCR) IFTHRS = 10
       CALL TITLER('End of Wave Function Section (SIRIUS)',' ',200)
-      IF (ICONV .LT. 1 .AND. .NOT.WLKREJ) THEN
+      IF (ICONV .EQ. 0 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
-     &      '- DALTON aborted because wave function not converged!'
+     &      '@ - DALTON aborted because wave function not converged!'
          CALL QUIT('DALTON aborted because wave function not converged')
       END IF
       CALL FLSHFO(LUPRI)
