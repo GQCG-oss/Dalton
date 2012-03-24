@@ -53,6 +53,8 @@ option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
 
+option(ENABLE_SRDFT          "Enable srdft module"           ON)
+
 add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
 
 set(WORK_MEM_WORDS
@@ -123,6 +125,24 @@ if(ENABLE_64BIT_INTEGERS)
     if(THIS_CODE STREQUAL "linsca")
         add_definitions(-DVAR_64BITS)
     endif()
+endif()
+
+if(ENABLE_SRDFT)
+    message("-- Enable srdft module")
+    add_definitions(-DMOD_SRDFT)
+    set(srdft_SOURCES
+        srdft/dftaux_srdft.F
+        srdft/dftdrv_srdft.F
+        srdft/dftfunjt.F
+        srdft/dftfun_srdft.F
+        srdft/dftgrd_srdft.F
+        srdft/sirmp2_srdft.F
+        srdft/sir_srdft.F
+        srdft/srdft.F
+        srdft/srdftjt.F)
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${srdft_SOURCES})
 endif()
 
 # forward CPP directly to the code
